@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Importar estilos de DataTables */
+@import 'datatables.net-dt';
+.ph-1 {
+  padding: 1.1rem !important;
+}
