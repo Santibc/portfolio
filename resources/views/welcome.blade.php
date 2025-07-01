@@ -6,7 +6,7 @@
 
         <title>FHT</title>
 
-        <link rel="icon" type="image/png" href="{{ Vite::asset('resources/images/logoico.png') }}"/>
+        <link rel="icon" type="image/png" href="{{ asset('images/logoico.png') }}"/>
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/fonts/font-awesome-4.7.0/css/font-awesome.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/animate/animate.css') }}">
@@ -50,12 +50,11 @@
              <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg01.jpg') }}');"></div>
         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg02.jpg') }}');"></div>
         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg03.jpg') }}');"></div>
-{{--         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ Vite::asset('resources/images/fondo.png') }}');"></div> --}}
-    </div>
+<div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/fondo.png') }}');"></div>    </div>
 
     <div class="size1 overlay1">
         <div class="size1 flex-col-c-m p-l-15 p-r-15 p-t-50 p-b-50">
-            <img src="{{ Vite::asset('resources/images/logodorado.png') }}">
+<img src="{{ asset('images/logodorado.png') }}">
             <h5 class="l1-txt1 txt-center p-b-25">
                Página  en construcción
             </h5>
