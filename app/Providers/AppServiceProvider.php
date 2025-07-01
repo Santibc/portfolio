@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Providers;
-
+use App\Services\Contracts\ApiClientFactoryInterface;
+use App\Services\Calendly\CalendlyClientFactory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(ApiClientFactoryInterface::class, CalendlyClientFactory::class);
     }
 
     /**

@@ -6,7 +6,7 @@
 
         <title>FHT</title>
 
-        <link rel="icon" type="image/png" href="{{ asset('images/logoico.png') }}"/>
+        <link rel="icon" type="image/png" href="{{ Vite::asset('resources/images/logoico.png') }}"/>
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/fonts/font-awesome-4.7.0/css/font-awesome.min.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ asset('vendor/animate/animate.css') }}">
@@ -50,11 +50,12 @@
              <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg01.jpg') }}');"></div>
         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg02.jpg') }}');"></div>
         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/bg03.jpg') }}');"></div>
-<div class="simpleslide100-item bg-img1" style="background-image: url('{{ asset('images/fondo.png') }}');"></div>    </div>
+{{--         <div class="simpleslide100-item bg-img1" style="background-image: url('{{ Vite::asset('resources/images/fondo.png') }}');"></div> --}}
+    </div>
 
     <div class="size1 overlay1">
         <div class="size1 flex-col-c-m p-l-15 p-r-15 p-t-50 p-b-50">
-<img src="{{ asset('images/logodorado.png') }}">
+            <img src="{{ Vite::asset('resources/images/logodorado.png') }}">
             <h5 class="l1-txt1 txt-center p-b-25">
                Página  en construcción
             </h5>
@@ -77,54 +78,59 @@
                     <span class="s2-txt1">Minutos</span>
                 </div>
 
-                <div class="flex-col-c-m size2 bor1 m-l-15 m-r-15 m-b-20">
-                    <span class="l2-txt1 p-b-9 seconds">0</span>
-                    <span class="s2-txt1">Segundos</span>
                 </div>
             </div>
-
-            <form class="w-full flex-w flex-c-m validate-form">
-
-                
-                <a href="{{ route('login') }}" class="flex-c-m size3 s2-txt3 how-btn1 trans-04 where1">
-    Ingresar
-</a>
-
-            </form>
         </div>
     </div>
-    
-<script src="{{ asset('vendor/jquery/jquery-3.2.1.min.js') }}"></script>
-<script src="{{ asset('vendor/bootstrap/js/popper.js') }}"></script>
-    <script src="{{ asset('vendor/bootstrap/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
-<script src="{{ asset('vendor/countdowntime/moment.min.js') }}"></script>
-    <script src="{{ asset('vendor/countdowntime/moment-timezone.min.js') }}"></script>
-    <script src="{{ asset('vendor/countdowntime/moment-timezone-with-data.min.js') }}"></script>
-    <script src="{{ asset('vendor/countdowntime/countdowntime.js') }}"></script>
-<script>
-    $('.cd100').countdown100({
-        /*Set Endtime here*/
-        /*Endtime must be > current time*/
-        endtimeYear: 2025,       // Año de finalización
-        endtimeMonth: 7,         // Mes de finalización (Agosto es 8)
-        endtimeDate: 9,         // Día de finalización
-        endtimeHours: 10,        // Hora de finalización (formato 24 horas)
-        endtimeMinutes: 0,       // Minuto de finalización
-        endtimeSeconds: 0,       // Segundo de finalización
-        timeZone: "America/Bogota" // Zona horaria para la fecha de finalización
-        // Si la plantilla original venía con "http://momentjs.com/timezone/"
-        // esta es la forma correcta de especificar la zona horaria.
-    });
-</script>
-<script src="{{ asset('vendor/tilt/tilt.jquery.min.js') }}"></script>
-    <script >
-        $('.js-tilt').tilt({
-            scale: 1.1
-        })
-    </script>
-<script src="{{ asset('js/main.js') }}"></script>
 
-     {{--    </div> --}}
-    </body>
-</html>
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize DataTables
+            $('#users-table').DataTable({
+                // (l)ength, (f)ilter, (t)able, (i)nfo, (p)agination
+                dom: "<'flex items-center justify-between mb-4'<'w-auto'l><'w-auto'f>>" +
+                     "<'w-full'tr>" +
+                     "<'flex items-center justify-between mt-4'<'w-auto'i><'w-auto'p>>",
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('usuarios') }}",
+                columns: [
+                    { data: 'id', name: 'id' },
+                    { data: 'name', name: 'name' },
+                    { data: 'email', name: 'email' },
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ],
+                language: {
+                    url: '{{ asset("js/datatables/es-ES.json") }}',
+                },
+                // Combined and corrected callback to apply Tailwind classes
+                drawCallback: function(settings) {
+                    // Style for rows, similar to Shadcn
+                    $('#users-table tbody tr').addClass('bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600');
+                    $('#users-table tbody td').addClass('px-6 py-4 align-middle');
+
+                    // --- Styling for DataTables generated elements ---
+
+                    const wrapper = $(this.api().table().container()).closest('.dataTables_wrapper');
+
+                    // Style "Show entries" dropdown
+                    wrapper.find('.dataTables_length label').addClass('inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300');
+                    wrapper.find('.dataTables_length select').addClass('ml-2 mr-2 w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300');
+
+                    // Style "Search" input
+                    wrapper.find('.dataTables_filter label').addClass('inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300');
+                    wrapper.find('.dataTables_filter input').addClass('ml-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300');
+
+                    // Style table information text
+                    wrapper.find('.dataTables_info').addClass('text-sm text-gray-700 dark:text-gray-300');
+
+                    // Style pagination buttons
+                    wrapper.find('.dataTables_paginate .paginate_button').addClass('relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-500 bg-white border border-gray-300 ms-1 hover:bg-gray-50 focus:outline-none disabled:opacity-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white rounded-md');
+                    wrapper.find('.dataTables_paginate .paginate_button.current').addClass('z-10 bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:text-white dark:border-indigo-500').removeClass('text-gray-500 bg-white dark:bg-gray-800 dark:text-gray-400');
+                }
+            });
+        });
+    </script>
+    @endpush
+</x-app-layout>
