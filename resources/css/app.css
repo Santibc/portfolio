@@ -1,8 +1,12 @@
+@import 'datatables.net-dt';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 /* Importar estilos de DataTables */
-@import 'datatables.net-dt';
+
 .ph-1 {
   padding: 1.1rem !important;
+}
+#users-table_wrapper {
+    padding: 1.5rem; /* O el valor que desees, por ejemplo, 24px */
 }

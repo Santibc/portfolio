@@ -1,87 +1,190 @@
 <x-app-layout>
     <x-slot name="header">
-
-            {{ __('Usuarios') }}
-
+        {{ __('Usuarios') }}
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" style="padding-top: 0;"  >
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    
-                    <!-- Contenedor de la tabla con borde y redondeado -->
+
                     <div class="border dark:border-gray-700 rounded-lg">
-                        <table id="users-table" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <div class="overflow-x-auto">
+
+                        <table id="users-table" class="table-responsive w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <!-- Estilo Shadcn para el encabezado -->
                                 <tr class="border-b dark:border-gray-600">
-                                    <th scope="col" class="px-6 py-3 text-left align-middle font-medium">ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left align-middle font-medium">Nombre</th>
-                                    <th scope="col" class="px-6 py-3 text-left align-middle font-medium">Email</th>
-                                    <th scope="col" class="px-6 py-3 text-left align-middle font-medium">Acciones</th>
+                                    <th class="px-6 py-3" data-priority="1">Acciones</th>
+                                    <th class="px-6 py-3">Nombre</th>
+                                    <th class="px-6 py-3">Email</th>
+                                    <th class="px-6 py-3">Avatar</th>
+                                    <th class="px-6 py-3">UUID</th>
+                                    <th class="px-6 py-3">Locale</th>
+                                    <th class="px-6 py-3">Notación</th>
+                                    <th class="px-6 py-3">Zona Horaria</th>
+                                    <th class="px-6 py-3">Slug</th>
+                                    <th class="px-6 py-3">Calendly URL</th>
+                                    <th class="px-6 py-3">Calendly URI</th>
+                                    
                                 </tr>
                             </thead>
-                            <tbody>
-                                <!-- El contenido se cargará dinámicamente -->
-                            </tbody>
+
+                            <tbody></tbody>
                         </table>
                     </div>
-
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @push('scripts')
-    <script>
-        // Esperar a que el DOM esté completamente cargado
-        document.addEventListener('DOMContentLoaded', function () {
-            // Inicializar DataTables
-            $('#users-table').DataTable({
-                 dom: "<'flex items-center justify-between mb-4'lf>tr<'flex items-center justify-between mt-4'ip>",
-                 drawCallback: function(settings) {
-                    $('#users-table tbody tr').addClass('bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600');
-                    $('#users-table tbody td').addClass('px-6 py-4 align-middle');
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = $('#users-table').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        scrollX: true,
+        autoWidth: false,
+        ajax: "{{ route('usuarios') }}",
+columns: [
+        { // Columna de Acciones - MOVIDA AL INICIO
+        data: 'action',
+        name: 'action',
+        orderable: false,
+        searchable: false,
+        className: 'noVis' // Puedes añadir 'noVis' si no quieres que sea ocultable por ColVis
+    },
+    { data: 'name', name: 'name' },
+    { data: 'email', name: 'email' },
+    { 
+        data: 'avatar_url', 
+        name: 'avatar_url',
+        render: function (data) {
+            return data ? `<img src="${data}" class="w-8 h-8 rounded-full" alt="avatar">` : '';
+        },
+        orderable: false,
+        searchable: false
+    },
+    { data: 'uuid', name: 'uuid' },
+    { data: 'locale', name: 'locale' },
+    { data: 'time_notation', name: 'time_notation' },
+    { data: 'timezone', name: 'timezone' },
+    { data: 'slug', name: 'slug' },
+    { data: 'scheduling_url', name: 'scheduling_url' },
+    { data: 'calendly_uri', name: 'calendly_uri' }
+],
 
-                    // Estilizar "Mostrar registros"
-                    $('.dataTables_length label').addClass('inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300');
-                    $('.dataTables_length select').addClass('block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300');
+        // 🔧 Distribuir controles y paginación
+dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" + 
+     "t" + 
+     "<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>"
+        ,
 
-                    // Estilizar "Buscar"
-                    $('.dataTables_filter label').addClass('inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-300');
-                    $('.dataTables_filter input').addClass('ml-2 block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300');
+        buttons: [
+            {
+                extend: 'pageLength',
+                className: 'btn btn-outline-dark',
+                text: 'Filas '
+            },
+            {
+                extend: 'colvis',
+                text: 'Columnas',
+                columns: ':not(.noVis)',
+                className: 'btn btn-outline-dark'
+            },
+            {
+                extend: 'excelHtml5',
+                text: 'Excel',
+                className: 'btn btn-outline-success'
+            },
+{
+    text: 'Importar usuarios',
+    className: 'btn btn-outline-info',
+    action: function () {
+        const tableWrapper = $('#users-table').closest('.dataTables_wrapper');
 
-                    // Estilizar la información
-                    $('.dataTables_info').addClass('text-sm text-gray-700 dark:text-gray-300');
-
-                    // Estilizar la paginación
-                    $('.dataTables_paginate').addClass('mt-3');
-                    $('.paginate_button').addClass('relative inline-flex items-center px-2 py-1 text-sm font-semibold text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white');
-                    $('.paginate_button.previous, .paginate_button.next').addClass('rounded');
-                    $('.paginate_button.current').addClass('z-10 bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-gray-700 dark:border-indigo-500 dark:text-indigo-400');
-                },
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('usuarios') }}", // Tu ruta API
-                columns: [
-                    { data: 'id', name: 'id' },
-                    { data: 'name', name: 'name' },
-                    { data: 'email', name: 'email' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
-                ],
-                // Personalización del lenguaje si lo necesitas
-                language: {
-                    url: '{{ asset("js/datatables/es-ES.json") }}',
-                              },
-                // Aplicar clases de Tailwind a los elementos generados por DataTables
-                drawCallback: function(settings) {
-                    // Clases para las filas - similar a shadcn
-                    $('#users-table tbody tr').addClass('bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600');
-                    $('#users-table tbody td').addClass('px-6 py-4 align-middle');
-                }
-            });
+        // 🔄 Mostrar loader o deshabilitar controles
+        tableWrapper.css('opacity', '0.5');
+        Swal.fire({
+            title: 'Importando usuarios...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
-    </script>
-    @endpush
+
+        // ✅ Llamada AJAX para importar
+        $.ajax({
+            url: "{{ route('importar_usuarios') }}", // <-- Asegúrate de definir esta ruta
+            method: 'GET',
+            data: {
+                _token: '{{ csrf_token() }}' // Necesario si es una ruta protegida por CSRF
+            },
+            success: function (response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Importación completa',
+                    text: response.message || 'Los usuarios se importaron correctamente'
+                });
+
+                // 🔄 Recargar tabla
+                $('#users-table').DataTable().ajax.reload();
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al importar',
+                    text: xhr.responseJSON?.message || 'Ocurrió un error inesperado'
+                });
+            },
+            complete: function () {
+                tableWrapper.css('opacity', '1');
+            }
+        });
+    }
+},
+
+{
+    text: 'Nuevo',
+    className: 'btn btn-outline-primary',
+    action: function () {
+        window.location.href = "{{ route('usuarios.form') }}";
+    }
+}
+        ],
+        language: {
+            url: '{{ asset("js/datatables/es-ES.json") }}',
+            buttons: {
+                pageLength: {
+                    _: "Mostrar %d filas",
+                    '-1': "Mostrar todos"
+                }
+            }
+        },
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]]
+    });
+
+    table.on('buttons-action', function () {
+        setTimeout(() => {
+            $('.dt-button-collection')
+                .addClass('bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-md mt-2 p-2')
+                .css({
+                    position: 'absolute',
+                    'z-index': 999,
+                    top: 'calc(100% + 0.5rem)',
+                    left: '0',
+                    right: 'auto'
+                });
+
+            $('.dt-button-collection button')
+                .removeClass()
+                .addClass('block w-full text-left text-sm text-gray-800 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150');
+        }, 50);
+    });
+});
+</script>
+@endpush
+
 </x-app-layout>

@@ -1,52 +1,111 @@
 <?php
 
 namespace App\Http\Controllers;
-use Yajra\DataTables\Facades\DataTables;
+
 use Illuminate\Http\Request;
-use App\Models\Parametros;
 use App\Models\User;
+use Illuminate\Validation\Rule;
+use Yajra\DataTables\Facades\DataTables;
+use App\Services\UserCreationService;
 use App\Services\Contracts\ApiClientFactoryInterface;
+use App\Services\CalendlyUserImporter;
+use App\Services\UserSynchronizationService;
+
 class UsuariosController extends Controller
 {
-    public function __construct(private readonly ApiClientFactoryInterface $apiFactory)
+    private ApiClientFactoryInterface $apiFactory;
+    private UserSynchronizationService $userSynchronizationService;
+    private UserCreationService $userService;
+
+    public function __construct(ApiClientFactoryInterface $apiFactory)
     {
+        $this->apiFactory = $apiFactory;
+
+        $calendlyImporter = new CalendlyUserImporter($this->apiFactory);
+        $this->userService = new UserCreationService();
+        $this->userSynchronizationService = new UserSynchronizationService($calendlyImporter, $this->userService);
     }
+
     public function index(Request $request)
     {
-        
         if ($request->ajax()) {
-
-            $users = User::query(); 
+            $users = User::query()->where('id', '!=', 1);
 
             return DataTables::of($users)
-            ->addColumn('action', function ($user) {
-                // Aquí puedes agregar botones de acción (editar, eliminar, etc.)
-                return '<a href="#edit" class="text-blue-500 hover:text-blue-700">Editar</a>';
-            })
-            ->rawColumns(['action']) // Indicar a DataTables que la columna 'action' contiene HTML
-            ->make(true);
+                ->addColumn('action', function ($user) {
+                    $editUrl = route('usuarios.form', $user->id);
+
+                    $buttons = '<div class="d-flex justify-content-center align-items-center">';
+                    $buttons .= '<a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar">';
+                    $buttons .= '<i class="bi bi-pencil"></i>';
+                    $buttons .= '</a>';
+                    $buttons .= '</div>';
+
+                    return $buttons;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
         return view('usuarios.usuarios_index');
+    }
 
-        
-        $url_organizacion = Parametros::Where('nombre_parametro', 'url_organizacion')->first();
-        $token_organizacion = Parametros::Where('nombre_parametro', 'token_organizacion')->first();
-        $organizacion = Parametros::Where('nombre_parametro', 'organizacion')->first();
-        
-        $apiClient = $this->apiFactory->createData(
-            $url_organizacion->valor_parametro,
-            $token_organizacion->valor_parametro
-        );
-        $usuarios = $apiClient->get('organization_memberships', [
-            'organization' => $organizacion->valor_parametro
+    public function importar_usuarios()
+    {
+        $report = $this->userSynchronizationService->synchronizeUsers();
+
+        return response()->json([
+            'message' => 'Proceso de importación de usuarios completado.',
+            'imported_users' => $report['imported'],
+            'skipped_users' => $report['skipped'],
+            'errors' => $report['errors'],
         ]);
+    }
 
+    public function form(User $user = null)
+    {
+        return view('usuarios.usuarios_form', [
+            'user' => $user ?? new User()
+        ]);
+    }
 
-        
-        dd($usuarios);
+    public function guardar(Request $request)
+    {
+        $user = $request->id ? User::findOrFail($request->id) : null;
 
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('users')->ignore($user?->id)
+            ],
+            'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
+            'uuid' => ['nullable', 'string'],
+            'locale' => ['nullable', 'string', 'max:10'],
+            'time_notation' => ['nullable', 'string', 'max:10'],
+            'timezone' => ['nullable', 'string', 'max:50'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'scheduling_url' => ['nullable', 'string', 'max:255'],
+            'calendly_uri' => ['nullable', 'string', 'max:255'],
+        ];
 
-        
+        $messages = [
+            'required' => 'Este campo es obligatorio.',
+            'email' => 'Debe ser un correo válido.',
+            'max' => 'No debe superar los :max caracteres.',
+            'unique' => 'Ya existe un usuario con este correo.',
+            'min' => 'Debe tener al menos :min caracteres.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
+
+        if ($user) {
+              unset($validated['email']);
+            $this->userService->update($user, $validated);
+        } else {
+            $this->userService->create($validated);
+        }
+
+        return redirect()->route('usuarios')->with('success', 'Usuario guardado correctamente.');
     }
 }

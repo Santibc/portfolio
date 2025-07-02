@@ -21,6 +21,14 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'uuid', // Añadido
+        'avatar_url', // Añadido
+        'locale', // Añadido
+        'time_notation', // Añadido
+        'timezone', // Añadido
+        'slug', // Añadido
+        'scheduling_url', // Añadido
+        'calendly_uri', // Añadido
     ];
 
     /**
