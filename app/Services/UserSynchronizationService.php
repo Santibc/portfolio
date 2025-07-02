@@ -65,7 +65,7 @@ class UserSynchronizationService
                     'calendly_uri' => $userData['uri'] ?? null, // Almacenar la URI completa del usuario de Calendly
                 ];
 
-                $this->userCreationService->createUser($userAttributes);
+                $this->userCreationService->create($userAttributes);
                 $importedCount++;
                 Log::info("Usuario '{$email}' importado exitosamente.");
             } catch (\Exception $e) {
