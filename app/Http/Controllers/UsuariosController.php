@@ -46,7 +46,7 @@ class UsuariosController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-
+   $this->importar_usuarios();
         return view('usuarios.usuarios_index');
     }
 

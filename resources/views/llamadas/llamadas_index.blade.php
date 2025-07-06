@@ -16,6 +16,7 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr class="border-b dark:border-gray-600">
                                     <th class="px-6 py-3" data-priority="1">Acciones</th>
+                                    <th class="px-6 py-3">Lead</th>
                                     <th class="px-6 py-3">Nombre del Evento</th>
                                     <th class="px-6 py-3">Usuario</th>
                                     <th class="px-6 py-3">Estado</th>
@@ -27,7 +28,7 @@
                                     <th class="px-6 py-3">Cancelado por</th>
                                     <th class="px-6 py-3">Motivo de Cancelación</th>
                                     <th class="px-6 py-3">Estado en Pipeline</th>
-                                    <th class="px-6 py-3">Lead ID</th>
+                                    
                                     <th class="px-6 py-3">URI</th>                               
                                 </tr>
                             </thead>
@@ -57,9 +58,59 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="modalLeadInfo" tabindex="-1" aria-labelledby="modalLeadInfoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Información del Lead</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="contenidoLead">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status" id="loaderLead" style="display: none;">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 @push('scripts')
 <script>
+    function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    const results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+}
+    $(document).on('click', '.ver-lead-btn', function () {
+    var leadId = $(this).data('id');
+    $('#loaderLead').show();
+    $('#contenidoLead').html('');
+
+    $.ajax({
+        url: '/leads/' + leadId + '/info-json',
+        method: 'GET',
+        success: function (lead) {
+            $('#loaderLead').hide();
+
+            let html = `<ul class="list-group">
+                <li class="list-group-item"><strong>Nombre:</strong> ${lead.nombre}</li>
+                <li class="list-group-item"><strong>Email:</strong> ${lead.email}</li>
+                <li class="list-group-item"><strong>Teléfono:</strong> ${lead.telefono ?? '-'}</li>
+                <li class="list-group-item"><strong>Instagram:</strong> ${lead.instagram_user ?? '-'}</li>
+            </ul>`;
+            $('#contenidoLead').html(html);
+            $('#modalLeadInfo').modal('show');
+        },
+        error: function () {
+            $('#loaderLead').hide();
+            $('#contenidoLead').html('<div class="alert alert-danger">Error al cargar la información del lead.</div>');
+        }
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     const table = $('#llamadas-table').DataTable({
         processing: true,
@@ -67,7 +118,12 @@ document.addEventListener('DOMContentLoaded', function () {
         responsive: true,
         scrollX: true,
         autoWidth: false,
-        ajax: "{{ route('llamadas') }}",
+        ajax: {
+    url: "{{ route('llamadas') }}",
+    data: function (d) {
+        d.lead_id = getUrlParameter('lead_id'); // <-- pasa lead_id manualmente
+    }
+},
 columns: [
         { // Columna de Acciones - MOVIDA AL INICIO
         data: 'action',
@@ -76,6 +132,7 @@ columns: [
         searchable: false,
         className: 'noVis' // Puedes añadir 'noVis' si no quieres que sea ocultable por ColVis
     },
+    { data: 'lead', name: 'lead_id', orderable: false, searchable: false },
     { data: 'nombre_evento', name: 'nombre_evento' },
     { data: 'user_id', name: 'user_id' },
     { data: 'status', name: 'status' },
@@ -87,7 +144,6 @@ columns: [
     { data: 'cancelado_por', name: 'cancelado_por' },
     { data: 'motivo_cancelacion', name: 'motivo_cancelacion' },
     { data: 'pipeline_status', name: 'pipeline_status' },
-    { data: 'lead_id', name: 'lead_id' },
     { data: 'uri', name: 'uri' },
 
 ],

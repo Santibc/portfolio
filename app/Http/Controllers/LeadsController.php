@@ -51,28 +51,47 @@ class LeadsController extends Controller
     {
         if ($request->ajax()) {
             if(auth()->user()->getRoleNames()->first()=='admin'){
-                $leads = Lead::query();
+                $leads = Lead::query()->orderByDesc('id');;
                 
             }else{
-                $leads = Lead::query()->where('user_id', Auth::user()->id);
+                $leads = Lead::query()->where('user_id', Auth::user()->id)->orderByDesc('id');;
             }
 
             return DataTables::of($leads)
                 ->addColumn('action', function ($lead) {
                     $editUrl = route('leads.form', $lead->id);
+                    $llamadasUrl = route('llamadas', ['lead_id' => $lead->id]);
 
-                    $buttons = '<div class="d-flex justify-content-center align-items-center">';
-                    $buttons .= '<a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar">';
-                    $buttons .= '<i class="bi bi-pencil"></i>';
-                    $buttons .= '</a>';
+                    $buttons = '<div class="d-flex justify-content-center gap-1">';
+                    $buttons .= '<a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
+                    $buttons .= '<a href="' . $llamadasUrl . '" class="btn btn-outline-secondary btn-sm" title="Ver llamadas"><i class="bi bi-telephone"></i></a>';
                     $buttons .= '</div>';
 
                     return $buttons;
                 })
+
                 ->rawColumns(['action'])
                 ->make(true);
         }
+        if (!$request->ajax()) {
+            if (auth()->user()->hasRole('admin')) {
+                // 🔄 Importar leads para todos los usuarios (excepto el admin id=1 si quieres excluirlo)
+                $usuarios = User::where('id', '!=', 1)->get();
 
+                foreach ($usuarios as $usuario) {
+                    $this->importar_leads($usuario->id);
+                }
+            } else {
+                // 🔄 Importar solo para el usuario autenticado
+                $this->importar_leads(Auth::id());
+            }
+        }
         return view('leads.leads_index');
     }
+    public function infoJson($id)
+{
+    $lead = Lead::findOrFail($id);
+    return response()->json($lead);
+}
+
 }

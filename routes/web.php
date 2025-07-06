@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/llamadas', [LlamadasController::class, 'index'])->name('llamadas');
     Route::get('/leads_form/{llamada?}', [LlamadasController::class, 'form'])->name('llamadas.form');
 Route::get('/llamadas/{id}/respuestas-json', [LlamadasController::class, 'respuestasJson'])->name('llamadas.respuestas.json');
+Route::get('/leads/{id}/info-json', [LeadsController::class, 'infoJson'])->name('leads.info');
 });
 
 require __DIR__.'/auth.php';

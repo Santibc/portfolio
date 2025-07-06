@@ -97,7 +97,7 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
                 text: 'Excel',
                 className: 'btn btn-outline-success'
             },
-{
+/* {
     text: 'Importar usuarios',
     className: 'btn btn-outline-info',
     action: function () {
@@ -142,7 +142,7 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
             }
         });
     }
-},
+}, */
 
 {
     text: 'Nuevo',
