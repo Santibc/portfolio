@@ -9,17 +9,30 @@
 
     {{-- Navegación --}}
     <nav class="nav flex-column px-2 py-3">
-        <a href="/dashboard"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}">
-            <i class="bi bi-house-door-fill"></i>
-            <span>Inicio</span>
-        </a>
+<a href="/dashboard"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-speedometer2"></i>
+    <span>Inicio</span>
+</a>
 
-        <a href="/usuarios"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
-            <i class="bi bi-people-fill"></i>
-            <span>Usuarios</span>
-        </a>
+<a href="/usuarios"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-person-lines-fill"></i>
+    <span>Usuarios</span>
+</a>
+
+<a href="/leads"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('leads*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-person-plus-fill"></i>
+    <span>Leads</span>
+</a>
+
+<a href="/llamadas"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('llamadas*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-telephone-fill"></i>
+    <span>Llamadas</span>
+</a>
+
 
         {{-- Agrega más enlaces aquí si lo deseas --}}
     </nav>

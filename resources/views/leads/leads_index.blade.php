@@ -1,29 +1,25 @@
 <x-app-layout>
     <x-slot name="header">
-        {{ __('Usuarios') }}
+        {{ __('Leads') }}
     </x-slot>
 
     <div class="py-12" style="padding-top: 0;"  >
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h4 class="text-2xl font-semibold mb-4">Usuarios</h4>
+                    <h4 class="text-2xl font-semibold mb-4">Leads</h4>
 
                     <div class="border dark:border-gray-700 rounded-lg">
                         <div class="overflow-x-auto">
 
-                        <table id="users-table" class="table-responsive w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <table id="leads-table" class="table-responsive w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr class="border-b dark:border-gray-600">
                                     <th class="px-6 py-3" data-priority="1">Acciones</th>
                                     <th class="px-6 py-3">Nombre</th>
                                     <th class="px-6 py-3">Email</th>
-                                    <th class="px-6 py-3">Avatar</th>
-                                    <th class="px-6 py-3">UUID</th>
-                                    <th class="px-6 py-3">Slug</th>
-                                    <th class="px-6 py-3">Calendly URL</th>
-                                    <th class="px-6 py-3">Calendly URI</th>
-                                    <th class="px-6 py-3">Zona Horaria</th>
+                                    <th class="px-6 py-3">Teléfono </th>
+                                    <th class="px-6 py-3">Instagram</th>
                                     
                                 </tr>
                             </thead>
@@ -40,13 +36,13 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const table = $('#users-table').DataTable({
+    const table = $('#leads-table').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,
         scrollX: true,
         autoWidth: false,
-        ajax: "{{ route('usuarios') }}",
+        ajax: "{{ route('leads') }}",
 columns: [
         { // Columna de Acciones - MOVIDA AL INICIO
         data: 'action',
@@ -55,23 +51,10 @@ columns: [
         searchable: false,
         className: 'noVis' // Puedes añadir 'noVis' si no quieres que sea ocultable por ColVis
     },
-    { data: 'name', name: 'name' },
+    { data: 'nombre', name: 'nombre' },
     { data: 'email', name: 'email' },
-    { 
-        data: 'avatar_url', 
-        name: 'avatar_url',
-        render: function (data) {
-            return data ? `<img src="${data}" class="w-8 h-8 rounded-full" alt="avatar">` : '';
-        },
-        orderable: false,
-        searchable: false
-    },
-    { data: 'uuid', name: 'uuid' },
-
-    { data: 'slug', name: 'slug' },
-    { data: 'scheduling_url', name: 'scheduling_url' },
-    { data: 'calendly_uri', name: 'calendly_uri' },
-        { data: 'timezone', name: 'timezone' }
+    { data: 'telefono', name: 'telefono' },
+    { data: 'instagram_user', name: 'instagram_user' },
 ],
 
         // 🔧 Distribuir controles y paginación
@@ -98,15 +81,15 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
                 className: 'btn btn-outline-success'
             },
 {
-    text: 'Importar usuarios',
+    text: 'Importar leads',
     className: 'btn btn-outline-info',
     action: function () {
-        const tableWrapper = $('#users-table').closest('.dataTables_wrapper');
+        const tableWrapper = $('#leads-table').closest('.dataTables_wrapper');
 
         // 🔄 Mostrar loader o deshabilitar controles
         tableWrapper.css('opacity', '0.5');
         Swal.fire({
-            title: 'Importando usuarios...',
+            title: 'Importando leads...',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -115,7 +98,7 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
 
         // ✅ Llamada AJAX para importar
         $.ajax({
-            url: "{{ route('importar_usuarios') }}", // <-- Asegúrate de definir esta ruta
+            url: "{{ route('importar_leads') }}", // <-- Asegúrate de definir esta ruta
             method: 'GET',
             data: {
                 _token: '{{ csrf_token() }}' // Necesario si es una ruta protegida por CSRF
@@ -124,11 +107,11 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
                 Swal.fire({
                     icon: 'success',
                     title: 'Importación completa',
-                    text: response.message || 'Los usuarios se importaron correctamente'
+                    text: response.message || 'Los leads se importaron correctamente'
                 });
 
                 // 🔄 Recargar tabla
-                $('#users-table').DataTable().ajax.reload();
+                $('#leads-table').DataTable().ajax.reload();
             },
             error: function (xhr) {
                 Swal.fire({

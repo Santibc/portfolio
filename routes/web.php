@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\LeadsController;
+use App\Http\Controllers\LlamadasController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,6 +32,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+    Route::get('/leads', [LeadsController::class, 'index'])->name('leads');
+    Route::get('/importar_leads', [LeadsController::class, 'importar_leads'])->name('importar_leads');
+    Route::get('/leads_form/{lead?}', [LeadsController::class, 'form'])->name('leads.form');
+    Route::get('/llamadas', [LlamadasController::class, 'index'])->name('llamadas');
+    Route::get('/leads_form/{llamada?}', [LlamadasController::class, 'form'])->name('llamadas.form');
+Route::get('/llamadas/{id}/respuestas-json', [LlamadasController::class, 'respuestasJson'])->name('llamadas.respuestas.json');
 });
 
 require __DIR__.'/auth.php';

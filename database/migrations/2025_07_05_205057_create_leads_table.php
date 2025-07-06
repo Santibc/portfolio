@@ -11,10 +11,20 @@ return new class extends Migration
      *
      * @return void
      */
+// database/migrations/xxxx_xx_xx_xxxxxx_create_leads_table.php
     public function up()
     {
         Schema::create('leads', function (Blueprint $table) {
             $table->id();
+            
+            // ¡CAMBIO CLAVE! Asocia el lead con un usuario (closer).
+            // Si el closer se elimina, el lead no se elimina (set null).
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+
+            $table->string('nombre');
+            $table->string('email')->unique();
+            $table->string('telefono')->nullable();
+            $table->string('instagram_user')->nullable();
             $table->timestamps();
         });
     }

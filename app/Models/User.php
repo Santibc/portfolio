@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles; 
+use App\Models\Lead;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'slug', // Añadido
         'scheduling_url', // Añadido
         'calendly_uri', // Añadido
+        'last_synced_at ', // Añadido
     ];
 
     /**
@@ -47,6 +49,11 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'last_synced_at' => 'datetime',
         'email_verified_at' => 'datetime',
     ];
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+    }
 }
