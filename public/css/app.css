@@ -2136,6 +2136,12 @@ select{
 #users-table_wrapper {
     padding: 1.5rem; /* O el valor que desees, por ejemplo, 24px */
 }
+#leads-table_wrapper {
+    padding: 1.5rem; /* O el valor que desees, por ejemplo, 24px */
+}
+#llamadas-table_wrapper {
+    padding: 1.5rem; /* O el valor que desees, por ejemplo, 24px */
+}
 .hover\:border-gray-300:hover{
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));

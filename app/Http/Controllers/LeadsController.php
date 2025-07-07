@@ -59,11 +59,10 @@ class LeadsController extends Controller
 
             return DataTables::of($leads)
                 ->addColumn('action', function ($lead) {
-                    $editUrl = route('leads.form', $lead->id);
                     $llamadasUrl = route('llamadas', ['lead_id' => $lead->id]);
 
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
-                    $buttons .= '<a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
+        
                     $buttons .= '<a href="' . $llamadasUrl . '" class="btn btn-outline-secondary btn-sm" title="Ver llamadas"><i class="bi bi-telephone"></i></a>';
                     $buttons .= '</div>';
 

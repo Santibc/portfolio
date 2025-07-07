@@ -33,9 +33,9 @@ public function index(Request $request)
 
         return DataTables::of($llamadas)
             ->addColumn('action', function ($llamada) {
-                $editUrl = route('llamadas.form', $llamada->id);
+
                 return '<div class="d-flex flex-column align-items-center gap-1">
-                            <a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>
+
                             <button class="btn btn-outline-primary btn-sm ver-respuestas-btn" data-id="' . $llamada->id . '" title="Ver respuestas">
                                 <i class="bi bi-chat-dots"></i>
                             </button>

@@ -127,13 +127,13 @@ dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" +
     }
 }, */
 
-{
+/* {
     text: 'Nuevo',
     className: 'btn btn-outline-primary',
     action: function () {
         window.location.href = "{{ route('usuarios.form') }}";
     }
-}
+} */
         ],
         language: {
             url: '{{ asset("js/datatables/es-ES.json") }}',
