@@ -32,4 +32,16 @@ class Lead extends Model
 {
     return $this->belongsTo(User::class, 'user_id');
 }
+    public function pipelineStatus()
+    {
+        return $this->belongsTo(PipelineStatus::class);
+    }
+    public function sale()
+{
+    return $this->hasOne(Sale::class);
+}
+public function logs()
+{
+    return $this->hasMany(Log::class, 'id_tabla')->where('tabla', 'leads')->latest();
+}
 }

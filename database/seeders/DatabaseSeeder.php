@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(RolesAndPermissionsSeeder::class); // <-- Añade esta línea
+        //$this->call(RolesAndPermissionsSeeder::class); // <-- Añade esta línea
         $user = User::where('id',1)->first();
 
         $user->assignRole('admin'); // Asigna el rol 'admin'

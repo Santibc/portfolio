@@ -12,7 +12,7 @@
                     @if (Auth::user()->hasRole('admin'))
                         {{ __("Rol admin") }}
                     @else
-                        <p>No eres un administrador.</p>
+                        <p>Closer.</p>
                     @endif
                     
                 </div>

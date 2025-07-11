@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\LeadsController;
 use App\Http\Controllers\LlamadasController;
+use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,9 +37,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_leads', [LeadsController::class, 'importar_leads'])->name('importar_leads');
     Route::get('/leads_form/{lead?}', [LeadsController::class, 'form'])->name('leads.form');
     Route::get('/llamadas', [LlamadasController::class, 'index'])->name('llamadas');
+    Route::get('/leads/{id}/logs', [LeadsController::class, 'logs'])->name('leads.logs');
     Route::get('/leads_form/{llamada?}', [LlamadasController::class, 'form'])->name('llamadas.form');
 Route::get('/llamadas/{id}/respuestas-json', [LlamadasController::class, 'respuestasJson'])->name('llamadas.respuestas.json');
 Route::get('/leads/{id}/info-json', [LeadsController::class, 'infoJson'])->name('leads.info');
+Route::get('sales/form/{lead}', [SalesController::class, 'form'])->name('sales.form');
+    Route::prefix('sales')->name('sales.')->group(function () {
+        Route::post('store', [SalesController::class, 'store'])->name('store');
+    });
+        Route::post('leads/{id}/update-status', [LeadsController::class, 'updatePipelineStatus'])->name('leads.update_status');
+
 });
 
 require __DIR__.'/auth.php';

@@ -14,13 +14,13 @@
     <i class="bi bi-speedometer2"></i>
     <span>Inicio</span>
 </a>
-
+@if (auth()->user()->getRoleNames()->first() == 'admin') 
 <a href="/usuarios"
    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
     <i class="bi bi-person-lines-fill"></i>
     <span>Usuarios</span>
 </a>
-
+@endif
 <a href="/leads"
    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('leads*') ? 'active' : 'text-dark' }}">
     <i class="bi bi-person-plus-fill"></i>

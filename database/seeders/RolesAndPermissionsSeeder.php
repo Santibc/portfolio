@@ -20,11 +20,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
                 // Crea permisos (opcional, si los necesitas ya)
-                 Permission::create(['name' => 'Mensaje inicio']);
+               /*   Permission::create(['name' => 'Mensaje inicio']); */
 
         
                 // Crea roles
-                $adminRole = Role::create(['name' => 'admin']);
+             /*    $adminRole = Role::create(['name' => 'admin']); */
 /*                 $editorRole = Role::create(['name' => 'editor']);
                 $userRole = Role::create(['name' => 'user']); // Rol por defecto para usuarios registrados */
         

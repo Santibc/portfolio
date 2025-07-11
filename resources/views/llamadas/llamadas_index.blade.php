@@ -24,10 +24,8 @@
                                     <th class="px-6 py-3">Fin</th>
                                     <th class="px-6 py-3">Enlace de Ingreso</th>
                                     <th class="px-6 py-3">Tipo de Evento (URI)</th>
-                                    <th class="px-6 py-3">Comentarios</th>
                                     <th class="px-6 py-3">Cancelado por</th>
                                     <th class="px-6 py-3">Motivo de Cancelación</th>
-                                    <th class="px-6 py-3">Estado en Pipeline</th>
                                     <th class="px-6 py-3">URI</th>                               
                                 </tr>
                             </thead>
@@ -166,10 +164,8 @@
                 { data: 'end_time', name: 'end_time' },
                 { data: 'join_url', name: 'join_url' },
                 { data: 'event_type_uri', name: 'event_type_uri' },
-                { data: 'comentarios', name: 'comentarios' },
                 { data: 'cancelado_por', name: 'cancelado_por' },
                 { data: 'motivo_cancelacion', name: 'motivo_cancelacion' },
-                { data: 'pipeline_status', name: 'pipeline_status' },
                 { data: 'uri', name: 'uri' }
             ],
             dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" + 
