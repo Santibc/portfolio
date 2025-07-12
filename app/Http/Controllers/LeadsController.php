@@ -87,7 +87,7 @@ class LeadsController extends Controller
                             data-metodo_pago="' . e($lead->sale->metodo_pago) . '"
                             data-tipo_acuerdo="' . e($lead->sale->tipo_acuerdo) . '"
                             data-comentarios="' . e($lead->sale->comentarios) . '"
-                            data-comprobante="' . asset('storage/' . $lead->sale->comprobante_pago_path) . '"
+                            data-comprobante="' . asset($lead->sale->comprobante_pago_path) . '"
                             title="Ver Detalles de la Venta">
                             <i class="bi bi-eye"></i>
                         </button>';

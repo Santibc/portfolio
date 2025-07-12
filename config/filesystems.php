@@ -38,10 +38,11 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Apunta a la carpeta public_html que está fuera de la raíz del proyecto Laravel
+            'root' => base_path('../public_html'), 
+            // La URL base para acceder a estos archivos
+            'url' => env('APP_URL').'/',
             'visibility' => 'public',
-            'throw' => false,
         ],
 
         's3' => [
