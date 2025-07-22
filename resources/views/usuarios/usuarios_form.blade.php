@@ -12,17 +12,6 @@
                     <input type="hidden" name="id" value="{{ old('id', $user->id) }}">
 
                     <div class="row">
-                        {{-- UUID --}}
-                        <div class="col-12 col-md-6 mb-3">
-                            <label class="form-label">UUID</label>
-                            <input name="uuid" type="text"
-                                   class="form-control"
-                                   value="{{ old('uuid', $user->uuid) }}"
-                                   {{ $user->uuid ? 'disabled' : '' }}>
-                            @error('uuid')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
 
                         {{-- Nombre --}}
                         <div class="col-12 col-md-6 mb-3">
@@ -45,7 +34,7 @@
                             <input name="email" type="email"
                                    class="form-control"
                                    value="{{ old('email', $user->email) }}"
-                                   {{ $user->exists ? 'readonly' : '' }}>
+                                  >
                             @error('email')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
@@ -67,28 +56,6 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                    </div>
-
-                    {{-- Campos adicionales --}}
-                    <div class="row">
-                        @foreach([
-                            'locale' => 'Idioma',
-                            'time_notation' => 'Notación de Hora',
-                            'timezone' => 'Zona Horaria',
-                            'slug' => 'Slug',
-                            'scheduling_url' => 'URL de Agendamiento',
-                            'calendly_uri' => 'Calendly URI'
-                        ] as $field => $label)
-                            <div class="col-12 col-md-6 mb-3">
-                                <label class="form-label">{{ $label }}</label>
-                                <input name="{{ $field }}" type="text"
-                                       class="form-control"
-                                       value="{{ old($field, $user->$field) }}">
-                                @error($field)
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
-                        @endforeach
                     </div>
 
                     {{-- Botones --}}

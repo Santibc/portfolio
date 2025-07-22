@@ -18,12 +18,6 @@
                                     <th class="px-6 py-3" data-priority="1">Acciones</th>
                                     <th class="px-6 py-3">Nombre</th>
                                     <th class="px-6 py-3">Email</th>
-                                    <th class="px-6 py-3">Avatar</th>
-                                    <th class="px-6 py-3">UUID</th>
-                                    <th class="px-6 py-3">Slug</th>
-                                    <th class="px-6 py-3">Calendly URL</th>
-                                    <th class="px-6 py-3">Calendly URI</th>
-                                    <th class="px-6 py-3">Zona Horaria</th>
                                 </tr>
                             </thead>
 
@@ -55,21 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 className: 'noVis'
             },
             { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' },
-            {
-                data: 'avatar_url',
-                name: 'avatar_url',
-                render: function (data) {
-                    return data ? `<img src="${data}" class="w-8 h-8 rounded-full" alt="avatar">` : '';
-                },
-                orderable: false,
-                searchable: false
-            },
-            { data: 'uuid', name: 'uuid' },
-            { data: 'slug', name: 'slug' },
-            { data: 'scheduling_url', name: 'scheduling_url' },
-            { data: 'calendly_uri', name: 'calendly_uri' },
-            { data: 'timezone', name: 'timezone' }
+            { data: 'email', name: 'email' }
         ],
 
         dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" + 

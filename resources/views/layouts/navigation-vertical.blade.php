@@ -21,17 +21,6 @@
     <span>Usuarios</span>
 </a>
 @endif
-<a href="/leads"
-   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('leads*') ? 'active' : 'text-dark' }}">
-    <i class="bi bi-person-plus-fill"></i>
-    <span>Leads</span>
-</a>
-
-<a href="/llamadas"
-   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('llamadas*') ? 'active' : 'text-dark' }}">
-    <i class="bi bi-telephone-fill"></i>
-    <span>Llamadas</span>
-</a>
 @if (auth()->user()->getRoleNames()->first() == 'admin') 
 <a href="/clientes"
    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">

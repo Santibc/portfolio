@@ -7,23 +7,18 @@ use App\Models\User;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\UserCreationService;
-use App\Services\Contracts\ApiClientFactoryInterface;
+
 use App\Services\CalendlyUserImporter;
 use App\Services\UserSynchronizationService;
 
 class UsuariosController extends Controller
 {
-    private ApiClientFactoryInterface $apiFactory;
-    private UserSynchronizationService $userSynchronizationService;
+
     private UserCreationService $userService;
 
-    public function __construct(ApiClientFactoryInterface $apiFactory)
+    public function __construct()
     {
-        $this->apiFactory = $apiFactory;
-
-        $calendlyImporter = new CalendlyUserImporter($this->apiFactory);
-        $this->userService = new UserCreationService();
-        $this->userSynchronizationService = new UserSynchronizationService($calendlyImporter, $this->userService);
+        $this->userService = new UserCreationService();;
     }
 
     public function index(Request $request)
@@ -46,21 +41,11 @@ class UsuariosController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-   $this->importar_usuarios();
+
         return view('usuarios.usuarios_index');
     }
 
-    public function importar_usuarios()
-    {
-        $report = $this->userSynchronizationService->synchronizeUsers();
 
-        return response()->json([
-            'message' => 'Proceso de importación de usuarios completado.',
-            'imported_users' => $report['imported'],
-            'skipped_users' => $report['skipped'],
-            'errors' => $report['errors'],
-        ]);
-    }
 
     public function form(User $user = null)
     {
@@ -80,13 +65,6 @@ class UsuariosController extends Controller
                 Rule::unique('users')->ignore($user?->id)
             ],
             'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
-            'uuid' => ['nullable', 'string'],
-            'locale' => ['nullable', 'string', 'max:10'],
-            'time_notation' => ['nullable', 'string', 'max:10'],
-            'timezone' => ['nullable', 'string', 'max:50'],
-            'slug' => ['nullable', 'string', 'max:255'],
-            'scheduling_url' => ['nullable', 'string', 'max:255'],
-            'calendly_uri' => ['nullable', 'string', 'max:255'],
         ];
 
         $messages = [
@@ -100,7 +78,6 @@ class UsuariosController extends Controller
         $validated = $request->validate($rules, $messages);
 
         if ($user) {
-              unset($validated['email']);
             $this->userService->update($user, $validated);
         } else {
             $this->userService->create($validated);
