@@ -32,6 +32,14 @@
     <i class="bi bi-telephone-fill"></i>
     <span>Llamadas</span>
 </a>
+@if (auth()->user()->getRoleNames()->first() == 'admin') 
+<a href="/clientes"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-person-lines-fill"></i>
+    <span>clientes</span>
+</a>
+@endif
+
 
 
         {{-- Agrega más enlaces aquí si lo deseas --}}

@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\LeadsController;
 use App\Http\Controllers\LlamadasController;
+use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +47,8 @@ Route::get('sales/form/{lead}', [SalesController::class, 'form'])->name('sales.f
         Route::post('store', [SalesController::class, 'store'])->name('store');
     });
         Route::post('leads/{id}/update-status', [LeadsController::class, 'updatePipelineStatus'])->name('leads.update_status');
-
+//Clientes
+Route::get('/clientes', [ClientesController::class, 'index'])->name('clientes');
 });
 
 require __DIR__.'/auth.php';
