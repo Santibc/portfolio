@@ -2,8 +2,8 @@
     {{-- Logo --}}
     <div class="d-flex justify-content-center align-items-center py-3 border-bottom">
         <a href="/" class="text-decoration-none">
-            <img src="{{ asset('images/logodorado2.png') }}" class="logo-full" width="100" alt="Logo">
-            <img src="{{ asset('images/logoico.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
+            <img style="width: 80%;margin-left: 5%;" src="{{ asset('images/logo.png') }}" class="logo-full" width="100" alt="Logo">
+            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
         </a>
     </div>
 

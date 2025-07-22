@@ -55,7 +55,7 @@
 
     <div class="size1 overlay1">
         <div class="size1 flex-col-c-m p-l-15 p-r-15 p-t-50 p-b-50">
-            <img src="{{ asset('images/logodorado.png') }}">
+            <img src="{{ asset('images/logo.png') }}">
             <h5 class="l1-txt1 txt-center p-b-25">
                Página  en construcción
             </h5>
