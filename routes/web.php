@@ -8,7 +8,7 @@ use App\Http\Controllers\LlamadasController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\CiudadController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -34,21 +34,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
-    Route::get('/leads', [LeadsController::class, 'index'])->name('leads');
-    Route::get('/importar_leads', [LeadsController::class, 'importar_leads'])->name('importar_leads');
-    Route::get('/leads_form/{lead?}', [LeadsController::class, 'form'])->name('leads.form');
-    Route::get('/llamadas', [LlamadasController::class, 'index'])->name('llamadas');
-    Route::get('/leads/{id}/logs', [LeadsController::class, 'logs'])->name('leads.logs');
-    Route::get('/leads_form/{llamada?}', [LlamadasController::class, 'form'])->name('llamadas.form');
-Route::get('/llamadas/{id}/respuestas-json', [LlamadasController::class, 'respuestasJson'])->name('llamadas.respuestas.json');
-Route::get('/leads/{id}/info-json', [LeadsController::class, 'infoJson'])->name('leads.info');
-Route::get('sales/form/{lead}', [SalesController::class, 'form'])->name('sales.form');
-    Route::prefix('sales')->name('sales.')->group(function () {
-        Route::post('store', [SalesController::class, 'store'])->name('store');
-    });
-        Route::post('leads/{id}/update-status', [LeadsController::class, 'updatePipelineStatus'])->name('leads.update_status');
+
+Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
+     ->name('ajax.ciudades');
+
 //Clientes
-Route::get('/clientes', [ClientesController::class, 'index'])->name('clientes');
+    // Listado & AJAX
+    Route::get('clientes', [ClientesController::class, 'index'])
+        ->name('clientes');
+
+    // Formulario (crear / editar)
+    Route::get('clientes/form/{cliente?}', [ClientesController::class, 'form'])
+        ->name('clientes.form');
+
+    // Guardar
+    Route::post('clientes/guardar', [ClientesController::class, 'guardar'])
+        ->name('clientes.guardar');
 });
 
 require __DIR__.'/auth.php';

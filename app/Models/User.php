@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,15 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'uuid', // Añadido
-        'avatar_url', // Añadido
-        'locale', // Añadido
-        'time_notation', // Añadido
-        'timezone', // Añadido
-        'slug', // Añadido
-        'scheduling_url', // Añadido
-        'calendly_uri', // Añadido
-        'last_synced_at ', // Añadido
+        'telefono',
+        'activo',
+        'ultimo_login'
     ];
 
     /**
@@ -51,9 +45,57 @@ class User extends Authenticatable
     protected $casts = [
         'last_synced_at' => 'datetime',
         'email_verified_at' => 'datetime',
+               'activo' => 'boolean',
+        'ultimo_login' => 'datetime',
     ];
-    public function leads()
+
+        public function clientes()
     {
-        return $this->hasMany(Lead::class);
+        return $this->hasMany(Cliente::class, 'vendedor_id');
+    }
+
+    public function enlacesCreados()
+    {
+        return $this->hasMany(EnlaceAcceso::class, 'creado_por');
+    }
+
+    public function solicitudesAplicadas()
+    {
+        return $this->hasMany(SolicitudCotizacion::class, 'aplicada_por');
+    }
+
+    public function actualizacionesPrecios()
+    {
+        return $this->hasMany(ActualizacionPrecio::class, 'usuario_id');
+    }
+
+    public function esAdmin()
+    {
+        return $this->tipo_usuario === 'admin';
+    }
+
+    public function esVendedor()
+    {
+        return $this->tipo_usuario === 'vendedor';
+    }
+
+    public function registrarLogin()
+    {
+        $this->update(['ultimo_login' => now()]);
+    }
+
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    public function scopeVendedores($query)
+    {
+        return $query->where('tipo_usuario', 'vendedor');
+    }
+
+    public function scopeAdministradores($query)
+    {
+        return $query->where('tipo_usuario', 'admin');
     }
 }

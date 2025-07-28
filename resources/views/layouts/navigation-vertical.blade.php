@@ -20,6 +20,11 @@
     <i class="bi bi-person-lines-fill"></i>
     <span>Usuarios</span>
 </a>
+<a href="/clientes"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-person-lines-fill"></i>
+    <span>Clientes</span>
+</a>
 @endif
 {{-- @if (auth()->user()->getRoleNames()->first() == 'admin') 
 <a href="/clientes"

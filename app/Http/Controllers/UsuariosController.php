@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\UserCreationService;
-
+use Spatie\Permission\Models\Role;      
 use App\Services\CalendlyUserImporter;
 use App\Services\UserSynchronizationService;
 
@@ -27,6 +27,12 @@ class UsuariosController extends Controller
             $users = User::query()->where('id', '!=', 1);
 
             return DataTables::of($users)
+                    ->addColumn('roles', function($u) {
+                        // toma el primer rol o concatena varios
+                        return $u->getRoleNames()
+                                ->map(fn($r) => ucfirst($r))
+                                ->join(', ');
+                    })
                 ->addColumn('action', function ($user) {
                     $editUrl = route('usuarios.form', $user->id);
 
@@ -49,9 +55,10 @@ class UsuariosController extends Controller
 
     public function form(User $user = null)
     {
-        return view('usuarios.usuarios_form', [
-            'user' => $user ?? new User()
-        ]);
+        $user  = $user ?? new User();
+        $roles = Role::pluck('name','name');      // ← lista de roles (clave and valor = nombre)
+
+        return view('usuarios.usuarios_form', compact('user','roles'));
     }
 
     public function guardar(Request $request)
@@ -65,6 +72,7 @@ class UsuariosController extends Controller
                 Rule::unique('users')->ignore($user?->id)
             ],
             'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
+             'role'     => ['required','exists:roles,name'],   
         ];
 
         $messages = [
@@ -75,14 +83,15 @@ class UsuariosController extends Controller
             'min' => 'Debe tener al menos :min caracteres.',
         ];
 
-        $validated = $request->validate($rules, $messages);
+        $data = $request->validate($rules, $messages);
 
+        // 1) Crear o actualizar usuario
         if ($user) {
-            $this->userService->update($user, $validated);
+            $this->userService->update($user, $data);
         } else {
-            $this->userService->create($validated);
+            $user = $this->userService->create($data);
         }
-
+   $user->syncRoles($data['role']);
         return redirect()->route('usuarios')->with('success', 'Usuario guardado correctamente.');
     }
 }

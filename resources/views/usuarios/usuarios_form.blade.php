@@ -56,6 +56,23 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
+                                                <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">
+                                Rol <span class="text-danger">*</span>
+                            </label>
+                            <select name="role" class="form-control">
+                                <option value=""> Seleccionar rol </option>
+                                @foreach($roles as $roleName)
+                                    <option value="{{ $roleName }}"
+                                        {{ old('role', $user->getRoleNames()->first()) === $roleName ? 'selected' : '' }}>
+                                        {{ ucfirst($roleName) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('role')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
                     </div>
 
                     {{-- Botones --}}

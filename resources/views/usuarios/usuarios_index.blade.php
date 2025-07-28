@@ -18,6 +18,7 @@
                                     <th class="px-6 py-3" data-priority="1">Acciones</th>
                                     <th class="px-6 py-3">Nombre</th>
                                     <th class="px-6 py-3">Email</th>
+                                    <th class="px-6 py-3">Roles</th> 
                                 </tr>
                             </thead>
 
@@ -49,7 +50,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 className: 'noVis'
             },
             { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' }
+            { data: 'email', name: 'email' },
+             { data: 'roles',  name: 'roles', orderable: false, searchable: false } 
         ],
 
         dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" + 
