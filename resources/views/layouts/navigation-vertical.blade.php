@@ -25,6 +25,11 @@
     <i class="bi bi-person-lines-fill"></i>
     <span>Clientes</span>
 </a>
+<a href="/categorias"
+   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
+    <i class="bi bi-person-lines-fill"></i>
+    <span>Categorias</span>
+</a>
 @endif
 {{-- @if (auth()->user()->getRoleNames()->first() == 'admin') 
 <a href="/clientes"

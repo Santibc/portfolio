@@ -9,6 +9,7 @@ use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CiudadController;
+use App\Http\Controllers\CategoriasController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -50,6 +51,18 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
     // Guardar
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])
         ->name('clientes.guardar');
+
+            // Listado & AJAX
+    Route::get('categorias', [CategoriasController::class, 'index'])
+         ->name('categorias');
+
+    // Formulario (nuevo / editar)
+    Route::get('categorias/form/{categoria?}', [CategoriasController::class, 'form'])
+         ->name('categorias.form');
+
+    // Guardar (crear / actualizar)
+    Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])
+         ->name('categorias.guardar');
 });
 
 require __DIR__.'/auth.php';
