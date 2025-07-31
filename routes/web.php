@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CiudadController;
 use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\ProductosController;
+use App\Http\Controllers\CatalogoController;
+use App\Http\Controllers\SolicitudController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -75,6 +77,28 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
 });
+
+
+});
+// Rutas del Catálogo Interactivo
+// Flujo A: Acceso público por token
+Route::get('/catalogo/{token}', [CatalogoController::class, 'mostrarPorToken'])->name('catalogo.mostrar');
+
+// Flujo B: Acceso autenticado (vendedor/admin)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo');
+    Route::post('/catalogo/cliente', [CatalogoController::class, 'mostrarParaCliente'])->name('catalogo.cliente');
 });
 
+// Rutas AJAX del catálogo (pueden ser públicas o autenticadas)
+Route::post('/catalogo/productos', [CatalogoController::class, 'obtenerProductos'])->name('catalogo.productos');
+Route::get('/catalogo/producto/{producto}', [CatalogoController::class, 'detalleProducto'])->name('catalogo.producto.detalle');
+Route::post('/catalogo/solicitud', [CatalogoController::class, 'guardarSolicitud'])->name('catalogo.solicitud.guardar');
+
+// Rutas de Gestión de Solicitudes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
+    Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
+    Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
+});
 require __DIR__.'/auth.php';
