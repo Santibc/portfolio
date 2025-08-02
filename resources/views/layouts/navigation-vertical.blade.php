@@ -49,6 +49,11 @@
                 <i class="bi bi-file-text"></i>
                 <span>Solicitudes</span>
             </a>
+            <a href="{{ route('enlaces') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-file-text"></i>
+                <span>Links</span>
+            </a>
         @endif
     </nav>
 

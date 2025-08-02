@@ -31,7 +31,7 @@ class CatalogoController extends Controller
         $cliente = $enlace->cliente;
         $categorias = Categoria::activas()->get();
         
-        return view('catalogo.index', compact('enlace', 'cliente', 'categorias'));
+        return view('catalogo.index_cliente', compact('enlace', 'cliente', 'categorias'));
     }
     
     /**
@@ -209,25 +209,28 @@ class CatalogoController extends Controller
             // Determinar cliente y enlace
             $cliente = null;
             $enlace = null;
-            
-            if ($request->has('cliente_id')) {
-                // Flujo B: Vendedor
-                $cliente = Cliente::findOrFail($request->cliente_id);
-                
-                // Verificar permisos
-                if (Auth::user()->hasRole('vendedor') && $cliente->vendedor_id !== Auth::id()) {
-                    throw new \Exception('No tiene permisos para crear solicitudes para este cliente.');
-                }
-            } elseif ($request->has('enlace_token')) {
-                // Flujo A: Cliente con token
-                $enlace = EnlaceAcceso::where('token', $request->enlace_token)->first();
-                if (!$enlace || !$enlace->esValido()) {
-                    throw new \Exception('El enlace de acceso no es válido.');
-                }
-                $cliente = $enlace->cliente;
-            } else {
-                throw new \Exception('No se pudo identificar el cliente.');
-            }
+
+if ($request->input('enlace_token') !== null) {
+    // Flujo A: Cliente con token
+    $enlace = EnlaceAcceso::where('token', $request->enlace_token)->first();
+    if (!$enlace || !$enlace->esValido()) {
+        throw new \Exception('El enlace de acceso no es válido.');
+    }
+    $cliente = $enlace->cliente;
+}
+elseif ($request->input('cliente_id') !== null) {
+    // Flujo B: Vendedor
+    $cliente = Cliente::findOrFail($request->cliente_id);
+
+    // Verificar permisos
+    if (Auth::user()->hasRole('vendedor') && $cliente->vendedor_id !== Auth::id()) {
+        throw new \Exception('No tiene permisos para crear solicitudes para este cliente.');
+    }
+}
+else {
+    throw new \Exception('No se pudo identificar el cliente.');
+}
+
             
             // Crear solicitud
             $solicitud = new SolicitudCotizacion([

@@ -21,7 +21,8 @@ class EnlaceAcceso extends Model
         'expira_en',
         'activo',
         'visitas',
-        'ultimo_acceso'
+        'ultimo_acceso',
+        'notas' // Agregar campo de notas
     ];
 
     protected $casts = [
@@ -53,7 +54,7 @@ class EnlaceAcceso extends Model
 
     public function getUrlAttribute()
     {
-        /* return route('catalogo.mostrar', $this->token); */
+        return route('catalogo.token', $this->token);
     }
 
     // Registrar acceso al enlace

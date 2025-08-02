@@ -82,7 +82,20 @@ Route::prefix('productos')->middleware('auth')->group(function () {
 });
 // Rutas del Catálogo Interactivo
 // Flujo A: Acceso público por token
-Route::get('/catalogo/{token}', [CatalogoController::class, 'mostrarPorToken'])->name('catalogo.mostrar');
+// Agregar estas rutas en routes/web.php
+
+// Módulo de Enlaces de Acceso (autenticado)
+Route::middleware(['auth'])->group(function () {
+    // Enlaces temporales
+    Route::get('/enlaces', [App\Http\Controllers\EnlacesController::class, 'index'])->name('enlaces');
+    Route::get('/enlaces/crear', [App\Http\Controllers\EnlacesController::class, 'crear'])->name('enlaces.crear');
+    Route::post('/enlaces/guardar', [App\Http\Controllers\EnlacesController::class, 'guardar'])->name('enlaces.guardar');
+    Route::get('/enlaces/{enlace}/detalle', [App\Http\Controllers\EnlacesController::class, 'detalle'])->name('enlaces.detalle');
+    Route::post('/enlaces/{enlace}/cambiar-estado', [App\Http\Controllers\EnlacesController::class, 'cambiarEstado'])->name('enlaces.cambiar-estado');
+});
+
+// Catálogo público con token (sin autenticación)
+Route::get('/catalogo/{token}', [App\Http\Controllers\CatalogoController::class, 'mostrarPorToken'])->name('catalogo.token');
 
 // Flujo B: Acceso autenticado (vendedor/admin)
 Route::middleware(['auth'])->group(function () {
