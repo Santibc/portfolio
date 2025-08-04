@@ -91,6 +91,13 @@
               dt.column(7).search('Aplicada').draw();
             }
           }
+        },
+        {
+          text:'<i class="bi bi-file-earmark-excel"></i> Exportar Todo',
+          className:'btn btn-outline-info',
+          action: function() {
+            $('#modalExportarExcel').modal('show');
+          }
         }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
@@ -163,6 +170,13 @@
       alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al aplicar la solicitud'));
     });
   }
+  
+  // Función para exportar Excel con filtros
+  function exportarExcel() {
+    const form = $('#formExportarExcel');
+    form.submit();
+    $('#modalExportarExcel').modal('hide');
+  }
   </script>
   @endpush
 
@@ -181,6 +195,55 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Exportar Excel -->
+  <div class="modal fade" id="modalExportarExcel" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Exportar Solicitudes a Excel</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formExportarExcel" action="{{ route('solicitudes.exportar-excel') }}" method="GET">
+          <div class="modal-body">
+            <p class="text-muted mb-4">
+              Este reporte incluirá tres hojas:
+              <ul class="small text-muted">
+                <li><strong>Resumen:</strong> Información general de cada solicitud</li>
+                <li><strong>Detalle:</strong> Todos los items de todas las solicitudes</li>
+                <li><strong>Productos:</strong> Resumen de productos más solicitados</li>
+              </ul>
+            </p>
+            
+            <div class="mb-3">
+              <label class="form-label">Estado</label>
+              <select name="estado" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Solo Pendientes</option>
+                <option value="aplicada">Solo Aplicadas</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Fecha Desde</label>
+              <input type="date" name="fecha_desde" class="form-control">
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Fecha Hasta</label>
+              <input type="date" name="fecha_hasta" class="form-control">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-download"></i> Descargar Excel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

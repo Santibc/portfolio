@@ -7,6 +7,12 @@ use App\Models\SolicitudCotizacion;
 use App\Models\Cliente;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SolicitudAplicada;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SolicitudesExport;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudController extends Controller
 {
@@ -69,6 +75,12 @@ class SolicitudController extends Controller
                                        <i class="bi bi-check-circle"></i>
                                     </button>';
                     }
+                    
+                    // Botón descargar PDF
+                    $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm" 
+                                    title="Descargar PDF" target="_blank">
+                                   <i class="bi bi-file-earmark-pdf"></i>
+                                </a>';
                     
                     $buttons .= '</div>';
                     
@@ -243,9 +255,36 @@ class SolicitudController extends Controller
         try {
             $solicitud->marcarComoAplicada($user->id, $request->observaciones);
             
+            // Cargar relaciones necesarias para el PDF
+            $solicitud->load([
+                'cliente', 
+                'cliente.listaPrecio', 
+                'cliente.vendedor',
+                'cliente.ciudad',
+                'cliente.pais',
+                'items.producto.imagenPrincipal', 
+                'aplicadaPor'
+            ]);
+            
+            // Generar PDF
+            $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
+            $pdf->setPaper('letter', 'portrait');
+            
+            // Enviar email con PDF adjunto
+            try {
+                Mail::to($solicitud->cliente->email)
+                    ->send(new SolicitudAplicada($solicitud, $pdf));
+                    
+                $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
+            } catch (\Exception $e) {
+                // Log del error pero no fallar la aplicación
+                Log::error('Error al enviar email de solicitud aplicada: ' . $e->getMessage());
+                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            }
+            
             return response()->json([
                 'success' => true,
-                'mensaje' => 'Solicitud marcada como aplicada exitosamente'
+                'mensaje' => 'Solicitud marcada como aplicada exitosamente.' . $mensajeEmail
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -253,5 +292,76 @@ class SolicitudController extends Controller
                 'mensaje' => 'Error al aplicar la solicitud: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Descargar PDF de solicitud
+     */
+    public function descargarPdf(SolicitudCotizacion $solicitud)
+    {
+        // Verificar permisos
+        $user = Auth::user();
+        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+            abort(403, 'No tiene permisos para descargar este PDF');
+        }
+        
+        // Cargar relaciones necesarias
+        $solicitud->load([
+            'cliente', 
+            'cliente.listaPrecio', 
+            'cliente.vendedor',
+            'cliente.ciudad',
+            'cliente.pais',
+            'items.producto.imagenPrincipal', 
+            'aplicadaPor'
+        ]);
+        
+        $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
+        $pdf->setPaper('letter', 'portrait');
+        
+        return $pdf->download('solicitud-' . $solicitud->numero_solicitud . '.pdf');
+    }
+    
+    /**
+     * Exportar solicitudes a Excel
+     */
+    public function exportarExcel(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Aplicar filtros según el rol
+        $query = SolicitudCotizacion::with([
+            'cliente', 
+            'cliente.vendedor', 
+            'items.producto',
+            'items.varianteProducto',
+            'aplicadaPor'
+        ]);
+        
+        if ($user->hasRole('vendedor')) {
+            $query->whereHas('cliente', function($q) use ($user) {
+                $q->where('vendedor_id', $user->id);
+            });
+        }
+        
+        // Filtros opcionales
+        if ($request->has('estado') && $request->estado) {
+            $query->where('estado', $request->estado);
+        }
+        
+        if ($request->has('fecha_desde') && $request->fecha_desde) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+        
+        if ($request->has('fecha_hasta') && $request->fecha_hasta) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+        
+        $solicitudes = $query->orderBy('created_at', 'desc')->get();
+        
+        return Excel::download(
+            new SolicitudesExport($solicitudes), 
+            'solicitudes-cotizacion-' . now()->format('Y-m-d-His') . '.xlsx'
+        );
     }
 }

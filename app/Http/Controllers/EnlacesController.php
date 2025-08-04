@@ -9,6 +9,9 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EnlaceCreado;
+use Illuminate\Support\Facades\Log;
 
 class EnlacesController extends Controller
 {
@@ -173,9 +176,24 @@ class EnlacesController extends Controller
             
             $enlace->save();
             
+            // Cargar relaciones necesarias para el email
+            $enlace->load(['cliente', 'cliente.listaPrecio', 'creadoPor']);
+            
+            // Enviar email al cliente
+            try {
+                Mail::to($enlace->cliente->email)
+                    ->send(new EnlaceCreado($enlace));
+                    
+                $mensajeEmail = ' Se ha enviado el enlace por correo electrónico al cliente.';
+            } catch (\Exception $e) {
+                // Log del error pero no fallar la creación del enlace
+                Log::error('Error al enviar email de enlace creado: ' . $e->getMessage());
+                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            }
+            
             return redirect()->route('enlaces')
                            ->with('success', 'Enlace creado exitosamente. El enlace expirará el ' . 
-                                   $enlace->expira_en->format('d/m/Y'));
+                                   $enlace->expira_en->format('d/m/Y') . $mensajeEmail);
             
         } catch (\Exception $e) {
             return back()->withInput()
@@ -302,39 +320,36 @@ class EnlacesController extends Controller
     /**
      * Cambiar estado del enlace (AJAX)
      */
-/**
- * Cambiar estado del enlace (AJAX)
- */
-public function cambiarEstado(Request $request, EnlaceAcceso $enlace)
-{
-    // Verificar permisos
-    $user = Auth::user();
-    if ($user->hasRole('vendedor') && $enlace->creado_por !== $user->id) {
-        return response()->json([
-            'success' => false,
-            'mensaje' => 'No tiene permisos para modificar este enlace'
-        ], 403);
-    }
-    
-    $request->validate([
-        'activo' => 'required'
-    ]);
-    
-    try {
-        // Convertir explícitamente a entero (1 o 0)
-        $activo = $request->activo === 'true' || $request->activo === true || $request->activo === 1 || $request->activo === '1' ? 1 : 0;
+    public function cambiarEstado(Request $request, EnlaceAcceso $enlace)
+    {
+        // Verificar permisos
+        $user = Auth::user();
+        if ($user->hasRole('vendedor') && $enlace->creado_por !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para modificar este enlace'
+            ], 403);
+        }
         
-        $enlace->update(['activo' => $activo]);
-        
-        return response()->json([
-            'success' => true,
-            'mensaje' => $activo ? 'Enlace activado' : 'Enlace desactivado'
+        $request->validate([
+            'activo' => 'required'
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'mensaje' => 'Error al cambiar el estado: ' . $e->getMessage()
-        ], 500);
+        
+        try {
+            // Convertir explícitamente a entero (1 o 0)
+            $activo = $request->activo === 'true' || $request->activo === true || $request->activo === 1 || $request->activo === '1' ? 1 : 0;
+            
+            $enlace->update(['activo' => $activo]);
+            
+            return response()->json([
+                'success' => true,
+                'mensaje' => $activo ? 'Enlace activado' : 'Enlace desactivado'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al cambiar el estado: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
 }
