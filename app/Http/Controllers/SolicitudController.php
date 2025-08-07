@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SolicitudCotizacion;
 use App\Models\Cliente;
+use App\Models\StockProducto;
+use App\Models\MovimientoStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SolicitudAplicada;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -175,6 +178,9 @@ class SolicitudController extends Controller
         $html .= '<th>Cantidad</th>';
         $html .= '<th>Precio Unit.</th>';
         $html .= '<th>Subtotal</th>';
+        if ($solicitud->estado === 'pendiente') {
+            $html .= '<th>Stock Disponible</th>';
+        }
         $html .= '</tr>';
         $html .= '</thead>';
         $html .= '<tbody>';
@@ -187,13 +193,21 @@ class SolicitudController extends Controller
             $html .= '<td>' . $item->cantidad . '</td>';
             $html .= '<td>$' . number_format($item->precio_unitario, 2) . '</td>';
             $html .= '<td>$' . number_format($item->precio_total, 2) . '</td>';
+            
+            // Mostrar stock disponible solo si está pendiente
+            if ($solicitud->estado === 'pendiente') {
+                $stockInfo = $this->obtenerStockItem($item);
+                $html .= '<td>' . $stockInfo . '</td>';
+            }
+            
             $html .= '</tr>';
         }
         
         $html .= '</tbody>';
         $html .= '<tfoot>';
         $html .= '<tr>';
-        $html .= '<th colspan="5" class="text-end">Total:</th>';
+        $colspanTotal = ($solicitud->estado === 'pendiente') ? 6 : 5;
+        $html .= '<th colspan="' . $colspanTotal . '" class="text-end">Total:</th>';
         $html .= '<th>$' . number_format($solicitud->monto_total, 2) . '</th>';
         $html .= '</tr>';
         $html .= '</tfoot>';
@@ -218,6 +232,15 @@ class SolicitudController extends Controller
             $html .= '<textarea class="form-control" id="observacionesAdmin" rows="3" 
                               placeholder="Ingrese cualquier observación sobre esta solicitud..."></textarea>';
             $html .= '</div>';
+            $html .= '<div class="mb-3">';
+            $html .= '<div class="form-check">';
+            $html .= '<input class="form-check-input" type="checkbox" id="procesarStock" checked>';
+            $html .= '<label class="form-check-label" for="procesarStock">';
+            $html .= '<strong>Procesar Stock:</strong> Descontar automáticamente del inventario';
+            $html .= '</label>';
+            $html .= '</div>';
+            $html .= '<small class="text-muted">Si está marcado, se descontará el stock de los productos que lo controlen.</small>';
+            $html .= '</div>';
             $html .= '<button type="button" class="btn btn-success w-100" onclick="confirmarAplicar(' . $solicitud->id . ')">
                         <i class="bi bi-check-circle"></i> Marcar como Aplicada
                       </button>';
@@ -227,6 +250,50 @@ class SolicitudController extends Controller
         $html .= '</div>';
         
         return response($html);
+    }
+
+    /**
+     * Obtener información de stock para un item
+     */
+    private function obtenerStockItem($item)
+    {
+        $producto = $item->producto;
+        
+        // Si no controla stock
+        if (!$producto->controlar_stock) {
+            return '<span class="badge bg-success">Stock ilimitado</span>';
+        }
+        
+        if ($item->variante_producto_id) {
+            // Producto con variante
+            $stock = StockProducto::where('producto_id', $producto->id)
+                                  ->where('variante_producto_id', $item->variante_producto_id)
+                                  ->first();
+        } else {
+            // Producto sin variante
+            $stock = StockProducto::where('producto_id', $producto->id)
+                                  ->whereNull('variante_producto_id')
+                                  ->first();
+        }
+        
+        if (!$stock) {
+            if ($producto->permitir_venta_sin_stock) {
+                return '<span class="badge bg-warning">Sin stock (se permite)</span>';
+            } else {
+                return '<span class="badge bg-danger">Sin stock</span>';
+            }
+        }
+        
+        $disponible = $stock->cantidad_disponible - $stock->cantidad_reservada;
+        $solicitado = $item->cantidad;
+        
+        if ($disponible >= $solicitado) {
+            return '<span class="badge bg-success">' . $disponible . ' disponibles</span>';
+        } elseif ($producto->permitir_venta_sin_stock) {
+            return '<span class="badge bg-warning">' . $disponible . ' disponibles (se permite déficit)</span>';
+        } else {
+            return '<span class="badge bg-danger">Insuficiente (' . $disponible . ' de ' . $solicitado . ')</span>';
+        }
     }
     
     public function aplicar(Request $request, SolicitudCotizacion $solicitud)
@@ -249,11 +316,43 @@ class SolicitudController extends Controller
         }
         
         $request->validate([
-            'observaciones' => 'nullable|string|max:1000'
+            'observaciones' => 'nullable|string|max:1000',
+            'procesar_stock' => 'boolean'
         ]);
         
+        DB::beginTransaction();
+        
         try {
-            $solicitud->marcarComoAplicada($user->id, $request->observaciones);
+            $procesarStock = $request->boolean('procesar_stock', true);
+            $stockProcesado = [];
+            $stockInsuficiente = [];
+            
+            // Procesar stock si se solicita
+            if ($procesarStock) {
+                foreach ($solicitud->items as $item) {
+                    $resultado = $this->procesarStockItem($item, $user->id, $solicitud->id);
+                    
+                    if ($resultado['procesado']) {
+                        $stockProcesado[] = $resultado['mensaje'];
+                    } elseif ($resultado['error']) {
+                        $stockInsuficiente[] = $resultado['mensaje'];
+                    }
+                }
+                
+                // Si hay stock insuficiente y no se permite venta sin stock, fallar
+                if (!empty($stockInsuficiente)) {
+                    $errorMsg = "No se puede procesar la solicitud por stock insuficiente:\n" . implode("\n", $stockInsuficiente);
+                    throw new \Exception($errorMsg);
+                }
+            }
+            
+            // Marcar como aplicada
+            $observaciones = $request->observaciones;
+            if ($procesarStock && !empty($stockProcesado)) {
+                $observaciones .= "\n\nMovimientos de stock procesados:\n" . implode("\n", $stockProcesado);
+            }
+            
+            $solicitud->marcarComoAplicada($user->id, $observaciones);
             
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
@@ -282,16 +381,124 @@ class SolicitudController extends Controller
                 $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
             }
             
+            DB::commit();
+            
+            $mensaje = 'Solicitud marcada como aplicada exitosamente.';
+            if ($procesarStock) {
+                $mensaje .= ' Stock procesado correctamente.';
+            }
+            $mensaje .= $mensajeEmail;
+            
             return response()->json([
                 'success' => true,
-                'mensaje' => 'Solicitud marcada como aplicada exitosamente.' . $mensajeEmail
+                'mensaje' => $mensaje
             ]);
+            
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error al aplicar la solicitud: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Procesar stock de un item individual
+     */
+    private function procesarStockItem($item, $usuarioId, $solicitudId)
+    {
+        $producto = $item->producto;
+        
+        // Si no controla stock, no hacer nada
+        if (!$producto->controlar_stock) {
+            return [
+                'procesado' => false,
+                'error' => false,
+                'mensaje' => $producto->nombre . ' - No controla stock'
+            ];
+        }
+        
+        // Buscar registro de stock
+        if ($item->variante_producto_id) {
+            $stock = StockProducto::where('producto_id', $producto->id)
+                                  ->where('variante_producto_id', $item->variante_producto_id)
+                                  ->first();
+            $descripcion = $producto->nombre . ' - ' . $item->info_variante;
+        } else {
+            $stock = StockProducto::where('producto_id', $producto->id)
+                                  ->whereNull('variante_producto_id')
+                                  ->first();
+            $descripcion = $producto->nombre;
+        }
+        
+        if (!$stock) {
+            // Si no existe registro de stock, crearlo
+            $stock = StockProducto::create([
+                'producto_id' => $producto->id,
+                'variante_producto_id' => $item->variante_producto_id,
+                'cantidad_disponible' => 0,
+                'cantidad_reservada' => 0,
+                'stock_minimo' => 0,
+                'alerta_stock_bajo' => true
+            ]);
+        }
+        
+        $stockAnterior = $stock->cantidad_disponible;
+        $cantidadSolicitada = $item->cantidad;
+        $stockResultante = $stockAnterior - $cantidadSolicitada;
+        
+        // Verificar si se puede procesar
+        if ($stockResultante < 0 && !$producto->permitir_venta_sin_stock) {
+            return [
+                'procesado' => false,
+                'error' => true,
+                'mensaje' => $descripcion . ' - Stock insuficiente (disponible: ' . $stockAnterior . ', solicitado: ' . $cantidadSolicitada . ')'
+            ];
+        }
+        
+        // Procesar la salida
+        $resultado = $stock->salida(
+            $cantidadSolicitada,
+            'venta',
+            $item->solicitudCotizacion->numero_solicitud,
+            'Venta aplicada desde solicitud de cotización'
+        );
+        
+        if (!$resultado && !$producto->permitir_venta_sin_stock) {
+            return [
+                'procesado' => false,
+                'error' => true,
+                'mensaje' => $descripcion . ' - Error al procesar salida de stock'
+            ];
+        }
+        
+        // Si permite venta sin stock y falló la salida normal, hacer ajuste manual
+        if (!$resultado && $producto->permitir_venta_sin_stock) {
+            $stock->update(['cantidad_disponible' => $stockResultante]);
+            
+            // Crear movimiento manual
+            MovimientoStock::create([
+                'producto_id' => $producto->id,
+                'variante_producto_id' => $item->variante_producto_id,
+                'tipo_movimiento' => 'salida',
+                'cantidad' => $cantidadSolicitada,
+                'stock_anterior' => $stockAnterior,
+                'stock_nuevo' => $stockResultante,
+                'referencia_documento' => $item->solicitudCotizacion->numero_solicitud,
+                'origen' => 'venta',
+                'motivo' => 'Venta aplicada desde solicitud de cotización (permite stock negativo)',
+                'usuario_id' => $usuarioId,
+                'solicitud_cotizacion_id' => $solicitudId
+            ]);
+        }
+        
+        return [
+            'procesado' => true,
+            'error' => false,
+            'mensaje' => $descripcion . ' - Descontado: ' . $cantidadSolicitada . ' unidades (stock resultante: ' . $stockResultante . ')'
+        ];
     }
     
     /**

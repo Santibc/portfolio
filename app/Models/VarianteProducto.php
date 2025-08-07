@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\StockProducto;
 class VarianteProducto extends Model
 {
     use HasFactory;
@@ -37,7 +37,10 @@ class VarianteProducto extends Model
     {
         return $this->hasMany(ItemSolicitudCotizacion::class, 'variante_producto_id');
     }
-
+public function stock()
+{
+    return $this->hasOne(StockProducto::class, 'variante_producto_id');
+}
     // Calcular precio final con ajuste
     public function getPrecioFinal($listaPrecioId)
     {

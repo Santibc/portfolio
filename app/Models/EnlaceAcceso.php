@@ -18,15 +18,17 @@ class EnlaceAcceso extends Model
         'token',
         'dias_validos',
         'mostrar_precios',
+        'mostrar_stock', // Nuevo campo
         'expira_en',
         'activo',
         'visitas',
         'ultimo_acceso',
-        'notas' // Agregar campo de notas
+        'notas'
     ];
 
     protected $casts = [
         'mostrar_precios' => 'boolean',
+        'mostrar_stock' => 'boolean', // Nuevo cast
         'activo' => 'boolean',
         'expira_en' => 'datetime',
         'ultimo_acceso' => 'datetime',

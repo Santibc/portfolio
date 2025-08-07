@@ -114,6 +114,33 @@
                 </small>
               </div>
 
+              {{-- Mostrar stock --}}
+              <div class="mb-3">
+                <label class="form-label">Mostrar Stock <span class="text-danger">*</span></label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mostrar_stock" 
+                           id="mostrar_stock_si" value="1" 
+                           {{ old('mostrar_stock', '1') == '1' ? 'checked' : '' }} required>
+                    <label class="form-check-label" for="mostrar_stock_si">
+                      <i class="bi bi-box-seam text-success"></i> Sí mostrar stock
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="mostrar_stock" 
+                           id="mostrar_stock_no" value="0" 
+                           {{ old('mostrar_stock') == '0' ? 'checked' : '' }} required>
+                    <label class="form-check-label" for="mostrar_stock_no">
+                      <i class="bi bi-box text-warning"></i> No mostrar stock
+                    </label>
+                  </div>
+                </div>
+                <small class="text-muted">
+                  Si selecciona "No", el cliente podrá ver los productos pero no las cantidades disponibles. 
+                  Esto es útil para catálogos donde no se desea mostrar información de inventario.
+                </small>
+              </div>
+
               {{-- Notas --}}
               <div class="mb-3">
                 <label class="form-label">Notas Internas (opcional)</label>
@@ -141,6 +168,7 @@
                 <p class="mb-2"><i class="bi bi-person"></i> <strong>Cliente:</strong> <span id="previewCliente">No seleccionado</span></p>
                 <p class="mb-2"><i class="bi bi-calendar-check"></i> <strong>Validez:</strong> <span id="previewValidez">7 días</span></p>
                 <p class="mb-2"><i class="bi bi-tag"></i> <strong>Precios:</strong> <span id="previewPrecios">Visibles</span></p>
+                <p class="mb-2"><i class="bi bi-box-seam"></i> <strong>Stock:</strong> <span id="previewStock">Visible</span></p>
                 <p class="mb-0"><i class="bi bi-calendar-x"></i> <strong>Expirará el:</strong> <span id="previewExpira">{{ now()->addDays(7)->format('d/m/Y') }}</span></p>
               </div>
             </div>
@@ -180,6 +208,12 @@
           ? '<span class="text-success">Visibles</span>' 
           : '<span class="text-warning">Ocultos</span>');
         
+        // Mostrar stock
+        const mostrarStock = $('input[name="mostrar_stock"]:checked').val();
+        $('#previewStock').html(mostrarStock == '1' 
+          ? '<span class="text-success">Visible</span>' 
+          : '<span class="text-warning">Oculto</span>');
+        
         // Fecha de expiración
         const fechaExpira = new Date();
         fechaExpira.setDate(fechaExpira.getDate() + parseInt(dias));
@@ -187,7 +221,7 @@
       }
       
       // Eventos para actualizar vista previa
-      $('select[name="cliente_id"], input[name="dias_validos"], input[name="mostrar_precios"]').on('change input', actualizarVistaPrevia);
+      $('select[name="cliente_id"], input[name="dias_validos"], input[name="mostrar_precios"], input[name="mostrar_stock"]').on('change input', actualizarVistaPrevia);
       
       // Actualizar al cargar
       actualizarVistaPrevia();

@@ -39,6 +39,7 @@
                 <th>Visitas</th>
                 <th>Solicitudes</th>
                 <th>Mostrar Precios</th>
+                <th>Mostrar Stock</th>
                 <th>Último Acceso</th>
               </tr>
             </thead>
@@ -68,6 +69,7 @@
         { data:'visitas', name:'visitas' },
         { data:'solicitudes_count', orderable:false, searchable:false },
         { data:'mostrar_precios_badge', name:'mostrar_precios' },
+        { data:'mostrar_stock_badge', name:'mostrar_stock' },
         { data:'ultimo_acceso_formateado', name:'ultimo_acceso' }
       ],
       order: [[4, 'desc']], // Ordenar por fecha de creación descendente

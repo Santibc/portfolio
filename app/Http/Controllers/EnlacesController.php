@@ -65,6 +65,11 @@ class EnlacesController extends Controller
                         ? '<span class="badge bg-success">Sí</span>' 
                         : '<span class="badge bg-warning">No</span>';
                 })
+                ->addColumn('mostrar_stock_badge', function($e) {
+                    return $e->mostrar_stock 
+                        ? '<span class="badge bg-success">Sí</span>' 
+                        : '<span class="badge bg-warning">No</span>';
+                })
                 ->addColumn('ultimo_acceso_formateado', function($e) {
                     return $e->ultimo_acceso 
                         ? $e->ultimo_acceso->format('d/m/Y H:i') 
@@ -113,7 +118,7 @@ class EnlacesController extends Controller
                         $q->where('nombre_contacto', 'like', "%{$keyword}%");
                     });
                 })
-                ->rawColumns(['estado', 'mostrar_precios_badge', 'ultimo_acceso_formateado', 'action'])
+                ->rawColumns(['estado', 'mostrar_precios_badge', 'mostrar_stock_badge', 'ultimo_acceso_formateado', 'action'])
                 ->make(true);
         }
         
@@ -153,6 +158,7 @@ class EnlacesController extends Controller
             'cliente_id' => 'required|exists:clientes,id',
             'dias_validos' => 'required|integer|min:1|max:365',
             'mostrar_precios' => 'required|boolean',
+            'mostrar_stock' => 'required|boolean',
             'notas' => 'nullable|string|max:500'
         ]);
         
@@ -169,6 +175,7 @@ class EnlacesController extends Controller
                 'token' => Str::random(32),
                 'dias_validos' => $request->dias_validos,
                 'mostrar_precios' => $request->mostrar_precios,
+                'mostrar_stock' => $request->mostrar_stock,
                 'expira_en' => now()->addDays($request->dias_validos),
                 'activo' => true,
                 'notas' => $request->notas
@@ -235,6 +242,7 @@ class EnlacesController extends Controller
         $html .= '<tr><td><strong>Expira en:</strong></td><td>' . $enlace->expira_en->format('d/m/Y H:i') . '</td></tr>';
         $html .= '<tr><td><strong>Días válidos:</strong></td><td>' . $enlace->dias_validos . ' días</td></tr>';
         $html .= '<tr><td><strong>Mostrar precios:</strong></td><td>' . ($enlace->mostrar_precios ? 'Sí' : 'No') . '</td></tr>';
+        $html .= '<tr><td><strong>Mostrar stock:</strong></td><td>' . ($enlace->mostrar_stock ? 'Sí' : 'No') . '</td></tr>';
         $html .= '</table>';
         $html .= '</div>';
         
