@@ -117,8 +117,54 @@
     });
   }
   </script>
+{{-- Agregar esta función JavaScript junto con las otras funciones --}}
+<script>
+// Variable global para almacenar el producto actual
+let productoActualId = null;
+
+function verStock(productoId) {
+  // Guardar el ID del producto actual
+  productoActualId = productoId;
+  
+  // Actualizar el enlace del botón con el producto_id
+  $('#btnIrGestionStock').attr('href', '{{ route("stock.index") }}?producto_id=' + productoId);
+  
+  // Cargar el contenido del modal
+  $.get(`/productos/${productoId}/stock-ajax`, function(data) {
+    $('#modalStockContent').html(data);
+    $('#modalStock').modal('show');
+  });
+}
+</script>
   @endpush
 
+<!-- Modal para ver stock -->
+<div class="modal fade" id="modalStock" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Stock del Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalStockContent">
+        <div class="text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" id="btnIrGestionStock" class="btn btn-primary">
+          <i class="bi bi-box-seam"></i> Ir a Gestión de Stock (Filtrado)
+        </a>
+        <a href="{{ route('stock.index') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-box-seam"></i> Ver Todo el Stock
+        </a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- Modal para actualizar precios desde Excel -->
   <div class="modal fade" id="modalActualizarPrecios" tabindex="-1">
     <div class="modal-dialog">

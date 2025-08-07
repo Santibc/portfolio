@@ -54,6 +54,11 @@
                 <i class="bi bi-file-text"></i>
                 <span>Links</span>
             </a>
+            <a href="{{ route('stock.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-file-text"></i>
+                <span>Gestión de Stock</span>
+            </a>
         @endif
     </nav>
 

@@ -137,7 +137,121 @@
           </div>
         </div>
       </div>
+{{-- Control de Stock --}}
+<div class="card shadow mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Control de Stock</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      {{-- Controlar Stock --}}
+      <div class="col-md-6 mb-3">
+        <div class="form-check">
+          <input type="hidden" name="controlar_stock" value="0">
+          <input class="form-check-input" type="checkbox" 
+                 name="controlar_stock" id="controlar_stock"
+                 value="1"
+                 {{ old('controlar_stock', $producto->controlar_stock ?? true) ? 'checked' : '' }}>
+          <label class="form-check-label" for="controlar_stock">
+            Controlar stock de este producto
+          </label>
+          <small class="text-muted d-block">
+            Si desmarca esta opción, no se controlará el stock del producto.
+          </small>
+        </div>
+      </div>
 
+      {{-- Permitir venta sin stock --}}
+      <div class="col-md-6 mb-3">
+        <div class="form-check">
+          <input type="hidden" name="permitir_venta_sin_stock" value="0">
+          <input class="form-check-input" type="checkbox" 
+                 name="permitir_venta_sin_stock" id="permitir_venta_sin_stock"
+                 value="1"
+                 {{ old('permitir_venta_sin_stock', $producto->permitir_venta_sin_stock) ? 'checked' : '' }}>
+          <label class="form-check-label" for="permitir_venta_sin_stock">
+            Permitir venta sin stock disponible
+          </label>
+          <small class="text-muted d-block">
+            Permite realizar ventas aunque no haya stock disponible.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    {{-- Campos de stock para productos sin variantes --}}
+    <div id="stockSimpleSection" style="display: none;">
+      <hr class="my-3">
+      <h6>Configuración de Stock</h6>
+      
+      <div class="row">
+        {{-- Stock Inicial (solo para productos nuevos) --}}
+        @if(!$producto->exists)
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Stock Inicial</label>
+            <input type="number" name="stock_inicial" 
+                   class="form-control @error('stock_inicial') is-invalid @enderror"
+                   value="{{ old('stock_inicial', 0) }}"
+                   min="0">
+            @error('stock_inicial') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <small class="text-muted">Cantidad inicial en inventario</small>
+          </div>
+        @else
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Stock Actual</label>
+            @php
+              $stockActual = $producto->stockPrincipal ? $producto->stockPrincipal->cantidad_disponible : 0;
+            @endphp
+            <input type="text" class="form-control" value="{{ $stockActual }}" readonly>
+            <small class="text-muted">Use el módulo de stock para modificar</small>
+          </div>
+        @endif
+
+        {{-- Stock Mínimo --}}
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Stock Mínimo</label>
+          <input type="number" name="stock_minimo" 
+                 class="form-control @error('stock_minimo') is-invalid @enderror"
+                 value="{{ old('stock_minimo', $producto->stockPrincipal->stock_minimo ?? 0) }}"
+                 min="0">
+          @error('stock_minimo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          <small class="text-muted">Alerta cuando baje de este nivel</small>
+        </div>
+
+        {{-- Stock Máximo --}}
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Stock Máximo</label>
+          <input type="number" name="stock_maximo" 
+                 class="form-control @error('stock_maximo') is-invalid @enderror"
+                 value="{{ old('stock_maximo', $producto->stockPrincipal->stock_maximo ?? '') }}"
+                 min="0">
+          @error('stock_maximo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          <small class="text-muted">Opcional: límite máximo de stock</small>
+        </div>
+
+        {{-- Ubicación --}}
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Ubicación en Bodega</label>
+          <input type="text" name="ubicacion_stock" 
+                 class="form-control @error('ubicacion_stock') is-invalid @enderror"
+                 value="{{ old('ubicacion_stock', $producto->stockPrincipal->ubicacion ?? '') }}"
+                 placeholder="Ej: A-1-3">
+          @error('ubicacion_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+      </div>
+    </div>
+
+    {{-- Información de stock para productos con variantes --}}
+    <div id="stockVariantesInfo" style="display: none;">
+      <hr class="my-3">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Producto con variantes:</strong> El stock se gestiona individualmente para cada variante.
+        Configure el stock de cada variante después de crear el producto, desde el módulo de gestión de stock.
+      </div>
+    </div>
+  </div>
+</div>
       {{-- Variantes --}}
       <div class="card shadow mb-4" id="variantesSection" style="display: none;">
         <div class="card-header">
@@ -339,6 +453,34 @@
   @endpush
 
   @push('scripts')
+  <script>
+  $(document).ready(function() {
+    // Función para mostrar/ocultar campos de stock
+    function toggleStockFields() {
+      const controlarStock = $('#controlar_stock').is(':checked');
+      const tieneVariantes = $('#tiene_variantes').is(':checked');
+      
+      if (controlarStock) {
+        if (tieneVariantes) {
+          $('#stockSimpleSection').hide();
+          $('#stockVariantesInfo').show();
+        } else {
+          $('#stockSimpleSection').show();
+          $('#stockVariantesInfo').hide();
+        }
+      } else {
+        $('#stockSimpleSection').hide();
+        $('#stockVariantesInfo').hide();
+      }
+    }
+    
+    // Eventos
+    $('#controlar_stock, #tiene_variantes').change(toggleStockFields);
+    
+    // Ejecutar al cargar
+    toggleStockFields();
+  });
+</script>
   <script>
     $(document).ready(function() {
       // Mostrar/ocultar sección de variantes

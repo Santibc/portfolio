@@ -114,7 +114,38 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
 });
-// Agregar estas rutas en el archivo web.php
+
+
+// Rutas de Stock
+Route::prefix('stock')->name('stock.')->group(function () {
+    // Vistas principales
+    Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+    Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
+    
+    // Operaciones de stock
+    Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');
+    Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
+    Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
+    Route::post('/configurar', [App\Http\Controllers\StockController::class, 'configurar'])->name('configurar');
+    
+    // Consultas AJAX
+    Route::get('/productos-json', [App\Http\Controllers\StockController::class, 'productosJson'])->name('productos-json');
+    Route::get('/{id}/obtener', [App\Http\Controllers\StockController::class, 'obtenerStock'])->name('obtener');
+    Route::get('/historial', [App\Http\Controllers\StockController::class, 'historial'])->name('historial');
+    
+    // Reportes
+    Route::get('/reporte-movimientos', [App\Http\Controllers\StockController::class, 'reporteMovimientos'])->name('reporte-movimientos');
+    
+    // Importación/Exportación
+    Route::post('/importar', [App\Http\Controllers\StockController::class, 'importar'])->name('importar');
+    Route::get('/exportar', [App\Http\Controllers\StockController::class, 'exportar'])->name('exportar');
+    
+    // Inicializar stock
+    Route::post('/inicializar-todos', [App\Http\Controllers\StockController::class, 'inicializarTodos'])->name('inicializar-todos');
+});
+
+// Agregar ruta AJAX para ver stock desde productos
+Route::get('/productos/{producto}/stock-ajax', [App\Http\Controllers\ProductosController::class, 'stockAjax'])->name('productos.stock-ajax');
 
 // Rutas para solicitudes
 Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descargarPdf'])->name('solicitudes.pdf');
