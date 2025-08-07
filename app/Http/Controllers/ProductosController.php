@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Excel;
 use Illuminate\Http\Request;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Models\ImagenProducto;
 use App\Models\PrecioProducto;
+use App\Models\ActualizacionPrecio;
+use App\Imports\PreciosImport;
 use App\Models\ListaPrecio;
 use App\Models\VarianteProducto;
 use App\Models\StockProducto;
@@ -16,6 +18,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class ProductosController extends Controller
 {
@@ -360,16 +363,79 @@ class ProductosController extends Controller
         }
     }
 
-    public function actualizarPreciosExcel(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls|max:10240'
+public function actualizarPreciosExcel(Request $request)
+{
+    // 1. Validación
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv|max:10240'
+    ], [
+        'archivo.required' => 'Debe seleccionar un archivo',
+        'archivo.mimes'    => 'El archivo debe ser Excel (.xlsx, .xls) o CSV',
+        'archivo.max'      => 'El archivo no debe superar los 10MB'
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+        // 2. Obtener archivo y nombres
+        $archivo        = $request->file('archivo');
+        $nombreOriginal = $archivo->getClientOriginalName();
+        $nombreArchivo  = time() . '_' . $nombreOriginal;
+
+        // 3. Directorio en public
+        $rutaPublic = public_path('uploads/actualizaciones_precios');
+        if (! File::exists($rutaPublic)) {
+            File::makeDirectory($rutaPublic, 0755, true);
+        }
+
+        // 4. Mover archivo y construir ruta relativa
+        $archivo->move($rutaPublic, $nombreArchivo);
+        $rutaArchivo = 'uploads/actualizaciones_precios/' . $nombreArchivo;
+
+        // 5. Registrar en base de datos
+        $actualizacion = ActualizacionPrecio::create([
+            'usuario_id'               => auth()->id(),
+            'estado'                   => 'procesando',
+            'nombre_archivo'           => $nombreOriginal,
+            'ruta_archivo'             => $rutaArchivo,
+            'total_filas'              => 0,
+            'actualizaciones_exitosas' => 0,
+            'actualizaciones_fallidas' => 0,
+            'errores'                  => [],
+            'detalles_procesados'      => []
         ]);
 
-        // TODO: Implementar lógica de actualización masiva de precios desde Excel
-        
-        return back()->with('success', 'Precios actualizados desde Excel.');
+        // 6. Log de inicio
+        Log::info('Iniciando actualización de precios', [
+            'usuario'          => auth()->user()->name,
+            'archivo'          => $nombreArchivo,
+            'actualizacion_id' => $actualizacion->id,
+        ]);
+
+        // 7. Importar usando la ruta en public
+        $pathImport = public_path($rutaArchivo);
+        Excel::import(new PreciosImport($actualizacion), $pathImport);
+
+        DB::commit();
+
+        // 8. Preparar mensaje de resultado
+        $actualizacion->refresh();
+        if ($actualizacion->actualizaciones_fallidas === 0 && $actualizacion->actualizaciones_exitosas > 0) {
+            return back()->with('success', "Actualización completada: {$actualizacion->actualizaciones_exitosas} productos actualizados.");
+        } elseif ($actualizacion->actualizaciones_exitosas > 0) {
+            return back()->with('warning', "Actualización parcial: {$actualizacion->actualizaciones_exitosas} éxitosas, {$actualizacion->actualizaciones_fallidas} con errores.");
+        } else {
+            return back()->with('error', 'No se pudo actualizar ningún producto. Revisa el reporte de errores.');
+        }
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        Log::error('Error en actualización de precios', [
+            'mensaje' => $e->getMessage()
+        ]);
+        return back()->with('error', 'Ocurrió un error procesando el archivo.');
     }
+}
+
 
     // Métodos AJAX para los modales
     public function variantesAjax(Producto $producto)

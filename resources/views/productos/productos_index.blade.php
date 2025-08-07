@@ -73,11 +73,12 @@
         {
           text:'Nuevo', className:'btn btn-outline-primary',
           action: () => window.location.href = "{{ route('productos.form') }}"
-        }/* ,
+        },
         {
-          text:'Actualizar Precios', className:'btn btn-outline-warning',
-          action: () => $('#modalActualizarPrecios').modal('show')
-        } */
+  text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios', 
+  className:'btn btn-outline-warning',
+  action: () => window.location.href = "{{ route('productos.historial-precios') }}"
+}
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]

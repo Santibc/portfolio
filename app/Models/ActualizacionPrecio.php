@@ -13,16 +13,19 @@ class ActualizacionPrecio extends Model
 
     protected $fillable = [
         'usuario_id',
+        'estado',
         'nombre_archivo',
         'ruta_archivo',
         'total_filas',
         'actualizaciones_exitosas',
         'actualizaciones_fallidas',
-        'errores'
+        'errores',
+        'detalles_procesados'
     ];
 
     protected $casts = [
         'errores' => 'array',
+        'detalles_procesados' => 'array',
     ];
 
     public function usuario()
@@ -36,14 +39,29 @@ class ActualizacionPrecio extends Model
         return round(($this->actualizaciones_exitosas / $this->total_filas) * 100, 2);
     }
 
-    public function agregarError($fila, $mensaje)
+    public function agregarError($fila, $referencia, $mensaje)
     {
         $errores = $this->errores ?? [];
         $errores[] = [
             'fila' => $fila,
+            'referencia' => $referencia,
             'mensaje' => $mensaje,
             'timestamp' => now()->toISOString()
         ];
         $this->errores = $errores;
+    }
+
+    public function agregarProcesado($fila, $referencia, $listaPrecio, $precioAnterior, $precioNuevo)
+    {
+        $procesados = $this->detalles_procesados ?? [];
+        $procesados[] = [
+            'fila' => $fila,
+            'referencia' => $referencia,
+            'lista_precio' => $listaPrecio,
+            'precio_anterior' => $precioAnterior,
+            'precio_nuevo' => $precioNuevo,
+            'timestamp' => now()->toISOString()
+        ];
+        $this->detalles_procesados = $procesados;
     }
 }

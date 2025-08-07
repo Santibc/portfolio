@@ -13,6 +13,7 @@ use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\ActualizacionPreciosController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -71,12 +72,13 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
-    Route::post('/actualizar-precios-excel', [ProductosController::class, 'actualizarPreciosExcel'])->name('productos.actualizar-precios-excel');
-        // Rutas AJAX para los modales
     Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
 });
+Route::get('actualizaciones/{id}/descargar', 
+    [ActualizacionPreciosController::class, 'descargarArchivoActualizacion']
+)->name('actualizaciones.descargar');
 
 
 });
@@ -150,4 +152,16 @@ Route::get('/productos/{producto}/stock-ajax', [App\Http\Controllers\ProductosCo
 // Rutas para solicitudes
 Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descargarPdf'])->name('solicitudes.pdf');
 Route::get('/solicitudes/exportar-excel', [SolicitudController::class, 'exportarExcel'])->name('solicitudes.exportar-excel');
+Route::middleware(['auth'])->group(function () {
+    // ... otras rutas existentes ...
+    
+    // Actualización de precios
+    Route::post('/productos/actualizar-precios-excel', [ProductosController::class, 'actualizarPreciosExcel'])->name('productos.actualizar-precios-excel');
+    Route::get('/productos/historial-precios', [ActualizacionPreciosController::class, 'historial'])->name('productos.historial-precios');
+    Route::get('/productos/actualizacion-precios/{id}', [ActualizacionPreciosController::class, 'verDetalle'])->name('productos.actualizacion-precios.detalle');
+    
+    // Rutas para descargar plantillas
+    Route::get('/productos/descargar-plantilla-csv', [ActualizacionPreciosController::class, 'descargarPlantillaCsv'])->name('productos.descargar-plantilla-csv');
+    Route::get('/productos/descargar-plantilla-excel', [ActualizacionPreciosController::class, 'descargarPlantillaExcel'])->name('productos.descargar-plantilla-excel');
+});
 require __DIR__.'/auth.php';

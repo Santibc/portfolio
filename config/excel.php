@@ -123,12 +123,12 @@ return [
         | Configure e.g. delimiter, enclosure and line ending for CSV imports.
         |
         */
-        'csv'          => [
-            'delimiter'        => null,
-            'enclosure'        => '"',
+        'csv' => [
+            'delimiter' => ';',
+            'enclosure' => '"',
             'escape_character' => '\\',
-            'contiguous'       => false,
-            'input_encoding'   => Csv::GUESS_ENCODING,
+            'contiguous' => false,
+            'input_encoding' => 'UTF-8',
         ],
 
         /*
