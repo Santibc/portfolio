@@ -86,14 +86,16 @@
       margin: 0 1rem;
     }
     
-    .productos-carousel .col-md-4 {
-      flex: 0 0 33.333333%;
-      max-width: 33.333333%;
-    }
-    
-    .productos-grid .col-md-3 {
-      flex: 0 0 25%;
-      max-width: 25%;
+    /* Responsive para móviles */
+    @media (max-width: 768px) {
+      .carousel-info {
+        font-size: 0.8rem;
+      }
+      .carousel-nav-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
     }
 
     #itemsPerPageSelect { width: auto; display: inline-block; margin-left: 0.5rem; }
@@ -266,6 +268,8 @@
               <i class="bi bi-view-list"></i> Ver como carrusel
             </button>
             <select class="form-select form-select-sm d-none me-2" id="itemsPerPageSelect">
+              <option value="1">Mostrar 1</option>
+              <option value="2">Mostrar 2</option>
               <option value="3" selected>Mostrar 3</option>
               <option value="6">Mostrar 6</option>
               <option value="9">Mostrar 9</option>
@@ -282,7 +286,7 @@
       {{-- Productos --}}
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-4">
-          <div id="productosContainer" class="row productos-grid">
+          <div id="productosContainer" class="row">
             <div class="col-12 text-center py-5">
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Cargando productos...</span>
@@ -538,11 +542,16 @@
         ?'<div class="col-12 text-center py-5"><p class="text-muted">No se encontraron productos</p></div>'
         : prods.map(p=>{
             productosCargados[p.id]=p;
-            return buildCard(p, 'col-12 col-sm-4 col-md-3 col-lg-2');
+            return buildCard(p, 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-2');
           }).join('');
 
       $('#productosContainer').html(html);
-      $('#paginacionContainer').html(buildPagination(resp));
+      // Solo mostrar paginación si hay más de una página
+      if(resp.productos.last_page > 1) {
+        $('#paginacionContainer').html(buildPagination(resp));
+      } else {
+        $('#paginacionContainer').empty();
+      }
     }
 
     function renderCarousel() {
@@ -557,10 +566,21 @@
       const start = (carouselPage - 1) * itemsPerPage;
       const pageItems = productosCarousel.slice(start, start + itemsPerPage);
       
-      let colClass = 'col-12 col-sm-4 col-md-4';
-      if (itemsPerPage === 6) colClass = 'col-12 col-sm-4 col-md-2';
-      else if (itemsPerPage === 9) colClass = 'col-12 col-sm-4 col-md-3 col-lg-2';
-      else if (itemsPerPage === 12) colClass = 'col-12 col-sm-4 col-md-3 col-lg-2';
+      // Responsive columns para carrusel
+      let colClass = 'col-12';
+      if (itemsPerPage === 1) {
+        colClass = 'col-12';
+      } else if (itemsPerPage === 2) {
+        colClass = 'col-12 col-sm-6';
+      } else if (itemsPerPage === 3) {
+        colClass = 'col-12 col-sm-6 col-md-4';
+      } else if (itemsPerPage === 6) {
+        colClass = 'col-12 col-sm-4 col-md-2';
+      } else if (itemsPerPage === 9) {
+        colClass = 'col-12 col-sm-4 col-md-3 col-lg-2';
+      } else if (itemsPerPage === 12) {
+        colClass = 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-1';
+      }
       
       const html = pageItems.map(p => {
         productosCargados[p.id] = p;
@@ -570,9 +590,10 @@
       $('#productosContainer').html(html);
       $('#productosContainer').before(buildCarouselNavigation());
       $('#productosContainer').after(buildCarouselNavigation());
+      $('#paginacionContainer').empty(); // Limpiar paginación en modo carrusel
     }
 
-    function buildCard(p, colClass = 'col-12 col-sm-4 col-md-3 col-lg-2') {
+    function buildCard(p, colClass = 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-2') {
       const img = p.imagen_principal
         ? `{{asset('')}}${p.imagen_principal.ruta_imagen}`
         : '{{asset("images/no-image.png")}}';
@@ -650,19 +671,7 @@
 
     function buildPagination(resp) {
       let pgHtml='';
-      if(resp.productos.last_page>1){
-        pgHtml+='<nav><ul class="pagination justify-content-center">';
-        const cur = resp.productos.current_page, last= resp.productos.last_page;
-        if(cur>1) pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${cur-1});return false"><i class="bi bi-chevron-left"></i> Anterior</a></li>`;
-        for(let i=1;i<=last;i++){
-          if(i===cur) pgHtml+=`<li class="page-item active"><span class="page-link">${i}</span></li>`;
-          else if(i===1||i===last||Math.abs(i-cur)<=2)
-            pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${i});return false">${i}</a></li>`;
-          else if(Math.abs(i-cur)===3) pgHtml+='<li class="page-item disabled"><span class="page-link">...</span></li>';
-        }
-        if(cur<last) pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${cur+1});return false">Siguiente <i class="bi bi-chevron-right"></i></a></li>`;
-        pgHtml+='</ul></nav>';
-      }
+
       return pgHtml;
     }
 
@@ -674,7 +683,7 @@
           </button>
           <div class="carousel-info">
             Página ${carouselPage} de ${totalCarouselPages}<br>
-            (${productosCarousel.length} productos total)
+            <small>(${productosCarousel.length} productos total)</small>
           </div>
           <button class="carousel-nav-btn" id="nextCarouselBtn" ${carouselPage >= totalCarouselPages ? 'disabled' : ''}>
             <i class="bi bi-chevron-right"></i>

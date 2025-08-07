@@ -646,19 +646,7 @@ $(function(){
 
   function buildPagination(resp) {
     let pgHtml='';
-    if(resp.productos.last_page>1){
-      pgHtml+='<nav><ul class="pagination justify-content-center">';
-      const cur = resp.productos.current_page, last= resp.productos.last_page;
-      if(cur>1) pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${cur-1});return false"><i class="bi bi-chevron-left"></i> Anterior</a></li>`;
-      for(let i=1;i<=last;i++){
-        if(i===cur) pgHtml+=`<li class="page-item active"><span class="page-link">${i}</span></li>`;
-        else if(i===1||i===last||Math.abs(i-cur)<=2)
-          pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${i});return false">${i}</a></li>`;
-        else if(Math.abs(i-cur)===3) pgHtml+='<li class="page-item disabled"><span class="page-link">...</span></li>';
-      }
-      if(cur<last) pgHtml+=`<li class="page-item"><a class="page-link" href="#" onclick="cargarProductos(${cur+1});return false">Siguiente <i class="bi bi-chevron-right"></i></a></li>`;
-      pgHtml+='</ul></nav>';
-    }
+
     return pgHtml;
   }
 

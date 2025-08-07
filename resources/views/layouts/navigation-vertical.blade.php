@@ -37,7 +37,8 @@
                 <span>Productos</span>
             </a>
         @endif
-                {{-- Catálogo (para vendedor y admin) --}}
+
+        {{-- Catálogo (para vendedor y admin) --}}
         @if(auth()->user()->hasRole(['vendedor', 'admin']))
             <a href="{{ route('catalogo') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
@@ -46,17 +47,17 @@
             </a>
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-file-text"></i>
+                <i class="bi bi-clipboard-data"></i>
                 <span>Solicitudes</span>
             </a>
             <a href="{{ route('enlaces') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-file-text"></i>
+                <i class="bi bi-link-45deg"></i>
                 <span>Links</span>
             </a>
             <a href="{{ route('stock.index') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-file-text"></i>
+                <i class="bi bi-box-seam"></i>
                 <span>Gestión de Stock</span>
             </a>
         @endif
