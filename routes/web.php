@@ -25,9 +25,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/login'); // 302 por defecto
 
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 
