@@ -206,9 +206,6 @@
                     <div class="info-col">
                         <span class="info-label">Ciudad:</span> {{ $solicitud->cliente->ciudad->nombre }}, {{ $solicitud->cliente->pais->nombre }}
                     </div>
-                    <div class="info-col">
-                        <span class="info-label">Lista de Precios:</span> {{ $solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista' }}
-                    </div>
                 </div>
             </div>
         </div>

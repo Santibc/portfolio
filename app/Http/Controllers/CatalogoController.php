@@ -110,7 +110,8 @@ class CatalogoController extends Controller
                         $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
                     }]);
                 }
-            ]);
+            ])
+            ->select('productos.*'); // Asegurarse de que se incluyan todos los campos, incluyendo unidad_venta
         
         // Filtro por categoría
         if ($request->has('categoria_id') && $request->categoria_id) {
@@ -162,6 +163,9 @@ class CatalogoController extends Controller
             } else {
                 $producto->stock_info = null;
             }
+            
+            // Asegurarse de que unidad_venta esté disponible en la respuesta
+            $producto->unidad_venta = $producto->unidad_venta;
         }
         
         return response()->json([
@@ -227,6 +231,9 @@ class CatalogoController extends Controller
                 $variante->stock_info = $this->obtenerStockVariante($producto, $variante);
             }
         }
+        
+        // Asegurarse de que unidad_venta esté incluida
+        $producto->unidad_venta = $producto->unidad_venta;
         
         return response()->json([
             'producto' => $producto,

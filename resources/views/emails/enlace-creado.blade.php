@@ -80,8 +80,6 @@
             <ul>
                 <li><strong>Válido por:</strong> {{ $enlace->dias_validos }} días</li>
                 <li><strong>Expira el:</strong> {{ $enlace->expira_en->format('d/m/Y H:i') }}</li>
-                <li><strong>Mostrar precios:</strong> {{ $enlace->mostrar_precios ? 'Sí' : 'No' }}</li>
-                <li><strong>Lista de precios:</strong> {{ $enlace->cliente->listaPrecio?->nombre ?? 'Sin lista asignada' }}</li>
             </ul>
         </div>
         

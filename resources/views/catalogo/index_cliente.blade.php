@@ -10,9 +10,25 @@
     .producto-card { transition: transform .2s; cursor: pointer; }
     .producto-card:hover { transform: translateY(-5px); }
     .cart-badge { position: absolute; top: -8px; right: -8px; }
-    #cartSidebar { position: fixed; top:0; right:-400px; width:400px; height:100vh;
-                   background:#fff; box-shadow:-2px 0 5px rgba(0,0,0,.1);
-                   transition:right .3s; z-index:1050; }
+#cartSidebar { 
+  position: fixed; 
+  top: 0; 
+  right: -400px; 
+  width: 400px; 
+  height: 100vh;
+  background: #fff; 
+  box-shadow: -2px 0 5px rgba(0,0,0,.1);
+  transition: right .3s; 
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 768px) {
+  #cartSidebar {
+    width: 100%;
+    right: -100%;
+  }
+}
     #cartSidebar.show { right:0; }
     .loading-overlay { position:fixed; top:0; left:0; width:100%; height:100%;
                        background:rgba(255,255,255,.9); z-index:9999;
@@ -216,6 +232,11 @@
       color: #856404;
       border: 1px solid #ffeaa7;
     }
+    #cartItems {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+}
   </style>
 </head>
 <body class="bg-light">
@@ -291,16 +312,16 @@
 
 {{-- Sidebar del Carrito --}}
 <div id="cartSidebar">
-  <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+  <div class="p-4 border-bottom d-flex justify-content-between align-items-center flex-shrink-0">
     <h5 class="mb-0">Carrito de Compras</h5>
     <button class="btn-close" id="closeCart"></button>
   </div>
-  <div class="p-4" style="height:calc(100vh-200px); overflow-y:auto;">
+  <div class="flex-grow-1 overflow-auto p-4">
     <div id="cartItems">
       <p class="text-muted text-center">El carrito está vacío</p>
     </div>
   </div>
-  <div class="p-4 border-top">
+  <div class="p-4 border-top flex-shrink-0">
     <div class="d-flex justify-content-between mb-3">
       <strong>Total:</strong>
       <strong id="cartTotal">$0.00</strong>
@@ -397,12 +418,12 @@ $(function(){
           <div class="card mb-2">
             <div class="card-body p-2">
               <div class="d-flex justify-content-between">
-                <div>
+                <div style="flex: 1;">
                   <h6 class="mb-0">${item.nombre}</h6>
                   <small class="text-muted">Ref: ${item.referencia}</small>
                   ${item.variante?`<br><small class="text-info">${item.variante}</small>`:''}
                   ${(mostrarPrecios && !isNaN(precioUnit))
-                    ?`<br><small>${precioUnit.toFixed(2)} c/u</small>`
+                    ?`<br><small>${precioUnit.toFixed(2)} c/u ${item.unidad_venta ? `<span class="text-muted">Und/V: ${item.unidad_venta}</span>` : ''}</small>`
                     :''}
                 </div>
                 <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${i})">
@@ -412,8 +433,8 @@ $(function(){
               <div class="mt-2 d-flex align-items-center">
                 <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${i},-1)">-</button>
                 <input type="number" class="form-control form-control-sm mx-2 text-center"
-                       style="width:60px" value="${item.cantidad}"
-                       onchange="actualizarCantidad(${i},this.value)">
+                      style="width:60px" value="${item.cantidad}"
+                      onchange="actualizarCantidad(${i},this.value)">
                 <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${i},1)">+</button>
                 ${mostrarPrecios
                   ?`<span class="ms-auto">${subtotal.toFixed(2)}</span>`
@@ -424,10 +445,11 @@ $(function(){
       });
       $('#btnFinalizarSolicitud').prop('disabled',false);
     }
+    
     $('#cartItems').html(itemsHtml);
     $('#cartTotal').text(mostrarPrecios? total.toFixed(2):'N/A');
     $('#cartCount').text(carrito.reduce((s,i)=>s+i.cantidad,0))
-                   .toggle(!!carrito.length);
+                  .toggle(!!carrito.length);
     localStorage.setItem('carrito_'+clienteId, JSON.stringify(carrito));
   }
 
@@ -460,6 +482,7 @@ $(function(){
         nombre: producto.nombre,
         variante: variante? `${variante.talla||''} ${variante.color||''}`.trim():null,
         precio: precioUnit,
+        unidad_venta: producto.unidad_venta || '', // Agregamos la unidad de venta
         cantidad
       });
     }
@@ -517,6 +540,11 @@ $(function(){
     },resp=>{
       const prods = resp.productos.data;
       productosCarousel = prods;
+      
+      // Asegurarnos de que los productos cargados tengan la unidad_venta
+      prods.forEach(p => {
+        productosCargados[p.id] = p;
+      });
       
       if (viewType === 'grid') {
         renderGrid(prods, resp);
