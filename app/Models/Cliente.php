@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Empresa;
 class Cliente extends Model
 {
     use HasFactory;
@@ -20,12 +20,23 @@ class Cliente extends Model
         'vendedor_id',
         'lista_precio_id',
         'activo',
+        'empresa_id ',
          'pais_id'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
+    public function empresa()
+{
+    return $this->belongsTo(Empresa::class);
+}
+
+// Modificar scope para incluir empresa
+public function scopePorEmpresa($query, $empresaId)
+{
+    return $query->where('empresa_id', $empresaId);
+}
     public function pais()
     {
         return $this->belongsTo(Pais::class);

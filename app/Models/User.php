@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Empresa;
  use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -48,7 +48,20 @@ class User extends Authenticatable
                'activo' => 'boolean',
         'ultimo_login' => 'datetime',
     ];
+public function empresa()
+{
+    return $this->hasOne(Empresa::class, 'usuario_id');
+}
 
+public function tieneRolEmpresa()
+{
+    return $this->hasRole('empresa');
+}
+
+public function puedeCrearEmpresa()
+{
+    return $this->tieneRolEmpresa() && !$this->empresa;
+}
         public function clientes()
     {
         return $this->hasMany(Cliente::class, 'vendedor_id');

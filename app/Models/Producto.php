@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-
+use App\Models\Empresa;
 class Producto extends Model
 {
     use HasFactory;
@@ -23,6 +23,7 @@ class Producto extends Model
         'activo',
         'tiene_variantes',
         'controlar_stock',
+        'empresa_id',
         'permitir_venta_sin_stock'
     ];
 
@@ -32,7 +33,16 @@ class Producto extends Model
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
     ];
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 
+    // Modificar el scope para incluir empresa
+    public function scopePorEmpresa($query, $empresaId)
+    {
+        return $query->where('empresa_id', $empresaId);
+    }
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-
+use App\Models\Empresa;
 class EnlaceAcceso extends Model
 {
     use HasFactory;
@@ -23,6 +23,7 @@ class EnlaceAcceso extends Model
         'activo',
         'visitas',
         'ultimo_acceso',
+        'empresa_id',
         'notas'
     ];
 
@@ -33,7 +34,16 @@ class EnlaceAcceso extends Model
         'expira_en' => 'datetime',
         'ultimo_acceso' => 'datetime',
     ];
+public function empresa()
+{
+    return $this->belongsTo(Empresa::class);
+}
 
+// Agregar scope
+public function scopePorEmpresa($query, $empresaId)
+{
+    return $query->where('empresa_id', $empresaId);
+}
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
