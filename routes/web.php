@@ -162,4 +162,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/productos/descargar-plantilla-csv', [ActualizacionPreciosController::class, 'descargarPlantillaCsv'])->name('productos.descargar-plantilla-csv');
     Route::get('/productos/descargar-plantilla-excel', [ActualizacionPreciosController::class, 'descargarPlantillaExcel'])->name('productos.descargar-plantilla-excel');
 });
+// Agregar estas rutas al archivo routes/web.php dentro del middleware 'auth'
+
+// Rutas de Empresa
+Route::prefix('empresa')->name('empresa.')->group(function () {
+    Route::get('/', [App\Http\Controllers\EmpresasController::class, 'index'])->name('index');
+    Route::get('/crear', [App\Http\Controllers\EmpresasController::class, 'form'])->name('crear');
+    Route::get('/editar', [App\Http\Controllers\EmpresasController::class, 'form'])->name('form');
+    Route::post('/guardar', [App\Http\Controllers\EmpresasController::class, 'guardar'])->name('guardar');
+    Route::post('/cambiar-estado', [App\Http\Controllers\EmpresasController::class, 'cambiarEstado'])->name('cambiar-estado');
+    Route::get('/preview', [App\Http\Controllers\EmpresasController::class, 'preview'])->name('preview');
+});
+
+// Ruta pública para ver la tienda
+/* Route::get('/tienda/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])->name('tienda.empresa'); */
 require __DIR__.'/auth.php';

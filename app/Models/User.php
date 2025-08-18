@@ -57,7 +57,14 @@ public function tieneRolEmpresa()
 {
     return $this->hasRole('empresa');
 }
-
+    public function tieneEmpresa()
+    {
+        return $this->empresa()->exists();
+    }
+        public function getEmpresaActivaAttribute()
+    {
+        return $this->empresa()->where('activo', true)->first();
+    }
 public function puedeCrearEmpresa()
 {
     return $this->tieneRolEmpresa() && !$this->empresa;

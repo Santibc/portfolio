@@ -37,7 +37,8 @@ class CarruselEmpresa extends Model
 
     public function getImagenUrlAttribute()
     {
-        return Storage::url($this->imagen);
+        // Si la imagen existe, genera la URL con asset(), de lo contrario puedes retornar una URL por defecto
+        return $this->imagen ? asset($this->imagen) : null;
     }
 
     public function estaActivo()

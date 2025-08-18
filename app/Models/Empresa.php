@@ -109,12 +109,12 @@ class Empresa extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo ? Storage::url($this->logo) : asset('images/default-logo.png');
+        return $this->logo ? asset($this->logo) : asset('images/default-logo.png');
     }
 
     public function getImagenPortadaUrlAttribute()
     {
-        return $this->imagen_portada ? Storage::url($this->imagen_portada) : asset('images/default-cover.jpg');
+        return $this->imagen_portada ? asset($this->imagen_portada) : asset('images/default-cover.jpg');
     }
 
     protected static function boot()

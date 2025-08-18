@@ -19,13 +19,21 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\Empresa;
 class ProductosController extends Controller
 {
     public function index(Request $request)
     {
+        // Verificar si el usuario tiene empresa
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                        ->with('warning', 'Debe crear su empresa antes de gestionar productos.');
+        }
+        
         if ($request->ajax()) {
             $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal'])
+                            ->where('empresa_id', $empresa->id) // Filtrar por empresa
                             ->select('productos.*');
 
             return DataTables::of($query)
@@ -71,7 +79,7 @@ class ProductosController extends Controller
                     // Botón de precios
                     $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" title="Ver Precios" onclick="verPrecios('.$p->id.')"><i class="bi bi-currency-dollar"></i></button>';
                     
-                    // Botón de stock (NUEVO)
+                    // Botón de stock
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
@@ -89,11 +97,23 @@ class ProductosController extends Controller
 
     public function form(Producto $producto = null)
     {
+        // Verificar si el usuario tiene empresa
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                        ->with('warning', 'Debe crear su empresa antes de gestionar productos.');
+        }
+        
+        // Si es edición, verificar que el producto pertenezca a la empresa
+        if ($producto && $producto->exists && $producto->empresa_id !== $empresa->id) {
+            abort(403, 'No tiene permisos para editar este producto.');
+        }
+        
         $producto = $producto ?? new Producto();
         $categorias = Categoria::activas()->pluck('nombre', 'id');
         $listas = ListaPrecio::activas()->get();
         
-        // Cargar stock si el producto existe (NUEVO)
+        // Cargar stock si el producto existe
         $stocks = [];
         if ($producto->exists) {
             if ($producto->tiene_variantes) {
@@ -111,14 +131,28 @@ class ProductosController extends Controller
 
     public function guardar(Request $request)
     {
+        // Verificar si el usuario tiene empresa
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                        ->with('warning', 'Debe crear su empresa antes de gestionar productos.');
+        }
+        
         $producto = $request->id
-                  ? Producto::findOrFail($request->id)
-                  : new Producto();
+                ? Producto::findOrFail($request->id)
+                : new Producto();
+                
+        // Si es edición, verificar que el producto pertenezca a la empresa
+        if ($producto->exists && $producto->empresa_id !== $empresa->id) {
+            abort(403, 'No tiene permisos para editar este producto.');
+        }
 
         $rules = [
             'referencia' => [
                 'required','string','max:255',
-                Rule::unique('productos')->ignore($producto->id)
+                Rule::unique('productos', 'referencia')
+                    ->where(fn($q) => $q->where('empresa_id', $empresa->id))
+                    ->ignore($producto->id),
             ],
             'nombre' => ['required','string','max:255'],
             'descripcion' => ['nullable','string'],
@@ -126,21 +160,24 @@ class ProductosController extends Controller
             'unidad_empaque' => ['required','string','max:100'],
             'extension' => ['nullable','string','max:100'],
             'categoria_id' => ['required','exists:categorias,id'],
-            'controlar_stock' => ['boolean'],  // NUEVO
-            'permitir_venta_sin_stock' => ['boolean'],  // NUEVO
-            'imagenes.*' => ['nullable','image','mimes:jpeg,png,jpg,webp','max:2048'],
+            'controlar_stock' => ['boolean'],
+            'permitir_venta_sin_stock' => ['boolean'],
+
+            // ✅ Variantes
+            // Evita duplicados en el mismo request y deja que el índice (producto_id, sku) haga el resto
             'variantes.*.talla' => ['nullable','string','max:50'],
             'variantes.*.color' => ['nullable','string','max:50'],
-            'variantes.*.sku' => ['nullable','string','max:255'],
-            'variantes.*.stock_inicial' => ['nullable','integer','min:0'],  // NUEVO
-            'variantes.*.stock_minimo' => ['nullable','integer','min:0'],  // NUEVO
-            'variantes.*.stock_maximo' => ['nullable','integer','min:0'],  // NUEVO
-            'variantes.*.ubicacion' => ['nullable','string','max:255'],  // NUEVO
+            'variantes.*.sku'   => ['nullable','string','max:255','distinct'],
+            'variantes.*.stock_inicial' => ['nullable','integer','min:0'],
+            'variantes.*.stock_minimo'  => ['nullable','integer','min:0'],
+            'variantes.*.stock_maximo'  => ['nullable','integer','min:0'],
+            'variantes.*.ubicacion'     => ['nullable','string','max:255'],
+
             'precios.*' => ['nullable','numeric','min:0'],
-            'stock_inicial' => ['nullable','integer','min:0'],  // NUEVO
-            'stock_minimo' => ['nullable','integer','min:0'],  // NUEVO
-            'stock_maximo' => ['nullable','integer','min:0'],  // NUEVO
-            'ubicacion_stock' => ['nullable','string','max:255'],  // NUEVO
+            'stock_inicial' => ['nullable','integer','min:0'],
+            'stock_minimo'  => ['nullable','integer','min:0'],
+            'stock_maximo'  => ['nullable','integer','min:0'],
+            'ubicacion_stock' => ['nullable','string','max:255'],
         ];
 
         $messages = [
@@ -153,8 +190,8 @@ class ProductosController extends Controller
             'imagenes.*.max' => 'La imagen no debe superar 2MB.',
             'precios.*.numeric' => 'El precio debe ser un número.',
             'precios.*.min' => 'El precio no puede ser negativo.',
-            'stock_inicial.integer' => 'El stock debe ser un número entero.',  // NUEVO
-            'stock_inicial.min' => 'El stock no puede ser negativo.',  // NUEVO
+            'stock_inicial.integer' => 'El stock debe ser un número entero.',
+            'stock_inicial.min' => 'El stock no puede ser negativo.',
         ];
 
         $data = $request->validate($rules, $messages);
@@ -164,11 +201,12 @@ class ProductosController extends Controller
         try {
             // Guardar datos básicos del producto
             $data['tiene_variantes'] = $request->input('tiene_variantes', 0) == 1;
-            $data['controlar_stock'] = $request->input('controlar_stock', 1) == 1;  // NUEVO
-            $data['permitir_venta_sin_stock'] = $request->input('permitir_venta_sin_stock', 0) == 1;  // NUEVO
+            $data['controlar_stock'] = $request->input('controlar_stock', 1) == 1;
+            $data['permitir_venta_sin_stock'] = $request->input('permitir_venta_sin_stock', 0) == 1;
             $data['activo'] = true;
+            $data['empresa_id'] = $empresa->id; // ASIGNAR EMPRESA_ID
             
-            $esNuevo = !$producto->exists;  // NUEVO
+            $esNuevo = !$producto->exists;
             $producto->fill($data)->save();
             
             // Guardar variantes
@@ -440,6 +478,9 @@ public function actualizarPreciosExcel(Request $request)
     // Métodos AJAX para los modales
     public function variantesAjax(Producto $producto)
     {
+        if ($producto->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
         $variantes = $producto->variantes()->get();
         
         $html = '<div class="table-responsive">';
@@ -470,6 +511,9 @@ public function actualizarPreciosExcel(Request $request)
 
     public function imagenesAjax(Producto $producto)
     {
+        if ($producto->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
         $imagenes = $producto->imagenes()->orderBy('orden')->get();
         
         $html = '<div class="row">';
@@ -498,6 +542,9 @@ public function actualizarPreciosExcel(Request $request)
 
     public function preciosAjax(Producto $producto)
     {
+        if ($producto->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
         $precios = $producto->precios()->with('listaPrecio')->get();
         
         $html = '<div class="table-responsive">';
@@ -529,6 +576,9 @@ public function actualizarPreciosExcel(Request $request)
     // Método AJAX para ver stock (NUEVO)
     public function stockAjax(Producto $producto)
     {
+        if ($producto->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
         $stocks = $producto->stock()->with('variante')->get();
         
         $html = '<div class="table-responsive">';
