@@ -133,7 +133,17 @@ class Empresa extends Model
             }
         });
     }
+    public function categorias()
+    {
+        return $this->hasMany(Categoria::class);
+    }
 
+    public function categoriasActivas()
+    {
+        return $this->hasMany(Categoria::class)
+                    ->where('activo', true)
+                    ->orderBy('orden');
+    }
     public function scopeActivas($query)
     {
         return $query->where('activo', true);

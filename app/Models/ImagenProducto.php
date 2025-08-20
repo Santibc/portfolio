@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str; // arriba con los use si quieres la validación opcional
 class ImagenProducto extends Model
 {
     use HasFactory;
@@ -29,11 +29,20 @@ class ImagenProducto extends Model
         return $this->belongsTo(Producto::class, 'producto_id');
     }
 
-    public function getUrlAttribute()
-    {
-        return Storage::url($this->ruta_imagen);
+public function getUrlAttribute()
+{
+    if (!$this->ruta_imagen) {
+        return asset('images/no-image.png'); // opcional: cambia por tu placeholder
     }
 
+    // Si ya es absoluta o empieza con '/', devuélvela tal cual
+    if (Str::startsWith($this->ruta_imagen, ['http://', 'https://', '/'])) {
+        return $this->ruta_imagen;
+    }
+
+    // Ruta relativa dentro de /public
+    return asset($this->ruta_imagen);
+}
     protected static function boot()
     {
         parent::boot();

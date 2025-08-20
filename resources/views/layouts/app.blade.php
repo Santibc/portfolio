@@ -207,7 +207,116 @@
         // También actualizar en el redimensionamiento de la ventana
         window.addEventListener('resize', updateLayout);
     </script>
+<script>
+        const sidebar = document.querySelector('.sidebar');
+        const appHeader = document.getElementById('appHeader');
+        const appMainContent = document.getElementById('appMainContent');
+        let isManuallyToggled = false;
 
+        function updateLayout() {
+            const sidebarWidth = sidebar.offsetWidth; // Obtiene el ancho actual (70px o 250px)
+            appHeader.style.left = `${sidebarWidth}px`;
+            appHeader.style.right = `0`;
+            appMainContent.style.marginLeft = `${sidebarWidth}px`;
+        }
+
+        // Función para guardar el estado del sidebar en localStorage
+        function saveSidebarState() {
+            if (sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // Función para manejar el responsive
+        function handleResponsive() {
+            const windowWidth = window.innerWidth;
+            
+            // Solo aplicar auto-colapso si el usuario no ha interactuado manualmente
+            if (!isManuallyToggled) {
+                if (windowWidth <= 768) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+                setTimeout(updateLayout, 300);
+            }
+        }
+
+        // Función para restaurar el estado del sidebar desde localStorage
+        function restoreSidebarState() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed');
+            const windowWidth = window.innerWidth;
+            
+            // Si hay un estado guardado, usarlo
+            if (isCollapsed !== null) {
+                isManuallyToggled = true;
+                if (isCollapsed === 'true') {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            } else {
+                // Si no hay estado guardado, aplicar responsive
+                handleResponsive();
+            }
+            
+            setTimeout(updateLayout, 300);
+        }
+
+        // Restaurar el estado del sidebar al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            restoreSidebarState();
+            
+            // Inicializar tooltips para el sidebar colapsado
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Modificar el click del botón para guardar el estado
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            isManuallyToggled = true;
+            sidebar.classList.toggle('collapsed');
+            saveSidebarState(); // Guardar el nuevo estado
+
+            // Esperar a que la transición termine para actualizar el layout
+            setTimeout(updateLayout, 300);
+        });
+
+        // Manejar el redimensionamiento de la ventana
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                handleResponsive();
+                updateLayout();
+            }, 250);
+        });
+
+        // Manejar clicks en submenús cuando el sidebar está colapsado
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('collapsed')) {
+                const submenuTrigger = e.target.closest('[data-bs-toggle="collapse"]');
+                if (submenuTrigger) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Expandir temporalmente el sidebar
+                    sidebar.classList.remove('collapsed');
+                    setTimeout(() => {
+                        updateLayout();
+                        // Activar el collapse después de expandir
+                        const collapse = new bootstrap.Collapse(document.querySelector(submenuTrigger.getAttribute('href')), {
+                            toggle: true
+                        });
+                    }, 300);
+                }
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

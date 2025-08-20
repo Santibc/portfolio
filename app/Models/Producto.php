@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Empresa;
+use Illuminate\Support\Str; // si quieres la misma validación opcional
 class Producto extends Model
 {
     use HasFactory;
@@ -97,11 +98,22 @@ class Producto extends Model
     }
 
     // Obtener URL de imagen principal
-    public function getUrlImagenPrincipalAttribute()
-    {
-        $imagenPrincipal = $this->imagenPrincipal ?? $this->imagenes->first();
-        return $imagenPrincipal ? Storage::url($imagenPrincipal->ruta_imagen) : asset('images/no-image.png');
+public function getUrlImagenPrincipalAttribute()
+{
+    $imagenPrincipal = $this->imagenPrincipal ?? $this->imagenes->first();
+
+    if (!$imagenPrincipal || !$imagenPrincipal->ruta_imagen) {
+        return asset('images/no-image.png'); // opcional
     }
+
+    $ruta = $imagenPrincipal->ruta_imagen;
+
+    if (Str::startsWith($ruta, ['http://', 'https://', '/'])) {
+        return $ruta;
+    }
+
+    return asset($ruta); // sirve archivos desde /public
+}
 
     // Obtener stock total del producto (suma de todas las variantes o stock principal)
     public function getStockTotalAttribute()

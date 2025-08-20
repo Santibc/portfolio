@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
+use App\Models\Empresa;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -16,8 +17,18 @@ class StockController extends Controller
     // Vista principal de gestión de stock
     public function index(Request $request)
     {
+        // Verificar si el usuario tiene empresa
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                           ->with('warning', 'Debe crear su empresa antes de gestionar el stock.');
+        }
+
         if ($request->ajax()) {
             $query = StockProducto::with(['producto', 'variante'])
+                ->whereHas('producto', function($q) use ($empresa) {
+                    $q->where('empresa_id', $empresa->id);
+                })
                 ->select('stock_productos.*');
 
             // Filtrar por producto si se especifica
@@ -99,16 +110,29 @@ class StockController extends Controller
                 ->make(true);
         }
 
-        $productosConStockBajo = StockProducto::conStockBajo()->count();
-        $productosSinStock = StockProducto::sinStock()->count();
+        // Estadísticas de la empresa
+        $productosConStockBajo = StockProducto::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->conStockBajo()->count();
+        
+        $productosSinStock = StockProducto::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->sinStock()->count();
         
         // Obtener información del producto si viene filtrado
         $productoFiltrado = null;
         if ($request->has('producto_id') && $request->producto_id) {
-            $productoFiltrado = Producto::find($request->producto_id);
+            $productoFiltrado = Producto::where('empresa_id', $empresa->id)
+                                      ->find($request->producto_id);
+            
+            // Si el producto no es de la empresa, redireccionar
+            if (!$productoFiltrado) {
+                return redirect()->route('stock.index')
+                               ->with('error', 'Producto no encontrado o no autorizado.');
+            }
         }
         
-        return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado'));
+        return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'empresa'));
     }
 
     // Entrada de stock
@@ -124,6 +148,12 @@ class StockController extends Controller
         DB::beginTransaction();
         try {
             $stock = StockProducto::findOrFail($request->stock_id);
+            
+            // Verificar que el producto pertenezca a la empresa del usuario
+            if ($stock->producto->empresa_id !== auth()->user()->empresa->id) {
+                throw new \Exception('No autorizado para modificar este stock.');
+            }
+            
             $stock->entrada(
                 $request->cantidad,
                 'compra',
@@ -160,6 +190,11 @@ class StockController extends Controller
         DB::beginTransaction();
         try {
             $stock = StockProducto::findOrFail($request->stock_id);
+            
+            // Verificar que el producto pertenezca a la empresa del usuario
+            if ($stock->producto->empresa_id !== auth()->user()->empresa->id) {
+                throw new \Exception('No autorizado para modificar este stock.');
+            }
             
             if (!$stock->hayDisponibilidad($request->cantidad)) {
                 throw new \Exception('Stock insuficiente. Disponible: ' . $stock->stock_real);
@@ -204,6 +239,12 @@ class StockController extends Controller
         DB::beginTransaction();
         try {
             $stock = StockProducto::findOrFail($request->stock_id);
+            
+            // Verificar que el producto pertenezca a la empresa del usuario
+            if ($stock->producto->empresa_id !== auth()->user()->empresa->id) {
+                throw new \Exception('No autorizado para modificar este stock.');
+            }
+            
             $stock->ajustar($request->nueva_cantidad, $request->motivo);
 
             DB::commit();
@@ -237,6 +278,11 @@ class StockController extends Controller
         try {
             $stock = StockProducto::findOrFail($request->stock_id);
             
+            // Verificar que el producto pertenezca a la empresa del usuario
+            if ($stock->producto->empresa_id !== auth()->user()->empresa->id) {
+                throw new \Exception('No autorizado para modificar este stock.');
+            }
+            
             $stock->update([
                 'stock_minimo' => $request->stock_minimo,
                 'stock_maximo' => $request->stock_maximo,
@@ -260,8 +306,15 @@ class StockController extends Controller
     // Ver historial de movimientos
     public function historial(Request $request)
     {
+        $empresa = auth()->user()->empresa;
         $productoId = $request->producto_id;
         $varianteId = $request->variante_id;
+        
+        // Verificar que el producto pertenezca a la empresa
+        $producto = Producto::where('empresa_id', $empresa->id)->find($productoId);
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
         
         $movimientos = MovimientoStock::with(['usuario', 'producto', 'variante'])
             ->where('producto_id', $productoId);
@@ -286,6 +339,11 @@ class StockController extends Controller
     {
         $stock = StockProducto::with(['producto', 'variante'])->findOrFail($id);
         
+        // Verificar que el producto pertenezca a la empresa del usuario
+        if ($stock->producto->empresa_id !== auth()->user()->empresa->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+        
         return response()->json([
             'stock' => $stock,
             'producto_nombre' => $stock->producto->nombre,
@@ -296,38 +354,63 @@ class StockController extends Controller
     // Dashboard de stock
     public function dashboard()
     {
-        // Estadísticas generales
-        $totalProductos = Producto::where('controlar_stock', true)->count();
-        $productosConStock = StockProducto::conStock()->count();
-        $productosSinStock = StockProducto::sinStock()->count();
-        $productosStockBajo = StockProducto::conStockBajo()->count();
+        // Verificar si el usuario tiene empresa
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                           ->with('warning', 'Debe crear su empresa antes de ver el dashboard de stock.');
+        }
+
+        // Estadísticas generales de la empresa
+        $totalProductos = $empresa->productos()->where('controlar_stock', true)->count();
+        
+        $productosConStock = StockProducto::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->conStock()->count();
+        
+        $productosSinStock = StockProducto::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->sinStock()->count();
+        
+        $productosStockBajo = StockProducto::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->conStockBajo()->count();
         
         // Valor total del inventario (necesitaría precio de costo)
         $valorInventario = 0; // Implementar si se tiene precio de costo
         
-        // Movimientos del mes
-        $movimientosMes = MovimientoStock::delMes()->get();
+        // Movimientos del mes de la empresa
+        $movimientosMes = MovimientoStock::whereHas('producto', function($q) use ($empresa) {
+            $q->where('empresa_id', $empresa->id);
+        })->delMes()->get();
+        
         $entradasMes = $movimientosMes->where('tipo_movimiento', 'entrada')->sum('cantidad');
         $salidasMes = $movimientosMes->where('tipo_movimiento', 'salida')->sum('cantidad');
         
-        // Productos con mayor rotación
+        // Productos con mayor rotación de la empresa
         $productosTopRotacion = DB::table('movimientos_stock')
-            ->select('producto_id', DB::raw('SUM(cantidad) as total_movimiento'))
-            ->where('tipo_movimiento', 'salida')
-            ->whereBetween('created_at', [Carbon::now()->subMonth(), Carbon::now()])
-            ->groupBy('producto_id')
+            ->join('productos', 'movimientos_stock.producto_id', '=', 'productos.id')
+            ->select('movimientos_stock.producto_id', DB::raw('SUM(movimientos_stock.cantidad) as total_movimiento'))
+            ->where('productos.empresa_id', $empresa->id)
+            ->where('movimientos_stock.tipo_movimiento', 'salida')
+            ->whereBetween('movimientos_stock.created_at', [Carbon::now()->subMonth(), Carbon::now()])
+            ->groupBy('movimientos_stock.producto_id')
             ->orderBy('total_movimiento', 'desc')
             ->limit(10)
             ->get();
         
-        // Productos críticos (stock bajo)
+        // Productos críticos (stock bajo) de la empresa
         $productosCriticos = StockProducto::with(['producto', 'variante'])
+            ->whereHas('producto', function($q) use ($empresa) {
+                $q->where('empresa_id', $empresa->id);
+            })
             ->conStockBajo()
             ->orderBy('cantidad_disponible', 'asc')
             ->limit(10)
             ->get();
         
         return view('stock.dashboard', compact(
+            'empresa',
             'totalProductos',
             'productosConStock',
             'productosSinStock',
@@ -340,55 +423,20 @@ class StockController extends Controller
         ));
     }
 
-    // Importar stock desde Excel
-    public function importar(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls|max:10240'
-        ]);
-
-        // TODO: Implementar importación desde Excel
-        // Formato esperado: Referencia | SKU_Variante | Cantidad | Stock_Minimo | Stock_Maximo | Ubicacion
-        
-        return back()->with('success', 'Stock importado correctamente.');
-    }
-
-    // Exportar inventario actual
-    public function exportar()
-    {
-        // TODO: Implementar exportación a Excel
-        
-        return response()->download('inventario.xlsx');
-    }
-
-    // Reporte de movimientos
-    public function reporteMovimientos(Request $request)
-    {
-        $fechaInicio = $request->fecha_inicio ? Carbon::parse($request->fecha_inicio) : Carbon::now()->subMonth();
-        $fechaFin = $request->fecha_fin ? Carbon::parse($request->fecha_fin) : Carbon::now();
-        
-        $movimientos = MovimientoStock::with(['producto', 'variante', 'usuario'])
-            ->whereBetween('created_at', [$fechaInicio, $fechaFin]);
-        
-        if ($request->producto_id) {
-            $movimientos->where('producto_id', $request->producto_id);
-        }
-        
-        if ($request->tipo_movimiento) {
-            $movimientos->where('tipo_movimiento', $request->tipo_movimiento);
-        }
-        
-        $movimientos = $movimientos->orderBy('created_at', 'desc')->get();
-        
-        return view('stock.reporte_movimientos', compact('movimientos', 'fechaInicio', 'fechaFin'));
-    }
-
-    // Inicializar stock para todos los productos
+    // Inicializar stock para todos los productos de la empresa
     public function inicializarTodos()
     {
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tiene empresa registrada'
+            ], 403);
+        }
+
         DB::beginTransaction();
         try {
-            $productos = Producto::where('controlar_stock', true)->get();
+            $productos = $empresa->productos()->where('controlar_stock', true)->get();
             
             foreach ($productos as $producto) {
                 $producto->inicializarStock();
@@ -398,7 +446,7 @@ class StockController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => 'Stock inicializado para todos los productos'
+                'message' => 'Stock inicializado para todos los productos de su empresa'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -409,10 +457,16 @@ class StockController extends Controller
         }
     }
 
-    // Obtener productos para selector (AJAX)
+    // Obtener productos para selector (AJAX) - filtrado por empresa
     public function productosJson(Request $request)
     {
-        $query = Producto::where('controlar_stock', true);
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return response()->json(['results' => []]);
+        }
+
+        $query = Producto::where('empresa_id', $empresa->id)
+                        ->where('controlar_stock', true);
         
         if ($request->has('q')) {
             $search = $request->q;
@@ -438,5 +492,40 @@ class StockController extends Controller
         return response()->json([
             'results' => $productos
         ]);
+    }
+
+    // Reporte de movimientos
+    public function reporteMovimientos(Request $request)
+    {
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return redirect()->route('empresa.crear')
+                           ->with('warning', 'Debe crear su empresa antes de ver reportes.');
+        }
+
+        $fechaInicio = $request->fecha_inicio ? Carbon::parse($request->fecha_inicio) : Carbon::now()->subMonth();
+        $fechaFin = $request->fecha_fin ? Carbon::parse($request->fecha_fin) : Carbon::now();
+        
+        $movimientos = MovimientoStock::with(['producto', 'variante', 'usuario'])
+            ->whereHas('producto', function($q) use ($empresa) {
+                $q->where('empresa_id', $empresa->id);
+            })
+            ->whereBetween('created_at', [$fechaInicio, $fechaFin]);
+        
+        if ($request->producto_id) {
+            // Verificar que el producto sea de la empresa
+            $producto = Producto::where('empresa_id', $empresa->id)->find($request->producto_id);
+            if ($producto) {
+                $movimientos->where('producto_id', $request->producto_id);
+            }
+        }
+        
+        if ($request->tipo_movimiento) {
+            $movimientos->where('tipo_movimiento', $request->tipo_movimiento);
+        }
+        
+        $movimientos = $movimientos->orderBy('created_at', 'desc')->get();
+        
+        return view('stock.reporte_movimiento', compact('movimientos', 'fechaInicio', 'fechaFin', 'empresa'));
     }
 }

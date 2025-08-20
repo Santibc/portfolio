@@ -26,7 +26,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 */
 
 Route::redirect('/', '/login'); // 302 por defecto
-
+Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -43,28 +43,11 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
 
 //Clientes
     // Listado & AJAX
-    Route::get('clientes', [ClientesController::class, 'index'])
-        ->name('clientes');
 
-    // Formulario (crear / editar)
-    Route::get('clientes/form/{cliente?}', [ClientesController::class, 'form'])
-        ->name('clientes.form');
 
-    // Guardar
-    Route::post('clientes/guardar', [ClientesController::class, 'guardar'])
-        ->name('clientes.guardar');
 
-            // Listado & AJAX
-    Route::get('categorias', [CategoriasController::class, 'index'])
-         ->name('categorias');
 
-    // Formulario (nuevo / editar)
-    Route::get('categorias/form/{categoria?}', [CategoriasController::class, 'form'])
-         ->name('categorias.form');
 
-    // Guardar (crear / actualizar)
-    Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])
-         ->name('categorias.guardar');
 // Rutas de Productos - versión simplificada
 Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
@@ -117,31 +100,24 @@ Route::middleware(['auth'])->group(function () {
 
 
 // Rutas de Stock
-Route::prefix('stock')->name('stock.')->group(function () {
-    // Vistas principales
-    Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
-    Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
+Route::middleware(['auth', 'verificar.empresa'])->group(function () {
     
-    // Operaciones de stock
-    Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');
-    Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
-    Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
-    Route::post('/configurar', [App\Http\Controllers\StockController::class, 'configurar'])->name('configurar');
-    
-    // Consultas AJAX
-    Route::get('/productos-json', [App\Http\Controllers\StockController::class, 'productosJson'])->name('productos-json');
-    Route::get('/{id}/obtener', [App\Http\Controllers\StockController::class, 'obtenerStock'])->name('obtener');
-    Route::get('/historial', [App\Http\Controllers\StockController::class, 'historial'])->name('historial');
-    
-    // Reportes
-    Route::get('/reporte-movimientos', [App\Http\Controllers\StockController::class, 'reporteMovimientos'])->name('reporte-movimientos');
-    
-    // Importación/Exportación
-    Route::post('/importar', [App\Http\Controllers\StockController::class, 'importar'])->name('importar');
-    Route::get('/exportar', [App\Http\Controllers\StockController::class, 'exportar'])->name('exportar');
-    
-    // Inicializar stock
-    Route::post('/inicializar-todos', [App\Http\Controllers\StockController::class, 'inicializarTodos'])->name('inicializar-todos');
+    // Rutas de Stock
+    Route::prefix('stock')->name('stock.')->group(function () {
+        Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+        Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
+        Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');
+        Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
+        Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
+        Route::post('/configurar', [App\Http\Controllers\StockController::class, 'configurar'])->name('configurar');
+        Route::get('/historial', [App\Http\Controllers\StockController::class, 'historial'])->name('historial');
+        Route::get('/{id}/obtener', [App\Http\Controllers\StockController::class, 'obtenerStock'])->name('obtener');
+        Route::post('/inicializar-todos', [App\Http\Controllers\StockController::class, 'inicializarTodos'])->name('inicializar-todos');
+        Route::get('/productos-json', [App\Http\Controllers\StockController::class, 'productosJson'])->name('productos-json');
+        Route::get('/reporte-movimiento', [App\Http\Controllers\StockController::class, 'reporteMovimientos'])->name('reporte-movimiento');
+        Route::post('/importar', [App\Http\Controllers\StockController::class, 'importar'])->name('importar');
+        Route::get('/exportar', [App\Http\Controllers\StockController::class, 'exportar'])->name('exportar');
+    });
 });
 
 // Agregar ruta AJAX para ver stock desde productos
@@ -176,4 +152,98 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
 
 // Ruta pública para ver la tienda
 /* Route::get('/tienda/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])->name('tienda.empresa'); */
+Route::get('/tienda/acceso/{token}', [App\Http\Controllers\TiendaController::class, 'acceso'])->name('tienda.acceso');
+Route::middleware(['auth', 'verificar.empresa'])->group(function () {
+    
+    // Rutas de Categorías
+    Route::prefix('categorias')->name('categorias.')->group(function () {
+        Route::get('/', [App\Http\Controllers\CategoriasController::class, 'index'])->name('index');
+        Route::get('/form/{categoria?}', [App\Http\Controllers\CategoriasController::class, 'form'])->name('form');
+        Route::post('/guardar', [App\Http\Controllers\CategoriasController::class, 'guardar'])->name('guardar');
+     Route::post('/{categoria}/cambiar-estado', [App\Http\Controllers\CategoriasController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::delete('/{categoria}', [App\Http\Controllers\CategoriasController::class, 'eliminar'])->name('eliminar');
+    });
+    
+    // Alias para la ruta index
+    Route::get('/categorias', [App\Http\Controllers\CategoriasController::class, 'index'])->name('categorias');
+    
+    // Rutas de Clientes
+    Route::prefix('clientes')->name('clientes.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ClientesController::class, 'index'])->name('index');
+        Route::get('/form/{cliente?}', [App\Http\Controllers\ClientesController::class, 'form'])->name('form');
+        Route::post('/guardar', [App\Http\Controllers\ClientesController::class, 'guardar'])->name('guardar');
+        Route::post('/{cliente}/cambiar-estado', [App\Http\Controllers\ClientesController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::get('/{cliente}/enlaces-ajax', [App\Http\Controllers\ClientesController::class, 'enlacesAjax'])->name('enlaces-ajax');
+    });
+    
+    // Alias para la ruta index
+    Route::get('/clientes', [App\Http\Controllers\ClientesController::class, 'index'])->name('clientes');
+});
+// Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
+
+// ========== RUTAS DE GESTIÓN DE COMPRAS (AUTENTICADAS) ==========
+Route::middleware(['auth', 'verificar.empresa'])->prefix('compras')->name('compras.')->group(function () {
+    Route::get('/', [App\Http\Controllers\ComprasController::class, 'index'])->name('index');
+    Route::get('/{compra}', [App\Http\Controllers\ComprasController::class, 'show'])->name('show');
+    Route::post('/{compra}/cambiar-estado', [App\Http\Controllers\ComprasController::class, 'cambiarEstado'])->name('cambiar-estado');
+    Route::post('/{compra}/actualizar-envio', [App\Http\Controllers\ComprasController::class, 'actualizarEnvio'])->name('actualizar-envio');
+    Route::get('/{compra}/timeline', [App\Http\Controllers\ComprasController::class, 'timeline'])->name('timeline');
+    Route::get('/exportar/excel', [App\Http\Controllers\ComprasController::class, 'exportar'])->name('exportar');
+});
+
+// Alias para la ruta index de compras
+Route::get('/compras', [App\Http\Controllers\ComprasController::class, 'index'])
+    ->middleware(['auth', 'verificar.empresa'])
+    ->name('compras');
+
+// ========== RUTAS DE TIENDA PÚBLICA ==========
+
+// Tienda principal
+Route::get('/tienda/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])
+    ->name('tienda.empresa');
+
+// Producto individual
+Route::get('/tienda/{slug}/producto/{producto}', [App\Http\Controllers\TiendaController::class, 'producto'])
+    ->name('tienda.producto');
+
+// Carrito
+Route::get('/tienda/{slug}/carrito', [App\Http\Controllers\TiendaController::class, 'verCarrito'])
+    ->name('tienda.carrito');
+
+Route::post('/tienda/{slug}/carrito/agregar', [App\Http\Controllers\TiendaController::class, 'agregarCarrito'])
+    ->name('tienda.carrito.agregar');
+
+Route::post('/tienda/{slug}/carrito/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarCarrito'])
+    ->name('tienda.carrito.actualizar');
+
+Route::post('/tienda/{slug}/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
+    ->name('tienda.carrito.quitar');
+
+// Checkout y pago
+Route::get('/tienda/{slug}/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
+    ->name('tienda.checkout');
+
+Route::post('/tienda/{slug}/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
+    ->name('tienda.procesar-compra');
+
+// Confirmación de pago (callback de Wompi)
+Route::get('/tienda/{slug}/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
+    ->name('tienda.pago.confirmacion');
+
+// Página de pago pendiente
+Route::get('/tienda/{slug}/pago/pendiente/{referencia}', function($slug, $referencia) {
+    $empresa = \App\Models\Empresa::where('slug', $slug)->firstOrFail();
+    $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
+    
+    return view('tienda.pago-pendiente', compact('empresa', 'transaccion'));
+})->name('tienda.pago.pendiente');
+
+// Webhook de Wompi (sin CSRF)
+Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
+    ->name('webhooks.wompi')
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
+
+
 require __DIR__.'/auth.php';

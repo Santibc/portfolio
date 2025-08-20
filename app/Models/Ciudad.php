@@ -23,4 +23,14 @@ class Ciudad extends Model
     {
         return $this->belongsTo(Departamento::class);
     }
+
+        public function compras()
+    {
+        return $this->hasMany(Compra::class);
+    }
+
+    public function clientes()
+    {
+        return $this->hasMany(Cliente::class);
+    }
 }

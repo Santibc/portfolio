@@ -110,7 +110,13 @@ class ProductosController extends Controller
         }
         
         $producto = $producto ?? new Producto();
-        $categorias = Categoria::activas()->pluck('nombre', 'id');
+            $categorias = Categoria::where('empresa_id', $empresa->id)
+                         ->activas()
+                         ->pluck('nombre', 'id');
+                             if ($categorias->isEmpty()) {
+        return redirect()->route('categorias.form')
+                       ->with('warning', 'Debe crear al menos una categoría antes de crear productos.');
+    }
         $listas = ListaPrecio::activas()->get();
         
         // Cargar stock si el producto existe

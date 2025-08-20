@@ -8,99 +8,139 @@
     </div>
 
     {{-- Navegación --}}
-    <nav class="nav flex-column px-2 py-3">
+    <nav class="nav flex-column px-2 py-3 overflow-auto flex-grow-1">
+        {{-- Inicio --}}
         <a href="/dashboard"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}">
-            <i class="bi bi-house"></i>
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}"
+           title="Inicio">
+            <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
 
+        {{-- Menú Admin --}}
         @if (auth()->user()->getRoleNames()->first() == 'admin')
             <a href="/usuarios"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-people"></i>
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}"
+               title="Usuarios">
+                <i class="bi bi-people-fill"></i>
                 <span>Usuarios</span>
             </a>
-{{--             <a href="/clientes"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-person-badge"></i>
-                <span>Clientes</span>
-            </a>
-            <a href="/categorias"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-tags"></i>
-                <span>Categorías</span>
-            </a>
-            <a href="/productos"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-basket3"></i>
-                <span>Productos</span>
-            </a> --}}
         @endif
 
+        {{-- Mi Empresa (con submenú) --}}
         @if(auth()->user()->empresa)
-            <a href="/productos"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-basket3"></i>
-                <span>Productos</span>
-            </a>
-            <a href="/clientes"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-person-badge"></i>
-                <span>Clientes</span>
-            </a>
-            <a href="/categorias"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-tags"></i>
-                <span>Categorías</span>
-            </a>            
-            {{--             <x-nav-link :href="route('compras')" :active="request()->routeIs('compras*')">
-                <i class="bi bi-cart3"></i> {{ __('Ventas') }}
-            </x-nav-link> --}}
-            @endif
+            <div class="nav-item">
+                <a href="#empresaSubmenu" 
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'active' : 'text-dark' }}"
+                   data-bs-toggle="collapse" 
+                   aria-expanded="{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'true' : 'false' }}">
+                    <i class="bi bi-building"></i>
+                    <span>Mi Empresa</span>
+                    <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
+                </a>
+                <div class="collapse {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'show' : '' }}" id="empresaSubmenu">
+                    <div class="ps-3">
+                        <a href="/empresa"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-gear"></i>
+                            <span>Configuración</span>
+                        </a>
+                        <a href="/productos"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Productos</span>
+                        </a>
+                        <a href="/clientes"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Clientes</span>
+                        </a>
+                        <a href="/categorias"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-tags"></i>
+                            <span>Categorías</span>
+                        </a>
+                        @if(auth()->user()->empresa->activo)
+                            <a href="/empresa/preview" target="_blank"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa.preview') ? 'active' : 'text-dark' }}">
+                                <i class="bi bi-eye"></i>
+                                <span>Ver Mi Tienda</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @else
             <a href="/empresa"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-tags"></i>
+                <i class="bi bi-building"></i>
                 <span>Mi Empresa</span>
-            </a>       
-        @if(auth()->user()->empresa && auth()->user()->empresa->activo)
-            <a href="/empresa/preview" target="_blank"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa.preview') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-tags"></i>
-                <span>Ver Mi Tienda</span>
-            </a>    
+            </a>
         @endif
 
-
-
-
-
-
-
-
-
-        {{-- Catálogo (para vendedor y admin) --}}
+        {{-- Ventas --}}
         @if(auth()->user()->hasRole(['vendedor', 'admin']))
             <a href="{{ route('catalogo') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-cart"></i>
+                <i class="bi bi-shop"></i>
                 <span>Catálogo</span>
             </a>
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-clipboard-data"></i>
+                <i class="bi bi-clipboard-check"></i>
                 <span>Solicitudes</span>
             </a>
             <a href="{{ route('enlaces') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-link-45deg"></i>
-                <span>Links</span>
+                <span>Enlaces</span>
             </a>
-            <a href="{{ route('stock.index') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-box-seam"></i>
-                <span>Gestión de Stock</span>
-            </a>
+            
+            {{-- Gestión de Stock (con submenú) --}}
+            @if(auth()->user()->empresa)
+                <div class="nav-item">
+                    <a href="#stockSubmenu" 
+                       class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.*') ? 'active' : 'text-dark' }}"
+                       data-bs-toggle="collapse" 
+                       aria-expanded="{{ request()->routeIs('stock.*') ? 'true' : 'false' }}">
+                        <i class="bi bi-boxes"></i>
+                        <span>Gestión de Stock</span>
+                        <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('stock.*') ? 'show' : '' }}" id="stockSubmenu">
+                        <div class="ps-3">
+                            <a href="{{ route('stock.index') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index') ? 'active' : 'text-dark' }}">
+                                <i class="bi bi-box-arrow-in-down"></i>
+                                <span>Inventario</span>
+                            </a>
+                            <a href="{{ route('stock.dashboard') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.dashboard*') ? 'active' : 'text-dark' }}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="{{ route('stock.reporte-movimiento') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.reporte-movimiento*') ? 'active' : 'text-dark' }}">
+                                <i class="bi bi-file-earmark-bar-graph"></i>
+                                <span>Reportes</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {{-- Compras --}}
+                <a href="{{ route('compras') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('compras*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>Compras</span>
+                </a>
+            @else
+                <a href="{{ route('stock.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-boxes"></i>
+                    <span>Gestión de Stock</span>
+                </a>
+            @endif
         @endif
     </nav>
 
@@ -109,9 +149,84 @@
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-start gap-2">
-                <i class="fas fa-sign-out-alt"></i>
+                <i class="bi bi-box-arrow-right"></i>
                 <span class="logout-label">Salir</span>
             </button>
         </form>
     </div>
 </div>
+
+<style>
+    /* Estilos para submenús */
+    .nav-item .nav-link[data-bs-toggle="collapse"] {
+        position: relative;
+    }
+    
+    .submenu-icon {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+    
+    .nav-link[aria-expanded="true"] .submenu-icon {
+        transform: rotate(180deg);
+    }
+    
+    .collapse .ps-3 {
+        border-left: 2px solid #dee2e6;
+        margin-left: 1rem;
+    }
+    
+    .collapse .ps-3 .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.75rem;
+    }
+    
+    /* Ocultar iconos de submenú cuando sidebar está colapsado */
+    .sidebar.collapsed .submenu-icon {
+        display: none;
+    }
+    
+    /* Ajustar submenús cuando sidebar está colapsado */
+    .sidebar.collapsed .collapse {
+        position: absolute;
+        left: 70px;
+        top: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+        min-width: 200px;
+        z-index: 1050;
+    }
+    
+    .sidebar.collapsed .collapse .ps-3 {
+        border-left: none;
+        margin-left: 0;
+        padding: 0.5rem;
+    }
+    
+    /* Asegurar que el menú es scrolleable */
+    .nav.overflow-auto {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    /* Estilo para scrollbar */
+    .nav.overflow-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .nav.overflow-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .nav.overflow-auto::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    .nav.overflow-auto::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
