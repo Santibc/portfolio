@@ -123,19 +123,6 @@
             <a href="{{ route('empresa.form') }}" class="btn btn-light btn-sm">
               <i class="bi bi-pencil"></i> Editar
             </a>
-            <a href="{{ route('empresa.preview') }}" target="_blank" class="btn btn-light btn-sm">
-              <i class="bi bi-eye"></i> Ver Tienda
-            </a>
-          </div>
-
-          {{-- Estado empresa --}}
-          <div class="position-absolute top-0 start-0 p-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="estadoEmpresa" {{ $empresa->activo ? 'checked' : '' }}>
-              <label class="form-check-label text-white fw-semibold" for="estadoEmpresa">
-                {{ $empresa->activo ? 'Activa' : 'Inactiva' }}
-              </label>
-            </div>
           </div>
         </div>
 
@@ -192,30 +179,7 @@
           {{-- Mini-cards fuera del padding-left (primero Información, luego Contacto) --}}
           <div class="brand-cards mt-3">
             <div class="row g-3">
-              {{-- Información --}}
-              <div class="col-12 col-md-6">
-                <div class="mini-card">
-                  <div class="mini-title">Información</div>
-                  <div class="d-flex flex-wrap gap-2">
-                    @if(!empty($empresa->slug))
-                      <span class="chip gray"><i class="bi bi-link-45deg"></i> slug: {{ $empresa->slug }}</span>
-                    @endif
-                    <span class="chip">
-                      <i class="bi bi-toggle-{{ $empresa->activo ? 'on' : 'off' }}"></i>
-                      {{ $empresa->activo ? 'Activa' : 'Inactiva' }}
-                    </span>
-                    @if(!empty($empresa->created_at))
-                      <span class="chip gray"><i class="bi bi-clock-history"></i> creada: {{ $empresa->created_at->format('Y-m-d') }}</span>
-                    @endif
-                    @if(!empty($empresa->updated_at))
-                      <span class="chip gray"><i class="bi bi-arrow-repeat"></i> actualizada: {{ $empresa->updated_at->format('Y-m-d') }}</span>
-                    @endif
-                  </div>
-                </div>
-              </div>
-
-              {{-- Contacto --}}
-              <div class="col-12 col-md-6">
+              <div class="col-12 ">
                 <div class="mini-card">
                   <div class="mini-title">Contacto</div>
 
@@ -249,64 +213,9 @@
               </div>
             </div>
           </div>
-          {{-- /Mini-cards --}}
-        </div> {{-- /brand-header --}}
-      </div> {{-- /card principal --}}
+        </div> 
+      </div> 
 
-      {{-- ======= Estadísticas ======= --}}
-
-
-{{-- ======= Estadísticas ======= --}}
-<div class="row g-3 mb-6">
-  {{-- Total Productos --}}
-  <div class="col-12 col-lg-4">
-    <div class="bg-white rounded-lg shadow-sm p-6 h-100">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <p class="text-sm text-gray-600 mb-1">Total Productos</p>
-          <p class="h4 fw-bold text-gray-900 mb-1">{{ $estadisticas['total_productos'] }}</p>
-          <p class="text-sm text-success mb-0">{{ $estadisticas['productos_activos'] }} activos</p>
-        </div>
-        <div class="text-primary">
-          <i class="bi bi-box-seam fs-1"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{-- Total Clientes --}}
-  <div class="col-12 col-lg-4">
-    <div class="bg-white rounded-lg shadow-sm p-6 h-100">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <p class="text-sm text-gray-600 mb-1">Total Clientes</p>
-          <p class="h4 fw-bold text-gray-900 mb-0">{{ $estadisticas['total_clientes'] }}</p>
-        </div>
-        <div class="text-success">
-          <i class="bi bi-people fs-1"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{-- Ventas del Mes --}}
-  <div class="col-12 col-lg-4">
-    <div class="bg-white rounded-lg shadow-sm p-6 h-100">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <p class="text-sm text-gray-600 mb-1">Ventas del Mes</p>
-          <p class="h4 fw-bold text-gray-900 mb-1">${{ number_format($estadisticas['ventas_mes'], 2) }}</p>
-          <p class="text-sm text-primary mb-0">{{ $estadisticas['compras_mes'] }} órdenes</p>
-        </div>
-        <div class="text-purple-500">
-          <i class="bi bi-currency-dollar fs-1"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-{{-- ======= Carrusel + Horario (col-12 en small, col-lg-6 en large) ======= --}}
 <div class="row g-4 mb-6">
 
   @if($empresa->carruselImagenesActivas->count() > 0)

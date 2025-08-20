@@ -16,8 +16,6 @@
             <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
-
-        {{-- Menú Admin --}}
         @if (auth()->user()->getRoleNames()->first() == 'admin')
             <a href="/usuarios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}"
@@ -26,8 +24,6 @@
                 <span>Usuarios</span>
             </a>
         @endif
-
-        {{-- Mi Empresa (con submenú) --}}
         @if(auth()->user()->empresa)
             <div class="nav-item">
                 <a href="#empresaSubmenu" 
@@ -45,28 +41,6 @@
                             <i class="bi bi-gear"></i>
                             <span>Configuración</span>
                         </a>
-                        <a href="/productos"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-box-seam"></i>
-                            <span>Productos</span>
-                        </a>
-                        <a href="/clientes"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-person-badge"></i>
-                            <span>Clientes</span>
-                        </a>
-                        <a href="/categorias"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-tags"></i>
-                            <span>Categorías</span>
-                        </a>
-                        @if(auth()->user()->empresa->activo)
-                            <a href="/empresa/preview" target="_blank"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa.preview') ? 'active' : 'text-dark' }}">
-                                <i class="bi bi-eye"></i>
-                                <span>Ver Mi Tienda</span>
-                            </a>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -78,70 +52,6 @@
             </a>
         @endif
 
-        {{-- Ventas --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin']))
-            <a href="{{ route('catalogo') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-shop"></i>
-                <span>Catálogo</span>
-            </a>
-            <a href="{{ route('solicitudes') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Solicitudes</span>
-            </a>
-            <a href="{{ route('enlaces') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-link-45deg"></i>
-                <span>Enlaces</span>
-            </a>
-            
-            {{-- Gestión de Stock (con submenú) --}}
-            @if(auth()->user()->empresa)
-                <div class="nav-item">
-                    <a href="#stockSubmenu" 
-                       class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.*') ? 'active' : 'text-dark' }}"
-                       data-bs-toggle="collapse" 
-                       aria-expanded="{{ request()->routeIs('stock.*') ? 'true' : 'false' }}">
-                        <i class="bi bi-boxes"></i>
-                        <span>Gestión de Stock</span>
-                        <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
-                    </a>
-                    <div class="collapse {{ request()->routeIs('stock.*') ? 'show' : '' }}" id="stockSubmenu">
-                        <div class="ps-3">
-                            <a href="{{ route('stock.index') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index') ? 'active' : 'text-dark' }}">
-                                <i class="bi bi-box-arrow-in-down"></i>
-                                <span>Inventario</span>
-                            </a>
-                            <a href="{{ route('stock.dashboard') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.dashboard*') ? 'active' : 'text-dark' }}">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>Dashboard</span>
-                            </a>
-                            <a href="{{ route('stock.reporte-movimiento') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.reporte-movimiento*') ? 'active' : 'text-dark' }}">
-                                <i class="bi bi-file-earmark-bar-graph"></i>
-                                <span>Reportes</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                {{-- Compras --}}
-                <a href="{{ route('compras') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('compras*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-cart-plus"></i>
-                    <span>Compras</span>
-                </a>
-            @else
-                <a href="{{ route('stock.index') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-boxes"></i>
-                    <span>Gestión de Stock</span>
-                </a>
-            @endif
-        @endif
     </nav>
 
     {{-- Botón Salir --}}

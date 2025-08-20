@@ -14,4 +14,10 @@ class HomeController extends Controller
 
         
     }
+    public function welcome()
+    {
+          return view('landing_page.home');
+
+        
+    }
 }
