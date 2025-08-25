@@ -58,17 +58,17 @@
     <div class="branding d-flex align-items-center">
 
       <div class="container position-relative d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo d-flex align-items-center">
+        <a href="{{ route('welcome') }}" class="logo d-flex align-items-center">
           <img src="{{ asset('images/logo.png') }}" alt="Logo">
         </a>
 
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="#hero" class="active">Inicio</a></li>
-            <li><a href="#about">Nosotros</a></li>
-            <li><a href="#portfolio">Portafolio</a></li>
-            <li><a href="#team">Equipo</a></li>
-            <li><a href="#contact">Contacto</a></li>
+            <li><a href="{{ route('welcome') }}" @if(Route::currentRouteName()=='welcome') class="active" @endif >Inicio</a></li>
+            <li><a href="{{ route('nosotros') }}" @if(Route::currentRouteName()=='nosotros') class="active" @endif>Nosotros</a></li>
+            <li><a href="{{ route('equipo') }}" @if(Route::currentRouteName()=='equipo') class="active" @endif>Equipo</a></li>
+            <li><a href="{{ route('contacto') }}" @if(Route::currentRouteName()=='contacto') class="active" @endif>Contacto</a></li>
+            
           </ul>
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
@@ -98,9 +98,10 @@
         <div class="col-12 col-md-3 footer-links">
           <h4>Enlaces útiles</h4>
           <ul>
-            <li><a href="#">Inicio</a></li>
-            <li><a href="#">Nosotros</a></li>
-            <li><a href="#">Servicios</a></li>
+            <li><a href="{{ route('welcome') }}">Inicio</a></li>
+            <li><a href="{{ route('nosotros') }}">Nosotros</a></li>
+            <li><a href="{{ route('equipo') }}">Equipo</a></li>
+            <li><a href="{{ route('contacto') }}">contacto</a></li>
             <li><a href="#">Términos de servicio</a></li>
             <li><a href="#">Política de privacidad</a></li>
           </ul>

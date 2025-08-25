@@ -27,6 +27,9 @@ use App\Http\Controllers\ActualizacionPreciosController;
 Route::get('/',[HomeController::class, 'welcome'] )->name('welcome');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/nosotros',[HomeController::class, 'nosotros'] )->name('nosotros');
+Route::get('/equipo',[HomeController::class, 'equipo'] )->name('equipo');
+Route::get('/contacto',[HomeController::class, 'contacto'] )->name('contacto');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

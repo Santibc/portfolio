@@ -20,4 +20,22 @@ class HomeController extends Controller
 
         
     }
+    public function nosotros()
+    {
+          return view('landing_page.nosotros');
+
+        
+    }
+    public function equipo()
+    {
+          return view('landing_page.equipo');
+
+        
+    }
+    public function contacto()
+    {
+          return view('landing_page.contacto');
+
+        
+    }
 }
