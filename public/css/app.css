@@ -2549,3 +2549,26 @@ select{
     background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
   }
 }
+/* ===== FIX: que los submenús se expandan hacia abajo ===== */
+.sidebar.collapsed .collapse,
+.sidebar .collapse.show {
+    position: static !important;
+    left: auto !important;
+    min-width: 100% !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+/* Sidebar: solo scroll vertical, nunca horizontal */
+.sidebar {
+    height: 100vh;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Evita que texto largo ensanche el sidebar */
+.sidebar * {
+    white-space: normal !important;
+    word-break: break-word;
+    min-width: 0;
+}

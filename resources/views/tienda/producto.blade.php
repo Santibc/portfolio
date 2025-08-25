@@ -1,894 +1,874 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $producto->nombre }} - {{ $empresa->nombre }}</title>
-    <meta name="description" content="{{ $producto->descripcion }}">
-    
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
-    <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #3730a3;
-            --secondary-color: #6366f1;
-            --accent-color: #fbbf24;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --bg-light: #f9fafb;
-            --border-color: #e5e7eb;
-        }
+@extends('tienda.layout')
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: var(--text-primary);
-        }
+@section('title', $producto->nombre . ' - ' . $empresa->nombre)
+@section('description', $producto->descripcion)
+@section('body-class', 'product-details-page')
 
-        /* Header (reuso del index) */
-        .store-header {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+@section('content')
 
-        .logo-container {
-            max-width: 150px;
-        }
+  <main class="main">
 
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--accent-color);
-            color: var(--text-primary);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
+    <!-- Page Title -->
+    <div class="page-title light-background">
+      <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">{{ $producto->nombre }}</h1>
+        <nav class="breadcrumbs">
+          <ol>
+            <li><a href="{{ route('tienda.empresa', $empresa->slug) }}">Inicio</a></li>
+            <li><a href="{{ route('tienda.empresa', [$empresa->slug, 'categoria' => $producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
+            <li class="current">{{ $producto->nombre }}</li>
+          </ol>
+        </nav>
+      </div>
+    </div><!-- End Page Title -->
 
-        /* Breadcrumb */
-        .breadcrumb {
-            background: none;
-            padding: 0;
-            margin: 0;
-        }
+    <!-- Product Details Section -->
+    <section id="product-details" class="product-details section">
 
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: "›";
-            color: var(--text-secondary);
-        }
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-        /* Product Gallery */
-        .product-gallery {
-            position: sticky;
-            top: 100px;
-        }
+        <div class="row g-4">
+          <!-- Product Gallery -->
+          <div class="col-lg-7" data-aos="zoom-in" data-aos-delay="150">
+            <div class="product-gallery">
+              <div class="main-showcase">
+                <div class="image-zoom-container">
+                  <img src="{{ $producto->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}" 
+                       alt="{{ $producto->nombre }}" 
+                       class="img-fluid main-product-image drift-zoom" 
+                       id="main-product-image" 
+                       data-zoom="{{ $producto->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}">
 
-        .main-image-container {
-            position: relative;
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-
-        .main-image {
-            width: 100%;
-            height: 500px;
-            object-fit: contain;
-            background: var(--bg-light);
-        }
-
-        .thumbnails-container {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .thumbnail {
-            flex-shrink: 0;
-            width: 80px;
-            height: 80px;
-            border: 2px solid var(--border-color);
-            border-radius: 0.5rem;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .thumbnail:hover,
-        .thumbnail.active {
-            border-color: var(--primary-color);
-        }
-
-        .thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Product Info */
-        .product-details {
-            padding: 2rem;
-        }
-
-        .product-category {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .product-price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .product-reference {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
-
-        /* Variants */
-        .variant-section {
-            margin-bottom: 2rem;
-        }
-
-        .variant-label {
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .variant-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .variant-option {
-            padding: 0.5rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 0.5rem;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .variant-option:hover {
-            border-color: var(--primary-color);
-        }
-
-        .variant-option.selected {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .variant-option.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-
-        /* Quantity Selector */
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .quantity-input {
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        .quantity-btn {
-            background: none;
-            border: none;
-            padding: 0.5rem 0.75rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .quantity-btn:hover {
-            background: var(--bg-light);
-        }
-
-        .quantity-value {
-            padding: 0.5rem 1rem;
-            min-width: 60px;
-            text-align: center;
-            border-left: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-        }
-
-        /* Stock Info */
-        .stock-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-
-        .stock-available {
-            color: #10b981;
-        }
-
-        .stock-low {
-            color: #f59e0b;
-        }
-
-        .stock-out {
-            color: #ef4444;
-        }
-
-        /* Add to Cart Button */
-        .add-to-cart-section {
-            margin-bottom: 2rem;
-        }
-
-        .btn-add-to-cart {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.125rem;
-            font-weight: 600;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .btn-add-to-cart:hover:not(:disabled) {
-            background: var(--secondary-color);
-            transform: translateY(-1px);
-        }
-
-        .btn-add-to-cart:disabled {
-            background: var(--text-secondary);
-            cursor: not-allowed;
-        }
-
-        /* Product Info Tabs */
-        .product-tabs {
-            border-top: 1px solid var(--border-color);
-            margin-top: 3rem;
-            padding-top: 2rem;
-        }
-
-        .nav-tabs {
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            color: var(--text-secondary);
-            padding: 0.75rem 1.5rem;
-            margin-bottom: -2px;
-            transition: all 0.2s;
-        }
-
-        .nav-tabs .nav-link:hover {
-            color: var(--text-primary);
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            font-weight: 600;
-        }
-
-        .tab-content {
-            padding: 2rem 0;
-        }
-
-        /* Related Products */
-        .related-products {
-            margin-top: 4rem;
-            padding-top: 3rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .product-card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            overflow: hidden;
-            transition: all 0.3s;
-            height: 100%;
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-
-        .product-card .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .product-card .product-info {
-            padding: 1rem;
-        }
-
-        .product-card .product-name {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-card .product-price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        /* Footer (reuso del index) */
-        .store-footer {
-            background: var(--text-primary);
-            color: white;
-            padding: 3rem 0 1.5rem;
-            margin-top: 4rem;
-        }
-
-        @media (max-width: 768px) {
-            .product-gallery {
-                position: static;
-            }
-            
-            .main-image {
-                height: 350px;
-            }
-            
-            .product-details {
-                padding: 1rem;
-            }
-            
-            .product-title {
-                font-size: 1.5rem;
-            }
-            
-            .product-price {
-                font-size: 2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header class="store-header">
-        <div class="container py-3">
-            <div class="row align-items-center">
-                <div class="col-6 col-md-3">
-                    <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="d-flex align-items-center text-decoration-none">
-                        <div class="logo-container">
-                            <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" class="img-fluid">
-                        </div>
-                    </a>
+                  @if($producto->imagenes->count() > 1)
+                  <div class="image-navigation">
+                    <button class="nav-arrow prev-image image-nav-btn prev-image" type="button" onclick="navigateImages(-1)">
+                      <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="nav-arrow next-image image-nav-btn next-image" type="button" onclick="navigateImages(1)">
+                      <i class="bi bi-chevron-right"></i>
+                    </button>
+                  </div>
+                  @endif
                 </div>
-                <div class="col-6 col-md-9 text-end">
-                    <a href="{{ route('tienda.carrito', $empresa->slug) }}" class="btn btn-outline-primary position-relative">
-                        <i class="bi bi-cart3"></i> <span class="d-none d-md-inline">Carrito</span>
-                        @if($carrito->total_items > 0)
-                            <span class="cart-badge">{{ $carrito->total_items }}</span>
-                        @endif
-                    </a>
+              </div>
+
+              @if($producto->imagenes->count() > 0)
+              <div class="thumbnail-grid">
+                @foreach($producto->imagenes as $index => $imagen)
+                <div class="thumbnail-wrapper thumbnail-item {{ $loop->first ? 'active' : '' }}" 
+                     data-image="{{ $imagen->url }}"
+                     onclick="changeMainImage('{{ $imagen->url }}', this)">
+                  <img src="{{ $imagen->url }}" alt="{{ $producto->nombre }} - Vista {{ $loop->iteration }}" class="img-fluid">
                 </div>
+                @endforeach
+              </div>
+              @else
+              {{-- Si no hay imágenes, mostrar una sola con placeholder --}}
+              <div class="thumbnail-grid">
+                <div class="thumbnail-wrapper thumbnail-item active" 
+                     data-image="{{ asset('assets/img/product/placeholder.webp') }}">
+                  <img src="{{ asset('assets/img/product/placeholder.webp') }}" alt="{{ $producto->nombre }}" class="img-fluid">
+                </div>
+              </div>
+              @endif
             </div>
-        </div>
-    </header>
+          </div>
 
-    <!-- Main Content -->
-    <main class="py-4">
-        <div class="container">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('tienda.empresa', $empresa->slug) }}">Inicio</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('tienda.empresa', [$empresa->slug, 'categoria' => $producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
-                    <li class="breadcrumb-item active">{{ $producto->nombre }}</li>
-                </ol>
-            </nav>
+          <!-- Product Details -->
+          <div class="col-lg-5" data-aos="fade-left" data-aos-delay="200">
+            <div class="product-details">
+              <div class="product-badge-container">
+                <span class="badge-category">{{ $producto->categoria->nombre }}</span>
+                <div class="rating-group">
+                  <div class="stars">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-half"></i>
+                  </div>
+                  <span class="review-text">(127 reviews)</span>
+                </div>
+              </div>
 
-            <div class="row">
-                <!-- Product Gallery -->
-                <div class="col-lg-6">
-                    <div class="product-gallery">
-                        <div class="main-image-container">
-                            <img src="{{ $producto->url_imagen_principal }}" alt="{{ $producto->nombre }}" class="main-image" id="mainImage">
-                        </div>
-                        
-                        @if($producto->imagenes->count() > 1)
-                        <div class="thumbnails-container">
-                            @foreach($producto->imagenes as $imagen)
-                            <div class="thumbnail {{ $loop->first ? 'active' : '' }}" onclick="changeImage('{{ $imagen->url }}', this)">
-                                <img src="{{ $imagen->url }}" alt="{{ $producto->nombre }} - Imagen {{ $loop->iteration }}">
-                            </div>
-                            @endforeach
-                        </div>
-                        @endif
+              <h1 class="product-name">{{ $producto->nombre }}</h1>
+
+              <div class="pricing-section">
+                @if($producto->precio_actual)
+                <div class="price-display">
+                  <span class="sale-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</span>
+                  {{-- Precio anterior quemado por ahora --}}
+                  @if(false)
+                  <span class="regular-price">$239.99</span>
+                  @endif
+                </div>
+                @if(false)
+                <div class="savings-info">
+                  <span class="save-amount">Save $50.00</span>
+                  <span class="discount-percent">(21% off)</span>
+                </div>
+                @endif
+                @else
+                <div class="price-display">
+                  <span class="text-muted">Precio no disponible</span>
+                </div>
+                @endif
+              </div>
+
+              <div class="product-description">
+                <p>{{ $producto->descripcion ?: 'No hay descripción disponible para este producto.' }}</p>
+              </div>
+
+              {{-- Estado de disponibilidad --}}
+              <div class="availability-status">
+                @if($producto->controlar_stock)
+                  @if($producto->tiene_variantes)
+                    <div class="stock-indicator" id="stockInfo">
+                      <i class="bi bi-info-circle"></i>
+                      <span class="stock-text">Selecciona una opción para ver disponibilidad</span>
                     </div>
+                  @else
+                    @php $stockDisponible = $producto->stock_disponible; @endphp
+                    @if($stockDisponible > 10)
+                      <div class="stock-indicator">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span class="stock-text">Disponible</span>
+                      </div>
+                    @elseif($stockDisponible > 0)
+                      <div class="stock-indicator">
+                        <i class="bi bi-exclamation-circle-fill" style="color: #f59e0b;"></i>
+                        <span class="stock-text">Limitado</span>
+                      </div>
+                      <div class="quantity-left">Solo {{ $stockDisponible }} unidades disponibles</div>
+                    @else
+                      <div class="stock-indicator">
+                        <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i>
+                        <span class="stock-text">Sin Stock</span>
+                      </div>
+                    @endif
+                  @endif
+                @else
+                  <div class="stock-indicator">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span class="stock-text">Disponible</span>
+                  </div>
+                @endif
+              </div>
+
+              <!-- Product Variants -->
+              @if($producto->tiene_variantes && $producto->variantes->count() > 0)
+                @php
+                  $tallas = $producto->variantes->pluck('talla')->unique()->filter()->sort();
+                  $colores = $producto->variantes->pluck('color')->unique()->filter()->sort();
+                @endphp
+
+                <div class="variant-section">
+                  @if($colores->count() > 0)
+                  <div class="color-selection">
+                    <label class="variant-label">Colores Disponibles:</label>
+                    <div class="color-grid">
+                      @foreach($colores as $color)
+                        @php
+                          $variantesConColor = $producto->variantes->where('color', $color);
+                          $hayStock = $variantesConColor->filter(function($v) {
+                            return $v->stock && $v->stock->stock_real > 0;
+                          })->count() > 0;
+                        @endphp
+                        <div class="color-chip variant-option {{ !$hayStock ? 'disabled' : '' }}" 
+                             data-color="{{ $color }}"
+                             data-type="color"
+                             data-value="{{ $color }}"
+                             style="background: linear-gradient(135deg, #e9ecef, #dee2e6);"
+                             {{ !$hayStock ? 'disabled' : '' }}>
+                          <span class="selection-check"><i class="bi bi-check"></i></span>
+                        </div>
+                      @endforeach
+                    </div>
+                    <div class="selected-variant">Seleccionado: <span id="selectedColor">-</span></div>
+                  </div>
+                  @endif
+
+                  @if($tallas->count() > 0)
+                  <div class="size-selection mt-3">
+                    <label class="variant-label">Tallas Disponibles:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                      @foreach($tallas as $talla)
+                        @php
+                          $variantesConTalla = $producto->variantes->where('talla', $talla);
+                          $hayStock = $variantesConTalla->filter(function($v) {
+                            return $v->stock && $v->stock->stock_real > 0;
+                          })->count() > 0;
+                        @endphp
+                        <button class="btn btn-outline-secondary variant-option {{ !$hayStock ? 'disabled' : '' }}"
+                                data-type="talla"
+                                data-value="{{ $talla }}"
+                                {{ !$hayStock ? 'disabled' : '' }}>
+                          {{ $talla }}
+                        </button>
+                      @endforeach
+                    </div>
+                  </div>
+                  @endif
+                </div>
+              @endif
+
+              <!-- Purchase Options -->
+              <div class="purchase-section">
+                <div class="quantity-control">
+                  <label class="control-label">Cantidad:</label>
+                  <div class="quantity-input-group">
+                    <div class="quantity-selector">
+                      <button class="quantity-btn decrease" type="button" onclick="updateQuantity(-1)">
+                        <i class="bi bi-dash"></i>
+                      </button>
+                      <input type="number" class="quantity-input" id="quantity" value="1" min="1" max="99">
+                      <button class="quantity-btn increase" type="button" onclick="updateQuantity(1)">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Product Info -->
-                <div class="col-lg-6">
-                    <div class="product-details">
-                        <div class="product-category">{{ $producto->categoria->nombre }}</div>
-                        <h1 class="product-title">{{ $producto->nombre }}</h1>
-                        
-                        @if($producto->precio_actual)
-                            <div class="product-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</div>
-                        @else
-                            <div class="product-price text-muted">Precio no disponible</div>
-                        @endif
+                <div class="action-buttons">
+                  <button class="btn primary-action" id="addToCartBtn"
+                    {{ (!$producto->precio_actual || ($producto->controlar_stock && $producto->stock_disponible <= 0 && !$producto->permitir_venta_sin_stock)) ? 'disabled' : '' }}>
+                    <i class="bi bi-bag-plus"></i>
+                    Agregar al Carrito
+                  </button>
+                  <button class="btn secondary-action" onclick="comprarAhora()">
+                    <i class="bi bi-lightning"></i>
+                    Comprar Ahora
+                  </button>
+                  <button class="btn icon-action" title="Agregar a favoritos">
+                    <i class="bi bi-heart"></i>
+                  </button>
+                </div>
+              </div>
 
-                        <div class="product-reference">
-                            <strong>Referencia:</strong> {{ $producto->referencia }}
-                        </div>
+              <!-- Benefits List -->
+              <div class="benefits-list">
+                <div class="benefit-item">
+                  <i class="bi bi-truck"></i>
+                  <span>Envío gratis en compras superiores a $75.000</span>
+                </div>
+                <div class="benefit-item">
+                  <i class="bi bi-arrow-clockwise"></i>
+                  <span>45 días para devoluciones sin complicaciones</span>
+                </div>
+                <div class="benefit-item">
+                  <i class="bi bi-shield-check"></i>
+                  <span>Garantía del fabricante de 3 años</span>
+                </div>
+                <div class="benefit-item">
+                  <i class="bi bi-headset"></i>
+                  <span>Soporte al cliente 24/7 disponible</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                        <!-- Stock Info -->
-                        @if($producto->controlar_stock)
-                            @if($producto->tiene_variantes)
-                                <div class="stock-info stock-available" id="stockInfo">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span>Selecciona una opción para ver disponibilidad</span>
-                                </div>
-                            @else
-                                @php
-                                    $stockDisponible = $producto->stock_disponible;
-                                @endphp
-                                <div class="stock-info {{ $stockDisponible > 10 ? 'stock-available' : ($stockDisponible > 0 ? 'stock-low' : 'stock-out') }}">
-                                    <i class="bi bi-{{ $stockDisponible > 0 ? 'check-circle' : 'x-circle' }}"></i>
-                                    <span>
-                                        @if($stockDisponible > 10)
-                                            Disponible
-                                        @elseif($stockDisponible > 0)
-                                            ¡Últimas {{ $stockDisponible }} unidades!
-                                        @else
-                                            Sin stock
-                                        @endif
-                                    </span>
-                                </div>
-                            @endif
-                        @endif
+        <!-- Information Tabs -->
+        <div class="row mt-5" data-aos="fade-up" data-aos-delay="300">
+          <div class="col-12">
+            <div class="info-tabs-container">
+              <nav class="tabs-navigation nav">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-overview" type="button">Descripción</button>
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-technical" type="button">Detalles Técnicos</button>
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-customer-reviews" type="button">Reseñas (127)</button>
+              </nav>
 
-                        <!-- Variants -->
-                        @if($producto->tiene_variantes && $producto->variantes->count() > 0)
-                            @php
-                                $tallas = $producto->variantes->pluck('talla')->unique()->filter()->sort();
-                                $colores = $producto->variantes->pluck('color')->unique()->filter()->sort();
-                            @endphp
+              <div class="tab-content">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="ecommerce-product-details-5-overview">
+                  <div class="overview-content">
+                    <div class="row g-4">
+                      <div class="col-lg-8">
+                        <div class="content-section">
+                          <h3>Descripción del Producto</h3>
+                          <p>{{ $producto->descripcion ?: 'No hay descripción disponible para este producto.' }}</p>
 
-                            @if($tallas->count() > 0)
-                            <div class="variant-section">
-                                <div class="variant-label">Talla:</div>
-                                <div class="variant-options">
-                                    @foreach($tallas as $talla)
-                                        @php
-                                            $variantesConTalla = $producto->variantes->where('talla', $talla);
-                                            $hayStock = $variantesConTalla->filter(function($v) {
-                                                return $v->stock && $v->stock->stock_real > 0;
-                                            })->count() > 0;
-                                        @endphp
-                                        <button class="variant-option {{ !$hayStock ? 'disabled' : '' }}" 
-                                                data-type="talla" 
-                                                data-value="{{ $talla }}"
-                                                {{ !$hayStock ? 'disabled' : '' }}>
-                                            {{ $talla }}
-                                        </button>
-                                    @endforeach
-                                </div>
+                          <h4>Características Principales</h4>
+                          <div class="highlights-grid">
+                            <div class="highlight-card">
+                              <i class="bi bi-box"></i>
+                              <h5>Unidad de Venta</h5>
+                              <p>{{ $producto->unidad_venta }}</p>
+                            </div>
+                            <div class="highlight-card">
+                              <i class="bi bi-box-seam"></i>
+                              <h5>Unidad de Empaque</h5>
+                              <p>{{ $producto->unidad_empaque }}</p>
+                            </div>
+                            @if($producto->extension)
+                            <div class="highlight-card">
+                              <i class="bi bi-rulers"></i>
+                              <h5>Extensión</h5>
+                              <p>{{ $producto->extension }}</p>
                             </div>
                             @endif
+                            <div class="highlight-card">
+                              <i class="bi bi-tag"></i>
+                              <h5>Referencia</h5>
+                              <p>{{ $producto->referencia }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
-                            @if($colores->count() > 0)
-                            <div class="variant-section">
-                                <div class="variant-label">Color:</div>
-                                <div class="variant-options">
-                                    @foreach($colores as $color)
-                                        @php
-                                            $variantesConColor = $producto->variantes->where('color', $color);
-                                            $hayStock = $variantesConColor->filter(function($v) {
-                                                return $v->stock && $v->stock->stock_real > 0;
-                                            })->count() > 0;
-                                        @endphp
-                                        <button class="variant-option {{ !$hayStock ? 'disabled' : '' }}" 
-                                                data-type="color" 
-                                                data-value="{{ $color }}"
-                                                {{ !$hayStock ? 'disabled' : '' }}>
-                                            {{ $color }}
-                                        </button>
-                                    @endforeach
-                                </div>
+                      <div class="col-lg-4">
+                        <div class="package-contents">
+                          <h4>Contenido del Paquete</h4>
+                          <ul class="contents-list">
+                            <li><i class="bi bi-check-circle"></i>{{ $producto->nombre }}</li>
+                            <li><i class="bi bi-check-circle"></i>Empaque Premium</li>
+                            <li><i class="bi bi-check-circle"></i>Instrucciones de Uso</li>
+                            <li><i class="bi bi-check-circle"></i>Garantía del Fabricante</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Technical Details Tab -->
+                <div class="tab-pane fade" id="ecommerce-product-details-5-technical">
+                  <div class="technical-content">
+                    <div class="row g-4">
+                      <div class="col-md-12">
+                        <div class="tech-group">
+                          <h4>Especificaciones del Producto</h4>
+                          <div class="spec-table">
+                            <div class="spec-row">
+                              <span class="spec-name">Referencia</span>
+                              <span class="spec-value">{{ $producto->referencia }}</span>
+                            </div>
+                            <div class="spec-row">
+                              <span class="spec-name">Categoría</span>
+                              <span class="spec-value">{{ $producto->categoria->nombre }}</span>
+                            </div>
+                            <div class="spec-row">
+                              <span class="spec-name">Unidad de Venta</span>
+                              <span class="spec-value">{{ $producto->unidad_venta }}</span>
+                            </div>
+                            <div class="spec-row">
+                              <span class="spec-name">Unidad de Empaque</span>
+                              <span class="spec-value">{{ $producto->unidad_empaque }}</span>
+                            </div>
+                            @if($producto->extension)
+                            <div class="spec-row">
+                              <span class="spec-name">Extensión</span>
+                              <span class="spec-value">{{ $producto->extension }}</span>
                             </div>
                             @endif
-                        @endif
-
-                        <!-- Quantity Selector -->
-                        <div class="quantity-selector">
-                            <label class="fw-semibold">Cantidad:</label>
-                            <div class="quantity-input">
-                                <button class="quantity-btn" onclick="updateQuantity(-1)">
-                                    <i class="bi bi-dash"></i>
-                                </button>
-                                <input type="number" class="quantity-value" id="quantity" value="1" min="1" readonly>
-                                <button class="quantity-btn" onclick="updateQuantity(1)">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            </div>
+                          </div>
                         </div>
-
-                        <!-- Add to Cart -->
-                        <div class="add-to-cart-section">
-                            <button class="btn-add-to-cart" id="addToCartBtn" 
-                                    {{ (!$producto->precio_actual || ($producto->controlar_stock && $producto->stock_disponible <= 0 && !$producto->permitir_venta_sin_stock)) ? 'disabled' : '' }}>
-                                <i class="bi bi-cart-plus"></i> Agregar al Carrito
-                            </button>
-                        </div>
-
-                        <!-- Product Tabs -->
-                        <div class="product-tabs">
-                            <ul class="nav nav-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" data-bs-toggle="tab" href="#descripcion">Descripción</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-bs-toggle="tab" href="#especificaciones">Especificaciones</a>
-                                </li>
-                            </ul>
-                            
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="descripcion">
-                                    <p>{{ $producto->descripcion ?: 'No hay descripción disponible.' }}</p>
-                                </div>
-                                <div class="tab-pane fade" id="especificaciones">
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td class="fw-semibold">Referencia:</td>
-                                            <td>{{ $producto->referencia }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Categoría:</td>
-                                            <td>{{ $producto->categoria->nombre }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Unidad de Venta:</td>
-                                            <td>{{ $producto->unidad_venta }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-semibold">Unidad de Empaque:</td>
-                                            <td>{{ $producto->unidad_empaque }}</td>
-                                        </tr>
-                                        @if($producto->extension)
-                                        <tr>
-                                            <td class="fw-semibold">Extensión:</td>
-                                            <td>{{ $producto->extension }}</td>
-                                        </tr>
-                                        @endif
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
 
-            <!-- Related Products -->
-            @if($relacionados->count() > 0)
-            <div class="related-products">
-                <h3 class="mb-4">Productos Relacionados</h3>
-                <div class="row g-4">
-                    @foreach($relacionados as $relacionado)
-                    <div class="col-6 col-md-3">
-                        <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}" class="text-decoration-none text-dark">
-                            <div class="product-card">
-                                <img src="{{ $relacionado->url_imagen_principal }}" alt="{{ $relacionado->nombre }}" class="product-image">
-                                <div class="product-info">
-                                    <div class="product-name">{{ $relacionado->nombre }}</div>
-                                    @if($relacionado->precio_actual)
-                                        <div class="product-price">${{ number_format($relacionado->precio_actual, 0, ',', '.') }}</div>
-                                    @endif
-                                </div>
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="ecommerce-product-details-5-customer-reviews">
+                  <div class="reviews-content">
+                    <div class="reviews-header">
+                      <div class="rating-overview">
+                        <div class="average-score">
+                          <div class="score-display">4.6</div>
+                          <div class="score-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                          </div>
+                          <div class="total-reviews">127 reseñas de clientes</div>
+                        </div>
+
+                        <div class="rating-distribution">
+                          <div class="rating-row">
+                            <span class="stars-label">5★</span>
+                            <div class="progress-container">
+                              <div class="progress-fill" style="width: 68%;"></div>
                             </div>
-                        </a>
+                            <span class="count-label">86</span>
+                          </div>
+                          <div class="rating-row">
+                            <span class="stars-label">4★</span>
+                            <div class="progress-container">
+                              <div class="progress-fill" style="width: 22%;"></div>
+                            </div>
+                            <span class="count-label">28</span>
+                          </div>
+                          <div class="rating-row">
+                            <span class="stars-label">3★</span>
+                            <div class="progress-container">
+                              <div class="progress-fill" style="width: 6%;"></div>
+                            </div>
+                            <span class="count-label">8</span>
+                          </div>
+                          <div class="rating-row">
+                            <span class="stars-label">2★</span>
+                            <div class="progress-container">
+                              <div class="progress-fill" style="width: 3%;"></div>
+                            </div>
+                            <span class="count-label">4</span>
+                          </div>
+                          <div class="rating-row">
+                            <span class="stars-label">1★</span>
+                            <div class="progress-container">
+                              <div class="progress-fill" style="width: 1%;"></div>
+                            </div>
+                            <span class="count-label">1</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="write-review-cta">
+                        <h4>Comparte tu Experiencia</h4>
+                        <p>Ayuda a otros a tomar decisiones informadas</p>
+                        <button class="btn review-btn">Escribir Reseña</button>
+                      </div>
                     </div>
-                    @endforeach
+
+                    <div class="customer-reviews-list">
+                      <div class="review-card">
+                        <div class="reviewer-profile">
+                          <img src="{{ asset('assets/img/person/person-f-3.webp') }}" alt="Cliente" class="profile-pic">
+                          <div class="profile-details">
+                            <div class="customer-name">María González</div>
+                            <div class="review-meta">
+                              <div class="review-stars">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                              </div>
+                              <span class="review-date">28 de Marzo, 2024</span>
+                            </div>
+                          </div>
+                        </div>
+                        <h5 class="review-headline">Excelente calidad y comodidad</h5>
+                        <div class="review-text">
+                          <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam. Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                        </div>
+                        <div class="review-actions">
+                          <button class="action-btn"><i class="bi bi-hand-thumbs-up"></i> Útil (12)</button>
+                          <button class="action-btn"><i class="bi bi-chat-dots"></i> Responder</button>
+                        </div>
+                      </div>
+
+                      <div class="review-card">
+                        <div class="reviewer-profile">
+                          <img src="{{ asset('assets/img/person/person-m-5.webp') }}" alt="Cliente" class="profile-pic">
+                          <div class="profile-details">
+                            <div class="customer-name">Carlos Rodríguez</div>
+                            <div class="review-meta">
+                              <div class="review-stars">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star"></i>
+                              </div>
+                              <span class="review-date">15 de Marzo, 2024</span>
+                            </div>
+                          </div>
+                        </div>
+                        <h5 class="review-headline">Buen producto, entrega rápida</h5>
+                        <div class="review-text">
+                          <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. En general satisfecho con la compra.</p>
+                        </div>
+                        <div class="review-actions">
+                          <button class="action-btn"><i class="bi bi-hand-thumbs-up"></i> Útil (8)</button>
+                          <button class="action-btn"><i class="bi bi-chat-dots"></i> Responder</button>
+                        </div>
+                      </div>
+
+                      <div class="load-more-section">
+                        <button class="btn load-more-reviews">Mostrar Más Reseñas</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            @endif
+          </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="store-footer">
-        <div class="container">
-            <div class="text-center">
-                <h5>{{ $empresa->nombre }}</h5>
-                <p class="text-white-50 mb-3">{{ $empresa->descripcion }}</p>
-                <p class="mb-0">&copy; {{ date('Y') }} {{ $empresa->nombre }}. Todos los derechos reservados.</p>
+        {{-- Productos relacionados --}}
+        @if($relacionados->count() > 0)
+        <div class="row mt-5" data-aos="fade-up" data-aos-delay="400">
+          <div class="col-12">
+            <h3 class="mb-4">Productos Relacionados</h3>
+            <div class="row g-4">
+              @foreach($relacionados as $relacionado)
+              <div class="col-lg-3 col-md-6">
+                <div class="product-item">
+                  <div class="product-image">
+                    @if($relacionado->stock_disponible <= 5 && $relacionado->stock_disponible > 0)
+                      <div class="product-badge">¡Últimas unidades!</div>
+                    @elseif($relacionado->stock_disponible == 0 && !$relacionado->permitir_venta_sin_stock)
+                      <div class="product-badge sale-badge">Sin Stock</div>
+                    @endif
+                    <img src="{{ $relacionado->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}" 
+                         alt="{{ $relacionado->nombre }}" 
+                         class="img-fluid" 
+                         loading="lazy">
+                    <div class="product-actions">
+                      <button class="action-btn wishlist-btn">
+                        <i class="bi bi-heart"></i>
+                      </button>
+                      <button class="action-btn compare-btn">
+                        <i class="bi bi-arrow-left-right"></i>
+                      </button>
+                      <button class="action-btn quickview-btn">
+                        <i class="bi bi-zoom-in"></i>
+                      </button>
+                    </div>
+                    <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}" class="cart-btn">Ver Producto</a>
+                  </div>
+                  <div class="product-info">
+                    <div class="product-category">{{ $relacionado->categoria->nombre }}</div>
+                    <h4 class="product-name">
+                      <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}">{{ $relacionado->nombre }}</a>
+                    </h4>
+                    <div class="product-rating">
+                      <div class="stars">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star"></i>
+                      </div>
+                      <span class="rating-count">({{ rand(10, 50) }})</span>
+                    </div>
+                    @if($relacionado->precio_actual)
+                      <div class="product-price">${{ number_format($relacionado->precio_actual, 0, ',', '.') }}</div>
+                    @else
+                      <div class="product-price text-muted">Precio no disponible</div>
+                    @endif
+                  </div>
+                </div>
+              </div>
+              @endforeach
             </div>
+          </div>
         </div>
-    </footer>
+        @endif
 
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="cartToast" class="toast" role="alert">
-            <div class="toast-header">
-                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                <strong class="me-auto">Carrito</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body"></div>
-        </div>
-    </div>
+      </div>
+    </section><!-- /Product Details Section -->
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </main>
+
+@endsection
+
+@push('scripts')
+<script>
+  // === Variantes disponibles del producto (JSON) ===
+  const variantes = @json($producto->variantes);
+  const tieneVariantes = {{ $producto->tiene_variantes ? 'true' : 'false' }};
+  let selectedVariant = null;
+  let selectedTalla = null;
+  let selectedColor = null;
+  let currentImageIndex = 0;
+  const productImages = @json($producto->imagenes->pluck('url'));
+
+  $(document).ready(function() {
+    // Inicializar Drift zoom si está disponible
+    if (typeof Drift !== 'undefined') {
+      new Drift(document.querySelector('.drift-zoom'), {
+        paneContainer: document.querySelector('.image-zoom-container'),
+        inlinePane: true,
+        inlineOffsetY: -85,
+        containInline: true,
+        hoverBoundingBox: true
+      });
+    }
+
+    // Selección de variantes
+    $('.variant-option:not(:disabled)').on('click', function() {
+      const type = $(this).data('type');
+      const value = $(this).data('value');
+
+      // Toggle selection
+      $(`.variant-option[data-type="${type}"]`).removeClass('selected active');
+      $(this).addClass('selected active');
+
+      if (type === 'talla') {
+        selectedTalla = value;
+      }
+      if (type === 'color') {
+        selectedColor = value;
+        $('#selectedColor').text(value);
+      }
+
+      updateVariantAvailability();
+      if (tieneVariantes) findSelectedVariant();
+    });
+
+    // Agregar al carrito
+    $('#addToCartBtn').on('click', function() {
+      const btn = $(this);
+      const quantity = parseInt($('#quantity').val());
+
+      if (tieneVariantes && !selectedVariant) {
+        showToast('error', 'Por favor selecciona todas las opciones del producto');
+        return;
+      }
+
+      btn.prop('disabled', true);
+      btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Agregando...');
+
+      const data = {
+        producto_id: {{ $producto->id }},
+        cantidad: quantity
+      };
+      if (selectedVariant) data.variante_id = selectedVariant.id;
+
+      $.ajax({
+        url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+        method: 'POST',
+        data: data,
+        success: function(response) {
+          showToast('success', 'Producto agregado al carrito');
+          if (response && typeof response.total_items !== 'undefined') {
+            updateCartBadge(response.total_items);
+          }
+          btn.html('<i class="bi bi-check"></i> Agregado al Carrito');
+
+          setTimeout(() => {
+            btn.prop('disabled', false);
+            btn.html('<i class="bi bi-bag-plus"></i> Agregar al Carrito');
+          }, 2000);
+        },
+        error: function(xhr) {
+          const error = xhr.responseJSON?.error || 'Error al agregar al carrito';
+          showToast('error', error);
+          btn.prop('disabled', false);
+          btn.html('<i class="bi bi-bag-plus"></i> Agregar al Carrito');
+        }
+      });
+    });
+
+    // Cambiar imagen con thumbnails
+    $('.thumbnail-item').on('click', function() {
+      const index = $('.thumbnail-item').index(this);
+      currentImageIndex = index;
+      updateMainImage();
+    });
+  });
+
+  // Cambiar imagen principal
+  function changeMainImage(url, thumbnail) {
+    $('#main-product-image').attr('src', url);
+    $('#main-product-image').attr('data-zoom', url);
+    $('.thumbnail-item').removeClass('active');
+    $(thumbnail).addClass('active');
     
-    <script>
-        // Variantes disponibles del producto
-        const variantes = @json($producto->variantes);
-        const tieneVariantes = {{ $producto->tiene_variantes ? 'true' : 'false' }};
-        let selectedVariant = null;
-        let selectedTalla = null;
-        let selectedColor = null;
+    // Re-inicializar Drift si existe
+    if (typeof Drift !== 'undefined') {
+      const oldDrift = document.querySelector('.drift-zoom').drift;
+      if (oldDrift) oldDrift.destroy();
+      
+      new Drift(document.querySelector('.drift-zoom'), {
+        paneContainer: document.querySelector('.image-zoom-container'),
+        inlinePane: true,
+        inlineOffsetY: -85,
+        containInline: true,
+        hoverBoundingBox: true
+      });
+    }
+  }
 
-        $(document).ready(function() {
-            // CSRF Token
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            });
+  // Navegación de imágenes con flechas
+  function navigateImages(direction) {
+    const totalImages = productImages.length;
+    currentImageIndex = (currentImageIndex + direction + totalImages) % totalImages;
+    updateMainImage();
+  }
 
-            // Selección de variantes
-            $('.variant-option:not(:disabled)').on('click', function() {
-                const type = $(this).data('type');
-                const value = $(this).data('value');
-                
-                // Toggle selection
-                $(`.variant-option[data-type="${type}"]`).removeClass('selected');
-                $(this).addClass('selected');
-                
-                if (type === 'talla') {
-                    selectedTalla = value;
-                } else if (type === 'color') {
-                    selectedColor = value;
-                }
-                
-                // Actualizar disponibilidad de otras opciones
-                updateVariantAvailability();
-                
-                // Buscar variante seleccionada
-                if (tieneVariantes) {
-                    findSelectedVariant();
-                }
-            });
+  function updateMainImage() {
+    const url = productImages[currentImageIndex];
+    $('#main-product-image').attr('src', url);
+    $('#main-product-image').attr('data-zoom', url);
+    $('.thumbnail-item').removeClass('active');
+    $('.thumbnail-item').eq(currentImageIndex).addClass('active');
+  }
 
-            // Agregar al carrito
-            $('#addToCartBtn').on('click', function() {
-                const btn = $(this);
-                const quantity = parseInt($('#quantity').val());
-                
-                if (tieneVariantes && !selectedVariant) {
-                    showToast('error', 'Por favor selecciona todas las opciones del producto');
-                    return;
-                }
-                
-                btn.prop('disabled', true);
-                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Agregando...');
-                
-                const data = {
-                    producto_id: {{ $producto->id }},
-                    cantidad: quantity
-                };
-                
-                if (selectedVariant) {
-                    data.variante_id = selectedVariant.id;
-                }
-                
-                $.ajax({
-                    url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
-                    method: 'POST',
-                    data: data,
-                    success: function(response) {
-                        showToast('success', 'Producto agregado al carrito');
-                        updateCartBadge(response.total_items);
-                        btn.html('<i class="bi bi-check"></i> Agregado al Carrito');
-                        
-                        setTimeout(() => {
-                            btn.prop('disabled', false);
-                            btn.html('<i class="bi bi-cart-plus"></i> Agregar al Carrito');
-                        }, 2000);
-                    },
-                    error: function(xhr) {
-                        const error = xhr.responseJSON?.error || 'Error al agregar al carrito';
-                        showToast('error', error);
-                        btn.prop('disabled', false);
-                        btn.html('<i class="bi bi-cart-plus"></i> Agregar al Carrito');
-                    }
-                });
-            });
-        });
+  // Actualizar cantidad
+  function updateQuantity(change) {
+    const input = document.getElementById('quantity');
+    let value = parseInt(input.value) + change;
 
-        // Cambiar imagen principal
-        function changeImage(url, thumbnail) {
-            document.getElementById('mainImage').src = url;
-            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            thumbnail.classList.add('active');
-        }
+    if (value < 1) value = 1;
 
-        // Actualizar cantidad
-        function updateQuantity(change) {
-            const input = document.getElementById('quantity');
-            let value = parseInt(input.value) + change;
-            
-            if (value < 1) value = 1;
-            
-            // Verificar stock máximo
-            if (selectedVariant && selectedVariant.stock) {
-                const maxStock = selectedVariant.stock.stock_real || 0;
-                if (value > maxStock) {
-                    value = maxStock;
-                    showToast('error', `Solo hay ${maxStock} unidades disponibles`);
-                }
-            } else if (!tieneVariantes) {
-                const maxStock = {{ $producto->stock_disponible ?? 999 }};
-                if (value > maxStock && {{ $producto->controlar_stock ? 'true' : 'false' }}) {
-                    value = maxStock;
-                    showToast('error', `Solo hay ${maxStock} unidades disponibles`);
-                }
-            }
-            
-            input.value = value;
-        }
+    // Límite por stock
+    if (selectedVariant && selectedVariant.stock) {
+      const maxStock = selectedVariant.stock.stock_real || 0;
+      if (value > maxStock) {
+        value = maxStock;
+        showToast('error', `Solo hay ${maxStock} unidades disponibles`);
+      }
+    } else if (!tieneVariantes) {
+      const maxStock = {{ $producto->stock_disponible ?? 999 }};
+      if (value > maxStock && {{ $producto->controlar_stock ? 'true' : 'false' }}) {
+        value = maxStock;
+        showToast('error', `Solo hay ${maxStock} unidades disponibles`);
+      }
+    }
 
-        // Actualizar disponibilidad de variantes
-        function updateVariantAvailability() {
-            if (!tieneVariantes) return;
-            
-            // Actualizar colores disponibles según talla seleccionada
-            if (selectedTalla) {
-                $('.variant-option[data-type="color"]').each(function() {
-                    const color = $(this).data('value');
-                    const hayStock = variantes.some(v => 
-                        v.talla === selectedTalla && 
-                        v.color === color && 
-                        v.stock && 
-                        v.stock.stock_real > 0
-                    );
-                    
-                    $(this).prop('disabled', !hayStock);
-                    $(this).toggleClass('disabled', !hayStock);
-                });
-            }
-            
-            // Actualizar tallas disponibles según color seleccionado
-            if (selectedColor) {
-                $('.variant-option[data-type="talla"]').each(function() {
-                    const talla = $(this).data('value');
-                    const hayStock = variantes.some(v => 
-                        v.talla === talla && 
-                        v.color === selectedColor && 
-                        v.stock && 
-                        v.stock.stock_real > 0
-                    );
-                    
-                    $(this).prop('disabled', !hayStock);
-                    $(this).toggleClass('disabled', !hayStock);
-                });
-            }
-        }
+    input.value = value;
+  }
 
-        // Encontrar variante seleccionada
-        function findSelectedVariant() {
-            if (!selectedTalla && !selectedColor) {
-                selectedVariant = null;
-                return;
-            }
-            
-            selectedVariant = variantes.find(v => {
-                const tallaMatch = !selectedTalla || v.talla === selectedTalla;
-                const colorMatch = !selectedColor || v.color === selectedColor;
-                return tallaMatch && colorMatch;
-            });
-            
-            // Actualizar información de stock
-            if (selectedVariant) {
-                updateStockInfo(selectedVariant);
-                $('#addToCartBtn').prop('disabled', false);
-            } else {
-                $('#stockInfo').html('<i class="bi bi-info-circle"></i> <span>Selecciona todas las opciones</span>');
-                $('#addToCartBtn').prop('disabled', true);
-            }
-        }
+  // Actualizar disponibilidad de variantes
+  function updateVariantAvailability() {
+    if (!tieneVariantes) return;
 
-        // Actualizar información de stock
-        function updateStockInfo(variant) {
-            if (!variant.stock) return;
-            
-            const stock = variant.stock.stock_real || 0;
-            let stockClass, stockText, stockIcon;
-            
-            if (stock > 10) {
-                stockClass = 'stock-available';
-                stockText = 'Disponible';
-                stockIcon = 'check-circle';
-            } else if (stock > 0) {
-                stockClass = 'stock-low';
-                stockText = `¡Últimas ${stock} unidades!`;
-                stockIcon = 'exclamation-circle';
-            } else {
-                stockClass = 'stock-out';
-                stockText = 'Sin stock';
-                stockIcon = 'x-circle';
-                $('#addToCartBtn').prop('disabled', true);
-            }
-            
-            $('#stockInfo').removeClass('stock-available stock-low stock-out')
-                          .addClass(stockClass)
-                          .html(`<i class="bi bi-${stockIcon}"></i> <span>${stockText}</span>`);
-        }
+    // Filtra colores por talla
+    if (selectedTalla) {
+      $('.variant-option[data-type="color"]').each(function() {
+        const color = $(this).data('value');
+        const hayStock = variantes.some(v =>
+          v.talla === selectedTalla &&
+          v.color === color &&
+          v.stock &&
+          v.stock.stock_real > 0
+        );
+        $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
+      });
+    }
 
-        // Toast notifications
-        function showToast(type, message) {
-            const toastEl = document.getElementById('cartToast');
-            const toast = new bootstrap.Toast(toastEl);
-            
-            $('.toast-body').text(message);
-            if (type === 'error') {
-                $('.toast-header i').removeClass('text-success').addClass('text-danger');
-                $('.toast-header i').removeClass('bi-check-circle-fill').addClass('bi-exclamation-circle-fill');
-            } else {
-                $('.toast-header i').removeClass('text-danger').addClass('text-success');
-                $('.toast-header i').removeClass('bi-exclamation-circle-fill').addClass('bi-check-circle-fill');
-            }
-            
-            toast.show();
-        }
+    // Filtra tallas por color
+    if (selectedColor) {
+      $('.variant-option[data-type="talla"]').each(function() {
+        const talla = $(this).data('value');
+        const hayStock = variantes.some(v =>
+          v.talla === talla &&
+          v.color === selectedColor &&
+          v.stock &&
+          v.stock.stock_real > 0
+        );
+        $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
+      });
+    }
+  }
 
-        // Update cart badge
-        function updateCartBadge(count) {
-            if (count > 0) {
-                if ($('.cart-badge').length) {
-                    $('.cart-badge').text(count);
-                } else {
-                    $('.btn-outline-primary').append('<span class="cart-badge">' + count + '</span>');
-                }
-            } else {
-                $('.cart-badge').remove();
-            }
-        }
-    </script>
-</body>
-</html>
+  // Encuentra la variante seleccionada
+  function findSelectedVariant() {
+    if (!selectedTalla && !selectedColor) {
+      selectedVariant = null;
+      return;
+    }
+
+    selectedVariant = variantes.find(v => {
+      const tallaMatch = !selectedTalla || v.talla === selectedTalla;
+      const colorMatch = !selectedColor || v.color === selectedColor;
+      return tallaMatch && colorMatch;
+    });
+
+    if (selectedVariant) {
+      updateStockInfo(selectedVariant);
+      $('#addToCartBtn').prop('disabled', false);
+    } else {
+      $('#stockInfo').html('<i class="bi bi-info-circle"></i> <span class="stock-text">Selecciona todas las opciones</span>');
+      $('#addToCartBtn').prop('disabled', true);
+    }
+  }
+
+  // Actualizar información de stock
+  function updateStockInfo(variant) {
+    if (!variant.stock) return;
+
+    const stock = variant.stock.stock_real || 0;
+    let stockClass, stockText, stockIcon, quantityText = '';
+
+    if (stock > 10) {
+      stockClass = 'stock-available';
+      stockText = 'Disponible';
+      stockIcon = 'check-circle-fill';
+    } else if (stock > 0) {
+      stockClass = 'stock-low';
+      stockText = 'Limitado';
+      stockIcon = 'exclamation-circle-fill';
+      quantityText = `<div class="quantity-left">Solo ${stock} unidades disponibles</div>`;
+    } else {
+      stockClass = 'stock-out';
+      stockText = 'Sin stock';
+      stockIcon = 'x-circle-fill';
+      $('#addToCartBtn').prop('disabled', true);
+    }
+
+    $('#stockInfo').html(`
+      <div class="stock-indicator">
+        <i class="bi bi-${stockIcon}"></i>
+        <span class="stock-text">${stockText}</span>
+      </div>
+      ${quantityText}
+    `);
+  }
+
+  // Comprar ahora
+  function comprarAhora() {
+    // Primero agregar al carrito
+    const quantity = parseInt($('#quantity').val());
+
+    if (tieneVariantes && !selectedVariant) {
+      showToast('error', 'Por favor selecciona todas las opciones del producto');
+      return;
+    }
+
+    const data = {
+      producto_id: {{ $producto->id }},
+      cantidad: quantity
+    };
+    if (selectedVariant) data.variante_id = selectedVariant.id;
+
+    $.ajax({
+      url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+      method: 'POST',
+      data: data,
+      success: function(response) {
+        // Redirigir al checkout
+        window.location.href = "{{ route('tienda.checkout', $empresa->slug) }}";
+      },
+      error: function(xhr) {
+        const error = xhr.responseJSON?.error || 'Error al procesar la compra';
+        showToast('error', error);
+      }
+    });
+  }
+
+  // Toast notification
+  function showToast(type, message) {
+    const toastEl = document.getElementById('cartToast');
+    const toast = new bootstrap.Toast(toastEl);
+
+    $('.toast-body').text(message);
+    if (type === 'error') {
+      $('.toast-header i').removeClass('text-success').addClass('text-danger');
+      $('.toast-header i').removeClass('bi-check-circle-fill').addClass('bi-exclamation-circle-fill');
+    } else {
+      $('.toast-header i').removeClass('text-danger').addClass('text-success');
+      $('.toast-header i').removeClass('bi-exclamation-circle-fill').addClass('bi-check-circle-fill');
+    }
+
+    toast.show();
+  }
+
+  // Actualiza el badge del carrito
+  function updateCartBadge(count) {
+    if (count > 0) {
+      if ($('.header-action-btn .badge').length) {
+        $('.header-action-btn .badge').text(count);
+      } else {
+        $('.header-action-btn').append('<span class="badge">' + count + '</span>');
+      }
+    } else {
+      $('.header-action-btn .badge').remove();
+    }
+  }
+</script>
+@endpush

@@ -317,6 +317,11 @@
             }
         });
     </script>
+    <script>
+  document.documentElement.style.overflowX = 'hidden';
+  document.body.style.overflowX = 'hidden';
+</script>
+
     @stack('scripts')
 </body>
 </html>

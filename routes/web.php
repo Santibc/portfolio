@@ -244,6 +244,9 @@ Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, '
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 // Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
+// Agregar después de las otras rutas de tienda
+Route::get('/{slug}/categorias', [App\Http\Controllers\TiendaController::class, 'categorias'])->name('tienda.categorias');
+
 
 
 require __DIR__.'/auth.php';

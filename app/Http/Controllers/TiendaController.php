@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Empresa;
 use App\Models\Producto;
 use App\Models\Categoria;
+use App\Models\PrecioProducto;
 use App\Models\ListaPrecio;
 use App\Models\Carrito;
 use App\Models\Compra;
@@ -461,4 +462,163 @@ class TiendaController extends Controller
                 ->with('error', 'Error al procesar el pago. Por favor intente nuevamente.');
         }
     }
+    /**
+     * Mostrar página de categorías con filtros
+     */
+/**
+ * Mostrar página de categorías con filtros
+ */
+public function categorias($slug, Request $request)
+{
+    $empresa = Empresa::where('slug', $slug)
+        ->where('activo', true)
+        ->firstOrFail();
+
+    // Obtener primera lista de precios activa
+    $listaPrecio = ListaPrecio::activas()->first();
+    
+    if (!$listaPrecio) {
+        abort(404, 'No hay listas de precios configuradas');
+    }
+
+    // Obtener todas las categorías con conteo de productos
+    $categorias = Categoria::where('empresa_id', $empresa->id)
+        ->where('activo', true)
+        ->whereHas('productos', function($q) {
+            $q->where('activo', true);
+        })
+        ->withCount([
+            'productos as productos_count' => function ($q) use ($empresa) {
+                $q->where('activo', true)
+                ->where('empresa_id', $empresa->id);
+            }
+        ])
+        ->orderBy('orden')
+        ->get();
+
+    // Obtener categoría seleccionada si existe
+    $categoriaSeleccionada = null;
+    if ($request->filled('categoria')) {
+        $categoriaSeleccionada = Categoria::find($request->categoria);
+    }
+
+    // Query base de productos
+    $query = Producto::where('empresa_id', $empresa->id)
+        ->where('productos.activo', true)
+        ->with(['imagenPrincipal', 'imagenes', 'categoria', 'stockPrincipal']);
+
+    // Filtro por categoría
+    if ($request->filled('categoria')) {
+        $query->where('categoria_id', $request->categoria);
+    }
+
+    // Filtro por búsqueda
+    if ($request->filled('buscar')) {
+        $query->buscar($request->buscar);
+    }
+
+    // Obtener rango de precios antes de aplicar filtros de precio
+    // Primero obtener todos los productos de la empresa (o categoría si está filtrada)
+    $productosParaRango = Producto::where('empresa_id', $empresa->id)
+        ->where('activo', true);
+    
+    // Si hay categoría seleccionada, aplicar ese filtro
+    if ($request->filled('categoria')) {
+        $productosParaRango->where('categoria_id', $request->categoria);
+    }
+    
+    // Obtener los IDs de productos
+    $productosIds = $productosParaRango->pluck('id');
+    
+    // Ahora obtener el rango de precios de estos productos
+    $rangoPreciosQuery = PrecioProducto::whereIn('producto_id', $productosIds)
+        ->where('lista_precio_id', $listaPrecio->id)
+        ->where('activo', true);
+    
+    $precioMin = floor($rangoPreciosQuery->min('precio') ?? 0);
+    $precioMax = ceil($rangoPreciosQuery->max('precio') ?? 1000000);
+
+    // Filtro por rango de precio (select)
+    if ($request->filled('rango_precio')) {
+        $rango = explode('-', $request->rango_precio);
+        $min = $rango[0];
+        $max = $rango[1] ?? null;
+
+        $query->whereHas('precios', function($q) use ($listaPrecio, $min, $max) {
+            $q->where('lista_precio_id', $listaPrecio->id)
+              ->where('activo', true)
+              ->where('precio', '>=', $min);
+            
+            if ($max && $max > 0) {
+                $q->where('precio', '<=', $max);
+            }
+        });
+    }
+
+    // Filtro por precio mínimo y máximo (slider)
+    if ($request->filled('precio_min') || $request->filled('precio_max')) {
+        $minFilter = $request->precio_min ?? $precioMin;
+        $maxFilter = $request->precio_max ?? $precioMax;
+
+        $query->whereHas('precios', function($q) use ($listaPrecio, $minFilter, $maxFilter) {
+            $q->where('lista_precio_id', $listaPrecio->id)
+              ->where('activo', true)
+              ->whereBetween('precio', [$minFilter, $maxFilter]);
+        });
+    }
+
+    // Ordenamiento
+    if ($request->filled('orden')) {
+        switch ($request->orden) {
+            case 'precio_asc':
+                $query->select('productos.*')
+                    ->leftJoin('precios_productos', function($join) use ($listaPrecio) {
+                        $join->on('productos.id', '=', 'precios_productos.producto_id')
+                             ->where('precios_productos.lista_precio_id', $listaPrecio->id)
+                             ->where('precios_productos.activo', true);
+                    })
+                    ->orderBy('precios_productos.precio', 'asc');
+                break;
+            case 'precio_desc':
+                $query->select('productos.*')
+                    ->leftJoin('precios_productos', function($join) use ($listaPrecio) {
+                        $join->on('productos.id', '=', 'precios_productos.producto_id')
+                             ->where('precios_productos.lista_precio_id', $listaPrecio->id)
+                             ->where('precios_productos.activo', true);
+                    })
+                    ->orderBy('precios_productos.precio', 'desc');
+                break;
+            case 'nombre':
+                $query->orderBy('nombre');
+                break;
+            default:
+                $query->latest();
+        }
+    } else {
+        $query->latest();
+    }
+
+    // Paginación
+    $porPagina = $request->get('por_pagina', 12);
+    $productos = $query->paginate($porPagina)->withQueryString();
+
+    // Cargar precios para la lista seleccionada
+    foreach ($productos as $producto) {
+        $producto->precio_actual = $producto->getPrecioPorLista($listaPrecio->id);
+    }
+
+    // Obtener carrito
+    $carrito = $this->obtenerCarrito($empresa->id);
+
+    return view('tienda.categoria', compact(
+        'empresa',
+        'productos',
+        'categorias',
+        'categoriaSeleccionada',
+        'listaPrecio',
+        'carrito',
+        'precioMin',
+        'precioMax'
+    ));
+}
 }
