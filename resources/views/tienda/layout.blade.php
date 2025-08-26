@@ -135,10 +135,10 @@
         <nav id="navmenu" class="navmenu">
           <ul>
             <li><a href="{{ route('tienda.empresa', $empresa->slug) }}" class="@yield('nav-inicio', '')">Inicio</a></li>
-            <li><a href="#about" class="@yield('nav-about', '')">Acerca de</a></li>
-            <li><a href="#productos" class="@yield('nav-productos', '')">Productos</a></li>
+{{--             <li><a href="#about" class="@yield('nav-about', '')">Acerca de</a></li> --}}
+{{--             <li><a href="#productos" class="@yield('nav-productos', '')">Productos</a></li> --}}
             <li><a href="{{ route('tienda.categorias', $empresa->slug) }}" class="@yield('nav-categorias', '')">Categorías</a></li>
-            <li><a href="#contacto" class="@yield('nav-contacto', '')">Contacto</a></li>
+{{--             <li><a href="#contacto" class="@yield('nav-contacto', '')">Contacto</a></li> --}}
           </ul>
         </nav>
       </div>

@@ -83,22 +83,32 @@ class Compra extends Model
         $this->save();
         return $this->total;
     }
-
-    public function generarComision()
-    {
-        if ($this->estado === 'pagada' && !$this->comision) {
-            return Comision::create([
-                'empresa_id' => $this->empresa_id,
-                'compra_id' => $this->id,
-                'monto_venta' => $this->total,
-                'porcentaje_comision' => $this->empresa->porcentaje_comision,
-                'monto_comision' => $this->total * ($this->empresa->porcentaje_comision / 100),
-                'monto_empresa' => $this->total * (1 - $this->empresa->porcentaje_comision / 100),
-                'estado' => 'pendiente'
-            ]);
-        }
-        return null;
+public function generarComision()
+{
+    if ($this->estado === 'pagada' && !$this->comision) {
+        // Calcular comisión: porcentaje + cargo fijo
+        $porcentajeComision = $this->empresa->porcentaje_comision ?? 6.09;
+        $cargoFijo = $this->empresa->cargo_fijo_comision ?? 900;
+        
+        // Comisión total = (total * porcentaje/100) + cargo fijo
+        $montoComision = ($this->total * ($porcentajeComision / 100)) + ($cargoFijo / 100); // Dividir entre 100 porque está en centavos
+        
+        // Lo que recibe la empresa = total - comisión
+        $montoEmpresa = $this->total - $montoComision;
+        
+        return Comision::create([
+            'empresa_id' => $this->empresa_id,
+            'compra_id' => $this->id,
+            'monto_venta' => $this->total,
+            'porcentaje_comision' => $porcentajeComision,
+            'monto_comision' => $montoComision,
+            'monto_empresa' => $montoEmpresa,
+            'estado' => 'pendiente',
+            'observaciones' => "Comisión: {$porcentajeComision}% + $" . number_format($cargoFijo / 100, 0)
+        ]);
     }
+    return null;
+}
 
     protected static function boot()
     {

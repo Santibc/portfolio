@@ -29,7 +29,8 @@ Route::get('/', function () {
 });
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
-
+Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
+     ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -39,8 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
 
-Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
-     ->name('ajax.ciudades');
+
 
 //Clientes
     // Listado & AJAX

@@ -51,8 +51,7 @@ class ConfiguracionPasarela extends Model
 
     public static function obtenerConfiguracionActiva($pasarela = 'wompi')
     {
-        return static::where('pasarela', $pasarela)
-                    ->where('activo', true)
+        return static::where('activo', true)
                     ->first();
     }
 

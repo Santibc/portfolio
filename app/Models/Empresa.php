@@ -28,7 +28,9 @@ class Empresa extends Model
         'whatsapp',
         'horario_atencion',
         'activo',
-        'porcentaje_comision'
+        'porcentaje_comision',
+
+    'cargo_fijo_comision'
     ];
 
     protected $casts = [

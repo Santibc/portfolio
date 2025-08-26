@@ -50,11 +50,11 @@
                             <i class="bi bi-box-seam"></i>
                             <span>Productos</span>
                         </a>
-                        <a href="/clientes"
+{{--                         <a href="/clientes"
                            class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
                             <i class="bi bi-person-badge"></i>
                             <span>Clientes</span>
-                        </a>
+                        </a> --}}
                         <a href="/categorias"
                            class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
                             <i class="bi bi-tags"></i>
@@ -80,21 +80,21 @@
 
         {{-- Ventas --}}
         @if(auth()->user()->hasRole(['vendedor', 'admin']))
-            <a href="{{ route('catalogo') }}"
+{{--             <a href="{{ route('catalogo') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-shop"></i>
                 <span>Catálogo</span>
-            </a>
-            <a href="{{ route('solicitudes') }}"
+            </a> --}}
+{{--             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-check"></i>
                 <span>Solicitudes</span>
-            </a>
-            <a href="{{ route('enlaces') }}"
+            </a> --}}
+{{--             <a href="{{ route('enlaces') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-link-45deg"></i>
                 <span>Enlaces</span>
-            </a>
+            </a> --}}
             
             {{-- Gestión de Stock (con submenú) --}}
             @if(auth()->user()->empresa)

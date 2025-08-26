@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TransaccionPago;
-use App\Models\ConfiguracionPasarela;
+use App\Services\WompiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -14,43 +14,29 @@ class WebhookController extends Controller
      */
     public function wompi(Request $request)
     {
-        // Log del webhook recibido
-        Log::info('Webhook Wompi recibido', $request->all());
+        Log::info('Webhook Wompi recibido', [
+            'headers' => $request->headers->all(),
+            'body' => $request->all()
+        ]);
 
         try {
-            // Verificar la firma del webhook (implementar según documentación de Wompi)
-            if (!$this->verificarFirmaWompi($request)) {
-                Log::warning('Webhook Wompi con firma inválida');
-                return response()->json(['error' => 'Firma inválida'], 401);
-            }
-
-            // Obtener datos del evento
-            $evento = $request->input('event');
-            $datos = $request->input('data');
+            // Verificar la firma del webhook
+            $wompiService = new WompiService();
+            $firmaRecibida = $request->header('X-Event-Signature');
+            $payload = $request->getContent();
             
-            // Buscar la transacción
-            $referencia = $datos['reference'] ?? null;
-            if (!$referencia) {
-                return response()->json(['error' => 'Referencia no encontrada'], 400);
-            }
-
-            $transaccion = TransaccionPago::where('referencia_transaccion', $referencia)->first();
-            if (!$transaccion) {
-                Log::warning('Transacción no encontrada para referencia: ' . $referencia);
+            if (!$wompiService->verificarFirmaWebhook($payload, $firmaRecibida)) {
+                Log::warning('Webhook Wompi con firma inválida');
                 return response()->json(['error' => 'Transacción no encontrada'], 404);
             }
 
             // Registrar el evento
-            $transaccion->registrarEvento($evento, $datos, $request->ip());
+            $transaccionLocal->registrarEvento($evento, $transaccion, $request->ip());
 
             // Procesar según el tipo de evento
             switch ($evento) {
                 case 'transaction.updated':
-                    $this->procesarActualizacionTransaccion($transaccion, $datos);
-                    break;
-                    
-                case 'payment_link.paid':
-                    $this->procesarPagoCompletado($transaccion, $datos);
+                    $this->procesarActualizacionTransaccion($transaccionLocal, $transaccion);
                     break;
                     
                 default:
@@ -60,93 +46,93 @@ class WebhookController extends Controller
             return response()->json(['success' => true]);
 
         } catch (\Exception $e) {
-            Log::error('Error procesando webhook Wompi: ' . $e->getMessage());
+            Log::error('Error procesando webhook Wompi: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => 'Error interno'], 500);
         }
     }
 
     /**
-     * Verificar firma del webhook de Wompi
-     */
-    private function verificarFirmaWompi(Request $request)
-    {
-        $config = ConfiguracionPasarela::obtenerConfiguracionActiva('wompi');
-        if (!$config || !$config->event_key) {
-            return false;
-        }
-
-        // Obtener la firma del header
-        $firmaRecibida = $request->header('X-Event-Signature');
-        if (!$firmaRecibida) {
-            return false;
-        }
-
-        // Calcular la firma esperada
-        $payload = $request->getContent();
-        $firmaEsperada = hash_hmac('sha256', $payload, $config->event_key);
-
-        return hash_equals($firmaEsperada, $firmaRecibida);
-    }
-
-    /**
      * Procesar actualización de transacción
      */
-    private function procesarActualizacionTransaccion($transaccion, $datos)
+    private function procesarActualizacionTransaccion($transaccionLocal, $datosWompi)
     {
-        $estado = $datos['status'] ?? null;
+        // No procesar si ya fue procesada
+        if (in_array($transaccionLocal->estado, ['aprobada', 'rechazada', 'error'])) {
+            Log::info('Transacción ya procesada: ' . $transaccionLocal->referencia_transaccion);
+            return;
+        }
+
+        $estado = $datosWompi['status'] ?? null;
         
         switch ($estado) {
             case 'APPROVED':
-                $transaccion->update([
+                $transaccionLocal->update([
                     'estado' => 'aprobada',
-                    'id_transaccion_pasarela' => $datos['id'],
-                    'metodo_pago' => $datos['payment_method_type'] ?? null,
+                    'id_transaccion_pasarela' => $datosWompi['id'],
+                    'metodo_pago' => $datosWompi['payment_method_type'] ?? null,
                     'fecha_procesamiento' => now(),
-                    'respuesta_pasarela' => $datos
+                    'respuesta_pasarela' => $datosWompi,
+                    'codigo_autorizacion' => $datosWompi['authorization_code'] ?? null
                 ]);
                 
                 // Actualizar compra
-                $transaccion->compra->update(['estado' => 'pagada']);
-                $transaccion->compra->generarComision();
+                $transaccionLocal->compra->update(['estado' => 'pagada']);
                 
-                // Enviar email de confirmación
-                // TODO: Implementar envío de email
+                // Generar comisión
+                $transaccionLocal->compra->generarComision();
                 
+                // TODO: Enviar email de confirmación
+                
+                Log::info('Transacción aprobada: ' . $transaccionLocal->referencia_transaccion);
                 break;
                 
             case 'DECLINED':
             case 'VOIDED':
-                $transaccion->update([
+                $transaccionLocal->update([
                     'estado' => 'rechazada',
-                    'mensaje_error' => $datos['status_message'] ?? 'Transacción rechazada',
-                    'respuesta_pasarela' => $datos
+                    'id_transaccion_pasarela' => $datosWompi['id'],
+                    'mensaje_error' => $datosWompi['status_message'] ?? 'Transacción rechazada',
+                    'respuesta_pasarela' => $datosWompi
                 ]);
                 
-                // Liberar stock si estaba reservado
-                $this->liberarStockCompra($transaccion->compra);
+                // Actualizar estado de la compra
+                $transaccionLocal->compra->update(['estado' => 'cancelada']);
                 
+                // Liberar stock si estaba reservado
+                $this->liberarStockCompra($transaccionLocal->compra);
+                
+                Log::info('Transacción rechazada: ' . $transaccionLocal->referencia_transaccion);
                 break;
                 
             case 'ERROR':
-                $transaccion->update([
+                $transaccionLocal->update([
                     'estado' => 'error',
-                    'mensaje_error' => $datos['error_message'] ?? 'Error en la transacción',
-                    'respuesta_pasarela' => $datos
+                    'id_transaccion_pasarela' => $datosWompi['id'],
+                    'mensaje_error' => $datosWompi['error_message'] ?? 'Error en la transacción',
+                    'respuesta_pasarela' => $datosWompi
                 ]);
                 
-                // Liberar stock si estaba reservado
-                $this->liberarStockCompra($transaccion->compra);
+                // Actualizar estado de la compra
+                $transaccionLocal->compra->update(['estado' => 'cancelada']);
                 
+                // Liberar stock
+                $this->liberarStockCompra($transaccionLocal->compra);
+                
+                Log::error('Error en transacción: ' . $transaccionLocal->referencia_transaccion);
+                break;
+                
+            case 'PENDING':
+                // Solo actualizar si cambia de otro estado a pendiente
+                $transaccionLocal->update([
+                    'id_transaccion_pasarela' => $datosWompi['id'],
+                    'respuesta_pasarela' => $datosWompi
+                ]);
+                
+                Log::info('Transacción pendiente: ' . $transaccionLocal->referencia_transaccion);
                 break;
         }
-    }
-
-    /**
-     * Procesar pago completado
-     */
-    private function procesarPagoCompletado($transaccion, $datos)
-    {
-        $this->procesarActualizacionTransaccion($transaccion, $datos);
     }
 
     /**
@@ -163,7 +149,7 @@ class WebhookController extends Controller
                     : $producto->stockPrincipal;
                 
                 if ($stock) {
-                    // Devolver el stock
+                    // Devolver el stock usando el método entrada()
                     $stock->entrada(
                         $item->cantidad, 
                         'devolucion', 
