@@ -323,6 +323,201 @@
         </section>
     </div>
 
+<!-- Add this HTML section after your benefits section -->
+<section class="pricing-section">
+  <div class="pricing-container">
+    <div class="pricing-header">
+      <p class="pricing-subtitle">ELIGE TU PLAN PERFECTO</p>
+      <h2 class="pricing-title">Planes diseñados para cada etapa de tu crecimiento</h2>
+      <p class="pricing-description">
+        Desde emprendedores que inician hasta marcas consolidadas. 
+        <strong>Todos incluyen tienda online y pasarela de pagos.</strong>
+      </p>
+    </div>
+
+    <div class="plans-grid">
+      <!-- Plan Fundador -->
+      <div class="plan-card">
+        <h3 class="plan-name">Plan Fundador</h3>
+        <div class="plan-price free">GRATIS</div>
+        <p class="plan-limit">Hasta 50 transacciones/mes</p>
+        
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>10 productos</strong> en tu catálogo</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Subdominio propio</strong> (tumarca.betogether.com.co)</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Pasarela de Pagos</strong> integrada y segura</span>
+          </li>
+        </ul>
+        
+        <div class="commission-box">
+          <strong>6.09% + $900</strong>
+          <span class="commission-label">Por transacción exitosa</span>
+        </div>
+        
+        <button class="plan-cta">Empezar Gratis</button>
+      </div>
+
+      <!-- Plan Emprendedor -->
+      <div class="plan-card featured">
+        <h3 class="plan-name">Emprendedor</h3>
+        <div class="plan-price">$85.000<small>/mes</small></div>
+        <p class="plan-limit">Hasta 50 transacciones/mes</p>
+        
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>20 productos</strong> en tu tienda</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Puntos Colombia</strong> para fidelización</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Sin marca de agua</strong> de BeTogether</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Logística prioritaria AM</strong></span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Programa Embajadores</strong> de marca</span>
+          </li>
+        </ul>
+        
+        <div class="commission-box">
+          <strong>5.09% + $900</strong>
+          <span class="commission-label">Por transacción exitosa</span>
+        </div>
+        
+        <button class="plan-cta">Elegir Plan</button>
+      </div>
+
+      <!-- Plan Emprendedor PRO -->
+      <div class="plan-card">
+        <h3 class="plan-name">Emprendedor PRO</h3>
+        <div class="plan-price">$110.000<small>/mes</small></div>
+        <p class="plan-limit">Hasta 60 transacciones/mes</p>
+        
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>50 productos</strong> en tu tienda</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Todo lo del plan Emprendedor +</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Prioridad AM y PM</strong> en entregas</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>IA para Creativos</strong> <span class="ai-badge">✨ NUEVO</span><br>
+            Genera piezas para Instagram y Facebook</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>IA para Estrategia</strong> <span class="ai-badge">✨ NUEVO</span><br>
+            Planes de marketing de 15 días</span>
+          </li>
+        </ul>
+        
+        <div class="commission-box">
+          <strong>5.09% + $800</strong>
+          <span class="commission-label">¡LA MÁS BAJA!</span>
+        </div>
+        
+        <button class="plan-cta">Elegir Plan</button>
+      </div>
+    </div>
+
+    <div class="plans-grid-bottom">
+      <!-- Plan Crecimiento -->
+      <div class="plan-card">
+        <h3 class="plan-name">Crecimiento</h3>
+        <div class="plan-price">$500.000<small>/mes</small></div>
+        <p class="plan-limit">Hasta 100 transacciones/mes</p>
+        
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>200 productos</strong> en tu tienda</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Todo lo del plan PRO +</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Embajador de Marca</strong> en marketing</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>Descuento en eventos</strong> presenciales</span>
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill"></i>
+            <span><strong>1 Sesión mensual</strong> con profesional</span>
+          </li>
+          <li>
+            <i class="bi bi-star-fill"></i>
+            <span><strong>Opción Pasaporte a Canadá</strong></span>
+          </li>
+        </ul>
+        
+        <div class="commission-box">
+          <strong>4.09% + $700</strong>
+          <span class="commission-label">Por transacción exitosa</span>
+        </div>
+        
+        <button class="plan-cta">Elegir Plan</button>
+      </div>
+
+      <!-- Bonus Exclusivo -->
+      <div class="plan-card bonus-plan">
+        <h3 class="plan-name">🌟 Bonus - Activación Global</h3>
+        <div class="plan-price">$1.700.000<small style="color: white">/pago único</small></div>
+        <p class="plan-limit">Para Plan Crecimiento • 200 transacciones/mes</p>
+        
+        <ul class="plan-features">
+          <li>
+            <i class="bi bi-globe-americas"></i>
+            <span><strong style="color: white">Expansión Internacional</strong> - Tu tienda en Canadá</span>
+          </li>
+          <li>
+            <i class="bi bi-box-seam"></i>
+            <span><strong style="color: white">Centro de acopio</strong> en Canadá para tu inventario</span>
+          </li>
+          <li>
+            <i class="bi bi-person-check"></i>
+            <span><strong style="color: white">Gestión dedicada</strong> de inventario y logística</span>
+          </li>
+          <li>
+            <i class="bi bi-truck"></i>
+            <span><strong style="color: white">Alianza con transportadora</strong> internacional</span>
+          </li>
+        </ul>
+        
+        <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 12px; line-height: 1.4;">
+          *No incluye fletes, aduanas ni seguros. La mercancía debe estar asegurada.
+        </p>
+        
+        <button class="plan-cta">Consultar Disponibilidad</button>
+      </div>
+    </div>
+  </div>
+</section>
     <section class="hero3">
         <svg class="wave-top2" viewBox="0 0 1440 320">
             <path fill="#fff" fill-opacity="0.3"
