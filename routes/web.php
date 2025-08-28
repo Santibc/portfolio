@@ -28,7 +28,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
-Route::get('/inicio',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('inicio');
+Route::get('/inicio',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
