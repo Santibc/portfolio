@@ -10,13 +10,18 @@
     {{-- Navegación --}}
     <nav class="nav flex-column px-2 py-3 overflow-auto flex-grow-1">
         {{-- Inicio --}}
-        <a href="/dashboard"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}"
+        <a href="/inicio"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('inicio') ? 'active' : 'text-dark' }}"
            title="Inicio">
             <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
-
+            <a href="/membresias"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('membresias*') ? 'active' : 'text-dark' }}"
+               title="membresias">
+                <i class="bi bi-people-fill"></i>
+                <span>Membresias</span>
+            </a>
         {{-- Menú Admin --}}
         @if (auth()->user()->getRoleNames()->first() == 'admin')
             <a href="/usuarios"
@@ -24,6 +29,12 @@
                title="Usuarios">
                 <i class="bi bi-people-fill"></i>
                 <span>Usuarios</span>
+            </a>
+            <a href="admin/dashboard"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard*') ? 'active' : 'text-dark' }}"
+               title="Dashboard">
+                <i class="bi bi-people-fill"></i>
+                <span>Dashboard</span>
             </a>
         @endif
 

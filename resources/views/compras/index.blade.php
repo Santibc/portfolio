@@ -255,13 +255,13 @@
                                                     </a>
                                                 </li>
                                                 @endif
-                                                <li><hr class="dropdown-divider"></li>
+     {{--                                            <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item" href="#" 
                                                        onclick="cambiarEstado({{ $compra->id }}, '{{ $compra->estado }}')">
                                                         <i class="bi bi-arrow-repeat me-2"></i> Cambiar estado
                                                     </a>
-                                                </li>
+                                                </li> --}}
                                             </ul>
                                         </div>
                                     </td>

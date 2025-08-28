@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-
+use App\Models\Membresia;
+use App\Models\PlanMembresia;
 class Empresa extends Model
 {
     use HasFactory;
@@ -158,4 +159,62 @@ class Empresa extends Model
               ->orWhere('descripcion', 'like', "%{$termino}%");
         });
     }
+    public function planMembresia()
+{
+    return $this->belongsTo(PlanMembresia::class);
+}
+
+/**
+ * Historial de membresías
+ */
+public function membresias()
+{
+    return $this->hasMany(Membresia::class);
+}
+
+/**
+ * Membresía activa actual
+ */
+public function membresiaActiva()
+{
+    return $this->hasOne(Membresia::class)
+                ->where('estado', 'activa')
+                ->where('fecha_fin', '>', now())
+                ->latest();
+}
+
+/**
+ * Verificar si puede crear más productos
+ */
+public function puedeCrearProductos()
+{
+    $totalProductos = $this->productos()->where('activo', true)->count();
+    return $totalProductos < $this->limite_productos;
+}
+
+/**
+ * Productos restantes que puede crear
+ */
+public function productosRestantes()
+{
+    $totalProductos = $this->productos()->where('activo', true)->count();
+    return max(0, $this->limite_productos - $totalProductos);
+}
+
+/**
+ * Tiene plan premium (no gratuito)
+ */
+public function tienePlanPremium()
+{
+    return $this->planMembresia && $this->planMembresia->precio > 0;
+}
+
+/**
+ * Calcular comisión para un monto
+ */
+public function calcularComision($monto)
+{
+    $comisionPorcentaje = ($monto * $this->porcentaje_comision) / 100;
+    return $comisionPorcentaje + $this->comision_fija;
+}
 }

@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 class Compra extends Model
 {
     use HasFactory;
@@ -83,31 +83,34 @@ class Compra extends Model
         $this->save();
         return $this->total;
     }
-public function generarComision()
-{
-    if ($this->estado === 'pagada' && !$this->comision) {
-        // Calcular comisión: porcentaje + cargo fijo
-        $porcentajeComision = $this->empresa->porcentaje_comision ?? 6.09;
-        $cargoFijo = $this->empresa->cargo_fijo_comision ?? 900;
-        
-        // Comisión total = (total * porcentaje/100) + cargo fijo
-        $montoComision = ($this->total * ($porcentajeComision / 100)) + ($cargoFijo / 100); // Dividir entre 100 porque está en centavos
-        
-        // Lo que recibe la empresa = total - comisión
-        $montoEmpresa = $this->total - $montoComision;
-        
-        return Comision::create([
-            'empresa_id' => $this->empresa_id,
-            'compra_id' => $this->id,
-            'monto_venta' => $this->total,
-            'porcentaje_comision' => $porcentajeComision,
-            'monto_comision' => $montoComision,
-            'monto_empresa' => $montoEmpresa,
-            'estado' => 'pendiente',
-            'observaciones' => "Comisión: {$porcentajeComision}% + $" . number_format($cargoFijo / 100, 0)
-        ]);
+public function generarComision() {
+    if ($this->estado !== 'pagada') {
+        return null;
     }
-    return null;
+
+    return DB::transaction(function () {
+        $this->refresh();
+
+        $porcentaje = $this->empresa->porcentaje_comision ?? 6.09;
+        $cargoFijo = (float)($this->empresa->comision_fija ?? 900);
+
+        $montoVariable = $this->total * ($porcentaje / 100);
+        $montoComision = round($montoVariable + $cargoFijo, 2);
+        $montoEmpresa  = round($this->total - $montoComision, 2);
+
+        return \App\Models\Comision::updateOrCreate(
+            ['compra_id' => $this->id],
+            [
+                'empresa_id'          => $this->empresa_id,
+                'monto_venta'         => $this->total,
+                'porcentaje_comision' => $porcentaje,
+                'monto_comision'      => $montoComision,
+                'monto_empresa'       => $montoEmpresa,
+                'estado'              => 'pendiente',
+                'observaciones'       => "Comisión: {$porcentaje}% + $" . number_format($cargoFijo, 0),
+            ]
+        );
+    });
 }
 
     protected static function boot()

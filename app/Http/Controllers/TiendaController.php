@@ -195,6 +195,22 @@ class TiendaController extends Controller
      */
     public function agregarCarrito(Request $request, $slug)
     {
+        // En TiendaController@agregarCarrito
+        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+
+        // Verificar límite de transacciones del mes
+        $transaccionesMes = Compra::where('empresa_id', $empresa->id)
+            ->where('estado', 'pagada')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        if ($empresa->planMembresia->limite_transacciones && 
+            $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
+            return response()->json([
+                'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
+            ], 403);
+        }
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
             'cantidad' => 'required|integer|min:1',
@@ -327,6 +343,22 @@ class TiendaController extends Controller
  */
 public function procesarCompra(Request $request, $slug)
 {
+    // En TiendaController@agregarCarrito
+    $empresa = Empresa::where('slug', $slug)->firstOrFail();
+
+    // Verificar límite de transacciones del mes
+    $transaccionesMes = Compra::where('empresa_id', $empresa->id)
+        ->where('estado', 'pagada')
+        ->whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->count();
+
+    if ($empresa->planMembresia->limite_transacciones && 
+        $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
+        return response()->json([
+            'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
+        ], 403);
+    }
     $request->validate([
         'nombre' => 'required|string|max:255',
         'email' => 'required|email|max:255',

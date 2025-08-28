@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Excel;
 use Illuminate\Http\Request;
 use App\Models\Producto;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use App\Models\Empresa;
+
 class ProductosController extends Controller
 {
     public function index(Request $request)
@@ -33,7 +35,7 @@ class ProductosController extends Controller
         
         if ($request->ajax()) {
             $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal'])
-                            ->where('empresa_id', $empresa->id) // Filtrar por empresa
+                            ->where('empresa_id', $empresa->id)
                             ->select('productos.*');
 
             return DataTables::of($query)
@@ -68,18 +70,13 @@ class ProductosController extends Controller
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
                     $buttons .= '<a href="'.$url.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
                     
-                    // Botón de variantes si tiene
                     if ($p->tiene_variantes) {
                         $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm" title="Ver Variantes" onclick="verVariantes('.$p->id.')"><i class="bi bi-list-ul"></i></button>';
                     }
                     
-                    // Botón de imágenes
                     $buttons .= '<button type="button" class="btn btn-outline-primary btn-sm" title="Ver Imágenes" onclick="verImagenes('.$p->id.')"><i class="bi bi-image"></i></button>';
-                    
-                    // Botón de precios
                     $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" title="Ver Precios" onclick="verPrecios('.$p->id.')"><i class="bi bi-currency-dollar"></i></button>';
                     
-                    // Botón de stock
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
@@ -92,7 +89,20 @@ class ProductosController extends Controller
                 ->make(true);
         }
 
-        return view('productos.productos_index');
+        // INFORMACIÓN DE LÍMITES PARA LA VISTA
+        $productosActivos = $empresa->productos()->where('activo', true)->count();
+        $limiteProductos = $empresa->limite_productos;
+        $productosRestantes = max(0, $limiteProductos - $productosActivos);
+        $puedeCrearProductos = $empresa->puedeCrearProductos();
+        $membresiaActual = $empresa->planMembresia;
+
+        return view('productos.productos_index', compact(
+            'productosActivos',
+            'limiteProductos',
+            'productosRestantes',
+            'puedeCrearProductos',
+            'membresiaActual'
+        ));
     }
 
     public function form(Producto $producto = null)
@@ -104,19 +114,30 @@ class ProductosController extends Controller
                         ->with('warning', 'Debe crear su empresa antes de gestionar productos.');
         }
         
+        // VERIFICAR LÍMITE DE PRODUCTOS SI ES NUEVO
+        if (!$producto || !$producto->exists) {
+            if (!$empresa->puedeCrearProductos()) {
+                return redirect()->route('productos')
+                    ->with('error', 'Has alcanzado el límite de ' . $empresa->limite_productos . ' productos para tu plan ' . $empresa->planMembresia->nombre . '. Por favor actualiza tu membresía para crear más productos.')
+                    ->with('show_upgrade', true); // Flag para mostrar opciones de upgrade
+            }
+        }
+        
         // Si es edición, verificar que el producto pertenezca a la empresa
         if ($producto && $producto->exists && $producto->empresa_id !== $empresa->id) {
             abort(403, 'No tiene permisos para editar este producto.');
         }
         
         $producto = $producto ?? new Producto();
-            $categorias = Categoria::where('empresa_id', $empresa->id)
-                         ->activas()
-                         ->pluck('nombre', 'id');
-                             if ($categorias->isEmpty()) {
-        return redirect()->route('categorias.form')
-                       ->with('warning', 'Debe crear al menos una categoría antes de crear productos.');
-    }
+        $categorias = Categoria::where('empresa_id', $empresa->id)
+                     ->activas()
+                     ->pluck('nombre', 'id');
+                     
+        if ($categorias->isEmpty()) {
+            return redirect()->route('categorias.form')
+                           ->with('warning', 'Debe crear al menos una categoría antes de crear productos.');
+        }
+        
         $listas = ListaPrecio::activas()->get();
         
         // Cargar stock si el producto existe
@@ -153,6 +174,13 @@ class ProductosController extends Controller
             abort(403, 'No tiene permisos para editar este producto.');
         }
 
+        // VERIFICAR LÍMITE ANTES DE CREAR NUEVO PRODUCTO
+        if (!$producto->exists && !$empresa->puedeCrearProductos()) {
+            return back()->withInput()
+                ->with('error', 'Has alcanzado el límite de ' . $empresa->limite_productos . ' productos para tu plan. Por favor actualiza tu membresía.')
+                ->with('show_upgrade', true);
+        }
+
         $rules = [
             'referencia' => [
                 'required','string','max:255',
@@ -168,9 +196,6 @@ class ProductosController extends Controller
             'categoria_id' => ['required','exists:categorias,id'],
             'controlar_stock' => ['boolean'],
             'permitir_venta_sin_stock' => ['boolean'],
-
-            // ✅ Variantes
-            // Evita duplicados en el mismo request y deja que el índice (producto_id, sku) haga el resto
             'variantes.*.talla' => ['nullable','string','max:50'],
             'variantes.*.color' => ['nullable','string','max:50'],
             'variantes.*.sku'   => ['nullable','string','max:255','distinct'],
@@ -178,7 +203,6 @@ class ProductosController extends Controller
             'variantes.*.stock_minimo'  => ['nullable','integer','min:0'],
             'variantes.*.stock_maximo'  => ['nullable','integer','min:0'],
             'variantes.*.ubicacion'     => ['nullable','string','max:255'],
-
             'precios.*' => ['nullable','numeric','min:0'],
             'stock_inicial' => ['nullable','integer','min:0'],
             'stock_minimo'  => ['nullable','integer','min:0'],
@@ -191,9 +215,6 @@ class ProductosController extends Controller
             'max' => 'No debe superar los :max caracteres.',
             'unique' => 'Ya existe un producto con esta referencia.',
             'exists' => 'La categoría seleccionada no es válida.',
-            'imagenes.*.image' => 'El archivo debe ser una imagen.',
-            'imagenes.*.mimes' => 'La imagen debe ser JPG, PNG o WebP.',
-            'imagenes.*.max' => 'La imagen no debe superar 2MB.',
             'precios.*.numeric' => 'El precio debe ser un número.',
             'precios.*.min' => 'El precio no puede ser negativo.',
             'stock_inicial.integer' => 'El stock debe ser un número entero.',
@@ -210,16 +231,14 @@ class ProductosController extends Controller
             $data['controlar_stock'] = $request->input('controlar_stock', 1) == 1;
             $data['permitir_venta_sin_stock'] = $request->input('permitir_venta_sin_stock', 0) == 1;
             $data['activo'] = true;
-            $data['empresa_id'] = $empresa->id; // ASIGNAR EMPRESA_ID
+            $data['empresa_id'] = $empresa->id;
             
             $esNuevo = !$producto->exists;
             $producto->fill($data)->save();
             
             // Guardar variantes
             if ($producto->tiene_variantes && $request->has('variantes')) {
-                // Si es edición, eliminar variantes anteriores
                 if ($request->id) {
-                    // Eliminar stock de variantes eliminadas (NUEVO)
                     $variantesIds = $producto->variantes()->pluck('id');
                     StockProducto::whereIn('variante_producto_id', $variantesIds)
                                  ->where('producto_id', $producto->id)
@@ -229,7 +248,6 @@ class ProductosController extends Controller
                 
                 foreach ($request->variantes as $index => $varianteData) {
                     if (!empty($varianteData['talla']) || !empty($varianteData['color']) || !empty($varianteData['sku'])) {
-                        // Generar SKU si no se proporciona
                         $sku = $varianteData['sku'];
                         if (empty($sku)) {
                             $sku = $producto->referencia;
@@ -252,7 +270,6 @@ class ProductosController extends Controller
                             'activo' => true
                         ]);
                         
-                        // Crear registro de stock para la variante si se controla stock (NUEVO)
                         if ($producto->controlar_stock) {
                             $stockInicial = $varianteData['stock_inicial'] ?? 0;
                             $stock = StockProducto::create([
@@ -266,7 +283,6 @@ class ProductosController extends Controller
                                 'alerta_stock_bajo' => true
                             ]);
                             
-                            // Registrar movimiento inicial si hay stock
                             if ($stockInicial > 0) {
                                 MovimientoStock::create([
                                     'producto_id' => $producto->id,
@@ -284,7 +300,6 @@ class ProductosController extends Controller
                     }
                 }
             } else if ($producto->controlar_stock && !$producto->tiene_variantes) {
-                // Producto sin variantes - crear o actualizar stock principal (NUEVO)
                 $stockInicial = $request->input('stock_inicial', 0);
                 
                 $stock = StockProducto::firstOrNew([
@@ -292,7 +307,6 @@ class ProductosController extends Controller
                     'variante_producto_id' => null
                 ]);
                 
-                // Si es nuevo o si cambió el stock
                 if (!$stock->exists || ($esNuevo && $stockInicial > 0)) {
                     $stockAnterior = $stock->cantidad_disponible ?? 0;
                     
@@ -305,7 +319,6 @@ class ProductosController extends Controller
                         'alerta_stock_bajo' => true
                     ])->save();
                     
-                    // Registrar movimiento si es nuevo con stock inicial
                     if ($esNuevo && $stockInicial > 0) {
                         MovimientoStock::create([
                             'producto_id' => $producto->id,
@@ -320,7 +333,6 @@ class ProductosController extends Controller
                         ]);
                     }
                 } else {
-                    // Solo actualizar configuración
                     $stock->update([
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
@@ -356,9 +368,7 @@ class ProductosController extends Controller
             
             // Actualizar imagen principal existente
             if ($request->has('imagen_principal_existente')) {
-                // Quitar principal de todas
                 $producto->imagenes()->update(['es_principal' => false]);
-                // Establecer la nueva principal
                 $producto->imagenes()
                         ->where('id', $request->imagen_principal_existente)
                         ->update(['es_principal' => true]);
@@ -369,7 +379,6 @@ class ProductosController extends Controller
                 foreach ($request->eliminar_imagenes as $imagenId) {
                     $imagen = ImagenProducto::find($imagenId);
                     if ($imagen && $imagen->producto_id == $producto->id) {
-                        // Eliminar archivo físico
                         $filePath = public_path($imagen->ruta_imagen);
                         if (File::exists($filePath)) {
                             File::delete($filePath);

@@ -28,7 +28,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
-Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/inicio',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('inicio');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
@@ -247,7 +247,26 @@ Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, '
 // Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
 // Agregar después de las otras rutas de tienda
 Route::get('/{slug}/categorias', [App\Http\Controllers\TiendaController::class, 'categorias'])->name('tienda.categorias');
+// Agregar en web.php dentro del middleware 'auth'
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\DashboardAdminController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/empresa/{id}', [App\Http\Controllers\DashboardAdminController::class, 'detalleEmpresa'])->name('dashboard.empresa');
+    Route::post('/dashboard/pagar', [App\Http\Controllers\DashboardAdminController::class, 'marcarComoPagadas'])->name('dashboard.pagar');
+    Route::get('/dashboard/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporte'])->name('dashboard.exportar');
+});
 
+Route::middleware(['auth'])->group(function () {
+    // Membresías
+    Route::prefix('membresias')->name('membresias.')->group(function () {
+        Route::get('/', [App\Http\Controllers\MembresiaController::class, 'index'])->name('index');
+        Route::get('/historial', [App\Http\Controllers\MembresiaController::class, 'historial'])->name('historial');
+        Route::get('/{slug}', [App\Http\Controllers\MembresiaController::class, 'show'])->name('show');
+        Route::post('/{plan}/comprar', [App\Http\Controllers\MembresiaController::class, 'comprar'])->name('comprar');
+        Route::post('/cancelar', [App\Http\Controllers\MembresiaController::class, 'cancelar'])->name('cancelar');
+    });
+});
 
+// Ruta pública para confirmación de pago de membresía
+Route::get('/membresias/pago/confirmacion/{referencia}', [App\Http\Controllers\MembresiaController::class, 'confirmarPago'])->name('membresias.pago.confirmacion');
 
 require __DIR__.'/auth.php';

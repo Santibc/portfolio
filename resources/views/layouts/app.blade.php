@@ -12,7 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
-   @stack('styles')
+    @stack('styles')
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -37,7 +38,7 @@
             overflow: hidden;
         }
 
-        /* Added for the logout text in sidebar */
+        /* Ocultar texto de "Salir" cuando está colapsado */
         .sidebar.collapsed .logout-label {
             opacity: 0;
             width: 0;
@@ -46,7 +47,7 @@
         }
 
         .sidebar.collapsed .btn-outline-danger {
-            justify-content: center !important; /* Center the icon when text is hidden */
+            justify-content: center !important;
         }
 
         header {
@@ -54,9 +55,9 @@
             background-color: white;
             position: fixed;
             top: 0;
-            right: 0; /* Keep it aligned to the right */
-            transition: left 0.3s ease; /* Smooth transition only for left */
-            padding-right: 1rem; /* Add some padding to the right edge */
+            right: 0;
+            transition: left 0.3s ease;
+            padding-right: 1rem;
         }
 
         main {
@@ -88,23 +89,20 @@
             font-weight: 600;
         }
 
-        /* Ensure user info in header expands as needed, remove max-width constraints if possible */
+        /* Header: info de usuario alineada a la derecha y con elipsis */
         .header-user-info {
-            /* This div contains the name, email, and avatar */
-            flex-grow: 1; /* Allow it to take available space */
-            justify-content: flex-end; /* Push content to the right within this flex item */
-            display: flex; /* Make it a flex container */
+            flex-grow: 1;
+            justify-content: flex-end;
+            display: flex;
             align-items: center;
-            gap: 0.5rem; /* Space between text and avatar */
+            gap: 0.5rem;
         }
 
         .header-user-info .text-end {
-            /* No max-width here, allow name/email to expand */
-            overflow: hidden; /* Hide overflow if text is too long */
+            overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            max-width: calc(100% - 50px); /* Allow text to take most of the space, reserving for avatar */
-                                          /* Adjust 50px (avatar width + gap) as needed */
+            max-width: calc(100% - 50px);
         }
 
         .header-user-info .text-end .fw-semibold,
@@ -114,10 +112,9 @@
             text-overflow: ellipsis;
         }
 
-
         @media (max-width: 768px) {
             .header-user-info .text-end {
-                max-width: calc(100% - 50px); /* Keep a max-width for smaller screens if necessary */
+                max-width: calc(100% - 50px);
             }
         }
     </style>
@@ -147,7 +144,7 @@
         </header>
 
         {{-- Contenido --}}
-        <main id="appMainContent" >
+        <main id="appMainContent">
             {{ $slot }}
         </main>
     </div>
@@ -156,171 +153,104 @@
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
+    {{-- Lógica unificada del sidebar (sin variables duplicadas) --}}
     <script>
-        const sidebar = document.querySelector('.sidebar');
-        const appHeader = document.getElementById('appHeader');
-        const appMainContent = document.getElementById('appMainContent');
+    (() => {
+      const sidebar       = document.querySelector('.sidebar');
+      const appHeader     = document.getElementById('appHeader');
+      const appMainContent= document.getElementById('appMainContent');
+      const toggleBtn     = document.getElementById('toggleSidebar');
 
-        function updateLayout() {
-            const sidebarWidth = sidebar.offsetWidth; // Obtiene el ancho actual (70px o 250px)
-            appHeader.style.left = `${sidebarWidth}px`;
-            appHeader.style.right = `0`;
-            appMainContent.style.marginLeft = `${sidebarWidth}px`;
+      // Si por alguna razón no existen (otra plantilla), salimos sin romper nada
+      if (!sidebar || !appHeader || !appMainContent || !toggleBtn) return;
+
+      let isManuallyToggled = false;
+      const TRANSITION_MS = 300;
+
+      const updateLayout = () => {
+        const sidebarWidth = sidebar.offsetWidth; // 70px o 250px
+        appHeader.style.left = `${sidebarWidth}px`;
+        appHeader.style.right = '0';
+        appMainContent.style.marginLeft = `${sidebarWidth}px`;
+      };
+
+      const saveSidebarState = () => {
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? 'true' : 'false');
+      };
+
+      const handleResponsive = () => {
+        if (isManuallyToggled) return;
+        if (window.innerWidth <= 768) {
+          sidebar.classList.add('collapsed');
+        } else {
+          sidebar.classList.remove('collapsed');
         }
+        setTimeout(updateLayout, TRANSITION_MS);
+      };
 
-        // Función para guardar el estado del sidebar en localStorage
-        function saveSidebarState() {
-            if (sidebar.classList.contains('collapsed')) {
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
+      const restoreSidebarState = () => {
+        const saved = localStorage.getItem('sidebarCollapsed');
+        if (saved !== null) {
+          isManuallyToggled = true;
+          if (saved === 'true') sidebar.classList.add('collapsed');
+          else sidebar.classList.remove('collapsed');
+        } else {
+          handleResponsive();
         }
+        setTimeout(updateLayout, TRANSITION_MS);
+      };
 
-        // Función para restaurar el estado del sidebar desde localStorage
-        function restoreSidebarState() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed');
-            if (isCollapsed === 'true') {
-                sidebar.classList.add('collapsed');
-                // IMPORTANTE: Esperar a que la transición CSS termine antes de actualizar el layout
-                // 300ms debe coincidir con la duración de la transición en el CSS para .sidebar
-                setTimeout(updateLayout, 300);
-            } else {
-                sidebar.classList.remove('collapsed');
-                // Si no está colapsado, puedes actualizar el layout inmediatamente o con un pequeño delay si también tiene transición de apertura
-                updateLayout();
-            }
-        }
+      document.addEventListener('DOMContentLoaded', () => {
+        restoreSidebarState();
 
-        // Restaurar el estado del sidebar al cargar la página
-        document.addEventListener('DOMContentLoaded', restoreSidebarState);
+        // Inicializar tooltips del sidebar (si los hay)
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+      });
 
-        // Modificar el click del botón para guardar el estado
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            saveSidebarState(); // Guardar el nuevo estado
+      // Toggle manual
+      toggleBtn.addEventListener('click', () => {
+        isManuallyToggled = true;
+        sidebar.classList.toggle('collapsed');
+        saveSidebarState();
+        setTimeout(updateLayout, TRANSITION_MS);
+      });
 
-            // Esperar a que la transición termine para actualizar el layout
-            setTimeout(updateLayout, 300);
-        });
+      // Redimensionamiento (debounce)
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          handleResponsive();
+          updateLayout();
+        }, 250);
+      });
 
-        // También actualizar en el redimensionamiento de la ventana
-        window.addEventListener('resize', updateLayout);
+      // Abrir submenús aunque el sidebar esté colapsado
+      document.addEventListener('click', (e) => {
+        if (!sidebar.classList.contains('collapsed')) return;
+        const trigger = e.target.closest('[data-bs-toggle="collapse"]');
+        if (!trigger) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Expandir temporalmente el sidebar para mostrar el submenú
+        sidebar.classList.remove('collapsed');
+        setTimeout(() => {
+          updateLayout();
+          const targetSel = trigger.getAttribute('href') || trigger.dataset.bsTarget;
+          if (targetSel) new bootstrap.Collapse(document.querySelector(targetSel), { toggle: true });
+        }, TRANSITION_MS);
+      });
+    })();
     </script>
-<script>
-        const sidebar = document.querySelector('.sidebar');
-        const appHeader = document.getElementById('appHeader');
-        const appMainContent = document.getElementById('appMainContent');
-        let isManuallyToggled = false;
 
-        function updateLayout() {
-            const sidebarWidth = sidebar.offsetWidth; // Obtiene el ancho actual (70px o 250px)
-            appHeader.style.left = `${sidebarWidth}px`;
-            appHeader.style.right = `0`;
-            appMainContent.style.marginLeft = `${sidebarWidth}px`;
-        }
-
-        // Función para guardar el estado del sidebar en localStorage
-        function saveSidebarState() {
-            if (sidebar.classList.contains('collapsed')) {
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
-        }
-
-        // Función para manejar el responsive
-        function handleResponsive() {
-            const windowWidth = window.innerWidth;
-            
-            // Solo aplicar auto-colapso si el usuario no ha interactuado manualmente
-            if (!isManuallyToggled) {
-                if (windowWidth <= 768) {
-                    sidebar.classList.add('collapsed');
-                } else {
-                    sidebar.classList.remove('collapsed');
-                }
-                setTimeout(updateLayout, 300);
-            }
-        }
-
-        // Función para restaurar el estado del sidebar desde localStorage
-        function restoreSidebarState() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed');
-            const windowWidth = window.innerWidth;
-            
-            // Si hay un estado guardado, usarlo
-            if (isCollapsed !== null) {
-                isManuallyToggled = true;
-                if (isCollapsed === 'true') {
-                    sidebar.classList.add('collapsed');
-                } else {
-                    sidebar.classList.remove('collapsed');
-                }
-            } else {
-                // Si no hay estado guardado, aplicar responsive
-                handleResponsive();
-            }
-            
-            setTimeout(updateLayout, 300);
-        }
-
-        // Restaurar el estado del sidebar al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            restoreSidebarState();
-            
-            // Inicializar tooltips para el sidebar colapsado
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-
-        // Modificar el click del botón para guardar el estado
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            isManuallyToggled = true;
-            sidebar.classList.toggle('collapsed');
-            saveSidebarState(); // Guardar el nuevo estado
-
-            // Esperar a que la transición termine para actualizar el layout
-            setTimeout(updateLayout, 300);
-        });
-
-        // Manejar el redimensionamiento de la ventana
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                handleResponsive();
-                updateLayout();
-            }, 250);
-        });
-
-        // Manejar clicks en submenús cuando el sidebar está colapsado
-        document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('collapsed')) {
-                const submenuTrigger = e.target.closest('[data-bs-toggle="collapse"]');
-                if (submenuTrigger) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Expandir temporalmente el sidebar
-                    sidebar.classList.remove('collapsed');
-                    setTimeout(() => {
-                        updateLayout();
-                        // Activar el collapse después de expandir
-                        const collapse = new bootstrap.Collapse(document.querySelector(submenuTrigger.getAttribute('href')), {
-                            toggle: true
-                        });
-                    }, 300);
-                }
-            }
-        });
-    </script>
+    {{-- Evitar scroll horizontal indeseado --}}
     <script>
-  document.documentElement.style.overflowX = 'hidden';
-  document.body.style.overflowX = 'hidden';
-</script>
+      document.documentElement.style.overflowX = 'hidden';
+      document.body.style.overflowX = 'hidden';
+    </script>
 
     @stack('scripts')
 </body>
