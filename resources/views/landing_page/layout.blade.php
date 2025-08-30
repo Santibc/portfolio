@@ -27,6 +27,204 @@
   <!-- Archivo CSS principal -->
   <link href="{{ asset('montano_assets/assets/css/main.css') }}" rel="stylesheet">
 
+  <!-- Estilos personalizados para el header dinámico -->
+  <style>
+    /* Estilos para el header dinámico */
+    .header {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    
+    .header.scrolled {
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header .branding {
+      transition: min-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header.scrolled .branding {
+      min-height: 28px;  /* Reducido 30% - era 40px */
+    }
+    
+    /* Contenedor del logo con posición relativa para superponer imágenes */
+    .header .logo {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 100px;
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header.scrolled .logo {
+      height: 35px;  /* Reducido 30% de 50px */
+    }
+    
+    /* Ambas imágenes posicionadas absolutamente para superponerse */
+    .header .logo img {
+      position: absolute;
+      left: 0;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Logo grande - visible por defecto */
+    .header .logo .logo-large {
+      max-height: 100px;
+      padding: 5px;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    
+    /* Logo pequeño - oculto por defecto */
+    .header .logo .logo-small {
+      max-height: 45px;  /* Reducido 30% de 50px */
+      opacity: 0;
+      transform: scale(0.8) translateY(10px);
+    }
+    
+    /* Al hacer scroll - animaciones */
+    .header.scrolled .logo .logo-large {
+      opacity: 0;
+      transform: scale(1.2) translateY(-10px);
+    }
+    
+    .header.scrolled .logo .logo-small {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    
+    /* Efecto de morphing en el contenedor */
+    .branding {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .branding::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, 
+        transparent 0%, 
+        transparent 40%, 
+        rgba(255,255,255,0.1) 50%, 
+        transparent 60%, 
+        transparent 100%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    
+    .header.scrolled .branding::after {
+      opacity: 1;
+    }
+    
+    /* Animación adicional para el contenedor del logo */
+    .container {
+      transition: padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header.scrolled .container {
+      padding-top: 5px;  /* Reducido de 10px */
+      padding-bottom: 5px;  /* Reducido de 10px */
+    }
+    
+    /* Estilos para el menú de navegación con transiciones */
+    .navmenu {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .navmenu a,
+    .navmenu a:focus {
+      color: #999999 !important;
+      background-color: transparent !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    
+    /* Efecto de subrayado animado */
+    .navmenu a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background-color: #032344;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(-50%);
+    }
+    
+    .navmenu li:hover > a::after,
+    .navmenu .active::after {
+      width: 100%;
+    }
+    
+    .navmenu li:hover > a,
+    .navmenu .active,
+    .navmenu .active:focus {
+      color: #032344 !important;
+      background-color: transparent !important;
+      transform: translateY(-1px);
+    }
+    
+    /* Animación de entrada escalonada para los items del menú */
+    .navmenu li {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .header.scrolled .navmenu li {
+      animation: slideIn 0.5s ease forwards;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0.8;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Retraso escalonado para cada item del menú */
+    .navmenu li:nth-child(1) { animation-delay: 0.1s; }
+    .navmenu li:nth-child(2) { animation-delay: 0.15s; }
+    .navmenu li:nth-child(3) { animation-delay: 0.2s; }
+    .navmenu li:nth-child(4) { animation-delay: 0.25s; }
+    
+    /* Para dispositivos móviles */
+    @media (max-width: 1199px) {
+      .navmenu a:hover,
+      .navmenu .active,
+      .navmenu .active:focus {
+        color: #032344 !important;
+        background-color: transparent !important;
+      }
+      
+      .header .logo {
+        height: 80px;
+      }
+      
+      .header.scrolled .logo {
+        height: 45px;  /* Reducido 30% de 45px para móviles */
+      }
+      
+      .header .logo .logo-large {
+        max-height: 80px;
+      }
+      
+      .header .logo .logo-small {
+        max-height: 45px;  /* Reducido 30% de 45px para móviles */
+      }
+    }
+  </style>
+
   <!-- =======================================================
   * Nombre de la plantilla: Day
   * URL de la plantilla: https://bootstrapmade.com/day-multipurpose-html-template-for-free/
@@ -59,7 +257,8 @@
 
       <div class="container position-relative d-flex align-items-center justify-content-between">
         <a href="{{ route('welcome') }}" class="logo d-flex align-items-center">
-          <img src="{{ asset('images/logo.png') }}" alt="Logo">
+          <img src="{{ asset('images/logo_largo.png') }}" alt="Logo" class="logo-large">
+          <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo-small">
         </a>
 
         <nav id="navmenu" class="navmenu">
@@ -148,6 +347,32 @@
   <script src="{{ asset('montano_assets/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
   <script src="{{ asset('montano_assets/assets/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
   <script src="{{ asset('montano_assets/assets/js/main.js') }}"></script>
+
+  <!-- Script para el header dinámico -->
+  <script>
+    // Función para manejar el scroll con throttling para mejor rendimiento
+    let isScrolling = false;
+    
+    function handleScroll() {
+      if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+          const header = document.getElementById('header');
+          if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+          } else {
+            header.classList.remove('scrolled');
+          }
+          isScrolling = false;
+        });
+        isScrolling = true;
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    // Verificar el estado inicial
+    handleScroll();
+  </script>
 
 </body>
 
