@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\PlanMembresia;
 use App\Models\Membresia;
 use App\Models\PagoMembresia;
-use App\Models\TransaccionPago;
 use App\Services\WompiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,21 +82,11 @@ class MembresiaController extends Controller
                 'estado' => 'pendiente'
             ]);
             
-            // Crear transacción para Wompi
-            $transaccion = TransaccionPago::create([
-                'compra_id' => 0, // No es una compra regular
-                'pasarela' => 'wompi',
-                'referencia_transaccion' => $referencia,
-                'monto' => $plan->precio,
-                'moneda' => 'COP',
-                'estado' => 'pendiente'
-            ]);
-            
             DB::commit();
             
             // Generar datos para Wompi
             $wompiService = new WompiService();
-            $datosCheckout = $this->generarDatosCheckoutMembresia($plan, $empresa, $transaccion);
+            $datosCheckout = $this->generarDatosCheckoutMembresia($plan, $empresa, $pagoMembresia);
             
             return view('membresias.redirect-wompi', compact('datosCheckout'));
             
@@ -229,21 +218,21 @@ class MembresiaController extends Controller
     /**
      * Generar datos para checkout de membresía
      */
-    private function generarDatosCheckoutMembresia($plan, $empresa, $transaccion)
+    private function generarDatosCheckoutMembresia($plan, $empresa, $pagoMembresia)
     {
         $wompiService = new WompiService();
         $montoEnCentavos = intval($plan->precio * 100);
         
         // Generar firma
         $firma = $wompiService->generarFirmaIntegridad(
-            $transaccion->referencia_transaccion,
+            $pagoMembresia->referencia_pago,
             $montoEnCentavos,
             'COP'
         );
         
         // URL de redirección
         $redirectUrl = route('membresias.pago.confirmacion', [
-            'referencia' => $transaccion->referencia_transaccion
+            'referencia' => $pagoMembresia->referencia_pago
         ]);
         
         $config = \App\Models\ConfiguracionPasarela::obtenerConfiguracionActiva('wompi');
@@ -252,7 +241,7 @@ class MembresiaController extends Controller
             'public_key' => $config->public_key,
             'currency' => 'COP',
             'amount_in_cents' => $montoEnCentavos,
-            'reference' => $transaccion->referencia_transaccion,
+            'reference' => $pagoMembresia->referencia_pago,
             'signature_integrity' => $firma,
             'redirect_url' => $redirectUrl,
             'customer_email' => Auth::user()->email,
