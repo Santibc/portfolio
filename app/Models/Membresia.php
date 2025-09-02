@@ -59,19 +59,38 @@ class Membresia extends Model
      */
     public function activar()
     {
-        $this->update([
-            'estado' => 'activa',
-            'fecha_inicio' => now(),
-            'fecha_fin' => now()->addMonth()
-        ]);
+        \DB::beginTransaction();
         
-        // Actualizar empresa con los parámetros del plan
-        $this->empresa->update([
-            'plan_membresia_id' => $this->plan_membresia_id,
-            'limite_productos' => $this->plan->limite_productos,
-            'porcentaje_comision' => $this->plan->porcentaje_comision,
-            'comision_fija' => $this->plan->comision_fija
-        ]);
+        try {
+            // Cancelar todas las membresías activas previas de la empresa
+            $this->empresa->membresias()
+                ->where('estado', 'activa')
+                ->where('id', '!=', $this->id)
+                ->update(['estado' => 'cancelada']);
+            
+            // Activar esta membresía
+            $fechaFin = $this->plan->esGratuito() ? null : now()->addMonth();
+            
+            $this->update([
+                'estado' => 'activa',
+                'fecha_inicio' => now(),
+                'fecha_fin' => $fechaFin
+            ]);
+            
+            // Actualizar empresa con los parámetros del plan
+            $this->empresa->update([
+                'plan_membresia_id' => $this->plan_membresia_id,
+                'limite_productos' => $this->plan->limite_productos,
+                'porcentaje_comision' => $this->plan->porcentaje_comision,
+                'comision_fija' => $this->plan->comision_fija,
+                'cargo_fijo_comision' => $this->plan->comision_fija
+            ]);
+            
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            throw $e;
+        }
     }
     
     /**

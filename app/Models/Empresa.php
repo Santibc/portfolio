@@ -229,21 +229,46 @@ public function verificarYActualizarMembresia()
     $membresiaActiva = $this->membresiaActiva;
     
     if ($membresiaActiva && $membresiaActiva->fecha_fin && $membresiaActiva->fecha_fin <= now()) {
-        // Membresía expirada, marcar como expirada
-        $membresiaActiva->update(['estado' => 'expirada']);
+        \DB::beginTransaction();
         
-        // Obtener plan gratuito
-        $planGratuito = PlanMembresia::where('precio', 0)->first();
-        
-        if ($planGratuito) {
-            // Cambiar a plan gratuito
-            $this->update(['plan_membresia_id' => $planGratuito->id]);
+        try {
+            // Membresía expirada, marcar como expirada
+            $membresiaActiva->update(['estado' => 'expirada']);
             
-            // Desactivar productos excedentes (más recientes primero)
-            $this->desactivarProductosExcedentes($planGratuito->limite_productos);
+            // Obtener plan gratuito
+            $planGratuito = PlanMembresia::where('precio', 0)->first();
+            
+            if ($planGratuito) {
+                // Crear nueva membresía gratuita
+                $nuevaMembresiaGratuita = Membresia::create([
+                    'empresa_id' => $this->id,
+                    'plan_membresia_id' => $planGratuito->id,
+                    'estado' => 'activa',
+                    'fecha_inicio' => now(),
+                    'fecha_fin' => null, // Plan gratuito no expira
+                    'precio_pagado' => 0
+                ]);
+                
+                // Actualizar empresa con parámetros del plan gratuito
+                $this->update([
+                    'plan_membresia_id' => $planGratuito->id,
+                    'limite_productos' => $planGratuito->limite_productos,
+                    'porcentaje_comision' => $planGratuito->porcentaje_comision,
+                    'comision_fija' => $planGratuito->comision_fija,
+                    'cargo_fijo_comision' => $planGratuito->comision_fija
+                ]);
+                
+                // Desactivar productos excedentes (más recientes primero)
+                $this->desactivarProductosExcedentes($planGratuito->limite_productos);
+            }
+            
+            \DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Error al verificar y actualizar membresía: ' . $e->getMessage());
+            return false;
         }
-        
-        return true;
     }
     
     return false;
