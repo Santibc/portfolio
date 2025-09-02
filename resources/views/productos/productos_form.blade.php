@@ -418,6 +418,64 @@
         </div>
       </div>
 
+      {{-- Beneficios del Producto --}}
+      <div class="card shadow mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Beneficios del Producto (Opcional)</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {{-- Información de Envío --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">
+                <i class="bi bi-truck me-1"></i>
+                Información de Envío
+              </label>
+              <input name="info_envio" type="text"
+                     class="form-control @error('info_envio') is-invalid @enderror"
+                     value="{{ old('info_envio',$producto->info_envio) }}"
+                     placeholder="Ej: Envío gratis en compras superiores a $75.000">
+              @error('info_envio') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Información sobre envío que se mostrará al cliente</small>
+            </div>
+
+            {{-- Días de Devolución --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Política de Devoluciones
+              </label>
+              <input name="dias_devolucion" type="text"
+                     class="form-control @error('dias_devolucion') is-invalid @enderror"
+                     value="{{ old('dias_devolucion',$producto->dias_devolucion) }}"
+                     placeholder="Ej: 45 días para devoluciones sin complicaciones">
+              @error('dias_devolucion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Política de devoluciones del producto</small>
+            </div>
+
+            {{-- Garantía --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">
+                <i class="bi bi-shield-check me-1"></i>
+                Garantía
+              </label>
+              <input name="garantia" type="text"
+                     class="form-control @error('garantia') is-invalid @enderror"
+                     value="{{ old('garantia',$producto->garantia) }}"
+                     placeholder="Ej: Garantía del fabricante de 3 años">
+              @error('garantia') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Información de garantía del producto</small>
+            </div>
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Opcional:</strong> Complete solo los beneficios que apliquen para este producto. 
+            Si no completa ningún campo, esta sección no se mostrará en la tienda.
+          </div>
+        </div>
+      </div>
+
       {{-- Botones --}}
       <div class="d-flex justify-content-between">
         <button type="submit" class="btn btn-primary">

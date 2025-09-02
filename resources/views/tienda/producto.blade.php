@@ -77,7 +77,7 @@
           <!-- Product Details -->
           <div class="col-lg-5" data-aos="fade-left" data-aos-delay="200">
             <div class="product-details">
-              <div class="product-badge-container">
+{{--               <div class="product-badge-container">
                 <span class="badge-category">{{ $producto->categoria->nombre }}</span>
                 <div class="rating-group">
                   <div class="stars">
@@ -89,7 +89,7 @@
                   </div>
                   <span class="review-text">(127 reviews)</span>
                 </div>
-              </div>
+              </div> --}}
 
               <h1 class="product-name">{{ $producto->nombre }}</h1>
 
@@ -121,14 +121,22 @@
 
               {{-- Estado de disponibilidad --}}
               <div class="availability-status">
-                @if($producto->controlar_stock)
-                  @if($producto->tiene_variantes)
-                    <div class="stock-indicator" id="stockInfo">
-                      <i class="bi bi-info-circle"></i>
-                      <span class="stock-text">Selecciona una opción para ver disponibilidad</span>
+                @if($producto->tiene_variantes)
+                  <div class="stock-indicator" id="stockInfo">
+                    <i class="bi bi-info-circle"></i>
+                    <span class="stock-text">Selecciona una opción para ver disponibilidad</span>
+                  </div>
+                @else
+                  @php 
+                    $stockInfo = $producto->getStockInfo();
+                    $stockDisponible = $stockInfo['stock_disponible'];
+                  @endphp
+                  @if(!$stockInfo['controlar_stock'] || $stockInfo['permitir_venta_sin_stock'])
+                    <div class="stock-indicator">
+                      <i class="bi bi-check-circle-fill"></i>
+                      <span class="stock-text">Disponible</span>
                     </div>
-                  @else
-                    @php $stockDisponible = $producto->stock_disponible; @endphp
+                  @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
                     @if($stockDisponible > 10)
                       <div class="stock-indicator">
                         <i class="bi bi-check-circle-fill"></i>
@@ -147,68 +155,36 @@
                       </div>
                     @endif
                   @endif
-                @else
-                  <div class="stock-indicator">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span class="stock-text">Disponible</span>
-                  </div>
                 @endif
               </div>
 
               <!-- Product Variants -->
               @if($producto->tiene_variantes && $producto->variantes->count() > 0)
-                @php
-                  $tallas = $producto->variantes->pluck('talla')->unique()->filter()->sort();
-                  $colores = $producto->variantes->pluck('color')->unique()->filter()->sort();
-                @endphp
-
                 <div class="variant-section">
-                  @if($colores->count() > 0)
-                  <div class="color-selection">
-                    <label class="variant-label">Colores Disponibles:</label>
-                    <div class="color-grid">
-                      @foreach($colores as $color)
-                        @php
-                          $variantesConColor = $producto->variantes->where('color', $color);
-                          $hayStock = $variantesConColor->filter(function($v) {
-                            return $v->stock && $v->stock->stock_real > 0;
-                          })->count() > 0;
-                        @endphp
-                        <div class="color-chip variant-option {{ !$hayStock ? 'disabled' : '' }}" 
-                             data-color="{{ $color }}"
-                             data-type="color"
-                             data-value="{{ $color }}"
-                             style="background: linear-gradient(135deg, #e9ecef, #dee2e6);"
-                             {{ !$hayStock ? 'disabled' : '' }}>
-                          <span class="selection-check"><i class="bi bi-check"></i></span>
-                        </div>
-                      @endforeach
-                    </div>
-                    <div class="selected-variant">Seleccionado: <span id="selectedColor">-</span></div>
-                  </div>
-                  @endif
-
-                  @if($tallas->count() > 0)
-                  <div class="size-selection mt-3">
-                    <label class="variant-label">Tallas Disponibles:</label>
+                  <div class="variant-selection">
+                    <label class="variant-label">Variantes Disponibles:</label>
                     <div class="d-flex flex-wrap gap-2">
-                      @foreach($tallas as $talla)
+                      @foreach($producto->variantes as $variante)
                         @php
-                          $variantesConTalla = $producto->variantes->where('talla', $talla);
-                          $hayStock = $variantesConTalla->filter(function($v) {
-                            return $v->stock && $v->stock->stock_real > 0;
-                          })->count() > 0;
+                          $varianteStockInfo = $producto->getStockInfo($variante->id);
+                          $tieneStockDisponible = $varianteStockInfo['hay_stock'];
+                          $nombreVariante = $variante->nombre_variante;
                         @endphp
-                        <button class="btn btn-outline-secondary variant-option {{ !$hayStock ? 'disabled' : '' }}"
-                                data-type="talla"
-                                data-value="{{ $talla }}"
-                                {{ !$hayStock ? 'disabled' : '' }}>
-                          {{ $talla }}
+                        <button class="btn btn-outline-secondary variant-option {{ !$tieneStockDisponible && $producto->controlar_stock && !$producto->permitir_venta_sin_stock ? 'disabled' : '' }}"
+                                data-type="variante"
+                                data-variante-id="{{ $variante->id }}"
+                                data-talla="{{ $variante->talla }}"
+                                data-color="{{ $variante->color }}"
+                                data-value="{{ $nombreVariante }}"
+                                data-stock-disponible="{{ $varianteStockInfo['stock_disponible'] }}"
+                                data-puede-agregar-sin-stock="{{ $varianteStockInfo['puede_agregar_sin_stock'] ? 'true' : 'false' }}"
+                                {{ (!$tieneStockDisponible && $producto->controlar_stock && !$producto->permitir_venta_sin_stock) ? 'disabled' : '' }}>
+                          {{ $nombreVariante ?: 'Sin especificar' }}
                         </button>
                       @endforeach
                     </div>
+                    <div class="selected-variant mt-2">Variante seleccionada: <span id="selectedVariant">-</span></div>
                   </div>
-                  @endif
                 </div>
               @endif
 
@@ -231,7 +207,8 @@
 
                 <div class="action-buttons">
                   <button class="btn primary-action" id="addToCartBtn"
-                    {{ (!$producto->precio_actual || ($producto->controlar_stock && $producto->stock_disponible <= 0 && !$producto->permitir_venta_sin_stock)) ? 'disabled' : '' }}>
+                    @php $stockInfo = $producto->getStockInfo(); @endphp
+                    {{ (!$producto->precio_actual || (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado'])) ? 'disabled' : '' }}>
                     <i class="bi bi-bag-plus"></i>
                     Agregar al Carrito
                   </button>
@@ -246,24 +223,30 @@
               </div>
 
               <!-- Benefits List -->
+              @if($producto->info_envio || $producto->dias_devolucion || $producto->garantia)
               <div class="benefits-list">
+                @if($producto->info_envio)
                 <div class="benefit-item">
                   <i class="bi bi-truck"></i>
-                  <span>Envío gratis en compras superiores a $75.000</span>
+                  <span>{{ $producto->info_envio }}</span>
                 </div>
+                @endif
+                
+                @if($producto->dias_devolucion)
                 <div class="benefit-item">
                   <i class="bi bi-arrow-clockwise"></i>
-                  <span>45 días para devoluciones sin complicaciones</span>
+                  <span>{{ $producto->dias_devolucion }}</span>
                 </div>
+                @endif
+                
+                @if($producto->garantia)
                 <div class="benefit-item">
                   <i class="bi bi-shield-check"></i>
-                  <span>Garantía del fabricante de 3 años</span>
+                  <span>{{ $producto->garantia }}</span>
                 </div>
-                <div class="benefit-item">
-                  <i class="bi bi-headset"></i>
-                  <span>Soporte al cliente 24/7 disponible</span>
-                </div>
+                @endif
               </div>
+              @endif
             </div>
           </div>
         </div>
@@ -275,7 +258,7 @@
               <nav class="tabs-navigation nav">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-overview" type="button">Descripción</button>
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-technical" type="button">Detalles Técnicos</button>
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-customer-reviews" type="button">Reseñas (127)</button>
+               {{--  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ecommerce-product-details-5-customer-reviews" type="button">Reseñas (127)</button> --}}
               </nav>
 
               <div class="tab-content">
@@ -322,7 +305,7 @@
                           <ul class="contents-list">
                             <li><i class="bi bi-check-circle"></i>{{ $producto->nombre }}</li>
                             <li><i class="bi bi-check-circle"></i>Empaque Premium</li>
-                            <li><i class="bi bi-check-circle"></i>Instrucciones de Uso</li>
+                        {{--     <li><i class="bi bi-check-circle"></i>Instrucciones de Uso</li> --}}
                             <li><i class="bi bi-check-circle"></i>Garantía del Fabricante</li>
                           </ul>
                         </div>
@@ -369,7 +352,7 @@
                 </div>
 
                 <!-- Reviews Tab -->
-                <div class="tab-pane fade" id="ecommerce-product-details-5-customer-reviews">
+    {{--             <div class="tab-pane fade" id="ecommerce-product-details-5-customer-reviews">
                   <div class="reviews-content">
                     <div class="reviews-header">
                       <div class="rating-overview">
@@ -491,7 +474,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> --}}
               </div>
             </div>
           </div>
@@ -591,22 +574,45 @@
     // Selección de variantes
     $('.variant-option:not(:disabled)').on('click', function() {
       const type = $(this).data('type');
-      const value = $(this).data('value');
+      
+      if (type === 'variante') {
+        // Nueva lógica para variantes unificadas
+        $('.variant-option[data-type="variante"]').removeClass('selected active');
+        $(this).addClass('selected active');
+        
+        const varianteId = $(this).data('variante-id');
+        const varianteNombre = $(this).data('value');
+        selectedTalla = $(this).data('talla');
+        selectedColor = $(this).data('color');
+        
+        // Encontrar la variante seleccionada
+        selectedVariant = variantes.find(v => v.id == varianteId);
+        
+        $('#selectedVariant').text(varianteNombre);
+        
+        if (selectedVariant) {
+          updateStockInfo(varianteId);
+          // Solo habilitar si puede agregar al carrito
+          const puedeAgregar = $(this).data('puede-agregar-sin-stock') === 'true' || $(this).data('stock-disponible') > 0;
+          $('#addToCartBtn').prop('disabled', !puedeAgregar);
+        }
+      } else {
+        // Lógica anterior para compatibilidad (si se necesita)
+        const value = $(this).data('value');
+        $(`.variant-option[data-type="${type}"]`).removeClass('selected active');
+        $(this).addClass('selected active');
 
-      // Toggle selection
-      $(`.variant-option[data-type="${type}"]`).removeClass('selected active');
-      $(this).addClass('selected active');
+        if (type === 'talla') {
+          selectedTalla = value;
+        }
+        if (type === 'color') {
+          selectedColor = value;
+          $('#selectedColor').text(value);
+        }
 
-      if (type === 'talla') {
-        selectedTalla = value;
+        updateVariantAvailability();
+        if (tieneVariantes) findSelectedVariant();
       }
-      if (type === 'color') {
-        selectedColor = value;
-        $('#selectedColor').text(value);
-      }
-
-      updateVariantAvailability();
-      if (tieneVariantes) findSelectedVariant();
     });
 
     // Agregar al carrito
@@ -705,109 +711,119 @@
 
     if (value < 1) value = 1;
 
-    // Límite por stock
-    if (selectedVariant && selectedVariant.stock) {
-      const maxStock = selectedVariant.stock.stock_real || 0;
-      if (value > maxStock) {
-        value = maxStock;
-        showToast('error', `Solo hay ${maxStock} unidades disponibles`);
-      }
-    } else if (!tieneVariantes) {
-      const maxStock = {{ $producto->stock_disponible ?? 999 }};
-      if (value > maxStock && {{ $producto->controlar_stock ? 'true' : 'false' }}) {
-        value = maxStock;
-        showToast('error', `Solo hay ${maxStock} unidades disponibles`);
-      }
+    // Verificar límite por stock usando el input max attribute
+    const maxStock = parseInt(input.getAttribute('max'));
+    if (maxStock && value > maxStock) {
+      value = maxStock;
+      showToast('error', `Solo hay ${maxStock} unidades disponibles`);
     }
 
     input.value = value;
   }
 
-  // Actualizar disponibilidad de variantes
+  // Actualizar disponibilidad de variantes (simplificada)
   function updateVariantAvailability() {
+    // Con las variantes unificadas, esta función es menos necesaria
+    // ya que el stock se maneja directamente en la renderización inicial
     if (!tieneVariantes) return;
 
-    // Filtra colores por talla
-    if (selectedTalla) {
-      $('.variant-option[data-type="color"]').each(function() {
-        const color = $(this).data('value');
-        const hayStock = variantes.some(v =>
-          v.talla === selectedTalla &&
-          v.color === color &&
-          v.stock &&
-          v.stock.stock_real > 0
-        );
-        $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
-      });
-    }
+    // Solo ejecutar si hay variantes separadas (compatibilidad)
+    if ($('.variant-option[data-type="color"]').length > 0 || $('.variant-option[data-type="talla"]').length > 0) {
+      // Filtra colores por talla
+      if (selectedTalla) {
+        $('.variant-option[data-type="color"]').each(function() {
+          const color = $(this).data('value');
+          const hayStock = variantes.some(v =>
+            v.talla === selectedTalla &&
+            v.color === color &&
+            v.stock &&
+            v.stock.stock_real > 0
+          );
+          $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
+        });
+      }
 
-    // Filtra tallas por color
-    if (selectedColor) {
-      $('.variant-option[data-type="talla"]').each(function() {
-        const talla = $(this).data('value');
-        const hayStock = variantes.some(v =>
-          v.talla === talla &&
-          v.color === selectedColor &&
-          v.stock &&
-          v.stock.stock_real > 0
-        );
-        $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
-      });
+      // Filtra tallas por color
+      if (selectedColor) {
+        $('.variant-option[data-type="talla"]').each(function() {
+          const talla = $(this).data('value');
+          const hayStock = variantes.some(v =>
+            v.talla === talla &&
+            v.color === selectedColor &&
+            v.stock &&
+            v.stock.stock_real > 0
+          );
+          $(this).prop('disabled', !hayStock).toggleClass('disabled', !hayStock);
+        });
+      }
     }
   }
 
-  // Encuentra la variante seleccionada
+  // Encuentra la variante seleccionada (simplificada para variantes unificadas)
   function findSelectedVariant() {
-    if (!selectedTalla && !selectedColor) {
-      selectedVariant = null;
+    // Esta función ahora es más simple porque las variantes se seleccionan directamente
+    if (!selectedVariant) {
+      $('#stockInfo').html('<i class="bi bi-info-circle"></i> <span class="stock-text">Selecciona una variante</span>');
+      $('#addToCartBtn').prop('disabled', true);
       return;
     }
 
-    selectedVariant = variantes.find(v => {
-      const tallaMatch = !selectedTalla || v.talla === selectedTalla;
-      const colorMatch = !selectedColor || v.color === selectedColor;
-      return tallaMatch && colorMatch;
-    });
-
-    if (selectedVariant) {
-      updateStockInfo(selectedVariant);
-      $('#addToCartBtn').prop('disabled', false);
-    } else {
-      $('#stockInfo').html('<i class="bi bi-info-circle"></i> <span class="stock-text">Selecciona todas las opciones</span>');
-      $('#addToCartBtn').prop('disabled', true);
-    }
+    updateStockInfo(selectedVariant);
+    $('#addToCartBtn').prop('disabled', false);
   }
 
   // Actualizar información de stock
-  function updateStockInfo(variant) {
-    if (!variant.stock) return;
+  function updateStockInfo(varianteId) {
+    // Obtener información de stock vía AJAX
+    $.ajax({
+      url: "{{ route('tienda.stock.info', $empresa->slug) }}",
+      method: 'POST',
+      data: {
+        producto_id: {{ $producto->id }},
+        variante_id: varianteId
+      },
+      success: function(stockInfo) {
+        const stock = stockInfo.stock_disponible || 0;
+        let stockClass, stockText, stockIcon, quantityText = '';
+        
+        if (!stockInfo.controlar_stock || stockInfo.permitir_venta_sin_stock) {
+          stockClass = 'stock-available';
+          stockText = 'Disponible';
+          stockIcon = 'check-circle-fill';
+        } else if (stockInfo.controlar_stock && !stockInfo.permitir_venta_sin_stock) {
+          if (stock > 10) {
+            stockClass = 'stock-available';
+            stockText = 'Disponible';
+            stockIcon = 'check-circle-fill';
+          } else if (stock > 0) {
+            stockClass = 'stock-low';
+            stockText = 'Limitado';
+            stockIcon = 'exclamation-circle-fill';
+            quantityText = `<div class="quantity-left">Solo ${stock} unidades disponibles</div>`;
+          } else {
+            stockClass = 'stock-out';
+            stockText = 'Sin stock';
+            stockIcon = 'x-circle-fill';
+          }
+        }
 
-    const stock = variant.stock.stock_real || 0;
-    let stockClass, stockText, stockIcon, quantityText = '';
-
-    if (stock > 10) {
-      stockClass = 'stock-available';
-      stockText = 'Disponible';
-      stockIcon = 'check-circle-fill';
-    } else if (stock > 0) {
-      stockClass = 'stock-low';
-      stockText = 'Limitado';
-      stockIcon = 'exclamation-circle-fill';
-      quantityText = `<div class="quantity-left">Solo ${stock} unidades disponibles</div>`;
-    } else {
-      stockClass = 'stock-out';
-      stockText = 'Sin stock';
-      stockIcon = 'x-circle-fill';
-      $('#addToCartBtn').prop('disabled', true);
-    }
-
-    $('#stockInfo').html(`
-      <div class="stock-indicator">
-        <i class="bi bi-${stockIcon}"></i>
-        <span class="stock-text">${stockText}</span>
-      </div>
-      ${quantityText}
-    `);
+        $('#stockInfo').html(`
+          <div class="stock-indicator">
+            <i class="bi bi-${stockIcon}"></i>
+            <span class="stock-text">${stockText}</span>
+          </div>
+          ${quantityText}
+        `);
+        
+        // Actualizar límite de cantidad
+        const quantityInput = document.getElementById('quantity');
+        if (stockInfo.stock_limitado && stock > 0) {
+          quantityInput.max = stock;
+        } else {
+          quantityInput.removeAttribute('max');
+        }
+      }
+    });
   }
 
   // Comprar ahora

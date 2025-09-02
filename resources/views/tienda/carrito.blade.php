@@ -195,9 +195,23 @@
             transition: all 0.2s;
         }
 
-        .btn-checkout:hover {
+        .btn-checkout:hover:not(:disabled) {
             background: var(--secondary-color);
             transform: translateY(-1px);
+        }
+
+        .btn-checkout:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stock-warning {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: #fef2f2;
+            border-radius: 0.25rem;
+            border: 1px solid #fecaca;
         }
 
         .btn-continue-shopping {
@@ -329,6 +343,12 @@
                                                         </div>
                                                     @endif
                                                     <div class="item-reference">Ref: {{ $item['referencia'] }}</div>
+                                                    <div class="stock-warning d-none" id="stock-warning-{{ $key }}">
+                                                        <small class="text-danger">
+                                                            <i class="bi bi-exclamation-triangle"></i>
+                                                            <span class="warning-text"></span>
+                                                        </small>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-auto">
@@ -404,9 +424,10 @@
                             <span id="summaryTotal">${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
                         </div>
                         
-                        <a href="{{ route('tienda.checkout', $empresa->slug) }}" class="btn btn-checkout">
-                            Proceder al Pago
-                        </a>
+                        <button id="checkoutBtn" class="btn btn-checkout" onclick="validateAndProceedToCheckout()">
+                            <span id="checkoutBtnText">Proceder al Pago</span>
+                            <span id="checkoutSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
                         
                         <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="btn btn-continue-shopping">
                             Seguir Comprando
@@ -442,6 +463,12 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             });
+            
+            // Validar stock al cargar la página
+            validateCartStock();
+            
+            // Validar stock cada 30 segundos
+            setInterval(validateCartStock, 30000);
         });
 
         // Update cart quantity
@@ -466,6 +493,9 @@
                     updateSummary(response);
                     showToast('success', 'Carrito actualizado');
                     $('#cartLoading').hide();
+                    
+                    // Re-validar stock después de actualizar
+                    setTimeout(validateCartStock, 500);
                 },
                 error: function(xhr) {
                     $('#cartLoading').hide();
@@ -547,6 +577,95 @@
             }
             
             toast.show();
+        }
+        
+        // Validar stock del carrito
+        function validateCartStock() {
+            $.ajax({
+                url: "{{ route('tienda.carrito.validar-stock', $empresa->slug) }}",
+                method: 'POST',
+                success: function(response) {
+                    const checkoutBtn = $('#checkoutBtn');
+                    const checkoutBtnText = $('#checkoutBtnText');
+                    
+                    // Limpiar advertencias previas
+                    $('.stock-warning').addClass('d-none');
+                    
+                    if (response.valid) {
+                        checkoutBtn.prop('disabled', false);
+                        checkoutBtnText.text('Proceder al Pago');
+                    } else {
+                        checkoutBtn.prop('disabled', true);
+                        checkoutBtnText.text('Revisar Stock - No Disponible');
+                        
+                        // Mostrar advertencias específicas por producto
+                        response.errors.forEach(function(error) {
+                            const warningEl = $('#stock-warning-' + error.key);
+                            const warningText = warningEl.find('.warning-text');
+                            
+                            let message = `Solo quedan ${error.stock_disponible} unidades disponibles`;
+                            if (error.stock_disponible === 0) {
+                                message = 'Sin stock disponible';
+                            }
+                            
+                            warningText.text(message);
+                            warningEl.removeClass('d-none');
+                        });
+                    }
+                },
+                error: function() {
+                    console.warn('Error validating cart stock');
+                }
+            });
+        }
+        
+        // Validar y proceder al checkout
+        function validateAndProceedToCheckout() {
+            const checkoutBtn = $('#checkoutBtn');
+            const checkoutBtnText = $('#checkoutBtnText');
+            const checkoutSpinner = $('#checkoutSpinner');
+            
+            checkoutBtn.prop('disabled', true);
+            checkoutBtnText.addClass('d-none');
+            checkoutSpinner.removeClass('d-none');
+            
+            $.ajax({
+                url: "{{ route('tienda.carrito.validar-stock', $empresa->slug) }}",
+                method: 'POST',
+                success: function(response) {
+                    if (response.valid) {
+                        // Stock válido, proceder al checkout
+                        window.location.href = "{{ route('tienda.checkout', $empresa->slug) }}";
+                    } else {
+                        // Stock inválido, mostrar errores
+                        let errorMessage = 'Algunos productos ya no tienen stock suficiente:\\n';
+                        response.errors.forEach(function(error) {
+                            let varianteInfo = '';
+                            if (error.variante) {
+                                const variante = Object.values(error.variante).filter(v => v).join(', ');
+                                if (variante) varianteInfo = ` (${variante})`;
+                            }
+                            errorMessage += `• ${error.producto}${varianteInfo}: Stock ${error.stock_disponible}, solicitaste ${error.cantidad_solicitada}\\n`;
+                        });
+                        errorMessage += '\\nPor favor ajusta las cantidades antes de continuar.';
+                        
+                        alert(errorMessage);
+                        
+                        // Actualizar vista con advertencias
+                        validateCartStock();
+                        
+                        checkoutBtn.prop('disabled', false);
+                        checkoutBtnText.removeClass('d-none').text('Revisar Stock - No Disponible');
+                        checkoutSpinner.addClass('d-none');
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Error al validar el stock. Intenta nuevamente.');
+                    checkoutBtn.prop('disabled', false);
+                    checkoutBtnText.removeClass('d-none').text('Proceder al Pago');
+                    checkoutSpinner.addClass('d-none');
+                }
+            });
         }
     </script>
 </body>

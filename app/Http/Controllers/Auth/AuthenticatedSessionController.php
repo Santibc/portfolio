@@ -29,6 +29,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Verificar membresía después del login para empresas
+        if (Auth::user()->hasRole('empresa') && Auth::user()->empresa) {
+            Auth::user()->empresa->verificarYActualizarMembresia();
+        }
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

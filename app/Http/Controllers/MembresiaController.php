@@ -21,7 +21,7 @@ class MembresiaController extends Controller
     public function index()
     {
         $planes = PlanMembresia::activos()->get();
-        $empresa = Auth::user()->empresa;
+        $empresa = Auth::user()->empresa()->with('planMembresia')->first();
         $membresiaActiva = $empresa->membresiaActiva;
         
         return view('membresias.index', compact('planes', 'empresa', 'membresiaActiva'));
@@ -210,7 +210,8 @@ class MembresiaController extends Controller
                 'plan_membresia_id' => $plan->id,
                 'limite_productos' => $plan->limite_productos,
                 'porcentaje_comision' => $plan->porcentaje_comision,
-                'comision_fija' => $plan->comision_fija
+                'comision_fija' => $plan->comision_fija,
+                'cargo_fijo_comision' => $plan->comision_fija
             ]);
             
             DB::commit();

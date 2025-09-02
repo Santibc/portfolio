@@ -20,7 +20,8 @@ class PlanMembresia extends Model
         'descripcion',
         'caracteristicas',
         'activo',
-        'orden'
+        'orden',
+        'marca_de_agua'
     ];
     
     protected $casts = [
@@ -28,7 +29,8 @@ class PlanMembresia extends Model
         'precio' => 'decimal:2',
         'porcentaje_comision' => 'decimal:2',
         'comision_fija' => 'decimal:2',
-        'activo' => 'boolean'
+        'activo' => 'boolean',
+        'marca_de_agua' => 'boolean'
     ];
     
     /**

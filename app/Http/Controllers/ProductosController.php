@@ -63,6 +63,9 @@ class ProductosController extends Controller
                     return '<span class="badge bg-'.$badge.'">' . $stockDisponible . '</span>';
                 })
                 ->addColumn('variantes', fn($p) => $p->tiene_variantes ? 'Sí' : 'No')
+                ->addColumn('info_envio', fn($p) => $p->info_envio ? '<span title="'.e($p->info_envio).'">'.e(\Illuminate\Support\Str::limit($p->info_envio, 30)).'</span>' : '-')
+                ->addColumn('dias_devolucion', fn($p) => $p->dias_devolucion ? '<span title="'.e($p->dias_devolucion).'">'.e(\Illuminate\Support\Str::limit($p->dias_devolucion, 30)).'</span>' : '-')
+                ->addColumn('garantia', fn($p) => $p->garantia ? '<span title="'.e($p->garantia).'">'.e(\Illuminate\Support\Str::limit($p->garantia, 30)).'</span>' : '-')
                 ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
                 ->addColumn('action', function($p) {
                     $url = route('productos.form', $p->id);
@@ -85,7 +88,7 @@ class ProductosController extends Controller
                     
                     return $buttons;
                 })
-                ->rawColumns(['imagen', 'stock', 'action'])
+                ->rawColumns(['imagen', 'stock', 'info_envio', 'dias_devolucion', 'garantia', 'action'])
                 ->make(true);
         }
 
@@ -196,6 +199,9 @@ class ProductosController extends Controller
             'categoria_id' => ['required','exists:categorias,id'],
             'controlar_stock' => ['boolean'],
             'permitir_venta_sin_stock' => ['boolean'],
+            'info_envio' => ['nullable','string','max:255'],
+            'dias_devolucion' => ['nullable','string','max:255'],
+            'garantia' => ['nullable','string','max:255'],
             'variantes.*.talla' => ['nullable','string','max:50'],
             'variantes.*.color' => ['nullable','string','max:50'],
             'variantes.*.sku'   => ['nullable','string','max:255','distinct'],

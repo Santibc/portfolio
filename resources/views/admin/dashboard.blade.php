@@ -30,9 +30,6 @@
                                 <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-clockwise"></i> Limpiar
                                 </a>
-                                <a href="{{ route('admin.dashboard.exportar', request()->all()) }}" class="btn btn-success">
-                                    <i class="bi bi-download"></i> Exportar Excel
-                                </a>
                             </div>
                         </form>
                     </div>

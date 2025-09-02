@@ -95,6 +95,9 @@
                 <th>Unidad Empaque</th>
                 <th>Extensión</th>
                 <th>Variantes</th>
+                <th>Info Envío</th>
+                <th>Devoluciones</th>
+                <th>Garantía</th>
                 <th>Activo</th>
               </tr>
             </thead>
@@ -128,6 +131,9 @@
         { data:'unidad_empaque', name:'unidad_empaque' },
         { data:'extension',    name:'extension' },
         { data:'variantes',    name:'tiene_variantes' },
+        { data:'info_envio',   name:'info_envio' },
+        { data:'dias_devolucion', name:'dias_devolucion' },
+        { data:'garantia',     name:'garantia' },
         { data:'activo',       name:'activo' },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",

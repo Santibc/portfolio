@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
+    <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}"/>
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     {{-- CSS personalizado y Bootstrap --}}
@@ -16,16 +16,24 @@
 
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f7f8fc;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23e9eaf2' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M11 0l5 20H6l5-20zm42 31a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM0 72h40v4H0v-4zm0-8h31v4H0v-4zm20-16h20v4H20v-4zM0 56h40v4H0v-4zm0-8h20v4H0v-4zm0-8h11v4H0v-4zm0-8h40v4H0v-4zm0-8h20v4H0v-4zm0-8h31v4H0v-4zm0-8h40v4H0v-4zM40 0h40v4H40v-4zm0 8h31v4H40v-4zm0 8h20v4H40v-4zm0 8h11v4H40v-4zm0 8h40v4H40v-4zm0 8h20v4H40v-4zm0 8h31v4H40v-4zm0 8h40v4H40v-4zm0 8h11v4H40v-4zm0 8h20v4H40v-4zm0 8h31v4H40v-4zm0 8h40v4H40v-4z'/%3E%3C/g%3E%3C/svg%3E");
+            font-family: 'Poppins', sans-serif;
         }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
         .sidebar {
             width: 250px;
             transition: all 0.3s ease;
+            background: linear-gradient(to bottom, #FF00C1, #0B00F9) !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
         }
 
         .sidebar.collapsed {
             width: 70px;
+            overflow-x: hidden !important;
         }
 
         .sidebar .nav-link span {
@@ -38,6 +46,27 @@
             overflow: hidden;
         }
 
+        /* Evitar que botones se desborden horizontalmente */
+        .sidebar.collapsed .nav-link {
+            justify-content: center !important;
+            padding: 0.1rem !important;
+            width: 100% !important;
+            max-width: 45px !important;
+            margin: 0.02rem auto !important;
+            min-height: 25px !important;
+            border-radius: 0.2rem !important;
+        }
+
+        .sidebar.collapsed .nav-link i {
+            margin: 0 !important;
+            font-size: 0.9rem !important;
+        }
+
+        .sidebar.collapsed .nav-item {
+            width: 100% !important;
+            text-align: center !important;
+        }
+
         /* Ocultar texto de "Salir" cuando está colapsado */
         .sidebar.collapsed .logout-label {
             opacity: 0;
@@ -48,16 +77,37 @@
 
         .sidebar.collapsed .btn-outline-danger {
             justify-content: center !important;
+            padding: 0.1rem !important;
+            max-width: 45px !important;
+            min-height: 25px !important;
+            margin: 0.02rem auto !important;
         }
 
         header {
             height: 64px;
-            background-color: white;
+            background: linear-gradient(to right, #FF00C1, #0B00F9);
+            color: white;
             position: fixed;
             top: 0;
             right: 0;
             transition: left 0.3s ease;
             padding-right: 1rem;
+        }
+
+        header .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        header .fw-semibold {
+            color: white !important;
+        }
+
+        #toggleSidebar {
+            color: white !important;
+        }
+
+        #toggleSidebar:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important;
         }
 
         main {
@@ -226,7 +276,7 @@
         }, 250);
       });
 
-      // Abrir submenús aunque el sidebar esté colapsado
+      // Manejar submenús cuando el sidebar esté colapsado - mantener distribución vertical
       document.addEventListener('click', (e) => {
         if (!sidebar.classList.contains('collapsed')) return;
         const trigger = e.target.closest('[data-bs-toggle="collapse"]');
@@ -235,13 +285,14 @@
         e.preventDefault();
         e.stopPropagation();
 
-        // Expandir temporalmente el sidebar para mostrar el submenú
-        sidebar.classList.remove('collapsed');
-        setTimeout(() => {
-          updateLayout();
-          const targetSel = trigger.getAttribute('href') || trigger.dataset.bsTarget;
-          if (targetSel) new bootstrap.Collapse(document.querySelector(targetSel), { toggle: true });
-        }, TRANSITION_MS);
+        // No expandir el sidebar, solo abrir el submenú en su lugar
+        const targetSel = trigger.getAttribute('href') || trigger.dataset.bsTarget;
+        if (targetSel) {
+          const targetEl = document.querySelector(targetSel);
+          if (targetEl) {
+            new bootstrap.Collapse(targetEl, { toggle: true });
+          }
+        }
       });
     })();
     </script>

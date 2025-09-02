@@ -73,6 +73,7 @@ class RegisteredUserController extends Controller
                 'limite_productos' => $planFundador->limite_productos,
                 'porcentaje_comision' => $planFundador->porcentaje_comision,
                 'comision_fija' => $planFundador->comision_fija,
+                'cargo_fijo_comision' => $planFundador->comision_fija,
                 'activo' => true
             ]);
             

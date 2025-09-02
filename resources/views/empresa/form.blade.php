@@ -57,7 +57,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">URL de la Tienda</label>
               <div class="input-group">
-                <span class="input-group-text text-muted">{{ url('tienda') }}/</span>
+                <span class="input-group-text text-muted">{{ url('') }}/</span>
                 <input name="slug" type="text"
                        class="form-control @error('slug') is-invalid @enderror"
                        value="{{ old('slug', $empresa->slug) }}"

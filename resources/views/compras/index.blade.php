@@ -377,8 +377,14 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-truck me-2"></i>Actualizar Envío
+                        <button type="submit" class="btn btn-primary" id="btnActualizarEnvio">
+                            <span class="btn-text">
+                                <i class="bi bi-truck me-2"></i>Actualizar Envío
+                            </span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Enviando correo...
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -460,6 +466,12 @@
             
             const compraId = $('#compraIdEnvio').val();
             const data = $(this).serialize();
+            const submitBtn = $('#btnActualizarEnvio');
+            
+            // Mostrar estado de carga
+            submitBtn.prop('disabled', true);
+            submitBtn.find('.btn-text').addClass('d-none');
+            submitBtn.find('.btn-loading').removeClass('d-none');
             
             $.ajax({
                 url: `/compras/${compraId}/actualizar-envio`,
@@ -470,12 +482,47 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        toastr.success(response.message);
-                        setTimeout(() => location.reload(), 1500);
+                        // Restaurar botón
+                        submitBtn.find('.btn-loading').addClass('d-none');
+                        submitBtn.find('.btn-text').removeClass('d-none');
+                        submitBtn.prop('disabled', false);
+                        
+                        // Cerrar modal
+                        $('#modalEnvio').modal('hide');
+                        
+                        // Mostrar SweetAlert de éxito
+                        Swal.fire({
+                            title: '¡Envío Actualizado!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#28a745',
+                            timer: 5000,
+                            timerProgressBar: true,
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
                     }
                 },
                 error: function(xhr) {
-                    toastr.error(xhr.responseJSON?.message || 'Error al actualizar el envío');
+                    // Restaurar botón en caso de error
+                    submitBtn.find('.btn-loading').addClass('d-none');
+                    submitBtn.find('.btn-text').removeClass('d-none');
+                    submitBtn.prop('disabled', false);
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Error al actualizar el envío',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#dc3545'
+                    });
                 }
             });
         });

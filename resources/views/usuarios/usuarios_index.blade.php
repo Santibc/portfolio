@@ -18,7 +18,10 @@
                                     <th class="px-6 py-3" data-priority="1">Acciones</th>
                                     <th class="px-6 py-3">Nombre</th>
                                     <th class="px-6 py-3">Email</th>
-                                    <th class="px-6 py-3">Roles</th> 
+                                    <th class="px-6 py-3">Roles</th>
+                                    <th class="px-6 py-3">Empresa</th>
+                                    <th class="px-6 py-3">Membresía</th>
+                                    <th class="px-6 py-3">Tienda</th>
                                 </tr>
                             </thead>
 
@@ -51,7 +54,10 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             { data: 'name', name: 'name' },
             { data: 'email', name: 'email' },
-             { data: 'roles',  name: 'roles', orderable: false, searchable: false } 
+            { data: 'roles',  name: 'roles', orderable: false, searchable: false },
+            { data: 'empresa_info', name: 'empresa_info', orderable: false, searchable: false },
+            { data: 'membresia_info', name: 'membresia_info', orderable: false, searchable: false },
+            { data: 'tienda_link', name: 'tienda_link', orderable: false, searchable: false }
         ],
 
         dom: "<'flex flex-wrap justify-between items-center mb-4'<'relative'B>f>" + 
@@ -111,6 +117,43 @@ document.addEventListener('DOMContentLoaded', function () {
                 .removeClass()
                 .addClass('block w-full text-left text-sm text-gray-800 px-4 py-2 rounded hover:bg-gray-100 cursor-pointer transition-colors duration-150');
         }, 50);
+    });
+
+    // Manejar el cambio de estado de empresa
+    $('#users-table').on('click', '.toggle-empresa-btn', function() {
+        const button = $(this);
+        const userId = button.data('user-id');
+        const empresaId = button.data('empresa-id');
+        const nuevoEstado = button.data('estado');
+        const estadoTexto = nuevoEstado ? 'activar' : 'desactivar';
+
+        if (confirm(`¿Está seguro de que desea ${estadoTexto} esta empresa?`)) {
+            button.prop('disabled', true);
+
+            $.ajax({
+                url: "{{ route('usuarios.cambiar-estado-empresa') }}",
+                method: 'POST',
+                data: {
+                    empresa_id: empresaId,
+                    estado: nuevoEstado,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Recargar la tabla para mostrar los cambios
+                        table.ajax.reload(null, false);
+                        
+                        // Mostrar mensaje de éxito
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error:', xhr);
+                    alert('Error al cambiar el estado de la empresa');
+                    button.prop('disabled', false);
+                }
+            });
+        }
     });
 });
 </script>

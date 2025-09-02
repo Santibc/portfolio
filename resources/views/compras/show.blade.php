@@ -128,6 +128,11 @@
                         </div>
                     </div>
                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        @if(in_array($compra->estado, ['pendiente', 'procesando', 'pagada', 'enviada']))
+                            <button class="btn btn-outline-success" onclick="actualizarEnvio({{ $compra->id }})">
+                                <i class="bi bi-truck"></i> Actualizar Envío
+                            </button>
+                        @endif
                         <button class="btn btn-outline-primary" onclick="verTimeline()">
                             <i class="bi bi-clock-history"></i> Timeline
                         </button>
@@ -350,6 +355,60 @@
         </div>
     </div>
 
+    {{-- Modal actualizar envío --}}
+    <div class="modal fade" id="modalEnvio" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formEnvio">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Actualizar Información de Envío</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="compraIdEnvio">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Transportadora *</label>
+                            <input type="text" class="form-control" name="transportadora" required
+                                   value="{{ $compra->envio->transportadora ?? '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Número de guía *</label>
+                            <input type="text" class="form-control" name="numero_guia" required
+                                   value="{{ $compra->envio->numero_guia ?? '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">URL de seguimiento</label>
+                            <input type="url" class="form-control" name="url_seguimiento"
+                                   value="{{ $compra->envio->url_seguimiento ?? '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Fecha estimada de entrega</label>
+                            <input type="date" class="form-control" name="fecha_entrega_estimada" 
+                                   min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                                   value="{{ $compra->envio->fecha_entrega_estimada ?? '' }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btnActualizarEnvio">
+                            <span class="btn-text">
+                                <i class="bi bi-truck me-2"></i>Actualizar Envío
+                            </span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Enviando correo...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script>
         function verTimeline() {
@@ -391,6 +450,81 @@
         function imprimirCompra() {
             window.print();
         }
+
+        // Actualizar envío
+        function actualizarEnvio(compraId) {
+            $('#compraIdEnvio').val(compraId);
+            
+            const modal = new bootstrap.Modal(document.getElementById('modalEnvio'));
+            modal.show();
+        }
+
+        // Submit envío
+        $('#formEnvio').on('submit', function(e) {
+            e.preventDefault();
+            
+            const compraId = $('#compraIdEnvio').val();
+            const data = $(this).serialize();
+            const submitBtn = $('#btnActualizarEnvio');
+            
+            // Mostrar estado de carga
+            submitBtn.prop('disabled', true);
+            submitBtn.find('.btn-text').addClass('d-none');
+            submitBtn.find('.btn-loading').removeClass('d-none');
+            
+            $.ajax({
+                url: `/compras/${compraId}/actualizar-envio`,
+                method: 'POST',
+                data: data,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Restaurar botón
+                        submitBtn.find('.btn-loading').addClass('d-none');
+                        submitBtn.find('.btn-text').removeClass('d-none');
+                        submitBtn.prop('disabled', false);
+                        
+                        // Cerrar modal
+                        $('#modalEnvio').modal('hide');
+                        
+                        // Mostrar SweetAlert de éxito
+                        Swal.fire({
+                            title: '¡Envío Actualizado!',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#28a745',
+                            timer: 5000,
+                            timerProgressBar: true,
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    // Restaurar botón en caso de error
+                    submitBtn.find('.btn-loading').addClass('d-none');
+                    submitBtn.find('.btn-text').removeClass('d-none');
+                    submitBtn.prop('disabled', false);
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Error al actualizar el envío',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            });
+        });
     </script>
     @endpush
 </x-app-layout>

@@ -6,8 +6,10 @@ use App\Models\Compra;
 use App\Models\TransaccionPago;
 use App\Models\Envio;
 use App\Services\WompiService;
+use App\Mail\EnvioActualizado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class ComprasController extends Controller
@@ -192,11 +194,17 @@ class ComprasController extends Controller
                 $compra->update(['estado' => 'enviada']);
             }
 
+            // Cargar relaciones necesarias para el correo
+            $compra->load(['items.producto', 'items.variante', 'ciudad.departamento', 'envio', 'empresa']);
+
+            // Enviar correo al cliente
+            Mail::to($compra->email_cliente)->send(new EnvioActualizado($compra));
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Información de envío actualizada'
+                'message' => 'Información de envío actualizada correctamente. Se ha enviado un correo al cliente con los detalles del envío.'
             ]);
 
         } catch (\Exception $e) {

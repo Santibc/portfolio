@@ -99,8 +99,7 @@ class Membresia extends Model
     public function estaActiva()
     {
         return $this->estado === 'activa' && 
-               $this->fecha_fin && 
-               $this->fecha_fin->isFuture();
+               ($this->fecha_fin === null || $this->fecha_fin->isFuture());
     }
     
     /**
@@ -112,6 +111,11 @@ class Membresia extends Model
             return 0;
         }
         
+        // Si no tiene fecha de fin (plan gratuito/permanente)
+        if ($this->fecha_fin === null) {
+            return 999; // Indicador de "ilimitado"
+        }
+        
         return now()->diffInDays($this->fecha_fin);
     }
     
@@ -121,7 +125,10 @@ class Membresia extends Model
     public function scopeActivas($query)
     {
         return $query->where('estado', 'activa')
-                     ->where('fecha_fin', '>', now());
+                     ->where(function($q) {
+                         $q->where('fecha_fin', '>', now())
+                           ->orWhereNull('fecha_fin');
+                     });
     }
     
     /**

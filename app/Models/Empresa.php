@@ -179,7 +179,10 @@ public function membresiaActiva()
 {
     return $this->hasOne(Membresia::class)
                 ->where('estado', 'activa')
-                ->where('fecha_fin', '>', now())
+                ->where(function($query) {
+                    $query->where('fecha_fin', '>', now())
+                          ->orWhereNull('fecha_fin');
+                })
                 ->latest();
 }
 
@@ -216,5 +219,52 @@ public function calcularComision($monto)
 {
     $comisionPorcentaje = ($monto * $this->porcentaje_comision) / 100;
     return $comisionPorcentaje + $this->comision_fija;
+}
+
+/**
+ * Verificar y actualizar estado de membresía
+ */
+public function verificarYActualizarMembresia()
+{
+    $membresiaActiva = $this->membresiaActiva;
+    
+    if ($membresiaActiva && $membresiaActiva->fecha_fin && $membresiaActiva->fecha_fin <= now()) {
+        // Membresía expirada, marcar como expirada
+        $membresiaActiva->update(['estado' => 'expirada']);
+        
+        // Obtener plan gratuito
+        $planGratuito = PlanMembresia::where('precio', 0)->first();
+        
+        if ($planGratuito) {
+            // Cambiar a plan gratuito
+            $this->update(['plan_membresia_id' => $planGratuito->id]);
+            
+            // Desactivar productos excedentes (más recientes primero)
+            $this->desactivarProductosExcedentes($planGratuito->limite_productos);
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Desactivar productos que exceden el límite del plan
+ */
+private function desactivarProductosExcedentes($limiteProductos)
+{
+    $productosActivos = $this->productos()
+                            ->where('activo', true)
+                            ->orderBy('created_at', 'desc')
+                            ->get();
+    
+    if ($productosActivos->count() > $limiteProductos) {
+        $productosADesactivar = $productosActivos->skip($limiteProductos);
+        
+        foreach ($productosADesactivar as $producto) {
+            $producto->update(['activo' => false]);
+        }
+    }
 }
 }

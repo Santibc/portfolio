@@ -25,7 +25,10 @@ class Producto extends Model
         'tiene_variantes',
         'controlar_stock',
         'empresa_id',
-        'permitir_venta_sin_stock'
+        'permitir_venta_sin_stock',
+        'info_envio',
+        'dias_devolucion',
+        'garantia'
     ];
 
     protected $casts = [
@@ -148,10 +151,17 @@ public function getUrlImagenPrincipalAttribute()
     // Verificar si hay stock disponible
     public function hayStock($cantidad = 1, $varianteId = null)
     {
-        if (!$this->controlar_stock || $this->permitir_venta_sin_stock) {
+        // Si no controla stock, siempre permitir
+        if (!$this->controlar_stock) {
             return true;
         }
 
+        // Si controla stock pero permite venta sin stock, siempre permitir
+        if ($this->controlar_stock && $this->permitir_venta_sin_stock) {
+            return true;
+        }
+
+        // Si controla stock y no permite venta sin stock, verificar disponibilidad
         if ($varianteId) {
             $stock = $this->stock()->where('variante_producto_id', $varianteId)->first();
         } else {
@@ -159,6 +169,25 @@ public function getUrlImagenPrincipalAttribute()
         }
 
         return $stock && $stock->hayDisponibilidad($cantidad);
+    }
+
+    // Obtener información de stock para mostrar en frontend
+    public function getStockInfo($varianteId = null)
+    {
+        if ($varianteId) {
+            $stock = $this->stock()->where('variante_producto_id', $varianteId)->first();
+        } else {
+            $stock = $this->stockPrincipal;
+        }
+
+        return [
+            'controlar_stock' => $this->controlar_stock,
+            'permitir_venta_sin_stock' => $this->permitir_venta_sin_stock,
+            'stock_disponible' => $stock ? $stock->stock_real : 0,
+            'hay_stock' => $this->hayStock(1, $varianteId),
+            'puede_agregar_sin_stock' => !$this->controlar_stock || $this->permitir_venta_sin_stock,
+            'stock_limitado' => $this->controlar_stock && !$this->permitir_venta_sin_stock
+        ];
     }
 
     // Inicializar stock si no existe

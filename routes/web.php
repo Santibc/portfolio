@@ -28,7 +28,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
-Route::get('/inicio',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+    Route::post('/usuarios/cambiar-estado-empresa', [UsuariosController::class, 'cambiarEstadoEmpresa'])->name('usuarios.cambiar-estado-empresa');
 
 
 
@@ -101,7 +102,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 // Rutas de Stock
-Route::middleware(['auth', 'verificar.empresa'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     
     // Rutas de Stock
     Route::prefix('stock')->name('stock.')->group(function () {
@@ -154,7 +155,7 @@ Route::prefix('empresa')->name('empresa.')->group(function () {
 // Ruta pública para ver la tienda
 /* Route::get('/tienda/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])->name('tienda.empresa'); */
 Route::get('/tienda/acceso/{token}', [App\Http\Controllers\TiendaController::class, 'acceso'])->name('tienda.acceso');
-Route::middleware(['auth', 'verificar.empresa'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     
     // Rutas de Categorías
     Route::prefix('categorias')->name('categorias.')->group(function () {
@@ -197,47 +198,6 @@ Route::get('/compras', [App\Http\Controllers\ComprasController::class, 'index'])
     ->middleware(['auth', 'verificar.empresa'])
     ->name('compras');
 
-// ========== RUTAS DE TIENDA PÚBLICA ==========
-
-// Tienda principal
-Route::get('/tienda/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])
-    ->name('tienda.empresa');
-
-// Producto individual
-Route::get('/tienda/{slug}/producto/{producto}', [App\Http\Controllers\TiendaController::class, 'producto'])
-    ->name('tienda.producto');
-
-// Carrito
-Route::get('/tienda/{slug}/carrito', [App\Http\Controllers\TiendaController::class, 'verCarrito'])
-    ->name('tienda.carrito');
-
-Route::post('/tienda/{slug}/carrito/agregar', [App\Http\Controllers\TiendaController::class, 'agregarCarrito'])
-    ->name('tienda.carrito.agregar');
-
-Route::post('/tienda/{slug}/carrito/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarCarrito'])
-    ->name('tienda.carrito.actualizar');
-
-Route::post('/tienda/{slug}/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
-    ->name('tienda.carrito.quitar');
-
-// Checkout y pago
-Route::get('/tienda/{slug}/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
-    ->name('tienda.checkout');
-
-Route::post('/tienda/{slug}/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
-    ->name('tienda.procesar-compra');
-
-// Confirmación de pago (callback de Wompi)
-Route::get('/tienda/{slug}/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
-    ->name('tienda.pago.confirmacion');
-
-// Página de pago pendiente
-Route::get('/tienda/{slug}/pago/pendiente/{referencia}', function($slug, $referencia) {
-    $empresa = \App\Models\Empresa::where('slug', $slug)->firstOrFail();
-    $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
-    
-    return view('tienda.pago-pendiente', compact('empresa', 'transaccion'));
-})->name('tienda.pago.pendiente');
 
 // Webhook de Wompi (sin CSRF)
 Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
@@ -247,12 +207,26 @@ Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, '
 // Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
 // Agregar después de las otras rutas de tienda
 Route::get('/{slug}/categorias', [App\Http\Controllers\TiendaController::class, 'categorias'])->name('tienda.categorias');
-// Agregar en web.php dentro del middleware 'auth'
+
+require __DIR__.'/auth.php';
+
+// ========== RUTAS DE TIENDA (DEBEN IR AL FINAL) ==========
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardAdminController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/empresa/{id}', [App\Http\Controllers\DashboardAdminController::class, 'detalleEmpresa'])->name('dashboard.empresa');
     Route::post('/dashboard/pagar', [App\Http\Controllers\DashboardAdminController::class, 'marcarComoPagadas'])->name('dashboard.pagar');
     Route::get('/dashboard/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporte'])->name('dashboard.exportar');
+    Route::get('/dashboard/membresias', [App\Http\Controllers\DashboardAdminController::class, 'dashboardMembresias'])->name('dashboard.membresias');
+    Route::get('/dashboard/membresias/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporteMembresias'])->name('dashboard.membresias.exportar');
+    
+    // Rutas de Planes de Membresía
+    Route::prefix('planes-membresia')->name('planes-membresia.')->group(function () {
+        Route::get('/', [App\Http\Controllers\PlanMembresiaController::class, 'index'])->name('index');
+        Route::get('/form/{plan?}', [App\Http\Controllers\PlanMembresiaController::class, 'form'])->name('form');
+        Route::post('/guardar', [App\Http\Controllers\PlanMembresiaController::class, 'guardar'])->name('guardar');
+        Route::post('/{plan}/cambiar-estado', [App\Http\Controllers\PlanMembresiaController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
+    });
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -269,4 +243,50 @@ Route::middleware(['auth'])->group(function () {
 // Ruta pública para confirmación de pago de membresía
 Route::get('/membresias/pago/confirmacion/{referencia}', [App\Http\Controllers\MembresiaController::class, 'confirmarPago'])->name('membresias.pago.confirmacion');
 
-require __DIR__.'/auth.php';
+// ========== RUTAS DE TIENDA PÚBLICA (AL FINAL PARA EVITAR CONFLICTOS) ==========
+
+// Tienda principal
+Route::get('/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])
+    ->name('tienda.empresa');
+
+// Producto individual
+Route::get('/{slug}/producto/{producto}', [App\Http\Controllers\TiendaController::class, 'producto'])
+    ->name('tienda.producto');
+
+// Carrito
+Route::get('/{slug}/carrito', [App\Http\Controllers\TiendaController::class, 'verCarrito'])
+    ->name('tienda.carrito');
+
+Route::post('/{slug}/carrito/agregar', [App\Http\Controllers\TiendaController::class, 'agregarCarrito'])
+    ->name('tienda.carrito.agregar');
+
+Route::post('/{slug}/carrito/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarCarrito'])
+    ->name('tienda.carrito.actualizar');
+
+Route::post('/{slug}/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
+    ->name('tienda.carrito.quitar');
+
+Route::post('/{slug}/stock/info', [App\Http\Controllers\TiendaController::class, 'obtenerStockInfo'])
+    ->name('tienda.stock.info');
+
+Route::post('/{slug}/carrito/validar-stock', [App\Http\Controllers\TiendaController::class, 'validarStockCarrito'])
+    ->name('tienda.carrito.validar-stock');
+
+// Checkout y pago
+Route::get('/{slug}/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
+    ->name('tienda.checkout');
+
+Route::post('/{slug}/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
+    ->name('tienda.procesar-compra');
+
+// Confirmación de pago (callback de Wompi)
+Route::get('/{slug}/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
+    ->name('tienda.pago.confirmacion');
+
+// Página de pago pendiente
+Route::get('/{slug}/pago/pendiente/{referencia}', function($slug, $referencia) {
+    $empresa = \App\Models\Empresa::where('slug', $slug)->firstOrFail();
+    $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
+    
+    return view('tienda.pago-pendiente', compact('empresa', 'transaccion'));
+})->name('tienda.pago.pendiente');

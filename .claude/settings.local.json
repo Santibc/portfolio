@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell:*)",
+      "Bash(mv:*)",
+      "Bash(echo $HOME)",
+      "Read(C:\\Users\\REALTECH\\.claude\\commands/**)",
+      "Read(C:\\Users\\REALTECH\\.claude\\commands/**)",
+      "Read(C:\\Users\\REALTECH\\.claude/**)",
+      "Read(C:\\Users\\REALTECH\\.claude\\commands/**)",
+      "Read(C:\\Users\\REALTECH\\.claude/**)",
+      "Bash(npm run dev:*)",
+      "Bash(php artisan:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -12684,3 +12684,39 @@ section,
   backdrop-filter: blur(1.5px);
 }
 
+
+
+/* Watermark styles */
+.watermark-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #D600CA;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: rgba(214, 0, 202, 0.05);
+  border: 1px solid transparent;
+}
+
+.watermark-link:hover {
+  color: #D600CA;
+  text-decoration: none;
+  background: rgba(214, 0, 202, 0.1);
+  border-color: rgba(214, 0, 202, 0.2);
+  transform: translateY(-1px);
+}
+
+.watermark-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  object-fit: contain;
+}
+
+.watermark-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}

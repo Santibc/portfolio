@@ -6,6 +6,8 @@ use App\Models\Empresa;
 use App\Models\Compra;
 use App\Models\Comision;
 use App\Models\TransaccionPago;
+use App\Models\Membresia;
+use App\Models\PlanMembresia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -260,6 +262,232 @@ class DashboardAdminController extends Controller
      * Exportar reporte de comisiones
      */
     public function exportarReporte(Request $request)
+    {
+        // TODO: Implementar exportación a Excel
+        return back()->with('info', 'Función de exportación en desarrollo');
+    }
+
+    /**
+     * Dashboard de membresías
+     */
+    public function dashboardMembresias(Request $request)
+    {
+        // Verificar que sea admin
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403);
+        }
+
+        // Filtros de fecha
+        $fechaInicio = $request->get('fecha_inicio') 
+            ? Carbon::parse($request->get('fecha_inicio'))->startOfDay() 
+            : Carbon::now()->startOfMonth();
+            
+        $fechaFin = $request->get('fecha_fin') 
+            ? Carbon::parse($request->get('fecha_fin'))->endOfDay() 
+            : Carbon::now()->endOfDay();
+
+        // Estadísticas generales de membresías
+        $statsMembresias = $this->obtenerEstadisticasMembresias($fechaInicio, $fechaFin);
+        
+        // Ingresos por plan de membresía
+        $ingresosPorPlan = $this->obtenerIngresosPorPlan($fechaInicio, $fechaFin);
+        
+        // Membresías por empresa
+        $membresiasPorEmpresa = $this->obtenerMembresiasPorEmpresa($fechaInicio, $fechaFin);
+        
+        // Gráfico de membresías mensuales
+        $membresiasMensuales = $this->obtenerMembresiasMensuales($fechaInicio, $fechaFin);
+        
+        // Membresías por vencer en los próximos 7 días
+        $membresiasPorVencer = $this->obtenerMembresiasPorVencer();
+
+        // Resumen de renovaciones
+        $resumenRenovaciones = $this->obtenerResumenRenovaciones($fechaInicio, $fechaFin);
+
+        return view('admin.dashboard-membresias', compact(
+            'statsMembresias',
+            'ingresosPorPlan',
+            'membresiasPorEmpresa',
+            'membresiasMensuales',
+            'membresiasPorVencer',
+            'resumenRenovaciones',
+            'fechaInicio',
+            'fechaFin'
+        ));
+    }
+
+    /**
+     * Obtener estadísticas generales de membresías
+     */
+    private function obtenerEstadisticasMembresias($fechaInicio, $fechaFin)
+    {
+        $ingresosTotal = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->sum('precio_pagado');
+
+        $membresiasTotales = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->count();
+
+        $membresiasPagadas = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->where('estado', 'activa')
+            ->count();
+
+        $membresiasPendientes = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->where('estado', 'pendiente')
+            ->count();
+
+        $membresiasCanceladas = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->where('estado', 'cancelada')
+            ->count();
+
+        $membresiaActivas = Membresia::activas()->count();
+
+        $promedioIngresosPorMembresia = $membresiasTotales > 0 ? $ingresosTotal / $membresiasTotales : 0;
+
+        // Ingresos del mes anterior para comparación
+        $mesAnteriorInicio = Carbon::parse($fechaInicio)->subMonth()->startOfMonth();
+        $mesAnteriorFin = Carbon::parse($fechaInicio)->subMonth()->endOfMonth();
+        $ingresosMesAnterior = Membresia::whereBetween('created_at', [$mesAnteriorInicio, $mesAnteriorFin])
+            ->sum('precio_pagado');
+
+        $crecimientoPorcentual = $ingresosMesAnterior > 0 
+            ? (($ingresosTotal - $ingresosMesAnterior) / $ingresosMesAnterior) * 100 
+            : 0;
+
+        return [
+            'ingresos_total' => $ingresosTotal,
+            'membresias_totales' => $membresiasTotales,
+            'membresias_pagadas' => $membresiasPagadas,
+            'membresias_pendientes' => $membresiasPendientes,
+            'membresias_canceladas' => $membresiasCanceladas,
+            'membresias_activas' => $membresiaActivas,
+            'promedio_ingresos_membresia' => $promedioIngresosPorMembresia,
+            'crecimiento_porcentual' => $crecimientoPorcentual
+        ];
+    }
+
+    /**
+     * Obtener ingresos por plan de membresía
+     */
+    private function obtenerIngresosPorPlan($fechaInicio, $fechaFin)
+    {
+        return DB::table('membresias')
+            ->join('planes_membresia', 'membresias.plan_membresia_id', '=', 'planes_membresia.id')
+            ->whereBetween('membresias.created_at', [$fechaInicio, $fechaFin])
+            ->select(
+                'planes_membresia.id',
+                'planes_membresia.nombre',
+                'planes_membresia.precio',
+                DB::raw('COUNT(membresias.id) as total_membresias'),
+                DB::raw('SUM(membresias.precio_pagado) as ingresos_total'),
+                DB::raw('COUNT(CASE WHEN membresias.estado = "activa" THEN 1 END) as membresias_activas'),
+                DB::raw('COUNT(CASE WHEN membresias.estado = "pendiente" THEN 1 END) as membresias_pendientes'),
+                DB::raw('COUNT(CASE WHEN membresias.estado = "cancelada" THEN 1 END) as membresias_canceladas')
+            )
+            ->groupBy('planes_membresia.id', 'planes_membresia.nombre', 'planes_membresia.precio')
+            ->orderByDesc('ingresos_total')
+            ->get();
+    }
+
+    /**
+     * Obtener membresías por empresa
+     */
+    private function obtenerMembresiasPorEmpresa($fechaInicio, $fechaFin)
+    {
+        return DB::table('empresas')
+            ->leftJoin('membresias', function($join) use ($fechaInicio, $fechaFin) {
+                $join->on('empresas.id', '=', 'membresias.empresa_id')
+                     ->whereBetween('membresias.created_at', [$fechaInicio, $fechaFin]);
+            })
+            ->leftJoin('planes_membresia', 'membresias.plan_membresia_id', '=', 'planes_membresia.id')
+            ->select(
+                'empresas.id',
+                'empresas.nombre',
+                'empresas.email',
+                DB::raw('COUNT(membresias.id) as total_membresias'),
+                DB::raw('SUM(membresias.precio_pagado) as total_pagado'),
+                DB::raw('MAX(membresias.created_at) as ultima_membresia'),
+                DB::raw('GROUP_CONCAT(DISTINCT planes_membresia.nombre SEPARATOR ", ") as planes_contratados'),
+                DB::raw('COUNT(CASE WHEN membresias.estado = "activa" THEN 1 END) as membresias_activas'),
+                DB::raw('MAX(CASE WHEN membresias.estado = "activa" THEN membresias.fecha_fin END) as fecha_vencimiento')
+            )
+            ->groupBy('empresas.id', 'empresas.nombre', 'empresas.email')
+            ->orderByDesc('total_pagado')
+            ->get();
+    }
+
+    /**
+     * Obtener membresías mensuales para gráfico
+     */
+    private function obtenerMembresiasMensuales($fechaInicio, $fechaFin)
+    {
+        return Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as periodo, COUNT(*) as total_membresias, SUM(precio_pagado) as ingresos')
+            ->groupBy('periodo')
+            ->orderBy('periodo')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'periodo' => Carbon::parse($item->periodo . '-01')->format('M Y'),
+                    'membresias' => $item->total_membresias,
+                    'ingresos' => $item->ingresos
+                ];
+            });
+    }
+
+    /**
+     * Obtener membresías por vencer
+     */
+    private function obtenerMembresiasPorVencer()
+    {
+        return DB::table('membresias')
+            ->join('empresas', 'membresias.empresa_id', '=', 'empresas.id')
+            ->join('planes_membresia', 'membresias.plan_membresia_id', '=', 'planes_membresia.id')
+            ->where('membresias.estado', 'activa')
+            ->whereBetween('membresias.fecha_fin', [now(), now()->addDays(30)])
+            ->select(
+                'empresas.nombre as empresa_nombre',
+                'empresas.email',
+                'planes_membresia.nombre as plan_nombre',
+                'membresias.fecha_fin',
+                'membresias.precio_pagado',
+                DB::raw('DATEDIFF(membresias.fecha_fin, NOW()) as dias_restantes')
+            )
+            ->orderBy('membresias.fecha_fin')
+            ->get();
+    }
+
+    /**
+     * Obtener resumen de renovaciones
+     */
+    private function obtenerResumenRenovaciones($fechaInicio, $fechaFin)
+    {
+        // Contar empresas que renovaron vs empresas que no renovaron
+        $empresasConMembresias = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->distinct('empresa_id')
+            ->count('empresa_id');
+
+        $renovaciones = DB::table('membresias as m1')
+            ->join('membresias as m2', function($join) {
+                $join->on('m1.empresa_id', '=', 'm2.empresa_id')
+                     ->where('m2.created_at', '>', DB::raw('m1.created_at'));
+            })
+            ->whereBetween('m2.created_at', [$fechaInicio, $fechaFin])
+            ->distinct('m1.empresa_id')
+            ->count();
+
+        $tasaRenovacion = $empresasConMembresias > 0 ? ($renovaciones / $empresasConMembresias) * 100 : 0;
+
+        return [
+            'empresas_con_membresias' => $empresasConMembresias,
+            'renovaciones' => $renovaciones,
+            'tasa_renovacion' => $tasaRenovacion
+        ];
+    }
+
+    /**
+     * Exportar reporte de membresías
+     */
+    public function exportarReporteMembresias(Request $request)
     {
         // TODO: Implementar exportación a Excel
         return back()->with('info', 'Función de exportación en desarrollo');

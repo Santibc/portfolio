@@ -305,20 +305,24 @@
                           <i class="bi bi-cart-plus"></i>
                         </a>
                       @else
+                        @php $stockInfo = $producto->getStockInfo(); @endphp
                         <button type="button" class="action-btn quick-add-btn" 
                                 data-producto-id="{{ $producto->id }}"
                                 data-precio="{{ $producto->precio_actual }}"
                                 data-bs-toggle="tooltip" title="Agregar al Carrito"
-                                {{ (!$producto->hayStock(1) && !$producto->permitir_venta_sin_stock) ? 'disabled' : '' }}>
+                                {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
                           <i class="bi bi-cart-plus"></i>
                         </button>
                       @endif
                     </div>
                   </div>
-                  @if($producto->stock_disponible <= 5 && $producto->stock_disponible > 0)
-                    <div class="product-badge new">¡Últimas unidades!</div>
-                  @elseif($producto->stock_disponible == 0 && !$producto->permitir_venta_sin_stock)
-                    <div class="product-badge sale">Sin Stock</div>
+                  @php $stockInfo = $producto->getStockInfo(); @endphp
+                  @if($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                    @if($stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
+                      <div class="product-badge new">¡Últimas unidades!</div>
+                    @elseif($stockInfo['stock_disponible'] == 0)
+                      <div class="product-badge sale">Sin Stock</div>
+                    @endif
                   @endif
                 </div>
                 <div class="product-details">
@@ -390,11 +394,12 @@
                         Ver Opciones
                       </a>
                     @else
+                      @php $stockInfo = $producto->getStockInfo(); @endphp
                       <button class="btn btn-primary quick-add-btn" 
                               data-producto-id="{{ $producto->id }}"
                               data-precio="{{ $producto->precio_actual }}"
-                              {{ (!$producto->hayStock(1) && !$producto->permitir_venta_sin_stock) ? 'disabled' : '' }}>
-                        {{ (!$producto->hayStock(1) && !$producto->permitir_venta_sin_stock) ? 'Sin Stock' : 'Agregar al Carrito' }}
+                              {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
+                        {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'Sin Stock' : 'Agregar al Carrito' }}
                       </button>
                     @endif
                   </div>

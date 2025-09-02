@@ -324,6 +324,43 @@ class TiendaController extends Controller
                 ->with('error', 'El carrito está vacío');
         }
 
+        // Validar stock antes de permitir checkout
+        $stockErrors = [];
+        foreach ($carrito->items as $key => $item) {
+            $producto = Producto::find($item['producto_id']);
+            if (!$producto) continue;
+            
+            $varianteId = $item['variante_id'] ?? null;
+            $cantidad = $item['cantidad'];
+            
+            $stockInfo = $producto->getStockInfo($varianteId);
+            $hayStock = $producto->hayStock($cantidad, $varianteId);
+            
+            if (!$hayStock && $stockInfo['stock_limitado']) {
+                $stockErrors[] = [
+                    'producto' => $item['nombre'],
+                    'cantidad_solicitada' => $cantidad,
+                    'stock_disponible' => $stockInfo['stock_disponible'],
+                    'variante' => isset($item['info_variante']) ? $item['info_variante'] : null
+                ];
+            }
+        }
+
+        if (!empty($stockErrors)) {
+            $errorMessage = 'Algunos productos en tu carrito ya no tienen stock disponible:<br>';
+            foreach ($stockErrors as $error) {
+                $varianteInfo = '';
+                if ($error['variante']) {
+                    $varianteInfo = ' (' . implode(', ', array_filter($error['variante'])) . ')';
+                }
+                $errorMessage .= "• {$error['producto']}{$varianteInfo}: Stock disponible {$error['stock_disponible']}, solicitaste {$error['cantidad_solicitada']}<br>";
+            }
+            $errorMessage .= 'Por favor ajusta las cantidades en tu carrito.';
+            
+            return redirect()->route('tienda.carrito', $slug)
+                ->with('error', $errorMessage);
+        }
+
         $departamentos = Departamento::with('ciudades')->get();
         $configuracionPasarela = ConfiguracionPasarela::obtenerConfiguracionActiva();
 
@@ -766,4 +803,66 @@ public function categorias($slug, Request $request)
         'precioMax'
     ));
 }
+
+    /**
+     * Obtener información de stock por AJAX
+     */
+    public function obtenerStockInfo(Request $request, $slug)
+    {
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id',
+            'variante_id' => 'nullable|exists:variantes_productos,id'
+        ]);
+
+        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $producto = Producto::where('id', $request->producto_id)
+            ->where('empresa_id', $empresa->id)
+            ->firstOrFail();
+        
+        $stockInfo = $producto->getStockInfo($request->variante_id);
+        
+        return response()->json($stockInfo);
+    }
+
+    /**
+     * Validar stock completo del carrito
+     */
+    public function validarStockCarrito(Request $request, $slug)
+    {
+        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $carrito = $this->obtenerCarrito($empresa->id);
+        
+        $stockErrors = [];
+        $totalValid = true;
+        
+        foreach ($carrito->items as $key => $item) {
+            $producto = Producto::find($item['producto_id']);
+            if (!$producto) continue;
+            
+            $varianteId = $item['variante_id'] ?? null;
+            $cantidad = $item['cantidad'];
+            
+            // Obtener información actual del stock
+            $stockInfo = $producto->getStockInfo($varianteId);
+            $hayStock = $producto->hayStock($cantidad, $varianteId);
+            
+            if (!$hayStock && $stockInfo['stock_limitado']) {
+                $totalValid = false;
+                $stockErrors[] = [
+                    'key' => $key,
+                    'producto' => $item['nombre'],
+                    'cantidad_solicitada' => $cantidad,
+                    'stock_disponible' => $stockInfo['stock_disponible'],
+                    'permite_venta_sin_stock' => $stockInfo['puede_agregar_sin_stock'],
+                    'variante' => isset($item['info_variante']) ? $item['info_variante'] : null
+                ];
+            }
+        }
+        
+        return response()->json([
+            'valid' => $totalValid,
+            'errors' => $stockErrors,
+            'total_items' => count($carrito->items)
+        ]);
+    }
 }

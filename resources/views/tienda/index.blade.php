@@ -283,10 +283,13 @@
           <div class="col-lg-3 col-md-6">
             <div class="product-item">
               <div class="product-image">
-                @if($producto->stock_disponible <= 5 && $producto->stock_disponible > 0)
-                  <div class="product-badge">¡Últimas unidades!</div>
-                @elseif($producto->stock_disponible == 0 && !$producto->permitir_venta_sin_stock)
-                  <div class="product-badge sale-badge">Sin Stock</div>
+                @php $stockInfo = $producto->getStockInfo(); @endphp
+                @if($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                  @if($stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
+                    <div class="product-badge">¡Últimas unidades!</div>
+                  @elseif($stockInfo['stock_disponible'] == 0)
+                    <div class="product-badge sale-badge">Sin Stock</div>
+                  @endif
                 @endif
                 <img src="{{ $producto->url_imagen_principal }}" alt="{{ $producto->nombre }}" class="img-fluid" loading="lazy">
                 <div class="product-actions">
@@ -303,11 +306,12 @@
                 @if($producto->tiene_variantes)
                   <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="cart-btn">Ver Opciones</a>
                 @else
+                  @php $stockInfo = $producto->getStockInfo(); @endphp
                   <button class="cart-btn quick-add-btn" 
                           data-producto-id="{{ $producto->id }}"
                           data-precio="{{ $producto->precio_actual }}"
-                          {{ (!$producto->hayStock(1) && !$producto->permitir_venta_sin_stock) ? 'disabled' : '' }}>
-                    {{ (!$producto->hayStock(1) && !$producto->permitir_venta_sin_stock) ? 'Sin Stock' : 'Agregar al Carrito' }}
+                          {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
+                    {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'Sin Stock' : 'Agregar al Carrito' }}
                   </button>
                 @endif
               </div>
