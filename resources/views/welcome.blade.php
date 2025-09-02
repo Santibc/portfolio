@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Betogether</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -41,7 +42,7 @@
 
         <div class="hero">
             <div class="hero-text">
-                <img width="20%" src="{{ asset('images/logo.png') }}"
+                <img width="20%" src="{{ asset('images/logo1.png') }}"
                     alt="Logo" class="logo">
                 <h1>¡Hola Colombia!<br>Tu Negocio, <span>Nuestra causa.</span></h1>
                 <p>Te abrimos la puerta a un ecosistema de <strong>crecimiento sin límites.</strong></p>
@@ -335,186 +336,54 @@
       </p>
     </div>
 
-    <div class="plans-grid">
-      <!-- Plan Fundador -->
-      <div class="plan-card">
-        <h3 class="plan-name">Plan Fundador</h3>
-        <div class="plan-price free">GRATIS</div>
-        <p class="plan-limit">Hasta 50 transacciones/mes</p>
+    <div class="plans-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+      @foreach($planes as $index => $plan)
+      <div class="plan-card @if($index == 1) featured @endif" style="background: white; border-radius: 16px; padding: 25px 20px; border: 2px solid #eee; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column;">
+        @if($index == 1)
+        <div style="content: 'MÁS POPULAR'; position: absolute; top: 15px; right: -30px; background: #ff00c8; color: white; padding: 4px 35px; font-size: 0.75rem; font-weight: 600; transform: rotate(45deg);">
+          <span>Más Popular</span>
+        </div>
+        @endif
         
-        <ul class="plan-features">
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>10 productos</strong> en tu catálogo</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Subdominio propio</strong> (tumarca.betogether.com.co)</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Pasarela de Pagos</strong> integrada y segura</span>
-          </li>
+        <h3 class="plan-name" style="font-size: 1.4rem; font-weight: 700; color: #1c1c1c; margin-bottom: 8px;">{{ $plan->nombre }}</h3>
+        <div class="plan-price {{ $plan->precio == 0 ? 'free' : '' }}" style="font-size: 2rem; font-weight: 800; color: {{ $plan->precio == 0 ? '#25D366' : '#ff00c8' }}; margin-bottom: 4px;">
+          @if($plan->precio == 0)
+          GRATIS
+          @else
+          ${{ number_format($plan->precio, 0) }}<small style="font-size: 0.8rem; font-weight: 400; color: #666;">/mes</small>
+          @endif
+        </div>
+        @if($plan->limite_transacciones)
+        <p class="plan-limit" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">Hasta {{ $plan->limite_transacciones }} transacciones/mes</p>
+        @endif
+        
+        <ul class="plan-features" style="list-style: none; margin-bottom: auto; flex-grow: 1;">
+          @if($plan->caracteristicas)
+            @foreach($plan->caracteristicas as $caracteristica)
+            <li style="padding: 8px 0; color: #444; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 8px;">
+              <i class="bi bi-check-circle-fill" style="color: #25D366; font-size: 1rem; flex-shrink: 0; margin-top: 2px;"></i>
+              <span>{{ $caracteristica }}</span>
+            </li>
+            @endforeach
+          @endif
         </ul>
         
-        <div class="commission-box">
-          <strong>6.09% + $900</strong>
-          <span class="commission-label">Por transacción exitosa</span>
+        <div class="commission-box" style="background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%); color: white; padding: 12px; border-radius: 10px; text-align: center; margin-top: 15px;">
+          <strong style="display: block; font-size: 1.1rem; margin-bottom: 3px;">{{ $plan->porcentaje_comision }}% + ${{ number_format($plan->comision_fija, 0) }}</strong>
+          <span class="commission-label" style="font-size: 0.75rem; opacity: 0.9;">Por transacción exitosa</span>
         </div>
         
-        <button class="plan-cta">Empezar Gratis</button>
+        @auth
+          <a href="{{ route('membresias.index') }}" class="plan-cta" style="display: block; width: 100%; padding: 12px; background: #ff00c8; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; margin-top: 15px; text-decoration: none; text-align: center;">
+            Ver Planes
+          </a>
+        @else
+          <a href="{{ route('register') }}" class="plan-cta" style="display: block; width: 100%; padding: 12px; background: #ff00c8; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; margin-top: 15px; text-decoration: none; text-align: center;">
+            {{ $plan->precio == 0 ? 'Empezar Gratis' : 'Elegir Plan' }}
+          </a>
+        @endauth
       </div>
-
-      <!-- Plan Emprendedor -->
-      <div class="plan-card featured">
-        <h3 class="plan-name">Emprendedor</h3>
-        <div class="plan-price">$85.000<small>/mes</small></div>
-        <p class="plan-limit">Hasta 50 transacciones/mes</p>
-        
-        <ul class="plan-features">
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>20 productos</strong> en tu tienda</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Puntos Colombia</strong> para fidelización</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Sin marca de agua</strong> de BeTogether</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Logística prioritaria AM</strong></span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Programa Embajadores</strong> de marca</span>
-          </li>
-        </ul>
-        
-        <div class="commission-box">
-          <strong>5.09% + $900</strong>
-          <span class="commission-label">Por transacción exitosa</span>
-        </div>
-        
-        <button class="plan-cta">Elegir Plan</button>
-      </div>
-
-      <!-- Plan Emprendedor PRO -->
-      <div class="plan-card">
-        <h3 class="plan-name">Emprendedor PRO</h3>
-        <div class="plan-price">$110.000<small>/mes</small></div>
-        <p class="plan-limit">Hasta 60 transacciones/mes</p>
-        
-        <ul class="plan-features">
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>50 productos</strong> en tu tienda</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Todo lo del plan Emprendedor +</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Prioridad AM y PM</strong> en entregas</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>IA para Creativos</strong> <span class="ai-badge">✨ NUEVO</span><br>
-            Genera piezas para Instagram y Facebook</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>IA para Estrategia</strong> <span class="ai-badge">✨ NUEVO</span><br>
-            Planes de marketing de 15 días</span>
-          </li>
-        </ul>
-        
-        <div class="commission-box">
-          <strong>5.09% + $800</strong>
-          <span class="commission-label">¡LA MÁS BAJA!</span>
-        </div>
-        
-        <button class="plan-cta">Elegir Plan</button>
-      </div>
-    </div>
-
-    <div class="plans-grid-bottom">
-      <!-- Plan Crecimiento -->
-      <div class="plan-card">
-        <h3 class="plan-name">Crecimiento</h3>
-        <div class="plan-price">$500.000<small>/mes</small></div>
-        <p class="plan-limit">Hasta 100 transacciones/mes</p>
-        
-        <ul class="plan-features">
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>200 productos</strong> en tu tienda</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span>Todo lo del plan PRO +</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Embajador de Marca</strong> en marketing</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>Descuento en eventos</strong> presenciales</span>
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill"></i>
-            <span><strong>1 Sesión mensual</strong> con profesional</span>
-          </li>
-          <li>
-            <i class="bi bi-star-fill"></i>
-            <span><strong>Opción Pasaporte a Canadá</strong></span>
-          </li>
-        </ul>
-        
-        <div class="commission-box">
-          <strong>4.09% + $700</strong>
-          <span class="commission-label">Por transacción exitosa</span>
-        </div>
-        
-        <button class="plan-cta">Elegir Plan</button>
-      </div>
-
-      <!-- Bonus Exclusivo -->
-      <div class="plan-card bonus-plan">
-        <h3 class="plan-name">🌟 Bonus - Activación Global</h3>
-        <div class="plan-price">$1.700.000<small style="color: white">/pago único</small></div>
-        <p class="plan-limit">Para Plan Crecimiento • 200 transacciones/mes</p>
-        
-        <ul class="plan-features">
-          <li>
-            <i class="bi bi-globe-americas"></i>
-            <span><strong style="color: white">Expansión Internacional</strong> - Tu tienda en Canadá</span>
-          </li>
-          <li>
-            <i class="bi bi-box-seam"></i>
-            <span><strong style="color: white">Centro de acopio</strong> en Canadá para tu inventario</span>
-          </li>
-          <li>
-            <i class="bi bi-person-check"></i>
-            <span><strong style="color: white">Gestión dedicada</strong> de inventario y logística</span>
-          </li>
-          <li>
-            <i class="bi bi-truck"></i>
-            <span><strong style="color: white">Alianza con transportadora</strong> internacional</span>
-          </li>
-        </ul>
-        
-        <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 12px; line-height: 1.4;">
-          *No incluye fletes, aduanas ni seguros. La mercancía debe estar asegurada.
-        </p>
-        
-        <button class="plan-cta">Consultar Disponibilidad</button>
-      </div>
+      @endforeach
     </div>
   </div>
 </section>
@@ -542,53 +411,78 @@
             </p>
         </div>
         <div class="form-container">
-            <form>
+            @if(session('success'))
+            <div style="background: #d4edda; color: #155724; padding: 15px; border: 1px solid #c3e6cb; border-radius: 8px; margin-bottom: 20px;">
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div style="background: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 8px; margin-bottom: 20px;">
+                {{ session('error') }}
+            </div>
+            @endif
+
+            @if($errors->any())
+            <div style="background: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 8px; margin-bottom: 20px;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
+            <form action="{{ route('formulario.contacto') }}" method="POST">
+                @csrf
                 <label>Tu nombre *</label>
-                <input type="text" required>
+                <input type="text" name="nombre" value="{{ old('nombre') }}" required>
 
                 <label>¿Eres un ...? *</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="tipo" required> Emprendimiento</label>
-                    <label><input type="radio" name="tipo" required> Fundación</label>
+                    <label><input type="radio" name="tipo" value="emprendimiento" {{ old('tipo') == 'emprendimiento' ? 'checked' : '' }} required> Emprendimiento</label>
+                    <label><input type="radio" name="tipo" value="fundacion" {{ old('tipo') == 'fundacion' ? 'checked' : '' }} required> Fundación</label>
                 </div>
 
                 <label>¿Ya vendes en línea? *</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="online" required> Sí</label>
-                    <label><input type="radio" name="online" required> No</label>
+                    <label><input type="radio" name="online" value="si" {{ old('online') == 'si' ? 'checked' : '' }} required> Sí</label>
+                    <label><input type="radio" name="online" value="no" {{ old('online') == 'no' ? 'checked' : '' }} required> No</label>
                 </div>
 
                 <label>¿Has invertido en festivales anteriormente? *</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="festival" required> Sí</label>
-                    <label><input type="radio" name="festival" required> No</label>
+                    <label><input type="radio" name="festival" value="si" {{ old('festival') == 'si' ? 'checked' : '' }} required> Sí</label>
+                    <label><input type="radio" name="festival" value="no" {{ old('festival') == 'no' ? 'checked' : '' }} required> No</label>
                 </div>
 
                 <label>¿Cómo podemos encontrar tu negocio en redes sociales?</label>
-                <input type="text">
+                <input type="text" name="redes_sociales" value="{{ old('redes_sociales') }}">
 
                 <label>Elige la red social</label>
-                <select>
-                    <option>Facebook</option>
-                    <option>Instagram</option>
-                    <option>TikTok</option>
+                <select name="red_social">
+                    <option value="">Selecciona una opción</option>
+                    <option value="facebook" {{ old('red_social') == 'facebook' ? 'selected' : '' }}>Facebook</option>
+                    <option value="instagram" {{ old('red_social') == 'instagram' ? 'selected' : '' }}>Instagram</option>
+                    <option value="tiktok" {{ old('red_social') == 'tiktok' ? 'selected' : '' }}>TikTok</option>
                 </select>
 
                 <label>¿Te gustaría participar en eventos? *</label>
-                <select required>
-                    <option>No estoy interesado</option>
-                    <option>Sí, claro</option>
-                    <option>Depende del evento</option>
+                <select name="participar_eventos" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="no_interesado" {{ old('participar_eventos') == 'no_interesado' ? 'selected' : '' }}>No estoy interesado</option>
+                    <option value="si_claro" {{ old('participar_eventos') == 'si_claro' ? 'selected' : '' }}>Sí, claro</option>
+                    <option value="depende_evento" {{ old('participar_eventos') == 'depende_evento' ? 'selected' : '' }}>Depende del evento</option>
                 </select>
 
                 <label>Un email para ponernos en contacto *</label>
-                <input type="email" required>
+                <input type="email" name="email" value="{{ old('email') }}" required>
 
                 <label>Tu número WhatsApp</label>
-                <input type="text">
+                <input type="text" name="whatsapp" value="{{ old('whatsapp') }}">
 
                 <label>Algo que quieras decirnos</label>
-                <textarea rows="4"></textarea>
+                <textarea name="mensaje_adicional" rows="4">{{ old('mensaje_adicional') }}</textarea>
 
                 <button class="button2" type="submit">Enviar</button>
             </form>

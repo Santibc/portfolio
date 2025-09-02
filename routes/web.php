@@ -24,9 +24,8 @@ use App\Http\Controllers\ActualizacionPreciosController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
+Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
