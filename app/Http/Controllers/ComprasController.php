@@ -76,8 +76,8 @@ class ComprasController extends Controller
      */
     public function show(Compra $compra)
     {
-        // Verificar que la compra pertenece a la empresa del usuario
-        if ($compra->empresa_id !== auth()->user()->empresa->id) {
+        // Verificar que la compra pertenece a la empresa del usuario, excepto para admins
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
             abort(403);
         }
 
@@ -98,8 +98,8 @@ class ComprasController extends Controller
      */
     public function cambiarEstado(Request $request, Compra $compra)
     {
-        // Verificar que la compra pertenece a la empresa del usuario
-        if ($compra->empresa_id !== auth()->user()->empresa->id) {
+        // Verificar que la compra pertenece a la empresa del usuario, excepto para admins
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
             abort(403);
         }
 
@@ -161,8 +161,8 @@ class ComprasController extends Controller
      */
     public function actualizarEnvio(Request $request, Compra $compra)
     {
-        // Verificar que la compra pertenece a la empresa del usuario
-        if ($compra->empresa_id !== auth()->user()->empresa->id) {
+        // Verificar que la compra pertenece a la empresa del usuario, excepto para admins
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
             abort(403);
         }
 
@@ -221,8 +221,8 @@ class ComprasController extends Controller
      */
     public function timeline(Compra $compra)
     {
-        // Verificar que la compra pertenece a la empresa del usuario
-        if ($compra->empresa_id !== auth()->user()->empresa->id) {
+        // Verificar que la compra pertenece a la empresa del usuario, excepto para admins
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
             abort(403);
         }
 

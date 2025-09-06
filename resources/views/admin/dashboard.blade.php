@@ -183,7 +183,7 @@
                                                     <div>
                                                         <div class="font-weight-bold">{{ $empresa->nombre }}</div>
                                                         <small class="text-muted">
-                                                            Comisión: {{ $empresa->porcentaje_comision }}% + ${{ number_format($empresa->cargo_fijo_comision, 0, ',', '.') }}
+                                                            Comisión: {{ $empresa->planMembresia->porcentaje_comision ?? 0 }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0, ',', '.') }}
                                                         </small>
                                                     </div>
                                                 </div>

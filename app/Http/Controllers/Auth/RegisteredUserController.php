@@ -70,10 +70,6 @@ class RegisteredUserController extends Controller
                 'email' => $request->email,
                 'telefono' => $request->telefono,
                 'plan_membresia_id' => $planFundador->id,
-                'limite_productos' => $planFundador->limite_productos,
-                'porcentaje_comision' => $planFundador->porcentaje_comision,
-                'comision_fija' => $planFundador->comision_fija,
-                'cargo_fijo_comision' => $planFundador->comision_fija,
                 'activo' => true
             ]);
             

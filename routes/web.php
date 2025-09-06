@@ -27,7 +27,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
 Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
-Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
 
 
 // Rutas de Productos - versión simplificada
-Route::prefix('productos')->middleware('auth')->group(function () {
+Route::prefix('productos')->middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
@@ -69,7 +69,7 @@ Route::get('actualizaciones/{id}/descargar',
 // Agregar estas rutas en routes/web.php
 
 // Módulo de Enlaces de Acceso (autenticado)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     // Enlaces temporales
     Route::get('/enlaces', [App\Http\Controllers\EnlacesController::class, 'index'])->name('enlaces');
     Route::get('/enlaces/crear', [App\Http\Controllers\EnlacesController::class, 'crear'])->name('enlaces.crear');
@@ -82,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/catalogo/{token}', [App\Http\Controllers\CatalogoController::class, 'mostrarPorToken'])->name('catalogo.token');
 
 // Flujo B: Acceso autenticado (vendedor/admin)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     Route::get('/catalogo', [CatalogoController::class, 'index'])->name('catalogo');
     Route::post('/catalogo/cliente', [CatalogoController::class, 'mostrarParaCliente'])->name('catalogo.cliente');
 });
@@ -93,7 +93,7 @@ Route::get('/catalogo/producto/{producto}', [CatalogoController::class, 'detalle
 Route::post('/catalogo/solicitud', [CatalogoController::class, 'guardarSolicitud'])->name('catalogo.solicitud.guardar');
 
 // Rutas de Gestión de Solicitudes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
@@ -127,7 +127,7 @@ Route::get('/productos/{producto}/stock-ajax', [App\Http\Controllers\ProductosCo
 // Rutas para solicitudes
 Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descargarPdf'])->name('solicitudes.pdf');
 Route::get('/solicitudes/exportar-excel', [SolicitudController::class, 'exportarExcel'])->name('solicitudes.exportar-excel');
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->group(function () {
     // ... otras rutas existentes ...
     
     // Actualización de precios
@@ -142,7 +142,7 @@ Route::middleware(['auth'])->group(function () {
 // Agregar estas rutas al archivo routes/web.php dentro del middleware 'auth'
 
 // Rutas de Empresa
-Route::prefix('empresa')->name('empresa.')->group(function () {
+Route::prefix('empresa')->middleware(['auth', 'verificar.empresa', 'verificar.membresia'])->name('empresa.')->group(function () {
     Route::get('/', [App\Http\Controllers\EmpresasController::class, 'index'])->name('index');
     Route::get('/crear', [App\Http\Controllers\EmpresasController::class, 'form'])->name('crear');
     Route::get('/editar', [App\Http\Controllers\EmpresasController::class, 'form'])->name('form');

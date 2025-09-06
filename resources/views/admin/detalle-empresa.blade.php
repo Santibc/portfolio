@@ -6,7 +6,7 @@
                     <div>
                         <h1 class="h3">Detalle de Comisiones - {{ $empresa->nombre }}</h1>
                         <p class="text-muted mb-0">
-                            Comisión: {{ $empresa->porcentaje_comision }}% + ${{ number_format($empresa->cargo_fijo_comision, 0) }} por venta
+                            Comisión: {{ $empresa->planMembresia->porcentaje_comision ?? 0 }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0) }} por venta
                         </p>
                     </div>
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
@@ -231,7 +231,7 @@
                             <p><strong>Total Venta:</strong> ${{ number_format($comision->monto_venta, 0, ',', '.') }}</p>
                         </div>
                         <div class="col-6">
-                            <p><strong>Comisión ({{ $comision->porcentaje_comision }}% + ${{ number_format($empresa->cargo_fijo_comision, 0) }}):</strong> 
+                            <p><strong>Comisión ({{ $comision->porcentaje_comision }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0) }}):</strong> 
                                ${{ number_format($comision->monto_comision, 0, ',', '.') }}</p>
                             <p><strong>Para la empresa:</strong> ${{ number_format($comision->monto_empresa, 0, ',', '.') }}</p>
                         </div>

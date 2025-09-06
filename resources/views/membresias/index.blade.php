@@ -60,7 +60,7 @@
                 <div class="col-md-4">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h3 class="mb-1">{{ $empresa->porcentaje_comision }}% + ${{ number_format($empresa->cargo_fijo_comision, 0) }}</h3>
+                            <h3 class="mb-1">{{ $empresa->planMembresia->porcentaje_comision ?? 0 }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0) }}</h3>
                             <p class="text-muted mb-0">Comisión actual</p>
                         </div>
                     </div>

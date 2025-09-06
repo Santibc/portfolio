@@ -77,14 +77,8 @@ class Membresia extends Model
                 'fecha_fin' => $fechaFin
             ]);
             
-            // Actualizar empresa con los parámetros del plan
-            $this->empresa->update([
-                'plan_membresia_id' => $this->plan_membresia_id,
-                'limite_productos' => $this->plan->limite_productos,
-                'porcentaje_comision' => $this->plan->porcentaje_comision,
-                'comision_fija' => $this->plan->comision_fija,
-                'cargo_fijo_comision' => $this->plan->comision_fija
-            ]);
+            // Actualizar empresa con el ID del plan solamente
+            $this->empresa->update(['plan_membresia_id' => $this->plan_membresia_id]);
             
             \DB::commit();
         } catch (\Exception $e) {
@@ -103,12 +97,7 @@ class Membresia extends Model
         // Regresar a plan gratuito
         $planGratuito = PlanMembresia::planGratuito();
         if ($planGratuito) {
-            $this->empresa->update([
-                'plan_membresia_id' => $planGratuito->id,
-                'limite_productos' => $planGratuito->limite_productos,
-                'porcentaje_comision' => $planGratuito->porcentaje_comision,
-                'comision_fija' => $planGratuito->comision_fija
-            ]);
+            $this->empresa->update(['plan_membresia_id' => $planGratuito->id]);
         }
     }
     
@@ -118,7 +107,7 @@ class Membresia extends Model
     public function estaActiva()
     {
         return $this->estado === 'activa' && 
-               ($this->fecha_fin === null || $this->fecha_fin->isFuture());
+               ($this->fecha_fin === null || $this->fecha_fin > now()->toDateString());
     }
     
     /**
@@ -145,7 +134,7 @@ class Membresia extends Model
     {
         return $query->where('estado', 'activa')
                      ->where(function($q) {
-                         $q->where('fecha_fin', '>', now())
+                         $q->where('fecha_fin', '>', now()->toDateString())
                            ->orWhereNull('fecha_fin');
                      });
     }

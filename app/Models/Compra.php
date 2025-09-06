@@ -91,8 +91,8 @@ public function generarComision() {
     return DB::transaction(function () {
         $this->refresh();
 
-        $porcentaje = $this->empresa->porcentaje_comision ?? 6.09;
-        $cargoFijo = (float)($this->empresa->comision_fija ?? 900);
+        $porcentaje = $this->empresa->planMembresia?->porcentaje_comision ?? 6.09;
+        $cargoFijo = (float)($this->empresa->planMembresia?->comision_fija ?? 900);
 
         $montoVariable = $this->total * ($porcentaje / 100);
         $montoComision = round($montoVariable + $cargoFijo, 2);

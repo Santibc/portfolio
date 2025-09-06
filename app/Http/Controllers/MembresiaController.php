@@ -195,13 +195,7 @@ class MembresiaController extends Controller
             ]);
             
             // Actualizar empresa
-            $empresa->update([
-                'plan_membresia_id' => $plan->id,
-                'limite_productos' => $plan->limite_productos,
-                'porcentaje_comision' => $plan->porcentaje_comision,
-                'comision_fija' => $plan->comision_fija,
-                'cargo_fijo_comision' => $plan->comision_fija
-            ]);
+            $empresa->update(['plan_membresia_id' => $plan->id]);
             
             DB::commit();
             

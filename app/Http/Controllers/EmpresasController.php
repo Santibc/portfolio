@@ -162,12 +162,17 @@ class EmpresasController extends Controller
                 $data['horario_atencion'] = $horario;
             }
 
-            // Asignar usuario si es nueva
+            // Asignar usuario y plan por defecto si es nueva
             $esNueva = !$empresa->exists;
             if ($esNueva) {
                 $data['usuario_id'] = auth()->id();
                 $data['activo'] = true;
-                $data['porcentaje_comision'] = 10.00; // Valor por defecto
+                
+                // Asignar plan gratuito por defecto
+                $planGratuito = \App\Models\PlanMembresia::where('precio', 0)->first();
+                if ($planGratuito) {
+                    $data['plan_membresia_id'] = $planGratuito->id;
+                }
             }
 
             // No intentes guardar archivos en $data antes de moverlos

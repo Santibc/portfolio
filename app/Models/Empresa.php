@@ -29,14 +29,11 @@ class Empresa extends Model
         'whatsapp',
         'horario_atencion',
         'activo',
-        'porcentaje_comision',
-
-    'cargo_fijo_comision'
+        'plan_membresia_id'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
-        'porcentaje_comision' => 'decimal:2',
         'horario_atencion' => 'array'
     ];
 
@@ -160,9 +157,55 @@ class Empresa extends Model
         });
     }
     public function planMembresia()
-{
-    return $this->belongsTo(PlanMembresia::class);
-}
+    {
+        return $this->belongsTo(PlanMembresia::class);
+    }
+
+    /**
+     * Obtener el plan de la membresía activa (atributo computado)
+     */
+    public function getPlanMembresiaActivaAttribute()
+    {
+        $membresiaActiva = $this->membresiaActiva;
+        if ($membresiaActiva && $membresiaActiva->plan) {
+            return $membresiaActiva->plan;
+        }
+        
+        // Fallback al plan asociado directamente
+        return $this->planMembresia;
+    }
+
+    /**
+     * Obtener límite de productos del plan activo
+     */
+    public function getLimiteProductosAttribute()
+    {
+        return $this->planMembresia?->limite_productos ?? 10;
+    }
+
+    /**
+     * Obtener porcentaje de comisión del plan activo
+     */
+    public function getPorcentajeComisionAttribute()
+    {
+        return $this->planMembresia?->porcentaje_comision ?? 5.00;
+    }
+
+    /**
+     * Obtener comisión fija del plan activo
+     */
+    public function getComisionFijaAttribute()
+    {
+        return $this->planMembresia?->comision_fija ?? 0.00;
+    }
+
+    /**
+     * Obtener cargo fijo de comisión del plan activo (alias de comision_fija)
+     */
+    public function getCargoFijoComisionAttribute()
+    {
+        return $this->getComisionFijaAttribute();
+    }
 
 /**
  * Historial de membresías
@@ -180,10 +223,10 @@ public function membresiaActiva()
     return $this->hasOne(Membresia::class)
                 ->where('estado', 'activa')
                 ->where(function($query) {
-                    $query->where('fecha_fin', '>', now())
+                    $query->where('fecha_fin', '>', now()->toDateString())
                           ->orWhereNull('fecha_fin');
                 })
-                ->latest();
+                ->latest('id'); // Usar la más reciente por ID
 }
 
 /**
@@ -217,8 +260,11 @@ public function tienePlanPremium()
  */
 public function calcularComision($monto)
 {
-    $comisionPorcentaje = ($monto * $this->porcentaje_comision) / 100;
-    return $comisionPorcentaje + $this->comision_fija;
+    $porcentajeComision = $this->planMembresia?->porcentaje_comision ?? 5.00;
+    $comisionFija = $this->planMembresia?->comision_fija ?? 0.00;
+    
+    $comisionPorcentaje = ($monto * $porcentajeComision) / 100;
+    return $comisionPorcentaje + $comisionFija;
 }
 
 /**
@@ -226,21 +272,26 @@ public function calcularComision($monto)
  */
 public function verificarYActualizarMembresia()
 {
-    $membresiaActiva = $this->membresiaActiva;
-    
-    if ($membresiaActiva && $membresiaActiva->fecha_fin && $membresiaActiva->fecha_fin <= now()) {
-        \DB::beginTransaction();
+    try {
+        // Obtener la membresía que tiene estado "activa" sin importar si está vencida
+        $membresiaConEstadoActiva = $this->membresias()
+                                         ->where('estado', 'activa')
+                                         ->latest('id')
+                                         ->first();
         
-        try {
-            // Membresía expirada, marcar como expirada
-            $membresiaActiva->update(['estado' => 'expirada']);
+        // Caso 1: Membresía vencida (tiene estado activa pero fecha pasada)
+        if ($membresiaConEstadoActiva && $membresiaConEstadoActiva->fecha_fin && $membresiaConEstadoActiva->fecha_fin < now()->toDateString()) {
+            \DB::beginTransaction();
+            
+            // Membresía vencida, marcar como vencida
+            $membresiaConEstadoActiva->update(['estado' => 'vencida']);
             
             // Obtener plan gratuito
             $planGratuito = PlanMembresia::where('precio', 0)->first();
             
             if ($planGratuito) {
                 // Crear nueva membresía gratuita
-                $nuevaMembresiaGratuita = Membresia::create([
+                Membresia::create([
                     'empresa_id' => $this->id,
                     'plan_membresia_id' => $planGratuito->id,
                     'estado' => 'activa',
@@ -249,14 +300,8 @@ public function verificarYActualizarMembresia()
                     'precio_pagado' => 0
                 ]);
                 
-                // Actualizar empresa con parámetros del plan gratuito
-                $this->update([
-                    'plan_membresia_id' => $planGratuito->id,
-                    'limite_productos' => $planGratuito->limite_productos,
-                    'porcentaje_comision' => $planGratuito->porcentaje_comision,
-                    'comision_fija' => $planGratuito->comision_fija,
-                    'cargo_fijo_comision' => $planGratuito->comision_fija
-                ]);
+                // Actualizar empresa con ID del plan gratuito
+                $this->update(['plan_membresia_id' => $planGratuito->id]);
                 
                 // Desactivar productos excedentes (más recientes primero)
                 $this->desactivarProductosExcedentes($planGratuito->limite_productos);
@@ -264,14 +309,59 @@ public function verificarYActualizarMembresia()
             
             \DB::commit();
             return true;
-        } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Error al verificar y actualizar membresía: ' . $e->getMessage());
-            return false;
         }
+        
+        // Obtener membresía realmente activa (no vencida)
+        $membresiaRealmenteActiva = $this->membresiaActiva;
+        
+        // Caso 2: Sincronizar plan_membresia_id con membresía activa
+        if ($membresiaRealmenteActiva && $this->plan_membresia_id !== $membresiaRealmenteActiva->plan_membresia_id) {
+            \Log::info("Sincronizando empresa {$this->id}: plan {$this->plan_membresia_id} -> {$membresiaRealmenteActiva->plan_membresia_id}");
+            
+            // Solo actualizar el plan_membresia_id
+            $resultado = $this->update(['plan_membresia_id' => $membresiaRealmenteActiva->plan_membresia_id]);
+            
+            \Log::info("Resultado del update: " . ($resultado ? 'exitoso' : 'fallido'));
+            
+            return true;
+        }
+        
+        // Caso 3: No hay membresía activa pero debería tener plan gratuito
+        if (!$membresiaRealmenteActiva) {
+            \DB::beginTransaction();
+            
+            $planGratuito = PlanMembresia::where('precio', 0)->first();
+            
+            if ($planGratuito) {
+                // Crear membresía gratuita
+                Membresia::create([
+                    'empresa_id' => $this->id,
+                    'plan_membresia_id' => $planGratuito->id,
+                    'estado' => 'activa',
+                    'fecha_inicio' => now(),
+                    'fecha_fin' => null,
+                    'precio_pagado' => 0
+                ]);
+                
+                // Actualizar empresa
+                $this->update(['plan_membresia_id' => $planGratuito->id]);
+                
+                \DB::commit();
+                return true;
+            }
+            
+            \DB::rollBack();
+        }
+        
+        return false;
+        
+    } catch (\Exception $e) {
+        if (\DB::transactionLevel() > 0) {
+            \DB::rollBack();
+        }
+        \Log::error('Error al verificar y actualizar membresía: ' . $e->getMessage());
+        return false;
     }
-    
-    return false;
 }
 
 /**

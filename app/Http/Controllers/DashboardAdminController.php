@@ -93,6 +93,7 @@ class DashboardAdminController extends Controller
     private function obtenerVentasPorEmpresa($fechaInicio, $fechaFin)
     {
         return DB::table('empresas')
+            ->leftJoin('planes_membresia', 'empresas.plan_membresia_id', '=', 'planes_membresia.id')
             ->leftJoin('compras', function($join) use ($fechaInicio, $fechaFin) {
                 $join->on('empresas.id', '=', 'compras.empresa_id')
                      ->where('compras.estado', '=', 'pagada')
@@ -102,15 +103,15 @@ class DashboardAdminController extends Controller
             ->select(
                 'empresas.id',
                 'empresas.nombre',
-                'empresas.porcentaje_comision',
-                'empresas.cargo_fijo_comision', // Corregido: usar el nombre correcto del campo
+                'planes_membresia.porcentaje_comision',
+                'planes_membresia.comision_fija',
                 DB::raw('COUNT(DISTINCT compras.id) as numero_ventas'),
                 DB::raw('COALESCE(SUM(compras.total), 0) as ventas_totales'),
                 DB::raw('COALESCE(SUM(comisiones.monto_comision), 0) as comisiones_totales'),
                 DB::raw('COALESCE(SUM(comisiones.monto_empresa), 0) as total_empresa'),
                 DB::raw('COALESCE(SUM(CASE WHEN comisiones.estado = "pendiente" THEN comisiones.monto_empresa ELSE 0 END), 0) as pendiente_pagar')
             )
-            ->groupBy('empresas.id', 'empresas.nombre', 'empresas.porcentaje_comision', 'empresas.cargo_fijo_comision')
+            ->groupBy('empresas.id', 'empresas.nombre', 'planes_membresia.porcentaje_comision', 'planes_membresia.comision_fija')
             ->orderByDesc('ventas_totales')
             ->get();
     }

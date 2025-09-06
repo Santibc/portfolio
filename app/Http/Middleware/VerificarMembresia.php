@@ -19,11 +19,16 @@ class VerificarMembresia
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->hasRole('empresa')) {
+        if (Auth::check()) {
             $empresa = Auth::user()->empresa;
             
             if ($empresa) {
-                $empresa->verificarYActualizarMembresia();
+                \Log::info("Verificando membresía para empresa ID: {$empresa->id}");
+                $resultado = $empresa->verificarYActualizarMembresia();
+                \Log::info("Resultado verificación: " . ($resultado ? 'exitoso' : 'sin cambios'));
+                
+                // Refrescar la empresa después de la verificación
+                $empresa->refresh();
             }
         }
         

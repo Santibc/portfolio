@@ -48,7 +48,7 @@
 
           <div class="col-lg-4 col-md-12 text-center">
             @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
-              <a href="https://betogether.com" target="_blank" class="watermark-link">
+              <a href="https://betogether.com.co" target="_blank" class="watermark-link">
                 <img src="{{ asset('images/ico.png') }}" alt="BeTogether" class="watermark-icon">
                 <span class="watermark-text">Página creada en BeTogether</span>
               </a>

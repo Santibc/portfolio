@@ -16,7 +16,7 @@
                             <div class="bg-light p-3 rounded">
                                 <h6>{{ $empresa->planMembresia->nombre }}</h6>
                                 <p class="mb-1">{{ $empresa->limite_productos }} productos</p>
-                                <p class="mb-0">{{ $empresa->porcentaje_comision }}% + ${{ number_format($empresa->cargo_fijo_comision, 0) }} por transacción</p>
+                                <p class="mb-0">{{ $empresa->planMembresia->porcentaje_comision ?? 0 }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0) }} por transacción</p>
                             </div>
                         </div>
                         
