@@ -14,36 +14,482 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <style>
+        /* Modern Navigation Bar Styles */
+        .modern-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 68px;
+            background: linear-gradient(135deg, rgba(16, 16, 30, 0.95) 0%, rgba(30, 30, 60, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modern-navbar.scrolled {
+            height: 60px;
+            background: linear-gradient(135deg, rgba(16, 16, 30, 0.98) 0%, rgba(30, 30, 60, 0.98) 100%);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .logo-nav {
+            height: 38px;
+            width: auto;
+            transition: all 0.3s ease;
+        }
+
+        .modern-navbar.scrolled .logo-nav {
+            height: 34px;
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            position: relative;
+            padding: 10px 18px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 50px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.95rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50px;
+            z-index: -1;
+        }
+
+        .nav-link:hover::before {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 200, 0.3);
+        }
+
+        .nav-link-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link i {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover i {
+            transform: scale(1.1);
+        }
+
+        .register-btn {
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(255, 0, 200, 0.3);
+        }
+
+        .register-btn::before {
+            background: linear-gradient(135deg, #7000ff 0%, #ff00c8 100%);
+        }
+
+        .logout-form {
+            display: inline;
+        }
+
+        .logout-btn {
+            color: #dc3545;
+        }
+
+        .logout-btn:hover {
+            color: white;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        }
+
+        .logout-btn::before {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(255, 0, 200, 0.1);
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            margin: 3px 0;
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mobile-menu-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu-overlay.active .mobile-menu {
+            transform: translateX(0);
+        }
+
+        .mobile-menu-header {
+            padding: 2rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .close-mobile-menu {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            font-size: 1.5rem;
+            color: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-mobile-menu:hover {
+            background: rgba(255, 0, 200, 0.1);
+            color: #ff00c8;
+        }
+
+        .mobile-menu-links {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #333;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .mobile-nav-link:hover {
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .mobile-nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .register-mobile {
+            background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%);
+            color: white !important;
+            margin-top: 10px;
+        }
+
+        .logout-mobile {
+            color: #dc3545;
+        }
+
+        .logout-mobile:hover {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        /* Body padding for fixed navbar */
+        body {
+            padding-top: 68px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .brand-text {
+                font-size: 1.2rem;
+            }
+
+            .logo-nav {
+                height: 30px;
+            }
+
+            .mobile-menu {
+                width: 100%;
+            }
+
+            body {
+                padding-top: 60px;
+            }
+
+            .modern-navbar {
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-menu {
+                width: 100vw;
+            }
+
+            .mobile-menu-links {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Animation for scroll */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modern-navbar {
+            animation: fadeInDown 0.8s ease-out;
+        }
+    </style>
+
 </head>
 
 <body id="welcome-body">
-    <!-- 🎯 HEADER -->
-    <header>
-        <nav class="navbar">
-            <ul class="nav-links">
-                <li><a href="{{ url('/') }}">Inicio</a></li>
+    <!-- 🎯 MODERN NAVIGATION BAR -->
+    <nav class="modern-navbar" id="modernNavbar">
+        <div class="nav-container">
+            <!-- Logo Section -->
+            <div class="nav-logo">
+                <img src="{{ asset('images/logo1.png') }}" alt="Betogether" class="logo-nav">
+            </div>
 
+            <!-- Navigation Links -->
+            <div class="nav-links">
                 @auth
-                    <li><a href="{{ route('dashboard') }}">Mi cuenta</a></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}" style="display:inline">
+                    <a href="{{ route('dashboard') }}" class="nav-link">
+                        <div class="nav-link-content">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Mi cuenta</span>
+                        </div>
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit" class="nav-link logout-btn">
+                            <div class="nav-link-content">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Cerrar sesión</span>
+                            </div>
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="nav-link login-btn">
+                        <div class="nav-link-content">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Iniciar sesión</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('register') }}" class="nav-link register-btn">
+                        <div class="nav-link-content">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Registrarse</span>
+                        </div>
+                    </a>
+                @endauth
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <div class="hamburger">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </div>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+            <div class="mobile-menu">
+                <div class="mobile-menu-header">
+                    <img src="{{ asset('images/logo1.png') }}" alt="Betogether" class="mobile-logo">
+                    <button class="close-mobile-menu" id="closeMobileMenu">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="mobile-menu-links">
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="mobile-nav-link">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Mi cuenta</span>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="btn outline"
-                                style="border:none;background:none;padding:0;cursor:pointer;">
-                                Cerrar sesión
+                            <button type="submit" class="mobile-nav-link logout-mobile">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Cerrar sesión</span>
                             </button>
                         </form>
-                    </li>
-                @else
-                    <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
-                @endauth
-            </ul>
-        </nav>
+                    @else
+                        <a href="{{ route('login') }}" class="mobile-nav-link">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Iniciar sesión</span>
+                        </a>
+                        <a href="{{ route('register') }}" class="mobile-nav-link register-mobile">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Registrarse</span>
+                        </a>
+                    @endauth
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header>
 
         <div class="hero">
             <div class="hero-text">
-                <img width="20%" src="{{ asset('images/logo1.png') }}"
-                    alt="Logo" class="logo">
                 <h1>¡Hola Colombia!<br>Tu Negocio, <span>Nuestra causa.</span></h1>
                 <p>Te abrimos la puerta a un ecosistema de <strong>crecimiento sin límites.</strong></p>
                 <ul class="benefits">
@@ -508,6 +954,191 @@
     <a href="https://wa.me/#" class="whatsapp-button" target="_blank">
         <i class="bi bi-whatsapp"></i> Contáctanos vía Whatsapp
     </a>
+
+    <script>
+        // Modern Navigation Bar Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbar = document.getElementById('modernNavbar');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const closeMobileMenu = document.getElementById('closeMobileMenu');
+            
+            // Navbar scroll effect
+            let lastScrollY = window.scrollY;
+            let ticking = false;
+            
+            function updateNavbar() {
+                const scrollY = window.scrollY;
+                
+                if (scrollY > 20) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                
+                lastScrollY = scrollY;
+                ticking = false;
+            }
+            
+            function onScroll() {
+                if (!ticking) {
+                    requestAnimationFrame(updateNavbar);
+                    ticking = true;
+                }
+            }
+            
+            window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // Mobile menu functionality
+            function toggleMobileMenu(show) {
+                if (show) {
+                    mobileMenuOverlay.classList.add('active');
+                    mobileMenuBtn.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    mobileMenuOverlay.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+            
+            // Open mobile menu
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMobileMenu(true);
+            });
+            
+            // Close mobile menu
+            closeMobileMenu.addEventListener('click', function() {
+                toggleMobileMenu(false);
+            });
+            
+            // Close mobile menu when clicking overlay
+            mobileMenuOverlay.addEventListener('click', function(e) {
+                if (e.target === mobileMenuOverlay) {
+                    toggleMobileMenu(false);
+                }
+            });
+            
+            // Close mobile menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    toggleMobileMenu(false);
+                }
+            });
+            
+            // Close mobile menu when clicking on mobile nav links
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link:not(.logout-mobile)');
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    toggleMobileMenu(false);
+                });
+            });
+            
+            // Smooth hover animations for nav links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Logo click to scroll to top
+            const logoSection = document.querySelector('.nav-logo');
+            if (logoSection) {
+                logoSection.addEventListener('click', function() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+            
+            // Add ripple effect to nav links
+            function createRipple(event) {
+                const button = event.currentTarget;
+                const circle = document.createElement('span');
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+                
+                const rect = button.getBoundingClientRect();
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - rect.left - radius}px`;
+                circle.style.top = `${event.clientY - rect.top - radius}px`;
+                circle.classList.add('ripple');
+                
+                const ripple = button.getElementsByClassName('ripple')[0];
+                if (ripple) {
+                    ripple.remove();
+                }
+                
+                button.appendChild(circle);
+                
+                setTimeout(() => {
+                    circle.remove();
+                }, 600);
+            }
+            
+            // Add ripple CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .nav-link {
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .ripple {
+                    position: absolute;
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 600ms linear;
+                    background-color: rgba(255, 255, 255, 0.6);
+                    pointer-events: none;
+                }
+                
+                @keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Apply ripple effect to nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', createRipple);
+            });
+            
+            // Intersection Observer for navbar animation on load
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            // Add subtle animation to navbar on first load
+            setTimeout(() => {
+                navbar.style.transform = 'translateY(0)';
+                navbar.style.opacity = '1';
+            }, 100);
+            
+            // Performance optimization: Debounce resize events
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    // Close mobile menu on resize to desktop
+                    if (window.innerWidth > 768) {
+                        toggleMobileMenu(false);
+                    }
+                }, 100);
+            });
+        });
+    </script>
 </body>
 
 </html>
