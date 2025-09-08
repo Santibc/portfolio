@@ -60,13 +60,13 @@
         }
 
         .logo-nav {
-            height: 38px;
+            height: 48px;
             width: auto;
             transition: all 0.3s ease;
         }
 
         .modern-navbar.scrolled .logo-nav {
-            height: 34px;
+            height: 44px;
         }
 
         .brand-text {
@@ -351,7 +351,7 @@
             }
 
             .logo-nav {
-                height: 30px;
+                height: 38px;
             }
 
             .mobile-menu {
