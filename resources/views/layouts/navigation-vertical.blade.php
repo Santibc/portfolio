@@ -131,25 +131,6 @@
             </a>
         @endif
 
-        {{-- Ventas --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin']))
-{{--             <a href="{{ route('catalogo') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-shop"></i>
-                <span>Catálogo</span>
-            </a> --}}
-{{--             <a href="{{ route('solicitudes') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Solicitudes</span>
-            </a> --}}
-{{--             <a href="{{ route('enlaces') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-link-45deg"></i>
-                <span>Enlaces</span>
-            </a> --}}
-            
-            {{-- Gestión de Stock (con submenú) --}}
             @if(auth()->user()->empresa)
                 <div class="nav-item">
                     <a href="#stockSubmenu" 
@@ -192,8 +173,7 @@
                         </div>
                     </div>
                 </div>
-                
-                {{-- Compras --}}
+
                 <a href="{{ route('compras') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('compras*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
                    title="Compras"
@@ -212,7 +192,7 @@
                     <span>Gestión de Stock</span>
                 </a>
             @endif
-        @endif
+
     </nav>
 
     {{-- Botón Salir --}}
