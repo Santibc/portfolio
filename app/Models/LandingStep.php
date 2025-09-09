@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class LandingStep extends Model
+{
+    use HasFactory;
+    
+    protected $table = 'landing_steps';
+    
+    protected $fillable = [
+        'title',
+        'description',
+        'step_number',
+        'order',
+        'is_active'
+    ];
+    
+    protected $casts = [
+        'is_active' => 'boolean'
+    ];
+}

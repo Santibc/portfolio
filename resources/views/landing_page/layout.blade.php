@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Montano&Co</title>
+  <title>{{ $layoutConfig->site_title ?? 'Montano&Co' }}</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
@@ -19,7 +19,8 @@
 
   <!-- Archivos CSS de terceros -->
   <link href="{{ asset('montano_assets/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-  <link href="{{ asset('montano_assets/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <!-- Bootstrap Icons CDN - Versión completa con todos los iconos -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link href="{{ asset('montano_assets/assets/vendor/aos/aos.css') }}" rel="stylesheet">
   <link href="{{ asset('montano_assets/assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
   <link href="{{ asset('montano_assets/assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
@@ -241,14 +242,22 @@
     <div class="topbar d-flex align-items-center">
       <div class="container d-flex justify-content-center justify-content-md-between">
         <div class="contact-info d-flex align-items-center">
-          <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:contacto@ejemplo.com">contacto@ejemplo.com</a></i>
-          <i class="bi bi-phone d-flex align-items-center ms-4"><span>+57 310 000 0000</span></i>
+          <i class="bi bi-envelope d-flex align-items-center"><a href="mailto:{{ $layoutConfig->topbar_email ?? 'contacto@ejemplo.com' }}">{{ $layoutConfig->topbar_email ?? 'contacto@ejemplo.com' }}</a></i>
+          <i class="bi bi-phone d-flex align-items-center ms-4"><span>{{ $layoutConfig->topbar_phone ?? '+57 310 000 0000' }}</span></i>
         </div>
         <div class="social-links d-none d-md-flex align-items-center">
-          <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+          @if($layoutConfig && $layoutConfig->twitter_url)
+            <a href="{{ $layoutConfig->twitter_url }}" target="_blank" class="twitter"><i class="bi bi-twitter-x"></i></a>
+          @endif
+          @if($layoutConfig && $layoutConfig->facebook_url)
+            <a href="{{ $layoutConfig->facebook_url }}" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
+          @endif
+          @if($layoutConfig && $layoutConfig->instagram_url)
+            <a href="{{ $layoutConfig->instagram_url }}" target="_blank" class="instagram"><i class="bi bi-instagram"></i></a>
+          @endif
+          @if($layoutConfig && $layoutConfig->linkedin_url)
+            <a href="{{ $layoutConfig->linkedin_url }}" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
+          @endif
         </div>
       </div>
     </div><!-- Fin de barra superior -->
@@ -300,9 +309,9 @@
             <li><a href="{{ route('welcome') }}">Inicio</a></li>
             <li><a href="{{ route('nosotros') }}">Nosotros</a></li>
             <li><a href="{{ route('equipo') }}">Equipo</a></li>
-            <li><a href="{{ route('contacto') }}">contacto</a></li>
-            <li><a href="#">Términos de servicio</a></li>
-            <li><a href="#">Política de privacidad</a></li>
+            <li><a href="{{ route('contacto') }}">Contacto</a></li>
+{{--             <li><a href="#">Términos de servicio</a></li>
+            <li><a href="#">Política de privacidad</a></li> --}}
           </ul>
         </div>
 
@@ -310,16 +319,24 @@
         <div class="col-12 col-md-5 footer-newsletter">
           <h4>Empresa</h4>
                       <div class="footer-contact ">
-              <p>Calle 108 #10-20</p>
-              <p>Bogotá, Colombia</p>
-              <p class="mt-3"><strong>Teléfono:</strong> <span>+57 310 000 0000</span></p>
-              <p><strong>Email:</strong> <span>info@ejemplo.com</span></p>
+              <p>{{ $layoutConfig->footer_address ?? 'Calle 108 #10-20' }}</p>
+              <p>{{ $layoutConfig->footer_city ?? 'Bogotá, Colombia' }}</p>
+              <p class="mt-3"><strong>Teléfono:</strong> <span>{{ $layoutConfig->footer_phone ?? '+57 310 000 0000' }}</span></p>
+              <p><strong>Email:</strong> <span>{{ $layoutConfig->footer_email ?? 'info@ejemplo.com' }}</span></p>
             </div>
                         <div class="social-links d-flex mt-4">
-              <a href=""><i class="bi bi-twitter-x"></i></a>
-              <a href=""><i class="bi bi-facebook"></i></a>
-              <a href=""><i class="bi bi-instagram"></i></a>
-              <a href=""><i class="bi bi-linkedin"></i></a>
+              @if($layoutConfig && $layoutConfig->twitter_url)
+                <a href="{{ $layoutConfig->twitter_url }}" target="_blank"><i class="bi bi-twitter-x"></i></a>
+              @endif
+              @if($layoutConfig && $layoutConfig->facebook_url)
+                <a href="{{ $layoutConfig->facebook_url }}" target="_blank"><i class="bi bi-facebook"></i></a>
+              @endif
+              @if($layoutConfig && $layoutConfig->instagram_url)
+                <a href="{{ $layoutConfig->instagram_url }}" target="_blank"><i class="bi bi-instagram"></i></a>
+              @endif
+              @if($layoutConfig && $layoutConfig->linkedin_url)
+                <a href="{{ $layoutConfig->linkedin_url }}" target="_blank"><i class="bi bi-linkedin"></i></a>
+              @endif
             </div>
         </div>
 
@@ -327,7 +344,7 @@
     </div>
 
     <div class="container copyright text-center mt-4">
-      <p>© <span>Derechos de autor</span> <strong class="px-1 sitename">Montano&Co.</strong> <span>Todos los derechos reservados</span></p>
+      <p>© <span>Derechos de autor</span> <strong class="px-1 sitename">{{ $layoutConfig->copyright_company ?? 'Montano&Co.' }}</strong> <span>Todos los derechos reservados</span></p>
     </div>
 
   </footer>
@@ -373,6 +390,8 @@
     // Verificar el estado inicial
     handleScroll();
   </script>
+
+  @stack('scripts')
 
 </body>
 

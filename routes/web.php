@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\ActualizacionPreciosController;
+use App\Http\Controllers\AdminLandingPageController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,6 +32,9 @@ Route::get('/nosotros',[HomeController::class, 'nosotros'] )->name('nosotros');
 Route::get('/equipo',[HomeController::class, 'equipo'] )->name('equipo');
 Route::get('/contacto',[HomeController::class, 'contacto'] )->name('contacto');
 
+// Ruta para envío de correo desde formulario de contacto del landing page
+Route::post('/contact/send', [AdminLandingPageController::class, 'sendContactEmail'])->name('contact.send');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -39,6 +43,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+
+    // Rutas de administración de Landing Page  
+    Route::prefix('admin/landing')->name('admin.landing.')->group(function () {
+        Route::get('/', [AdminLandingPageController::class, 'index'])->name('index');
+        Route::post('/config/update', [AdminLandingPageController::class, 'updateConfig'])->name('config.update');
+        Route::post('/carousel/store', [AdminLandingPageController::class, 'storeCarouselImage'])->name('carousel.store');
+        Route::delete('/carousel/{id}', [AdminLandingPageController::class, 'deleteCarouselImage'])->name('carousel.delete');
+        Route::post('/services/store', [AdminLandingPageController::class, 'storeService'])->name('services.store');
+        Route::put('/services/{id}', [AdminLandingPageController::class, 'updateService'])->name('services.update');
+        Route::delete('/services/{id}', [AdminLandingPageController::class, 'deleteService'])->name('services.delete');
+        Route::post('/steps/store', [AdminLandingPageController::class, 'storeStep'])->name('steps.store');
+        Route::put('/steps/{id}', [AdminLandingPageController::class, 'updateStep'])->name('steps.update');
+        Route::delete('/steps/{id}', [AdminLandingPageController::class, 'deleteStep'])->name('steps.delete');
+        Route::post('/contact/update', [AdminLandingPageController::class, 'updateContactInfo'])->name('contact.update');
+        Route::post('/about/update', [AdminLandingPageController::class, 'updateAbout'])->name('about.update');
+        Route::post('/team/store', [AdminLandingPageController::class, 'storeTeamMember'])->name('team.store');
+        Route::put('/team/{id}', [AdminLandingPageController::class, 'updateTeamMember'])->name('team.update');
+        Route::delete('/team/{id}', [AdminLandingPageController::class, 'deleteTeamMember'])->name('team.delete');
+        Route::post('/layout/update', [AdminLandingPageController::class, 'updateLayoutConfig'])->name('layout.update');
+        Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
+        Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');
+    });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
