@@ -26,6 +26,69 @@
 
   <!-- Main CSS File -->
   <link href="{{ asset('montano_assets/assets/css/main.css') }}" rel="stylesheet">
+  
+  <!-- Custom Hero Carousel Styles -->
+  <style>
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero .carousel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    
+    .hero .carousel-inner {
+      height: 100%;
+    }
+    
+    .hero .carousel-item {
+      height: 100%;
+    }
+    
+    .hero .hero-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.6) sepia(0.2) hue-rotate(200deg) saturate(1.2);
+    }
+    
+    .hero .hero-content {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 10;
+      color: white;
+    }
+    
+    .hero .carousel-control-prev,
+    .hero .carousel-control-next {
+      z-index: 15;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    
+    .hero .carousel-control-prev:hover,
+    .hero .carousel-control-next:hover {
+      opacity: 1;
+    }
+    
+    .hero .carousel-control-prev-icon,
+    .hero .carousel-control-next-icon {
+      background-size: 100%, 100%;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+      width: 3rem;
+      height: 3rem;
+    }
+  </style>
 
   <!-- =======================================================
   * Template Name: Day
@@ -102,10 +165,39 @@
 
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
+      <!-- Carousel -->
+      <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="{{ asset('imagenes/car1.jpg') }}" class="hero-bg-img" alt="">
+          </div>
+          <div class="carousel-item">
+            <img src="{{ asset('imagenes/car2.jpg') }}" class="hero-bg-img" alt="">
+          </div>
+          <div class="carousel-item">
+            <img src="{{ asset('imagenes/car3.jpg') }}" class="hero-bg-img" alt="">
+          </div>
+          <div class="carousel-item">
+            <img src="{{ asset('imagenes/car4.jpg') }}" class="hero-bg-img" alt="">
+          </div>
+          <div class="carousel-item">
+            <img src="{{ asset('imagenes/car5.jpg') }}" class="hero-bg-img" alt="">
+          </div>
+        </div>
+        
+        <!-- Carousel Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
 
-      <img src="{{ asset('montano_assets/assets/img/hero-bg.jpg') }}" alt="" data-aos="fade-in">
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <!-- Fixed content overlay -->
+      <div class="container hero-content" data-aos="fade-up" data-aos-delay="100">
         <div class="row justify-content-start">
           <div class="col-lg-8">
             <h2>Welcome to Day</h2>
