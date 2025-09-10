@@ -4,9 +4,17 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>{{ $layoutConfig->site_title ?? 'Montano&Co' }}</title>
-  <meta name="description" content="">
-  <meta name="keywords" content="">
+  <title>{{ $seo->meta_title ?? ($layoutConfig->site_title ?? 'Montano&Co') }}</title>
+  <meta name="description" content="{{ $seo->meta_description ?? '' }}">
+  <meta name="keywords" content="{{ $seo->meta_keywords ?? '' }}">
+  
+  @if($seo && $seo->canonical_url)
+  <link rel="canonical" href="{{ $seo->canonical_url }}">
+  @endif
+  
+  @if($seo && $seo->robots)
+  <meta name="robots" content="{{ $seo->robots }}">
+  @endif
 
   <!-- Favicons -->
   <link href="{{ asset('images/logo.png') }}" rel="icon">

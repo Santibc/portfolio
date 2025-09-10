@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/layout/update', [AdminLandingPageController::class, 'updateLayoutConfig'])->name('layout.update');
         Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
         Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');
+        Route::delete('/seo/{id}', [AdminLandingPageController::class, 'deleteSeo'])->name('seo.delete');
     });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])

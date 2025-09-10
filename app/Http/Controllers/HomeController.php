@@ -12,6 +12,8 @@ use App\Models\LandingContactInfo;
 use App\Models\LandingAbout;
 use App\Models\LandingTeamMember;
 use App\Models\LandingLayoutConfig;
+use App\Models\Page;
+use App\Models\Seo;
 
 class HomeController extends Controller
 {
@@ -30,9 +32,13 @@ class HomeController extends Controller
         $steps = LandingStep::orderBy('order')->get();
         $contactInfo = LandingContactInfo::first();
         $layoutConfig = LandingLayoutConfig::first();
+        
+        // Cargar SEO para la página inicio (solo si está activo)
+        $page = Page::where('slug', 'home')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
         return view('landing_page.home', compact(
-            'config', 'carouselImages', 'services', 'steps', 'contactInfo', 'layoutConfig'
+            'config', 'carouselImages', 'services', 'steps', 'contactInfo', 'layoutConfig', 'seo'
         ));
     }
     public function nosotros()
@@ -40,7 +46,11 @@ class HomeController extends Controller
         $about = LandingAbout::first();
         $layoutConfig = LandingLayoutConfig::first();
         
-        return view('landing_page.nosotros', compact('about', 'layoutConfig'));
+        // Cargar SEO para la página nosotros (solo si está activo)
+        $page = Page::where('slug', 'nosotros')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+        
+        return view('landing_page.nosotros', compact('about', 'layoutConfig', 'seo'));
     }
     
     public function equipo()
@@ -48,7 +58,11 @@ class HomeController extends Controller
         $teamMembers = LandingTeamMember::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
         
-        return view('landing_page.equipo', compact('teamMembers', 'layoutConfig'));
+        // Cargar SEO para la página equipo (solo si está activo)
+        $page = Page::where('slug', 'equipo')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+        
+        return view('landing_page.equipo', compact('teamMembers', 'layoutConfig', 'seo'));
     }
     
     public function contacto()
@@ -56,6 +70,10 @@ class HomeController extends Controller
         $contactInfo = LandingContactInfo::first();
         $layoutConfig = LandingLayoutConfig::first();
         
-        return view('landing_page.contacto', compact('contactInfo', 'layoutConfig'));
+        // Cargar SEO para la página contacto (solo si está activo)
+        $page = Page::where('slug', 'contacto')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+        
+        return view('landing_page.contacto', compact('contactInfo', 'layoutConfig', 'seo'));
     }
 }

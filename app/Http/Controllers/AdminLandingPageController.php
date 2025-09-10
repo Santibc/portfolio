@@ -14,6 +14,7 @@ use App\Models\LandingLayoutConfig;
 use App\Models\Page;
 use App\Models\Seo;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use App\Mail\ContactFormMail;
 
 class AdminLandingPageController extends Controller
@@ -32,10 +33,11 @@ class AdminLandingPageController extends Controller
         // Get or create landing pages
         $this->ensureLandingPagesExist();
         $pages = Page::where('page_type', 'landing')->get();
+        $seoConfigs = Seo::with('page')->get();
         
         return view('admin.landing.index', compact(
             'config', 'carouselImages', 'services', 'steps', 'contactInfo',
-            'about', 'teamMembers', 'layoutConfig', 'pages'
+            'about', 'teamMembers', 'layoutConfig', 'pages', 'seoConfigs'
         ));
     }
     
@@ -448,43 +450,16 @@ class AdminLandingPageController extends Controller
         $request->validate([
             'page_id' => 'required|exists:pages,id',
             'meta_title' => 'nullable|string|max:150',
-            'meta_description' => 'nullable|string|max:300',
+            'meta_description' => 'nullable|string',
             'meta_keywords' => 'nullable|string|max:500',
             'canonical_url' => 'nullable|url|max:500',
-            'robots' => 'required|in:index,follow,noindex,follow,index,nofollow,noindex,nofollow',
-            'og_title' => 'nullable|string|max:150',
-            'og_description' => 'nullable|string',
-            'og_image' => 'nullable|url|max:500',
-            'og_type' => 'required|in:website,article,product,business.business',
-            'og_url' => 'nullable|url|max:500',
-            'og_site_name' => 'nullable|string|max:100',
-            'twitter_card' => 'required|in:summary,summary_large_image,app,player',
-            'twitter_title' => 'nullable|string|max:150',
-            'twitter_description' => 'nullable|string',
-            'twitter_image' => 'nullable|url|max:500',
-            'twitter_site' => 'nullable|string|max:50',
-            'twitter_creator' => 'nullable|string|max:50',
-            'schema_markup' => 'nullable|json',
+            'robots' => ['required', Rule::in(['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'])],
             'focus_keyword' => 'nullable|string|max:100',
-            'breadcrumb_title' => 'nullable|string',
-            'sitemap_include' => 'required|boolean',
-            'sitemap_priority' => 'required|numeric|between:0,1',
-            'sitemap_changefreq' => 'required|in:always,hourly,daily,weekly,monthly,yearly,never',
             'is_active' => 'boolean'
         ]);
         
-        $data = $request->except('_token');
+        $data = $request->only(['page_id', 'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'robots', 'focus_keyword']);
         $data['is_active'] = $request->has('is_active');
-        
-        // Validate JSON schema markup if provided
-        if ($request->schema_markup) {
-            $decoded = json_decode($request->schema_markup);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return redirect()->back()
-                    ->withErrors(['schema_markup' => 'El marcado Schema debe ser un JSON válido.'])
-                    ->withInput();
-            }
-        }
         
         $seo = Seo::where('page_id', $request->page_id)->first();
         
@@ -501,5 +476,13 @@ class AdminLandingPageController extends Controller
     {
         $seo = Seo::where('page_id', $pageId)->first();
         return response()->json($seo);
+    }
+    
+    public function deleteSeo($id)
+    {
+        $seo = Seo::findOrFail($id);
+        $seo->delete();
+        
+        return redirect()->back()->with('success', 'Configuración SEO eliminada correctamente.');
     }
 }

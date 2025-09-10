@@ -598,306 +598,249 @@
 
                     <!-- SEO -->
                     <div class="tab-pane fade" id="seo" role="tabpanel">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Configuración SEO</h5>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h1 class="h3 mb-0">
+                                        <i class="bi bi-search me-2 text-primary"></i>
+                                        Gestión SEO
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 1: Lista de SEOs Configurados -->
+                        @if($seoConfigs->count() > 0)
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-list-check me-2 text-success"></i>
+                                            SEOs Configurados
+                                        </h5>
+                                        <span class="badge bg-primary">{{ $seoConfigs->count() }} configuraciones</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="border-0 fw-bold">
+                                                        <i class="bi bi-file-text me-1"></i>Página
+                                                    </th>
+                                                    <th class="border-0 fw-bold">
+                                                        <i class="bi bi-tag me-1"></i>Título SEO
+                                                    </th>
+                                                    <th class="border-0 fw-bold">
+                                                        <i class="bi bi-key me-1"></i>Palabra Clave
+                                                    </th>
+                                                    <th class="border-0 fw-bold">
+                                                        <i class="bi bi-robot me-1"></i>Robots
+                                                    </th>
+                                                    <th class="border-0 fw-bold text-center">
+                                                        <i class="bi bi-toggle-on me-1"></i>Estado
+                                                    </th>
+                                                    <th class="border-0 fw-bold text-center">
+                                                        <i class="bi bi-gear me-1"></i>Acciones
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($seoConfigs as $seoConfig)
+                                                    <tr class="align-middle">
+                                                        <td class="fw-bold text-primary">
+                                                            <i class="bi bi-page-forward me-2"></i>
+                                                            {{ $seoConfig->page->name }}
+                                                        </td>
+                                                        <td>
+                                                            <div class="text-truncate" style="max-width: 250px;" title="{{ $seoConfig->meta_title }}">
+                                                                {{ $seoConfig->meta_title ?: 'No definido' }}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            @if($seoConfig->focus_keyword)
+                                                                <span class="badge bg-info">{{ $seoConfig->focus_keyword }}</span>
+                                                            @else
+                                                                <span class="text-muted">No definida</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            <code class="text-dark">{{ $seoConfig->robots }}</code>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @if($seoConfig->is_active)
+                                                                <span class="badge bg-success">
+                                                                    <i class="bi bi-check-circle me-1"></i>Activo
+                                                                </span>
+                                                            @else
+                                                                <span class="badge bg-secondary">
+                                                                    <i class="bi bi-x-circle me-1"></i>Inactivo
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <div class="btn-group" role="group">
+                                                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                        onclick="editSeo({{ $seoConfig->page->id }})"
+                                                                        title="Editar">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <form action="{{ route('admin.landing.seo.delete', $seoConfig->id) }}" method="POST" class="d-inline">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                                            onclick="return confirm('¿Estás seguro de eliminar esta configuración SEO?')"
+                                                                            title="Eliminar">
+                                                                        <i class="bi bi-trash3"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <div>
+                                    No hay configuraciones SEO creadas aún. Utiliza el formulario de abajo para crear la primera configuración.
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Card 2: Formulario de Configuración -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <h5 class="card-title mb-0 text-white">
+                                    <i class="bi bi-plus-circle me-2"></i>
+                                    Configurar SEO
+                                </h5>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('admin.landing.seo.update') }}" method="POST">
+                                <form action="{{ route('admin.landing.seo.update') }}" method="POST" id="seoForm">
                                     @csrf
 
                                     <!-- Selector de Página -->
-                                    <div class="mb-4">
-                                        <label class="form-label">Página a Configurar</label>
-                                        <select name="page_id" id="pageSelector" class="form-control" required>
-                                            <option value="">Seleccionar página...</option>
-                                            @foreach($pages as $page)
-                                                <option value="{{ $page->id }}" {{ old('page_id') == $page->id ? 'selected' : '' }}>
-                                                    {{ $page->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <!-- Meta Tags Básicos -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Meta Tags Básicos</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Título SEO <small>(máx. 150 caracteres)</small></label>
-                                                        <input type="text" name="meta_title" class="form-control" maxlength="150" 
-                                                               value="{{ old('meta_title') }}" 
-                                                               placeholder="Título optimizado para motores de búsqueda">
-                                                        <div class="form-text">
-                                                            <span id="titleCounter">0</span>/150 caracteres
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Palabra Clave Principal</label>
-                                                        <input type="text" name="focus_keyword" class="form-control" maxlength="100"
-                                                               value="{{ old('focus_keyword') }}" 
-                                                               placeholder="palabra clave principal">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Meta Descripción <small>(máx. 300 caracteres)</small></label>
-                                                <textarea name="meta_description" class="form-control" rows="3" maxlength="300"
-                                                          placeholder="Descripción atractiva que aparecerá en los resultados de búsqueda">{{ old('meta_description') }}</textarea>
-                                                <div class="form-text">
-                                                    <span id="descriptionCounter">0</span>/300 caracteres
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Palabras Clave (separadas por comas)</label>
-                                                        <input type="text" name="meta_keywords" class="form-control" maxlength="500"
-                                                               value="{{ old('meta_keywords') }}" 
-                                                               placeholder="palabra1, palabra2, palabra3">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">URL Canónica</label>
-                                                        <input type="url" name="canonical_url" class="form-control" maxlength="500"
-                                                               value="{{ old('canonical_url') }}" 
-                                                               placeholder="https://ejemplo.com/pagina">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Robots</label>
-                                                <select name="robots" class="form-control">
-                                                    <option value="index,follow" {{ old('robots') == 'index,follow' ? 'selected' : '' }}>Index, Follow (Recomendado)</option>
-                                                    <option value="noindex,follow" {{ old('robots') == 'noindex,follow' ? 'selected' : '' }}>No Index, Follow</option>
-                                                    <option value="index,nofollow" {{ old('robots') == 'index,nofollow' ? 'selected' : '' }}>Index, No Follow</option>
-                                                    <option value="noindex,nofollow" {{ old('robots') == 'noindex,nofollow' ? 'selected' : '' }}>No Index, No Follow</option>
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="form-floating">
+                                                <select name="page_id" id="pageSelector" class="form-select" required>
+                                                    <option value="">Seleccionar página...</option>
+                                                    @foreach($pages as $page)
+                                                        <option value="{{ $page->id }}" {{ old('page_id') == $page->id ? 'selected' : '' }}>
+                                                            {{ $page->name }}
+                                                        </option>
+                                                    @endforeach
                                                 </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Open Graph (Facebook) -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Open Graph (Facebook/LinkedIn)</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">OG Título</label>
-                                                        <input type="text" name="og_title" class="form-control" maxlength="150"
-                                                               value="{{ old('og_title') }}" 
-                                                               placeholder="Título para compartir en redes sociales">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">OG Tipo</label>
-                                                        <select name="og_type" class="form-control">
-                                                            <option value="website" {{ old('og_type') == 'website' ? 'selected' : '' }}>Website</option>
-                                                            <option value="article" {{ old('og_type') == 'article' ? 'selected' : '' }}>Article</option>
-                                                            <option value="product" {{ old('og_type') == 'product' ? 'selected' : '' }}>Product</option>
-                                                            <option value="business.business" {{ old('og_type') == 'business.business' ? 'selected' : '' }}>Business</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">OG Descripción</label>
-                                                <textarea name="og_description" class="form-control" rows="3"
-                                                          placeholder="Descripción para compartir en redes sociales">{{ old('og_description') }}</textarea>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">OG Imagen (URL)</label>
-                                                        <input type="url" name="og_image" class="form-control" maxlength="500"
-                                                               value="{{ old('og_image') }}" 
-                                                               placeholder="https://ejemplo.com/imagen.jpg">
-                                                        <div class="form-text">Tamaño recomendado: 1200x630 px</div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">OG Nombre del Sitio</label>
-                                                        <input type="text" name="og_site_name" class="form-control" maxlength="100"
-                                                               value="{{ old('og_site_name') }}" 
-                                                               placeholder="Nombre de tu sitio web">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">OG URL</label>
-                                                <input type="url" name="og_url" class="form-control" maxlength="500"
-                                                       value="{{ old('og_url') }}" 
-                                                       placeholder="https://ejemplo.com/pagina">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Twitter Cards -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Twitter Cards</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Twitter Card</label>
-                                                        <select name="twitter_card" class="form-control">
-                                                            <option value="summary_large_image" {{ old('twitter_card') == 'summary_large_image' ? 'selected' : '' }}>Summary Large Image (Recomendado)</option>
-                                                            <option value="summary" {{ old('twitter_card') == 'summary' ? 'selected' : '' }}>Summary</option>
-                                                            <option value="app" {{ old('twitter_card') == 'app' ? 'selected' : '' }}>App</option>
-                                                            <option value="player" {{ old('twitter_card') == 'player' ? 'selected' : '' }}>Player</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Twitter Título</label>
-                                                        <input type="text" name="twitter_title" class="form-control" maxlength="150"
-                                                               value="{{ old('twitter_title') }}" 
-                                                               placeholder="Título para Twitter">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Twitter Descripción</label>
-                                                <textarea name="twitter_description" class="form-control" rows="3"
-                                                          placeholder="Descripción para Twitter">{{ old('twitter_description') }}</textarea>
-                                            </div>
-                                            
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Twitter Imagen (URL)</label>
-                                                        <input type="url" name="twitter_image" class="form-control" maxlength="500"
-                                                               value="{{ old('twitter_image') }}" 
-                                                               placeholder="https://ejemplo.com/imagen.jpg">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Twitter Site (@usuario)</label>
-                                                        <input type="text" name="twitter_site" class="form-control" maxlength="50"
-                                                               value="{{ old('twitter_site') }}" 
-                                                               placeholder="@usuario">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Twitter Creator (@usuario)</label>
-                                                <input type="text" name="twitter_creator" class="form-control" maxlength="50"
-                                                       value="{{ old('twitter_creator') }}" 
-                                                       placeholder="@autor">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Configuración de Sitemap -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Configuración de Sitemap</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Incluir en Sitemap</label>
-                                                        <select name="sitemap_include" class="form-control">
-                                                            <option value="1" {{ old('sitemap_include') == '1' ? 'selected' : '' }}>Sí</option>
-                                                            <option value="0" {{ old('sitemap_include') == '0' ? 'selected' : '' }}>No</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Prioridad (0.0 - 1.0)</label>
-                                                        <select name="sitemap_priority" class="form-control">
-                                                            <option value="1.0" {{ old('sitemap_priority') == '1.0' ? 'selected' : '' }}>1.0 (Muy alta)</option>
-                                                            <option value="0.8" {{ old('sitemap_priority') == '0.8' ? 'selected' : '' }}>0.8 (Alta)</option>
-                                                            <option value="0.6" {{ old('sitemap_priority') == '0.6' ? 'selected' : '' }}>0.6 (Media)</option>
-                                                            <option value="0.4" {{ old('sitemap_priority') == '0.4' ? 'selected' : '' }}>0.4 (Baja)</option>
-                                                            <option value="0.2" {{ old('sitemap_priority') == '0.2' ? 'selected' : '' }}>0.2 (Muy baja)</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Frecuencia de Cambio</label>
-                                                        <select name="sitemap_changefreq" class="form-control">
-                                                            <option value="daily" {{ old('sitemap_changefreq') == 'daily' ? 'selected' : '' }}>Diariamente</option>
-                                                            <option value="weekly" {{ old('sitemap_changefreq') == 'weekly' ? 'selected' : '' }}>Semanalmente</option>
-                                                            <option value="monthly" {{ old('sitemap_changefreq') == 'monthly' ? 'selected' : '' }}>Mensualmente</option>
-                                                            <option value="yearly" {{ old('sitemap_changefreq') == 'yearly' ? 'selected' : '' }}>Anualmente</option>
-                                                            <option value="never" {{ old('sitemap_changefreq') == 'never' ? 'selected' : '' }}>Nunca</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label">Título para Breadcrumbs</label>
-                                                <input type="text" name="breadcrumb_title" class="form-control"
-                                                       value="{{ old('breadcrumb_title') }}" 
-                                                       placeholder="Título alternativo para navegación">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Schema.org -->
-                                    <div class="card mb-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Schema.org JSON-LD (Opcional)</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Marcado Estructurado JSON-LD</label>
-                                                <textarea name="schema_markup" class="form-control" rows="8"
-                                                          placeholder='{"@context": "https://schema.org", "@type": "Organization", "name": "Empresa"}'>{{ old('schema_markup') }}</textarea>
-                                                <div class="form-text">
-                                                    Código JSON-LD para datos estructurados. 
-                                                    <a href="https://schema.org" target="_blank">Más información</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-check mb-3">
-                                                <input class="form-check-input" type="checkbox" name="is_active" value="1" 
-                                                       {{ old('is_active', true) ? 'checked' : '' }} id="seoActive">
-                                                <label class="form-check-label" for="seoActive">
-                                                    Configuración SEO Activa
+                                                <label for="pageSelector">
+                                                    <i class="bi bi-file-earmark me-1"></i>Página a Configurar *
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-lg me-1"></i>Guardar Configuración SEO
-                                    </button>
+                                    <!-- Campos del Formulario -->
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-4">
+                                                <input type="text" name="meta_title" class="form-control" id="metaTitle" maxlength="150" 
+                                                       value="{{ old('meta_title') }}" 
+                                                       placeholder="Título optimizado para motores de búsqueda">
+                                                <label for="metaTitle">
+                                                    <i class="bi bi-tag-fill me-1"></i>Título SEO *
+                                                </label>
+                                                <div class="form-text">
+                                                    <span id="titleCounter">0</span>/150 caracteres
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-4">
+                                                <input type="text" name="focus_keyword" class="form-control" id="focusKeyword" maxlength="100"
+                                                       value="{{ old('focus_keyword') }}" 
+                                                       placeholder="palabra clave principal">
+                                                <label for="focusKeyword">
+                                                    <i class="bi bi-key-fill me-1"></i>Palabra Clave Principal
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-floating mb-4">
+                                        <textarea name="meta_description" class="form-control" id="metaDescription" style="height: 120px"
+                                                  placeholder="Descripción que aparecerá en los resultados de búsqueda">{{ old('meta_description') }}</textarea>
+                                        <label for="metaDescription">
+                                            <i class="bi bi-file-text me-1"></i>Meta Descripción
+                                        </label>
+                                        <div class="form-text">
+                                            <span id="descriptionCounter">0</span> caracteres
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-4">
+                                                <input type="text" name="meta_keywords" class="form-control" id="metaKeywords" maxlength="500"
+                                                       value="{{ old('meta_keywords') }}" 
+                                                       placeholder="palabra1, palabra2, palabra3">
+                                                <label for="metaKeywords">
+                                                    <i class="bi bi-tags me-1"></i>Palabras Clave
+                                                </label>
+                                                <div class="form-text">Separadas por comas</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-4">
+                                                <input type="url" name="canonical_url" class="form-control" id="canonicalUrl" maxlength="500"
+                                                       value="{{ old('canonical_url') }}" 
+                                                       placeholder="https://ejemplo.com/pagina">
+                                                <label for="canonicalUrl">
+                                                    <i class="bi bi-link-45deg me-1"></i>URL Canónica
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-4">
+                                                <select name="robots" class="form-select" id="robotsSelect">
+                                                    <option value="index,follow" {{ old('robots') == 'index,follow' ? 'selected' : '' }}>Index, Follow (Recomendado)</option>
+                                                    <option value="noindex,follow" {{ old('robots') == 'noindex,follow' ? 'selected' : '' }}>No Index, Follow</option>
+                                                    <option value="index,nofollow" {{ old('robots') == 'index,nofollow' ? 'selected' : '' }}>Index, No Follow</option>
+                                                    <option value="noindex,nofollow" {{ old('robots') == 'noindex,nofollow' ? 'selected' : '' }}>No Index, No Follow</option>
+                                                </select>
+                                                <label for="robotsSelect">
+                                                    <i class="bi bi-robot me-1"></i>Robots Meta Tag *
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 d-flex align-items-center">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="is_active" value="1" 
+                                                       {{ old('is_active', true) ? 'checked' : '' }} id="seoActiveSwitch">
+                                                <label class="form-check-label" for="seoActiveSwitch">
+                                                  
+                                                    <strong>Configuración SEO Activa</strong>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </form>
                             </div>
+                        </div>
+
+                        <!-- Botón de Guardar fuera de la card -->
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" form="seoForm" class="btn btn-lg btn-primary shadow">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Guardar Configuración SEO
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1002,8 +945,8 @@
         // Initialize character counters when SEO tab is shown
         document.addEventListener('DOMContentLoaded', function() {
             // Setup character counters
-            const titleInput = document.querySelector('[name="meta_title"]');
-            const descInput = document.querySelector('[name="meta_description"]');
+            const titleInput = document.getElementById('metaTitle');
+            const descInput = document.getElementById('metaDescription');
             
             if (titleInput) {
                 titleInput.addEventListener('input', function() {
@@ -1050,7 +993,7 @@
 
         // Populate SEO form with data
         function populateSeoForm(data) {
-            const form = document.querySelector('[action="{{ route('admin.landing.seo.update') }}"]');
+            const form = document.getElementById('seoForm');
             
             Object.keys(data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
@@ -1071,7 +1014,7 @@
 
         // Clear SEO form
         function clearSeoForm() {
-            const form = document.querySelector('[action="{{ route('admin.landing.seo.update') }}"]');
+            const form = document.getElementById('seoForm');
             
             // Reset all inputs except page_id
             form.querySelectorAll('input, textarea, select').forEach(input => {
@@ -1086,11 +1029,6 @@
 
             // Set defaults
             form.querySelector('[name="robots"]').value = 'index,follow';
-            form.querySelector('[name="og_type"]').value = 'website';
-            form.querySelector('[name="twitter_card"]').value = 'summary_large_image';
-            form.querySelector('[name="sitemap_include"]').value = '1';
-            form.querySelector('[name="sitemap_priority"]').value = '0.8';
-            form.querySelector('[name="sitemap_changefreq"]').value = 'weekly';
             form.querySelector('[name="is_active"]').checked = true;
 
             // Update character counters
@@ -1099,8 +1037,8 @@
 
         // Update character counters
         function updateCharacterCounters() {
-            const titleInput = document.querySelector('[name="meta_title"]');
-            const descInput = document.querySelector('[name="meta_description"]');
+            const titleInput = document.getElementById('metaTitle');
+            const descInput = document.getElementById('metaDescription');
             
             if (titleInput) {
                 document.getElementById('titleCounter').textContent = titleInput.value.length;
@@ -1108,6 +1046,21 @@
             
             if (descInput) {
                 document.getElementById('descriptionCounter').textContent = descInput.value.length;
+            }
+        }
+
+        // Edit SEO function
+        function editSeo(pageId) {
+            const pageSelector = document.getElementById('pageSelector');
+            if (pageSelector) {
+                pageSelector.value = pageId;
+                // Trigger change event to load the data
+                pageSelector.dispatchEvent(new Event('change'));
+                
+                // Scroll to form
+                document.getElementById('seoForm').scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         }
     </script>
