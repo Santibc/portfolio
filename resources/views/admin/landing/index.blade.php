@@ -260,6 +260,12 @@
                             <div class="card-body">
                                 <form action="{{ route('admin.landing.contact.update') }}" method="POST">
                                     @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción de la Sección Contacto</label>
+                                        <textarea name="description" class="form-control" rows="3" 
+                                                  placeholder="Breve descripción que aparece en la sección de contacto">{{ $contactInfo->description ?? 'Estamos aquí para ayudarte. Contáctanos y resolveremos todas tus dudas.' }}</textarea>
+                                    </div>
+                                    
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
@@ -376,6 +382,9 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Imagen Principal</label>
                                                 <input type="file" name="main_image" class="form-control" accept="image/*">
+                                                <small class="form-text text-muted">
+                                                    <i class="bi bi-info-circle me-1"></i>Recomendado: 1280x854 píxeles (proporción 3:2) para mejor visualización
+                                                </small>
                                                 @if($about && $about->main_image_path)
                                                     <small class="form-text text-muted mt-1">
                                                         Imagen actual: <a href="{{ asset($about->main_image_path) }}" target="_blank">Ver imagen</a>

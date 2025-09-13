@@ -15,6 +15,7 @@ class LandingContactInfo extends Model
         'address',
         'phone',
         'email',
+        'description',
         'receive_messages_email',
         'google_maps_embed',
         'is_active'
