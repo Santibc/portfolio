@@ -57,7 +57,7 @@
         <title>Betogether</title>
     @endif
 
-    <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset($page->content['favicon'] ?? 'images/ico.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -454,7 +454,7 @@
         <div class="nav-container">
             <!-- Logo Section -->
             <div class="nav-logo">
-                <img src="{{ asset('images/logo1.png') }}" alt="Betogether" class="logo-nav">
+                <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Betogether" class="logo-nav">
             </div>
 
             <!-- Navigation Links -->
@@ -505,7 +505,7 @@
         <div class="mobile-menu-overlay" id="mobileMenuOverlay">
             <div class="mobile-menu">
                 <div class="mobile-menu-header">
-                    <img src="{{ asset('images/logo1.png') }}" alt="Betogether" class="mobile-logo">
+                    <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Betogether" class="mobile-logo">
                     <button class="close-mobile-menu" id="closeMobileMenu">
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -680,7 +680,7 @@
     <section class="features-section">
         <div class="features-container">
             <div class="features-image">
-                <img src="{{ asset('images/imagen1.png') }}" alt="imagen">
+                <img src="{{ asset($page->content['imagen_seccion_principal'] ?? 'images/imagen1.png') }}" alt="imagen">
             </div>
 
             <div class="features-text">
@@ -733,7 +733,7 @@
                 </div>
             </div>
             <div class="bt-right">
-                <img src="{{ asset('images/imagen2.png') }}" alt="Personas emprendiendo">
+                <img src="{{ asset($page->content['imagen_better_together'] ?? 'images/imagen2.png') }}" alt="Personas emprendiendo">
             </div>
         </div>
 
@@ -764,7 +764,7 @@
             </div>
 
             <div class="benefit-center">
-                <img src="{{ asset('images/imagen3.png') }}" alt="persona con bolsa y tablet">
+                <img src="{{ asset($page->content['imagen_beneficios'] ?? 'images/imagen3.png') }}" alt="persona con bolsa y tablet">
                 <button class="cta-button hidden" data-animate="slideInBottom">{{ $page->content['benefits_cta_text'] ?? '¡EMPIEZA AHORA!' }}</button>
             </div>
 

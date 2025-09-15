@@ -34,6 +34,31 @@
                        value="{{ old('content.hero_btn_secondary', $page->content['hero_btn_secondary'] ?? 'Regístrate ahora') }}">
             </div>
         </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label class="form-label">Logo Principal</label>
+                <input type="file" class="form-control" name="logo_principal" accept="image/*">
+                @if($page->content['logo_principal'] ?? false)
+                    <div class="mt-2">
+                        <img src="{{ asset($page->content['logo_principal']) }}" alt="Logo actual" style="max-height: 60px;">
+                        <small class="d-block text-muted">Logo actual</small>
+                    </div>
+                @endif
+                <small class="form-text text-muted">Recomendado: 200x80 px (PNG con fondo transparente)</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Favicon (Icono pestaña)</label>
+                <input type="file" class="form-control" name="favicon" accept="image/*">
+                @if($page->content['favicon'] ?? false)
+                    <div class="mt-2">
+                        <img src="{{ asset($page->content['favicon']) }}" alt="Favicon actual" style="max-height: 32px;">
+                        <small class="d-block text-muted">Favicon actual</small>
+                    </div>
+                @endif
+                <small class="form-text text-muted">Recomendado: 32x32 px (ICO o PNG)</small>
+            </div>
+        </div>
     </div>
 
     <hr class="section-divider">
@@ -188,6 +213,18 @@
             <textarea class="form-control" name="content[features_intro]" rows="3">{{ old('content.features_intro', $page->content['features_intro'] ?? 'Tu tienda, Tus eventos, tu momento Inscríbete en la lista de espera 🚨') }}</textarea>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Imagen de la sección</label>
+            <input type="file" class="form-control" name="imagen_seccion_principal" accept="image/*">
+            @if($page->content['imagen_seccion_principal'] ?? false)
+                <div class="mt-2">
+                    <img src="{{ asset($page->content['imagen_seccion_principal']) }}" alt="Imagen sección principal actual" style="max-height: 100px;">
+                    <small class="d-block text-muted">Imagen actual</small>
+                </div>
+            @endif
+            <small class="form-text text-muted">Recomendado: 600x400 px</small>
+        </div>
+
         <!-- Pasos del proceso -->
         <h6 class="mt-4">Pasos del Proceso</h6>
 
@@ -312,6 +349,18 @@
             <label class="form-label">Texto Footer</label>
             <input type="text" class="form-control" name="content[bt_footer]"
                    value="{{ old('content.bt_footer', $page->content['bt_footer'] ?? 'Somos una inversión para tu marca') }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen Better Together</label>
+            <input type="file" class="form-control" name="imagen_better_together" accept="image/*">
+            @if($page->content['imagen_better_together'] ?? false)
+                <div class="mt-2">
+                    <img src="{{ asset($page->content['imagen_better_together']) }}" alt="Imagen Better Together actual" style="max-height: 100px;">
+                    <small class="d-block text-muted">Imagen actual</small>
+                </div>
+            @endif
+            <small class="form-text text-muted">Recomendado: 500x350 px</small>
         </div>
     </div>
 
@@ -467,6 +516,19 @@
             <label class="form-label">Texto del botón central</label>
             <input type="text" class="form-control" name="content[benefits_cta_text]"
                    value="{{ old('content.benefits_cta_text', $page->content['benefits_cta_text'] ?? '¡EMPIEZA AHORA!') }}">
+        </div>
+
+        <!-- Imagen Central de Beneficios -->
+        <div class="mb-3">
+            <label class="form-label">Imagen central de beneficios</label>
+            <input type="file" class="form-control" name="imagen_beneficios" accept="image/*">
+            @if($page->content['imagen_beneficios'] ?? false)
+                <div class="mt-2">
+                    <img src="{{ asset($page->content['imagen_beneficios']) }}" alt="Imagen beneficios actual" style="max-height: 100px;">
+                    <small class="d-block text-muted">Imagen actual</small>
+                </div>
+            @endif
+            <small class="form-text text-muted">Recomendado: 400x300 px</small>
         </div>
     </div>
 

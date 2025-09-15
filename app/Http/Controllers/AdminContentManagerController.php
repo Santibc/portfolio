@@ -51,15 +51,75 @@ class AdminContentManagerController extends Controller
             'sitemap_include' => 'boolean',
             'sitemap_priority' => 'nullable|numeric|between:0.0,1.0',
             'sitemap_changefreq' => 'nullable|string',
+            // Validaciones para las nuevas imágenes
+            'logo_principal' => 'nullable|image|max:2048',
+            'favicon' => 'nullable|image|max:1024',
+            'imagen_seccion_principal' => 'nullable|image|max:3072',
+            'imagen_better_together' => 'nullable|image|max:3072',
+            'imagen_beneficios' => 'nullable|image|max:3072',
+        ], [
+            // Mensajes personalizados para imágenes
+            'logo_principal.image' => 'El logo principal debe ser una imagen válida (JPG, PNG, etc.).',
+            'logo_principal.max' => 'El logo principal no puede ser mayor a 2MB.',
+            'favicon.image' => 'El favicon debe ser una imagen válida (JPG, PNG, etc.).',
+            'favicon.max' => 'El favicon no puede ser mayor a 1MB.',
+            'imagen_seccion_principal.image' => 'La imagen de la sección principal debe ser una imagen válida (JPG, PNG, etc.).',
+            'imagen_seccion_principal.max' => 'La imagen de la sección principal no puede ser mayor a 3MB.',
+            'imagen_better_together.image' => 'La imagen de Better Together debe ser una imagen válida (JPG, PNG, etc.).',
+            'imagen_better_together.max' => 'La imagen de Better Together no puede ser mayor a 3MB.',
+            'imagen_beneficios.image' => 'La imagen de beneficios debe ser una imagen válida (JPG, PNG, etc.).',
+            'imagen_beneficios.max' => 'La imagen de beneficios no puede ser mayor a 3MB.',
+            // Mensajes para imágenes SEO
+            'og_image.image' => 'La imagen Open Graph debe ser una imagen válida (JPG, PNG, etc.).',
+            'og_image.max' => 'La imagen Open Graph no puede ser mayor a 2MB.',
+            'twitter_image.image' => 'La imagen de Twitter debe ser una imagen válida (JPG, PNG, etc.).',
+            'twitter_image.max' => 'La imagen de Twitter no puede ser mayor a 2MB.',
         ]);
 
         $page = Page::findOrFail($id);
+
+        // Procesar imágenes del contenido
+        $content = $request->content;
+
+        // Manejar imágenes de contenido (guardar en public directamente)
+        $imageFields = [
+            'logo_principal' => 'images/logos/',
+            'favicon' => 'images/favicons/',
+            'imagen_seccion_principal' => 'images/content/',
+            'imagen_better_together' => 'images/content/',
+            'imagen_beneficios' => 'images/content/',
+        ];
+
+        foreach ($imageFields as $fieldName => $directory) {
+            if ($request->hasFile($fieldName)) {
+                // Eliminar imagen anterior si existe
+                if (isset($content[$fieldName]) && $content[$fieldName] && file_exists(public_path($content[$fieldName]))) {
+                    unlink(public_path($content[$fieldName]));
+                }
+
+                // Subir nueva imagen
+                $file = $request->file($fieldName);
+                $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                $path = $directory . $filename;
+
+                // Crear directorio si no existe
+                if (!file_exists(public_path($directory))) {
+                    mkdir(public_path($directory), 0755, true);
+                }
+
+                // Mover archivo
+                $file->move(public_path($directory), $filename);
+
+                // Guardar ruta en content
+                $content[$fieldName] = $path;
+            }
+        }
 
         // Actualizar página
         $pageData = [
             'title' => $request->title,
             'description' => $request->description,
-            'content' => $request->content,
+            'content' => $content,
             'is_active' => $request->boolean('is_active', true),
         ];
 
@@ -107,6 +167,10 @@ class AdminContentManagerController extends Controller
     {
         $request->validate([
             'image' => 'required|image|max:2048'
+        ], [
+            'image.required' => 'Debe seleccionar una imagen.',
+            'image.image' => 'El archivo debe ser una imagen válida (JPG, PNG, etc.).',
+            'image.max' => 'La imagen no puede ser mayor a 2MB.',
         ]);
 
         if ($request->hasFile('image')) {
