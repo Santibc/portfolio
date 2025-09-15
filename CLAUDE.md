@@ -185,3 +185,22 @@ php artisan test
 - Use descriptive migration names
 - Add proper indexes for foreign keys
 - Include default values where appropriate
+
+### Custom Middleware
+- **VerificarMembresia**: Validates membership status and restrictions
+- **VerificarEmpresa**: Ensures user has associated company profile
+- Used in route groups to control access based on business logic
+
+### Route Structure
+- **Public Routes**: Welcome page, contact forms, catalog browsing
+- **Authenticated Routes**: Dashboard, profile management, business operations
+- **Admin Routes**: User management, system administration
+- **API Routes**: AJAX endpoints for cities, data processing
+- **Webhook Routes**: Payment gateway callbacks and integrations
+
+### Key Business Logic
+- **Membership System**: Three-tier membership plans (Basic/Premium/Enterprise) with feature restrictions
+- **Commission Tracking**: Automated commission calculation on sales with `Comision` model
+- **Multi-vendor Architecture**: Each `Empresa` operates independently with own products/customers
+- **Stock Management**: Real-time inventory tracking via `StockProducto` and `MovimientoStock`
+- **Payment Integration**: Configurable payment gateways via `ConfiguracionPasarela`

@@ -60,6 +60,14 @@
                 <i class="bi bi-credit-card"></i>
                 <span>Planes Membresía</span>
             </a>
+            <a href="{{ route('admin.content-manager.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/content-manager*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+               title="Gestor de Contenido"
+               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('admin/content-manager*') ? '' : 'transparent' }}'">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Gestor de Contenido</span>
+            </a>
         @endif
 
         {{-- Mi Empresa (con submenú) --}}

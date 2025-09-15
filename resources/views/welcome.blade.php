@@ -4,7 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Betogether</title>
+
+    @if($page->seo)
+        <title>{{ $page->seo->meta_title ?: 'Betogether' }}</title>
+        @if($page->seo->meta_description)
+            <meta name="description" content="{{ $page->seo->meta_description }}">
+        @endif
+        @if($page->seo->meta_keywords)
+            <meta name="keywords" content="{{ $page->seo->meta_keywords }}">
+        @endif
+        @if($page->seo->canonical_url)
+            <link rel="canonical" href="{{ $page->seo->canonical_url }}">
+        @endif
+        <meta name="robots" content="{{ $page->seo->robots ?: 'index,follow' }}">
+
+        {{-- Open Graph --}}
+        @if($page->seo->og_title)
+            <meta property="og:title" content="{{ $page->seo->og_title }}">
+        @endif
+        @if($page->seo->og_description)
+            <meta property="og:description" content="{{ $page->seo->og_description }}">
+        @endif
+        @if($page->seo->og_image)
+            <meta property="og:image" content="{{ Storage::url($page->seo->og_image) }}">
+        @endif
+        <meta property="og:type" content="{{ $page->seo->og_type ?: 'website' }}">
+        @if($page->seo->og_url)
+            <meta property="og:url" content="{{ $page->seo->og_url }}">
+        @endif
+        @if($page->seo->og_site_name)
+            <meta property="og:site_name" content="{{ $page->seo->og_site_name }}">
+        @endif
+
+        {{-- Twitter Cards --}}
+        <meta name="twitter:card" content="{{ $page->seo->twitter_card ?: 'summary_large_image' }}">
+        @if($page->seo->twitter_title)
+            <meta name="twitter:title" content="{{ $page->seo->twitter_title }}">
+        @endif
+        @if($page->seo->twitter_description)
+            <meta name="twitter:description" content="{{ $page->seo->twitter_description }}">
+        @endif
+        @if($page->seo->twitter_image)
+            <meta name="twitter:image" content="{{ Storage::url($page->seo->twitter_image) }}">
+        @endif
+        @if($page->seo->twitter_site)
+            <meta name="twitter:site" content="{{ $page->seo->twitter_site }}">
+        @endif
+        @if($page->seo->twitter_creator)
+            <meta name="twitter:creator" content="{{ $page->seo->twitter_creator }}">
+        @endif
+    @else
+        <title>Betogether</title>
+    @endif
+
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
@@ -490,16 +542,22 @@
 
         <div class="hero">
             <div class="hero-text">
-                <h1>¡Hola Colombia!<br>Tu Negocio, <span>Nuestra causa.</span></h1>
-                <p>Te abrimos la puerta a un ecosistema de <strong>crecimiento sin límites.</strong></p>
+                <h1>{!! $page->content['hero_title'] ?? '¡Hola Colombia!<br>Tu Negocio, <span>Nuestra causa.</span>' !!}</h1>
+                <p>{!! $page->content['hero_subtitle'] ?? 'Te abrimos la puerta a un ecosistema de <strong>crecimiento sin límites.</strong>' !!}</p>
                 <ul class="benefits">
-                    <li>🛒 Tienda Online al Instante</li>
-                    <li>🚚 Pasarela de pago y Logística integrada</li>
-                    <li>🎉 Festivales Exclusivos para nuestros miembros</li>
+                    @if(isset($page->content['hero_benefits']))
+                        @foreach(explode('|', $page->content['hero_benefits']) as $benefit)
+                            <li>{{ $benefit }}</li>
+                        @endforeach
+                    @else
+                        <li>🛒 Tienda Online al Instante</li>
+                        <li>🚚 Pasarela de pago y Logística integrada</li>
+                        <li>🎉 Festivales Exclusivos para nuestros miembros</li>
+                    @endif
                 </ul>
                 <div class="buttons">
-                    <a href="#" class="btn pink">Así lo hacemos posible</a>
-                    <a href="{{ route('register') }}" class="btn outline">Regístrate ahora</a>
+                    <a href="#" class="btn pink">{{ $page->content['hero_btn_primary'] ?? 'Así lo hacemos posible' }}</a>
+                    <a href="{{ route('register') }}" class="btn outline">{{ $page->content['hero_btn_secondary'] ?? 'Regístrate ahora' }}</a>
                 </div>
             </div>
         </div>
@@ -527,39 +585,32 @@
 
     <!-- 🎯 HERO SECTION -->
     <section class="seccion-oferta">
-        <p class="subtitulo">¡ACTIVA TU MARCA EN LO DIGITAL Y PRESENCIAL!</p>
-        <h2 class="titulo">¿Emprendes o lideras una fundación?</h2>
+        <p class="subtitulo">{{ $page->content['offer_subtitle'] ?? '¡ACTIVA TU MARCA EN LO DIGITAL Y PRESENCIAL!' }}</p>
+        <h2 class="titulo">{{ $page->content['offer_title'] ?? '¿Emprendes o lideras una fundación?' }}</h2>
         <p class="descripcion">
-            Con nosotros no solo accedes a una plataforma…<br />
-            ¡Abres la puerta a un <strong>ecosistema completo</strong> que se enfoca en atraer visitantes y potenciales
-            clientes para ti.
+            {!! $page->content['offer_description'] ?? 'Con nosotros no solo accedes a una plataforma…<br />¡Abres la puerta a un <strong>ecosistema completo</strong> que se enfoca en atraer visitantes y potenciales clientes para ti.' !!}
         </p>
 
         <div class="tarjetas-contenedor">
             <!-- Tarjeta 1 -->
             <div class="tarjeta">
-                <div class="icono"><i class="bi bi-laptop"></i></div>
-                <h3><a href="#">Tu Tienda Online ¡Lista para Vender!</a></h3>
-                <p>Lánzala en minutos y gestiona pagos seguros, envíos y estadísticas para el control total de tus
-                    ventas. 🧾</p>
+                <div class="icono"><i class="{{ $page->content['card1_icon'] ?? 'bi bi-laptop' }}"></i></div>
+                <h3><a href="#">{{ $page->content['card1_title'] ?? 'Tu Tienda Online ¡Lista para Vender!' }}</a></h3>
+                <p>{!! $page->content['card1_description'] ?? 'Lánzala en minutos y gestiona pagos seguros, envíos y estadísticas para el control total de tus ventas. 🧾' !!}</p>
             </div>
 
             <!-- Tarjeta 2 -->
             <div class="tarjeta">
-                <div class="icono"><i class="fa-solid fa-handshake"></i></div>
-                <h3><a href="#">Tu Marca Siempre Visible.</a></h3>
-                <p>¡No solo vendes, tu marca conecta! ❤️ Creamos contenido audiovisual en nuestras redes que cuenta la
-                    historia de algunos de nuestros miembros, impulsando su reconocimiento. <strong>Somos tu aliado para
-                        hacerte conocer.</strong></p>
+                <div class="icono"><i class="{{ $page->content['card2_icon'] ?? 'fa-solid fa-handshake' }}"></i></div>
+                <h3><a href="#">{{ $page->content['card2_title'] ?? 'Tu Marca Siempre Visible.' }}</a></h3>
+                <p>{!! $page->content['card2_description'] ?? '¡No solo vendes, tu marca conecta! ❤️ Creamos contenido audiovisual en nuestras redes que cuenta la historia de algunos de nuestros miembros, impulsando su reconocimiento. <strong>Somos tu aliado para hacerte conocer.</strong>' !!}</p>
             </div>
 
             <!-- Tarjeta 3 -->
             <div class="tarjeta">
-                <div class="icono"><i class="bi bi-star-fill"></i></div>
-                <h3><a href="#">¡Brilla en nuestros eventos exclusivos!</a></h3>
-                <p>Lleva tu marca al siguiente nivel en festivales comerciales. Tu tienda digital y física se fusionan
-                    para que solo te preocupes por vender, nosotros nos encargamos del resto y, <strong>¡nosotros
-                        ponemos la infraestructura!</strong> 🏠</p>
+                <div class="icono"><i class="{{ $page->content['card3_icon'] ?? 'bi bi-star-fill' }}"></i></div>
+                <h3><a href="#">{{ $page->content['card3_title'] ?? '¡Brilla en nuestros eventos exclusivos!' }}</a></h3>
+                <p>{!! $page->content['card3_description'] ?? 'Lleva tu marca al siguiente nivel en festivales comerciales. Tu tienda digital y física se fusionan para que solo te preocupes por vender, nosotros nos encargamos del resto y, <strong>¡nosotros ponemos la infraestructura!</strong> 🏠' !!}</p>
             </div>
         </div>
     </section>
@@ -586,15 +637,13 @@
         </svg>
 
         <!-- Contenido -->
-        <h2>¡Únete a la <strong>primera membresía</strong> en Colombia para Emprendedores y
-            <strong>Fundaciones</strong>!
-        </h2>
-        <h1>Juntos, ya impactamos a más de:</h1>
+        <h2>{!! $page->content['stats_title'] ?? '¡Únete a la <strong>primera membresía</strong> en Colombia para Emprendedores y <strong>Fundaciones</strong>!' !!}</h2>
+        <h1>{{ $page->content['stats_subtitle'] ?? 'Juntos, ya impactamos a más de:' }}</h1>
         <div class="contador"><span id="contador">0</span>K</div>
-        <div class="subcontador">VISITANTES TOTALES</div>
+        <div class="subcontador">{{ $page->content['stats_label'] ?? 'VISITANTES TOTALES' }}</div>
         <script>
             const contador = document.getElementById('contador');
-            const valorFinal = 134;
+            const valorFinal = {{ $page->content['stats_count'] ?? 134 }};
             let actual = 0;
             const velocidad = 15;
 
@@ -635,38 +684,33 @@
             </div>
 
             <div class="features-text">
-                <p class="subtitulo">UN ECOSISTEMA COMPLETO Y LISTO PARA TI</p>
-                <h2>Sencillo, Rápido y Poderoso</h2>
+                <p class="subtitulo">{{ $page->content['features_subtitle'] ?? 'UN ECOSISTEMA COMPLETO Y LISTO PARA TI' }}</p>
+                <h2>{{ $page->content['features_title'] ?? 'Sencillo, Rápido y Poderoso' }}</h2>
                 <p class="intro">
-                    Tu tienda,<br />
-                    Tus eventos, tu momento<br />
-                    Inscríbete en la lista de espera 🚨
+                    {!! $page->content['features_intro'] ?? 'Tu tienda,<br />Tus eventos, tu momento<br />Inscríbete en la lista de espera 🚨' !!}
                 </p>
 
                 <div class="feature-item">
-                    <div class="icon pink"><i class="bi bi-person-plus"></i></i></div>
+                    <div class="icon {{ $page->content['step1_color'] ?? 'pink' }}"><i class="{{ $page->content['step1_icon'] ?? 'bi bi-person-plus' }}"></i></div>
                     <div class="feature-content">
-                        <h3>Regístrate</h3>
-                        <p>Da el primer paso para impulsar tu marca. Crea tu cuenta <strong>sin costo</strong> y
-                            configúrala en minutos.</p>
+                        <h3>{{ $page->content['step1_title'] ?? 'Regístrate' }}</h3>
+                        <p>{!! $page->content['step1_description'] ?? 'Da el primer paso para impulsar tu marca. Crea tu cuenta <strong>sin costo</strong> y configúrala en minutos.' !!}</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
-                    <div class="icon blue"><i class="bi bi-check-lg"></i></i></div>
+                    <div class="icon {{ $page->content['step2_color'] ?? 'blue' }}"><i class="{{ $page->content['step2_icon'] ?? 'bi bi-check-lg' }}"></i></div>
                     <div class="feature-content">
-                        <h3>Activa</h3>
-                        <p>Elige tu <strong>membresía</strong> activála ✅ y accede a múltiples beneficios. <strong>¡Así
-                                podrás enfocarte solo en vender!</strong></p>
+                        <h3>{{ $page->content['step2_title'] ?? 'Activa' }}</h3>
+                        <p>{!! $page->content['step2_description'] ?? 'Elige tu <strong>membresía</strong> activála ✅ y accede a múltiples beneficios. <strong>¡Así podrás enfocarte solo en vender!</strong>' !!}</p>
                     </div>
                 </div>
 
                 <div class="feature-item">
-                    <div class="icon pink"><i class="bi bi-calendar"></i></div>
+                    <div class="icon {{ $page->content['step3_color'] ?? 'pink' }}"><i class="{{ $page->content['step3_icon'] ?? 'bi bi-calendar' }}"></i></div>
                     <div class="feature-content">
-                        <h3>Agéndate</h3>
-                        <p><strong>Alquila tu espacio</strong> en nuestros festivales de comercio. ¡Tú solo vende,
-                            nosotros hacemos el resto!</p>
+                        <h3>{{ $page->content['step3_title'] ?? 'Agéndate' }}</h3>
+                        <p>{!! $page->content['step3_description'] ?? '<strong>Alquila tu espacio</strong> en nuestros festivales de comercio. ¡Tú solo vende, nosotros hacemos el resto!' !!}</p>
                     </div>
                 </div>
             </div>
@@ -674,8 +718,8 @@
     </section>
 
     <section class="bt-section">
-        <p class="bt-subtitle">Nacimos para transformar el emprendimiento y el impacto social en Colombia.</p>
-        <h2 class="bt-title">“Emprender no debe ser imposible, debe ser accesible.”</h2>
+        <p class="bt-subtitle">{{ $page->content['bt_subtitle'] ?? 'Nacimos para transformar el emprendimiento y el impacto social en Colombia.' }}</p>
+        <h2 class="bt-title">{{ $page->content['bt_title'] ?? '"Emprender no debe ser imposible, debe ser accesible."' }}</h2>
 
         <div class="bt-wrapper">
             <div class="bt-left">
@@ -684,11 +728,7 @@
                 </div>
                 <div class="bt-text">
                     <p>
-                        <strong>Better Together:</strong>
-                        <em>Tu ecosistema único</em> y accesible <em>en Colombia.</em>
-                        Con nuestra <strong>plataforma y eventos exclusivos</strong>, te damos las herramientas para que
-                        solo te enfoques en tu negocio y vender.
-                        <br>¡Únete y transforma tu estrategia!
+                        {!! $page->content['bt_description'] ?? '<strong>Better Together:</strong> <em>Tu ecosistema único</em> y accesible <em>en Colombia.</em> Con nuestra <strong>plataforma y eventos exclusivos</strong>, te damos las herramientas para que solo te enfoques en tu negocio y vender.<br>¡Únete y transforma tu estrategia!' !!}
                     </p>
                 </div>
             </div>
@@ -697,17 +737,15 @@
             </div>
         </div>
 
-        <p class="bt-footer-text">Somos una inversión para tu marca</p>
+        <p class="bt-footer-text">{{ $page->content['bt_footer'] ?? 'Somos una inversión para tu marca' }}</p>
     </section>
 
     <section class="btg-benefits-section">
         <div class="btg-benefits-content">
-            <h4 class="btg-benefits-subtitle">Acceso exclusivo por inscripción anticipada</h4>
-            <h2 class="btg-benefits-title">Todo lo que necesitas para crecer</h2>
+            <h4 class="btg-benefits-subtitle">{{ $page->content['access_subtitle'] ?? 'Acceso exclusivo por inscripción anticipada' }}</h4>
+            <h2 class="btg-benefits-title">{{ $page->content['access_title'] ?? 'Todo lo que necesitas para crecer' }}</h2>
             <p class="btg-benefits-description">
-                El acceso a Better Together es limitado en esta fase inicial.<br>
-                <strong>¡Solo quienes se registren en la lista de espera</strong> podrán ser parte de este grupo!<br>
-                <strong>No te quedes por fuera y asegura tu lugar ahora.</strong>
+                {!! $page->content['access_description'] ?? 'El acceso a Better Together es limitado en esta fase inicial.<br><strong>¡Solo quienes se registren en la lista de espera</strong> podrán ser parte de este grupo!<br><strong>No te quedes por fuera y asegura tu lugar ahora.</strong>' !!}
             </p>
         </div>
     </section>
@@ -717,35 +755,28 @@
                 <div class="horizontal-line"></div>
                 <div class="benefit-item">
                     <i class="bi bi-shop"></i>
-                    <p><strong>1. Lanza tu e-commerce en minutos:</strong> gestiona tus pedidos, inventario y potencia
-                        tus
-                        ingresos</p>
+                    <p><strong>1. {{ $page->content['benefit1_title'] ?? 'Lanza tu e-commerce en minutos' }}:</strong> {{ $page->content['benefit1_description'] ?? 'gestiona tus pedidos, inventario y potencia tus ingresos' }}</p>
                 </div>
                 <div class="benefit-item">
                     <i class="bi bi-cash"></i>
-                    <p><strong>2. Pagos rápidos y directos:</strong> Pagos ágiles y seguros usando nuestra plataforma en
-                        lo
-                        digital y en festivales.</p>
+                    <p><strong>2. {{ $page->content['benefit2_title'] ?? 'Pagos rápidos y directos' }}:</strong> {{ $page->content['benefit2_description'] ?? 'Pagos ágiles y seguros usando nuestra plataforma en lo digital y en festivales.' }}</p>
                 </div>
             </div>
 
             <div class="benefit-center">
                 <img src="{{ asset('images/imagen3.png') }}" alt="persona con bolsa y tablet">
-                <button class="cta-button hidden" data-animate="slideInBottom">¡EMPIEZA AHORA!</button>
+                <button class="cta-button hidden" data-animate="slideInBottom">{{ $page->content['benefits_cta_text'] ?? '¡EMPIEZA AHORA!' }}</button>
             </div>
 
             <div class="benefit-box right-box animate-right hidden" data-animate="slideInRight">
                 <div class="horizontal-line"></div>
                 <div class="benefit-item">
                     <i class="bi bi-truck"></i>
-                    <p><strong>3. Logística Optimizada para ti:</strong> Cotiza y gestiona tus despachos con las
-                        transportadoras, ¡todo desde nuestra plataforma!</p>
+                    <p><strong>3. {{ $page->content['benefit3_title'] ?? 'Logística Optimizada para ti' }}:</strong> {{ $page->content['benefit3_description'] ?? 'Cotiza y gestiona tus despachos con las transportadoras, ¡todo desde nuestra plataforma!' }}</p>
                 </div>
                 <div class="benefit-item">
                     <i class="bi bi-card-text"></i>
-                    <p><strong>4. Presencia en eventos físicos:</strong> Participa en festivales de comercio con
-                        afluencia
-                        de público. Conecta con nuevos clientes e impulsa tus ventas.</p>
+                    <p><strong>4. {{ $page->content['benefit4_title'] ?? 'Presencia en eventos físicos' }}:</strong> {{ $page->content['benefit4_description'] ?? 'Participa en festivales de comercio con afluencia de público. Conecta con nuevos clientes e impulsa tus ventas.' }}</p>
                 </div>
             </div>
             <script>
@@ -849,11 +880,9 @@
             </path>
         </svg>
         <div class="hero-content3">
-            <h1>¿Listo para llevar tu negocio al siguiente Nivel?</h1>
+            <h1>{{ $page->content['cta_title'] ?? '¿Listo para llevar tu negocio al siguiente Nivel?' }}</h1>
             <p>
-                Forma parte de nuestra comunidad.
-                <span class="highlight3">Regístrate en la lista de espera hoy y prepárate para crecer</span> con
-                nosotros.
+                {!! $page->content['cta_description'] ?? 'Forma parte de nuestra comunidad. <span class="highlight3">Regístrate en la lista de espera hoy y prepárate para crecer</span> con nosotros.' !!}
             </p>
         </div>
         <div class="form-container">
@@ -930,16 +959,16 @@
                 <label>Algo que quieras decirnos</label>
                 <textarea name="mensaje_adicional" rows="4">{{ old('mensaje_adicional') }}</textarea>
 
-                <button class="button2" type="submit">Enviar</button>
+                <button class="button2" type="submit">{{ $page->content['cta_button_text'] ?? 'Enviar' }}</button>
             </form>
         </div>
         <section class="socials">
-            <p>Síguenos en nuestras redes sociales</p>
+            <p>{{ $page->content['social_text'] ?? 'Síguenos en nuestras redes sociales' }}</p>
             <div class="icon-container">
-                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-tiktok"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+                <a href="{{ $page->content['facebook_url'] ?? '#' }}" class="social-icon"><i class="bi bi-facebook"></i></a>
+                <a href="{{ $page->content['tiktok_url'] ?? '#' }}" class="social-icon"><i class="bi bi-tiktok"></i></a>
+                <a href="{{ $page->content['instagram_url'] ?? '#' }}" class="social-icon"><i class="bi bi-instagram"></i></a>
+                <a href="{{ $page->content['linkedin_url'] ?? '#' }}" class="social-icon"><i class="bi bi-linkedin"></i></a>
             </div>
         </section>
     </section>
@@ -947,12 +976,12 @@
 
     <footer class="footer-personalizado">
         <hr class="linea-gris">
-        <p class="texto-gris">© BETOGETHER.COM.CO - TODOS LOS DERECHOS RESERVADOS</p>
-        <p class="texto-negro">TECNOLOGÍA ÚTIL, CERCANA Y SIN COMPLICACIONES.</p>
+        <p class="texto-gris">{{ $page->content['footer_rights'] ?? '© BETOGETHER.COM.CO - TODOS LOS DERECHOS RESERVADOS' }}</p>
+        <p class="texto-negro">{{ $page->content['footer_slogan'] ?? 'TECNOLOGÍA ÚTIL, CERCANA Y SIN COMPLICACIONES.' }}</p>
     </footer>
 
-    <a href="https://wa.me/#" class="whatsapp-button" target="_blank">
-        <i class="bi bi-whatsapp"></i> Contáctanos vía Whatsapp
+    <a href="{{ $page->content['whatsapp_url'] ?? 'https://wa.me/#' }}" class="whatsapp-button" target="_blank">
+        <i class="bi bi-whatsapp"></i> {{ $page->content['whatsapp_text'] ?? 'Contáctanos vía Whatsapp' }}
     </a>
 
     <script>

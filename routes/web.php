@@ -226,6 +226,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/{plan}/cambiar-estado', [App\Http\Controllers\PlanMembresiaController::class, 'cambiarEstado'])->name('cambiar-estado');
         Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
     });
+
+    // Rutas de Content Manager
+    Route::prefix('content-manager')->name('content-manager.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AdminContentManagerController::class, 'index'])->name('index');
+        Route::get('/{page}/edit', [App\Http\Controllers\AdminContentManagerController::class, 'edit'])->name('edit');
+        Route::put('/{page}', [App\Http\Controllers\AdminContentManagerController::class, 'update'])->name('update');
+        Route::post('/upload-image', [App\Http\Controllers\AdminContentManagerController::class, 'uploadImage'])->name('upload-image');
+    });
 });
 
 Route::middleware(['auth'])->group(function () {
