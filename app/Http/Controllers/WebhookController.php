@@ -23,24 +23,56 @@ class WebhookController extends Controller
         try {
             // Verificar firma
             $config = ConfiguracionPasarela::obtenerConfiguracionActiva('wompi');
-            if (!$config || !$config->event_key) {
+            if (!$config) {
                 Log::error('Configuración de Wompi no encontrada');
                 return response()->json(['error' => 'Configuración no válida'], 500);
             }
 
-            $firmaRecibida = $request->header('X-Event-Signature');
-            if (!$firmaRecibida) {
-                Log::warning('Webhook sin firma');
-                return response()->json(['error' => 'Sin firma'], 401);
+            // Obtener event_key de forma segura
+            $eventKey = null;
+            try {
+                $eventKey = $config->event_key;
+            } catch (\Exception $e) {
+                Log::error('Error desencriptando event_key: ' . $e->getMessage());
+                return response()->json(['error' => 'Error de configuración'], 500);
             }
 
-            // Verificar firma
+            if (!$eventKey) {
+                Log::error('Event key no configurado');
+                return response()->json(['error' => 'Event key no configurado'], 500);
+            }
+
+            // Wompi usa X-Event-Checksum, no X-Event-Signature
+            $firmaRecibida = $request->header('X-Event-Checksum');
+            if (!$firmaRecibida) {
+                Log::warning('Webhook sin checksum');
+                return response()->json(['error' => 'Sin checksum'], 401);
+            }
+
+            // Verificar firma según la documentación de Wompi
             $payload = $request->getContent();
-            $firmaEsperada = hash_hmac('sha256', $payload, $config->event_key);
-            
+            $data = json_decode($payload, true);
+
+            // Obtener los datos para el checksum según Wompi
+            $transaction = $data['data']['transaction'] ?? [];
+            $checksum_data = [
+                'id' => $transaction['id'] ?? '',
+                'status' => $transaction['status'] ?? '',
+                'amount_in_cents' => $transaction['amount_in_cents'] ?? 0
+            ];
+
+            // Concatenar valores para checksum
+            $checksum_string = implode('', $checksum_data);
+            $firmaEsperada = hash_hmac('sha256', $checksum_string, $eventKey);
+
             if (!hash_equals($firmaEsperada, $firmaRecibida)) {
-                Log::warning('Firma inválida del webhook');
-                return response()->json(['error' => 'Firma inválida'], 401);
+                Log::warning('Checksum inválido del webhook', [
+                    'esperado' => $firmaEsperada,
+                    'recibido' => $firmaRecibida,
+                    'checksum_data' => $checksum_data,
+                    'checksum_string' => $checksum_string
+                ]);
+                return response()->json(['error' => 'Checksum inválido'], 401);
             }
 
             // Procesar evento
