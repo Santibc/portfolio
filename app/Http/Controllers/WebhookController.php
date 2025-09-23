@@ -49,28 +49,80 @@ class WebhookController extends Controller
                 return response()->json(['error' => 'Sin checksum'], 401);
             }
 
-            // Verificar firma según la documentación de Wompi
+            // Verificar firma según la documentación oficial de Wompi
             $payload = $request->getContent();
             $data = json_decode($payload, true);
 
-            // Obtener los datos para el checksum según Wompi
-            $transaction = $data['data']['transaction'] ?? [];
-            $checksum_data = [
-                'id' => $transaction['id'] ?? '',
-                'status' => $transaction['status'] ?? '',
-                'amount_in_cents' => $transaction['amount_in_cents'] ?? 0
-            ];
+            // Obtener datos necesarios para verificación
+            $signatureData = $data['signature'] ?? [];
+            $properties = $signatureData['properties'] ?? [];
+            $timestamp = $data['timestamp'] ?? null;
 
-            // Concatenar valores para checksum
-            $checksum_string = implode('', $checksum_data);
-            $firmaEsperada = hash_hmac('sha256', $checksum_string, $eventKey);
+            if (empty($properties) || !$timestamp) {
+                Log::warning('Webhook sin datos de firma válidos', [
+                    'properties' => $properties,
+                    'timestamp' => $timestamp
+                ]);
+                return response()->json(['error' => 'Datos de firma inválidos'], 401);
+            }
+
+            // Construir string para verificación según documentación oficial
+            $checksumValues = [];
+
+            // 1. Agregar valores de los campos especificados en signature.properties
+            // IMPORTANTE: Las properties son relativas al campo 'data' según documentación oficial
+            $eventData = $data['data'] ?? [];
+            foreach ($properties as $property) {
+                $value = $this->getNestedValue($eventData, $property);
+
+                // Verificar que el valor no sea null
+                if ($value === null) {
+                    Log::error("Valor null encontrado para property: {$property}", [
+                        'property' => $property,
+                        'eventData_keys' => array_keys($eventData)
+                    ]);
+                    return response()->json(['error' => "Campo requerido faltante: {$property}"], 400);
+                }
+
+                // Convertir a string según documentación
+                $stringValue = (string) $value;
+                $checksumValues[] = $stringValue;
+
+                Log::debug("Property procesada", [
+                    'property' => $property,
+                    'value' => $value,
+                    'string_value' => $stringValue
+                ]);
+            }
+
+            // 2. Agregar timestamp (convertir a string)
+            $checksumValues[] = (string) $timestamp;
+
+            // 3. Agregar event key
+            $checksumValues[] = (string) $eventKey;
+
+            // Concatenar todos los valores
+            $checksum_string = implode('', $checksumValues);
+            $firmaEsperada = hash('sha256', $checksum_string);
+
+            // Log detallado para debugging
+            Log::info('Verificación de firma Wompi', [
+                'properties' => $properties,
+                'checksum_values' => $checksumValues,
+                'checksum_string' => $checksum_string,
+                'checksum_string_length' => strlen($checksum_string),
+                'timestamp' => $timestamp,
+                'event_key_length' => strlen($eventKey),
+                'firma_esperada' => $firmaEsperada,
+                'firma_recibida' => $firmaRecibida,
+                'firma_valida' => hash_equals($firmaEsperada, $firmaRecibida)
+            ]);
 
             if (!hash_equals($firmaEsperada, $firmaRecibida)) {
-                Log::warning('Checksum inválido del webhook', [
+                Log::error('Checksum inválido del webhook - FIRMA NO COINCIDE', [
                     'esperado' => $firmaEsperada,
                     'recibido' => $firmaRecibida,
-                    'checksum_data' => $checksum_data,
-                    'checksum_string' => $checksum_string
+                    'diferencia' => 'Las firmas no coinciden exactamente'
                 ]);
                 return response()->json(['error' => 'Checksum inválido'], 401);
             }
@@ -277,5 +329,24 @@ class WebhookController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * Obtener valor anidado de un array usando notación de punto
+     */
+    private function getNestedValue($data, $path)
+    {
+        $keys = explode('.', $path);
+        $value = $data;
+
+        foreach ($keys as $key) {
+            if (is_array($value) && isset($value[$key])) {
+                $value = $value[$key];
+            } else {
+                return null;
+            }
+        }
+
+        return $value;
     }
 }

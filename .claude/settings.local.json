@@ -10,7 +10,9 @@
       "Read(C:\\Users\\REALTECH\\.claude\\commands/**)",
       "Read(C:\\Users\\REALTECH\\.claude/**)",
       "Bash(npm run dev:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:docs.wompi.co)"
     ],
     "deny": [],
     "ask": []

@@ -46,7 +46,22 @@ class ConfiguracionPasarela extends Model
 
     public function getEventKeyAttribute($value)
     {
-        return $value ? Crypt::decryptString($value) : null;
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            // Intentar desencriptar
+            return Crypt::decryptString($value);
+        } catch (\Exception $e) {
+            // Si falla la desencriptación, assumir que es texto plano
+            // Esto puede suceder si se cambió la APP_KEY o se guardó sin encriptar
+            \Log::warning('Event key no pudo ser desencriptado, usando valor plano', [
+                'error' => $e->getMessage(),
+                'value_length' => strlen($value)
+            ]);
+            return $value;
+        }
     }
 
     public static function obtenerConfiguracionActiva($pasarela = 'wompi')
