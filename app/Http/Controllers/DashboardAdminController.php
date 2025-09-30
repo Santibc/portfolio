@@ -72,7 +72,7 @@ class DashboardAdminController extends Controller
             ->sum('monto_comision');
 
         $comisionesPendientes = Comision::where('estado', 'pendiente')
-            ->sum('monto_comision');
+            ->sum('monto_empresa');
 
         $totalParaEmpresas = Comision::whereBetween('created_at', [$fechaInicio, $fechaFin])
             ->sum('monto_empresa');
@@ -323,13 +323,22 @@ class DashboardAdminController extends Controller
     private function obtenerEstadisticasMembresias($fechaInicio, $fechaFin)
     {
         $ingresosTotal = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->where(function($q) {
+                $q->where('precio_pagado', 0)
+                  ->orWhereHas('pagos', function($query) {
+                      $query->where('estado', 'aprobado');
+                  });
+            })
             ->sum('precio_pagado');
 
         $membresiasTotales = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
             ->count();
 
         $membresiasPagadas = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->where('estado', 'activa')
+            ->where('precio_pagado', '>', 0)
+            ->whereHas('pagos', function($query) {
+                $query->where('estado', 'aprobado');
+            })
             ->count();
 
         $membresiasPendientes = Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
@@ -348,6 +357,12 @@ class DashboardAdminController extends Controller
         $mesAnteriorInicio = Carbon::parse($fechaInicio)->subMonth()->startOfMonth();
         $mesAnteriorFin = Carbon::parse($fechaInicio)->subMonth()->endOfMonth();
         $ingresosMesAnterior = Membresia::whereBetween('created_at', [$mesAnteriorInicio, $mesAnteriorFin])
+            ->where(function($q) {
+                $q->where('precio_pagado', 0)
+                  ->orWhereHas('pagos', function($query) {
+                      $query->where('estado', 'aprobado');
+                  });
+            })
             ->sum('precio_pagado');
 
         $crecimientoPorcentual = $ingresosMesAnterior > 0 
@@ -373,16 +388,17 @@ class DashboardAdminController extends Controller
     {
         return DB::table('membresias')
             ->join('planes_membresia', 'membresias.plan_membresia_id', '=', 'planes_membresia.id')
+            ->leftJoin('pagos_membresia', 'membresias.id', '=', 'pagos_membresia.membresia_id')
             ->whereBetween('membresias.created_at', [$fechaInicio, $fechaFin])
             ->select(
                 'planes_membresia.id',
                 'planes_membresia.nombre',
                 'planes_membresia.precio',
-                DB::raw('COUNT(membresias.id) as total_membresias'),
-                DB::raw('SUM(membresias.precio_pagado) as ingresos_total'),
-                DB::raw('COUNT(CASE WHEN membresias.estado = "activa" THEN 1 END) as membresias_activas'),
-                DB::raw('COUNT(CASE WHEN membresias.estado = "pendiente" THEN 1 END) as membresias_pendientes'),
-                DB::raw('COUNT(CASE WHEN membresias.estado = "cancelada" THEN 1 END) as membresias_canceladas')
+                DB::raw('COUNT(DISTINCT membresias.id) as total_membresias'),
+                DB::raw('SUM(CASE WHEN membresias.precio_pagado = 0 OR pagos_membresia.estado = "aprobado" THEN membresias.precio_pagado ELSE 0 END) as ingresos_total'),
+                DB::raw('COUNT(DISTINCT CASE WHEN membresias.estado = "activa" THEN membresias.id END) as membresias_activas'),
+                DB::raw('COUNT(DISTINCT CASE WHEN membresias.estado = "pendiente" THEN membresias.id END) as membresias_pendientes'),
+                DB::raw('COUNT(DISTINCT CASE WHEN membresias.estado = "cancelada" THEN membresias.id END) as membresias_canceladas')
             )
             ->groupBy('planes_membresia.id', 'planes_membresia.nombre', 'planes_membresia.precio')
             ->orderByDesc('ingresos_total')
@@ -400,16 +416,18 @@ class DashboardAdminController extends Controller
                      ->whereBetween('membresias.created_at', [$fechaInicio, $fechaFin]);
             })
             ->leftJoin('planes_membresia', 'membresias.plan_membresia_id', '=', 'planes_membresia.id')
+            ->leftJoin('pagos_membresia', 'membresias.id', '=', 'pagos_membresia.membresia_id')
             ->select(
                 'empresas.id',
                 'empresas.nombre',
                 'empresas.email',
-                DB::raw('COUNT(membresias.id) as total_membresias'),
-                DB::raw('SUM(membresias.precio_pagado) as total_pagado'),
+                DB::raw('COUNT(DISTINCT membresias.id) as total_membresias'),
+                DB::raw('SUM(CASE WHEN membresias.precio_pagado = 0 OR pagos_membresia.estado = "aprobado" THEN membresias.precio_pagado ELSE 0 END) as total_pagado'),
                 DB::raw('MAX(membresias.created_at) as ultima_membresia'),
                 DB::raw('GROUP_CONCAT(DISTINCT planes_membresia.nombre SEPARATOR ", ") as planes_contratados'),
-                DB::raw('COUNT(CASE WHEN membresias.estado = "activa" THEN 1 END) as membresias_activas'),
-                DB::raw('MAX(CASE WHEN membresias.estado = "activa" THEN membresias.fecha_fin END) as fecha_vencimiento')
+                DB::raw('COUNT(DISTINCT CASE WHEN membresias.estado = "activa" THEN membresias.id END) as membresias_activas'),
+                DB::raw('MAX(CASE WHEN membresias.estado = "activa" THEN membresias.fecha_fin END) as fecha_vencimiento'),
+                DB::raw('MAX(CASE WHEN membresias.estado = "activa" THEN planes_membresia.precio END) as precio_plan_activo')
             )
             ->groupBy('empresas.id', 'empresas.nombre', 'empresas.email')
             ->orderByDesc('total_pagado')
@@ -421,8 +439,12 @@ class DashboardAdminController extends Controller
      */
     private function obtenerMembresiasMensuales($fechaInicio, $fechaFin)
     {
-        return Membresia::whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as periodo, COUNT(*) as total_membresias, SUM(precio_pagado) as ingresos')
+        return DB::table('membresias')
+            ->leftJoin('pagos_membresia', 'membresias.id', '=', 'pagos_membresia.membresia_id')
+            ->whereBetween('membresias.created_at', [$fechaInicio, $fechaFin])
+            ->selectRaw('DATE_FORMAT(membresias.created_at, "%Y-%m") as periodo')
+            ->selectRaw('COUNT(DISTINCT membresias.id) as total_membresias')
+            ->selectRaw('SUM(CASE WHEN membresias.precio_pagado = 0 OR pagos_membresia.estado = "aprobado" THEN membresias.precio_pagado ELSE 0 END) as ingresos')
             ->groupBy('periodo')
             ->orderBy('periodo')
             ->get()

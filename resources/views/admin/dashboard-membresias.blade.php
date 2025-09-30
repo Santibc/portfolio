@@ -327,7 +327,7 @@
                                         <th class="text-end">Total Pagado</th>
                                         <th>Planes Contratados</th>
                                         <th class="text-center">Estado</th>
-                                        <th>Última Membresía</th>
+                                        <th>Inicio Membresía</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -348,16 +348,24 @@
                                                 <small class="text-muted">{{ $empresa->planes_contratados ?: 'Ninguno' }}</small>
                                             </td>
                                             <td class="text-center">
-                                                @if($empresa->fecha_vencimiento)
-                                                    @php
-                                                        $diasRestantes = now()->diffInDays(\Carbon\Carbon::parse($empresa->fecha_vencimiento), false);
-                                                    @endphp
-                                                    @if($diasRestantes > 7)
-                                                        <span class="badge bg-success">Activa</span>
-                                                    @elseif($diasRestantes > 0)
-                                                        <span class="badge bg-warning text-dark">Expira en {{ $diasRestantes }} días</span>
+                                                @if($empresa->membresias_activas > 0)
+                                                    @if($empresa->precio_plan_activo > 0)
+                                                        @if($empresa->fecha_vencimiento)
+                                                            @php
+                                                                $diasRestantes = now()->diffInDays(\Carbon\Carbon::parse($empresa->fecha_vencimiento), false);
+                                                            @endphp
+                                                            @if($diasRestantes > 7)
+                                                                <span class="badge bg-success">Activa</span>
+                                                            @elseif($diasRestantes > 0)
+                                                                <span class="badge bg-warning text-dark">Expira en {{ $diasRestantes }} días</span>
+                                                            @else
+                                                                <span class="badge bg-danger">Vencida</span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge bg-success">Activa</span>
+                                                        @endif
                                                     @else
-                                                        <span class="badge bg-danger">Vencida</span>
+                                                        <span class="badge bg-info">Plan Gratuito Activo</span>
                                                     @endif
                                                 @else
                                                     <span class="badge bg-secondary">Sin membresía</span>

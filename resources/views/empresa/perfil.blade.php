@@ -104,6 +104,20 @@
         </div>
       @endif
 
+      {{-- Mensaje de empresa inactiva --}}
+      @if(!$empresa->activo)
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+            <div>
+              <strong>Su empresa se encuentra actualmente inactiva.</strong>
+              <p class="mb-0">Si desea activarla, por favor comuníquese con el administrador de la aplicación.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
       {{-- ======= Card principal: Portada + Acciones + Estado ======= --}}
       <div class="bg-white shadow-sm rounded-4 overflow-hidden mb-6">
         <div class="cover-wrap bg-gradient-to-r from-blue-500 to-purple-600">
@@ -130,12 +144,15 @@
 
           {{-- Estado empresa --}}
           <div class="position-absolute top-0 start-0 p-3">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="estadoEmpresa" {{ $empresa->activo ? 'checked' : '' }}>
-              <label class="form-check-label text-white fw-semibold" for="estadoEmpresa">
-                {{ $empresa->activo ? 'Activa' : 'Inactiva' }}
-              </label>
-            </div>
+            @if($empresa->activo)
+              <span class="badge bg-success">
+                <i class="bi bi-check-circle"></i> Empresa Activa
+              </span>
+            @else
+              <span class="badge bg-danger">
+                <i class="bi bi-x-circle"></i> Empresa Inactiva
+              </span>
+            @endif
           </div>
         </div>
 
@@ -438,32 +455,4 @@
     </div>
   </div>
 
-  @push('scripts')
-  <script>
-    // Cambiar estado de la empresa (AJAX)
-    $('#estadoEmpresa').on('change', function() {
-      const checkbox = $(this);
-      const estadoAnterior = !checkbox.prop('checked'); // guardamos el contrario para revertir en error
-
-      $.ajax({
-        url: '{{ route("empresa.cambiar-estado") }}',
-        method: 'POST',
-        data: { _token: '{{ csrf_token() }}' },
-        success: function(response) {
-          if (response && response.success) {
-            $('label[for="estadoEmpresa"]').text(response.activo ? 'Activa' : 'Inactiva');
-            if (window.toastr) toastr.success(response.mensaje || 'Estado actualizado');
-          } else {
-            checkbox.prop('checked', estadoAnterior);
-            if (window.toastr) toastr.error('No se pudo cambiar el estado');
-          }
-        },
-        error: function() {
-          checkbox.prop('checked', estadoAnterior);
-          if (window.toastr) toastr.error('Error al cambiar el estado de la empresa');
-        }
-      });
-    });
-  </script>
-  @endpush
 </x-app-layout>
