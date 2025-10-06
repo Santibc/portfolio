@@ -324,7 +324,7 @@
         @endif
     </div>
 
-    {{-- Modales de pago --}}
+    {{-- Modales de pago para ventasPorEmpresa --}}
     @foreach($ventasPorEmpresa as $empresa)
         @if(($empresa->pendiente_pagar ?? 0) > 0)
             <div class="modal fade" id="pagarModal{{ $empresa->id }}" tabindex="-1" aria-hidden="true">
@@ -399,6 +399,84 @@
                 </div>
             </div>
         @endif
+    @endforeach
+
+    {{-- Modales de pago para comisionesPendientes --}}
+    @foreach($comisionesPendientes as $pendiente)
+        <div class="modal fade" id="pagarModal{{ $pendiente->id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('admin.dashboard.pagar') }}" method="POST" onsubmit="return confirmarPago(this)">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title">Registrar Pago - {{ $pendiente->nombre }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="empresa_id" value="{{ $pendiente->id }}">
+
+                            <div class="alert alert-info mb-3">
+                                <h6 class="alert-heading">Resumen del pago:</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small>Comisiones pendientes:</small><br>
+                                        <strong>{{ $pendiente->numero_comisiones }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small>Período:</small><br>
+                                        <strong>
+                                            {{ \Carbon\Carbon::parse($pendiente->primera_comision)->format('d/m/Y') }} -
+                                            {{ \Carbon\Carbon::parse($pendiente->ultima_comision)->format('d/m/Y') }}
+                                        </strong>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-center">
+                                    <small>TOTAL A PAGAR:</small><br>
+                                    <h4 class="mb-0">${{ number_format($pendiente->total_pagar, 0, ',', '.') }}</h4>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
+                                <select name="metodo_pago" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="transferencia">Transferencia Bancaria</option>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Referencia/Número de Comprobante <span class="text-danger">*</span></label>
+                                <input type="text" name="referencia_pago" class="form-control" required
+                                       placeholder="Ej: TRF-123456 o CHQ-789">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Observaciones (opcional)</label>
+                                <textarea name="observaciones" class="form-control" rows="2"
+                                          placeholder="Información adicional del pago"></textarea>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmarPendiente{{ $pendiente->id }}" required>
+                                <label class="form-check-label" for="confirmarPendiente{{ $pendiente->id }}">
+                                    Confirmo que he realizado el pago por el monto indicado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Confirmar Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     @endforeach
 
     @push('styles')
@@ -500,15 +578,40 @@
 
             // Confirmar pago (expuesto en window porque lo usa el formulario)
             window.confirmarPago = function (form) {
-                return confirm('¿Está seguro de registrar este pago? Esta acción no se puede deshacer.');
+                event.preventDefault();
+                Swal.fire({
+                    title: '¿Confirmar pago?',
+                    text: '¿Está seguro de registrar este pago? Esta acción no se puede deshacer.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+                return false;
             };
 
             // Mensajes flash
             @if(session('success'))
-                alert(@json(session('success')));
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Éxito',
+                    text: @json(session('success')),
+                    confirmButtonColor: '#198754'
+                });
             @endif
             @if(session('error'))
-                alert(@json(session('error')));
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: @json(session('error')),
+                    confirmButtonColor: '#dc3545'
+                });
             @endif
         });
         </script>
