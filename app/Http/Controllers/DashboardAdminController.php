@@ -60,22 +60,18 @@ class DashboardAdminController extends Controller
      */
     private function obtenerEstadisticasGenerales($fechaInicio, $fechaFin)
     {
-        $ventasTotales = Compra::where('estado', 'pagada')
-            ->whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->sum('total');
+        // Usar comisiones como fuente de verdad, ya que solo se generan cuando la compra está pagada
+        // Esto evita inconsistencias si el estado de la compra cambia después (ej: a "enviada")
+        $comisiones = Comision::whereBetween('created_at', [$fechaInicio, $fechaFin])->get();
 
-        $numeroVentas = Compra::where('estado', 'pagada')
-            ->whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->count();
-
-        $comisionesTotales = Comision::whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->sum('monto_comision');
+        $ventasTotales = $comisiones->sum('monto_venta');
+        $numeroVentas = $comisiones->count();
+        $comisionesTotales = $comisiones->sum('monto_comision');
 
         $comisionesPendientes = Comision::where('estado', 'pendiente')
             ->sum('monto_empresa');
 
-        $totalParaEmpresas = Comision::whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->sum('monto_empresa');
+        $totalParaEmpresas = $comisiones->sum('monto_empresa');
 
         return [
             'ventas_totales' => $ventasTotales,
@@ -92,21 +88,21 @@ class DashboardAdminController extends Controller
      */
     private function obtenerVentasPorEmpresa($fechaInicio, $fechaFin)
     {
+        // Usar comisiones como base para evitar inconsistencias cuando el estado de la compra cambia
+        // después de generarse la comisión (ej: de "pagada" a "enviada")
         return DB::table('empresas')
             ->leftJoin('planes_membresia', 'empresas.plan_membresia_id', '=', 'planes_membresia.id')
-            ->leftJoin('compras', function($join) use ($fechaInicio, $fechaFin) {
-                $join->on('empresas.id', '=', 'compras.empresa_id')
-                     ->where('compras.estado', '=', 'pagada')
-                     ->whereBetween('compras.created_at', [$fechaInicio, $fechaFin]);
+            ->leftJoin('comisiones', function($join) use ($fechaInicio, $fechaFin) {
+                $join->on('empresas.id', '=', 'comisiones.empresa_id')
+                     ->whereBetween('comisiones.created_at', [$fechaInicio, $fechaFin]);
             })
-            ->leftJoin('comisiones', 'compras.id', '=', 'comisiones.compra_id')
             ->select(
                 'empresas.id',
                 'empresas.nombre',
                 'planes_membresia.porcentaje_comision',
                 'planes_membresia.comision_fija',
-                DB::raw('COUNT(DISTINCT compras.id) as numero_ventas'),
-                DB::raw('COALESCE(SUM(compras.total), 0) as ventas_totales'),
+                DB::raw('COUNT(DISTINCT comisiones.id) as numero_ventas'),
+                DB::raw('COALESCE(SUM(comisiones.monto_venta), 0) as ventas_totales'),
                 DB::raw('COALESCE(SUM(comisiones.monto_comision), 0) as comisiones_totales'),
                 DB::raw('COALESCE(SUM(comisiones.monto_empresa), 0) as total_empresa'),
                 DB::raw('COALESCE(SUM(CASE WHEN comisiones.estado = "pendiente" THEN comisiones.monto_empresa ELSE 0 END), 0) as pendiente_pagar')
@@ -121,9 +117,9 @@ class DashboardAdminController extends Controller
      */
     private function obtenerVentasDiarias($fechaInicio, $fechaFin)
     {
-        return Compra::where('estado', 'pagada')
-            ->whereBetween('created_at', [$fechaInicio, $fechaFin])
-            ->selectRaw('DATE(created_at) as fecha, COUNT(*) as numero_ventas, SUM(total) as total')
+        // Usar comisiones como fuente de verdad
+        return Comision::whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->selectRaw('DATE(created_at) as fecha, COUNT(*) as numero_ventas, SUM(monto_venta) as total')
             ->groupBy('fecha')
             ->orderBy('fecha')
             ->get()
