@@ -17,7 +17,7 @@
           <!-- Image Column -->
           <div class="col-lg-6">
             <div class="about-image">
-              <img src="{{ $about && $about->main_image_path ? asset($about->main_image_path) : asset('images/limpieza.jpg') }}" class="img-fluid" alt="{{ $about->page_title ?? 'About Us' }}">
+              <img src="{{ $about && $about->main_image_path ? asset($about->main_image_path) : asset('images/limpieza.png') }}" class="img-fluid" alt="{{ $about->page_title ?? 'About Us' }}">
             </div>
           </div>
 
