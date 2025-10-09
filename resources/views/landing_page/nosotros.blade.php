@@ -5,33 +5,65 @@
     <section style="padding: 160px 0 100px 0;" id="about" class="about section">
 
       <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>{{ $about->page_title ?? 'Nosotros' }}<br></span>
-        <h2>{{ $about->page_title ?? 'Nosotros' }}<br></h2>
+      <div class="container section-title">
+        <h2>{{ $about->page_title ?? 'About Us' }}</h2>
+        <p>Learn more about Guillen Cleaning LLC</p>
       </div><!-- End Section Title -->
 
       <div class="container">
 
-        <div class="row gy-4">
+        <div class="row align-items-center">
 
-          <div class="col-lg-6 order-1 order-lg-2" data-aos="fade-up" data-aos-delay="100">
-            <img src="{{ $about && $about->main_image_path ? asset($about->main_image_path) : asset('images/justicia.jpg') }}" class="img-fluid" alt="{{ $about->page_title ?? 'Nosotros' }}">
+          <!-- Image Column -->
+          <div class="col-lg-6">
+            <div class="about-image">
+              <img src="{{ $about && $about->main_image_path ? asset($about->main_image_path) : asset('images/limpieza.jpg') }}" class="img-fluid" alt="{{ $about->page_title ?? 'About Us' }}">
+            </div>
           </div>
 
-          <div class="col-lg-6 order-2 order-lg-1 content" data-aos="fade-up" data-aos-delay="200">
-            <h3>{{ $about->purpose_title ?? 'Propósito' }}: </h3>
-            <p class="fst-italic">
-               {{ $about->purpose_content ?? 'Ofrecer soluciones jurídicas confiables, de alta calidad y orientadas al éxito de nuestros clientes.' }}
-            </p>
-            <h3>{{ $about->mission_title ?? 'Misión' }}:</h3>
-            <p class="fst-italic">
-               {{ $about->mission_content ?? 'Somos una firma legal que fortalece el crecimiento de sus clientes mediante asesoría estratégica, basada en la confianza, el compromiso y la excelencia profesional. Contamos con un equipo diverso y altamente especializado que colabora de forma articulada y se alinea con las metas del cliente para maximizar su valor jurídico y su impacto social.' }}
-            </p>
-            <h3>{{ $about->vision_title ?? 'Visión' }}:</h3>
-            <p class="fst-italic">
-               {{ $about->vision_content ?? 'Construir relaciones de confianza con empresas y emprendedores, siendo la firma legal que los acompaña con cercanía, comunicación transparente y soluciones jurídicas que generan impacto.' }}
-            </p>
+          <!-- Content Column -->
+          <div class="col-lg-6">
+            <div class="content">
+              <h3>{{ $about->purpose_title ?? 'Our Purpose' }}</h3>
+              <p class="lead">
+                {{ $about->purpose_content ?? 'Excellence and professionalism are first when it comes to our Residential and Commercial Cleaning Services.' }}
+              </p>
 
+              <h3>{{ $about->mission_title ?? 'Our Mission' }}</h3>
+              <p>
+                {{ $about->mission_content ?? 'Since 2009, our goal has remained the same—to provide reliable services and make sure our clients know we are professionals they can trust. We focus on delivering top-quality cleaning solutions that exceed expectations.' }}
+              </p>
+
+              <h3>{{ $about->vision_title ?? 'Our Vision' }}</h3>
+              <p>
+                {{ $about->vision_content ?? 'We are constantly improving our services, staying up-to-date on all the latest industry advancements, and bringing our knowledge to your doorstep. We aim to be the most trusted cleaning company in Wisconsin.' }}
+              </p>
+
+              <!-- Stats Row -->
+              <div class="stats-row">
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="16" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <p>Years Experience</p>
+                </div>
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="500" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <p>Happy Clients</p>
+                </div>
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="100" data-purecounter-duration="1" class="purecounter"></span>%</h3>
+                  <p>Client Satisfaction</p>
+                </div>
+              </div><!-- End Stats Row -->
+
+              <!-- CTA Button -->
+              <div class="cta-wrapper">
+                <a href="{{ route('contacto') }}" class="btn-cta">
+                  <span>Contact Us Today</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+
+            </div>
           </div>
 
         </div>
@@ -40,5 +72,43 @@
 
     </section><!-- /About Section -->
 
+    <!-- Values Section -->
+    <section class="section light-background">
+      <div class="container">
+        <div class="row gy-4">
+
+          <div class="col-lg-4 col-md-6">
+            <div class="service-card text-center">
+              <div class="service-icon">
+                <i class="bi bi-award"></i>
+              </div>
+              <h3>Quality Assurance</h3>
+              <p>We use eco-friendly cleaning products and employ highly trained professionals to deliver exceptional results every time.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6">
+            <div class="service-card text-center">
+              <div class="service-icon">
+                <i class="bi bi-people"></i>
+              </div>
+              <h3>Customer Focus</h3>
+              <p>Your satisfaction is our priority. We tailor our services to meet your specific needs and exceed your expectations.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6">
+            <div class="service-card text-center">
+              <div class="service-icon">
+                <i class="bi bi-clock-history"></i>
+              </div>
+              <h3>Reliability</h3>
+              <p>Since 2009, we've built our reputation on consistent, dependable service that you can count on.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section><!-- /Values Section -->
 
 @endsection

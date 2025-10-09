@@ -3,7 +3,8 @@
     "allow": [
       "Bash(php artisan make:migration:*)",
       "Bash(php artisan:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

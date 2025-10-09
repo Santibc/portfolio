@@ -1,317 +1,561 @@
 @extends('landing_page.layout')
 
 @section('content')
-    
-    <!-- Sección Hero -->
-    <section id="hero" class="hero section dark-background">
-      <!-- Carousel -->
-      <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-inner">
-          @forelse($carouselImages as $index => $image)
-            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-              <img src="{{ asset($image->image_path) }}" class="hero-bg-img" alt="{{ $image->alt_text }}">
-            </div>
-          @empty
-            <!-- Imágenes por defecto si no hay en la BD -->
-            <div class="carousel-item active">
-              <img src="{{ asset('imagenes/car1.jpg') }}" class="hero-bg-img" alt="">
-            </div>
-            <div class="carousel-item">
-              <img src="{{ asset('imagenes/car2.jpg') }}" class="hero-bg-img" alt="">
-            </div>
-            <div class="carousel-item">
-              <img src="{{ asset('imagenes/car3.jpg') }}" class="hero-bg-img" alt="">
-            </div>
-            <div class="carousel-item">
-              <img src="{{ asset('imagenes/car4.jpg') }}" class="hero-bg-img" alt="">
-            </div>
-            <div class="carousel-item">
-              <img src="{{ asset('imagenes/car5.jpg') }}" class="hero-bg-img" alt="">
-            </div>
-          @endforelse
-        </div>
-        
-        <!-- Carousel Controls - Desktop -->
-        <button class="carousel-control-prev d-none d-lg-flex" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next d-none d-lg-flex" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-      </div>
 
-      <!-- Fixed content overlay -->
-      <div class="container hero-content" data-aos="fade-up" data-aos-delay="100">
-        <div class="row justify-content-start">
-          <div class="col-lg-8"><br><br>
-            <h2 style="color: white">{{ $config->company_name ?? 'Montano & Co.' }}</h2><br>
-            <p style="text-align: justify; color: white;">{{ $config->company_description ?? 'Somos un despacho orientado a resultados. Diseñamos soluciones jurídicas integrales en derecho empresarial, comercio exterior (aduanas, importación y exportación) y cumplimiento (PLD/FT, anticorrupción y ética). Representamos en penal económico y litigios comerciales. También brindamos servicios notariales para estructurar y dar seguridad a tus operaciones. Operamos desde El Salvador con alcance en Centroamérica y el Caribe. Transparencia, eficiencia y acompañamiento en cada decisión.' }}</p>
-            <div class="d-flex gap-3 mt-4">
-              <a style="color: white;border-color: white;" href="{{ $config->services_button_url ?? '#services' }}" class="btn-get-started">Nuestros Servicios</a>
-              @if($config && $config->contact_email)
-                <a style="color: white;border-color: white;" href="mailto:{{ $config->contact_email }}" class="btn-get-started">
-                  <i class="bi bi-envelope"></i> Contáctanos
-                </a>
-              @else
-                <a style="color: white;border-color: white;" href="mailto:contacto@ejemplo.com" class="btn-get-started">
-                  <i class="bi bi-envelope"></i> Contáctanos
-                </a>
-              @endif
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6">
+            <div class="hero-content">
+              <h1>{{ $config->company_name ?? 'GUILLEN CLEANING LLC' }}</h1>
+              <h2 class="mb-4"><span>Top Quality Guaranteed</span></h2>
+              <p>{{ $config->company_description ?? 'At Guillen Cleaning LLC, we believe that putting in a lot of hard work ensures the best and fastest service. We are here to provide you the most suitable and highest solutions for your needs with a professional estimation.' }}</p>
+              <div class="hero-actions justify-content-center justify-content-lg-start">
+                <a href="#services" class="btn-primary scrollto">Our Services</a>
+                <a href="#contact" class="btn-primary scrollto">Get Free Estimate</a>
+              </div>
+
+              <!-- Company Values Icons -->
+              <div class="hero-values mt-5">
+                <div class="row gy-4">
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-shield-check"></i>
+                      </div>
+                      <h4>Trusted & Insured</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                      </div>
+                      <h4>Fast Service</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-award"></i>
+                      </div>
+                      <h4>Professional</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-tree"></i>
+                      </div>
+                      <h4>Eco-Friendly</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-patch-check"></i>
+                      </div>
+                      <h4>Guaranteed</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-clock"></i>
+                      </div>
+                      <h4>Flexible Hours</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-people"></i>
+                      </div>
+                      <h4>Experienced Team</h4>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="value-card">
+                      <div class="value-icon">
+                        <i class="bi bi-star"></i>
+                      </div>
+                      <h4>Quality Work</h4>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- End Hero Values -->
+
             </div>
-            
-            <!-- Mobile Carousel Controls -->
-            <div class="mobile-carousel-controls d-lg-none">
-              <button class="mobile-carousel-btn" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <button class="mobile-carousel-btn" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-                <i class="bi bi-chevron-right"></i>
-              </button>
+          </div>
+          <div class="col-lg-6">
+            <div class="hero-image">
+              <img src="{{ asset('images/mujer.png') }}" class="img-fluid floating" alt="Guillen Cleaning Services">
             </div>
           </div>
         </div>
       </div>
 
-    </section><!-- /Sección Hero -->
-
-    <!-- Sección Servicios -->
-    <section id="services" class="services section" style="padding: 100px 0;">
-
-      <!-- Título de Sección -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Servicios</span>
-        <h2>Servicios</h2>
-        <p></p>
-      </div><!-- Fin Título de Sección -->
+    </section><!-- /Hero Section -->
+    <section id="social-media" class="clients section social-media-section">
 
       <div class="container">
 
-        <div class="row gy-4">
-          @forelse($services as $index => $service)
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-{{ $service->icon_class }}"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>{{ $service->title }}</h3>
-                </a>
-                <p>{{ $service->description }}</p>
-              </div>
-            </div><!-- Fin Servicio -->
-          @empty
-            <!-- Servicios por defecto si no hay en la BD -->
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-currency-dollar"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Administración de Cartera y Patrimonio</h3>
-                </a>
-                <p>Acompañamiento estratégico en gestión patrimonial, optimización de inversiones y planificación sucesoria con seguridad jurídica.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-shield-check"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Prevención de Lavado y Gestión de Riesgos</h3>
-                </a>
-                <p>Programas de cumplimiento normativo en PLD/FT, anticorrupción y ética empresarial adaptados a estándares internacionales.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-building"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Derecho Empresarial</h3>
-                </a>
-                <p>Asesoría integral desde constitución de sociedades hasta fusiones, gobierno corporativo y resolución de conflictos comerciales.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-globe-americas"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Derecho Aduanero y Comercio Exterior</h3>
-                </a>
-                <p>Asesoría especializada en importación/exportación para operaciones en Centroamérica, el Caribe y mercados globales.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-shield-lock"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Derecho Penal</h3>
-                </a>
-                <p>Defensa penal integral en delitos económicos, financieros, societarios, corrupción y delitos comunes.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-              <div class="service-item position-relative">
-                <div class="icon">
-                  <i class="bi bi-file-text"></i>
-                </div>
-                <a href="#" class="stretched-link">
-                  <h3>Derecho Notarial y Registral</h3>
-                </a>
-                <p>Autenticación de documentos, escrituras públicas, constitución de sociedades y actos jurídicos con seguridad legal.</p>
-              </div>
-            </div><!-- Fin Servicio -->
-          @endforelse
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 3000
+              },
+              "slidesPerView": "auto",
+              "breakpoints": {
+                "320": {
+                  "slidesPerView": 2,
+                  "spaceBetween": 40
+                },
+                "480": {
+                  "slidesPerView": 3,
+                  "spaceBetween": 60
+                },
+                "640": {
+                  "slidesPerView": 4,
+                  "spaceBetween": 80
+                },
+                "992": {
+                  "slidesPerView": 4,
+                  "spaceBetween": 100
+                }
+              }
+            }
+          </script>
+          <div class="swiper-wrapper align-items-center">
+            <div class="swiper-slide">
+              <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/facebook.png') }}" class="img-fluid" alt="Facebook">
+              </a>
+            </div>
+            <div class="swiper-slide">
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/instagram.png') }}" class="img-fluid" alt="Instagram">
+              </a>
+            </div>
+            <div class="swiper-slide">
+              <a href="linkedin.com/home?originalSubdomain=co" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/link.png') }}" class="img-fluid" alt="Twitter">
+              </a>
+            </div>
+            <div class="swiper-slide">
+              <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/youtube.png') }}" class="img-fluid" alt="YouTube">
+              </a>
+            </div>
+          </div>
         </div>
 
       </div>
 
-    </section><!-- /Sección Servicios -->
+    </section><!-- /Social Media Section -->
+    <!-- Social Media Section -->
 
-    <!-- Sección Tarjetas -->
-    <section id="cards" class="cards section" style="padding: 100px 0;">
+
+    <!-- About Section -->
+    <section id="about" class="about section">
 
       <div class="container">
 
-        <div class="row no-gutters">
-          @forelse($steps as $index => $step)
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="{{ ($index + 1) * 100 }}">
-              <span>{{ str_pad($step->step_number, 2, '0', STR_PAD_LEFT) }}</span>
-              <h4>{{ $step->title }}</h4>
-              <p>{{ $step->description }}</p>
-            </div><!-- Fin Ítem Tarjeta -->
-          @empty
-            <!-- Pasos por defecto si no hay en la BD -->
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="100">
-              <span>01</span>
-              <h4>Consulta Inicial</h4>
-              <p>Escuchamos tu caso y brindamos una primera asesoría clara y transparente.</p>
-            </div><!-- Fin Ítem Tarjeta -->
+        <div class="row align-items-center">
 
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="200">
-              <span>02</span>
-              <h4>Análisis Jurídico</h4>
-              <p>Revisamos a fondo la situación legal para diseñar la mejor estrategia.</p>
-            </div><!-- Fin Ítem Tarjeta -->
+          <!-- Image Column -->
+          <div class="col-lg-6">
+            <div class="about-image">
+              <img src="{{ asset('images/paginaanterior/imagenluegodeltitulo.avif') }}" alt="We Are Guillen Cleaning" class="img-fluid">
+            </div>
+          </div>
 
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="300">
-              <span>03</span>
-              <h4>Plan de Acción</h4>
-              <p>Te presentamos opciones claras y viables para defender tus derechos.</p>
-            </div><!-- Fin Ítem Tarjeta -->
+          <!-- Content Column -->
+          <div class="col-lg-6">
+            <div class="content">
+              <h2>WE ARE GUILLEN CLEANING LLC</h2>
+              <p class="lead">Excellence and professionalism are first when it comes to our Residential and Commercial Cleaning Services.</p>
 
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="400">
-              <span>04</span>
-              <h4>Representación Legal</h4>
-              <p>Te acompañamos en audiencias, procesos y negociaciones legales.</p>
-            </div><!-- Fin Ítem Tarjeta -->
+              <p>We are constantly improving our services, staying up-to-date on all the latest industry advancements, and bringing our knowledge to your doorstep. Since 2009, our goal has remained the same—to provide reliable services and make sure our clients know we are professionals they can trust.</p>
 
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="500">
-              <span>05</span>
-              <h4>Seguimiento Constante</h4>
-              <p>Mantenemos comunicación permanente sobre el avance de tu caso.</p>
-            </div><!-- Fin Ítem Tarjeta -->
+              <!-- Stats Row -->
+              <div class="stats-row">
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="16" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <p>Years Experience</p>
+                </div>
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="500" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <p>Happy Clients</p>
+                </div>
+                <div class="stat-item">
+                  <h3><span data-purecounter-start="0" data-purecounter-end="100" data-purecounter-duration="1" class="purecounter"></span>%</h3>
+                  <p>Client Satisfaction</p>
+                </div>
+              </div><!-- End Stats Row -->
 
-            <div class="col-lg-4 col-md-6 card" data-aos="fade-up" data-aos-delay="600">
-              <span>06</span>
-              <h4>Resultados</h4>
-              <p>Trabajamos para lograr la mejor solución legal, justa y favorable para ti.</p>
-            </div><!-- Fin Ítem Tarjeta -->
-          @endforelse
+              <!-- CTA Button -->
+              <div class="cta-wrapper">
+                <a href="{{ route('nosotros') }}" class="btn-cta">
+                  <span>Learn More About Us</span>
+                  <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
       </div>
 
-    </section><!-- /Sección Tarjetas -->
-    
-    <section id="contact" style="padding: 100px 0;" class="contact section">
+    </section><!-- /About Section -->
+
+    <!-- Services Section -->
+    <section id="services" class="services section">
 
       <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <span>Contacto</span>
-        <h2>Contacto</h2>
-        <p>Estamos aquí para ayudarte. Contáctanos y recibe asesoría legal personalizada.</p>
+      <div class="container section-title">
+        <h2>Our Services</h2>
+        <p>Professional cleaning solutions for your residential and commercial needs</p>
       </div><!-- End Section Title -->
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="container">
+
+        <h3 class="text-center mb-5">Commercial Cleaning Services</h3>
+
+        <!-- Commercial Images Gallery -->
+
+
+        <div class="row gy-4 mb-5">
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-fire"></i>
+              </div>
+              <h3>Hood Cleaning</h3>
+              <p>Our professional team specializes in thorough hood cleaning for commercial kitchens. We ensure that your kitchen exhaust systems are free from grease buildup and fire hazards, keeping your workspace safe and compliant with regulations.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <h3>Sanitation Services</h3>
+              <p>We provide comprehensive sanitation services to maintain a clean and hygienic environment in your commercial space. Our experts use industry-standard disinfectants to eliminate bacteria, viruses, and germs, ensuring the well-being of your staff and customers.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-thermometer-half"></i>
+              </div>
+              <h3>Stove and Grill Cleaning</h3>
+              <p>We deep clean stoves and grills to remove grease, carbon buildup, and food residues. This not only enhances the longevity of your equipment but also ensures that your food preparation areas meet the highest hygiene standards.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-snow"></i>
+              </div>
+              <h3>Refrigerator Cleaning</h3>
+              <p>We offer professional cleaning of commercial refrigerators, ensuring a clean and safe storage environment for your perishable goods. Our services help maintain food quality and reduce the risk of contamination.</p>
+            </div>
+          </div>
+
+        </div>
+        <div class="row gy-4 mb-5">
+          <div class="col-lg-6 col-md-6 text-center">
+            <div class="service-image-wrapper">
+              <img src="{{ asset('images/paginaanterior/service1.avif') }}" alt="Commercial Cleaning Services" class="img-fluid rounded shadow">
+            </div>
+          </div>
+          <div class="col-lg-6 col-md-6 text-center">
+            <div class="service-image-wrapper">
+              <img src="{{ asset('images/paginaanterior/service2.avif') }}" alt="Commercial Cleaning Services" class="img-fluid rounded shadow">
+            </div>
+          </div>
+        </div>
+        <h3 class="text-center mb-5">Residential Cleaning Services</h3>
+
+        <!-- Residential Images Gallery -->
+
+
+        <div class="row gy-4 mb-5">
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-house-door"></i>
+              </div>
+              <h3>Basic Cleaning</h3>
+              <p>Our basic residential cleaning service covers essential tasks like dusting, vacuuming, mopping, and sanitizing common living areas, ensuring a clean and tidy home for your everyday comfort.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-stars"></i>
+              </div>
+              <h3>Deep Cleaning</h3>
+              <p>For a more thorough and comprehensive clean, our deep cleaning service goes beyond the basics. We pay attention to every nook and cranny, tackling accumulated grime, dirt, and dust. Ideal for periodic deep cleans or when moving in/out.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-balloon"></i>
+              </div>
+              <h3>Special Occasions</h3>
+              <p>Whether you're hosting a party, celebrating a special event, or having guests over, our special occasion cleaning service ensures your home is spotless and ready to impress. We'll take care of the cleaning so you can focus on the celebration.</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6">
+            <div class="service-card">
+              <div class="service-icon">
+                <i class="bi bi-tools"></i>
+              </div>
+              <h3>Construction Cleaning</h3>
+              <p>After a construction or renovation project, our construction cleaning service helps you rid your home of construction debris, dust, and dirt. We'll leave your space clean, safe, and ready for you to enjoy.</p>
+            </div>
+          </div>
+
+        </div>
+        <div class="row gy-4 mb-5">
+          <div class="col-lg-6 col-md-6 text-center">
+            <div class="service-image-wrapper">
+              <img src="{{ asset('images/paginaanterior/residential1.avif') }}" alt="Residential Cleaning Services" class="img-fluid rounded shadow">
+            </div>
+          </div>
+          <div class="col-lg-6 col-md-6 text-center">
+            <div class="service-image-wrapper">
+              <img src="{{ asset('images/paginaanterior/residential2.avif') }}" alt="Residential Cleaning Services" class="img-fluid rounded shadow">
+            </div>
+          </div>
+        </div>
+        <!-- Additional Note -->
+        <div class="row mt-5">
+          <div class="col-12">
+            <div class="alert alert-info text-center">
+              <p class="mb-0"><strong>Eco-Friendly Commitment:</strong> In both our commercial and residential cleaning services, we use eco-friendly cleaning products, employ highly trained and professional staff, and tailor our services to meet your specific needs. Our goal is to provide a clean, healthy, and welcoming environment for your home or business.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Services Section -->
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials section">
+
+      <!-- Section Title -->
+      <div class="container section-title">
+        <h2>Client Testimonials</h2>
+        <p>What our satisfied clients say about our cleaning services</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="testimonial-slider swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": 1,
+              "spaceBetween": 30,
+              "navigation": {
+                "nextEl": ".swiper-button-next",
+                "prevEl": ".swiper-button-prev"
+              },
+              "breakpoints": {
+                "768": {
+                  "slidesPerView": 2
+                },
+                "1200": {
+                  "slidesPerView": 3
+                }
+              }
+            }
+          </script>
+
+          <div class="swiper-wrapper">
+
+            <!-- Testimonial 1 -->
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="testimonial-header">
+                  <div class="rating">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                  </div>
+                </div>
+                <div class="testimonial-body">
+                  <p>"Patti is very profession and thorough. She spent the whole day at the house for our first initial deep clean. Loved seeing all the ways to fold towels and Kleenex. Our woodwork and blinds look beautiful and dust free. Highly recommend!"</p>
+                </div>
+                <div class="testimonial-footer">
+                  <h5>Rebekah Bower</h5>
+                  <span>Wisconsin</span>
+                  <div class="quote-icon">
+                    <i class="bi bi-chat-quote-fill"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Testimonial -->
+
+            <!-- Testimonial 2 -->
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="testimonial-header">
+                  <div class="rating">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                  </div>
+                </div>
+                <div class="testimonial-body">
+                  <p>"Patty and co-worker did a great deep clean of my home! They were very professional and returned calls and texts immediately."</p>
+                </div>
+                <div class="testimonial-footer">
+                  <h5>Maria McClellan</h5>
+                  <span>Wisconsin</span>
+                  <div class="quote-icon">
+                    <i class="bi bi-chat-quote-fill"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Testimonial -->
+
+            <!-- Testimonial 3 -->
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="testimonial-header">
+                  <div class="rating">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                  </div>
+                </div>
+                <div class="testimonial-body">
+                  <p>"After being laid up after a surgery I call Patti to ask about her service, she came out that day, gave me a quote. I had my house cleaned in a few days to absolute perfection. 100% recommend this cleaning service."</p>
+                </div>
+                <div class="testimonial-footer">
+                  <h5>Redwood Retreat</h5>
+                  <span>Wisconsin</span>
+                  <div class="quote-icon">
+                    <i class="bi bi-chat-quote-fill"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Testimonial -->
+
+          </div>
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div>
+
+      </div>
+
+    </section><!-- /Testimonials Section -->
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact section">
+
+      <!-- Section Title -->
+      <div class="container section-title">
+        <h2>Get Your Free Estimate</h2>
+        <p>{{ $contactInfo->description ?? 'Contact us today for a free estimate. We are here to help you with all your cleaning needs.' }}</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
 
         <div class="row gy-4">
 
           <div class="col-lg-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="200">
-              <i class="bi bi-geo-alt"></i>
-              <h3>Dirección</h3>
-              <p>{{ $contactInfo->address ?? 'A108 Adam Street, New York, NY 535022' }}</p>
+
+            <div class="row gy-4">
+              <div class="col-md-6">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                  <i class="bi bi-envelope"></i>
+                  <h3>Email</h3>
+                  <p>{{ $contactInfo->email ?? 'cleaningguillen@outlook.com' }}</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                  <i class="bi bi-telephone"></i>
+                  <h3>Phone</h3>
+                  <p>{{ $contactInfo->phone ?? '+1 (555) 000-0000' }}</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-12">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center">
+                  <i class="bi bi-geo-alt"></i>
+                  <h3>Location</h3>
+                  <p>{{ $contactInfo->address ?? 'Wisconsin, USA' }}</p>
+                </div>
+              </div><!-- End Info Item -->
             </div>
-          </div><!-- End Info Item -->
 
-          <div class="col-lg-3 col-md-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="300">
-              <i class="bi bi-telephone"></i>
-              <h3>Teléfono </h3>
-              <p>{{ $contactInfo->phone ?? '+1 5589 55488 55' }}</p>
-            </div>
-          </div><!-- End Info Item -->
-
-          <div class="col-lg-3 col-md-6">
-            <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="400">
-              <i class="bi bi-envelope"></i>
-              <h3>Correo</h3>
-              <p>{{ $contactInfo->email ?? 'info@example.com' }}</p>
-            </div>
-          </div><!-- End Info Item -->
-
-        </div>
-
-        <div class="row gy-4 mt-1">
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
-            @if($contactInfo && $contactInfo->google_maps_embed)
-              {!! $contactInfo->google_maps_embed !!}
-            @else
-              <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d48389.78314118045!2d-74.006138!3d40.710059!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a22a3bda30d%3A0xb89d1fe6bc499443!2sDowntown%20Conference%20Center!5e0!3m2!1sen!2sus!4v1676961268712!5m2!1sen!2sus" frameborder="0" style="border:0; width: 100%; height: 400px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            @endif
-          </div><!-- End Google Maps -->
+          </div>
 
           <div class="col-lg-6">
-            <form id="contactForm" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="400">
+            <form id="contactForm" class="php-email-form">
               @csrf
               <div class="row gy-4">
 
                 <div class="col-md-6">
-                  <input type="text" name="name" class="form-control" placeholder="Nombre" required="">
+                  <input type="text" name="name" class="form-control" placeholder="First Name" required="">
                 </div>
 
-                <div class="col-md-6 ">
-                  <input type="email" class="form-control" name="email" placeholder="Correo" required="">
-                </div>
-
-                <div class="col-md-12">
-                  <input type="text" class="form-control" name="subject" placeholder="Asunto" required="">
+                <div class="col-md-6">
+                  <input type="text" name="lastname" class="form-control" placeholder="Last Name" required="">
                 </div>
 
                 <div class="col-md-12">
-                  <textarea class="form-control" name="message" rows="6" placeholder="Mensaje" required=""></textarea>
+                  <input type="email" class="form-control" name="email" placeholder="Email" required="">
+                </div>
+
+                <div class="col-md-12">
+                  <input type="tel" class="form-control" name="phone" placeholder="Phone" required="">
+                </div>
+
+                <div class="col-md-12">
+                  <textarea class="form-control" name="message" rows="6" placeholder="Comments (Optional)"></textarea>
                 </div>
 
                 <div class="col-md-12 text-center">
-                  <div class="loading" style="display: none;">Enviando...</div>
+                  <div class="loading" style="display: none;">Sending...</div>
                   <div class="error-message" style="display: none;"></div>
-                  <div class="sent-message" style="display: none;">Tu mensaje ha sido enviado correctamente</div>
+                  <div class="sent-message" style="display: none;">Your message has been sent successfully!</div>
 
-                  <button type="submit">Enviar</button>
+                  <button type="submit" class="btn-primary">Submit Request</button>
                 </div>
 
               </div>
@@ -324,318 +568,60 @@
 
     </section><!-- /Contact Section -->
 
-    <!-- Estilos adicionales para la sección Hero -->
-    <style>
-      /* Estilos del carrusel hero */
-      .hero {
-        position: relative;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-      }
-      
-      .hero .carousel {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-      }
-      
-      .hero .carousel-inner {
-        height: 100%;
-      }
-      
-      .hero .carousel-item {
-        height: 100%;
-      }
-      
-      .hero .hero-bg-img {
-        position: absolute;
-        inset: 0;
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: brightness(0.95);
-        z-index: 1;
-      }
-      
-      .hero .hero-content {
-        position: relative;
-        z-index: 3;
-        color: white;
-        width: 100%;
-      }
-      
-      /* Controles del carrusel - Desktop */
-      .hero .carousel-control-prev,
-      .hero .carousel-control-next {
-        z-index: 10 !important;
-        opacity: 0.9;
-        transition: all 0.3s ease;
-        width: 60px;
-        height: 60px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        margin: 0 20px;
-      }
-      
-      .hero .carousel-control-prev {
-        left: 20px;
-      }
-      
-      .hero .carousel-control-next {
-        right: 20px;
-      }
-      
-      .hero .carousel-control-prev:hover,
-      .hero .carousel-control-next:hover {
-        opacity: 1;
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.5);
-        transform: translateY(-50%) scale(1.1);
-      }
-      
-      .hero .carousel-control-prev-icon,
-      .hero .carousel-control-next-icon {
-        background-size: 20px 20px !important;
-        width: 20px !important;
-        height: 20px !important;
-        filter: drop-shadow(1px 1px 3px rgba(0,0,0,0.5));
-      }
-      
-      /* Mobile Carousel Controls */
-      .mobile-carousel-controls {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 30px;
-        padding: 0 20px;
-      }
-      
-      .mobile-carousel-btn {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 20px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-      }
-      
-      .mobile-carousel-btn:hover,
-      .mobile-carousel-btn:focus {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.5);
-        color: white;
-        transform: scale(1.1);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      }
-      
-      .mobile-carousel-btn:active {
-        transform: scale(0.95);
-      }
-
-      /* Responsive - Mobile */
-      @media (max-width: 768px) {
-        .hero {
-          min-height: 90vh;
-          padding: 100px 0 120px 0;
-        }
-        
-        .hero .d-flex {
-          flex-direction: column !important;
-          gap: 20px !important;
-          margin-top: 30px !important;
-        }
-        
-        .hero .btn-get-started {
-          width: 100%;
-          text-align: center;
-          padding: 15px 20px !important;
-          font-size: 16px !important;
-          font-weight: 600;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-        }
-        
-        .hero .btn-get-started:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .hero .container .row .col-lg-8 {
-          padding: 0 20px;
-        }
-        
-        .hero h2 {
-          font-size: 2.2rem !important;
-          margin-bottom: 20px !important;
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .hero p {
-          font-size: 16px !important;
-          line-height: 1.6 !important;
-          text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-          margin-bottom: 0 !important;
-        }
-        
-        .mobile-carousel-controls {
-          margin-top: 25px;
-        }
-        
-        .mobile-carousel-btn {
-          width: 45px;
-          height: 45px;
-          font-size: 18px;
-        }
-      }
-
-      /* Extra small devices */
-      @media (max-width: 576px) {
-        .hero {
-          min-height: 85vh;
-          padding: 80px 0 100px 0;
-        }
-        
-        .hero h2 {
-          font-size: 1.9rem !important;
-        }
-        
-        .hero p {
-          font-size: 15px !important;
-        }
-        
-        .hero .container .row .col-lg-8 {
-          padding: 0 15px;
-        }
-        
-        .mobile-carousel-controls {
-          margin-top: 20px;
-          gap: 15px;
-        }
-        
-        .mobile-carousel-btn {
-          width: 40px;
-          height: 40px;
-          font-size: 16px;
-        }
-      }
-      
-      /* Mejoras visuales adicionales */
-      @media (max-width: 768px) {
-        .hero::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(45deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
-          z-index: 2;
-          pointer-events: none;
-        }
-      }
-      
-      /* Animación suave para las flechas */
-      .hero .carousel-control-prev,
-      .hero .carousel-control-next {
-        animation: fadeInControls 1s ease-in-out;
-      }
-      
-      @keyframes fadeInControls {
-        from {
-          opacity: 0;
-          transform: translateY(-50%) scale(0.8);
-        }
-        to {
-          opacity: 0.9;
-          transform: translateY(-50%) scale(1);
-        }
-      }
-    </style>
-
-<script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar el carrusel con Bootstrap
-        var heroCarousel = document.getElementById('heroCarousel');
-        if (heroCarousel) {
-          // Bootstrap maneja automáticamente los controles con data-bs-target y data-bs-slide
-          // Solo necesitamos asegurarnos de que esté inicializado con las opciones correctas
-          var carousel = new bootstrap.Carousel(heroCarousel, {
-            interval: 5000,
-            ride: 'carousel',
-            pause: 'hover',
-            wrap: true
-          });
-        }
-      });
-    </script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const contactForm = document.getElementById('contactForm');
-        const loading = contactForm.querySelector('.loading');
-        const errorMessage = contactForm.querySelector('.error-message');
-        const sentMessage = contactForm.querySelector('.sent-message');
-
-        contactForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-
-          // Mostrar loading y ocultar otros mensajes
-          loading.style.display = 'block';
-          errorMessage.style.display = 'none';
-          sentMessage.style.display = 'none';
-
-          // Obtener datos del formulario
-          const formData = new FormData(contactForm);
-
-          // Enviar por AJAX
-          fetch('{{ route('contact.send') }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          })
-          .then(response => response.json())
-          .then(data => {
-            loading.style.display = 'none';
-            
-            if (data.success) {
-              sentMessage.style.display = 'block';
-              contactForm.reset();
-              
-              // Ocultar mensaje de éxito después de 5 segundos
-              setTimeout(() => {
-                sentMessage.style.display = 'none';
-              }, 5000);
-            } else {
-              errorMessage.textContent = data.error || 'Ha ocurrido un error al enviar el mensaje';
-              errorMessage.style.display = 'block';
-            }
-          })
-          .catch(error => {
-            loading.style.display = 'none';
-            errorMessage.textContent = 'Ha ocurrido un error al enviar el mensaje';
-            errorMessage.style.display = 'block';
-            console.error('Error:', error);
-          });
-        });
-      });
-    </script>
-
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const loadingDiv = this.querySelector('.loading');
+            const errorDiv = this.querySelector('.error-message');
+            const successDiv = this.querySelector('.sent-message');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            // Reset states
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            submitBtn.disabled = true;
+
+            fetch('{{ route("contact.send") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+
+                if (data.success) {
+                    successDiv.style.display = 'block';
+                    contactForm.reset();
+                    setTimeout(() => {
+                        successDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    errorDiv.textContent = data.error || 'Error sending message';
+                    errorDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+                errorDiv.textContent = 'Error sending message';
+                errorDiv.style.display = 'block';
+            });
+        });
+    }
+});
+</script>
+@endpush
