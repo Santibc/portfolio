@@ -52,6 +52,7 @@
           <li><a href="{{ route('welcome') }}" @if(Route::currentRouteName()=='welcome') class="active" @endif>Home</a></li>
           <li><a href="{{ route('nosotros') }}" @if(Route::currentRouteName()=='nosotros') class="active" @endif>About</a></li>
           <li><a href="{{ route('welcome') }}#services">Services</a></li>
+          <li><a href="{{ route('services.calculator') }}" @if(Route::currentRouteName()=='services.calculator') class="active" @endif>Get Quote</a></li>
           <li><a href="{{ route('contacto') }}" @if(Route::currentRouteName()=='contacto') class="active" @endif>Contact</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>

@@ -31,6 +31,7 @@ Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 
 Route::get('/nosotros',[HomeController::class, 'nosotros'] )->name('nosotros');
 Route::get('/equipo',[HomeController::class, 'equipo'] )->name('equipo');
 Route::get('/contacto',[HomeController::class, 'contacto'] )->name('contacto');
+Route::get('/services-calculator',[HomeController::class, 'servicesCalculator'] )->name('services.calculator');
 
 // Ruta para envío de correo desde formulario de contacto del landing page
 Route::post('/contact/send', [AdminLandingPageController::class, 'sendContactEmail'])->name('contact.send');
@@ -44,7 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
 
-    // Rutas de administración de Landing Page  
+    // Rutas de administración de Landing Page
     Route::prefix('admin/landing')->name('admin.landing.')->group(function () {
         Route::get('/', [AdminLandingPageController::class, 'index'])->name('index');
         Route::post('/config/update', [AdminLandingPageController::class, 'updateConfig'])->name('config.update');
@@ -65,6 +66,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
         Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');
         Route::delete('/seo/{id}', [AdminLandingPageController::class, 'deleteSeo'])->name('seo.delete');
+        Route::post('/pricing/config/update', [AdminLandingPageController::class, 'updatePricingConfig'])->name('pricing.config.update');
+        Route::post('/pricing/range/store', [AdminLandingPageController::class, 'storePricingRange'])->name('pricing.range.store');
+        Route::put('/pricing/range/{id}', [AdminLandingPageController::class, 'updatePricingRange'])->name('pricing.range.update');
+        Route::delete('/pricing/range/{id}', [AdminLandingPageController::class, 'deletePricingRange'])->name('pricing.range.delete');
     });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])

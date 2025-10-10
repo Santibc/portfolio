@@ -14,6 +14,8 @@ use App\Models\LandingTeamMember;
 use App\Models\LandingLayoutConfig;
 use App\Models\Page;
 use App\Models\Seo;
+use App\Models\LandingPricingConfig;
+use App\Models\LandingPricingRange;
 
 class HomeController extends Controller
 {
@@ -69,11 +71,24 @@ class HomeController extends Controller
     {
         $contactInfo = LandingContactInfo::first();
         $layoutConfig = LandingLayoutConfig::first();
-        
+
         // Cargar SEO para la página contacto (solo si está activo)
         $page = Page::where('slug', 'contacto')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
-        
+
         return view('landing_page.contacto', compact('contactInfo', 'layoutConfig', 'seo'));
+    }
+
+    public function servicesCalculator()
+    {
+        $pricingConfig = LandingPricingConfig::first();
+        $pricingRanges = LandingPricingRange::orderBy('order')->get();
+        $layoutConfig = LandingLayoutConfig::first();
+
+        // Cargar SEO para la página services-calculator (solo si está activo)
+        $page = Page::where('slug', 'services-calculator')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+
+        return view('landing_page.services_calculator', compact('pricingConfig', 'pricingRanges', 'layoutConfig', 'seo'));
     }
 }
