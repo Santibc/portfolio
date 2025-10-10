@@ -4,7 +4,8 @@
       "Bash(php artisan make:migration:*)",
       "Bash(php artisan:*)",
       "Bash(mysql:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Read(//e/**)"
     ],
     "deny": [],
     "ask": []

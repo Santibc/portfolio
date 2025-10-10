@@ -71,6 +71,11 @@
                             <i class="bi bi-search me-1"></i>SEO
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pricing-tab" data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab">
+                            <i class="bi bi-calculator me-1"></i>Pricing
+                        </button>
+                    </li>
                 </ul>
 
                 <div class="tab-content mt-4" id="landingTabsContent">
@@ -88,7 +93,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Nombre de la Empresa</label>
                                                 <input type="text" name="company_name" class="form-control" 
-                                                       value="{{ $config->company_name ?? 'Montano & Co.' }}" required>
+                                                       value="{{ $config->company_name ?? 'GUILLEN ' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -498,7 +503,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Título del Sitio</label>
                                                 <input type="text" name="site_title" class="form-control" 
-                                                       value="{{ $layoutConfig->site_title ?? 'Montano & Co.' }}" required>
+                                                       value="{{ $layoutConfig->site_title ?? 'GUILLEN' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -522,7 +527,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Empresa para Copyright</label>
                                                 <input type="text" name="copyright_company" class="form-control" 
-                                                       value="{{ $layoutConfig->copyright_company ?? 'Montano & Co.' }}" required>
+                                                       value="{{ $layoutConfig->copyright_company ?? 'GUILLEN' }}" required>
                                             </div>
                                         </div>
                                     </div>
@@ -852,6 +857,159 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Pricing Calculator Tab -->
+                    <div class="tab-pane fade" id="pricing" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-calculator me-2"></i>Pricing Calculator Configuration</h5>
+                            </div>
+                            <div class="card-body">
+
+                                <!-- General Configuration -->
+                                <h6 class="border-bottom pb-2 mb-3">General Configuration</h6>
+                                <form action="{{ route('admin.landing.pricing.config.update') }}" method="POST">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">WhatsApp Number (with country code)</label>
+                                                <input type="text" name="whatsapp_number" class="form-control"
+                                                       value="{{ $pricingConfig->whatsapp_number ?? '573202230467' }}"
+                                                       placeholder="573001234567" required>
+                                                <small class="text-muted">Example: 573001234567 (57 = Colombia, 1 = USA)</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Weekly Discount (%)</label>
+                                                <input type="number" name="recurring_weekly_discount" class="form-control"
+                                                       value="{{ $pricingConfig->recurring_weekly_discount ?? 20 }}" min="0" max="100" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Bi-Weekly Discount (%)</label>
+                                                <input type="number" name="recurring_biweekly_discount" class="form-control"
+                                                       value="{{ $pricingConfig->recurring_biweekly_discount ?? 15 }}" min="0" max="100" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Extra Services Pricing</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Extra Heavy Duty ($)</label>
+                                                <input type="number" step="0.01" name="extra_heavy_duty" class="form-control"
+                                                       value="{{ $pricingConfig->extra_heavy_duty ?? 150 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Inside Fridge ($)</label>
+                                                <input type="number" step="0.01" name="inside_fridge_ea" class="form-control"
+                                                       value="{{ $pricingConfig->inside_fridge_ea ?? 50 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Inside Oven ($)</label>
+                                                <input type="number" step="0.01" name="inside_oven_ea" class="form-control"
+                                                       value="{{ $pricingConfig->inside_oven_ea ?? 50 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Post-Const Government ($/sqft)</label>
+                                                <input type="number" step="0.01" name="post_construction_government" class="form-control"
+                                                       value="{{ $pricingConfig->post_construction_government ?? 0.90 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Post-Const Private ($/sqft)</label>
+                                                <input type="number" step="0.01" name="post_construction_private" class="form-control"
+                                                       value="{{ $pricingConfig->post_construction_private ?? 0.60 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Window Interior ($/pane)</label>
+                                                <input type="number" step="0.01" name="window_clean_interior" class="form-control"
+                                                       value="{{ $pricingConfig->window_clean_interior ?? 8 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Window Exterior ($/pane)</label>
+                                                <input type="number" step="0.01" name="window_clean_exterior" class="form-control"
+                                                       value="{{ $pricingConfig->window_clean_exterior ?? 10 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>Save Configuration
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <!-- Pricing Ranges -->
+                                <h6 class="border-bottom pb-2 mb-3 mt-5">Pricing Ranges by Square Footage</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Range (sq ft)</th>
+                                                <th>Initial Clean</th>
+                                                <th>Weekly</th>
+                                                <th>Bi-Weekly</th>
+                                                <th>Monthly</th>
+                                                <th>Deep Clean</th>
+                                                <th>Move Out</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pricingRanges as $range)
+                                            <tr>
+                                                <form action="{{ route('admin.landing.pricing.range.update', $range->id) }}" method="POST" class="range-form-{{ $range->id }}">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <td>
+                                                        <div class="d-flex gap-1">
+                                                            <input type="number" name="sq_ft_min" class="form-control form-control-sm" style="width: 70px;"
+                                                                   value="{{ $range->sq_ft_min }}" required>
+                                                            <span class="align-self-center">-</span>
+                                                            <input type="number" name="sq_ft_max" class="form-control form-control-sm" style="width: 70px;"
+                                                                   value="{{ $range->sq_ft_max }}" required>
+                                                        </div>
+                                                    </td>
+                                                    <td><input type="number" step="0.01" name="initial_clean" class="form-control form-control-sm" value="{{ $range->initial_clean }}" required></td>
+                                                    <td><input type="number" step="0.01" name="weekly" class="form-control form-control-sm" value="{{ $range->weekly }}" required></td>
+                                                    <td><input type="number" step="0.01" name="biweekly" class="form-control form-control-sm" value="{{ $range->biweekly }}" required></td>
+                                                    <td><input type="number" step="0.01" name="monthly" class="form-control form-control-sm" value="{{ $range->monthly }}" required></td>
+                                                    <td><input type="number" step="0.01" name="deep_clean" class="form-control form-control-sm" value="{{ $range->deep_clean }}" required></td>
+                                                    <td><input type="number" step="0.01" name="move_out_clean" class="form-control form-control-sm" value="{{ $range->move_out_clean }}" required></td>
+                                                    <td>
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-check"></i>
+                                                        </button>
+                                                    </td>
+                                                </form>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Pricing Tab -->
+
                 </div>
             </div>
         </div>

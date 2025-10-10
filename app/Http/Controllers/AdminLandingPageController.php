@@ -13,6 +13,8 @@ use App\Models\LandingTeamMember;
 use App\Models\LandingLayoutConfig;
 use App\Models\Page;
 use App\Models\Seo;
+use App\Models\LandingPricingConfig;
+use App\Models\LandingPricingRange;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use App\Mail\ContactFormMail;
@@ -29,15 +31,18 @@ class AdminLandingPageController extends Controller
         $about = LandingAbout::first();
         $teamMembers = LandingTeamMember::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
-        
+        $pricingConfig = LandingPricingConfig::first();
+        $pricingRanges = LandingPricingRange::orderBy('order')->get();
+
         // Get or create landing pages
         $this->ensureLandingPagesExist();
         $pages = Page::where('page_type', 'landing')->get();
         $seoConfigs = Seo::with('page')->get();
-        
+
         return view('admin.landing.index', compact(
             'config', 'carouselImages', 'services', 'steps', 'contactInfo',
-            'about', 'teamMembers', 'layoutConfig', 'pages', 'seoConfigs'
+            'about', 'teamMembers', 'layoutConfig', 'pages', 'seoConfigs',
+            'pricingConfig', 'pricingRanges'
         ));
     }
     
@@ -482,7 +487,52 @@ class AdminLandingPageController extends Controller
     {
         $seo = Seo::findOrFail($id);
         $seo->delete();
-        
+
         return redirect()->back()->with('success', 'Configuración SEO eliminada correctamente.');
+    }
+
+    public function updatePricingConfig(Request $request)
+    {
+        $request->validate([
+            'whatsapp_number' => 'required|string|max:20',
+            'extra_heavy_duty' => 'required|numeric|min:0',
+            'inside_fridge_ea' => 'required|numeric|min:0',
+            'inside_oven_ea' => 'required|numeric|min:0',
+            'post_construction_government' => 'required|numeric|min:0',
+            'post_construction_private' => 'required|numeric|min:0',
+            'window_clean_interior' => 'required|numeric|min:0',
+            'window_clean_exterior' => 'required|numeric|min:0',
+            'recurring_weekly_discount' => 'required|integer|min:0|max:100',
+            'recurring_biweekly_discount' => 'required|integer|min:0|max:100',
+        ]);
+
+        $pricingConfig = LandingPricingConfig::first();
+
+        if ($pricingConfig) {
+            $pricingConfig->update($request->all());
+        } else {
+            LandingPricingConfig::create($request->all());
+        }
+
+        return redirect()->back()->with('success', 'Configuración de precios actualizada correctamente.');
+    }
+
+    public function updatePricingRange(Request $request, $id)
+    {
+        $request->validate([
+            'sq_ft_min' => 'required|integer|min:0',
+            'sq_ft_max' => 'required|integer|min:0',
+            'initial_clean' => 'required|numeric|min:0',
+            'weekly' => 'required|numeric|min:0',
+            'biweekly' => 'required|numeric|min:0',
+            'monthly' => 'required|numeric|min:0',
+            'deep_clean' => 'required|numeric|min:0',
+            'move_out_clean' => 'required|numeric|min:0',
+        ]);
+
+        $range = LandingPricingRange::findOrFail($id);
+        $range->update($request->all());
+
+        return redirect()->back()->with('success', 'Rango de precios actualizado correctamente.');
     }
 }
