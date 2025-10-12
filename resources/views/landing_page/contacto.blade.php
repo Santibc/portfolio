@@ -17,7 +17,7 @@
             <div class="info-item d-flex flex-column justify-content-center align-items-center">
               <i class="bi bi-envelope"></i>
               <h3>Email</h3>
-              <p>{{ $contactInfo->email ?? 'cleaningguillen@outlook.com' }}</p>
+              <p>{{ $contactInfo->email ?? 'info@cleanme.com' }}</p>
             </div>
           </div><!-- End Info Item -->
 

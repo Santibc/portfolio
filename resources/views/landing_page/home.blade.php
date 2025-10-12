@@ -9,9 +9,9 @@
         <div class="row align-items-center">
           <div class="col-lg-6">
             <div class="hero-content">
-              <h1>{{ $config->company_name ?? 'GUILLEN CLEANING LLC' }}</h1>
+              <h1>{{ $config->company_name ?? 'CLEAN ME' }}</h1>
               <h2 class="mb-4"><span>Top Quality Guaranteed</span></h2>
-              <p>{{ $config->company_description ?? 'At Guillen Cleaning LLC, we believe that putting in a lot of hard work ensures the best and fastest service. We are here to provide you the most suitable and highest solutions for your needs with a professional estimation.' }}</p>
+              <p>{{ $config->company_description ?? 'At Clean Me, we believe that putting in a lot of hard work ensures the best and fastest service. We are here to provide you the most suitable and highest solutions for your needs with a professional estimation.' }}</p>
               <div class="hero-actions justify-content-center justify-content-lg-start">
                 <a href="#services" class="btn-primary scrollto">Our Services</a>
                 <a href="#contact" class="btn-primary scrollto">Get Free Estimate</a>
@@ -91,7 +91,7 @@
           </div>
           <div class="col-lg-6">
             <div class="hero-image">
-              <img src="{{ asset('images/mujer.png') }}" class="img-fluid floating" alt="Guillen Cleaning Services">
+              <img src="{{ asset('images/mujer.png') }}" class="img-fluid floating" alt="Clean Me Services">
             </div>
           </div>
         </div>
@@ -171,14 +171,14 @@
           <!-- Image Column -->
           <div class="col-lg-6">
             <div class="about-image">
-              <img src="{{ asset('images/paginaanterior/imagenluegodeltitulo.avif') }}" alt="We Are Guillen Cleaning" class="img-fluid">
+              <img src="{{ asset('images/paginaanterior/imagenluegodeltitulo.avif') }}" alt="We Are Clean Me" class="img-fluid">
             </div>
           </div>
 
           <!-- Content Column -->
           <div class="col-lg-6">
             <div class="content">
-              <h2>WE ARE GUILLEN CLEANING LLC</h2>
+              <h2>WE ARE CLEAN ME</h2>
               <p class="lead">Excellence and professionalism are first when it comes to our Residential and Commercial Cleaning Services.</p>
 
               <p>We are constantly improving our services, staying up-to-date on all the latest industry advancements, and bringing our knowledge to your doorstep. Since 2009, our goal has remained the same—to provide reliable services and make sure our clients know we are professionals they can trust.</p>
@@ -502,7 +502,7 @@
                 <div class="info-item d-flex flex-column justify-content-center align-items-center">
                   <i class="bi bi-envelope"></i>
                   <h3>Email</h3>
-                  <p>{{ $contactInfo->email ?? 'cleaningguillen@outlook.com' }}</p>
+                  <p>{{ $contactInfo->email ?? 'info@cleanme.com' }}</p>
                 </div>
               </div><!-- End Info Item -->
 

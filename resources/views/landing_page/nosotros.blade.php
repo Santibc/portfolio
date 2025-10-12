@@ -7,7 +7,7 @@
       <!-- Section Title -->
       <div class="container section-title">
         <h2>{{ $about->page_title ?? 'About Us' }}</h2>
-        <p>Learn more about Guillen Cleaning LLC</p>
+        <p>Learn more about Clean Me</p>
       </div><!-- End Section Title -->
 
       <div class="container">

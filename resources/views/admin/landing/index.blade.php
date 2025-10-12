@@ -92,8 +92,8 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Nombre de la Empresa</label>
-                                                <input type="text" name="company_name" class="form-control" 
-                                                       value="{{ $config->company_name ?? 'GUILLEN ' }}" required>
+                                                <input type="text" name="company_name" class="form-control"
+                                                       value="{{ $config->company_name ?? 'CLEAN ME' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -502,8 +502,8 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Título del Sitio</label>
-                                                <input type="text" name="site_title" class="form-control" 
-                                                       value="{{ $layoutConfig->site_title ?? 'GUILLEN' }}" required>
+                                                <input type="text" name="site_title" class="form-control"
+                                                       value="{{ $layoutConfig->site_title ?? 'Clean Me' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -526,8 +526,8 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Empresa para Copyright</label>
-                                                <input type="text" name="copyright_company" class="form-control" 
-                                                       value="{{ $layoutConfig->copyright_company ?? 'GUILLEN' }}" required>
+                                                <input type="text" name="copyright_company" class="form-control"
+                                                       value="{{ $layoutConfig->copyright_company ?? 'Clean Me' }}" required>
                                             </div>
                                         </div>
                                     </div>

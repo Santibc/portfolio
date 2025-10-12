@@ -6,7 +6,7 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
   {{-- Lógica SEO del template anterior --}}
-  <title>{{ $seo->meta_title ?? ($layoutConfig->site_title ?? 'Guillen Cleaning LLC') }}</title>
+  <title>{{ $seo->meta_title ?? ($layoutConfig->site_title ?? 'Clean Me') }}</title>
   <meta name="description" content="{{ $seo->meta_description ?? 'Professional cleaning services for residential and commercial spaces in Wisconsin' }}">
   <meta name="keywords" content="{{ $seo->meta_keywords ?? 'cleaning services, house cleaning, commercial cleaning, Wisconsin, deep cleaning' }}">
 
@@ -35,6 +35,29 @@
 
   <!-- Main CSS File -->
   <link href="{{ asset('devin_assets/css/main.css') }}" rel="stylesheet">
+
+  <!-- Custom Logo Styles -->
+  <style>
+    .header .logo img {
+      max-height: 50px;
+      max-width: 180px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .header .logo img {
+        max-height: 40px;
+        max-width: 140px;
+      }
+
+      .header .logo h1.sitename {
+        font-size: 18px;
+      }
+    }
+  </style>
 </head>
 
 <body class="index-page">
@@ -43,8 +66,8 @@
     <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
       <a href="{{ route('welcome') }}" class="logo d-flex align-items-center">
-        <img src="{{ asset('images/logo.png') }}" alt="Guillen Cleaning LLC">
-        <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Guillen Cleaning' }}</h1>
+        <img src="{{ asset('images/logo.png') }}" alt="Clean Me">
+        <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">
@@ -73,10 +96,10 @@
         <div class="col-lg-4">
           <div class="footer-content">
             <a href="{{ route('welcome') }}" class="logo d-flex align-items-center mb-4">
-              <span class="sitename">{{ $layoutConfig->site_title ?? 'Guillen Cleaning LLC' }}</span>
+              <span class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</span>
             </a>
             <p class="mb-4">
-              Excellence and professionalism in residential and commercial cleaning services. Trusted by Wisconsin since 2009.
+              Excellence and professionalism in residential and commercial cleaning services.
             </p>
 
             <div class="social-links d-flex mt-4">
@@ -124,7 +147,7 @@
           <div class="footer-contact">
             <h4>Contact Us</h4>
             <p>
-              <strong>Email:</strong> <span>{{ $layoutConfig->footer_email ?? 'cleaningguillen@outlook.com' }}</span><br>
+              <strong>Email:</strong> <span>{{ $layoutConfig->footer_email ?? 'info@cleanme.com' }}</span><br>
               <strong>Phone:</strong> <span>{{ $layoutConfig->footer_phone ?? '+1 (555) 000-0000' }}</span><br>
               <strong>Location:</strong> <span>{{ $layoutConfig->footer_city ?? 'Wisconsin, USA' }}</span>
             </p>
@@ -135,7 +158,7 @@
     </div>
 
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">{{ $layoutConfig->copyright_company ?? 'Guillen Cleaning LLC' }}</strong> <span>All Rights Reserved</span></p>
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">{{ $layoutConfig->copyright_company ?? 'Clean Me' }}</strong> <span>All Rights Reserved</span></p>
       <div class="credits">
         Since 2009
       </div>
