@@ -5755,7 +5755,7 @@ button.btn-primary:disabled,
 --------------------------------------------------------------*/
 :root {
   --guillen-gold: #D4AF78;
-  --guillen-pink: #E91E8C;
+  --guillen-pink: #46cdcf;
   --guillen-black: #2c2c2c;
 }
 
@@ -5801,7 +5801,7 @@ button.btn-primary:disabled,
 
 /* Alert info con tonos suaves */
 .alert-info {
-  background-color: #fdf8fa;
+  background-color: #f0fafb;
   border-color: var(--guillen-pink);
   color: var(--guillen-black);
 }

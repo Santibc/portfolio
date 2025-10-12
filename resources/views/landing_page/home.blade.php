@@ -275,18 +275,7 @@
           </div>
 
         </div>
-        <div class="row gy-4 mb-5">
-          <div class="col-lg-6 col-md-6 text-center">
-            <div class="service-image-wrapper">
-              <img src="{{ asset('images/paginaanterior/service1.avif') }}" alt="Commercial Cleaning Services" class="img-fluid rounded shadow">
-            </div>
-          </div>
-          <div class="col-lg-6 col-md-6 text-center">
-            <div class="service-image-wrapper">
-              <img src="{{ asset('images/paginaanterior/service2.avif') }}" alt="Commercial Cleaning Services" class="img-fluid rounded shadow">
-            </div>
-          </div>
-        </div>
+
         <h3 class="text-center mb-5">Residential Cleaning Services</h3>
 
         <!-- Residential Images Gallery -->
@@ -335,18 +324,7 @@
           </div>
 
         </div>
-        <div class="row gy-4 mb-5">
-          <div class="col-lg-6 col-md-6 text-center">
-            <div class="service-image-wrapper">
-              <img src="{{ asset('images/paginaanterior/residential1.avif') }}" alt="Residential Cleaning Services" class="img-fluid rounded shadow">
-            </div>
-          </div>
-          <div class="col-lg-6 col-md-6 text-center">
-            <div class="service-image-wrapper">
-              <img src="{{ asset('images/paginaanterior/residential2.avif') }}" alt="Residential Cleaning Services" class="img-fluid rounded shadow">
-            </div>
-          </div>
-        </div>
+
         <!-- Additional Note -->
         <div class="row mt-5">
           <div class="col-12">
