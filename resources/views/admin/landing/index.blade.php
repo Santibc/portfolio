@@ -32,18 +32,28 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="carousel-tab" data-bs-toggle="tab" data-bs-target="#carousel" type="button" role="tab">
-                            <i class="bi bi-images me-1"></i>Carrusel
+                        <button class="nav-link" id="hero-tab" data-bs-toggle="tab" data-bs-target="#hero" type="button" role="tab">
+                            <i class="bi bi-star me-1"></i>Sección Principal
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab">
-                            <i class="bi bi-briefcase me-1"></i>Servicios
+                        <button class="nav-link" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab">
+                            <i class="bi bi-share me-1"></i>Redes Sociales
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps" type="button" role="tab">
-                            <i class="bi bi-list-ol me-1"></i>Pasos
+                        <button class="nav-link" id="home-about-tab" data-bs-toggle="tab" data-bs-target="#home-about" type="button" role="tab">
+                            <i class="bi bi-house-door me-1"></i> Acerca de (Home)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="home-services-tab" data-bs-toggle="tab" data-bs-target="#home-services" type="button" role="tab">
+                            <i class="bi bi-briefcase me-1"></i>Servicios (Home)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="testimonials-tab" data-bs-toggle="tab" data-bs-target="#testimonials" type="button" role="tab">
+                            <i class="bi bi-chat-quote me-1"></i>Testimonios
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -57,8 +67,8 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="team-tab" data-bs-toggle="tab" data-bs-target="#team" type="button" role="tab">
-                            <i class="bi bi-people me-1"></i>Equipo
+                        <button class="nav-link" id="about-values-tab" data-bs-toggle="tab" data-bs-target="#about-values" type="button" role="tab">
+                            <i class="bi bi-award me-1"></i>Valores (Nosotros)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -92,27 +102,14 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Nombre de la Empresa</label>
-                                                <input type="text" name="company_name" class="form-control" 
+                                                <input type="text" name="company_name" class="form-control"
                                                        value="{{ $config->company_name ?? 'GUILLEN ' }}" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">Email del Botón Contacto</label>
-                                                <input type="email" name="contact_email" class="form-control" 
-                                                       value="{{ $config->contact_email ?? '' }}" placeholder="contacto@ejemplo.com">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Descripción de la Empresa</label>
                                         <textarea name="company_description" class="form-control" rows="5" required>{{ $config->company_description ?? 'Somos un despacho orientado a resultados...' }}</textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">URL del Botón "Nuestros Servicios" (opcional)</label>
-                                        <input type="text" name="services_button_url" class="form-control" 
-                                               value="{{ $config->services_button_url ?? '#services' }}" 
-                                               placeholder="#services o URL externa">
                                     </div>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-check-lg me-1"></i>Guardar Configuración
@@ -122,29 +119,341 @@
                         </div>
                     </div>
 
-                    <!-- Carrusel -->
-                    <div class="tab-pane fade" id="carousel" role="tabpanel">
+                    <!-- Sección Principal -->
+                    <div class="tab-pane fade" id="hero" role="tabpanel">
+                        <!-- Hero Configuration -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuración de la Sección Principal</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('admin.landing.hero.update') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label">Subtítulo de la Página Principal</label>
+                                        <input type="text" name="subtitle" class="form-control"
+                                               value="{{ $heroSection->subtitle ?? '' }}" placeholder="Texto del subtítulo">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Imagen de Fondo Principal</label>
+                                        <input type="file" name="hero_image" class="form-control" accept="image/*">
+                                        @if($heroSection && $heroSection->hero_image_path)
+                                            <small class="form-text text-muted">
+                                                Imagen actual: <a href="{{ asset($heroSection->hero_image_path) }}" target="_blank">Ver imagen</a>
+                                            </small>
+                                        @endif
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar Hero
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Hero Values -->
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Imágenes del Carrusel</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCarouselModal">
+                                <h5 class="card-title mb-0">Valores de la Empresa</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHeroValueModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Valor
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                @if($heroValues->count() > 0)
+                                    <div class="row">
+                                        @foreach($heroValues as $value)
+                                            <div class="col-md-6 col-lg-3 mb-3">
+                                                <div class="card h-100">
+                                                    <div class="card-body">
+                                                        <div class="text-center mb-3">
+                                                            <i class="{{ $value->icon_class }} fa-2x text-primary"></i>
+                                                        </div>
+                                                        <h6 class="card-title text-center">{{ $value->title }}</h6>
+                                                        <p class="card-text text-center"><small class="text-muted">Orden: {{ $value->order }}</small></p>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <button class="btn btn-warning btn-sm"
+                                                                onclick="editHeroValue({{ $value->id }}, '{{ $value->icon_class }}', '{{ addslashes($value->title) }}', {{ $value->order }})">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form action="{{ route('admin.landing.hero-values.delete', $value->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este valor?')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay valores del hero registrados. Agrega el primer valor.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redes Sociales -->
+                    <div class="tab-pane fade" id="social" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Redes Sociales</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('admin.landing.social-media.update') }}" method="POST">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Facebook URL</label>
+                                                <input type="url" name="facebook_url" class="form-control"
+                                                       value="{{ $socialMedia->facebook_url ?? '' }}" placeholder="https://facebook.com/usuario">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Instagram URL</label>
+                                                <input type="url" name="instagram_url" class="form-control"
+                                                       value="{{ $socialMedia->instagram_url ?? '' }}" placeholder="https://instagram.com/usuario">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">LinkedIn URL</label>
+                                                <input type="url" name="linkedin_url" class="form-control"
+                                                       value="{{ $socialMedia->linkedin_url ?? '' }}" placeholder="https://linkedin.com/company/usuario">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">YouTube URL</label>
+                                                <input type="url" name="youtube_url" class="form-control"
+                                                       value="{{ $socialMedia->youtube_url ?? '' }}" placeholder="https://youtube.com/@usuario">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar Redes Sociales
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secci00f3n Acerca de (Home) -->
+                    <div class="tab-pane fade" id="home-about" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Sección About en Home</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('admin.landing.home-about.update') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Imagen</label>
+                                                <input type="file" name="image" class="form-control" accept="image/*">
+                                                @if($homeAbout && $homeAbout->image_path)
+                                                    <small class="form-text text-muted">
+                                                        Imagen actual: <a href="{{ asset($homeAbout->image_path) }}" target="_blank">Ver imagen</a>
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Título</label>
+                                                <input type="text" name="title" class="form-control"
+                                                       value="{{ $homeAbout->title ?? '' }}" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Lead Text</label>
+                                        <input type="text" name="lead_text" class="form-control"
+                                               value="{{ $homeAbout->lead_text ?? '' }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción</label>
+                                        <textarea name="description" class="form-control" rows="4" required>{{ $homeAbout->description ?? '' }}</textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Años de Experiencia</label>
+                                                <input type="number" name="years_experience" class="form-control"
+                                                       value="{{ $homeAbout->years_experience ?? 0 }}" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Clientes Felices</label>
+                                                <input type="number" name="happy_clients" class="form-control"
+                                                       value="{{ $homeAbout->happy_clients ?? 0 }}" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label class="form-label">Satisfacción del Cliente (%)</label>
+                                                <input type="number" name="client_satisfaction" class="form-control"
+                                                       value="{{ $homeAbout->client_satisfaction ?? 0 }}" min="0" max="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Texto del Botón CTA</label>
+                                                <input type="text" name="cta_button_text" class="form-control"
+                                                       value="{{ $homeAbout->cta_button_text ?? 'Más Información' }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">URL del Botón CTA</label>
+                                                <input type="text" name="cta_button_url" class="form-control"
+                                                       value="{{ $homeAbout->cta_button_url ?? '#' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar  Acerca de (Home)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicios (Home) -->
+                    <div class="tab-pane fade" id="home-services" role="tabpanel">
+                        <!-- Service Configuration -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configuración de Servicios</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('admin.landing.home-services.update') }}" method="POST">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label class="form-label">Título de la Sección</label>
+                                        <input type="text" name="section_title" class="form-control"
+                                               value="{{ $homeServicesConfig->section_title ?? '' }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción de la Sección</label>
+                                        <textarea name="section_description" class="form-control" rows="3">{{ $homeServicesConfig->section_description ?? '' }}</textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Título Comercial</label>
+                                                <input type="text" name="commercial_title" class="form-control"
+                                                       value="{{ $homeServicesConfig->commercial_title ?? 'Comercial' }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Título Residencial</label>
+                                                <input type="text" name="residential_title" class="form-control"
+                                                       value="{{ $homeServicesConfig->residential_title ?? 'Residencial' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nota Eco-Friendly</label>
+                                        <input type="text" name="eco_friendly_note" class="form-control"
+                                               value="{{ $homeServicesConfig->eco_friendly_note ?? '' }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar Configuración
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Service Items -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Items de Servicio</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceItemModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Item
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                @if($serviceItems->count() > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo</th>
+                                                    <th>Icono</th>
+                                                    <th>Título</th>
+                                                    <th>Descripción</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($serviceItems as $item)
+                                                    <tr>
+                                                        <td><span class="badge bg-{{ $item->type == 'commercial' ? 'primary' : 'success' }}">{{ $item->type }}</span></td>
+                                                        <td><i class="{{ $item->icon_class }}"></i></td>
+                                                        <td>{{ $item->title }}</td>
+                                                        <td>{{ Str::limit($item->description, 50) }}</td>
+                                                        <td>
+                                                            <button class="btn btn-warning btn-sm"
+                                                                    onclick="editServiceItem({{ $item->id }}, '{{ $item->type }}', '{{ $item->icon_class }}', '{{ addslashes($item->title) }}', '{{ addslashes($item->description) }}')">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <form action="{{ route('admin.landing.service-items.delete', $item->id) }}" method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                                        onclick="return confirm('¿Estás seguro de eliminar este item?')">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay items de servicio registrados.</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Service Images -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Imágenes de Servicios</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceImageModal">
                                     <i class="bi bi-plus-lg me-1"></i>Agregar Imagen
                                 </button>
                             </div>
                             <div class="card-body">
-                                @if($carouselImages->count() > 0)
+                                @if($serviceImages->count() > 0)
                                     <div class="row">
-                                        @foreach($carouselImages as $image)
+                                        @foreach($serviceImages as $image)
                                             <div class="col-md-4 mb-3">
                                                 <div class="card">
                                                     <img src="{{ asset($image->image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                                                     <div class="card-body">
-                                                        <p class="card-text">{{ $image->alt_text ?: 'Sin descripción' }}</p>
-                                                        <p class="card-text"><small class="text-muted">Orden: {{ $image->order }}</small></p>
-                                                        <form action="{{ route('admin.landing.carousel.delete', $image->id) }}" method="POST" class="d-inline">
+                                                        <p class="card-text">
+                                                            <span class="badge bg-{{ $image->type == 'commercial' ? 'primary' : 'success' }}">{{ $image->type }}</span>
+                                                        </p>
+                                                        <p class="card-text"><small>{{ $image->alt_text }}</small></p>
+                                                        <form action="{{ route('admin.landing.service-images.delete', $image->id) }}" method="POST">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
+                                                            <button type="submit" class="btn btn-danger btn-sm"
                                                                     onclick="return confirm('¿Estás seguro de eliminar esta imagen?')">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
@@ -155,45 +464,49 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <p class="text-muted">No hay imágenes en el carrusel. Agrega la primera imagen.</p>
+                                    <p class="text-muted">No hay imágenes de servicio registradas.</p>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <!-- Servicios -->
-                    <div class="tab-pane fade" id="services" role="tabpanel">
+                    <!-- Testimonios de Clientes -->
+                    <div class="tab-pane fade" id="testimonials" role="tabpanel">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Servicios</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Servicio
+                                <h5 class="card-title mb-0">Testimonios</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTestimonialModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Testimonio
                                 </button>
                             </div>
                             <div class="card-body">
-                                @if($services->count() > 0)
+                                @if($testimonials->count() > 0)
                                     <div class="row">
-                                        @foreach($services as $service)
-                                            <div class="col-md-6 col-lg-4 mb-3">
+                                        @foreach($testimonials as $testimonial)
+                                            <div class="col-md-6 mb-3">
                                                 <div class="card h-100">
                                                     <div class="card-body">
-                                                        <div class="text-center mb-3">
-                                                            <i class="{{ $service->icon_class }} fa-2x text-primary"></i>
+                                                        <div class="d-flex justify-content-between mb-2">
+                                                            <h6 class="card-title mb-0">{{ $testimonial->client_name }}</h6>
+                                                            <div>
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <i class="bi bi-star{{ $i <= $testimonial->rating ? '-fill' : '' }} text-warning"></i>
+                                                                @endfor
+                                                            </div>
                                                         </div>
-                                                        <h6 class="card-title">{{ $service->title }}</h6>
-                                                        <p class="card-text">{{ $service->description }}</p>
-                                                        <small class="text-muted">Orden: {{ $service->order }}</small>
+                                                        <p class="card-text"><small class="text-muted">{{ $testimonial->client_location }}</small></p>
+                                                        <p class="card-text">{{ $testimonial->testimonial_text }}</p>
                                                     </div>
                                                     <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm" 
-                                                                onclick="editService({{ $service->id }}, '{{ $service->icon_class }}', '{{ $service->title }}', '{{ addslashes($service->description) }}')">
+                                                        <button class="btn btn-warning btn-sm"
+                                                                onclick="editTestimonial({{ $testimonial->id }}, '{{ addslashes($testimonial->client_name) }}', '{{ addslashes($testimonial->client_location) }}', '{{ addslashes($testimonial->testimonial_text) }}', {{ $testimonial->rating }})">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
-                                                        <form action="{{ route('admin.landing.services.delete', $service->id) }}" method="POST" class="d-inline">
+                                                        <form action="{{ route('admin.landing.testimonials.delete', $testimonial->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este testimonio?')">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
@@ -203,54 +516,7 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <p class="text-muted">No hay servicios registrados. Agrega el primer servicio.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pasos -->
-                    <div class="tab-pane fade" id="steps" role="tabpanel">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Pasos del Proceso</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStepModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Paso
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                @if($steps->count() > 0)
-                                    <div class="row">
-                                        @foreach($steps as $step)
-                                            <div class="col-md-6 col-lg-4 mb-3">
-                                                <div class="card h-100">
-                                                    <div class="card-body">
-                                                        <div class="text-center mb-3">
-                                                            <span class="badge bg-primary fs-4">{{ $step->step_number }}</span>
-                                                        </div>
-                                                        <h6 class="card-title">{{ $step->title }}</h6>
-                                                        <p class="card-text">{{ $step->description }}</p>
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm" 
-                                                                onclick="editStep({{ $step->id }}, '{{ $step->title }}', '{{ addslashes($step->description) }}')">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form action="{{ route('admin.landing.steps.delete', $step->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar este paso?')">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-muted">No hay pasos registrados. Agrega el primer paso.</p>
+                                    <p class="text-muted">No hay testimonios registrados. Agrega el primer testimonio.</p>
                                 @endif
                             </div>
                         </div>
@@ -266,23 +532,28 @@
                                 <form action="{{ route('admin.landing.contact.update') }}" method="POST">
                                     @csrf
                                     <div class="mb-3">
+                                        <label class="form-label">Título del Hero de Contacto</label>
+                                        <input type="text" name="contact_hero_title" class="form-control"
+                                               value="{{ $contactInfo->contact_hero_title ?? 'Contáctanos' }}" placeholder="Título del hero">
+                                    </div>
+                                    <div class="mb-3">
                                         <label class="form-label">Descripción de la Sección Contacto</label>
-                                        <textarea name="description" class="form-control" rows="3" 
+                                        <textarea name="description" class="form-control" rows="3"
                                                   placeholder="Breve descripción que aparece en la sección de contacto">{{ $contactInfo->description ?? 'Estamos aquí para ayudarte. Contáctanos y resolveremos todas tus dudas.' }}</textarea>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Dirección</label>
-                                                <input type="text" name="address" class="form-control" 
+                                                <input type="text" name="address" class="form-control"
                                                        value="{{ $contactInfo->address ?? 'A108 Adam Street, New York, NY 535022' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Teléfono</label>
-                                                <input type="text" name="phone" class="form-control" 
+                                                <input type="text" name="phone" class="form-control"
                                                        value="{{ $contactInfo->phone ?? '+1 5589 55488 55' }}" required>
                                             </div>
                                         </div>
@@ -291,14 +562,14 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email (mostrar en contacto)</label>
-                                                <input type="email" name="email" class="form-control" 
+                                                <input type="email" name="email" class="form-control"
                                                        value="{{ $contactInfo->email ?? 'info@example.com' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email para recibir mensajes</label>
-                                                <input type="email" name="receive_messages_email" class="form-control" 
+                                                <input type="email" name="receive_messages_email" class="form-control"
                                                        value="{{ $contactInfo->receive_messages_email ?? 'admin@example.com' }}" required>
                                                 <small class="form-text text-muted">Los mensajes del formulario se enviarán a este email.</small>
                                             </div>
@@ -306,7 +577,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Código Embed de Google Maps</label>
-                                        
+
                                         <!-- Instrucciones paso a paso -->
                                         <div class="alert alert-info">
                                             <h6><i class="bi bi-info-circle me-1"></i>Pasos para obtener el código embed:</h6>
@@ -320,8 +591,8 @@
                                                 <li>Pégalo en el campo de abajo</li>
                                             </ol>
                                         </div>
-                                        
-                                        <textarea name="google_maps_embed" class="form-control" rows="4" 
+
+                                        <textarea name="google_maps_embed" class="form-control" rows="4"
                                                   placeholder="<iframe src=&quot;https://www.google.com/maps/embed?pb=...&quot; width=&quot;600&quot; height=&quot;450&quot; style=&quot;border:0;&quot; allowfullscreen=&quot;&quot; loading=&quot;lazy&quot; referrerpolicy=&quot;no-referrer-when-downgrade&quot;></iframe>">{{ $contactInfo->google_maps_embed ?? '' }}</textarea>
                                         <small class="form-text text-muted">Pega aquí el código iframe completo de Google Maps (incluyendo las etiquetas &lt;iframe&gt; de apertura y cierre).</small>
                                     </div>
@@ -344,42 +615,42 @@
                                     @csrf
                                     <div class="mb-3">
                                         <label class="form-label">Título de la Página</label>
-                                        <input type="text" name="page_title" class="form-control" 
+                                        <input type="text" name="page_title" class="form-control"
                                                value="{{ $about->page_title ?? 'Acerca de Nosotros' }}" required>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Título de Propósito</label>
-                                                <input type="text" name="purpose_title" class="form-control" 
+                                                <input type="text" name="purpose_title" class="form-control"
                                                        value="{{ $about->purpose_title ?? 'Nuestro Propósito' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Título de Misión</label>
-                                                <input type="text" name="mission_title" class="form-control" 
+                                                <input type="text" name="mission_title" class="form-control"
                                                        value="{{ $about->mission_title ?? 'Nuestra Misión' }}" required>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="mb-3">
                                         <label class="form-label">Contenido del Propósito</label>
                                         <textarea name="purpose_content" class="form-control" rows="4" required>{{ $about->purpose_content ?? 'Definir el propósito de la empresa...' }}</textarea>
                                     </div>
-                                    
+
                                     <div class="mb-3">
                                         <label class="form-label">Contenido de la Misión</label>
                                         <textarea name="mission_content" class="form-control" rows="4" required>{{ $about->mission_content ?? 'Definir la misión de la empresa...' }}</textarea>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Título de Visión</label>
-                                                <input type="text" name="vision_title" class="form-control" 
+                                                <input type="text" name="vision_title" class="form-control"
                                                        value="{{ $about->vision_title ?? 'Nuestra Visión' }}" required>
                                             </div>
                                         </div>
@@ -398,12 +669,39 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="mb-3">
                                         <label class="form-label">Contenido de la Visión</label>
                                         <textarea name="vision_content" class="form-control" rows="4" required>{{ $about->vision_content ?? 'Definir la visión de la empresa...' }}</textarea>
                                     </div>
-                                    
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Años de Experiencia</label>
+                                                <input type="number" name="years_experience" class="form-control"
+                                                       value="{{ $about->years_experience ?? 16 }}" min="0" required>
+                                                <small class="text-muted">Ejemplo: 16 (se mostrará como "16+")</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Clientes Felices</label>
+                                                <input type="number" name="happy_clients" class="form-control"
+                                                       value="{{ $about->happy_clients ?? 500 }}" min="0" required>
+                                                <small class="text-muted">Ejemplo: 500 (se mostrará como "500+")</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Satisfacción del Cliente (%)</label>
+                                                <input type="number" name="client_satisfaction" class="form-control"
+                                                       value="{{ $about->client_satisfaction ?? 100 }}" min="0" max="100" required>
+                                                <small class="text-muted">Ejemplo: 100 (se mostrará como "100%")</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-check-lg me-1"></i>Guardar Página Nosotros
                                     </button>
@@ -412,68 +710,38 @@
                         </div>
                     </div>
 
-                    <!-- Equipo -->
-                    <div class="tab-pane fade" id="team" role="tabpanel">
+                    <!-- Valores ( Nosotros) -->
+                    <div class="tab-pane fade" id="about-values" role="tabpanel">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Equipo de Trabajo</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Miembro
+                                <h5 class="card-title mb-0">Valores de Nosotros</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addAboutValueModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Valor
                                 </button>
                             </div>
                             <div class="card-body">
-                                @if($teamMembers->count() > 0)
+                                @if($aboutValues->count() > 0)
                                     <div class="row">
-                                        @foreach($teamMembers as $member)
+                                        @foreach($aboutValues as $value)
                                             <div class="col-md-6 col-lg-4 mb-3">
                                                 <div class="card h-100">
-                                                    @if($member->image_path)
-                                                        <img src="{{ asset($member->image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                                    @else
-                                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                            <i class="bi bi-person-circle fs-1 text-muted"></i>
-                                                        </div>
-                                                    @endif
                                                     <div class="card-body">
-                                                        <h6 class="card-title">{{ $member->name }}</h6>
-                                                        <p class="card-text"><strong>{{ $member->position }}</strong></p>
-                                                        <p class="card-text">{{ $member->description }}</p>
-                                                        
-                                                        @if($member->twitter_url || $member->facebook_url || $member->instagram_url || $member->linkedin_url)
-                                                            <div class="d-flex gap-2">
-                                                                @if($member->twitter_url)
-                                                                    <a href="{{ $member->twitter_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-twitter"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->facebook_url)
-                                                                    <a href="{{ $member->facebook_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-facebook"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->instagram_url)
-                                                                    <a href="{{ $member->instagram_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-instagram"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->linkedin_url)
-                                                                    <a href="{{ $member->linkedin_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-linkedin"></i>
-                                                                    </a>
-                                                                @endif
-                                                            </div>
-                                                        @endif
+                                                        <div class="text-center mb-3">
+                                                            <i class="{{ $value->icon_class }} fa-2x text-primary"></i>
+                                                        </div>
+                                                        <h6 class="card-title">{{ $value->title }}</h6>
+                                                        <p class="card-text">{{ $value->description }}</p>
                                                     </div>
                                                     <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm" 
-                                                                onclick="editTeamMember({{ $member->id }}, '{{ $member->name }}', '{{ $member->position }}', '{{ addslashes($member->description) }}', '{{ $member->twitter_url }}', '{{ $member->facebook_url }}', '{{ $member->instagram_url }}', '{{ $member->linkedin_url }}')">
+                                                        <button class="btn btn-warning btn-sm"
+                                                                onclick="editAboutValue({{ $value->id }}, '{{ $value->icon_class }}', '{{ addslashes($value->title) }}', '{{ addslashes($value->description) }}')">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
-                                                        <form action="{{ route('admin.landing.team.delete', $member->id) }}" method="POST" class="d-inline">
+                                                        <form action="{{ route('admin.landing.about-values.delete', $value->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar este miembro del equipo?')">
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este valor?')">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
@@ -483,7 +751,7 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <p class="text-muted">No hay miembros del equipo registrados. Agrega el primer miembro.</p>
+                                    <p class="text-muted">No hay valores registrados. Agrega el primer valor.</p>
                                 @endif
                             </div>
                         </div>
@@ -502,31 +770,38 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Título del Sitio</label>
-                                                <input type="text" name="site_title" class="form-control" 
+                                                <input type="text" name="site_title" class="form-control"
                                                        value="{{ $layoutConfig->site_title ?? 'GUILLEN' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email del Top Bar</label>
-                                                <input type="email" name="topbar_email" class="form-control" 
+                                                <input type="email" name="topbar_email" class="form-control"
                                                        value="{{ $layoutConfig->topbar_email ?? 'info@example.com' }}" required>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción del Footer</label>
+                                        <textarea name="footer_description" class="form-control" rows="3"
+                                                  placeholder="Descripción de la empresa que aparece en el footer">{{ $layoutConfig->footer_description ?? 'Excellence and professionalism in residential and commercial cleaning services. Trusted by Wisconsin since 2009.' }}</textarea>
+                                        <small class="text-muted">Aparece debajo del nombre de la empresa en el footer</small>
+                                    </div>
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Teléfono del Top Bar</label>
-                                                <input type="text" name="topbar_phone" class="form-control" 
+                                                <input type="text" name="topbar_phone" class="form-control"
                                                        value="{{ $layoutConfig->topbar_phone ?? '+1 5589 55488 55' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Empresa para Copyright</label>
-                                                <input type="text" name="copyright_company" class="form-control" 
+                                                <input type="text" name="copyright_company" class="form-control"
                                                        value="{{ $layoutConfig->copyright_company ?? 'GUILLEN' }}" required>
                                             </div>
                                         </div>
@@ -537,31 +812,31 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Twitter URL</label>
-                                                <input type="url" name="twitter_url" class="form-control" 
+                                                <input type="url" name="twitter_url" class="form-control"
                                                        value="{{ $layoutConfig->twitter_url ?? '' }}" placeholder="https://twitter.com/usuario">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Facebook URL</label>
-                                                <input type="url" name="facebook_url" class="form-control" 
+                                                <input type="url" name="facebook_url" class="form-control"
                                                        value="{{ $layoutConfig->facebook_url ?? '' }}" placeholder="https://facebook.com/usuario">
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Instagram URL</label>
-                                                <input type="url" name="instagram_url" class="form-control" 
+                                                <input type="url" name="instagram_url" class="form-control"
                                                        value="{{ $layoutConfig->instagram_url ?? '' }}" placeholder="https://instagram.com/usuario">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">LinkedIn URL</label>
-                                                <input type="url" name="linkedin_url" class="form-control" 
+                                                <input type="url" name="linkedin_url" class="form-control"
                                                        value="{{ $layoutConfig->linkedin_url ?? '' }}" placeholder="https://linkedin.com/in/usuario">
                                             </div>
                                         </div>
@@ -572,31 +847,31 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Dirección del Footer</label>
-                                                <input type="text" name="footer_address" class="form-control" 
+                                                <input type="text" name="footer_address" class="form-control"
                                                        value="{{ $layoutConfig->footer_address ?? 'A108 Adam Street' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Ciudad del Footer</label>
-                                                <input type="text" name="footer_city" class="form-control" 
+                                                <input type="text" name="footer_city" class="form-control"
                                                        value="{{ $layoutConfig->footer_city ?? 'New York, NY 535022' }}" required>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Teléfono del Footer</label>
-                                                <input type="text" name="footer_phone" class="form-control" 
+                                                <input type="text" name="footer_phone" class="form-control"
                                                        value="{{ $layoutConfig->footer_phone ?? '+1 5589 55488 55' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email del Footer</label>
-                                                <input type="email" name="footer_email" class="form-control" 
+                                                <input type="email" name="footer_email" class="form-control"
                                                        value="{{ $layoutConfig->footer_email ?? 'info@example.com' }}" required>
                                             </div>
                                         </div>
@@ -695,7 +970,7 @@
                                                         </td>
                                                         <td class="text-center">
                                                             <div class="btn-group" role="group">
-                                                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                                <button type="button" class="btn btn-outline-primary btn-sm"
                                                                         onclick="editSeo({{ $seoConfig->page->id }})"
                                                                         title="Editar">
                                                                     <i class="bi bi-pencil-square"></i>
@@ -703,7 +978,7 @@
                                                                 <form action="{{ route('admin.landing.seo.delete', $seoConfig->id) }}" method="POST" class="d-inline">
                                                                     @csrf
                                                                     @method('DELETE')
-                                                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                                    <button type="submit" class="btn btn-outline-danger btn-sm"
                                                                             onclick="return confirm('¿Estás seguro de eliminar esta configuración SEO?')"
                                                                             title="Eliminar">
                                                                         <i class="bi bi-trash3"></i>
@@ -762,8 +1037,8 @@
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <div class="form-floating mb-4">
-                                                <input type="text" name="meta_title" class="form-control" id="metaTitle" maxlength="150" 
-                                                       value="{{ old('meta_title') }}" 
+                                                <input type="text" name="meta_title" class="form-control" id="metaTitle" maxlength="150"
+                                                       value="{{ old('meta_title') }}"
                                                        placeholder="Título optimizado para motores de búsqueda">
                                                 <label for="metaTitle">
                                                     <i class="bi bi-tag-fill me-1"></i>Título SEO *
@@ -776,7 +1051,7 @@
                                         <div class="col-lg-6">
                                             <div class="form-floating mb-4">
                                                 <input type="text" name="focus_keyword" class="form-control" id="focusKeyword" maxlength="100"
-                                                       value="{{ old('focus_keyword') }}" 
+                                                       value="{{ old('focus_keyword') }}"
                                                        placeholder="palabra clave principal">
                                                 <label for="focusKeyword">
                                                     <i class="bi bi-key-fill me-1"></i>Palabra Clave Principal
@@ -784,7 +1059,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="form-floating mb-4">
                                         <textarea name="meta_description" class="form-control" id="metaDescription" style="height: 120px"
                                                   placeholder="Descripción que aparecerá en los resultados de búsqueda">{{ old('meta_description') }}</textarea>
@@ -795,12 +1070,12 @@
                                             <span id="descriptionCounter">0</span> caracteres
                                         </div>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <div class="form-floating mb-4">
                                                 <input type="text" name="meta_keywords" class="form-control" id="metaKeywords" maxlength="500"
-                                                       value="{{ old('meta_keywords') }}" 
+                                                       value="{{ old('meta_keywords') }}"
                                                        placeholder="palabra1, palabra2, palabra3">
                                                 <label for="metaKeywords">
                                                     <i class="bi bi-tags me-1"></i>Palabras Clave
@@ -811,7 +1086,7 @@
                                         <div class="col-lg-6">
                                             <div class="form-floating mb-4">
                                                 <input type="url" name="canonical_url" class="form-control" id="canonicalUrl" maxlength="500"
-                                                       value="{{ old('canonical_url') }}" 
+                                                       value="{{ old('canonical_url') }}"
                                                        placeholder="https://ejemplo.com/pagina">
                                                 <label for="canonicalUrl">
                                                     <i class="bi bi-link-45deg me-1"></i>URL Canónica
@@ -819,7 +1094,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-lg-6">
                                             <div class="form-floating mb-4">
@@ -836,10 +1111,9 @@
                                         </div>
                                         <div class="col-lg-6 d-flex align-items-center">
                                             <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" name="is_active" value="1" 
+                                                <input class="form-check-input" type="checkbox" name="is_active" value="1"
                                                        {{ old('is_active', true) ? 'checked' : '' }} id="seoActiveSwitch">
                                                 <label class="form-check-label" for="seoActiveSwitch">
-                                                  
                                                     <strong>Configuración SEO Activa</strong>
                                                 </label>
                                             </div>
@@ -1015,17 +1289,356 @@
         </div>
     </div>
 
-    <!-- Modales -->
-    @include('admin.landing.modals.carousel')
-    @include('admin.landing.modals.service')
-    @include('admin.landing.modals.step')
-    @include('admin.landing.modals.team')
+    <!-- Modals -->
+
+    <!-- Hero Value Add Modal -->
+    <div class="modal fade" id="addHeroValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Valor del Hero</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.hero-values.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" name="icon_class" class="form-control" required placeholder="bi bi-check-circle">
+                            <div class="alert alert-info mt-2"><strong><i class="bi bi-info-circle me-1"></i>Cómo encontrar iconos:</strong><ol class="mb-0 mt-2"><li><strong>Bootstrap Icons:</strong> Ve a <a href="https://icons.getbootstrap.com/" target="_blank">icons.getbootstrap.com</a></li><li>Busca el icono que necesitas (ejemplo: "check", "star", "home")</li><li>Haz clic en el icono para ver su nombre</li><li>Copia la clase completa (ejemplo: <code>bi bi-check-circle</code>)</li><li>Pégala en el campo de arriba</li></ol><p class="mb-0 mt-2"><strong>Alternativa Font Awesome:</strong> <a href="https://fontawesome.com/icons" target="_blank">fontawesome.com/icons</a> (ejemplo: <code>fas fa-star</code>)</p></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" name="title" class="form-control" required placeholder="Ejemplo: Trusted & Insured">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Value Edit Modal -->
+    <div class="modal fade" id="editHeroValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Valor del Hero</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editHeroValueForm" action="{{ route('admin.landing.hero-values.update', 0) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editHeroValueId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" id="editHeroValueIcon" name="icon_class" class="form-control" required>
+                            <div class="alert alert-info mt-2"><strong><i class="bi bi-info-circle me-1"></i>Cómo encontrar iconos:</strong><ol class="mb-0 mt-2"><li><strong>Bootstrap Icons:</strong> Ve a <a href="https://icons.getbootstrap.com/" target="_blank">icons.getbootstrap.com</a></li><li>Busca el icono que necesitas (ejemplo: "check", "star", "home")</li><li>Haz clic en el icono para ver su nombre</li><li>Copia la clase completa (ejemplo: <code>bi bi-check-circle</code>)</li><li>Pégala en el campo de arriba</li></ol><p class="mb-0 mt-2"><strong>Alternativa Font Awesome:</strong> <a href="https://fontawesome.com/icons" target="_blank">fontawesome.com/icons</a> (ejemplo: <code>fas fa-star</code>)</p></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" id="editHeroValueTitle" name="title" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Item Add Modal -->
+    <div class="modal fade" id="addServiceItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Item de Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.service-items.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="type" class="form-select" required>
+                                <option value="commercial">Comercial</option>
+                                <option value="residential">Residencial</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" name="icon_class" class="form-control" required placeholder="bi bi-check">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Item Edit Modal -->
+    <div class="modal fade" id="editServiceItemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Item de Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editServiceItemForm" action="{{ route('admin.landing.service-items.update', 0) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editServiceItemId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select id="editServiceItemType" name="type" class="form-select" required>
+                                <option value="commercial">Comercial</option>
+                                <option value="residential">Residencial</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" id="editServiceItemIcon" name="icon_class" class="form-control" required>
+                            <div class="alert alert-info mt-2"><strong><i class="bi bi-info-circle me-1"></i>Cómo encontrar iconos:</strong><ol class="mb-0 mt-2"><li><strong>Bootstrap Icons:</strong> Ve a <a href="https://icons.getbootstrap.com/" target="_blank">icons.getbootstrap.com</a></li><li>Busca el icono que necesitas (ejemplo: "check", "star", "home")</li><li>Haz clic en el icono para ver su nombre</li><li>Copia la clase completa (ejemplo: <code>bi bi-check-circle</code>)</li><li>Pégala en el campo de arriba</li></ol><p class="mb-0 mt-2"><strong>Alternativa Font Awesome:</strong> <a href="https://fontawesome.com/icons" target="_blank">fontawesome.com/icons</a> (ejemplo: <code>fas fa-star</code>)</p></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" id="editServiceItemTitle" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea id="editServiceItemDescription" name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Image Add Modal -->
+    <div class="modal fade" id="addServiceImageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Imagen de Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.service-images.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="type" class="form-select" required>
+                                <option value="commercial">Comercial</option>
+                                <option value="residential">Residencial</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Imagen</label>
+                            <input type="file" name="image" class="form-control" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Texto Alternativo</label>
+                            <input type="text" name="alt_text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonial Add Modal -->
+    <div class="modal fade" id="addTestimonialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Testimonio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.testimonials.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" name="client_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" name="client_location" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Testimonio</label>
+                            <textarea name="testimonial_text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Calificación (1-5)</label>
+                            <select name="rating" class="form-select" required>
+                                <option value="5" selected>5 Estrellas</option>
+                                <option value="4">4 Estrellas</option>
+                                <option value="3">3 Estrellas</option>
+                                <option value="2">2 Estrellas</option>
+                                <option value="1">1 Estrella</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonial Edit Modal -->
+    <div class="modal fade" id="editTestimonialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Testimonio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editTestimonialForm" action="{{ route('admin.landing.testimonials.update', 0) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editTestimonialId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Cliente</label>
+                            <input type="text" id="editTestimonialClientName" name="client_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" id="editTestimonialLocation" name="client_location" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Testimonio</label>
+                            <textarea id="editTestimonialText" name="testimonial_text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Calificación (1-5)</label>
+                            <select id="editTestimonialRating" name="rating" class="form-select" required>
+                                <option value="5">5 Estrellas</option>
+                                <option value="4">4 Estrellas</option>
+                                <option value="3">3 Estrellas</option>
+                                <option value="2">2 Estrellas</option>
+                                <option value="1">1 Estrella</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Value Add Modal -->
+    <div class="modal fade" id="addAboutValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Valor de Nosotros</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.about-values.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" name="icon_class" class="form-control" required placeholder="bi bi-award">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="description" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Value Edit Modal -->
+    <div class="modal fade" id="editAboutValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Valor de Nosotros</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editAboutValueForm" action="{{ route('admin.landing.about-values.update', 0) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editAboutValueId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (clase)</label>
+                            <input type="text" id="editAboutValueIcon" name="icon_class" class="form-control" required>
+                            <div class="alert alert-info mt-2"><strong><i class="bi bi-info-circle me-1"></i>Cómo encontrar iconos:</strong><ol class="mb-0 mt-2"><li><strong>Bootstrap Icons:</strong> Ve a <a href="https://icons.getbootstrap.com/" target="_blank">icons.getbootstrap.com</a></li><li>Busca el icono que necesitas (ejemplo: "check", "star", "home")</li><li>Haz clic en el icono para ver su nombre</li><li>Copia la clase completa (ejemplo: <code>bi bi-check-circle</code>)</li><li>Pégala en el campo de arriba</li></ol><p class="mb-0 mt-2"><strong>Alternativa Font Awesome:</strong> <a href="https://fontawesome.com/icons" target="_blank">fontawesome.com/icons</a> (ejemplo: <code>fas fa-star</code>)</p></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" id="editAboutValueTitle" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea id="editAboutValueDescription" name="description" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     @push('scripts')
     <script>
-        // Guardar y restaurar el tab activo
+        // Esperar a que Bootstrap esté completamente cargado
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap no está cargado');
+        }
+
+        // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', function() {
-            // Restaurar el tab activo al cargar la página
+            // Guardar y restaurar el tab activo
             const activeTab = localStorage.getItem('activeLandingTab');
             if (activeTab) {
                 // Remover clase active de todos los tabs
@@ -1035,17 +1648,17 @@
                 document.querySelectorAll('#landingTabsContent .tab-pane').forEach(pane => {
                     pane.classList.remove('show', 'active');
                 });
-                
+
                 // Activar el tab guardado
                 const tabButton = document.querySelector(`#landingTabs .nav-link[data-bs-target="${activeTab}"]`);
                 const tabPane = document.querySelector(activeTab);
-                
+
                 if (tabButton && tabPane) {
                     tabButton.classList.add('active');
                     tabPane.classList.add('show', 'active');
                 }
             }
-            
+
             // Guardar el tab activo cuando se hace clic
             document.querySelectorAll('#landingTabs .nav-link').forEach(tab => {
                 tab.addEventListener('click', function() {
@@ -1053,74 +1666,17 @@
                     localStorage.setItem('activeLandingTab', target);
                 });
             });
-        });
 
-        function editService(id, iconClass, title, description) {
-            document.getElementById('editServiceId').value = id;
-            document.getElementById('editServiceIconClass').value = iconClass;
-            document.getElementById('editServiceTitle').value = title;
-            document.getElementById('editServiceDescription').value = description;
-            
-            const editForm = document.getElementById('editServiceForm');
-            editForm.action = editForm.action.replace('/0', '/' + id);
-            
-            new bootstrap.Modal(document.getElementById('editServiceModal')).show();
-        }
-
-        function editStep(id, title, description) {
-            document.getElementById('editStepId').value = id;
-            document.getElementById('editStepTitle').value = title;
-            document.getElementById('editStepDescription').value = description;
-            
-            const editForm = document.getElementById('editStepForm');
-            editForm.action = editForm.action.replace('/0', '/' + id);
-            
-            new bootstrap.Modal(document.getElementById('editStepModal')).show();
-        }
-
-        function editTeamMember(id, name, position, description, twitterUrl, facebookUrl, instagramUrl, linkedinUrl) {
-            document.getElementById('editTeamMemberId').value = id;
-            document.getElementById('editTeamMemberName').value = name;
-            document.getElementById('editTeamMemberPosition').value = position;
-            document.getElementById('editTeamMemberDescription').value = description;
-            document.getElementById('editTeamMemberTwitterUrl').value = twitterUrl || '';
-            document.getElementById('editTeamMemberFacebookUrl').value = facebookUrl || '';
-            document.getElementById('editTeamMemberInstagramUrl').value = instagramUrl || '';
-            document.getElementById('editTeamMemberLinkedinUrl').value = linkedinUrl || '';
-            
-            const editForm = document.getElementById('editTeamMemberForm');
-            editForm.action = editForm.action.replace('/0', '/' + id);
-            
-            new bootstrap.Modal(document.getElementById('editTeamMemberModal')).show();
-        }
-
-        // Character counters for SEO fields
-        function updateCharacterCount(inputId, counterId) {
-            const input = document.getElementById(inputId) || document.querySelector(`[name="${inputId}"]`);
-            const counter = document.getElementById(counterId);
-            
-            if (input && counter) {
-                input.addEventListener('input', function() {
-                    counter.textContent = this.value.length;
-                });
-                
-                // Update on load
-                counter.textContent = input.value.length;
-            }
-        }
-
-        // Initialize character counters when SEO tab is shown
-        document.addEventListener('DOMContentLoaded', function() {
             // Setup character counters
             const titleInput = document.getElementById('metaTitle');
             const descInput = document.getElementById('metaDescription');
-            
+
             if (titleInput) {
                 titleInput.addEventListener('input', function() {
                     document.getElementById('titleCounter').textContent = this.value.length;
                 });
             }
-            
+
             if (descInput) {
                 descInput.addEventListener('input', function() {
                     document.getElementById('descriptionCounter').textContent = this.value.length;
@@ -1140,6 +1696,74 @@
                 });
             }
         });
+
+        // Hero Value Edit
+        function editHeroValue(id, icon, title, order) {
+            document.getElementById('editHeroValueId').value = id;
+            document.getElementById('editHeroValueIcon').value = icon;
+            document.getElementById('editHeroValueTitle').value = title;
+
+            const editForm = document.getElementById('editHeroValueForm');
+            editForm.action = editForm.action.replace('/0', '/' + id);
+
+            new bootstrap.Modal(document.getElementById('editHeroValueModal')).show();
+        }
+
+        // Service Item Edit
+        function editServiceItem(id, type, icon, title, description) {
+            document.getElementById('editServiceItemId').value = id;
+            document.getElementById('editServiceItemType').value = type;
+            document.getElementById('editServiceItemIcon').value = icon;
+            document.getElementById('editServiceItemTitle').value = title;
+            document.getElementById('editServiceItemDescription').value = description;
+
+            const editForm = document.getElementById('editServiceItemForm');
+            editForm.action = editForm.action.replace('/0', '/' + id);
+
+            new bootstrap.Modal(document.getElementById('editServiceItemModal')).show();
+        }
+
+        // Testimonial Edit
+        function editTestimonial(id, clientName, location, text, rating) {
+            document.getElementById('editTestimonialId').value = id;
+            document.getElementById('editTestimonialClientName').value = clientName;
+            document.getElementById('editTestimonialLocation').value = location;
+            document.getElementById('editTestimonialText').value = text;
+            document.getElementById('editTestimonialRating').value = rating;
+
+            const editForm = document.getElementById('editTestimonialForm');
+            editForm.action = editForm.action.replace('/0', '/' + id);
+
+            new bootstrap.Modal(document.getElementById('editTestimonialModal')).show();
+        }
+
+        // About Value Edit
+        function editAboutValue(id, icon, title, description) {
+            document.getElementById('editAboutValueId').value = id;
+            document.getElementById('editAboutValueIcon').value = icon;
+            document.getElementById('editAboutValueTitle').value = title;
+            document.getElementById('editAboutValueDescription').value = description;
+
+            const editForm = document.getElementById('editAboutValueForm');
+            editForm.action = editForm.action.replace('/0', '/' + id);
+
+            new bootstrap.Modal(document.getElementById('editAboutValueModal')).show();
+        }
+
+        // Character counters for SEO fields
+        function updateCharacterCount(inputId, counterId) {
+            const input = document.getElementById(inputId) || document.querySelector(`[name="${inputId}"]`);
+            const counter = document.getElementById(counterId);
+
+            if (input && counter) {
+                input.addEventListener('input', function() {
+                    counter.textContent = this.value.length;
+                });
+
+                // Update on load
+                counter.textContent = input.value.length;
+            }
+        }
 
         // Load SEO data for selected page
         function loadSeoData(pageId) {
@@ -1161,7 +1785,7 @@
         // Populate SEO form with data
         function populateSeoForm(data) {
             const form = document.getElementById('seoForm');
-            
+
             Object.keys(data).forEach(key => {
                 const input = form.querySelector(`[name="${key}"]`);
                 if (input) {
@@ -1182,7 +1806,7 @@
         // Clear SEO form
         function clearSeoForm() {
             const form = document.getElementById('seoForm');
-            
+
             // Reset all inputs except page_id
             form.querySelectorAll('input, textarea, select').forEach(input => {
                 if (input.name !== 'page_id') {
@@ -1206,11 +1830,11 @@
         function updateCharacterCounters() {
             const titleInput = document.getElementById('metaTitle');
             const descInput = document.getElementById('metaDescription');
-            
+
             if (titleInput) {
                 document.getElementById('titleCounter').textContent = titleInput.value.length;
             }
-            
+
             if (descInput) {
                 document.getElementById('descriptionCounter').textContent = descInput.value.length;
             }
@@ -1223,7 +1847,7 @@
                 pageSelector.value = pageId;
                 // Trigger change event to load the data
                 pageSelector.dispatchEvent(new Event('change'));
-                
+
                 // Scroll to form
                 document.getElementById('seoForm').scrollIntoView({
                     behavior: 'smooth'

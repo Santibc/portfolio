@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('landing_steps', function (Blueprint $table) {
+        Schema::create('landing_testimonials', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('description');
-            $table->integer('step_number');
+            $table->string('client_name');
+            $table->string('client_location')->nullable();
+            $table->text('testimonial_text');
+            $table->integer('rating')->default(5);
             $table->integer('order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('landing_steps');
+        Schema::dropIfExists('landing_testimonials');
     }
 };

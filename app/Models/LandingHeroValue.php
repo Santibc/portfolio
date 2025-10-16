@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LandingCarouselImage extends Model
+class LandingHeroValue extends Model
 {
     use HasFactory;
-    
-    protected $table = 'landing_carousel_images';
-    
+
+    protected $table = 'landing_hero_values';
+
     protected $fillable = [
-        'image_path',
-        'alt_text',
+        'icon_class',
+        'title',
         'order',
         'is_active'
     ];
-    
+
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 }

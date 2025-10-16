@@ -76,7 +76,7 @@
               <span class="sitename">{{ $layoutConfig->site_title ?? 'Guillen Cleaning LLC' }}</span>
             </a>
             <p class="mb-4">
-              Excellence and professionalism in residential and commercial cleaning services. Trusted by Wisconsin since 2009.
+              {{ $layoutConfig->footer_description ?? 'Excellence and professionalism in residential and commercial cleaning services. Trusted by Wisconsin since 2009.' }}
             </p>
 
             <div class="social-links d-flex mt-4">

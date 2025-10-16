@@ -160,57 +160,6 @@
         const sidebar = document.querySelector('.sidebar');
         const appHeader = document.getElementById('appHeader');
         const appMainContent = document.getElementById('appMainContent');
-
-        function updateLayout() {
-            const sidebarWidth = sidebar.offsetWidth; // Obtiene el ancho actual (70px o 250px)
-            appHeader.style.left = `${sidebarWidth}px`;
-            appHeader.style.right = `0`;
-            appMainContent.style.marginLeft = `${sidebarWidth}px`;
-        }
-
-        // Función para guardar el estado del sidebar en localStorage
-        function saveSidebarState() {
-            if (sidebar.classList.contains('collapsed')) {
-                localStorage.setItem('sidebarCollapsed', 'true');
-            } else {
-                localStorage.setItem('sidebarCollapsed', 'false');
-            }
-        }
-
-        // Función para restaurar el estado del sidebar desde localStorage
-        function restoreSidebarState() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed');
-            if (isCollapsed === 'true') {
-                sidebar.classList.add('collapsed');
-                // IMPORTANTE: Esperar a que la transición CSS termine antes de actualizar el layout
-                // 300ms debe coincidir con la duración de la transición en el CSS para .sidebar
-                setTimeout(updateLayout, 300);
-            } else {
-                sidebar.classList.remove('collapsed');
-                // Si no está colapsado, puedes actualizar el layout inmediatamente o con un pequeño delay si también tiene transición de apertura
-                updateLayout();
-            }
-        }
-
-        // Restaurar el estado del sidebar al cargar la página
-        document.addEventListener('DOMContentLoaded', restoreSidebarState);
-
-        // Modificar el click del botón para guardar el estado
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            saveSidebarState(); // Guardar el nuevo estado
-
-            // Esperar a que la transición termine para actualizar el layout
-            setTimeout(updateLayout, 300);
-        });
-
-        // También actualizar en el redimensionamiento de la ventana
-        window.addEventListener('resize', updateLayout);
-    </script>
-<script>
-        const sidebar = document.querySelector('.sidebar');
-        const appHeader = document.getElementById('appHeader');
-        const appMainContent = document.getElementById('appMainContent');
         let isManuallyToggled = false;
 
         function updateLayout() {
@@ -232,7 +181,7 @@
         // Función para manejar el responsive
         function handleResponsive() {
             const windowWidth = window.innerWidth;
-            
+
             // Solo aplicar auto-colapso si el usuario no ha interactuado manualmente
             if (!isManuallyToggled) {
                 if (windowWidth <= 768) {
@@ -248,7 +197,7 @@
         function restoreSidebarState() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed');
             const windowWidth = window.innerWidth;
-            
+
             // Si hay un estado guardado, usarlo
             if (isCollapsed !== null) {
                 isManuallyToggled = true;
@@ -261,14 +210,14 @@
                 // Si no hay estado guardado, aplicar responsive
                 handleResponsive();
             }
-            
+
             setTimeout(updateLayout, 300);
         }
 
         // Restaurar el estado del sidebar al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             restoreSidebarState();
-            
+
             // Inicializar tooltips para el sidebar colapsado
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -303,7 +252,7 @@
                 if (submenuTrigger) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     // Expandir temporalmente el sidebar
                     sidebar.classList.remove('collapsed');
                     setTimeout(() => {

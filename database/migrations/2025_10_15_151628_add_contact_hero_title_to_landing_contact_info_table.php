@@ -13,13 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('landing_carousel_images', function (Blueprint $table) {
-            $table->id();
-            $table->string('image_path');
-            $table->string('alt_text')->nullable();
-            $table->integer('order')->default(0);
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+        Schema::table('landing_contact_info', function (Blueprint $table) {
+            $table->string('contact_hero_title')->default('Get Your Free Estimate')->after('description');
         });
     }
 
@@ -30,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('landing_carousel_images');
+        Schema::table('landing_contact_info', function (Blueprint $table) {
+            $table->dropColumn('contact_hero_title');
+        });
     }
 };

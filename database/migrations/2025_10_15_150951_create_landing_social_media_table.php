@@ -13,17 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('landing_team_members', function (Blueprint $table) {
+        Schema::create('landing_social_media', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('position');
-            $table->text('description');
-            $table->string('image_path')->nullable();
-            $table->string('twitter_url')->nullable();
             $table->string('facebook_url')->nullable();
             $table->string('instagram_url')->nullable();
             $table->string('linkedin_url')->nullable();
-            $table->integer('order')->default(0);
+            $table->string('youtube_url')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -36,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('landing_team_members');
+        Schema::dropIfExists('landing_social_media');
     }
 };

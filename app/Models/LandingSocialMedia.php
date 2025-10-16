@@ -5,24 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LandingTeamMember extends Model
+class LandingSocialMedia extends Model
 {
     use HasFactory;
-    
+
+    protected $table = 'landing_social_media';
+
     protected $fillable = [
-        'name',
-        'position',
-        'description',
-        'image_path',
-        'twitter_url',
         'facebook_url',
         'instagram_url',
         'linkedin_url',
-        'order',
+        'youtube_url',
         'is_active'
     ];
-    
+
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 }

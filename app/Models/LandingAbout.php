@@ -20,6 +20,9 @@ class LandingAbout extends Model
         'mission_content',
         'vision_title',
         'vision_content',
+        'years_experience',
+        'happy_clients',
+        'client_satisfaction',
         'is_active'
     ];
     

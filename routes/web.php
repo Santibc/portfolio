@@ -49,27 +49,50 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin/landing')->name('admin.landing.')->group(function () {
         Route::get('/', [AdminLandingPageController::class, 'index'])->name('index');
         Route::post('/config/update', [AdminLandingPageController::class, 'updateConfig'])->name('config.update');
-        Route::post('/carousel/store', [AdminLandingPageController::class, 'storeCarouselImage'])->name('carousel.store');
-        Route::delete('/carousel/{id}', [AdminLandingPageController::class, 'deleteCarouselImage'])->name('carousel.delete');
-        Route::post('/services/store', [AdminLandingPageController::class, 'storeService'])->name('services.store');
-        Route::put('/services/{id}', [AdminLandingPageController::class, 'updateService'])->name('services.update');
-        Route::delete('/services/{id}', [AdminLandingPageController::class, 'deleteService'])->name('services.delete');
-        Route::post('/steps/store', [AdminLandingPageController::class, 'storeStep'])->name('steps.store');
-        Route::put('/steps/{id}', [AdminLandingPageController::class, 'updateStep'])->name('steps.update');
-        Route::delete('/steps/{id}', [AdminLandingPageController::class, 'deleteStep'])->name('steps.delete');
+
+        // Hero Section
+        Route::post('/hero/update', [AdminLandingPageController::class, 'updateHeroSection'])->name('hero.update');
+        Route::post('/hero-values/store', [AdminLandingPageController::class, 'storeHeroValue'])->name('hero-values.store');
+        Route::put('/hero-values/{id}', [AdminLandingPageController::class, 'updateHeroValue'])->name('hero-values.update');
+        Route::delete('/hero-values/{id}', [AdminLandingPageController::class, 'deleteHeroValue'])->name('hero-values.delete');
+
+        // Social Media
+        Route::post('/social-media/update', [AdminLandingPageController::class, 'updateSocialMedia'])->name('social-media.update');
+
+        // Home About
+        Route::post('/home-about/update', [AdminLandingPageController::class, 'updateHomeAbout'])->name('home-about.update');
+
+        // Home Services
+        Route::post('/home-services/update', [AdminLandingPageController::class, 'updateHomeServices'])->name('home-services.update');
+        Route::post('/service-items/store', [AdminLandingPageController::class, 'storeServiceItem'])->name('service-items.store');
+        Route::put('/service-items/{id}', [AdminLandingPageController::class, 'updateServiceItem'])->name('service-items.update');
+        Route::delete('/service-items/{id}', [AdminLandingPageController::class, 'deleteServiceItem'])->name('service-items.delete');
+        Route::post('/service-images/store', [AdminLandingPageController::class, 'storeServiceImage'])->name('service-images.store');
+        Route::delete('/service-images/{id}', [AdminLandingPageController::class, 'deleteServiceImage'])->name('service-images.delete');
+
+        // Testimonials
+        Route::post('/testimonials/store', [AdminLandingPageController::class, 'storeTestimonial'])->name('testimonials.store');
+        Route::put('/testimonials/{id}', [AdminLandingPageController::class, 'updateTestimonial'])->name('testimonials.update');
+        Route::delete('/testimonials/{id}', [AdminLandingPageController::class, 'deleteTestimonial'])->name('testimonials.delete');
+
+        // About Values
+        Route::post('/about-values/store', [AdminLandingPageController::class, 'storeAboutValue'])->name('about-values.store');
+        Route::put('/about-values/{id}', [AdminLandingPageController::class, 'updateAboutValue'])->name('about-values.update');
+        Route::delete('/about-values/{id}', [AdminLandingPageController::class, 'deleteAboutValue'])->name('about-values.delete');
+
+        // Contact, About, Layout (mantener rutas existentes)
         Route::post('/contact/update', [AdminLandingPageController::class, 'updateContactInfo'])->name('contact.update');
         Route::post('/about/update', [AdminLandingPageController::class, 'updateAbout'])->name('about.update');
-        Route::post('/team/store', [AdminLandingPageController::class, 'storeTeamMember'])->name('team.store');
-        Route::put('/team/{id}', [AdminLandingPageController::class, 'updateTeamMember'])->name('team.update');
-        Route::delete('/team/{id}', [AdminLandingPageController::class, 'deleteTeamMember'])->name('team.delete');
         Route::post('/layout/update', [AdminLandingPageController::class, 'updateLayoutConfig'])->name('layout.update');
+
+        // SEO
         Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
         Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');
         Route::delete('/seo/{id}', [AdminLandingPageController::class, 'deleteSeo'])->name('seo.delete');
+
+        // Pricing
         Route::post('/pricing/config/update', [AdminLandingPageController::class, 'updatePricingConfig'])->name('pricing.config.update');
-        Route::post('/pricing/range/store', [AdminLandingPageController::class, 'storePricingRange'])->name('pricing.range.store');
         Route::put('/pricing/range/{id}', [AdminLandingPageController::class, 'updatePricingRange'])->name('pricing.range.update');
-        Route::delete('/pricing/range/{id}', [AdminLandingPageController::class, 'deletePricingRange'])->name('pricing.range.delete');
     });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])

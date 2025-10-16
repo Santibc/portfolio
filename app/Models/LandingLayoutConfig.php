@@ -13,6 +13,7 @@ class LandingLayoutConfig extends Model
     
     protected $fillable = [
         'site_title',
+        'footer_description',
         'topbar_email',
         'topbar_phone',
         'twitter_url',

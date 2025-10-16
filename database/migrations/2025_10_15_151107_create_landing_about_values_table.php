@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('landing_services', function (Blueprint $table) {
+        Schema::create('landing_about_values', function (Blueprint $table) {
             $table->id();
             $table->string('icon_class');
             $table->string('title');
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('landing_services');
+        Schema::dropIfExists('landing_about_values');
     }
 };

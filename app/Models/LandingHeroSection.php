@@ -5,21 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LandingService extends Model
+class LandingHeroSection extends Model
 {
     use HasFactory;
-    
-    protected $table = 'landing_services';
-    
+
+    protected $table = 'landing_hero_section';
+
     protected $fillable = [
-        'icon_class',
-        'title',
-        'description',
-        'order',
+        'subtitle',
+        'hero_image_path',
         'is_active'
     ];
-    
+
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 }

@@ -5,7 +5,15 @@
       "Bash(php artisan:*)",
       "Bash(mysql:*)",
       "Bash(npm run build:*)",
-      "Read(//e/**)"
+      "Read(//e/**)",
+      "Bash(del appModelsLandingCarouselImage.php)",
+      "Bash(del appModelsLandingService.php)",
+      "Bash(del appModelsLandingStep.php)",
+      "Bash(del appModelsLandingTeamMember.php)",
+      "Bash(del databasemigrations2025_09_09_160128_create_landing_carousel_images_table.php)",
+      "Bash(del databasemigrations2025_09_09_160229_create_landing_services_table.php)",
+      "Bash(del databasemigrations2025_09_09_160241_create_landing_steps_table.php)",
+      "Bash(del databasemigrations2025_09_09_170904_create_landing_team_members_table.php)"
     ],
     "deny": [],
     "ask": []
