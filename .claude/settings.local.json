@@ -12,7 +12,9 @@
       "Bash(npm run dev:*)",
       "Bash(php artisan:*)",
       "Bash(rm:*)",
-      "WebFetch(domain:docs.wompi.co)"
+      "WebFetch(domain:docs.wompi.co)",
+      "Bash(dir:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

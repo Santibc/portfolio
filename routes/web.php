@@ -26,6 +26,19 @@ use App\Http\Controllers\ActualizacionPreciosController;
 */
 Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
 Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
+
+// Ruta para el tema Brasilia (demo de tienda)
+Route::get('/brasilia', function () {
+    return view('tienda.brasilia_index');
+})->name('tienda.brasilia');
+
+Route::get('/brasilia/productos', function () {
+    return view('tienda.brasilia_categoria');
+})->name('tienda.brasilia.productos');
+
+Route::get('/brasilia/producto/{slug?}', function ($slug = 'vestido-largo-lino') {
+    return view('tienda.brasilia_producto');
+})->name('tienda.brasilia.producto');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
