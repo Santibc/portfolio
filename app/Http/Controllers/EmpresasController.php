@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Empresa;
 use App\Models\CarruselEmpresa;
+use App\Repositories\TemplateRepository;
+use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -50,7 +52,7 @@ class EmpresasController extends Controller
     /**
      * Mostrar formulario de creación/edición
      */
-    public function form()
+    public function form(TemplateRepository $templateRepo)
     {
         $empresa = auth()->user()->empresa;
 
@@ -61,14 +63,17 @@ class EmpresasController extends Controller
             $empresa = new Empresa();
         }
 
-        return view('empresa.form', compact('empresa'));
+        // Obtener templates disponibles para el selector
+        $templates = $templateRepo->getForSelector();
+
+        return view('empresa.form', compact('empresa', 'templates'));
     }
 
     /**
      * Guardar o actualizar la empresa
      * - Guarda archivos directamente en /public sin usar storage:link
      */
-    public function guardar(Request $request)
+    public function guardar(Request $request, TemplateResolver $templateResolver)
     {
         $empresa = auth()->user()->empresa ?? new Empresa();
 
@@ -88,6 +93,11 @@ class EmpresasController extends Controller
             'facebook_url'   => ['nullable', 'url', 'max:255'],
             'twitter_url'    => ['nullable', 'url', 'max:255'],
             'whatsapp'       => ['nullable', 'string', 'max:255'],
+            'template_tienda_id' => ['nullable', 'exists:templates_tienda,id'],
+            'hero_video_url' => ['nullable', 'url', 'max:255'],
+            'hero_video_message' => ['nullable', 'string', 'max:500'],
+            'hero_video_button_text' => ['nullable', 'string', 'max:100'],
+            'hero_video_button_link' => ['nullable', 'url', 'max:255'],
             'logo'           => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'imagen_portada' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             // Horario de atención
@@ -180,6 +190,11 @@ class EmpresasController extends Controller
 
             // Guardar/actualizar datos básicos primero para tener ID
             $empresa->fill($data)->save();
+
+            // Si cambió el template, limpiar cache
+            if ($empresa->wasChanged('template_tienda_id')) {
+                $templateResolver->clearCache($empresa);
+            }
 
             // Rutas base en /public
             $baseDir = public_path('imagenes/empresas/' . $empresa->id);

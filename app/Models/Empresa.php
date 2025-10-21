@@ -29,7 +29,12 @@ class Empresa extends Model
         'whatsapp',
         'horario_atencion',
         'activo',
-        'plan_membresia_id'
+        'plan_membresia_id',
+        'template_tienda_id',
+        'hero_video_url',
+        'hero_video_message',
+        'hero_video_button_text',
+        'hero_video_button_link'
     ];
 
     protected $casts = [
@@ -159,6 +164,24 @@ class Empresa extends Model
     public function planMembresia()
     {
         return $this->belongsTo(PlanMembresia::class);
+    }
+
+    /**
+     * Relación con el template de tienda
+     */
+    public function templateTienda()
+    {
+        return $this->belongsTo(TemplateTienda::class, 'template_tienda_id');
+    }
+
+    /**
+     * Obtener el template de tienda (con fallback al default)
+     *
+     * @return TemplateTienda
+     */
+    public function getTemplate()
+    {
+        return $this->templateTienda ?? TemplateTienda::getDefault();
     }
 
     /**

@@ -15,6 +15,7 @@ use App\Models\Ciudad;
 use App\Models\Departamento;
 use App\Models\ConfiguracionPasarela;
 use App\Services\WompiService;
+use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -23,6 +24,12 @@ use Illuminate\Support\Facades\Log;
 
 class TiendaController extends Controller
 {
+    protected TemplateResolver $templateResolver;
+
+    public function __construct(TemplateResolver $templateResolver)
+    {
+        $this->templateResolver = $templateResolver;
+    }
     /**
      * Mostrar la tienda de una empresa
      */
@@ -114,13 +121,70 @@ class TiendaController extends Controller
         // Obtener carrito
         $carrito = $this->obtenerCarrito($empresa->id);
 
-        return view('tienda.index', compact(
+        // Productos destacados (más vendidos o aleatorios)
+        // TODO: Implementar lógica de más vendidos cuando se configure la relación itemsCompra
+        $productosDestacados = Producto::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
+            ->inRandomOrder()
+            ->take(6)
+            ->get();
+
+        // Cargar precios para productos destacados
+        foreach ($productosDestacados as $producto) {
+            $producto->precio_actual = $producto->precios()
+                ->where('lista_precio_id', $listaPrecio->id)
+                ->where('activo', true)
+                ->first();
+        }
+
+        // Productos nuevos (últimos 6 productos creados)
+        $productosNuevos = Producto::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
+            ->latest('created_at')
+            ->take(6)
+            ->get();
+
+        // Cargar precios para productos nuevos
+        foreach ($productosNuevos as $producto) {
+            $producto->precio_actual = $producto->precios()
+                ->where('lista_precio_id', $listaPrecio->id)
+                ->where('activo', true)
+                ->first();
+        }
+
+        // Producto aleatorio para showcase
+        $productoAleatorio = Producto::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal', 'variantes'])
+            ->inRandomOrder()
+            ->first();
+
+        if ($productoAleatorio) {
+            $productoAleatorio->precio_actual = $productoAleatorio->precios()
+                ->where('lista_precio_id', $listaPrecio->id)
+                ->where('activo', true)
+                ->first();
+        }
+
+        // Resolver estrategia de template
+        $strategy = $this->templateResolver->resolveForEmpresa($empresa);
+
+        // Preparar datos específicos del template
+        $data = $strategy->prepareData(compact(
             'empresa',
             'productos',
             'categorias',
             'listaPrecio',
-            'carrito'
+            'carrito',
+            'productosDestacados',
+            'productosNuevos',
+            'productoAleatorio'
         ));
+
+        // Renderizar vista del template
+        return view($strategy->getViewIndex(), $data);
     }
 
     /**
@@ -151,6 +215,21 @@ class TiendaController extends Controller
             $producto->load('stockPrincipal');
         }
 
+        // Obtener categorías con productos (para el menú)
+        $categorias = Categoria::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->whereHas('productos', function($q) {
+                $q->where('activo', true);
+            })
+            ->withCount([
+                'productos as productos_count' => function ($q) use ($empresa) {
+                    $q->where('activo', true)
+                    ->where('empresa_id', $empresa->id);
+                }
+            ])
+            ->orderBy('orden')
+            ->get();
+
         // Productos relacionados
         $relacionados = Producto::where('empresa_id', $empresa->id)
             ->where('categoria_id', $producto->categoria_id)
@@ -166,13 +245,18 @@ class TiendaController extends Controller
 
         $carrito = $this->obtenerCarrito($empresa->id);
 
-        return view('tienda.producto', compact(
+        $strategy = $this->templateResolver->resolveForEmpresa($empresa);
+
+        $data = $strategy->prepareData(compact(
             'empresa',
             'producto',
             'relacionados',
+            'categorias',
             'listaPrecio',
             'carrito'
         ));
+
+        return view($strategy->getViewProducto(), $data);
     }
 
     /**
@@ -792,7 +876,9 @@ public function categorias($slug, Request $request)
     // Obtener carrito
     $carrito = $this->obtenerCarrito($empresa->id);
 
-    return view('tienda.categoria', compact(
+    $strategy = $this->templateResolver->resolveForEmpresa($empresa);
+
+    $data = $strategy->prepareData(compact(
         'empresa',
         'productos',
         'categorias',
@@ -802,6 +888,8 @@ public function categorias($slug, Request $request)
         'precioMin',
         'precioMax'
     ));
+
+    return view($strategy->getViewCategoria(), $data);
 }
 
     /**

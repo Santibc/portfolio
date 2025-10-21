@@ -1,191 +1,27 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vestido largo Lino - Brasilia Theme</title>
+@extends('tienda.brasilia_layout')
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+@section('title', $producto->nombre . ' - ' . $empresa->nombre)
 
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/brasilia-theme.css') }}">
-</head>
-<body class="js-head-offset head-offset" style="padding-top: 206px;">
-
-    <!-- SVG Sprite -->
-    @include('tienda.partials.brasilia-svg-sprite')
-
-    <!-- Header -->
-    <header class="js-head-main head-main head-colors position-sticky position-fixed-md transition-soft" data-store="head" data-header-md-fixed="true" style="top: 0px;">
-
-        <!-- Adbar Primary (Gris Oscuro) -->
-        <div class="js-adbar js-adbar-primary adbar-primary adbar adbar-colors adbar-with-messages" data-active="true" data-messages="1" data-animated="false">
-            <div class="js-adbar-content js-swiper-adbar-primary swiper-container text-center container">
-                <div class="js-adbar-messages-container js-adbar-primary-messages-container swiper-wrapper adbar-text-container align-items-center">
-                    <span class="js-adbar-message-container js-adbar-primary-message-container adbar-message swiper-slide slide-container">
-                        CUPÓN DEL 10% OFF USANDO #DESCUENTO10
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Adbar Secondary (Verde - Animated) -->
-        <div class="js-adbar js-adbar-secondary adbar-secondary adbar adbar-animated adbar-colors adbar-with-messages" data-active="true" data-messages="1" data-animated="true">
-            <div class="js-adbar-content js-swiper-adbar-secondary adbar-content-animated">
-                <div class="js-adbar-messages-container js-adbar-secondary-messages-container swiper-wrapper adbar-text-container align-items-center">
-                    @for($i = 0; $i < 16; $i++)
-                    <span class="js-adbar-message-container js-adbar-secondary-message-container adbar-message mr-4">
-                        ENVÍO GRATIS A PARTIR DE $56.000
-                    </span>
-                    @endfor
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Navigation -->
-        <div class="js-head-row head-row container logo-center logo-md-left">
-
-            <!-- Mobile Menu Button -->
-            <div class="menu-container d-md-none">
-                <button class="js-modal-open-private header-utility" data-target="#nav-hamburger" aria-label="Menú">
-                    <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#bars"></use></svg>
-                </button>
-            </div>
-
-            <!-- Logo -->
-            <div class="js-logo-container logo-container" style="width: 163px;">
-                <div id="logo" class="logo-img-container">
-                    <a href="{{ route('tienda.brasilia') }}" title="Brasilia Theme">
-                        <img src="https://dcdn-us.mitiendanube.com/stores/004/486/324/themes/common/logo-429079951-1719412309-105224c351f272540c4b787ddee151421719412309-480-0.webp"
-                             alt="Brasilia Theme"
-                             class="logo-img transition-soft"
-                             width="250"
-                             height="92">
-                    </a>
-                    <h1 style="display: none;">Brasilia Theme</h1>
-                </div>
-            </div>
-
-            <!-- Search Form -->
-            <div class="search-container">
-                <form class="js-search-form search-form" action="/search/" method="get">
-                    <div class="form-group position-relative m-0">
-                        <input class="js-search-input form-control search-input"
-                               autocomplete="off"
-                               type="search"
-                               name="q"
-                               placeholder="¿Qué estás buscando?"
-                               aria-label="¿Qué estás buscando?">
-                        <button type="submit" class="js-search-input-submit search-btn search-submit-btn svg-icon-mask" value="Buscar" aria-label="Buscar">
-                        </button>
-                        <a href="#" class="js-empty-search search-btn search-empty-btn svg-icon-mask" style="display: none;">
-                        </a>
-                    </div>
-                </form>
-                <div class="js-search-form-suggestions search-suggestions" style="display: none;"></div>
-            </div>
-
-            <!-- Utilities -->
-            <div class="utilities-container">
-                <!-- User Account (Mobile) -->
-                <span class="js-header-utility-icon js-header-utility-icon-only header-utility d-md-none utility-icon-md-colors">
-                    <a href="/account/login/" class="header-icon">
-                        <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#user"></use></svg>
-                    </a>
-                </span>
-
-                <!-- User Account (Desktop) -->
-                <span class="js-header-utility-with-text header-utility d-none d-md-grid">
-                    <span class="js-header-utility-icon utility-icon-md-colors">
-                        <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#user"></use></svg>
-                    </span>
-                    <span class="utility-text">
-                        <div class="font-weight-bold">
-                            <a href="/account/login/" title="">Entrá</a> /
-                        </div>
-                        <div>
-                            <a href="/account/register" title="">Registráte</a>
-                        </div>
-                    </span>
-                </span>
-
-                <!-- Cart -->
-                <span id="ajax-cart" data-component="cart-button">
-                    <a href="#" data-target="#modal-cart" class="js-modal-open-private header-utility">
-                        <span class="js-header-utility-icon header-icon-big utility-icon-md-colors">
-                            <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#bag"></use></svg>
-                            <span class="js-cart-widget-amount badge d-md-none">0</span>
-                        </span>
-                        <div class="js-header-utility-text js-header-utility-text-cart utility-text d-none d-md-grid">
-                            <div class="font-weight-bold d-flex">
-                                <span class="mr-1">Carrito</span>
-                                <span>(<span class="js-cart-widget-amount">0</span>)</span>
-                            </div>
-                            <div class="js-cart-widget-total" data-priceraw="0">$0,00</div>
-                        </div>
-                    </a>
-                </span>
-            </div>
-        </div>
-
-        <!-- Desktop Navigation Menu -->
-        <div class="js-head-row-nav head-row-nav d-none d-md-block">
-            <nav class="js-desktop-nav desktop-nav container">
-                <div class="nav-list-container">
-                    <ul class="nav-list nav-list-left">
-                        <li class="nav-list-item nav-dropdown-parent">
-                            <a href="#" class="nav-list-link">Categorías</a>
-                            <div class="nav-dropdown-menu">
-                                <div class="nav-dropdown-content">
-                                    <div class="nav-dropdown-column">
-                                        <a href="#" class="nav-dropdown-item">Abrigos</a>
-                                        <a href="#" class="nav-dropdown-item">Shorts</a>
-                                        <a href="#" class="nav-dropdown-item">Lentes</a>
-                                        <a href="#" class="nav-dropdown-item">Remeras</a>
-                                    </div>
-                                    <div class="nav-dropdown-column">
-                                        <a href="#" class="nav-dropdown-item">Zapatos</a>
-                                        <a href="#" class="nav-dropdown-item">Carteras</a>
-                                        <a href="#" class="nav-dropdown-item">Camisas</a>
-                                        <a href="#" class="nav-dropdown-item">Vestidos</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="nav-list-item">
-                            <a href="#" class="nav-list-link">Liquidación</a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </div>
-    </header>
-
+@section('content')
     <?php
-    // Datos hardcodeados del producto
-    $producto = [
-        'nombre' => 'Vestido largo Lino',
-        'precio' => 87000,
-        'precio_antes' => 120000,
-        'descuento' => 28,
-        'descripcion' => 'El diseño presenta una silueta fluida y relajada que se adapta perfectamente a la estación, con una caída suave que añade movimiento y elegancia a cada paso. Confeccionado en lino de alta calidad, este vestido ofrece una textura ligera y transpirable, ideal para los días cálidos.',
-        'imagenes' => [
-            'https://dcdn-us.mitiendanube.com/stores/004/486/324/products/producto-19-2988a7feaac8586fdf17115606618964-1024-1024.webp',
-            'https://dcdn-us.mitiendanube.com/stores/004/486/324/products/producto-20-22ec3a9e9b7e1c90d417115606626023-1024-1024.webp',
-            'https://dcdn-us.mitiendanube.com/stores/004/486/324/products/producto-21-a7d83c3edb1ea85f4917115606632859-1024-1024.webp',
-            'https://dcdn-us.mitiendanube.com/stores/004/486/324/products/producto-22-c10a11353c1d0c4d8a17115606639412-1024-1024.webp',
-        ],
-        'variantes' => [
-            ['talla' => 'S', 'stock' => 3],
-            ['talla' => 'M', 'stock' => 5],
-            ['talla' => 'L', 'stock' => 1],
-            ['talla' => 'XL', 'stock' => 4],
-        ],
-    ];
+    // Preparar datos del producto para usar en el template
+    $precioActual = is_object($producto->precio_actual) ? $producto->precio_actual->precio : $producto->precio_actual;
+    $precioAnterior = is_object($producto->precio_actual) && isset($producto->precio_actual->precio_anterior) ? $producto->precio_actual->precio_anterior : null;
+    $descuento = 0;
+
+    if ($precioAnterior && $precioAnterior > $precioActual) {
+        $descuento = round((($precioAnterior - $precioActual) / $precioAnterior) * 100);
+    }
+
+    // Preparar imágenes
+    $imagenes = [];
+    if ($producto->imagenes && $producto->imagenes->count() > 0) {
+        foreach ($producto->imagenes as $img) {
+            $imagenes[] = $img->url;
+        }
+    } else {
+        $imagenes[] = $producto->url_imagen_principal ?? asset('assets/img/product/placeholder.webp');
+    }
     ?>
 
     <!-- Product Detail -->
@@ -196,28 +32,30 @@
                 <div class="col-md-7 mb-4 mb-md-0">
                     <div class="product-detail-images">
                         <!-- Main Image Slider -->
-                        <div class="swiper product-main-swiper mb-3">
+                        <div class="swiper product-main-swiper mb-3" style="max-width: 500px; margin: 0 auto;">
                             <div class="swiper-wrapper">
-                                @foreach($producto['imagenes'] as $imagen)
+                                @foreach($imagenes as $imagen)
                                 <div class="swiper-slide">
-                                    <div class="product-detail-image-container">
-                                        <img src="{{ $imagen }}" alt="{{ $producto['nombre'] }}" class="product-detail-image">
+                                    <div class="product-detail-image-container" style="padding-top: 100% !important; max-width: 500px; margin: 0 auto; border-radius: 0;">
+                                        <img src="{{ $imagen }}" alt="{{ $producto->nombre }}" class="product-detail-image">
                                     </div>
                                 </div>
                                 @endforeach
                             </div>
                             <!-- Navigation -->
+                            @if(count($imagenes) > 1)
                             <div class="swiper-button-prev"></div>
                             <div class="swiper-button-next"></div>
+                            @endif
                         </div>
 
                         <!-- Thumbnails -->
-                        <div class="swiper product-thumbs-swiper">
+                        <div class="swiper product-thumbs-swiper" style="max-width: 500px; margin: 0 auto;">
                             <div class="swiper-wrapper">
-                                @foreach($producto['imagenes'] as $imagen)
-                                <div class="swiper-slide">
-                                    <div class="product-thumb-container">
-                                        <img src="{{ $imagen }}" alt="{{ $producto['nombre'] }}" class="product-thumb-image">
+                                @foreach($imagenes as $imagen)
+                                <div class="swiper-slide" style="max-width: 120px;">
+                                    <div class="product-thumb-container" style="padding-top: 100% !important; border-radius: 0;">
+                                        <img src="{{ $imagen }}" alt="{{ $producto->nombre }}" class="product-thumb-image">
                                     </div>
                                 </div>
                                 @endforeach
@@ -229,67 +67,153 @@
                 <!-- Product Info -->
                 <div class="col-md-5">
                     <div class="product-detail-info">
-                        <h1 class="product-detail-title mb-3">{{ $producto['nombre'] }}</h1>
+                        <h1 class="product-detail-title mb-3">{{ $producto->nombre }}</h1>
 
                         <!-- Price -->
+                        @if($precioActual)
                         <div class="product-detail-price mb-3">
-                            @if(isset($producto['precio_antes']))
+                            @if($precioAnterior && $precioAnterior > $precioActual)
                             <div class="price-compare mb-1">
-                                ${{ number_format($producto['precio_antes'], 0, ',', '.') }}
+                                ${{ number_format($precioAnterior, 0, ',', '.') }}
                             </div>
                             @endif
                             <div class="d-flex align-items-center">
                                 <span class="price-current h3 mb-0">
-                                    ${{ number_format($producto['precio'], 0, ',', '.') }}
+                                    ${{ number_format($precioActual, 0, ',', '.') }}
                                 </span>
-                                @if(isset($producto['descuento']))
+                                @if($descuento > 0)
                                 <span class="price-discount-badge ml-2">
-                                    {{ $producto['descuento'] }}% OFF
+                                    {{ $descuento }}% OFF
                                 </span>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Saved Money -->
+                        @if($precioAnterior && $precioAnterior > $precioActual)
                         <div class="saved-money-message mb-3">
-                            Ahorrás ${{ number_format($producto['precio_antes'] - $producto['precio'], 0, ',', '.') }}
+                            Ahorrás ${{ number_format($precioAnterior - $precioActual, 0, ',', '.') }}
                         </div>
+                        @endif
 
                         <!-- Installments -->
                         <div class="installments-info mb-4">
                             <div class="installments-badge mb-2">
                                 <svg class="icon-inline icon-sm mr-1"><use xlink:href="#credit-card"></use></svg>
-                                <strong>3 cuotas sin interés de ${{ number_format($producto['precio'] / 3, 0, ',', '.') }}</strong>
+                                <strong>3 cuotas sin interés de ${{ number_format($precioActual / 3, 0, ',', '.') }}</strong>
                             </div>
                             <div class="installments-total">
                                 <span>Total en 1 pago: </span>
-                                <strong>${{ number_format($producto['precio'], 0, ',', '.') }}</strong>
+                                <strong>${{ number_format($precioActual, 0, ',', '.') }}</strong>
                             </div>
                             <div class="installments-cards">con todas las tarjetas.</div>
                         </div>
+                        @else
+                        <div class="alert alert-warning">Precio no disponible</div>
+                        @endif
 
                         <!-- Free Shipping -->
+                        @if($producto->info_envio)
+                        <div class="free-shipping-message mb-4">
+                            <svg class="icon-inline icon-lg mr-2"><use xlink:href="#truck"></use></svg>
+                            <span>{{ $producto->info_envio }}</span>
+                        </div>
+                        @else
                         <div class="free-shipping-message mb-4">
                             <svg class="icon-inline icon-lg mr-2"><use xlink:href="#truck"></use></svg>
                             <span><strong class="text-accent">Envío gratis</strong> superando los $56.000</span>
                         </div>
+                        @endif
 
                         <!-- Product Form -->
                         <form id="product_form" class="product-form" method="post">
                             @csrf
 
                             <!-- Variants (Sizes) -->
+                            @if($producto->tiene_variantes && $producto->variantes->count() > 0)
                             <div class="product-variants mb-4">
-                                <label class="variant-label mb-2">Talle:</label>
+                                <label class="variant-label mb-2">Variantes:</label>
                                 <div class="variant-options">
-                                    @foreach($producto['variantes'] as $index => $variante)
-                                    <label class="variant-option">
-                                        <input type="radio" name="variant" value="{{ $variante['talla'] }}" {{ $index === 0 ? 'checked' : '' }}>
-                                        <span class="variant-button">{{ $variante['talla'] }}</span>
-                                    </label>
+                                    @foreach($producto->variantes as $index => $variante)
+                                        @php
+                                            $varianteStockInfo = $producto->getStockInfo($variante->id);
+                                            $tieneStockDisponible = $varianteStockInfo['hay_stock'];
+                                            $nombreVariante = $variante->nombre_variante;
+                                        @endphp
+                                        <label class="variant-option {{ !$tieneStockDisponible && $producto->controlar_stock && !$producto->permitir_venta_sin_stock ? 'disabled' : '' }}">
+                                            <input type="radio"
+                                                   name="variant"
+                                                   value="{{ $variante->id }}"
+                                                   data-variante-id="{{ $variante->id }}"
+                                                   data-talla="{{ $variante->talla }}"
+                                                   data-color="{{ $variante->color }}"
+                                                   data-value="{{ $nombreVariante }}"
+                                                   data-stock-disponible="{{ $varianteStockInfo['stock_disponible'] }}"
+                                                   data-puede-agregar-sin-stock="{{ $varianteStockInfo['puede_agregar_sin_stock'] ? 'true' : 'false' }}"
+                                                   {{ $index === 0 && $tieneStockDisponible ? 'checked' : '' }}
+                                                   {{ (!$tieneStockDisponible && $producto->controlar_stock && !$producto->permitir_venta_sin_stock) ? 'disabled' : '' }}>
+                                            <span class="variant-button">{{ $nombreVariante ?: 'Sin especificar' }}</span>
+                                        </label>
                                     @endforeach
                                 </div>
+                                <div class="mt-2 text-muted small">
+                                    <span id="selectedVariant">
+                                        @if($producto->variantes->first())
+                                            {{ $producto->variantes->first()->nombre_variante ?: 'Sin especificar' }}
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="mt-2" id="stockInfo">
+                                    @php
+                                        $primeraVariante = $producto->variantes->first();
+                                        if ($primeraVariante) {
+                                            $stockInfo = $producto->getStockInfo($primeraVariante->id);
+                                            $stock = $stockInfo['stock_disponible'];
+                                        }
+                                    @endphp
+                                    @if(isset($stockInfo))
+                                        @if(!$stockInfo['controlar_stock'] || $stockInfo['permitir_venta_sin_stock'])
+                                            <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                            <span>Disponible</span>
+                                        @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                                            @if($stock > 10)
+                                                <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                                <span>Disponible</span>
+                                            @elseif($stock > 0)
+                                                <i class="bi bi-exclamation-circle-fill" style="color: #f59e0b;"></i>
+                                                <span>Solo {{ $stock }} disponibles</span>
+                                            @else
+                                                <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i>
+                                                <span>Sin stock</span>
+                                            @endif
+                                        @endif
+                                    @endif
+                                </div>
                             </div>
+                            @else
+                                <!-- Stock sin variantes -->
+                                <div class="mb-4" id="stockInfo">
+                                    @php
+                                        $stockInfo = $producto->getStockInfo();
+                                        $stock = $stockInfo['stock_disponible'];
+                                    @endphp
+                                    @if(!$stockInfo['controlar_stock'] || $stockInfo['permitir_venta_sin_stock'])
+                                        <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                        <span>Disponible</span>
+                                    @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                                        @if($stock > 10)
+                                            <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                            <span>Disponible</span>
+                                        @elseif($stock > 0)
+                                            <i class="bi bi-exclamation-circle-fill" style="color: #f59e0b;"></i>
+                                            <span>Solo {{ $stock }} disponibles</span>
+                                        @else
+                                            <i class="bi bi-x-circle-fill" style="color: #ef4444;"></i>
+                                            <span>Sin stock</span>
+                                        @endif
+                                    @endif
+                                </div>
+                            @endif
 
                             <!-- Quantity and Add to Cart in same row -->
                             <div class="product-quantity-cart mb-4">
@@ -299,109 +223,143 @@
                                         <button type="button" class="quantity-btn quantity-minus">
                                             <svg class="icon-inline"><use xlink:href="#minus"></use></svg>
                                         </button>
-                                        <input type="number" name="quantity" value="1" min="1" max="10" class="quantity-input">
+                                        <input type="number" name="quantity" value="1" min="1" max="99" class="quantity-input">
                                         <button type="button" class="quantity-btn quantity-plus">
                                             <svg class="icon-inline"><use xlink:href="#plus"></use></svg>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="cart-section">
-                                    <button type="submit" class="btn btn-primary btn-big">
+                                    <button type="button" class="btn btn-primary btn-big" id="addToCartBtn"
+                                        @php
+                                            $stockInfo = $producto->getStockInfo();
+                                            $puedeAgregar = $precioActual && ($stockInfo['hay_stock'] || !$stockInfo['stock_limitado']);
+                                        @endphp
+                                        {{ !$puedeAgregar ? 'disabled' : '' }}>
                                         Agregar al carrito
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Guaranteed Purchase & Returns -->
-                            <div class="product-guarantees mb-4">
-                                <div class="guarantee-item mb-3">
-                                    <div class="guarantee-icon">
-                                        <svg class="icon-inline icon-lg"><use xlink:href="#security"></use></svg>
-                                    </div>
-                                    <div class="guarantee-text">
-                                        <div class="guarantee-title">Compra protegida</div>
-                                        <div class="guarantee-desc">Tus datos cuidados durante toda la compra.</div>
-                                    </div>
-                                </div>
-                                <div class="guarantee-item">
-                                    <div class="guarantee-icon">
-                                        <svg class="icon-inline icon-lg"><use xlink:href="#returns"></use></svg>
-                                    </div>
-                                    <div class="guarantee-text">
-                                        <div class="guarantee-title">Cambios y devoluciones</div>
-                                        <div class="guarantee-desc">Si no te gusta, podés cambiarlo por otro o devolverlo.</div>
-                                    </div>
-                                </div>
+                            <!-- Product Description -->
+                            @if($producto->descripcion)
+                            <div class="product-short-description mb-4">
+                                <p class="text-muted mb-0">{{ $producto->descripcion }}</p>
                             </div>
+                            @endif
                         </form>
                     </div>
                 </div>
             </div>
 
-            <!-- Product Description -->
+            <!-- Product Specifications -->
+            @if($producto->unidad_venta || $producto->unidad_empaque || $producto->extension || $producto->referencia)
             <div class="row mt-5">
                 <div class="col-12">
                     <div class="product-description">
-                        <h2 class="description-title mb-3">Descripción</h2>
+                        <h2 class="description-title mb-3">Especificaciones</h2>
                         <div class="description-content">
-                            <p>{{ $producto['descripcion'] }}</p>
+                            <ul class="list-unstyled">
+                                @if($producto->referencia)
+                                <li class="mb-2"><strong>Referencia:</strong> {{ $producto->referencia }}</li>
+                                @endif
+                                @if($producto->unidad_venta)
+                                <li class="mb-2"><strong>Unidad de Venta:</strong> {{ $producto->unidad_venta }}</li>
+                                @endif
+                                @if($producto->unidad_empaque)
+                                <li class="mb-2"><strong>Unidad de Empaque:</strong> {{ $producto->unidad_empaque }}</li>
+                                @endif
+                                @if($producto->extension)
+                                <li class="mb-2"><strong>Extensión:</strong> {{ $producto->extension }}</li>
+                                @endif
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Related Products -->
+            @if(isset($relacionados) && $relacionados->count() > 0)
             <div class="row mt-5">
                 <div class="col-12">
                     <h2 class="section-title mb-4">Productos relacionados</h2>
                     <div class="swiper related-products-swiper">
                         <div class="swiper-wrapper">
-                            @for($i = 0; $i < 6; $i++)
-                            <div class="swiper-slide">
-                                <div class="product-card">
-                                    <div class="product-image-wrapper">
-                                        <a href="#" class="product-image-link">
-                                            <div class="product-image-container-square">
-                                                <img src="https://dcdn-us.mitiendanube.com/stores/004/486/324/products/producto-{{ $i + 1 }}-2988a7feaac8586fdf17115606618964-1024-1024.webp"
-                                                     alt="Producto relacionado"
-                                                     class="product-image">
-                                            </div>
-                                        </a>
-                                        <span class="product-badge product-badge-discount">25% OFF</span>
-                                    </div>
-                                    <div class="product-info">
-                                        <h3 class="product-name"><a href="#">Producto Relacionado {{ $i + 1 }}</a></h3>
-                                        <div class="product-price-container">
-                                            <span class="product-price-compare">$65.000</span>
-                                            <span class="product-price">${{ 45000 + ($i * 5000) }}</span>
+                            @foreach($relacionados as $relacionado)
+                                @php
+                                    $precioRel = is_object($relacionado->precio_actual) ? $relacionado->precio_actual->precio : $relacionado->precio_actual;
+                                    $precioAntRel = is_object($relacionado->precio_actual) && isset($relacionado->precio_actual->precio_anterior) ? $relacionado->precio_actual->precio_anterior : null;
+                                    $descuentoRel = 0;
+
+                                    if ($precioAntRel && $precioAntRel > $precioRel) {
+                                        $descuentoRel = round((($precioAntRel - $precioRel) / $precioAntRel) * 100);
+                                    }
+                                @endphp
+                                <div class="swiper-slide">
+                                    <div class="product-card" style="max-width: 300px;">
+                                        <div class="product-image-wrapper">
+                                            <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}" class="product-image-link">
+                                                <div class="product-image-container-square" style="max-height: 300px;">
+                                                    <img src="{{ $relacionado->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
+                                                         alt="{{ $relacionado->nombre }}"
+                                                         class="product-image"
+                                                         loading="lazy">
+                                                </div>
+                                            </a>
+                                            @if($descuentoRel > 0)
+                                            <span class="product-badge product-badge-discount">{{ $descuentoRel }}% OFF</span>
+                                            @endif
                                         </div>
-                                        <p class="product-installments">3 cuotas sin interés de ${{ number_format((45000 + ($i * 5000)) / 3, 0, ',', '.') }}</p>
+                                        <div class="product-info">
+                                            <h3 class="product-name">
+                                                <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}">
+                                                    {{ $relacionado->nombre }}
+                                                </a>
+                                            </h3>
+                                            <div class="product-price-container">
+                                                @if($precioAntRel && $precioAntRel > $precioRel)
+                                                <span class="product-price-compare">${{ number_format($precioAntRel, 0, ',', '.') }}</span>
+                                                @endif
+                                                @if($precioRel)
+                                                <span class="product-price">${{ number_format($precioRel, 0, ',', '.') }}</span>
+                                                @else
+                                                <span class="product-price text-muted">Consultar</span>
+                                                @endif
+                                            </div>
+                                            @if($precioRel)
+                                            <p class="product-installments">3 cuotas sin interés de ${{ number_format($precioRel / 3, 0, ',', '.') }}</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            @endfor
+                            @endforeach
                         </div>
+                        @if($relacionados->count() > 1)
                         <div class="swiper-button-prev"></div>
                         <div class="swiper-button-next"></div>
+                        @endif
                     </div>
                 </div>
             </div>
+            @endif
         </div>
     </div>
+@endsection
 
-    <!-- Footer -->
-    @include('tienda.partials.brasilia-footer')
+@push('scripts')
+<script>
+    // === Variables globales ===
+    const tieneVariantes = {{ $producto->tiene_variantes ? 'true' : 'false' }};
+    const variantes = @json($producto->variantes);
+    let selectedVariantId = null;
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar variante seleccionada si existe
+        @if($producto->tiene_variantes && $producto->variantes->count() > 0)
+            selectedVariantId = {{ $producto->variantes->first()->id }};
+        @endif
 
-    <!-- Swiper JS -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
-    <!-- Custom JS -->
-    <script src="{{ asset('js/brasilia-theme.js') }}"></script>
-
-    <script>
         // Product Image Sliders
         const productThumbsSwiper = new Swiper('.product-thumbs-swiper', {
             spaceBetween: 10,
@@ -413,8 +371,8 @@
         const productMainSwiper = new Swiper('.product-main-swiper', {
             spaceBetween: 10,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.product-main-swiper .swiper-button-next',
+                prevEl: '.product-main-swiper .swiper-button-prev',
             },
             thumbs: {
                 swiper: productThumbsSwiper,
@@ -426,8 +384,8 @@
             slidesPerView: 1,
             spaceBetween: 20,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: '.related-products-swiper .swiper-button-next',
+                prevEl: '.related-products-swiper .swiper-button-prev',
             },
             breakpoints: {
                 480: {
@@ -443,22 +401,206 @@
         });
 
         // Quantity Selector
-        document.querySelector('.quantity-minus').addEventListener('click', function() {
-            const input = document.querySelector('.quantity-input');
-            const currentValue = parseInt(input.value);
-            if (currentValue > 1) {
-                input.value = currentValue - 1;
-            }
+        const quantityMinus = document.querySelector('.quantity-minus');
+        const quantityPlus = document.querySelector('.quantity-plus');
+        const quantityInput = document.querySelector('.quantity-input');
+
+        if (quantityMinus) {
+            quantityMinus.addEventListener('click', function() {
+                const currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                }
+            });
+        }
+
+        if (quantityPlus) {
+            quantityPlus.addEventListener('click', function() {
+                const currentValue = parseInt(quantityInput.value);
+                const maxValue = parseInt(quantityInput.getAttribute('max')) || 99;
+                if (currentValue < maxValue) {
+                    quantityInput.value = currentValue + 1;
+                }
+            });
+        }
+
+        // Selección de variante
+        const variantInputs = document.querySelectorAll('input[name="variant"]');
+        variantInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (!this.disabled) {
+                    selectedVariantId = this.dataset.varianteId;
+                    const varianteName = this.dataset.value;
+                    const selectedVariantEl = document.getElementById('selectedVariant');
+                    if (selectedVariantEl) {
+                        selectedVariantEl.textContent = varianteName;
+                    }
+
+                    // Actualizar stock info
+                    updateStockInfo(selectedVariantId);
+
+                    // Habilitar/deshabilitar botón de agregar al carrito
+                    const puedeAgregar = this.dataset.puedeAgregarSinStock === 'true' || parseInt(this.dataset.stockDisponible) > 0;
+                    const addToCartBtn = document.getElementById('addToCartBtn');
+                    if (addToCartBtn) {
+                        addToCartBtn.disabled = !puedeAgregar;
+                    }
+                }
+            });
         });
 
-        document.querySelector('.quantity-plus').addEventListener('click', function() {
-            const input = document.querySelector('.quantity-input');
-            const currentValue = parseInt(input.value);
-            const maxValue = parseInt(input.max);
-            if (currentValue < maxValue) {
-                input.value = currentValue + 1;
+        // Agregar al carrito
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', function() {
+                const quantity = parseInt(quantityInput.value);
+
+                if (tieneVariantes && !selectedVariantId) {
+                    showToast('error', 'Por favor selecciona una variante del producto');
+                    return;
+                }
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Agregando...';
+
+                const data = {
+                    producto_id: {{ $producto->id }},
+                    cantidad: quantity
+                };
+                if (selectedVariantId) data.variante_id = selectedVariantId;
+
+                fetch("{{ route('tienda.carrito.agregar', $empresa->slug) }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    showToast('success', 'Producto agregado al carrito');
+                    if (data && typeof data.total_items !== 'undefined') {
+                        updateCartBadge(data.total_items);
+                    }
+                    addToCartBtn.innerHTML = '<i class="bi bi-check"></i> Agregado';
+
+                    setTimeout(() => {
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.innerHTML = 'Agregar al carrito';
+                    }, 2000);
+                })
+                .catch(error => {
+                    const errorMsg = error.message || 'Error al agregar al carrito';
+                    showToast('error', errorMsg);
+                    addToCartBtn.disabled = false;
+                    addToCartBtn.innerHTML = 'Agregar al carrito';
+                });
+            });
+        }
+    });
+
+    // Actualizar información de stock
+    function updateStockInfo(varianteId) {
+        fetch("{{ route('tienda.stock.info', $empresa->slug) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                producto_id: {{ $producto->id }},
+                variante_id: varianteId
+            })
+        })
+        .then(response => response.json())
+        .then(stockInfo => {
+            const stock = stockInfo.stock_disponible || 0;
+            let stockHtml = '';
+
+            if (!stockInfo.controlar_stock || stockInfo.permitir_venta_sin_stock) {
+                stockHtml = '<i class="bi bi-check-circle-fill" style="color: #10b981;"></i> <span>Disponible</span>';
+            } else if (stockInfo.controlar_stock && !stockInfo.permitir_venta_sin_stock) {
+                if (stock > 10) {
+                    stockHtml = '<i class="bi bi-check-circle-fill" style="color: #10b981;"></i> <span>Disponible</span>';
+                } else if (stock > 0) {
+                    stockHtml = '<i class="bi bi-exclamation-circle-fill" style="color: #f59e0b;"></i> <span>Solo ' + stock + ' disponibles</span>';
+                } else {
+                    stockHtml = '<i class="bi bi-x-circle-fill" style="color: #ef4444;"></i> <span>Sin stock</span>';
+                }
             }
+
+            const stockInfoEl = document.getElementById('stockInfo');
+            if (stockInfoEl) {
+                stockInfoEl.innerHTML = stockHtml;
+            }
+
+            // Actualizar límite de cantidad
+            const quantityInput = document.querySelector('.quantity-input');
+            if (quantityInput) {
+                if (stockInfo.stock_limitado && stock > 0) {
+                    quantityInput.setAttribute('max', stock);
+                } else {
+                    quantityInput.setAttribute('max', 99);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar stock:', error);
         });
-    </script>
-</body>
-</html>
+    }
+
+    // Toast notification
+    function showToast(type, message) {
+        const toastEl = document.getElementById('cartToast');
+        if (!toastEl) {
+            console.error('Toast element not found');
+            alert(message);
+            return;
+        }
+
+        const toast = new bootstrap.Toast(toastEl);
+
+        const toastBody = toastEl.querySelector('.toast-body');
+        if (toastBody) {
+            toastBody.textContent = message;
+        }
+
+        const toastIcon = toastEl.querySelector('.toast-header i');
+        if (toastIcon) {
+            if (type === 'error') {
+                toastIcon.classList.remove('text-success', 'bi-check-circle-fill');
+                toastIcon.classList.add('text-danger', 'bi-exclamation-circle-fill');
+            } else {
+                toastIcon.classList.remove('text-danger', 'bi-exclamation-circle-fill');
+                toastIcon.classList.add('text-success', 'bi-check-circle-fill');
+            }
+        }
+
+        toast.show();
+    }
+
+    // Actualiza el badge del carrito
+    function updateCartBadge(count) {
+        const cartBtn = document.querySelector('.header-action-btn');
+        if (!cartBtn) return;
+
+        let badge = cartBtn.querySelector('.badge');
+
+        if (count > 0) {
+            if (badge) {
+                badge.textContent = count;
+            } else {
+                badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.textContent = count;
+                cartBtn.appendChild(badge);
+            }
+        } else {
+            if (badge) {
+                badge.remove();
+            }
+        }
+    }
+</script>
+@endpush
