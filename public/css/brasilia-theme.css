@@ -603,8 +603,9 @@ body {
 }
 
 .badge-green {
-    background-color: var(--color-badge-green);
+    background-color: var(--color-white);
     color: var(--color-dark);
+    border: 1px solid var(--color-gray-border);
 }
 
 .product-info-square {
@@ -772,6 +773,20 @@ body {
     font-size: 32px;
     font-weight: 700;
     color: var(--color-dark);
+    border: none !important;
+    border-bottom: none !important;
+    text-decoration: none !important;
+}
+
+.section-header .section-title,
+h2.section-title,
+.products-section .section-title,
+.lo-nuevo-section .section-title,
+.ofertas-section .section-title {
+    border: none !important;
+    border-bottom: none !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
 }
 
 .lo-nuevo-swiper {
@@ -1003,8 +1018,9 @@ body {
 }
 
 .price-discount-estilo {
-    background-color: var(--color-badge-green);
+    background-color: var(--color-white);
     color: var(--color-dark);
+    border: 1px solid var(--color-gray-border);
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
@@ -2090,8 +2106,9 @@ body {
     position: absolute;
     top: 10px;
     left: 10px;
-    background-color: var(--color-badge-green);
+    background-color: var(--color-white);
     color: var(--color-dark);
+    border: 1px solid var(--color-gray-border);
     padding: 5px 10px;
     border-radius: 0;
     font-size: 11px;

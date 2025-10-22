@@ -71,6 +71,18 @@ Route::prefix('productos')->middleware(['auth', 'verificar.empresa', 'verificar.
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
 });
+
+// Rutas de Descuentos
+Route::prefix('descuentos')->middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\DescuentosController::class, 'index'])->name('descuentos.index');
+    Route::get('/create', [App\Http\Controllers\DescuentosController::class, 'create'])->name('descuentos.create');
+    Route::post('/store', [App\Http\Controllers\DescuentosController::class, 'store'])->name('descuentos.store');
+    Route::get('/{id}/edit', [App\Http\Controllers\DescuentosController::class, 'edit'])->name('descuentos.edit');
+    Route::put('/{id}', [App\Http\Controllers\DescuentosController::class, 'update'])->name('descuentos.update');
+    Route::delete('/{id}', [App\Http\Controllers\DescuentosController::class, 'destroy'])->name('descuentos.destroy');
+    Route::post('/{id}/toggle', [App\Http\Controllers\DescuentosController::class, 'toggleEstado'])->name('descuentos.toggle');
+    Route::get('/{id}/estadisticas', [App\Http\Controllers\DescuentosController::class, 'estadisticas'])->name('descuentos.estadisticas');
+});
 Route::get('actualizaciones/{id}/descargar', 
     [ActualizacionPreciosController::class, 'descargarArchivoActualizacion']
 )->name('actualizaciones.descargar');
@@ -285,6 +297,13 @@ Route::post('/{slug}/carrito/actualizar', [App\Http\Controllers\TiendaController
 
 Route::post('/{slug}/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
     ->name('tienda.carrito.quitar');
+
+// Descuentos
+Route::post('/{slug}/carrito/aplicar-descuento', [App\Http\Controllers\TiendaController::class, 'aplicarDescuento'])
+    ->name('tienda.carrito.aplicar-descuento');
+
+Route::post('/{slug}/carrito/remover-descuento', [App\Http\Controllers\TiendaController::class, 'removerDescuento'])
+    ->name('tienda.carrito.remover-descuento');
 
 Route::post('/{slug}/stock/info', [App\Http\Controllers\TiendaController::class, 'obtenerStockInfo'])
     ->name('tienda.stock.info');

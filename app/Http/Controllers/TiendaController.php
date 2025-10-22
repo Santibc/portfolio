@@ -168,6 +168,54 @@ class TiendaController extends Controller
                 ->first();
         }
 
+        // Obtener descuentos activos de la empresa
+        $descuentosActivos = \App\Models\Descuento::porEmpresa($empresa->id)
+            ->activos()
+            ->vigentes()
+            ->disponibles()
+            ->get();
+
+        // Productos con descuentos (para la sección de ofertas)
+        $productosConDescuento = collect();
+
+        foreach ($descuentosActivos as $descuento) {
+            if ($descuento->aplica_a === 'producto' && !empty($descuento->productos_aplicables)) {
+                $prodDescuento = Producto::where('empresa_id', $empresa->id)
+                    ->where('activo', true)
+                    ->whereIn('id', $descuento->productos_aplicables)
+                    ->with(['imagenPrincipal', 'categoria'])
+                    ->get();
+
+                foreach ($prodDescuento as $prod) {
+                    $prod->precio_actual = $prod->precios()
+                        ->where('lista_precio_id', $listaPrecio->id)
+                        ->where('activo', true)
+                        ->first();
+                    $prod->descuento_info = $descuento;
+                    $productosConDescuento->push($prod);
+                }
+            } elseif ($descuento->aplica_a === 'categoria' && !empty($descuento->categorias_aplicables)) {
+                $prodDescuento = Producto::where('empresa_id', $empresa->id)
+                    ->where('activo', true)
+                    ->whereIn('categoria_id', $descuento->categorias_aplicables)
+                    ->with(['imagenPrincipal', 'categoria'])
+                    ->take(5)
+                    ->get();
+
+                foreach ($prodDescuento as $prod) {
+                    $prod->precio_actual = $prod->precios()
+                        ->where('lista_precio_id', $listaPrecio->id)
+                        ->where('activo', true)
+                        ->first();
+                    $prod->descuento_info = $descuento;
+                    $productosConDescuento->push($prod);
+                }
+            }
+        }
+
+        // Limitar a 6 productos únicos
+        $productosConDescuento = $productosConDescuento->unique('id')->take(6);
+
         // Resolver estrategia de template
         $strategy = $this->templateResolver->resolveForEmpresa($empresa);
 
@@ -180,7 +228,9 @@ class TiendaController extends Controller
             'carrito',
             'productosDestacados',
             'productosNuevos',
-            'productoAleatorio'
+            'productoAleatorio',
+            'productosConDescuento',
+            'descuentosActivos'
         ));
 
         // Renderizar vista del template
@@ -245,6 +295,13 @@ class TiendaController extends Controller
 
         $carrito = $this->obtenerCarrito($empresa->id);
 
+        // Obtener descuentos activos de la empresa
+        $descuentosActivos = \App\Models\Descuento::porEmpresa($empresa->id)
+            ->activos()
+            ->vigentes()
+            ->disponibles()
+            ->get();
+
         $strategy = $this->templateResolver->resolveForEmpresa($empresa);
 
         $data = $strategy->prepareData(compact(
@@ -253,7 +310,8 @@ class TiendaController extends Controller
             'relacionados',
             'categorias',
             'listaPrecio',
-            'carrito'
+            'carrito',
+            'descuentosActivos'
         ));
 
         return view($strategy->getViewProducto(), $data);
@@ -509,9 +567,11 @@ public function procesarCompra(Request $request, $slug)
             'direccion_envio' => $request->direccion,
             'ciudad_id' => $request->ciudad_id,
             'subtotal' => $carrito->subtotal,
+            'descuento_total' => $carrito->descuento_total ?? 0,
+            'descuentos_aplicados' => $carrito->descuentos_aplicados ?? [],
             'impuestos' => 0, // Calcular según configuración
             'costo_envio' => 0, // Calcular según ciudad
-            'total' => $carrito->subtotal,
+            'total' => $carrito->total ?? $carrito->subtotal,
             'estado' => 'pendiente',
             'notas' => $request->notas
         ]);
@@ -543,6 +603,11 @@ public function procesarCompra(Request $request, $slug)
                     $stock->salida($item['cantidad'], 'venta', $compra->numero_compra);
                 }
             }
+        }
+
+        // Registrar descuentos aplicados
+        if (!empty($carrito->descuentos_aplicados)) {
+            $compra->registrarDescuentos();
         }
 
         // Crear transacción de pago
@@ -876,6 +941,19 @@ public function categorias($slug, Request $request)
     // Obtener carrito
     $carrito = $this->obtenerCarrito($empresa->id);
 
+    // Obtener descuentos activos
+    $descuentosActivos = \App\Models\Descuento::where('empresa_id', $empresa->id)
+        ->where('activo', true)
+        ->where(function($q) {
+            $q->whereNull('fecha_inicio')
+              ->orWhere('fecha_inicio', '<=', now());
+        })
+        ->where(function($q) {
+            $q->whereNull('fecha_fin')
+              ->orWhere('fecha_fin', '>=', now());
+        })
+        ->get();
+
     $strategy = $this->templateResolver->resolveForEmpresa($empresa);
 
     $data = $strategy->prepareData(compact(
@@ -886,7 +964,8 @@ public function categorias($slug, Request $request)
         'listaPrecio',
         'carrito',
         'precioMin',
-        'precioMax'
+        'precioMax',
+        'descuentosActivos'
     ));
 
     return view($strategy->getViewCategoria(), $data);
@@ -951,6 +1030,65 @@ public function categorias($slug, Request $request)
             'valid' => $totalValid,
             'errors' => $stockErrors,
             'total_items' => count($carrito->items)
+        ]);
+    }
+
+    /**
+     * Aplicar código de descuento al carrito
+     */
+    public function aplicarDescuento(Request $request, $slug)
+    {
+        $request->validate([
+            'codigo' => 'required|string'
+        ]);
+
+        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $carrito = $this->obtenerCarrito($empresa->id);
+
+        if (empty($carrito->items)) {
+            return response()->json(['error' => 'El carrito está vacío'], 400);
+        }
+
+        try {
+            $resultado = $carrito->aplicarDescuento($request->codigo);
+
+            if (empty($resultado['descuentos'])) {
+                return response()->json([
+                    'error' => 'El código de descuento no es válido o no cumple con los requisitos'
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Descuento aplicado correctamente',
+                'descuentos' => $resultado['descuentos'],
+                'descuento_total' => $resultado['total_descuento'],
+                'subtotal' => $carrito->subtotal,
+                'total' => $carrito->total
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al aplicar el descuento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remover descuento del carrito
+     */
+    public function removerDescuento($slug)
+    {
+        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $carrito = $this->obtenerCarrito($empresa->id);
+
+        $carrito->removerDescuento();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Descuento removido',
+            'subtotal' => $carrito->subtotal,
+            'descuento_total' => 0,
+            'total' => $carrito->subtotal
         ]);
     }
 }

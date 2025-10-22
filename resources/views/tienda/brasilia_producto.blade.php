@@ -7,10 +7,38 @@
     // Preparar datos del producto para usar en el template
     $precioActual = is_object($producto->precio_actual) ? $producto->precio_actual->precio : $producto->precio_actual;
     $precioAnterior = is_object($producto->precio_actual) && isset($producto->precio_actual->precio_anterior) ? $producto->precio_actual->precio_anterior : null;
-    $descuento = 0;
 
-    if ($precioAnterior && $precioAnterior > $precioActual) {
-        $descuento = round((($precioAnterior - $precioActual) / $precioAnterior) * 100);
+    // Buscar descuentos activos para este producto
+    $descuentoActivo = null;
+    $textoDescuento = null;
+    $precioConDescuento = $precioActual;
+    $montoDescuento = 0;
+
+    if (isset($descuentosActivos)) {
+        foreach ($descuentosActivos as $desc) {
+            $aplica = false;
+
+            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                $aplica = true;
+            } elseif ($desc->aplica_a === 'producto' && in_array($producto->id, $desc->productos_aplicables ?? [])) {
+                $aplica = true;
+            } elseif ($desc->aplica_a === 'categoria' && in_array($producto->categoria_id, $desc->categorias_aplicables ?? [])) {
+                $aplica = true;
+            }
+
+            if ($aplica) {
+                $descuentoActivo = $desc;
+                if ($desc->tipo === 'porcentaje') {
+                    $montoDescuento = ($precioActual * $desc->valor) / 100;
+                    $textoDescuento = round($desc->valor) . '% OFF';
+                } else {
+                    $montoDescuento = $desc->valor;
+                    $textoDescuento = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                }
+                $precioConDescuento = $precioActual - $montoDescuento;
+                break;
+            }
+        }
     }
 
     // Preparar imágenes
@@ -72,27 +100,35 @@
                         <!-- Price -->
                         @if($precioActual)
                         <div class="product-detail-price mb-3">
-                            @if($precioAnterior && $precioAnterior > $precioActual)
-                            <div class="price-compare mb-1">
-                                ${{ number_format($precioAnterior, 0, ',', '.') }}
-                            </div>
+                            @if($descuentoActivo)
+                                @if($descuentoActivo->nombre)
+                                <div class="alert alert-success py-2 mb-2">
+                                    <i class="bi bi-tag-fill"></i> <strong>{{ $descuentoActivo->nombre }}</strong>
+                                    @if($descuentoActivo->descripcion)
+                                        <small class="d-block">{{ $descuentoActivo->descripcion }}</small>
+                                    @endif
+                                </div>
+                                @endif
+                                <div class="price-compare mb-1">
+                                    ${{ number_format($precioActual, 0, ',', '.') }}
+                                </div>
                             @endif
                             <div class="d-flex align-items-center">
                                 <span class="price-current h3 mb-0">
-                                    ${{ number_format($precioActual, 0, ',', '.') }}
+                                    ${{ number_format($precioConDescuento, 0, ',', '.') }}
                                 </span>
-                                @if($descuento > 0)
+                                @if($descuentoActivo)
                                 <span class="price-discount-badge ml-2">
-                                    {{ $descuento }}% OFF
+                                    {{ $textoDescuento }}
                                 </span>
                                 @endif
                             </div>
                         </div>
 
                         <!-- Saved Money -->
-                        @if($precioAnterior && $precioAnterior > $precioActual)
+                        @if($descuentoActivo && $montoDescuento > 0)
                         <div class="saved-money-message mb-3">
-                            Ahorrás ${{ number_format($precioAnterior - $precioActual, 0, ',', '.') }}
+                            Ahorrás ${{ number_format($montoDescuento, 0, ',', '.') }}
                         </div>
                         @endif
 
@@ -100,11 +136,11 @@
                         <div class="installments-info mb-4">
                             <div class="installments-badge mb-2">
                                 <svg class="icon-inline icon-sm mr-1"><use xlink:href="#credit-card"></use></svg>
-                                <strong>3 cuotas sin interés de ${{ number_format($precioActual / 3, 0, ',', '.') }}</strong>
+                                <strong>3 cuotas sin interés de ${{ number_format($precioConDescuento / 3, 0, ',', '.') }}</strong>
                             </div>
                             <div class="installments-total">
                                 <span>Total en 1 pago: </span>
-                                <strong>${{ number_format($precioActual, 0, ',', '.') }}</strong>
+                                <strong>${{ number_format($precioConDescuento, 0, ',', '.') }}</strong>
                             </div>
                             <div class="installments-cards">con todas las tarjetas.</div>
                         </div>
@@ -550,57 +586,33 @@
         });
     }
 
-    // Toast notification
+    // Toast notification usando SweetAlert2
     function showToast(type, message) {
-        const toastEl = document.getElementById('cartToast');
-        if (!toastEl) {
-            console.error('Toast element not found');
-            alert(message);
-            return;
-        }
-
-        const toast = new bootstrap.Toast(toastEl);
-
-        const toastBody = toastEl.querySelector('.toast-body');
-        if (toastBody) {
-            toastBody.textContent = message;
-        }
-
-        const toastIcon = toastEl.querySelector('.toast-header i');
-        if (toastIcon) {
-            if (type === 'error') {
-                toastIcon.classList.remove('text-success', 'bi-check-circle-fill');
-                toastIcon.classList.add('text-danger', 'bi-exclamation-circle-fill');
-            } else {
-                toastIcon.classList.remove('text-danger', 'bi-exclamation-circle-fill');
-                toastIcon.classList.add('text-success', 'bi-check-circle-fill');
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
-        }
+        });
 
-        toast.show();
+        Toast.fire({
+            icon: type === 'error' ? 'error' : 'success',
+            title: message
+        });
     }
 
     // Actualiza el badge del carrito
     function updateCartBadge(count) {
-        const cartBtn = document.querySelector('.header-action-btn');
-        if (!cartBtn) return;
-
-        let badge = cartBtn.querySelector('.badge');
-
-        if (count > 0) {
-            if (badge) {
-                badge.textContent = count;
-            } else {
-                badge = document.createElement('span');
-                badge.className = 'badge';
-                badge.textContent = count;
-                cartBtn.appendChild(badge);
-            }
-        } else {
-            if (badge) {
-                badge.remove();
-            }
-        }
+        // Actualizar todos los elementos que muestran la cantidad del carrito
+        const cartAmountElements = document.querySelectorAll('.js-cart-widget-amount');
+        cartAmountElements.forEach(element => {
+            element.textContent = count;
+        });
     }
 </script>
 @endpush

@@ -245,17 +245,34 @@
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="hero_video_url" class="form-label">URL del Video</label>
-              <input type="url"
-                     class="form-control @error('hero_video_url') is-invalid @enderror"
-                     id="hero_video_url"
-                     name="hero_video_url"
-                     value="{{ old('hero_video_url', $empresa->hero_video_url) }}"
-                     placeholder="https://ejemplo.com/video.mp4">
-              @error('hero_video_url')
+              <label for="hero_video_file" class="form-label">Video del Hero</label>
+              <input type="file"
+                     class="form-control @error('hero_video_file') is-invalid @enderror"
+                     id="hero_video_file"
+                     name="hero_video_file"
+                     accept="video/*">
+              @error('hero_video_file')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-              <small class="text-muted">Formatos: MP4, WebM. Recomendado: 1920x1080px</small>
+              <small class="text-muted">Acepta cualquier formato de video. Recomendado: 1920x1080px. Máximo 50MB</small>
+
+              @if($empresa->hero_video_url)
+                <div class="mt-2">
+                  <label class="text-muted">Video actual:</label>
+                  <div class="border rounded p-2 mt-1" style="max-width: 300px;">
+                    <video width="100%" controls>
+                      <source src="{{ asset($empresa->hero_video_url) }}" type="video/mp4">
+                      Tu navegador no soporta el video.
+                    </video>
+                  </div>
+                  <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="remove_hero_video" id="remove_hero_video" value="1">
+                    <label class="form-check-label text-danger" for="remove_hero_video">
+                      Eliminar video actual
+                    </label>
+                  </div>
+                </div>
+              @endif
             </div>
 
             <div class="col-md-6 mb-3">

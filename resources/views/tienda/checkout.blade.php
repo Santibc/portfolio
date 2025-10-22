@@ -495,6 +495,22 @@
                                             </div>
                                         @endif
                                         <div class="item-quantity">Cantidad: {{ $item['cantidad'] }}</div>
+
+                                        {{-- Descuentos aplicados al item --}}
+                                        @if(isset($item['descuentos']) && !empty($item['descuentos']))
+                                            <div class="item-discounts-checkout mt-1">
+                                                @foreach($item['descuentos'] as $desc)
+                                                    <div class="small text-success">
+                                                        <i class="bi bi-tag-fill"></i>
+                                                        {{ $desc['nombre'] }}:
+                                                        @if($desc['porcentaje'])
+                                                            -{{ $desc['porcentaje'] }}%
+                                                        @endif
+                                                        -${{ number_format($desc['monto'], 0, ',', '.') }}
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="item-price">
                                         ${{ number_format($item['precio'] * $item['cantidad'], 0, ',', '.') }}
@@ -508,6 +524,23 @@
                                     <span>Subtotal</span>
                                     <span>${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
                                 </div>
+
+                                @if($carrito->descuentos_aplicados && count($carrito->descuentos_aplicados) > 0)
+                                    @foreach($carrito->descuentos_aplicados as $desc)
+                                        <div class="summary-row text-success">
+                                            <span>
+                                                <i class="bi bi-tag-fill"></i>
+                                                <small>{{ $desc['descripcion'] ?? 'Descuento' }}</small>
+                                            </span>
+                                            <span>-${{ number_format($desc['monto'] ?? 0, 0, ',', '.') }}</span>
+                                        </div>
+                                    @endforeach
+                                    <div class="summary-row">
+                                        <strong class="text-success">Total Descuento</strong>
+                                        <strong class="text-success">-${{ number_format($carrito->descuento_total, 0, ',', '.') }}</strong>
+                                    </div>
+                                @endif
+
                                 <div class="summary-row text-muted">
                                     <span>Envío</span>
                                     <span>Por calcular</span>
@@ -518,7 +551,7 @@
                                 </div>
                                 <div class="summary-total">
                                     <span>Total a pagar</span>
-                                    <span>${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
+                                    <span>${{ number_format($carrito->total ?? $carrito->subtotal, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                             

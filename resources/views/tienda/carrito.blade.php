@@ -98,6 +98,44 @@
             color: var(--primary-color);
         }
 
+        /* Item Discounts */
+        .item-discounts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .discount-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            width: fit-content;
+        }
+
+        .discount-badge i {
+            font-size: 0.625rem;
+        }
+
+        .discount-name {
+            font-weight: 600;
+        }
+
+        .discount-value {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .discount-amount {
+            color: #15803d;
+            font-weight: 700;
+        }
+
         /* Quantity Controls */
         .quantity-controls {
             display: flex;
@@ -343,6 +381,23 @@
                                                         </div>
                                                     @endif
                                                     <div class="item-reference">Ref: {{ $item['referencia'] }}</div>
+
+                                                    {{-- Descuentos aplicados al item --}}
+                                                    @if(isset($item['descuentos']) && !empty($item['descuentos']))
+                                                        <div class="item-discounts mt-2">
+                                                            @foreach($item['descuentos'] as $desc)
+                                                                <div class="discount-badge">
+                                                                    <i class="bi bi-tag-fill"></i>
+                                                                    <span class="discount-name">{{ $desc['nombre'] }}</span>
+                                                                    @if($desc['porcentaje'])
+                                                                        <span class="discount-value">-{{ $desc['porcentaje'] }}%</span>
+                                                                    @endif
+                                                                    <span class="discount-amount">-${{ number_format($desc['monto'], 0, ',', '.') }}</span>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+
                                                     <div class="stock-warning d-none" id="stock-warning-{{ $key }}">
                                                         <small class="text-danger">
                                                             <i class="bi bi-exclamation-triangle"></i>
@@ -413,15 +468,50 @@
                             <span>Subtotal</span>
                             <span id="summarySubtotal">${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
                         </div>
-                        
+
+                        <!-- Sección de Descuentos -->
+                        <div id="discountSection" class="mt-3 mb-3">
+                            @if($carrito->descuentos_aplicados && count($carrito->descuentos_aplicados) > 0)
+                                <div id="appliedDiscounts" class="mb-2">
+                                    @foreach($carrito->descuentos_aplicados as $desc)
+                                        <div class="summary-row text-success">
+                                            <span>
+                                                <small>{{ $desc['descripcion'] ?? 'Descuento' }}</small>
+                                            </span>
+                                            <span>-${{ number_format($desc['monto'] ?? 0, 0, ',', '.') }}</span>
+                                        </div>
+                                    @endforeach
+                                    <div class="summary-row">
+                                        <strong class="text-success">Total Descuento</strong>
+                                        <strong id="summaryDiscount" class="text-success">-${{ number_format($carrito->descuento_total, 0, ',', '.') }}</strong>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2 w-100" onclick="removerDescuento()">
+                                        Quitar Descuento
+                                    </button>
+                                </div>
+                            @else
+                                <form id="discountForm" onsubmit="aplicarDescuento(event)" class="mb-3">
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" name="codigo" class="form-control"
+                                               placeholder="Código de descuento"
+                                               id="codigoDescuento">
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            Aplicar
+                                        </button>
+                                    </div>
+                                    <small id="discountError" class="text-danger d-none"></small>
+                                </form>
+                            @endif
+                        </div>
+
                         <div class="summary-row text-muted">
                             <span>Envío</span>
                             <span>Por calcular</span>
                         </div>
-                        
+
                         <div class="summary-total">
                             <span>Total</span>
-                            <span id="summaryTotal">${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
+                            <span id="summaryTotal">${{ number_format($carrito->total ?? $carrito->subtotal, 0, ',', '.') }}</span>
                         </div>
                         
                         <button id="checkoutBtn" class="btn btn-checkout" onclick="validateAndProceedToCheckout()">
@@ -665,6 +755,64 @@
                     checkoutBtnText.removeClass('d-none').text('Proceder al Pago');
                     checkoutSpinner.addClass('d-none');
                 }
+            });
+        }
+
+        // Funciones de descuentos
+        function aplicarDescuento(event) {
+            event.preventDefault();
+
+            const codigo = document.getElementById('codigoDescuento').value.trim();
+            const errorEl = document.getElementById('discountError');
+
+            if (!codigo) {
+                errorEl.textContent = 'Ingresa un código de descuento';
+                errorEl.classList.remove('d-none');
+                return;
+            }
+
+            errorEl.classList.add('d-none');
+
+            fetch("{{ route('tienda.carrito.aplicar-descuento', $empresa->slug) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ codigo: codigo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    errorEl.textContent = data.error || 'Código inválido';
+                    errorEl.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorEl.textContent = 'Error al aplicar el descuento';
+                errorEl.classList.remove('d-none');
+            });
+        }
+
+        function removerDescuento() {
+            fetch("{{ route('tienda.carrito.remover-descuento', $empresa->slug) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al remover el descuento');
             });
         }
     </script>

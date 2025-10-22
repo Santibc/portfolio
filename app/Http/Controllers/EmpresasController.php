@@ -94,7 +94,8 @@ class EmpresasController extends Controller
             'twitter_url'    => ['nullable', 'url', 'max:255'],
             'whatsapp'       => ['nullable', 'string', 'max:255'],
             'template_tienda_id' => ['nullable', 'exists:templates_tienda,id'],
-            'hero_video_url' => ['nullable', 'url', 'max:255'],
+            'hero_video_file' => ['nullable', 'file', 'max:51200'], // 50MB max - sin validación de tipo
+            'remove_hero_video' => ['nullable', 'boolean'],
             'hero_video_message' => ['nullable', 'string', 'max:500'],
             'hero_video_button_text' => ['nullable', 'string', 'max:100'],
             'hero_video_button_link' => ['nullable', 'url', 'max:255'],
@@ -133,7 +134,8 @@ class EmpresasController extends Controller
             'horario_atencion.*.apertura.date_format' => 'Ingrese una hora de apertura válida (HH:MM).',
             'horario_atencion.*.cierre.date_format'   => 'Ingrese una hora de cierre válida (HH:MM).',
             'horario_atencion.*.cierre.after'         => 'La hora de cierre debe ser posterior a la hora de apertura.',
-
+            'hero_video_file.file'                    => 'Debe seleccionar un archivo válido.',
+            'hero_video_file.max'                     => 'El video no debe superar 50MB.',
         ];
 
         $data = $request->validate($rules, $messages);
@@ -186,7 +188,7 @@ class EmpresasController extends Controller
             }
 
             // No intentes guardar archivos en $data antes de moverlos
-            unset($data['logo'], $data['imagen_portada'], $data['carrusel'], $data['carrusel_existente']);
+            unset($data['logo'], $data['imagen_portada'], $data['carrusel'], $data['carrusel_existente'], $data['hero_video_file'], $data['remove_hero_video']);
 
             // Guardar/actualizar datos básicos primero para tener ID
             $empresa->fill($data)->save();
@@ -201,9 +203,10 @@ class EmpresasController extends Controller
             $logoDir = $baseDir . '/logo';
             $portadaDir = $baseDir . '/portada';
             $carruselDir = $baseDir . '/carrusel';
+            $videoDir = $baseDir . '/videos';
 
             // Crear directorios si no existen
-            foreach ([$baseDir, $logoDir, $portadaDir, $carruselDir] as $dir) {
+            foreach ([$baseDir, $logoDir, $portadaDir, $carruselDir, $videoDir] as $dir) {
                 if (!File::exists($dir)) {
                     File::makeDirectory($dir, 0755, true);
                 }
@@ -315,6 +318,46 @@ class EmpresasController extends Controller
                         }
                     }
                 }
+            }
+
+            // ---- HERO VIDEO (mover a /public/imagenes/empresas/{id}/videos) ----
+            // Eliminar video si se marcó la opción
+            if ($request->has('remove_hero_video') && $request->remove_hero_video) {
+                if (!empty($empresa->hero_video_url)) {
+                    $posiblesRutas = [
+                        public_path($empresa->hero_video_url),
+                    ];
+                    foreach ($posiblesRutas as $ruta) {
+                        if (File::exists($ruta)) {
+                            File::delete($ruta);
+                        }
+                    }
+                    $empresa->hero_video_url = null;
+                    $empresa->save();
+                }
+            }
+
+            // Subir nuevo video si se proporciona
+            if ($request->hasFile('hero_video_file')) {
+                // Eliminar video anterior si existe
+                if (!empty($empresa->hero_video_url)) {
+                    $posiblesRutas = [
+                        public_path($empresa->hero_video_url),
+                    ];
+                    foreach ($posiblesRutas as $ruta) {
+                        if (File::exists($ruta)) {
+                            File::delete($ruta);
+                        }
+                    }
+                }
+
+                $video = $request->file('hero_video_file');
+                $videoFilename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $video->getClientOriginalName());
+                $video->move($videoDir, $videoFilename);
+
+                // Guardar ruta relativa a /public
+                $empresa->hero_video_url = 'imagenes/empresas/' . $empresa->id . '/videos/' . $videoFilename;
+                $empresa->save();
             }
 
             DB::commit();

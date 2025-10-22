@@ -99,6 +99,7 @@
                 <th>Devoluciones</th>
                 <th>Garantía</th>
                 <th>Activo</th>
+                <th>Descuentos</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -135,6 +136,7 @@
         { data:'dias_devolucion', name:'dias_devolucion' },
         { data:'garantia',     name:'garantia' },
         { data:'activo',       name:'activo' },
+        { data:'descuentos',   orderable:false, searchable:false },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [

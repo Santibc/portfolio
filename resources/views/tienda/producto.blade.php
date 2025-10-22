@@ -5,6 +5,40 @@
 @section('body-class', 'product-details-page')
 
 @section('content')
+@php
+    // Buscar descuentos activos para este producto
+    $descuentoActivo = null;
+    $textoDescuento = null;
+    $precioConDescuento = $producto->precio_actual;
+    $montoDescuento = 0;
+
+    if (isset($descuentosActivos)) {
+        foreach ($descuentosActivos as $desc) {
+            $aplica = false;
+
+            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                $aplica = true;
+            } elseif ($desc->aplica_a === 'producto' && in_array($producto->id, $desc->productos_aplicables ?? [])) {
+                $aplica = true;
+            } elseif ($desc->aplica_a === 'categoria' && in_array($producto->categoria_id, $desc->categorias_aplicables ?? [])) {
+                $aplica = true;
+            }
+
+            if ($aplica) {
+                $descuentoActivo = $desc;
+                if ($desc->tipo === 'porcentaje') {
+                    $montoDescuento = ($producto->precio_actual * $desc->valor) / 100;
+                    $textoDescuento = round($desc->valor) . '% OFF';
+                } else {
+                    $montoDescuento = $desc->valor;
+                    $textoDescuento = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                }
+                $precioConDescuento = $producto->precio_actual - $montoDescuento;
+                break;
+            }
+        }
+    }
+@endphp
 
   <main class="main">
 
@@ -95,17 +129,26 @@
 
               <div class="pricing-section">
                 @if($producto->precio_actual)
+                  @if($descuentoActivo)
+                    <div class="alert alert-success mb-3">
+                      <i class="bi bi-tag-fill"></i> <strong>{{ $descuentoActivo->nombre }}</strong>
+                      @if($descuentoActivo->descripcion)
+                        <small class="d-block">{{ $descuentoActivo->descripcion }}</small>
+                      @endif
+                    </div>
+                  @endif
                 <div class="price-display">
-                  <span class="sale-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</span>
-                  {{-- Precio anterior quemado por ahora --}}
-                  @if(false)
-                  <span class="regular-price">$239.99</span>
+                  @if($descuentoActivo)
+                    <span class="regular-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</span>
+                    <span class="sale-price">${{ number_format($precioConDescuento, 0, ',', '.') }}</span>
+                  @else
+                    <span class="sale-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</span>
                   @endif
                 </div>
-                @if(false)
+                @if($descuentoActivo && $montoDescuento > 0)
                 <div class="savings-info">
-                  <span class="save-amount">Save $50.00</span>
-                  <span class="discount-percent">(21% off)</span>
+                  <span class="save-amount">Ahorrás ${{ number_format($montoDescuento, 0, ',', '.') }}</span>
+                  <span class="discount-percent">({{ $textoDescuento }})</span>
                 </div>
                 @endif
                 @else
@@ -487,51 +530,104 @@
             <h3 class="mb-4">Productos Relacionados</h3>
             <div class="row g-4">
               @foreach($relacionados as $relacionado)
+              @php
+                // Buscar descuentos activos para producto relacionado
+                $descuentoRelacionado = null;
+                $textoDescuentoRel = null;
+                $precioActualRel = $relacionado->precio_actual;
+                $precioConDescuentoRel = $precioActualRel;
+
+                if (isset($descuentosActivos) && $precioActualRel) {
+                    foreach ($descuentosActivos as $desc) {
+                        $aplica = false;
+                        if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                            $aplica = true;
+                        } elseif ($desc->aplica_a === 'producto' && in_array($relacionado->id, $desc->productos_aplicables ?? [])) {
+                            $aplica = true;
+                        } elseif ($desc->aplica_a === 'categoria' && in_array($relacionado->categoria_id, $desc->categorias_aplicables ?? [])) {
+                            $aplica = true;
+                        }
+
+                        if ($aplica) {
+                            $descuentoRelacionado = $desc;
+                            if ($desc->tipo === 'porcentaje') {
+                                $montoDescRel = ($precioActualRel * $desc->valor) / 100;
+                                $textoDescuentoRel = round($desc->valor) . '% OFF';
+                            } else {
+                                $montoDescRel = $desc->valor;
+                                $textoDescuentoRel = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                            }
+                            $precioConDescuentoRel = $precioActualRel - $montoDescRel;
+                            break;
+                        }
+                    }
+                }
+              @endphp
               <div class="col-lg-3 col-md-6">
-                <div class="product-item">
-                  <div class="product-image">
-                    @if($relacionado->stock_disponible <= 5 && $relacionado->stock_disponible > 0)
-                      <div class="product-badge">¡Últimas unidades!</div>
+                <div class="product-card" style="height: 100%;">
+                  <div class="product-image" style="position: relative; overflow: hidden; aspect-ratio: 1/1;">
+                    @if($descuentoRelacionado)
+                      <div class="product-badge sale">{{ $textoDescuentoRel }}</div>
+                    @elseif($relacionado->stock_disponible <= 5 && $relacionado->stock_disponible > 0)
+                      <div class="product-badge new">¡Últimas unidades!</div>
                     @elseif($relacionado->stock_disponible == 0 && !$relacionado->permitir_venta_sin_stock)
-                      <div class="product-badge sale-badge">Sin Stock</div>
+                      <div class="product-badge sale">Sin Stock</div>
                     @endif
-                    <img src="{{ $relacionado->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}" 
-                         alt="{{ $relacionado->nombre }}" 
-                         class="img-fluid" 
+                    <img src="{{ $relacionado->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
+                         alt="{{ $relacionado->nombre }}"
+                         class="main-image img-fluid"
+                         style="width: 100%; height: 100%; object-fit: cover;"
                          loading="lazy">
-                    <div class="product-actions">
-                      <button class="action-btn wishlist-btn">
-                        <i class="bi bi-heart"></i>
-                      </button>
-                      <button class="action-btn compare-btn">
-                        <i class="bi bi-arrow-left-right"></i>
-                      </button>
-                      <button class="action-btn quickview-btn">
-                        <i class="bi bi-zoom-in"></i>
-                      </button>
-                    </div>
-                    <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}" class="cart-btn">Ver Producto</a>
-                  </div>
-                  <div class="product-info">
-                    <div class="product-category">{{ $relacionado->categoria->nombre }}</div>
-                    <h4 class="product-name">
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}">{{ $relacionado->nombre }}</a>
-                    </h4>
-                    <div class="product-rating">
-                      <div class="stars">
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star"></i>
-                      </div>
-                      <span class="rating-count">({{ rand(10, 50) }})</span>
-                    </div>
-                    @if($relacionado->precio_actual)
-                      <div class="product-price">${{ number_format($relacionado->precio_actual, 0, ',', '.') }}</div>
-                    @else
-                      <div class="product-price text-muted">Precio no disponible</div>
+                    @if($relacionado->imagenes->count() > 1)
+                      <img src="{{ $relacionado->imagenes[1]->url }}"
+                           class="hover-image img-fluid"
+                           style="width: 100%; height: 100%; object-fit: cover;"
+                           alt="{{ $relacionado->nombre }} - Vista 2">
                     @endif
+                    <div class="product-overlay">
+                      <div class="product-actions">
+                        <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}"
+                           class="action-btn" data-bs-toggle="tooltip" title="Ver Detalles">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="product-details" style="padding: 1rem;">
+                    <div class="product-category" style="font-size: 0.875rem; color: #6c757d; margin-bottom: 0.5rem;">
+                      {{ $relacionado->categoria->nombre }}
+                    </div>
+                    <h4 class="product-title" style="font-size: 1rem; margin-bottom: 0.75rem; line-height: 1.4;">
+                      <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}"
+                         style="text-decoration: none; color: #212529;">
+                        {{ Str::limit($relacionado->nombre, 50) }}
+                      </a>
+                    </h4>
+                    <div class="product-meta">
+                      @if($precioActualRel)
+                        @if($descuentoRelacionado)
+                          <div class="product-price" style="margin-bottom: 0.5rem;">
+                            <span class="text-decoration-line-through text-muted me-2" style="font-size: 0.875rem;">
+                              ${{ number_format($precioActualRel, 0, ',', '.') }}
+                            </span>
+                            <span class="text-danger fw-bold" style="font-size: 1.125rem;">
+                              ${{ number_format($precioConDescuentoRel, 0, ',', '.') }}
+                            </span>
+                          </div>
+                        @else
+                          <div class="product-price" style="font-size: 1.125rem; font-weight: 600; color: #212529; margin-bottom: 0.5rem;">
+                            ${{ number_format($precioActualRel, 0, ',', '.') }}
+                          </div>
+                        @endif
+                      @else
+                        <div class="product-price text-muted" style="font-size: 0.875rem;">Precio no disponible</div>
+                      @endif
+                      <div class="product-rating" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                        <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                        {{ number_format(rand(35, 50) / 10, 1) }}
+                        <span style="color: #6c757d;">({{ rand(10, 50) }})</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

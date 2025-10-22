@@ -122,13 +122,45 @@
                     @php
                         $precioActual = is_object($producto->precio_actual) ? $producto->precio_actual->precio : $producto->precio_actual;
                         $precioAnterior = is_object($producto->precio_actual) && isset($producto->precio_actual->precio_anterior) ? $producto->precio_actual->precio_anterior : null;
-                        $descuento = null;
-                        if ($precioAnterior && $precioAnterior > $precioActual) {
-                            $descuento = round((($precioAnterior - $precioActual) / $precioAnterior) * 100);
+
+                        // Buscar descuentos activos para este producto
+                        $descuentoActivo = null;
+                        $textoDescuento = null;
+                        $precioConDescuento = $precioActual;
+
+                        if (isset($descuentosActivos)) {
+                            foreach ($descuentosActivos as $desc) {
+                                $aplica = false;
+
+                                if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                                    $aplica = true;
+                                } elseif ($desc->aplica_a === 'producto' && in_array($producto->id, $desc->productos_aplicables ?? [])) {
+                                    $aplica = true;
+                                } elseif ($desc->aplica_a === 'categoria' && in_array($producto->categoria_id, $desc->categorias_aplicables ?? [])) {
+                                    $aplica = true;
+                                }
+
+                                if ($aplica) {
+                                    $descuentoActivo = $desc;
+                                    if ($desc->tipo === 'porcentaje') {
+                                        $montoDescuento = ($precioActual * $desc->valor) / 100;
+                                        $textoDescuento = round($desc->valor) . '% OFF';
+                                    } else {
+                                        $montoDescuento = $desc->valor;
+                                        $textoDescuento = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                                    }
+                                    $precioConDescuento = $precioActual - $montoDescuento;
+                                    break;
+                                }
+                            }
                         }
+
                         $stockInfo = $producto->getStockInfo();
                     @endphp
                     <div class="product-card-cat">
+                        @if($descuentoActivo)
+                        <span class="product-badge product-badge-discount">{{ $textoDescuento }}</span>
+                        @endif
                         <div class="product-image-wrapper">
                             <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="product-image-link">
                                 <div class="product-image-container-square">
@@ -138,13 +170,6 @@
                                          style="width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important;">
                                 </div>
                             </a>
-                            @if($descuento)
-                            <span class="product-badge product-badge-discount">{{ $descuento }}% OFF</span>
-                            @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'] && $stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
-                            <span class="product-badge product-badge-discount">¡Últimas unidades!</span>
-                            @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'] && $stockInfo['stock_disponible'] == 0)
-                            <span class="product-badge product-badge-discount">Sin Stock</span>
-                            @endif
                             <div class="product-actions">
                                 @if($producto->tiene_variantes)
                                     <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="btn btn-primary btn-small">
@@ -165,12 +190,14 @@
                                 <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}">{{ $producto->nombre }}</a>
                             </h3>
                             <div class="product-price-container">
-                                @if($precioAnterior && $precioAnterior > $precioActual)
-                                <span class="product-price-old">${{ number_format($precioAnterior, 0, ',', '.') }}</span>
+                                @if($descuentoActivo)
+                                    <span class="product-price-old">${{ number_format($precioActual, 0, ',', '.') }}</span>
+                                    <span class="product-price">${{ number_format($precioConDescuento, 0, ',', '.') }}</span>
+                                @else
+                                    <span class="product-price">${{ number_format($precioActual, 0, ',', '.') }}</span>
                                 @endif
-                                <span class="product-price">${{ number_format($precioActual, 0, ',', '.') }}</span>
                             </div>
-                            <p class="product-installments">3 cuotas sin interés de ${{ number_format($precioActual / 3, 0, ',', '.') }}</p>
+                            <p class="product-installments" style="font-size: 11px; color: #6c757d; margin-top: 4px;">3 x ${{ number_format(($descuentoActivo ? $precioConDescuento : $precioActual) / 3, 0, ',', '.') }} sin interés</p>
                         </div>
                     </div>
                     @empty

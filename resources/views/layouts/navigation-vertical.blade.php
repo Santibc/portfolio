@@ -185,10 +185,19 @@
                 <a href="{{ route('compras') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('compras*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
                    title="Compras"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
                    onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('compras*') ? '' : 'transparent' }}'">
                     <i class="bi bi-cart-plus"></i>
                     <span>Compras</span>
+                </a>
+
+                <a href="{{ route('descuentos.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('descuentos*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+                   title="Descuentos"
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('descuentos*') ? '' : 'transparent' }}'">
+                    <i class="bi bi-tag-fill"></i>
+                    <span>Descuentos</span>
                 </a>
             @else
                 <a href="{{ route('stock.index') }}"

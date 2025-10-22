@@ -17,6 +17,8 @@ class Compra extends Model
         'direccion_envio',
         'ciudad_id',
         'subtotal',
+        'descuento_total',
+        'descuentos_aplicados',
         'impuestos',
         'costo_envio',
         'total',
@@ -26,6 +28,8 @@ class Compra extends Model
 
     protected $casts = [
         'subtotal' => 'decimal:2',
+        'descuento_total' => 'decimal:2',
+        'descuentos_aplicados' => 'array',
         'impuestos' => 'decimal:2',
         'costo_envio' => 'decimal:2',
         'total' => 'decimal:2'
@@ -79,9 +83,45 @@ class Compra extends Model
     public function calcularTotales()
     {
         $this->subtotal = $this->items->sum('precio_total');
-        $this->total = $this->subtotal + $this->impuestos + $this->costo_envio;
+        $this->total = ($this->subtotal - $this->descuento_total) + $this->impuestos + $this->costo_envio;
         $this->save();
         return $this->total;
+    }
+
+    public function descuentosAplicadosRegistro()
+    {
+        return $this->hasMany(DescuentoAplicado::class);
+    }
+
+    public function registrarDescuentos()
+    {
+        if (!$this->descuentos_aplicados || empty($this->descuentos_aplicados)) {
+            return;
+        }
+
+        foreach ($this->descuentos_aplicados as $descuentoData) {
+            if (!isset($descuentoData['descuento'])) {
+                continue;
+            }
+
+            $descuento = $descuentoData['descuento'];
+
+            // Registrar en la tabla de descuentos aplicados
+            DescuentoAplicado::create([
+                'descuento_id' => is_object($descuento) ? $descuento->id : $descuento['id'],
+                'compra_id' => $this->id,
+                'email_cliente' => $this->email_cliente,
+                'monto_descuento' => $descuentoData['monto'] ?? 0,
+            ]);
+
+            // Incrementar contador de usos del descuento
+            if (is_object($descuento)) {
+                $descuento->incrementarUsos();
+            } else {
+                $descuentoModel = \App\Models\Descuento::find($descuento['id']);
+                $descuentoModel?->incrementarUsos();
+            }
+        }
     }
 public function generarComision() {
     if ($this->estado !== 'pagada') {

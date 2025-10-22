@@ -14,7 +14,10 @@
       "Bash(rm:*)",
       "WebFetch(domain:docs.wompi.co)",
       "Bash(dir:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(Select-Object -First 50)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

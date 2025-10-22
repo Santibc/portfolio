@@ -67,28 +67,81 @@ class ProductosController extends Controller
                 ->addColumn('dias_devolucion', fn($p) => $p->dias_devolucion ? '<span title="'.e($p->dias_devolucion).'">'.e(\Illuminate\Support\Str::limit($p->dias_devolucion, 30)).'</span>' : '-')
                 ->addColumn('garantia', fn($p) => $p->garantia ? '<span title="'.e($p->garantia).'">'.e(\Illuminate\Support\Str::limit($p->garantia, 30)).'</span>' : '-')
                 ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
+                ->addColumn('descuentos', function($p) use ($empresa) {
+                    // Buscar descuentos activos
+                    $descuentos = \App\Models\Descuento::porEmpresa($empresa->id)
+                        ->activos()
+                        ->vigentes()
+                        ->get()
+                        ->filter(function($desc) use ($p) {
+                            // Descuentos que aplican a toda la orden
+                            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                                return true;
+                            }
+
+                            // Descuentos de producto específico
+                            if ($desc->aplica_a === 'producto') {
+                                return in_array($p->id, $desc->productos_aplicables ?? []);
+                            }
+
+                            // Descuentos de categoría
+                            if ($desc->aplica_a === 'categoria' && $p->categoria_id) {
+                                return in_array($p->categoria_id, $desc->categorias_aplicables ?? []);
+                            }
+
+                            return false;
+                        });
+
+                    if ($descuentos->isEmpty()) {
+                        return '<span class="text-muted">-</span>';
+                    }
+
+                    $html = '<div class="d-flex flex-column gap-1">';
+                    foreach ($descuentos as $desc) {
+                        $valor = $desc->tipo === 'porcentaje'
+                            ? $desc->valor . '%'
+                            : '$' . number_format($desc->valor, 0, ',', '.');
+
+                        $badge = $desc->codigo ? 'bg-primary' : 'bg-success';
+                        $tipo = $desc->codigo ? 'Código: ' . $desc->codigo : 'Automático';
+
+                        $editUrl = route('descuentos.edit', $desc->id);
+
+                        $html .= '<div class="d-flex align-items-center gap-1">';
+                        $html .= '<span class="badge ' . $badge . ' text-white" style="font-size:0.75rem;">';
+                        $html .= '<i class="bi bi-tag-fill"></i> ' . $valor;
+                        $html .= '</span>';
+                        $html .= '<a href="' . $editUrl . '" class="btn btn-outline-secondary btn-sm" style="padding:0.1rem 0.3rem;font-size:0.7rem;" title="' . $desc->nombre . ' - ' . $tipo . '">';
+                        $html .= '<i class="bi bi-pencil"></i>';
+                        $html .= '</a>';
+                        $html .= '</div>';
+                    }
+                    $html .= '</div>';
+
+                    return $html;
+                })
                 ->addColumn('action', function($p) {
                     $url = route('productos.form', $p->id);
-                    
+
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
                     $buttons .= '<a href="'.$url.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
-                    
+
                     if ($p->tiene_variantes) {
                         $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm" title="Ver Variantes" onclick="verVariantes('.$p->id.')"><i class="bi bi-list-ul"></i></button>';
                     }
-                    
+
                     $buttons .= '<button type="button" class="btn btn-outline-primary btn-sm" title="Ver Imágenes" onclick="verImagenes('.$p->id.')"><i class="bi bi-image"></i></button>';
                     $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" title="Ver Precios" onclick="verPrecios('.$p->id.')"><i class="bi bi-currency-dollar"></i></button>';
-                    
+
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
-                    
+
                     $buttons .= '</div>';
-                    
+
                     return $buttons;
                 })
-                ->rawColumns(['imagen', 'stock', 'info_envio', 'dias_devolucion', 'garantia', 'action'])
+                ->rawColumns(['imagen', 'stock', 'info_envio', 'dias_devolucion', 'garantia', 'descuentos', 'action'])
                 ->make(true);
         }
 

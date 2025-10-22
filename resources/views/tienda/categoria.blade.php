@@ -283,6 +283,41 @@
           <!-- Vista Grid (por defecto) -->
           <div class="row g-4" id="productGrid">
             @forelse($productos as $index => $producto)
+            @php
+                // Buscar descuentos activos para este producto
+                $descuentoActivo = null;
+                $textoDescuento = null;
+                $precioConDescuento = $producto->precio_actual;
+                $montoDescuento = 0;
+
+                if (isset($descuentosActivos)) {
+                    foreach ($descuentosActivos as $desc) {
+                        $aplica = false;
+
+                        if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                            $aplica = true;
+                        } elseif ($desc->aplica_a === 'producto' && in_array($producto->id, $desc->productos_aplicables ?? [])) {
+                            $aplica = true;
+                        } elseif ($desc->aplica_a === 'categoria' && in_array($producto->categoria_id, $desc->categorias_aplicables ?? [])) {
+                            $aplica = true;
+                        }
+
+                        if ($aplica) {
+                            $descuentoActivo = $desc;
+                            if ($desc->tipo === 'porcentaje') {
+                                $montoDescuento = ($producto->precio_actual * $desc->valor) / 100;
+                                $textoDescuento = round($desc->valor) . '% OFF';
+                            } else {
+                                $montoDescuento = $desc->valor;
+                                $textoDescuento = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                            }
+                            $precioConDescuento = $producto->precio_actual - $montoDescuento;
+                            break;
+                        }
+                    }
+                }
+                $stockInfo = $producto->getStockInfo();
+            @endphp
             <!-- Product -->
             <div class="col-6 col-xl-4 product-item">
               <div class="product-card" data-aos="zoom-in" data-aos-delay="{{ $index * 50 }}">
@@ -295,18 +330,17 @@
                   @endif
                   <div class="product-overlay">
                     <div class="product-actions">
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" 
+                      <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}"
                          class="action-btn" data-bs-toggle="tooltip" title="Ver Detalles">
                         <i class="bi bi-eye"></i>
                       </a>
                       @if($producto->tiene_variantes)
-                        <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" 
+                        <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}"
                            class="action-btn" data-bs-toggle="tooltip" title="Ver Opciones">
                           <i class="bi bi-cart-plus"></i>
                         </a>
                       @else
-                        @php $stockInfo = $producto->getStockInfo(); @endphp
-                        <button type="button" class="action-btn quick-add-btn" 
+                        <button type="button" class="action-btn quick-add-btn"
                                 data-producto-id="{{ $producto->id }}"
                                 data-precio="{{ $producto->precio_actual }}"
                                 data-bs-toggle="tooltip" title="Agregar al Carrito"
@@ -316,8 +350,9 @@
                       @endif
                     </div>
                   </div>
-                  @php $stockInfo = $producto->getStockInfo(); @endphp
-                  @if($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                  @if($descuentoActivo)
+                    <div class="product-badge sale">{{ $textoDescuento }}</div>
+                  @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
                     @if($stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
                       <div class="product-badge new">¡Últimas unidades!</div>
                     @elseif($stockInfo['stock_disponible'] == 0)
@@ -332,7 +367,14 @@
                   </h4>
                   <div class="product-meta">
                     @if($producto->precio_actual)
-                      <div class="product-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</div>
+                      @if($descuentoActivo)
+                        <div class="product-price">
+                          <span class="text-decoration-line-through text-muted me-2">${{ number_format($producto->precio_actual, 0, ',', '.') }}</span>
+                          <span class="text-danger fw-bold">${{ number_format($precioConDescuento, 0, ',', '.') }}</span>
+                        </div>
+                      @else
+                        <div class="product-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</div>
+                      @endif
                     @else
                       <div class="product-price text-muted">Precio no disponible</div>
                     @endif

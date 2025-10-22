@@ -100,6 +100,28 @@
             <div class="product-showcase" data-aos="fade-left" data-aos-delay="200">
               {{-- Producto destacado (el primero) --}}
               @if(isset($destacados[0]))
+                @php
+                    // Buscar descuentos para producto destacado 0
+                    $descHero0 = null;
+                    $precioHero0 = $destacados[0]->precio_actual;
+                    $precioDescHero0 = $precioHero0;
+
+                    if (isset($descuentosActivos)) {
+                        foreach ($descuentosActivos as $desc) {
+                            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito' ||
+                                ($desc->aplica_a === 'producto' && in_array($destacados[0]->id, $desc->productos_aplicables ?? [])) ||
+                                ($desc->aplica_a === 'categoria' && in_array($destacados[0]->categoria_id, $desc->categorias_aplicables ?? []))) {
+                                $descHero0 = $desc;
+                                if ($desc->tipo === 'porcentaje') {
+                                    $precioDescHero0 = $precioHero0 - (($precioHero0 * $desc->valor) / 100);
+                                } else {
+                                    $precioDescHero0 = $precioHero0 - $desc->valor;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                @endphp
                 <div class="product-card featured">
                   <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[0]->id]) }}">
                     <img
@@ -107,7 +129,13 @@
                       alt="{{ $destacados[0]->nombre }}"
                       class="img-fluid">
                   </a>
-                  <div class="product-badge">Destacado</div>
+                  @if($descHero0)
+                    <div class="product-badge sale-badge">
+                      {{ $descHero0->tipo === 'porcentaje' ? round($descHero0->valor) . '% OFF' : '$' . number_format($descHero0->valor, 0, ',', '.') . ' OFF' }}
+                    </div>
+                  @else
+                    <div class="product-badge">Destacado</div>
+                  @endif
                   <div class="product-info">
                     <h4>
                       <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[0]->id]) }}">
@@ -116,9 +144,18 @@
                     </h4>
                     <div class="price">
                       @if($destacados[0]->precio_actual)
-                        <span class="sale-price">
-                          ${{ number_format($destacados[0]->precio_actual, 0, ',', '.') }}
-                        </span>
+                        @if($descHero0)
+                          <span class="regular-price text-decoration-line-through text-muted me-2">
+                            ${{ number_format($precioHero0, 0, ',', '.') }}
+                          </span>
+                          <span class="sale-price text-danger fw-bold">
+                            ${{ number_format($precioDescHero0, 0, ',', '.') }}
+                          </span>
+                        @else
+                          <span class="sale-price">
+                            ${{ number_format($destacados[0]->precio_actual, 0, ',', '.') }}
+                          </span>
+                        @endif
                       @else
                         <span class="text-muted">Precio no disponible</span>
                       @endif
@@ -130,6 +167,28 @@
               {{-- Grid de 2 minis (segundo y tercero si existen) --}}
               <div class="product-grid">
                 @if(isset($destacados[1]))
+                  @php
+                    // Buscar descuentos para producto destacado 1
+                    $descHero1 = null;
+                    $precioHero1 = $destacados[1]->precio_actual;
+                    $precioDescHero1 = $precioHero1;
+
+                    if (isset($descuentosActivos) && $precioHero1) {
+                        foreach ($descuentosActivos as $desc) {
+                            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito' ||
+                                ($desc->aplica_a === 'producto' && in_array($destacados[1]->id, $desc->productos_aplicables ?? [])) ||
+                                ($desc->aplica_a === 'categoria' && in_array($destacados[1]->categoria_id, $desc->categorias_aplicables ?? []))) {
+                                $descHero1 = $desc;
+                                if ($desc->tipo === 'porcentaje') {
+                                    $precioDescHero1 = $precioHero1 - (($precioHero1 * $desc->valor) / 100);
+                                } else {
+                                    $precioDescHero1 = $precioHero1 - $desc->valor;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                  @endphp
                   <div class="product-mini" data-aos="zoom-in" data-aos-delay="400">
                     <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[1]->id]) }}">
                       <img
@@ -139,13 +198,44 @@
                     </a>
                     @if($destacados[1]->precio_actual)
                       <span class="mini-price">
-                        ${{ number_format($destacados[1]->precio_actual, 0, ',', '.') }}
+                        @if($descHero1)
+                          <span class="text-decoration-line-through text-muted d-block" style="font-size: 0.85em;">
+                            ${{ number_format($precioHero1, 0, ',', '.') }}
+                          </span>
+                          <span class="text-danger fw-bold">
+                            ${{ number_format($precioDescHero1, 0, ',', '.') }}
+                          </span>
+                        @else
+                          ${{ number_format($destacados[1]->precio_actual, 0, ',', '.') }}
+                        @endif
                       </span>
                     @endif
                   </div>
                 @endif
 
                 @if(isset($destacados[2]))
+                  @php
+                    // Buscar descuentos para producto destacado 2
+                    $descHero2 = null;
+                    $precioHero2 = $destacados[2]->precio_actual;
+                    $precioDescHero2 = $precioHero2;
+
+                    if (isset($descuentosActivos) && $precioHero2) {
+                        foreach ($descuentosActivos as $desc) {
+                            if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito' ||
+                                ($desc->aplica_a === 'producto' && in_array($destacados[2]->id, $desc->productos_aplicables ?? [])) ||
+                                ($desc->aplica_a === 'categoria' && in_array($destacados[2]->categoria_id, $desc->categorias_aplicables ?? []))) {
+                                $descHero2 = $desc;
+                                if ($desc->tipo === 'porcentaje') {
+                                    $precioDescHero2 = $precioHero2 - (($precioHero2 * $desc->valor) / 100);
+                                } else {
+                                    $precioDescHero2 = $precioHero2 - $desc->valor;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                  @endphp
                   <div class="product-mini" data-aos="zoom-in" data-aos-delay="500">
                     <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[2]->id]) }}">
                       <img
@@ -155,7 +245,16 @@
                     </a>
                     @if($destacados[2]->precio_actual)
                       <span class="mini-price">
-                        ${{ number_format($destacados[2]->precio_actual, 0, ',', '.') }}
+                        @if($descHero2)
+                          <span class="text-decoration-line-through text-muted d-block" style="font-size: 0.85em;">
+                            ${{ number_format($precioHero2, 0, ',', '.') }}
+                          </span>
+                          <span class="text-danger fw-bold">
+                            ${{ number_format($precioDescHero2, 0, ',', '.') }}
+                          </span>
+                        @else
+                          ${{ number_format($destacados[2]->precio_actual, 0, ',', '.') }}
+                        @endif
                       </span>
                     @endif
                   </div>
@@ -280,11 +379,48 @@
         <div class="row g-5">
 
           @forelse($productos as $producto)
+          @php
+              // Buscar descuentos activos para este producto
+              $descuentoProducto = null;
+              $textoDescuentoProducto = null;
+              $precioActualProducto = $producto->precio_actual;
+              $precioConDescuentoProducto = $precioActualProducto;
+              $montoDescuentoProducto = 0;
+
+              if (isset($descuentosActivos)) {
+                  foreach ($descuentosActivos as $desc) {
+                      $aplica = false;
+
+                      if ($desc->aplica_a === 'orden' || $desc->aplica_a === 'carrito') {
+                          $aplica = true;
+                      } elseif ($desc->aplica_a === 'producto' && in_array($producto->id, $desc->productos_aplicables ?? [])) {
+                          $aplica = true;
+                      } elseif ($desc->aplica_a === 'categoria' && in_array($producto->categoria_id, $desc->categorias_aplicables ?? [])) {
+                          $aplica = true;
+                      }
+
+                      if ($aplica) {
+                          $descuentoProducto = $desc;
+                          if ($desc->tipo === 'porcentaje') {
+                              $montoDescuentoProducto = ($precioActualProducto * $desc->valor) / 100;
+                              $textoDescuentoProducto = round($desc->valor) . '% OFF';
+                          } else {
+                              $montoDescuentoProducto = $desc->valor;
+                              $textoDescuentoProducto = '$' . number_format($desc->valor, 0, ',', '.') . ' OFF';
+                          }
+                          $precioConDescuentoProducto = $precioActualProducto - $montoDescuentoProducto;
+                          break;
+                      }
+                  }
+              }
+              $stockInfo = $producto->getStockInfo();
+          @endphp
           <div class="col-lg-3 col-md-6">
             <div class="product-item">
               <div class="product-image">
-                @php $stockInfo = $producto->getStockInfo(); @endphp
-                @if($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
+                @if($descuentoProducto)
+                  <div class="product-badge sale-badge">{{ $textoDescuentoProducto }}</div>
+                @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'])
                   @if($stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
                     <div class="product-badge">¡Últimas unidades!</div>
                   @elseif($stockInfo['stock_disponible'] == 0)
@@ -306,8 +442,7 @@
                 @if($producto->tiene_variantes)
                   <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="cart-btn">Ver Opciones</a>
                 @else
-                  @php $stockInfo = $producto->getStockInfo(); @endphp
-                  <button class="cart-btn quick-add-btn" 
+                  <button class="cart-btn quick-add-btn"
                           data-producto-id="{{ $producto->id }}"
                           data-precio="{{ $producto->precio_actual }}"
                           {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
@@ -331,7 +466,14 @@
                   <span class="rating-count">({{ rand(10, 50) }})</span>
                 </div>
                 @if($producto->precio_actual)
-                  <div class="product-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</div>
+                  @if($descuentoProducto)
+                    <div class="product-price">
+                      <span class="text-decoration-line-through text-muted me-2">${{ number_format($precioActualProducto, 0, ',', '.') }}</span>
+                      <span class="text-danger fw-bold">${{ number_format($precioConDescuentoProducto, 0, ',', '.') }}</span>
+                    </div>
+                  @else
+                    <div class="product-price">${{ number_format($producto->precio_actual, 0, ',', '.') }}</div>
+                  @endif
                 @else
                   <div class="product-price text-muted">Precio no disponible</div>
                 @endif
@@ -359,6 +501,81 @@
       </div>
 
     </section>
+
+    <!-- Ofertas Section - Productos con Descuentos -->
+    @if(isset($productosConDescuento) && $productosConDescuento->count() > 0)
+    <section id="ofertas" class="best-sellers section bg-light">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Ofertas Especiales</h2>
+        <p>Aprovecha nuestros productos con descuento</p>
+      </div>
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row g-5">
+          @foreach($productosConDescuento as $oferta)
+          @php
+              $descuento = $oferta->descuento_info;
+              $precioOriginal = $oferta->precio_actual ? $oferta->precio_actual->precio : 0;
+              $montoDescuento = 0;
+              $precioConDescuento = $precioOriginal;
+
+              if ($descuento) {
+                  if ($descuento->tipo === 'porcentaje') {
+                      $montoDescuento = ($precioOriginal * $descuento->valor) / 100;
+                      $textoDescuento = round($descuento->valor) . '% OFF';
+                  } else {
+                      $montoDescuento = $descuento->valor;
+                      $textoDescuento = '$' . number_format($descuento->valor, 0, ',', '.') . ' OFF';
+                  }
+                  $precioConDescuento = $precioOriginal - $montoDescuento;
+              }
+          @endphp
+          <div class="col-lg-3 col-md-6">
+            <div class="product-item">
+              <div class="product-image">
+                @if($descuento)
+                  <div class="product-badge sale-badge">{{ $textoDescuento }}</div>
+                @endif
+                <img src="{{ $oferta->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
+                     alt="{{ $oferta->nombre }}"
+                     class="img-fluid"
+                     loading="lazy">
+                <div class="product-actions">
+                  <button class="action-btn wishlist-btn">
+                    <i class="bi bi-heart"></i>
+                  </button>
+                  <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}" class="action-btn quickview-btn">
+                    <i class="bi bi-zoom-in"></i>
+                  </a>
+                </div>
+                <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}" class="cart-btn">Ver Oferta</a>
+              </div>
+              <div class="product-info">
+                <div class="product-category">{{ $oferta->categoria->nombre ?? 'Producto' }}</div>
+                <h4 class="product-name">
+                  <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}">{{ $oferta->nombre }}</a>
+                </h4>
+                @if($oferta->precio_actual)
+                  <div class="product-price">
+                    @if($montoDescuento > 0)
+                      <span class="text-decoration-line-through text-muted me-2">${{ number_format($precioOriginal, 0, ',', '.') }}</span>
+                      <span class="text-danger fw-bold">${{ number_format($precioConDescuento, 0, ',', '.') }}</span>
+                    @else
+                      ${{ number_format($precioOriginal, 0, ',', '.') }}
+                    @endif
+                  </div>
+                @else
+                  <div class="product-price text-muted">Precio no disponible</div>
+                @endif
+              </div>
+            </div>
+          </div>
+          @endforeach
+        </div>
+      </div>
+    </section>
+    @endif
+
 @endsection
 
 @push('styles')
