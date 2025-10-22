@@ -224,16 +224,16 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">LinkedIn URL</label>
+                                                <label class="form-label">Google URL</label>
                                                 <input type="url" name="linkedin_url" class="form-control"
-                                                       value="{{ $socialMedia->linkedin_url ?? '' }}" placeholder="https://linkedin.com/company/usuario">
+                                                       value="{{ $socialMedia->linkedin_url ?? '' }}" placeholder="https://google.com/">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">YouTube URL</label>
+                                                <label class="form-label">TikTok URL</label>
                                                 <input type="url" name="youtube_url" class="form-control"
-                                                       value="{{ $socialMedia->youtube_url ?? '' }}" placeholder="https://youtube.com/@usuario">
+                                                       value="{{ $socialMedia->youtube_url ?? '' }}" placeholder="https://tiktok.com/@usuario">
                                             </div>
                                         </div>
                                     </div>

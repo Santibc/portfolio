@@ -156,13 +156,13 @@
               </a>
             </div>
             <div class="swiper-slide">
-              <a href="{{ $socialMedia->linkedin_url ?? 'linkedin.com/home?originalSubdomain=co' }}" target="_blank" rel="noopener noreferrer">
-                <img src="{{ asset('images/link.png') }}" class="img-fluid" alt="Twitter">
+              <a href="{{ $socialMedia->linkedin_url ?? 'https://www.google.com' }}" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/Google_2015_logo.svg.webp') }}" class="img-fluid" alt="Twitter">
               </a>
             </div>
             <div class="swiper-slide">
-              <a href="{{ $socialMedia->youtube_url ?? 'https://www.youtube.com' }}" target="_blank" rel="noopener noreferrer">
-                <img src="{{ asset('images/youtube.png') }}" class="img-fluid" alt="YouTube">
+              <a href="{{ $socialMedia->youtube_url ?? 'https://www.tiktok.com' }}" target="_blank" rel="noopener noreferrer">
+                <img src="{{ asset('images/tiktok.png') }}" class="img-fluid" alt="Tiktok">
               </a>
             </div>
           </div>
