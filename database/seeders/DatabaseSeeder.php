@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             PaisSeeder::class,
             DepartamentoSeeder::class,
             CiudadSeeder::class,
+            DistrictsSeeder::class,
         ]);
 
     }

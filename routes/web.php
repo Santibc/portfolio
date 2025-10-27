@@ -30,11 +30,23 @@ Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'c
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/nosotros',[HomeController::class, 'nosotros'] )->name('nosotros');
 Route::get('/equipo',[HomeController::class, 'equipo'] )->name('equipo');
+Route::get('/servicios',[HomeController::class, 'servicios'] )->name('servicios');
 Route::get('/contacto',[HomeController::class, 'contacto'] )->name('contacto');
 Route::get('/services-calculator',[HomeController::class, 'servicesCalculator'] )->name('services.calculator');
 
 // Ruta para envío de correo desde formulario de contacto del landing page
 Route::post('/contact/send', [AdminLandingPageController::class, 'sendContactEmail'])->name('contact.send');
+
+// API para validar cupones
+Route::post('/api/coupon/validate', [App\Http\Controllers\Api\CouponController::class, 'validateCoupon'])->name('api.coupon.validate');
+
+// Cleaning Orders - Frontend
+Route::post('/services-calculator/checkout', [App\Http\Controllers\CleaningOrderController::class, 'checkout'])->name('cleaning-order.checkout');
+Route::get('/order/success', [App\Http\Controllers\CleaningOrderController::class, 'success'])->name('cleaning-order.success');
+Route::get('/order/cancel', [App\Http\Controllers\CleaningOrderController::class, 'cancel'])->name('cleaning-order.cancel');
+
+// Stripe Webhook (excluded from CSRF protection - see VerifyCsrfToken middleware)
+Route::post('/webhook/stripe', [App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -44,6 +56,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+
+    // Rutas de administración de Districts, Coupons y Cleaning Orders
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::post('districts/{district}/toggle-status', [App\Http\Controllers\Admin\DistrictController::class, 'toggleStatus'])->name('districts.toggle-status');
+        Route::resource('districts', App\Http\Controllers\Admin\DistrictController::class);
+        Route::post('coupons/{coupon}/toggle-status', [App\Http\Controllers\Admin\CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
+        Route::resource('coupons', App\Http\Controllers\Admin\CouponController::class);
+
+        // Cleaning Orders Management
+        Route::resource('cleaning-orders', App\Http\Controllers\Admin\CleaningOrderController::class);
+        Route::post('cleaning-orders/{order}/update-status', [App\Http\Controllers\Admin\CleaningOrderController::class, 'updateStatus'])->name('cleaning-orders.update-status');
+    });
 
     // Rutas de administración de Landing Page
     Route::prefix('admin/landing')->name('admin.landing.')->group(function () {

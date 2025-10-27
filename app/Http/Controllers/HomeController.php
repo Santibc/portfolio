@@ -59,14 +59,25 @@ class HomeController extends Controller
     {
         $teamMembers = LandingTeamMember::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
-        
+
         // Cargar SEO para la página equipo (solo si está activo)
         $page = Page::where('slug', 'equipo')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
-        
+
         return view('landing_page.equipo', compact('teamMembers', 'layoutConfig', 'seo'));
     }
-    
+
+    public function servicios()
+    {
+        $layoutConfig = LandingLayoutConfig::first();
+
+        // Cargar SEO para la página servicios (solo si está activo)
+        $page = Page::where('slug', 'servicios')->first();
+        $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+
+        return view('landing_page.servicios', compact('layoutConfig', 'seo'));
+    }
+
     public function contacto()
     {
         $contactInfo = LandingContactInfo::first();
@@ -84,11 +95,12 @@ class HomeController extends Controller
         $pricingConfig = LandingPricingConfig::first();
         $pricingRanges = LandingPricingRange::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
+        $districts = \App\Models\District::active()->get();
 
         // Cargar SEO para la página services-calculator (solo si está activo)
         $page = Page::where('slug', 'services-calculator')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
-        return view('landing_page.services_calculator', compact('pricingConfig', 'pricingRanges', 'layoutConfig', 'seo'));
+        return view('landing_page.services_calculator', compact('pricingConfig', 'pricingRanges', 'layoutConfig', 'seo', 'districts'));
     }
 }

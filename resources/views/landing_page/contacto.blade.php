@@ -79,7 +79,7 @@
                   <div class="error-message" style="display: none;"></div>
                   <div class="sent-message" style="display: none;">Your message has been sent successfully!</div>
 
-                  <button type="submit">Send Message</button>
+                  <button type="submit" class="btn-primary">Send Message</button>
                 </div>
 
               </div>

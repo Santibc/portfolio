@@ -24,6 +24,30 @@
             <i class="bi bi-globe"></i>
             <span>Landing Page</span>
         </a>
+
+        {{-- Districts --}}
+        <a href="{{ route('admin.districts.index') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/districts*') ? 'active' : 'text-dark' }}"
+           title="Districts">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>Districts</span>
+        </a>
+
+        {{-- Coupons --}}
+        <a href="{{ route('admin.coupons.index') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/coupons*') ? 'active' : 'text-dark' }}"
+           title="Coupons">
+            <i class="bi bi-ticket-perforated-fill"></i>
+            <span>Coupons</span>
+        </a>
+
+        {{-- Cleaning Orders --}}
+        <a href="{{ route('admin.cleaning-orders.index') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/cleaning-orders*') ? 'active' : 'text-dark' }}"
+           title="Cleaning Orders">
+            <i class="bi bi-cart-check-fill"></i>
+            <span>Cleaning Orders</span>
+        </a>
     </nav>
 
     {{-- Botón Salir --}}

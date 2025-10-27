@@ -9,11 +9,11 @@
         <div class="row align-items-center">
           <div class="col-lg-6">
             <div class="hero-content">
-              <h1>{{ $config->company_name ?? 'CLEAN ME' }}</h1>
+              <h1>{{ $config->company_name ?? 'Adelaide' }}</h1>
               <h2 class="mb-4"><span>Top Quality Guaranteed</span></h2>
               <p>{{ $config->company_description ?? 'At Clean Me, we believe that putting in a lot of hard work ensures the best and fastest service. We are here to provide you the most suitable and highest solutions for your needs with a professional estimation.' }}</p>
               <div class="hero-actions justify-content-center justify-content-lg-start">
-                <a href="#services" class="btn-primary scrollto">Our Services</a>
+                <a href="{{ route('servicios') }}" class="btn-primary">Our Services</a>
                 <a href="#contact" class="btn-primary scrollto">Get Free Estimate</a>
               </div>
 

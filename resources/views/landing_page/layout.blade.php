@@ -57,6 +57,21 @@
         font-size: 18px;
       }
     }
+
+    /* Header navigation colors for dark blue header */
+    .header .navmenu a,
+    .header .navmenu a:focus {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .header .navmenu li:hover>a,
+    .header .navmenu .active {
+      color: #46cdcf !important;
+    }
+
+    .header .mobile-nav-toggle {
+      color: #ffffff;
+    }
   </style>
 </head>
 
@@ -67,14 +82,14 @@
 
       <a href="{{ route('welcome') }}" class="logo d-flex align-items-center">
         <img src="{{ asset('images/logo.png') }}" alt="Clean Me">
-        <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</h1>
+{{--         <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</h1> --}}
       </a>
 
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="{{ route('welcome') }}" @if(Route::currentRouteName()=='welcome') class="active" @endif>Home</a></li>
           <li><a href="{{ route('nosotros') }}" @if(Route::currentRouteName()=='nosotros') class="active" @endif>About</a></li>
-          <li><a href="{{ route('welcome') }}#services">Services</a></li>
+          <li><a href="{{ route('servicios') }}" @if(Route::currentRouteName()=='servicios') class="active" @endif>Services</a></li>
           <li><a href="{{ route('services.calculator') }}" @if(Route::currentRouteName()=='services.calculator') class="active" @endif>Get Quote</a></li>
           <li><a href="{{ route('contacto') }}" @if(Route::currentRouteName()=='contacto') class="active" @endif>Contact</a></li>
         </ul>
@@ -95,9 +110,10 @@
 
         <div class="col-lg-4">
           <div class="footer-content">
-            <a href="{{ route('welcome') }}" class="logo d-flex align-items-center mb-4">
-              <span class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</span>
-            </a>
+      <a href="{{ route('welcome') }}" class="logo d-flex align-items-center justify-content-center">
+        <img style="max-width: 60%" src="{{ asset('images/logo.png') }}" alt="Clean Me">
+{{--         <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</h1> --}}
+      </a>
             <p class="mb-4">
               Excellence and professionalism in residential and commercial cleaning services.
             </p>
@@ -125,7 +141,7 @@
             <ul>
               <li><a href="{{ route('welcome') }}"><i class="bi bi-chevron-right"></i> Home</a></li>
               <li><a href="{{ route('nosotros') }}"><i class="bi bi-chevron-right"></i> About</a></li>
-              <li><a href="{{ route('welcome') }}#services"><i class="bi bi-chevron-right"></i> Services</a></li>
+              <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Services</a></li>
               <li><a href="{{ route('contacto') }}"><i class="bi bi-chevron-right"></i> Contact</a></li>
             </ul>
           </div>
@@ -135,10 +151,10 @@
           <div class="footer-links">
             <h4>Services</h4>
             <ul>
-              <li><a href="{{ route('welcome') }}#services"><i class="bi bi-chevron-right"></i> Residential Cleaning</a></li>
-              <li><a href="{{ route('welcome') }}#services"><i class="bi bi-chevron-right"></i> Commercial Cleaning</a></li>
-              <li><a href="{{ route('welcome') }}#services"><i class="bi bi-chevron-right"></i> Deep Cleaning</a></li>
-              <li><a href="{{ route('welcome') }}#services"><i class="bi bi-chevron-right"></i> Special Events</a></li>
+              <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Residential Cleaning</a></li>
+              <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Commercial Cleaning</a></li>
+              <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Deep Cleaning</a></li>
+              <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Special Events</a></li>
             </ul>
           </div>
         </div>

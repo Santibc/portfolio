@@ -5,7 +5,10 @@
       "Bash(php artisan:*)",
       "Bash(mysql:*)",
       "Bash(npm run build:*)",
-      "Read(//e/**)"
+      "Read(//e/**)",
+      "Bash(php create_tables.php:*)",
+      "Bash(php -r:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []
