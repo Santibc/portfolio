@@ -77,10 +77,7 @@ Add the following to your `.env` file:
 
 ```env
 # Stripe Configuration
-STRIPE_PUBLIC_KEY=pk_test_51SKhRJB0xo9qAnnamaGU93qsmTEU3KJmjyTPpWSoiyjgkkJoSquZQQ4YI3RT7y7s4o9GuqzbvqXZ2R7ijQMrRpb100a58Rn8bZ
-STRIPE_SECRET_KEY=sk_test_51SKhRJB0xo9qAnnal1vkjxIl3OLi9jDdg7iMYZiAPi57kdEWQN1vw5RL0dKGxYbBbllhF2BFFgSriXcW2nzgyr0g00rtifT2qE
-STRIPE_WEBHOOK_SECRET=whsec_YOUR_WEBHOOK_SECRET_HERE
-STRIPE_CURRENCY=usd
+
 ```
 
 ### 3. Configuration File
