@@ -54,14 +54,81 @@
                     <h6 class="m-0 font-weight-bold text-primary">Service Details</h6>
                 </div>
                 <div class="card-body">
+                    <!-- Room Details -->
+                    @if($cleaningOrder->num_bathrooms || $cleaningOrder->num_bedrooms || $cleaningOrder->num_kitchens || $cleaningOrder->other_rooms)
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Room Details:</strong></p>
+                            <div class="row">
+                                @if($cleaningOrder->num_bathrooms)
+                                    <div class="col-md-3 mb-2">
+                                        <i class="bi bi-water text-primary"></i>
+                                        <strong>{{ $cleaningOrder->num_bathrooms }}</strong> Bathroom{{ $cleaningOrder->num_bathrooms > 1 ? 's' : '' }}
+                                    </div>
+                                @endif
+                                @if($cleaningOrder->num_bedrooms)
+                                    <div class="col-md-3 mb-2">
+                                        <i class="bi bi-door-closed text-primary"></i>
+                                        <strong>{{ $cleaningOrder->num_bedrooms }}</strong> Bedroom{{ $cleaningOrder->num_bedrooms > 1 ? 's' : '' }}
+                                    </div>
+                                @endif
+                                @if($cleaningOrder->num_kitchens)
+                                    <div class="col-md-3 mb-2">
+                                        <i class="bi bi-egg-fried text-primary"></i>
+                                        <strong>{{ $cleaningOrder->num_kitchens }}</strong> Kitchen{{ $cleaningOrder->num_kitchens > 1 ? 's' : '' }}
+                                    </div>
+                                @endif
+                                @if($cleaningOrder->num_other_rooms || $cleaningOrder->other_rooms_desc || $cleaningOrder->other_rooms)
+                                    <div class="col-md-3 mb-2">
+                                        <i class="bi bi-plus-circle text-primary"></i>
+                                        @if($cleaningOrder->num_other_rooms)
+                                            <strong>{{ $cleaningOrder->num_other_rooms }}</strong> Other
+                                        @endif
+                                        @if($cleaningOrder->other_rooms_desc)
+                                            ({{ $cleaningOrder->other_rooms_desc }})
+                                        @elseif($cleaningOrder->other_rooms)
+                                            ({{ $cleaningOrder->other_rooms }})
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <hr>
+                    @endif
+
+                    <!-- Cleaners & Hours -->
+                    @if($cleaningOrder->num_cleaners || $cleaningOrder->num_hours)
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Service Configuration:</strong></p>
+                            <div class="row">
+                                @if($cleaningOrder->num_cleaners)
+                                    <div class="col-md-6 mb-2">
+                                        <i class="bi bi-people-fill text-primary"></i>
+                                        <strong>{{ $cleaningOrder->num_cleaners }}</strong> Cleaner{{ $cleaningOrder->num_cleaners > 1 ? 's' : '' }}
+                                    </div>
+                                @endif
+                                @if($cleaningOrder->num_hours)
+                                    <div class="col-md-6 mb-2">
+                                        <i class="bi bi-clock-fill text-primary"></i>
+                                        <strong>{{ $cleaningOrder->num_hours }}</strong> Hour{{ $cleaningOrder->num_hours > 1 ? 's' : '' }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <hr>
+                    @endif
+
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Service Type:</strong><br>
-                                {{ ucfirst(str_replace('_', ' ', $cleaningOrder->service_type)) }}
-                            </p>
-                            <p><strong>Square Footage:</strong><br>
-                                {{ $cleaningOrder->square_footage_range }}
-                            </p>
+                            @if($cleaningOrder->service_type)
+                                <p><strong>Service Type:</strong><br>
+                                    {{ ucfirst(str_replace('_', ' ', $cleaningOrder->service_type)) }}
+                                </p>
+                            @endif
+                            @if($cleaningOrder->square_footage_range)
+                                <p><strong>Square Footage:</strong><br>
+                                    {{ $cleaningOrder->square_footage_range }}
+                                </p>
+                            @endif
                             <p><strong>Preferred Date & Time:</strong><br>
                                 {{ $cleaningOrder->preferred_date->format('M d, Y') }} at {{ $cleaningOrder->preferred_time }}
                                 @if($cleaningOrder->date_flexible || $cleaningOrder->time_flexible)
@@ -84,12 +151,20 @@
                     @if($cleaningOrder->extras && count($cleaningOrder->extras) > 0)
                         <hr>
                         <p><strong>Extra Services:</strong></p>
-                        <ul class="mb-0">
+                        <ul class="list-unstyled mb-0">
                             @foreach($cleaningOrder->extras as $extra)
-                                <li>
+                                <li class="mb-2">
+                                    @if(isset($extra['id']))
+                                        @php
+                                            $serviceExtra = \App\Models\ServiceExtra::find($extra['id']);
+                                        @endphp
+                                        @if($serviceExtra)
+                                            <i class="{{ $serviceExtra->icon_class }} text-primary"></i>
+                                        @endif
+                                    @endif
                                     {{ $extra['name'] ?? 'Extra Service' }}
                                     @if(isset($extra['price']))
-                                        - ${{ number_format($extra['price'], 2) }}
+                                        - <strong>${{ number_format($extra['price'], 2) }}</strong>
                                     @endif
                                 </li>
                             @endforeach

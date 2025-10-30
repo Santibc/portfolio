@@ -27,23 +27,13 @@
                 <!-- Tabs -->
                 <ul class="nav nav-tabs" id="landingTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">
-                            <i class="bi bi-gear me-1"></i>Configuración General
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="carousel-tab" data-bs-toggle="tab" data-bs-target="#carousel" type="button" role="tab">
-                            <i class="bi bi-images me-1"></i>Carrusel
+                        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">
+                            <i class="bi bi-house me-1"></i>Home
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab">
                             <i class="bi bi-briefcase me-1"></i>Servicios
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="steps-tab" data-bs-toggle="tab" data-bs-target="#steps" type="button" role="tab">
-                            <i class="bi bi-list-ol me-1"></i>Pasos
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -54,11 +44,6 @@
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab">
                             <i class="bi bi-info-circle me-1"></i>Nosotros
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="team-tab" data-bs-toggle="tab" data-bs-target="#team" type="button" role="tab">
-                            <i class="bi bi-people me-1"></i>Equipo
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -79,73 +64,218 @@
                 </ul>
 
                 <div class="tab-content mt-4" id="landingTabsContent">
-                    <!-- Configuración General -->
-                    <div class="tab-pane fade show active" id="config" role="tabpanel">
+                    <!-- Home Configuration -->
+                    <div class="tab-pane fade show active" id="home" role="tabpanel">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Información General</h5>
+                                <h5 class="card-title mb-0">Configuración de la Página de Inicio</h5>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('admin.landing.config.update') }}" method="POST">
+                                <form action="{{ route('admin.landing.home.update') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
+
+                                    <!-- Hero Section -->
+                                    <h6 class="border-bottom pb-2 mb-3">Sección Hero</h6>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Nombre de la Empresa</label>
-                                                <input type="text" name="company_name" class="form-control"
-                                                       value="{{ $config->company_name ?? 'CLEAN ME' }}" required>
+                                                <label class="form-label">Título Principal</label>
+                                                <input type="text" name="hero_title" class="form-control"
+                                                       value="{{ $homeConfig->hero_title ?? 'CLEAN ME' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Email del Botón Contacto</label>
-                                                <input type="email" name="contact_email" class="form-control" 
-                                                       value="{{ $config->contact_email ?? '' }}" placeholder="contacto@ejemplo.com">
+                                                <label class="form-label">Subtítulo</label>
+                                                <input type="text" name="hero_subtitle" class="form-control"
+                                                       value="{{ $homeConfig->hero_subtitle ?? 'Top Quality Guaranteed' }}" required>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label class="form-label">Descripción de la Empresa</label>
-                                        <textarea name="company_description" class="form-control" rows="5" required>{{ $config->company_description ?? 'Somos un despacho orientado a resultados...' }}</textarea>
+                                        <label class="form-label">Descripción Hero</label>
+                                        <textarea name="hero_description" class="form-control" rows="3">{{ $homeConfig->hero_description ?? 'At Clean Me, we believe that putting in a lot of hard work ensures the best and fastest service.' }}</textarea>
                                     </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">URL Botón "Our Services"</label>
+                                                <input type="text" name="hero_services_button_url" class="form-control"
+                                                       value="{{ $homeConfig->hero_services_button_url ?? '/servicios' }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">URL Botón "Get Free Estimate"</label>
+                                                <input type="text" name="hero_estimate_button_url" class="form-control"
+                                                       value="{{ $homeConfig->hero_estimate_button_url ?? '#contact' }}">
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="mb-3">
-                                        <label class="form-label">URL del Botón "Nuestros Servicios" (opcional)</label>
-                                        <input type="text" name="services_button_url" class="form-control" 
-                                               value="{{ $config->services_button_url ?? '#services' }}" 
-                                               placeholder="#services o URL externa">
+                                        <label class="form-label">Imagen Hero</label>
+                                        <input type="file" name="hero_image" class="form-control" accept="image/*">
+                                        <small class="form-text text-muted">Imagen principal de la sección hero</small>
+                                        @if($homeConfig && $homeConfig->hero_image_path)
+                                            <div class="mt-2">
+                                                <img src="{{ asset($homeConfig->hero_image_path) }}" alt="Hero Image" style="max-height: 100px;">
+                                                <small class="form-text text-muted d-block">Imagen actual</small>
+                                            </div>
+                                        @endif
                                     </div>
+
+                                    <!-- About Section -->
+                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Sección "About" / "Nosotros"</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Título de la Sección</label>
+                                        <input type="text" name="about_title" class="form-control"
+                                               value="{{ $homeConfig->about_title ?? 'WE ARE CLEAN ME' }}" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Texto Destacado (Lead)</label>
+                                        <textarea name="about_lead" class="form-control" rows="2">{{ $homeConfig->about_lead ?? 'Excellence and professionalism are first when it comes to our Residential and Commercial Cleaning Services.' }}</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción</label>
+                                        <textarea name="about_description" class="form-control" rows="3">{{ $homeConfig->about_description ?? 'We are constantly improving our services, staying up-to-date on all the latest industry advancements, and bringing our knowledge to your doorstep.' }}</textarea>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Años de Experiencia</label>
+                                                <input type="number" name="about_years_experience" class="form-control"
+                                                       value="{{ $homeConfig->about_years_experience ?? 16 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Clientes Felices</label>
+                                                <input type="number" name="about_happy_clients" class="form-control"
+                                                       value="{{ $homeConfig->about_happy_clients ?? 500 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Satisfacción del Cliente (%)</label>
+                                                <input type="number" name="about_client_satisfaction" class="form-control"
+                                                       value="{{ $homeConfig->about_client_satisfaction ?? 100 }}" min="0" max="100" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Imagen About</label>
+                                        <input type="file" name="about_image" class="form-control" accept="image/*">
+                                        <small class="form-text text-muted">Imagen de la sección about</small>
+                                        @if($homeConfig && $homeConfig->about_image_path)
+                                            <div class="mt-2">
+                                                <img src="{{ asset($homeConfig->about_image_path) }}" alt="About Image" style="max-height: 100px;">
+                                                <small class="form-text text-muted d-block">Imagen actual</small>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Social Media Links -->
+                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Enlaces de Redes Sociales</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Facebook URL</label>
+                                                <input type="url" name="facebook_url" class="form-control"
+                                                       value="{{ $homeConfig->facebook_url ?? '' }}" placeholder="https://www.facebook.com/...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Instagram URL</label>
+                                                <input type="url" name="instagram_url" class="form-control"
+                                                       value="{{ $homeConfig->instagram_url ?? '' }}" placeholder="https://www.instagram.com/...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">LinkedIn URL</label>
+                                                <input type="url" name="linkedin_url" class="form-control"
+                                                       value="{{ $homeConfig->linkedin_url ?? '' }}" placeholder="https://linkedin.com/...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">YouTube URL</label>
+                                                <input type="url" name="youtube_url" class="form-control"
+                                                       value="{{ $homeConfig->youtube_url ?? '' }}" placeholder="https://www.youtube.com/...">
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-lg me-1"></i>Guardar Configuración
+                                        <i class="bi bi-check-lg me-1"></i>Guardar Configuración del Home
                                     </button>
                                 </form>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Carrusel -->
-                    <div class="tab-pane fade" id="carousel" role="tabpanel">
-                        <div class="card">
+                        <!-- Hero Values Management -->
+                        <div class="card mt-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Imágenes del Carrusel</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCarouselModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Imagen
+                                <h5 class="card-title mb-0">Hero Values (Valores/Badges del Hero)</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addHeroValueModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Hero Value
                                 </button>
                             </div>
                             <div class="card-body">
-                                @if($carouselImages->count() > 0)
+                                <!-- Bootstrap Icons Instructions -->
+                                <div class="alert alert-info mb-4">
+                                    <h6><i class="bi bi-info-circle me-1"></i>Cómo agregar iconos de Bootstrap Icons:</h6>
+                                    <ol class="mb-2">
+                                        <li>Visita <a href="https://icons.getbootstrap.com/" target="_blank" class="fw-bold">https://icons.getbootstrap.com/</a></li>
+                                        <li>Busca el icono que deseas usar (ej: "shield", "lightning", "award")</li>
+                                        <li>Haz clic en el icono para ver los detalles</li>
+                                        <li>Copia la clase del icono que aparece como <code>bi bi-nombre-del-icono</code></li>
+                                        <li>Pega la clase completa en el campo "Icono" del formulario</li>
+                                    </ol>
+                                    <p class="mb-0"><strong>Ejemplos de iconos populares:</strong></p>
+                                    <ul class="mb-0">
+                                        <li><code>bi bi-shield-check</code> - Escudo con check (Confianza/Seguridad)</li>
+                                        <li><code>bi bi-lightning-charge</code> - Rayo (Velocidad/Rapidez)</li>
+                                        <li><code>bi bi-award</code> - Medalla (Profesionalismo/Calidad)</li>
+                                        <li><code>bi bi-tree</code> - Árbol (Ecológico)</li>
+                                        <li><code>bi bi-clock</code> - Reloj (Puntualidad/Horarios)</li>
+                                        <li><code>bi bi-people</code> - Personas (Equipo)</li>
+                                    </ul>
+                                </div>
+
+                                @if($heroValues->count() > 0)
                                     <div class="row">
-                                        @foreach($carouselImages as $image)
-                                            <div class="col-md-4 mb-3">
-                                                <div class="card">
-                                                    <img src="{{ asset($image->image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                        @foreach($heroValues as $heroValue)
+                                            <div class="col-md-6 col-lg-3 mb-3">
+                                                <div class="card h-100 text-center">
                                                     <div class="card-body">
-                                                        <p class="card-text">{{ $image->alt_text ?: 'Sin descripción' }}</p>
-                                                        <p class="card-text"><small class="text-muted">Orden: {{ $image->order }}</small></p>
-                                                        <form action="{{ route('admin.landing.carousel.delete', $image->id) }}" method="POST" class="d-inline">
+                                                        <div class="mb-3">
+                                                            <i class="{{ $heroValue->icon_class }} fa-3x text-primary"></i>
+                                                        </div>
+                                                        <h6 class="card-title">{{ $heroValue->title }}</h6>
+                                                        <small class="text-muted">Orden: {{ $heroValue->order }}</small>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <button class="btn btn-warning btn-sm"
+                                                                onclick="editHeroValue({{ $heroValue->id }}, '{{ $heroValue->icon_class }}', '{{ $heroValue->title }}')">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form action="{{ route('admin.landing.hero-values.delete', $heroValue->id) }}" method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar esta imagen?')">
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este hero value?')">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
@@ -155,7 +285,60 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <p class="text-muted">No hay imágenes en el carrusel. Agrega la primera imagen.</p>
+                                    <p class="text-muted">No hay hero values registrados. Agrega el primero usando el botón de arriba.</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Testimonials Management -->
+                        <div class="card mt-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Testimonios de Clientes</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTestimonialModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Testimonio
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                @if($testimonials->count() > 0)
+                                    <div class="row">
+                                        @foreach($testimonials as $testimonial)
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card h-100">
+                                                    <div class="card-body">
+                                                        <div class="mb-3">
+                                                            <h6 class="mb-0">{{ $testimonial->client_name }}</h6>
+                                                            @if($testimonial->client_role)
+                                                                <small class="text-muted">{{ $testimonial->client_role }}</small>
+                                                            @endif
+                                                            <div class="mt-1">
+                                                                @for($i = 1; $i <= 5; $i++)
+                                                                    <i class="bi bi-star{{ $i <= $testimonial->rating ? '-fill' : '' }} text-warning"></i>
+                                                                @endfor
+                                                            </div>
+                                                        </div>
+                                                        <p class="card-text">{{ Str::limit($testimonial->testimonial, 150) }}</p>
+                                                        <small class="text-muted">Orden: {{ $testimonial->order }}</small>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <button class="btn btn-warning btn-sm"
+                                                                onclick="editTestimonial({{ $testimonial->id }}, '{{ $testimonial->client_name }}', '{{ $testimonial->client_role }}', '{{ addslashes($testimonial->testimonial) }}', {{ $testimonial->rating }})">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <form action="{{ route('admin.landing.testimonials.delete', $testimonial->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este testimonio?')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay testimonios registrados. Agrega el primero usando el botón de arriba.</p>
                                 @endif
                             </div>
                         </div>
@@ -204,53 +387,6 @@
                                     </div>
                                 @else
                                     <p class="text-muted">No hay servicios registrados. Agrega el primer servicio.</p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pasos -->
-                    <div class="tab-pane fade" id="steps" role="tabpanel">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Pasos del Proceso</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStepModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Paso
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                @if($steps->count() > 0)
-                                    <div class="row">
-                                        @foreach($steps as $step)
-                                            <div class="col-md-6 col-lg-4 mb-3">
-                                                <div class="card h-100">
-                                                    <div class="card-body">
-                                                        <div class="text-center mb-3">
-                                                            <span class="badge bg-primary fs-4">{{ $step->step_number }}</span>
-                                                        </div>
-                                                        <h6 class="card-title">{{ $step->title }}</h6>
-                                                        <p class="card-text">{{ $step->description }}</p>
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm" 
-                                                                onclick="editStep({{ $step->id }}, '{{ $step->title }}', '{{ addslashes($step->description) }}')">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form action="{{ route('admin.landing.steps.delete', $step->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar este paso?')">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-muted">No hay pasos registrados. Agrega el primer paso.</p>
                                 @endif
                             </div>
                         </div>
@@ -342,12 +478,23 @@
                             <div class="card-body">
                                 <form action="{{ route('admin.landing.about.update') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="mb-3">
-                                        <label class="form-label">Título de la Página</label>
-                                        <input type="text" name="page_title" class="form-control" 
-                                               value="{{ $about->page_title ?? 'Acerca de Nosotros' }}" required>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Título de la Página</label>
+                                                <input type="text" name="page_title" class="form-control"
+                                                       value="{{ $about->page_title ?? 'Acerca de Nosotros' }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Subtítulo de la Página</label>
+                                                <input type="text" name="page_subtitle" class="form-control"
+                                                       value="{{ $about->page_subtitle ?? 'Learn more about Clean Me' }}">
+                                            </div>
+                                        </div>
                                     </div>
-                                    
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
@@ -403,88 +550,120 @@
                                         <label class="form-label">Contenido de la Visión</label>
                                         <textarea name="vision_content" class="form-control" rows="4" required>{{ $about->vision_content ?? 'Definir la visión de la empresa...' }}</textarea>
                                     </div>
-                                    
+
+                                    <!-- Estadísticas -->
+                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Estadísticas</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Años de Experiencia</label>
+                                                <input type="number" name="stats_years_experience" class="form-control"
+                                                       value="{{ $about->stats_years_experience ?? 16 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Clientes Felices</label>
+                                                <input type="number" name="stats_happy_clients" class="form-control"
+                                                       value="{{ $about->stats_happy_clients ?? 500 }}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label class="form-label">Satisfacción del Cliente (%)</label>
+                                                <input type="number" name="stats_client_satisfaction" class="form-control"
+                                                       value="{{ $about->stats_client_satisfaction ?? 100 }}" min="0" max="100" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Valor 1 -->
+                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Valores de la Empresa</h6>
+                                    <div class="card mb-3">
+                                        <div class="card-header">Valor 1</div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Icono (Bootstrap Icons)</label>
+                                                        <input type="text" name="value1_icon" class="form-control"
+                                                               value="{{ $about->value1_icon ?? 'bi bi-award' }}" required>
+                                                        <small class="text-muted">Ejemplo: bi bi-award, bi bi-star, etc.</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Título</label>
+                                                        <input type="text" name="value1_title" class="form-control"
+                                                               value="{{ $about->value1_title ?? 'Quality Assurance' }}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Descripción</label>
+                                                <textarea name="value1_description" class="form-control" rows="2">{{ $about->value1_description ?? 'We use eco-friendly cleaning products and employ highly trained professionals to deliver exceptional results every time.' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Valor 2 -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">Valor 2</div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Icono (Bootstrap Icons)</label>
+                                                        <input type="text" name="value2_icon" class="form-control"
+                                                               value="{{ $about->value2_icon ?? 'bi bi-people' }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Título</label>
+                                                        <input type="text" name="value2_title" class="form-control"
+                                                               value="{{ $about->value2_title ?? 'Customer Focus' }}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Descripción</label>
+                                                <textarea name="value2_description" class="form-control" rows="2">{{ $about->value2_description ?? 'Your satisfaction is our priority. We tailor our services to meet your specific needs and exceed your expectations.' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Valor 3 -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">Valor 3</div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Icono (Bootstrap Icons)</label>
+                                                        <input type="text" name="value3_icon" class="form-control"
+                                                               value="{{ $about->value3_icon ?? 'bi bi-clock-history' }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Título</label>
+                                                        <input type="text" name="value3_title" class="form-control"
+                                                               value="{{ $about->value3_title ?? 'Reliability' }}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Descripción</label>
+                                                <textarea name="value3_description" class="form-control" rows="2">{{ $about->value3_description ?? 'Since 2009, we\'ve built our reputation on consistent, dependable service that you can count on.' }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-check-lg me-1"></i>Guardar Página Nosotros
                                     </button>
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Equipo -->
-                    <div class="tab-pane fade" id="team" role="tabpanel">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Equipo de Trabajo</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Miembro
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                @if($teamMembers->count() > 0)
-                                    <div class="row">
-                                        @foreach($teamMembers as $member)
-                                            <div class="col-md-6 col-lg-4 mb-3">
-                                                <div class="card h-100">
-                                                    @if($member->image_path)
-                                                        <img src="{{ asset($member->image_path) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                                    @else
-                                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                            <i class="bi bi-person-circle fs-1 text-muted"></i>
-                                                        </div>
-                                                    @endif
-                                                    <div class="card-body">
-                                                        <h6 class="card-title">{{ $member->name }}</h6>
-                                                        <p class="card-text"><strong>{{ $member->position }}</strong></p>
-                                                        <p class="card-text">{{ $member->description }}</p>
-                                                        
-                                                        @if($member->twitter_url || $member->facebook_url || $member->instagram_url || $member->linkedin_url)
-                                                            <div class="d-flex gap-2">
-                                                                @if($member->twitter_url)
-                                                                    <a href="{{ $member->twitter_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-twitter"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->facebook_url)
-                                                                    <a href="{{ $member->facebook_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-facebook"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->instagram_url)
-                                                                    <a href="{{ $member->instagram_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-instagram"></i>
-                                                                    </a>
-                                                                @endif
-                                                                @if($member->linkedin_url)
-                                                                    <a href="{{ $member->linkedin_url }}" target="_blank" class="text-primary">
-                                                                        <i class="bi bi-linkedin"></i>
-                                                                    </a>
-                                                                @endif
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm" 
-                                                                onclick="editTeamMember({{ $member->id }}, '{{ $member->name }}', '{{ $member->position }}', '{{ addslashes($member->description) }}', '{{ $member->twitter_url }}', '{{ $member->facebook_url }}', '{{ $member->instagram_url }}', '{{ $member->linkedin_url }}')">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form action="{{ route('admin.landing.team.delete', $member->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                                    onclick="return confirm('¿Estás seguro de eliminar este miembro del equipo?')">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <p class="text-muted">No hay miembros del equipo registrados. Agrega el primer miembro.</p>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -496,7 +675,7 @@
                                 <h5 class="card-title mb-0">Configuración del Layout</h5>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('admin.landing.layout.update') }}" method="POST">
+                                <form action="{{ route('admin.landing.layout.update') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
                                     <div class="row">
                                         <div class="col-md-6">
@@ -509,7 +688,7 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email del Top Bar</label>
-                                                <input type="email" name="topbar_email" class="form-control" 
+                                                <input type="email" name="topbar_email" class="form-control"
                                                        value="{{ $layoutConfig->topbar_email ?? 'info@example.com' }}" required>
                                             </div>
                                         </div>
@@ -589,17 +768,37 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Teléfono del Footer</label>
-                                                <input type="text" name="footer_phone" class="form-control" 
+                                                <input type="text" name="footer_phone" class="form-control"
                                                        value="{{ $layoutConfig->footer_phone ?? '+1 5589 55488 55' }}" required>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Email del Footer</label>
-                                                <input type="email" name="footer_email" class="form-control" 
+                                                <input type="email" name="footer_email" class="form-control"
                                                        value="{{ $layoutConfig->footer_email ?? 'info@example.com' }}" required>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción del Footer</label>
+                                        <textarea name="footer_description" class="form-control" rows="3"
+                                                  placeholder="Descripción que aparece en el footer del sitio">{{ $layoutConfig->footer_description ?? 'Excellence and professionalism in residential and commercial cleaning services.' }}</textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Logo del Footer</label>
+                                        <input type="file" name="footer_logo" class="form-control" accept="image/*">
+                                        <small class="form-text text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>Logo que aparece en el footer del sitio. Si no se especifica, se usa el logo principal.
+                                        </small>
+                                        @if($layoutConfig && $layoutConfig->footer_logo_path)
+                                            <div class="mt-2">
+                                                <img src="{{ asset($layoutConfig->footer_logo_path) }}" alt="Footer Logo" style="max-height: 60px;">
+                                                <small class="form-text text-muted d-block">Logo actual del footer</small>
+                                            </div>
+                                        @endif
                                     </div>
 
                                     <button type="submit" class="btn btn-primary">
@@ -858,144 +1057,104 @@
                         </div>
                     </div>
 
-                    <!-- Pricing Calculator Tab -->
+                                        <!-- Pricing Calculator Tab -->
                     <div class="tab-pane fade" id="pricing" role="tabpanel">
-                        <div class="card">
+
+                        <!-- Base Pricing Configuration -->
+                        <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="bi bi-calculator me-2"></i>Pricing Calculator Configuration</h5>
+                                <h5 class="card-title mb-0"><i class="bi bi-calculator me-2"></i>Configuración de Precios Base</h5>
                             </div>
                             <div class="card-body">
-
-                                <!-- General Configuration -->
-                                <h6 class="border-bottom pb-2 mb-3">General Configuration</h6>
-                                <form action="{{ route('admin.landing.pricing.config.update') }}" method="POST">
+                                <form action="{{ route('admin.landing.pricing.update-base') }}" method="POST">
                                     @csrf
+                                    @method('PUT')
                                     <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label class="form-label">WhatsApp Number (with country code)</label>
-                                                <input type="text" name="whatsapp_number" class="form-control"
-                                                       value="{{ $pricingConfig->whatsapp_number ?? '573202230467' }}"
-                                                       placeholder="573001234567" required>
-                                                <small class="text-muted">Example: 573001234567 (57 = Colombia, 1 = USA)</small>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-people-fill me-1"></i>Precio por Limpiador ($/limpiador)
+                                            </label>
+                                            <input type="number" step="0.01" name="cleaner_price" class="form-control"
+                                                   value="{{ $pricingConfig->cleaner_price ?? 30 }}" min="0" required>
+                                            <small class="text-muted">Precio que se multiplica por el número de limpiadores</small>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Weekly Discount (%)</label>
-                                                <input type="number" name="recurring_weekly_discount" class="form-control"
-                                                       value="{{ $pricingConfig->recurring_weekly_discount ?? 20 }}" min="0" max="100" required>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-clock-fill me-1"></i>Precio por Hora ($/hora)
+                                            </label>
+                                            <input type="number" step="0.01" name="hour_price" class="form-control"
+                                                   value="{{ $pricingConfig->hour_price ?? 30 }}" min="0" required>
+                                            <small class="text-muted">Se multiplica también por número de limpiadores</small>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Bi-Weekly Discount (%)</label>
-                                                <input type="number" name="recurring_biweekly_discount" class="form-control"
-                                                       value="{{ $pricingConfig->recurring_biweekly_discount ?? 15 }}" min="0" max="100" required>
-                                            </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-house-check me-1"></i>Precio Servicio Normal ($)
+                                            </label>
+                                            <input type="number" step="0.01" name="normal_service_price" class="form-control"
+                                                   value="{{ $pricingConfig->normal_service_price ?? 0 }}" min="0" required>
+                                            <small class="text-muted">Precio adicional por seleccionar limpieza normal</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">
+                                                <i class="bi bi-stars me-1"></i>Precio Servicio Profundo ($)
+                                            </label>
+                                            <input type="number" step="0.01" name="deep_service_price" class="form-control"
+                                                   value="{{ $pricingConfig->deep_service_price ?? 50 }}" min="0" required>
+                                            <small class="text-muted">Precio adicional por seleccionar limpieza profunda</small>
                                         </div>
                                     </div>
-
-                                    <h6 class="border-bottom pb-2 mb-3 mt-4">Extra Services Pricing</h6>
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Extra Heavy Duty ($)</label>
-                                                <input type="number" step="0.01" name="extra_heavy_duty" class="form-control"
-                                                       value="{{ $pricingConfig->extra_heavy_duty ?? 150 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Inside Fridge ($)</label>
-                                                <input type="number" step="0.01" name="inside_fridge_ea" class="form-control"
-                                                       value="{{ $pricingConfig->inside_fridge_ea ?? 50 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Inside Oven ($)</label>
-                                                <input type="number" step="0.01" name="inside_oven_ea" class="form-control"
-                                                       value="{{ $pricingConfig->inside_oven_ea ?? 50 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Post-Const Government ($/sqft)</label>
-                                                <input type="number" step="0.01" name="post_construction_government" class="form-control"
-                                                       value="{{ $pricingConfig->post_construction_government ?? 0.90 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Post-Const Private ($/sqft)</label>
-                                                <input type="number" step="0.01" name="post_construction_private" class="form-control"
-                                                       value="{{ $pricingConfig->post_construction_private ?? 0.60 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Window Interior ($/pane)</label>
-                                                <input type="number" step="0.01" name="window_clean_interior" class="form-control"
-                                                       value="{{ $pricingConfig->window_clean_interior ?? 8 }}" min="0" required>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="mb-3">
-                                                <label class="form-label">Window Exterior ($/pane)</label>
-                                                <input type="number" step="0.01" name="window_clean_exterior" class="form-control"
-                                                       value="{{ $pricingConfig->window_clean_exterior ?? 10 }}" min="0" required>
-                                            </div>
-                                        </div>
+                                    <div class="alert alert-info mb-0">
+                                        <strong><i class="bi bi-info-circle me-1"></i>Fórmula de Cálculo:</strong><br>
+                                        <code>Precio Total = (Habitaciones) + (Limpiadores × Horas × Precio Base) + (Tipo de Servicio) + (Extras)</code>
                                     </div>
-
-                                    <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-check-circle me-1"></i>Save Configuration
+                                    <div class="mt-3">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-check-circle me-1"></i>Guardar Configuración Base
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
 
-                                <!-- Pricing Ranges -->
-                                <h6 class="border-bottom pb-2 mb-3 mt-5">Pricing Ranges by Square Footage</h6>
+                        <!-- Room Type Prices -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><i class="bi bi-house-door me-2"></i>Precios por Tipo de Habitación</h5>
+                            </div>
+                            <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Range (sq ft)</th>
-                                                <th>Initial Clean</th>
-                                                <th>Weekly</th>
-                                                <th>Bi-Weekly</th>
-                                                <th>Monthly</th>
-                                                <th>Deep Clean</th>
-                                                <th>Move Out</th>
-                                                <th>Actions</th>
+                                                <th>Tipo de Habitación</th>
+                                                <th>Precio ($)</th>
+                                                <th>Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($pricingRanges as $range)
+                                            @foreach($roomTypePrices as $roomType)
                                             <tr>
-                                                <form action="{{ route('admin.landing.pricing.range.update', $range->id) }}" method="POST" class="range-form-{{ $range->id }}">
+                                                <form action="{{ route('admin.landing.room-type-prices.update', $roomType->id) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
                                                     <td>
-                                                        <div class="d-flex gap-1">
-                                                            <input type="number" name="sq_ft_min" class="form-control form-control-sm" style="width: 70px;"
-                                                                   value="{{ $range->sq_ft_min }}" required>
-                                                            <span class="align-self-center">-</span>
-                                                            <input type="number" name="sq_ft_max" class="form-control form-control-sm" style="width: 70px;"
-                                                                   value="{{ $range->sq_ft_max }}" required>
-                                                        </div>
+                                                        @if($roomType->room_type == 'bathroom')
+                                                            <i class="bi bi-water me-2"></i>Baño
+                                                        @elseif($roomType->room_type == 'bedroom')
+                                                            <i class="bi bi-door-closed me-2"></i>Habitación
+                                                        @elseif($roomType->room_type == 'kitchen')
+                                                            <i class="bi bi-egg-fried me-2"></i>Cocina
+                                                        @else
+                                                            <i class="bi bi-plus-circle me-2"></i>Otro
+                                                        @endif
                                                     </td>
-                                                    <td><input type="number" step="0.01" name="initial_clean" class="form-control form-control-sm" value="{{ $range->initial_clean }}" required></td>
-                                                    <td><input type="number" step="0.01" name="weekly" class="form-control form-control-sm" value="{{ $range->weekly }}" required></td>
-                                                    <td><input type="number" step="0.01" name="biweekly" class="form-control form-control-sm" value="{{ $range->biweekly }}" required></td>
-                                                    <td><input type="number" step="0.01" name="monthly" class="form-control form-control-sm" value="{{ $range->monthly }}" required></td>
-                                                    <td><input type="number" step="0.01" name="deep_clean" class="form-control form-control-sm" value="{{ $range->deep_clean }}" required></td>
-                                                    <td><input type="number" step="0.01" name="move_out_clean" class="form-control form-control-sm" value="{{ $range->move_out_clean }}" required></td>
+                                                    <td>
+                                                        <input type="number" step="0.01" name="price" class="form-control form-control-sm"
+                                                               value="{{ $roomType->price }}" min="0" style="width: 120px;" required>
+                                                    </td>
                                                     <td>
                                                         <button type="submit" class="btn btn-sm btn-success">
-                                                            <i class="bi bi-check"></i>
+                                                            <i class="bi bi-check"></i> Guardar
                                                         </button>
                                                     </td>
                                                 </form>
@@ -1004,11 +1163,75 @@
                                         </tbody>
                                     </table>
                                 </div>
-
                             </div>
                         </div>
+
+                        <!-- Service Extras -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><i class="bi bi-plus-square me-2"></i>Servicios Extras</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceExtraModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Extra
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-info-circle me-1"></i>Iconos de Bootstrap Icons:</h6>
+                                    <p class="mb-0">Visita <a href="https://icons.getbootstrap.com/" target="_blank" class="fw-bold">https://icons.getbootstrap.com/</a> para buscar iconos. Copia la clase completa (ej: <code>bi bi-thermometer-half</code>)</p>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Icono</th>
+                                                <th>Nombre</th>
+                                                <th>Precio ($)</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($serviceExtras as $extra)
+                                            <tr>
+                                                <td><i class="{{ $extra->icon_class }} fa-2x"></i></td>
+                                                <td>{{ $extra->name }}</td>
+                                                <td>${{ number_format($extra->price, 2) }}</td>
+                                                <td>
+                                                    <button class="btn btn-warning btn-sm"
+                                                            onclick="editServiceExtra({{ $extra->id }}, '{{ addslashes($extra->name) }}', '{{ $extra->icon_class }}', {{ $extra->price }})">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <form action="{{ route('admin.landing.service-extras.delete', $extra->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                                onclick="return confirm('¿Eliminar este extra?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cleaner Hour Prices - YA NO SE USA (Precio simplificado arriba) -->
+                        <!-- <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-people me-2"></i>Precios por Limpiadores y Horas (Obsoleto)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    Esta sección ya no se usa. Ahora los precios se configuran en "Configuración de Precios Base" arriba.
+                                </div>
+                            </div>
+                        </div> -->
+
                     </div>
                     <!-- End Pricing Tab -->
+
 
                 </div>
             </div>
@@ -1016,10 +1239,247 @@
     </div>
 
     <!-- Modales -->
-    @include('admin.landing.modals.carousel')
     @include('admin.landing.modals.service')
-    @include('admin.landing.modals.step')
-    @include('admin.landing.modals.team')
+
+    <!-- Add Hero Value Modal -->
+    <div class="modal fade" id="addHeroValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Hero Value</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.hero-values.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (Bootstrap Icons) *</label>
+                            <input type="text" name="icon_class" class="form-control" required
+                                   placeholder="bi bi-shield-check">
+                            <small class="form-text text-muted">Visita <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> para buscar iconos</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título *</label>
+                            <input type="text" name="title" class="form-control" required
+                                   placeholder="Trusted & Insured">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Hero Value Modal -->
+    <div class="modal fade" id="editHeroValueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Hero Value</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editHeroValueForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editHeroValueId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Icono (Bootstrap Icons) *</label>
+                            <input type="text" id="editHeroValueIconClass" name="icon_class" class="form-control" required>
+                            <small class="form-text text-muted">Visita <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a> para buscar iconos</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título *</label>
+                            <input type="text" id="editHeroValueTitle" name="title" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Testimonial Modal -->
+    <div class="modal fade" id="addTestimonialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Testimonio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.testimonials.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Cliente *</label>
+                            <input type="text" name="client_name" class="form-control" required
+                                   placeholder="John Doe">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rol/Posición</label>
+                            <input type="text" name="client_role" class="form-control"
+                                   placeholder="CEO, Empresa XYZ">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Testimonio *</label>
+                            <textarea name="testimonial" class="form-control" rows="4" required
+                                      placeholder="Escriba el testimonio del cliente aquí..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Calificación (estrellas) *</label>
+                            <select name="rating" class="form-select" required>
+                                <option value="5" selected>5 Estrellas</option>
+                                <option value="4">4 Estrellas</option>
+                                <option value="3">3 Estrellas</option>
+                                <option value="2">2 Estrellas</option>
+                                <option value="1">1 Estrella</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Testimonial Modal -->
+    <div class="modal fade" id="editTestimonialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Testimonio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editTestimonialForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editTestimonialId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Cliente *</label>
+                            <input type="text" id="editTestimonialClientName" name="client_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rol/Posición</label>
+                            <input type="text" id="editTestimonialClientRole" name="client_role" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Testimonio *</label>
+                            <textarea id="editTestimonialText" name="testimonial" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Calificación (estrellas) *</label>
+                            <select id="editTestimonialRating" name="rating" class="form-select" required>
+                                <option value="5">5 Estrellas</option>
+                                <option value="4">4 Estrellas</option>
+                                <option value="3">3 Estrellas</option>
+                                <option value="2">2 Estrellas</option>
+                                <option value="1">1 Estrella</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Service Extra Modal -->
+    <div class="modal fade" id="addServiceExtraModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Servicio Extra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.service-extras.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" name="name" class="form-control" required
+                                   placeholder="Clean Oven">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Icono (Bootstrap Icons)</label>
+                            <input type="text" name="icon_class" class="form-control"
+                                   placeholder="bi bi-thermometer-half">
+                            <small class="form-text text-muted">Opcional. Visita <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a></small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Precio ($) *</label>
+                            <input type="number" step="0.01" name="price" class="form-control" required
+                                   placeholder="50.00" min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Service Extra Modal -->
+    <div class="modal fade" id="editServiceExtraModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Servicio Extra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editServiceExtraForm" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editServiceExtraId" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre *</label>
+                            <input type="text" id="editServiceExtraName" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Icono (Bootstrap Icons)</label>
+                            <input type="text" id="editServiceExtraIconClass" name="icon_class" class="form-control">
+                            <small class="form-text text-muted">Opcional. Visita <a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a></small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Precio ($) *</label>
+                            <input type="number" step="0.01" id="editServiceExtraPrice" name="price" class="form-control" required min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     @push('scripts')
     <script>
@@ -1060,38 +1520,11 @@
             document.getElementById('editServiceIconClass').value = iconClass;
             document.getElementById('editServiceTitle').value = title;
             document.getElementById('editServiceDescription').value = description;
-            
+
             const editForm = document.getElementById('editServiceForm');
             editForm.action = editForm.action.replace('/0', '/' + id);
-            
+
             new bootstrap.Modal(document.getElementById('editServiceModal')).show();
-        }
-
-        function editStep(id, title, description) {
-            document.getElementById('editStepId').value = id;
-            document.getElementById('editStepTitle').value = title;
-            document.getElementById('editStepDescription').value = description;
-            
-            const editForm = document.getElementById('editStepForm');
-            editForm.action = editForm.action.replace('/0', '/' + id);
-            
-            new bootstrap.Modal(document.getElementById('editStepModal')).show();
-        }
-
-        function editTeamMember(id, name, position, description, twitterUrl, facebookUrl, instagramUrl, linkedinUrl) {
-            document.getElementById('editTeamMemberId').value = id;
-            document.getElementById('editTeamMemberName').value = name;
-            document.getElementById('editTeamMemberPosition').value = position;
-            document.getElementById('editTeamMemberDescription').value = description;
-            document.getElementById('editTeamMemberTwitterUrl').value = twitterUrl || '';
-            document.getElementById('editTeamMemberFacebookUrl').value = facebookUrl || '';
-            document.getElementById('editTeamMemberInstagramUrl').value = instagramUrl || '';
-            document.getElementById('editTeamMemberLinkedinUrl').value = linkedinUrl || '';
-            
-            const editForm = document.getElementById('editTeamMemberForm');
-            editForm.action = editForm.action.replace('/0', '/' + id);
-            
-            new bootstrap.Modal(document.getElementById('editTeamMemberModal')).show();
         }
 
         // Character counters for SEO fields
@@ -1223,12 +1656,51 @@
                 pageSelector.value = pageId;
                 // Trigger change event to load the data
                 pageSelector.dispatchEvent(new Event('change'));
-                
+
                 // Scroll to form
                 document.getElementById('seoForm').scrollIntoView({
                     behavior: 'smooth'
                 });
             }
+        }
+
+        // Hero Values functions
+        function editHeroValue(id, iconClass, title) {
+            document.getElementById('editHeroValueId').value = id;
+            document.getElementById('editHeroValueIconClass').value = iconClass;
+            document.getElementById('editHeroValueTitle').value = title;
+
+            const editForm = document.getElementById('editHeroValueForm');
+            editForm.action = '{{ url("admin/landing/hero-values") }}/' + id;
+
+            new bootstrap.Modal(document.getElementById('editHeroValueModal')).show();
+        }
+
+        // Testimonials functions
+        function editTestimonial(id, clientName, clientRole, testimonial, rating) {
+            document.getElementById('editTestimonialId').value = id;
+            document.getElementById('editTestimonialClientName').value = clientName;
+            document.getElementById('editTestimonialClientRole').value = clientRole || '';
+            document.getElementById('editTestimonialText').value = testimonial;
+            document.getElementById('editTestimonialRating').value = rating;
+
+            const editForm = document.getElementById('editTestimonialForm');
+            editForm.action = '{{ url("admin/landing/testimonials") }}/' + id;
+
+            new bootstrap.Modal(document.getElementById('editTestimonialModal')).show();
+        }
+
+        // Service Extras functions
+        function editServiceExtra(id, name, iconClass, price) {
+            document.getElementById('editServiceExtraId').value = id;
+            document.getElementById('editServiceExtraName').value = name;
+            document.getElementById('editServiceExtraIconClass').value = iconClass || '';
+            document.getElementById('editServiceExtraPrice').value = price;
+
+            const editForm = document.getElementById('editServiceExtraForm');
+            editForm.action = '{{ url("admin/landing/service-extras") }}/' + id;
+
+            new bootstrap.Modal(document.getElementById('editServiceExtraModal')).show();
         }
     </script>
     @endpush

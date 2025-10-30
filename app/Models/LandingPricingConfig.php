@@ -13,6 +13,10 @@ class LandingPricingConfig extends Model
 
     protected $fillable = [
         'whatsapp_number',
+        'cleaner_price',
+        'hour_price',
+        'normal_service_price',
+        'deep_service_price',
         'extra_heavy_duty',
         'inside_fridge_ea',
         'inside_oven_ea',
@@ -25,6 +29,10 @@ class LandingPricingConfig extends Model
     ];
 
     protected $casts = [
+        'cleaner_price' => 'decimal:2',
+        'hour_price' => 'decimal:2',
+        'normal_service_price' => 'decimal:2',
+        'deep_service_price' => 'decimal:2',
         'extra_heavy_duty' => 'decimal:2',
         'inside_fridge_ea' => 'decimal:2',
         'inside_oven_ea' => 'decimal:2',

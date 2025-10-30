@@ -28,19 +28,18 @@ class HomeController extends Controller
     }
     public function welcome()
     {
-        $config = LandingConfiguracion::first();
-        $carouselImages = LandingCarouselImage::orderBy('order')->get();
-        $services = LandingService::orderBy('order')->get();
-        $steps = LandingStep::orderBy('order')->get();
+        $homeConfig = \App\Models\LandingHomeConfig::first();
         $contactInfo = LandingContactInfo::first();
         $layoutConfig = LandingLayoutConfig::first();
-        
+        $heroValues = \App\Models\LandingHeroValue::where('is_active', true)->orderBy('order')->get();
+        $testimonials = \App\Models\LandingTestimonial::where('is_active', true)->orderBy('order')->get();
+
         // Cargar SEO para la página inicio (solo si está activo)
         $page = Page::where('slug', 'home')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
         return view('landing_page.home', compact(
-            'config', 'carouselImages', 'services', 'steps', 'contactInfo', 'layoutConfig', 'seo'
+            'homeConfig', 'contactInfo', 'layoutConfig', 'heroValues', 'testimonials', 'seo'
         ));
     }
     public function nosotros()
@@ -69,13 +68,14 @@ class HomeController extends Controller
 
     public function servicios()
     {
+        $services = LandingService::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
 
         // Cargar SEO para la página servicios (solo si está activo)
         $page = Page::where('slug', 'servicios')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
-        return view('landing_page.servicios', compact('layoutConfig', 'seo'));
+        return view('landing_page.servicios', compact('services', 'layoutConfig', 'seo'));
     }
 
     public function contacto()
@@ -96,11 +96,24 @@ class HomeController extends Controller
         $pricingRanges = LandingPricingRange::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
         $districts = \App\Models\District::active()->get();
+        $serviceExtras = \App\Models\ServiceExtra::where('is_active', true)->orderBy('order')->get();
+        $roomTypePrices = \App\Models\RoomTypePrice::where('is_active', true)->orderBy('order')->get();
+
+        // Simplified pricing: single price per cleaner and per hour
+        $cleanerPrice = $pricingConfig->cleaner_price ?? 30;
+        $hourPrice = $pricingConfig->hour_price ?? 30;
+        $normalMultiplier = $pricingConfig->normal_service_price ?? 0;
+        $deepMultiplier = $pricingConfig->deep_service_price ?? 50;
 
         // Cargar SEO para la página services-calculator (solo si está activo)
         $page = Page::where('slug', 'services-calculator')->first();
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
-        return view('landing_page.services_calculator', compact('pricingConfig', 'pricingRanges', 'layoutConfig', 'seo', 'districts'));
+        return view('landing_page.services_calculator', compact(
+            'pricingConfig', 'pricingRanges', 'layoutConfig', 'seo', 'districts',
+            'serviceExtras', 'roomTypePrices', 'cleanerPrice', 'hourPrice',
+            'normalMultiplier', 'deepMultiplier'
+        ));
     }
 }
+

@@ -20,6 +20,16 @@ class DatabaseSeeder extends Seeder
             DepartamentoSeeder::class,
             CiudadSeeder::class,
             DistrictsSeeder::class,
+            LandingLayoutConfigSeeder::class,
+            LandingHomeConfigSeeder::class,
+            LandingAboutSeeder::class,
+            LandingServiceSeeder::class,
+            LandingContactInfoSeeder::class,
+            LandingHeroValueSeeder::class,
+            LandingTestimonialSeeder::class,
+            ServiceExtraSeeder::class,
+            RoomTypePriceSeeder::class,
+            CleanerHourPriceSeeder::class,
         ]);
 
     }

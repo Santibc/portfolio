@@ -24,6 +24,8 @@ class LandingLayoutConfig extends Model
         'footer_phone',
         'footer_email',
         'copyright_company',
+        'footer_description',
+        'footer_logo_path',
         'is_active'
     ];
     

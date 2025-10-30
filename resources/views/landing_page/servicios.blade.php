@@ -60,103 +60,25 @@
 
       <div class="container">
 
-        <h3 class="text-center mb-5">Commercial Cleaning Services</h3>
-
-        <!-- Commercial Images Gallery -->
-
-
-        <div class="row gy-4 mb-5">
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-fire"></i>
+        @if($services && $services->count() > 0)
+          <div class="row gy-4 mb-5">
+            @foreach($services as $service)
+              <div class="col-lg-6 col-md-6">
+                <div class="service-card">
+                  <div class="service-icon">
+                    <i class="{{ $service->icon_class }}"></i>
+                  </div>
+                  <h3>{{ $service->title }}</h3>
+                  <p>{{ $service->description }}</p>
+                </div>
               </div>
-              <h3>Hood Cleaning</h3>
-              <p>Our professional team specializes in thorough hood cleaning for commercial kitchens. We ensure that your kitchen exhaust systems are free from grease buildup and fire hazards, keeping your workspace safe and compliant with regulations.</p>
-            </div>
+            @endforeach
           </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-shield-check"></i>
-              </div>
-              <h3>Sanitation Services</h3>
-              <p>We provide comprehensive sanitation services to maintain a clean and hygienic environment in your commercial space. Our experts use industry-standard disinfectants to eliminate bacteria, viruses, and germs, ensuring the well-being of your staff and customers.</p>
-            </div>
+        @else
+          <div class="alert alert-info text-center">
+            <p class="mb-0">No hay servicios disponibles en este momento. Por favor, contacte con nosotros para más información.</p>
           </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-thermometer-half"></i>
-              </div>
-              <h3>Stove and Grill Cleaning</h3>
-              <p>We deep clean stoves and grills to remove grease, carbon buildup, and food residues. This not only enhances the longevity of your equipment but also ensures that your food preparation areas meet the highest hygiene standards.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-snow"></i>
-              </div>
-              <h3>Refrigerator Cleaning</h3>
-              <p>We offer professional cleaning of commercial refrigerators, ensuring a clean and safe storage environment for your perishable goods. Our services help maintain food quality and reduce the risk of contamination.</p>
-            </div>
-          </div>
-
-        </div>
-
-        <h3 class="text-center mb-5">Residential Cleaning Services</h3>
-
-        <!-- Residential Images Gallery -->
-
-
-        <div class="row gy-4 mb-5">
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-house-door"></i>
-              </div>
-              <h3>Basic Cleaning</h3>
-              <p>Our basic residential cleaning service covers essential tasks like dusting, vacuuming, mopping, and sanitizing common living areas, ensuring a clean and tidy home for your everyday comfort.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-stars"></i>
-              </div>
-              <h3>Deep Cleaning</h3>
-              <p>For a more thorough and comprehensive clean, our deep cleaning service goes beyond the basics. We pay attention to every nook and cranny, tackling accumulated grime, dirt, and dust. Ideal for periodic deep cleans or when moving in/out.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-balloon"></i>
-              </div>
-              <h3>Special Occasions</h3>
-              <p>Whether you're hosting a party, celebrating a special event, or having guests over, our special occasion cleaning service ensures your home is spotless and ready to impress. We'll take care of the cleaning so you can focus on the celebration.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-6 col-md-6">
-            <div class="service-card">
-              <div class="service-icon">
-                <i class="bi bi-tools"></i>
-              </div>
-              <h3>Construction Cleaning</h3>
-              <p>After a construction or renovation project, our construction cleaning service helps you rid your home of construction debris, dust, and dirt. We'll leave your space clean, safe, and ready for you to enjoy.</p>
-            </div>
-          </div>
-
-        </div>
+        @endif
 
         <!-- Additional Note -->
         <div class="row mt-5">

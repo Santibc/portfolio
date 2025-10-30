@@ -22,11 +22,11 @@
                 <!-- Progress Indicator -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between mb-2">
-                    <small class="text-muted">Step <span id="current-step-num">1</span> of 9</small>
-                    <small class="text-muted"><span id="progress-percentage">11</span>% Complete</small>
+                    <small class="text-muted">Step <span id="current-step-num">1</span> of <span id="total-steps-num">10</span></small>
+                    <small class="text-muted"><span id="progress-percentage">10</span>% Complete</small>
                   </div>
                   <div class="progress" style="height: 8px;">
-                    <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 11%; background-color: var(--accent-color);" aria-valuenow="11" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 10%; background-color: var(--accent-color);" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
                   </div>
                 </div>
 
@@ -175,80 +175,97 @@
                   </div>
                 </div>
 
-                <!-- Step 7: Square Footage -->
+                <!-- Step 7: Room Details -->
                 <div class="calculator-step" id="step-7" style="display: none;">
-                  <h4 class="mb-3">Property Size</h4>
-                  <p class="text-muted mb-4">What is the square footage of the area to be cleaned?</p>
-                  <select id="square-footage" class="form-select form-select-lg" required>
-                    <option value="">Choose your square footage...</option>
-                    @foreach($pricingRanges as $range)
-                      <option value="{{ $range->id }}"
-                              data-sq-min="{{ $range->sq_ft_min }}"
-                              data-sq-max="{{ $range->sq_ft_max }}"
-                              data-initial="{{ $range->initial_clean }}"
-                              data-weekly="{{ $range->weekly }}"
-                              data-biweekly="{{ $range->biweekly }}"
-                              data-monthly="{{ $range->monthly }}"
-                              data-deep="{{ $range->deep_clean }}"
-                              data-moveout="{{ $range->move_out_clean }}">
-                        {{ $range->sq_ft_min }} - {{ $range->sq_ft_max }} sq ft
-                      </option>
-                    @endforeach
-                    <option value="custom">More than 5,000 sq ft (Contact Us)</option>
-                  </select>
+                  <h4 class="mb-3">Room Details</h4>
+                  <p class="text-muted mb-4">Please specify the number of rooms</p>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="num-bathrooms" class="form-label">Number of Bathrooms <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control room-input" id="num-bathrooms" min="0" value="1" required>
+                      <small class="text-muted">Price: $<span id="bathroom-price">{{ $roomTypePrices->where('room_type', 'bathroom')->first()->price ?? 50 }}</span> each</small>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="num-bedrooms" class="form-label">Number of Bedrooms <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control room-input" id="num-bedrooms" min="0" value="2" required>
+                      <small class="text-muted">Price: $<span id="bedroom-price">{{ $roomTypePrices->where('room_type', 'bedroom')->first()->price ?? 60 }}</span> each</small>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="num-kitchens" class="form-label">Number of Kitchens <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control room-input" id="num-kitchens" min="0" value="1" required>
+                      <small class="text-muted">Price: $<span id="kitchen-price">{{ $roomTypePrices->where('room_type', 'kitchen')->first()->price ?? 70 }}</span> each</small>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="other-rooms-desc" class="form-label">Other Description (Optional)</label>
+                      <input type="text" class="form-control mb-2" id="other-rooms-desc" placeholder="Living room, dining room, etc.">
+                      <label for="num-other-rooms" class="form-label">Quantity</label>
+                      <input type="number" class="form-control room-input" id="num-other-rooms" min="0" value="0">
+                      <small class="text-muted">Price: $<span id="other-price">{{ $roomTypePrices->where('room_type', 'other')->first()->price ?? 40 }}</span> each</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 7.5: Cleaners and Hours -->
+                <div class="calculator-step" id="step-7-5" style="display: none;">
+                  <h4 class="mb-3">Cleaners & Hours</h4>
+                  <p class="text-muted mb-4">How many cleaners and for how long?</p>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label for="num-cleaners" class="form-label">Number of Cleaners <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-lg cleaner-hour-input" id="num-cleaners" min="1" max="10" value="1" required>
+                      <small class="text-muted">Price per cleaner: $<span id="price-per-cleaner">{{ $cleanerPrice ?? 30 }}</span></small>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="num-hours" class="form-label">Number of Hours <span class="text-danger">*</span></label>
+                      <input type="number" class="form-control form-control-lg cleaner-hour-input" id="num-hours" min="1" max="24" value="2" required>
+                      <small class="text-muted">Price per hour: $<span id="price-per-hour">{{ $hourPrice ?? 30 }}</span></small>
+                    </div>
+                  </div>
+                  <div id="cleaner-price-display" class="alert alert-info mt-3">
+                    <strong>Total Service Price:</strong> $<span id="cleaner-hour-price">0.00</span>
+                    <br><small class="text-muted">(<span id="num-cleaners-display">1</span> cleaner × <span id="num-hours-display">2</span> hours × $<span id="base-rate-display">30</span>)</small>
+                  </div>
                 </div>
 
                 <!-- Step 8: Service Type -->
                 <div class="calculator-step" id="step-8" style="display: none;">
                   <h4 class="mb-3">Service Type</h4>
                   <p class="text-muted mb-4">What type of cleaning service do you need?</p>
-                  <div class="row g-3">
+                  <div class="row g-3 justify-content-center">
 
-                    <!-- Recurring Services -->
-                    <div class="col-md-6">
-                      <div class="service-type-card">
-                        <h5 class="mb-3">Recurring Service</h5>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="radio" name="serviceType" id="initial" value="initial">
-                          <label class="form-check-label" for="initial">
-                            Initial Clean - <span class="price-display" id="price-initial">$0.00</span>
-                          </label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="radio" name="serviceType" id="weekly" value="weekly">
-                          <label class="form-check-label" for="weekly">
-                            Weekly (20% off) - <span class="price-display" id="price-weekly">$0.00</span>
-                          </label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="radio" name="serviceType" id="biweekly" value="biweekly">
-                          <label class="form-check-label" for="biweekly">
-                            Bi-Weekly (15% off) - <span class="price-display" id="price-biweekly">$0.00</span>
-                          </label>
-                        </div>
+                    <!-- Normal Clean -->
+                    <div class="col-md-5">
+                      <div class="service-type-card h-100 text-center">
                         <div class="form-check">
-                          <input class="form-check-input" type="radio" name="serviceType" id="monthly" value="monthly">
-                          <label class="form-check-label" for="monthly">
-                            Monthly - <span class="price-display" id="price-monthly">$0.00</span>
+                          <input class="form-check-input service-type-radio" type="radio" name="serviceType" id="normal-clean" value="normal" data-multiplier="{{ $normalMultiplier ?? 1 }}">
+                          <label class="form-check-label w-100" for="normal-clean">
+                            <div class="mb-3">
+                              <i class="bi bi-house-check" style="font-size: 3rem; color: var(--accent-color);"></i>
+                            </div>
+                            <h5>Normal Clean</h5>
+                            <p class="text-muted small mb-2">Standard cleaning service</p>
+                            <div class="price-display fs-4" id="price-normal">
+                              +$<span id="normal-multiplier-price">{{ $normalMultiplier ?? 0 }}</span>
+                            </div>
                           </label>
                         </div>
                       </div>
                     </div>
 
-                    <!-- One-Time Services -->
-                    <div class="col-md-6">
-                      <div class="service-type-card">
-                        <h5 class="mb-3">One-Time Service</h5>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="radio" name="serviceType" id="deep-clean" value="deep_clean">
-                          <label class="form-check-label" for="deep-clean">
-                            Deep Clean - <span class="price-display" id="price-deep">$0.00</span>
-                          </label>
-                        </div>
+                    <!-- Deep Clean -->
+                    <div class="col-md-5">
+                      <div class="service-type-card h-100 text-center">
                         <div class="form-check">
-                          <input class="form-check-input" type="radio" name="serviceType" id="move-out" value="move_out">
-                          <label class="form-check-label" for="move-out">
-                            Move Out Clean - <span class="price-display" id="price-moveout">$0.00</span>
+                          <input class="form-check-input service-type-radio" type="radio" name="serviceType" id="deep-clean" value="deep" data-multiplier="{{ $deepMultiplier ?? 1.5 }}">
+                          <label class="form-check-label w-100" for="deep-clean">
+                            <div class="mb-3">
+                              <i class="bi bi-stars" style="font-size: 3rem; color: var(--accent-color);"></i>
+                            </div>
+                            <h5>Deep Clean</h5>
+                            <p class="text-muted small mb-2">Thorough deep cleaning</p>
+                            <div class="price-display fs-4" id="price-deep">
+                              +$<span id="deep-multiplier-price">{{ $deepMultiplier ?? 0 }}</span>
+                            </div>
                           </label>
                         </div>
                       </div>
@@ -260,95 +277,23 @@
                 <!-- Step 9: Extra Services -->
                 <div class="calculator-step" id="step-9" style="display: none;">
                   <h4 class="mb-3">Extra Services (Optional)</h4>
-                  <p class="text-muted mb-4">Would you like to add any extra services?</p>
+                  <p class="text-muted mb-4">Select any additional services you need</p>
                   <div class="row g-3">
-
-                    <div class="col-md-6">
-                      <div class="form-check">
-                        <input class="form-check-input extra-service" type="checkbox" id="extra-heavy"
-                               data-price="{{ $pricingConfig->extra_heavy_duty }}">
-                        <label class="form-check-label" for="extra-heavy">
-                          Extra Heavy Duty (+${{ $pricingConfig->extra_heavy_duty }})
+                    @foreach($serviceExtras as $extra)
+                    <div class="col-6 col-md-4 col-lg-3">
+                      <div class="extra-service-card">
+                        <input type="checkbox" class="extra-checkbox" id="extra-{{ $extra->id }}"
+                               value="{{ $extra->id }}" data-price="{{ $extra->price }}" data-name="{{ $extra->name }}">
+                        <label for="extra-{{ $extra->id }}" class="extra-label">
+                          <div class="extra-icon">
+                            <i class="{{ $extra->icon_class }} fa-2x"></i>
+                          </div>
+                          <div class="extra-name">{{ $extra->name }}</div>
+                          <div class="extra-price">${{ number_format($extra->price, 2) }}</div>
                         </label>
                       </div>
                     </div>
-
-                    <div class="col-md-6">
-                      <div class="form-check">
-                        <input class="form-check-input extra-service" type="checkbox" id="inside-fridge"
-                               data-price="{{ $pricingConfig->inside_fridge_ea }}">
-                        <label class="form-check-label" for="inside-fridge">
-                          Inside Fridge (+${{ $pricingConfig->inside_fridge_ea }})
-                        </label>
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <div class="form-check">
-                        <input class="form-check-input extra-service" type="checkbox" id="inside-oven"
-                               data-price="{{ $pricingConfig->inside_oven_ea }}">
-                        <label class="form-check-label" for="inside-oven">
-                          Inside Oven (+${{ $pricingConfig->inside_oven_ea }})
-                        </label>
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <div class="d-flex align-items-center">
-                        <div class="form-check flex-grow-1">
-                          <input class="form-check-input extra-service-sqft" type="checkbox" id="post-const-gov">
-                          <label class="form-check-label" for="post-const-gov">
-                            Post-Construction Government
-                          </label>
-                        </div>
-                        <input type="number" class="form-control form-control-sm ms-2" style="width: 100px;"
-                               id="post-const-gov-sqft" placeholder="Sq Ft" min="0" disabled
-                               data-price-per-sqft="{{ $pricingConfig->post_construction_government }}">
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <div class="d-flex align-items-center">
-                        <div class="form-check flex-grow-1">
-                          <input class="form-check-input extra-service-sqft" type="checkbox" id="post-const-priv">
-                          <label class="form-check-label" for="post-const-priv">
-                            Post-Construction Private
-                          </label>
-                        </div>
-                        <input type="number" class="form-control form-control-sm ms-2" style="width: 100px;"
-                               id="post-const-priv-sqft" placeholder="Sq Ft" min="0" disabled
-                               data-price-per-sqft="{{ $pricingConfig->post_construction_private }}">
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <div class="d-flex align-items-center">
-                        <div class="form-check flex-grow-1">
-                          <input class="form-check-input extra-service-panes" type="checkbox" id="window-interior">
-                          <label class="form-check-label" for="window-interior">
-                            Window Clean (Interior)
-                          </label>
-                        </div>
-                        <input type="number" class="form-control form-control-sm ms-2" style="width: 100px;"
-                               id="window-interior-panes" placeholder="Panes" min="0" disabled
-                               data-price-per-pane="{{ $pricingConfig->window_clean_interior }}">
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <div class="d-flex align-items-center">
-                        <div class="form-check flex-grow-1">
-                          <input class="form-check-input extra-service-panes" type="checkbox" id="window-exterior">
-                          <label class="form-check-label" for="window-exterior">
-                            Window Clean (Exterior)
-                          </label>
-                        </div>
-                        <input type="number" class="form-control form-control-sm ms-2" style="width: 100px;"
-                               id="window-exterior-panes" placeholder="Panes" min="0" disabled
-                               data-price-per-pane="{{ $pricingConfig->window_clean_exterior }}">
-                      </div>
-                    </div>
-
+                    @endforeach
                   </div>
                 </div>
 
@@ -475,7 +420,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
-    const totalSteps = 9;
+    const totalSteps = 10;
 
     // Form data storage
     let formData = {
@@ -494,14 +439,22 @@ document.addEventListener('DOMContentLoaded', function() {
         accessNotes: '',
         dateFlexible: false,
         timeFlexible: false,
-        squareFootage: null,
+        numBathrooms: 0,
+        numBedrooms: 0,
+        numKitchens: 0,
+        numOtherRooms: 0,
+        otherRoomsDesc: '',
+        numCleaners: null,
+        numHours: null,
         serviceType: null,
         extras: []
     };
 
     // Pricing data
-    let currentRange = null;
+    let roomTypePrices = @json($roomTypePrices);
     let basePrice = 0;
+    let roomsPrice = 0;
+    let serviceTypeMultiplier = 0;
     let extrasTotal = 0;
     let subtotal = 0;
     let discountAmount = 0;
@@ -533,7 +486,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showStep(step) {
         document.querySelectorAll('.calculator-step').forEach(s => s.style.display = 'none');
-        document.getElementById('step-' + step).style.display = 'block';
+
+        // Map step 8 to step-7-5, and adjust steps 9-10 accordingly
+        let stepId;
+        if (step <= 7) {
+            stepId = 'step-' + step;
+        } else if (step === 8) {
+            stepId = 'step-7-5';
+        } else {
+            // step 9 becomes step 8, step 10 becomes step 9 in HTML
+            stepId = 'step-' + (step - 1);
+        }
+
+        document.getElementById(stepId).style.display = 'block';
 
         prevBtn.style.display = step === 1 ? 'none' : 'block';
 
@@ -609,18 +574,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
 
             case 7:
-                const sqft = document.getElementById('square-footage').value;
-                if (!sqft) {
-                    message = 'Please select your square footage';
+                const numBathrooms = document.getElementById('num-bathrooms').value;
+                const numBedrooms = document.getElementById('num-bedrooms').value;
+                const numKitchens = document.getElementById('num-kitchens').value;
+
+                if (numBathrooms === '' || parseInt(numBathrooms) < 0) {
+                    message = 'Please enter a valid number of bathrooms';
                     isValid = false;
-                } else if (sqft === 'custom') {
-                    alert('For properties over 5,000 sq ft, please contact us directly for a custom quote.');
-                    window.location.href = '{{ route("contacto") }}';
+                } else if (numBedrooms === '' || parseInt(numBedrooms) < 0) {
+                    message = 'Please enter a valid number of bedrooms';
+                    isValid = false;
+                } else if (numKitchens === '' || parseInt(numKitchens) < 0) {
+                    message = 'Please enter a valid number of kitchens';
                     isValid = false;
                 }
                 break;
 
             case 8:
+                // Step 8 is now cleaners/hours (step-7-5)
+                const numCleanersVal = parseInt(document.getElementById('num-cleaners').value);
+                const numHoursVal = parseInt(document.getElementById('num-hours').value);
+
+                if (!numCleanersVal || numCleanersVal < 1) {
+                    message = 'Please enter at least 1 cleaner';
+                    isValid = false;
+                } else if (!numHoursVal || numHoursVal < 1) {
+                    message = 'Please enter at least 1 hour';
+                    isValid = false;
+                }
+                break;
+
+            case 9:
+                // Step 9 is now service type
                 if (!document.querySelector('input[name="serviceType"]:checked')) {
                     message = 'Please select a service type';
                     isValid = false;
@@ -672,35 +657,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
 
             case 7:
-                const selectedOption = document.getElementById('square-footage').options[document.getElementById('square-footage').selectedIndex];
-                currentRange = {
-                    min: selectedOption.dataset.sqMin,
-                    max: selectedOption.dataset.sqMax,
-                    initial: parseFloat(selectedOption.dataset.initial),
-                    weekly: parseFloat(selectedOption.dataset.weekly),
-                    biweekly: parseFloat(selectedOption.dataset.biweekly),
-                    monthly: parseFloat(selectedOption.dataset.monthly),
-                    deep: parseFloat(selectedOption.dataset.deep),
-                    moveout: parseFloat(selectedOption.dataset.moveout)
-                };
-                updatePriceDisplays();
+                // Room details - save to formData
+                formData.numBathrooms = parseInt(document.getElementById('num-bathrooms').value) || 0;
+                formData.numBedrooms = parseInt(document.getElementById('num-bedrooms').value) || 0;
+                formData.numKitchens = parseInt(document.getElementById('num-kitchens').value) || 0;
+                formData.numOtherRooms = parseInt(document.getElementById('num-other-rooms').value) || 0;
+                formData.otherRoomsDesc = document.getElementById('other-rooms-desc').value;
+
+                calculateRoomsPrice();
                 break;
 
             case 8:
-                const serviceRadio = document.querySelector('input[name="serviceType"]:checked');
-                formData.serviceType = serviceRadio.value;
+                // Cleaners and hours - save to formData
+                formData.numCleaners = parseInt(document.getElementById('num-cleaners').value) || 0;
+                formData.numHours = parseInt(document.getElementById('num-hours').value) || 0;
 
-                switch(serviceRadio.value) {
-                    case 'initial': basePrice = currentRange.initial; break;
-                    case 'weekly': basePrice = currentRange.weekly; break;
-                    case 'biweekly': basePrice = currentRange.biweekly; break;
-                    case 'monthly': basePrice = currentRange.monthly; break;
-                    case 'deep_clean': basePrice = currentRange.deep; break;
-                    case 'move_out': basePrice = currentRange.moveout; break;
-                }
+                updateCleanerHourPrice();
                 break;
 
             case 9:
+                // Service type
+                const selectedType = document.querySelector('input[name="serviceType"]:checked');
+                if (selectedType) {
+                    formData.serviceType = selectedType.value;
+                    calculateServiceTypePrice();
+                }
+                break;
+
+            case 10:
                 calculateExtras();
                 break;
         }
@@ -715,22 +699,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('price-moveout').textContent = '$' + currentRange.moveout.toFixed(2);
     }
 
-    // Extra services handlers
-    document.querySelectorAll('.extra-service').forEach(checkbox => {
+    // Extra services handlers (new icon-based checkboxes)
+    document.querySelectorAll('.extra-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
-            if (currentStep === 9) {
-                calculateExtras();
-                updateSummary();
-            }
-        });
-    });
-
-    document.querySelectorAll('.extra-service-sqft').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const inputId = this.id + '-sqft';
-            document.getElementById(inputId).disabled = !this.checked;
-            if (!this.checked) document.getElementById(inputId).value = '';
-            if (currentStep === 9) {
+            if (currentStep === 10) {
                 calculateExtras();
                 updateSummary();
             }
@@ -769,43 +741,98 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Pricing configuration
+    const pricePerCleaner = {{ $cleanerPrice ?? 30 }};
+    const pricePerHour = {{ $hourPrice ?? 30 }};
+    const normalMultiplier = {{ $normalMultiplier ?? 0 }};
+    const deepMultiplier = {{ $deepMultiplier ?? 50 }};
+
+    // Real-time calculation for rooms
+    document.querySelectorAll('.room-input').forEach(input => {
+        input.addEventListener('input', function() {
+            calculateRoomsPrice();
+            updateSummary();
+        });
+    });
+
+    // Real-time calculation for cleaners and hours
+    document.querySelectorAll('.cleaner-hour-input').forEach(input => {
+        input.addEventListener('input', function() {
+            updateCleanerHourPrice();
+            updateSummary();
+        });
+    });
+
+    // Real-time calculation for service type
+    document.querySelectorAll('.service-type-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            calculateServiceTypePrice();
+            updateSummary();
+        });
+    });
+
+    function calculateRoomsPrice() {
+        const bathroomPrice = parseFloat(document.getElementById('bathroom-price').textContent);
+        const bedroomPrice = parseFloat(document.getElementById('bedroom-price').textContent);
+        const kitchenPrice = parseFloat(document.getElementById('kitchen-price').textContent);
+        const otherPrice = parseFloat(document.getElementById('other-price').textContent);
+
+        const numBathrooms = parseInt(document.getElementById('num-bathrooms').value) || 0;
+        const numBedrooms = parseInt(document.getElementById('num-bedrooms').value) || 0;
+        const numKitchens = parseInt(document.getElementById('num-kitchens').value) || 0;
+        const numOther = parseInt(document.getElementById('num-other-rooms').value) || 0;
+
+        roomsPrice = (bathroomPrice * numBathrooms) +
+                     (bedroomPrice * numBedrooms) +
+                     (kitchenPrice * numKitchens) +
+                     (otherPrice * numOther);
+
+        return roomsPrice;
+    }
+
+    function updateCleanerHourPrice() {
+        const numCleaners = parseInt(document.getElementById('num-cleaners').value) || 0;
+        const numHours = parseInt(document.getElementById('num-hours').value) || 0;
+
+        if (numCleaners > 0 && numHours > 0) {
+            const totalPrice = numCleaners * numHours * pricePerCleaner;
+
+            document.getElementById('cleaner-hour-price').textContent = totalPrice.toFixed(2);
+            document.getElementById('num-cleaners-display').textContent = numCleaners;
+            document.getElementById('num-hours-display').textContent = numHours;
+            document.getElementById('base-rate-display').textContent = pricePerCleaner.toFixed(2);
+
+            basePrice = totalPrice;
+        } else {
+            document.getElementById('cleaner-hour-price').textContent = '0.00';
+            basePrice = 0;
+        }
+    }
+
+    function calculateServiceTypePrice() {
+        const selectedType = document.querySelector('input[name="serviceType"]:checked');
+
+        if (selectedType) {
+            serviceTypeMultiplier = parseFloat(selectedType.dataset.multiplier) || 0;
+
+            // Update display
+            if (selectedType.value === 'normal') {
+                document.getElementById('normal-multiplier-price').textContent = normalMultiplier.toFixed(2);
+            } else if (selectedType.value === 'deep') {
+                document.getElementById('deep-multiplier-price').textContent = deepMultiplier.toFixed(2);
+            }
+        } else {
+            serviceTypeMultiplier = 0;
+        }
+    }
+
     function calculateExtras() {
         extrasTotal = 0;
 
-        // Simple checkboxes
-        document.querySelectorAll('.extra-service:checked').forEach(checkbox => {
+        // New extra checkboxes with .extra-checkbox class
+        document.querySelectorAll('.extra-checkbox:checked').forEach(checkbox => {
             extrasTotal += parseFloat(checkbox.dataset.price);
         });
-
-        // Square footage based
-        const postConstGov = document.getElementById('post-const-gov');
-        if (postConstGov.checked) {
-            const sqft = parseFloat(document.getElementById('post-const-gov-sqft').value) || 0;
-            const pricePerSqft = parseFloat(document.getElementById('post-const-gov-sqft').dataset.pricePerSqft);
-            extrasTotal += sqft * pricePerSqft;
-        }
-
-        const postConstPriv = document.getElementById('post-const-priv');
-        if (postConstPriv.checked) {
-            const sqft = parseFloat(document.getElementById('post-const-priv-sqft').value) || 0;
-            const pricePerSqft = parseFloat(document.getElementById('post-const-priv-sqft').dataset.pricePerSqft);
-            extrasTotal += sqft * pricePerSqft;
-        }
-
-        // Window panes
-        const windowInt = document.getElementById('window-interior');
-        if (windowInt.checked) {
-            const panes = parseFloat(document.getElementById('window-interior-panes').value) || 0;
-            const pricePerPane = parseFloat(document.getElementById('window-interior-panes').dataset.pricePerPane);
-            extrasTotal += panes * pricePerPane;
-        }
-
-        const windowExt = document.getElementById('window-exterior');
-        if (windowExt.checked) {
-            const panes = parseFloat(document.getElementById('window-exterior-panes').value) || 0;
-            const pricePerPane = parseFloat(document.getElementById('window-exterior-panes').dataset.pricePerPane);
-            extrasTotal += panes * pricePerPane;
-        }
     }
 
     function updateSummary() {
@@ -838,47 +865,54 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('summary-datetime').textContent = `${dateStr} at ${formData.preferredTime}`;
         }
 
-        // Square footage
-        if (currentStep >= 7 && currentRange) {
-            document.getElementById('summary-sqft-section').style.display = 'block';
-            document.getElementById('summary-sqft').textContent = currentRange.min + ' - ' + currentRange.max + ' sq ft';
+        // Room details
+        if (currentStep >= 7) {
+            const numBathrooms = parseInt(document.getElementById('num-bathrooms')?.value) || 0;
+            const numBedrooms = parseInt(document.getElementById('num-bedrooms')?.value) || 0;
+            const numKitchens = parseInt(document.getElementById('num-kitchens')?.value) || 0;
+            const numOther = parseInt(document.getElementById('num-other-rooms')?.value) || 0;
+            const otherDesc = document.getElementById('other-rooms-desc')?.value || '';
+
+            if (numBathrooms || numBedrooms || numKitchens || numOther) {
+                document.getElementById('summary-sqft-section').style.display = 'block';
+                const roomDetails = [];
+                if (numBathrooms > 0) roomDetails.push(`${numBathrooms} Bathroom${numBathrooms > 1 ? 's' : ''}`);
+                if (numBedrooms > 0) roomDetails.push(`${numBedrooms} Bedroom${numBedrooms > 1 ? 's' : ''}`);
+                if (numKitchens > 0) roomDetails.push(`${numKitchens} Kitchen${numKitchens > 1 ? 's' : ''}`);
+                if (numOther > 0) roomDetails.push(`${numOther} Other${otherDesc ? ' (' + otherDesc + ')' : ''}`);
+                document.getElementById('summary-sqft').textContent = roomDetails.join(', ');
+            }
+        }
+
+        // Cleaners and hours
+        if (currentStep >= 8) {
+            const numCleaners = document.getElementById('num-cleaners')?.value;
+            const numHours = document.getElementById('num-hours')?.value;
+            if (numCleaners && numHours) {
+                // Could add a summary section for this if needed
+            }
         }
 
         // Service type
-        if (currentStep >= 8 && formData.serviceType) {
-            document.getElementById('summary-service-section').style.display = 'block';
-            const serviceName = document.querySelector('input[name="serviceType"]:checked').parentElement.textContent.split('-')[0].trim();
-            document.getElementById('summary-service').textContent = serviceName;
-            document.getElementById('summary-service-price').textContent = '$' + basePrice.toFixed(2);
+        if (currentStep >= 9 && formData.serviceType) {
+            const summaryServiceSection = document.getElementById('summary-service-section');
+            const selectedService = document.querySelector('input[name="serviceType"]:checked');
+
+            if (summaryServiceSection && selectedService) {
+                summaryServiceSection.style.display = 'block';
+                const serviceName = selectedService.parentElement?.textContent?.split('-')[0]?.trim() || formData.serviceType;
+                document.getElementById('summary-service').textContent = serviceName;
+                document.getElementById('summary-service-price').textContent = '$' + (basePrice + serviceTypeMultiplier).toFixed(2);
+            }
         }
 
         // Extras
-        if (currentStep >= 9) {
+        if (currentStep >= 10) {
             const extrasList = [];
 
-            document.querySelectorAll('.extra-service:checked').forEach(checkbox => {
-                extrasList.push(checkbox.parentElement.textContent.trim());
+            document.querySelectorAll('.extra-checkbox:checked').forEach(checkbox => {
+                extrasList.push(checkbox.dataset.name);
             });
-
-            if (document.getElementById('post-const-gov').checked) {
-                const sqft = document.getElementById('post-const-gov-sqft').value || 0;
-                extrasList.push(`Post-Construction Government (${sqft} sq ft)`);
-            }
-
-            if (document.getElementById('post-const-priv').checked) {
-                const sqft = document.getElementById('post-const-priv-sqft').value || 0;
-                extrasList.push(`Post-Construction Private (${sqft} sq ft)`);
-            }
-
-            if (document.getElementById('window-interior').checked) {
-                const panes = document.getElementById('window-interior-panes').value || 0;
-                extrasList.push(`Window Clean Interior (${panes} panes)`);
-            }
-
-            if (document.getElementById('window-exterior').checked) {
-                const panes = document.getElementById('window-exterior-panes').value || 0;
-                extrasList.push(`Window Clean Exterior (${panes} panes)`);
-            }
 
             if (extrasList.length > 0) {
                 document.getElementById('summary-extras').style.display = 'block';
@@ -897,7 +931,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('summary-total-section').style.display = 'flex';
             document.getElementById('proceed-payment-btn').style.display = 'block';
 
-            subtotal = basePrice + extrasTotal;
+            subtotal = roomsPrice + basePrice + serviceTypeMultiplier + extrasTotal;
             document.getElementById('subtotal-price').textContent = '$' + subtotal.toFixed(2);
 
             // Recalculate discount if coupon is applied
@@ -1006,9 +1040,17 @@ document.addEventListener('DOMContentLoaded', function() {
             parking: formData.parking,
             property_access: formData.propertyAccess,
             access_notes: formData.accessNotes,
-            square_footage_range: `${currentRange.min} - ${currentRange.max}`,
+            num_bathrooms: formData.numBathrooms,
+            num_bedrooms: formData.numBedrooms,
+            num_kitchens: formData.numKitchens,
+            num_other_rooms: formData.numOtherRooms,
+            other_rooms_desc: formData.otherRoomsDesc,
+            num_cleaners: formData.numCleaners,
+            num_hours: formData.numHours,
             service_type: formData.serviceType,
+            rooms_price: roomsPrice,
             base_price: basePrice,
+            service_type_price: serviceTypeMultiplier,
             extras_total: extrasTotal,
             coupon_code: appliedCoupon ? appliedCoupon.code : null,
             extras: collectExtrasData()
@@ -1058,65 +1100,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function collectExtrasData() {
         const extras = [];
 
-        // Simple checkboxes
-        document.querySelectorAll('.extra-service:checked').forEach(checkbox => {
+        // New icon-based checkboxes
+        document.querySelectorAll('.extra-checkbox:checked').forEach(checkbox => {
             const price = parseFloat(checkbox.dataset.price);
+            const name = checkbox.dataset.name;
+            const extraId = checkbox.value;
             extras.push({
-                type: checkbox.id,
-                name: checkbox.parentElement.textContent.trim(),
+                id: extraId,
+                name: name,
                 price: price
             });
         });
-
-        // Square footage based
-        if (document.getElementById('post-const-gov').checked) {
-            const sqft = parseFloat(document.getElementById('post-const-gov-sqft').value) || 0;
-            const pricePerSqft = parseFloat(document.getElementById('post-const-gov-sqft').dataset.pricePerSqft);
-            extras.push({
-                type: 'post-const-gov',
-                name: 'Post-Construction Government',
-                square_feet: sqft,
-                price_per_sqft: pricePerSqft,
-                price: sqft * pricePerSqft
-            });
-        }
-
-        if (document.getElementById('post-const-priv').checked) {
-            const sqft = parseFloat(document.getElementById('post-const-priv-sqft').value) || 0;
-            const pricePerSqft = parseFloat(document.getElementById('post-const-priv-sqft').dataset.pricePerSqft);
-            extras.push({
-                type: 'post-const-priv',
-                name: 'Post-Construction Private',
-                square_feet: sqft,
-                price_per_sqft: pricePerSqft,
-                price: sqft * pricePerSqft
-            });
-        }
-
-        // Window panes
-        if (document.getElementById('window-interior').checked) {
-            const panes = parseFloat(document.getElementById('window-interior-panes').value) || 0;
-            const pricePerPane = parseFloat(document.getElementById('window-interior-panes').dataset.pricePerPane);
-            extras.push({
-                type: 'window-interior',
-                name: 'Window Clean (Interior)',
-                panes: panes,
-                price_per_pane: pricePerPane,
-                price: panes * pricePerPane
-            });
-        }
-
-        if (document.getElementById('window-exterior').checked) {
-            const panes = parseFloat(document.getElementById('window-exterior-panes').value) || 0;
-            const pricePerPane = parseFloat(document.getElementById('window-exterior-panes').dataset.pricePerPane);
-            extras.push({
-                type: 'window-exterior',
-                name: 'Window Clean (Exterior)',
-                panes: panes,
-                price_per_pane: pricePerPane,
-                price: panes * pricePerPane
-            });
-        }
 
         return extras;
     }
@@ -1151,6 +1145,72 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .calculator-step {
     min-height: 300px;
+}
+
+/* Extra Service Card Styling */
+.extra-service-card {
+    position: relative;
+    height: 100%;
+}
+
+.extra-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.extra-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    height: 100%;
+    text-align: center;
+}
+
+.extra-label:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.extra-checkbox:checked + .extra-label {
+    border-color: var(--accent-color);
+    background-color: rgba(69, 162, 158, 0.1);
+    box-shadow: 0 0 0 3px rgba(69, 162, 158, 0.2);
+}
+
+.extra-icon {
+    margin-bottom: 12px;
+    color: var(--accent-color);
+    font-size: 2rem;
+}
+
+.extra-checkbox:checked + .extra-label .extra-icon {
+    transform: scale(1.1);
+}
+
+.extra-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+}
+
+.extra-price {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.1em;
 }
 </style>
 @endpush

@@ -8,7 +8,9 @@
       "Read(//e/**)",
       "Bash(php create_tables.php:*)",
       "Bash(php -r:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(php:*)",
+      "Bash(del \"E:\\xampp8.20\\htdocs\\cleanme\\fix_nullable_columns.php\")"
     ],
     "deny": [],
     "ask": []

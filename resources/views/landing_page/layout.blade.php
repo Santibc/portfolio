@@ -111,11 +111,15 @@
         <div class="col-lg-4">
           <div class="footer-content">
       <a href="{{ route('welcome') }}" class="logo d-flex align-items-center justify-content-center">
-        <img style="max-width: 60%" src="{{ asset('images/logo.png') }}" alt="Clean Me">
+        @if($layoutConfig && $layoutConfig->footer_logo_path)
+          <img style="max-width: 60%" src="{{ asset($layoutConfig->footer_logo_path) }}" alt="{{ $layoutConfig->site_title ?? 'Clean Me' }}">
+        @else
+          <img style="max-width: 60%" src="{{ asset('images/logo.png') }}" alt="Clean Me">
+        @endif
 {{--         <h1 class="sitename">{{ $layoutConfig->site_title ?? 'Clean Me' }}</h1> --}}
       </a>
             <p class="mb-4">
-              Excellence and professionalism in residential and commercial cleaning services.
+              {{ $layoutConfig->footer_description ?? 'Excellence and professionalism in residential and commercial cleaning services.' }}
             </p>
 
             <div class="social-links d-flex mt-4">

@@ -13,6 +13,7 @@ class LandingAbout extends Model
     
     protected $fillable = [
         'page_title',
+        'page_subtitle',
         'main_image_path',
         'purpose_title',
         'purpose_content',
@@ -20,6 +21,18 @@ class LandingAbout extends Model
         'mission_content',
         'vision_title',
         'vision_content',
+        'stats_years_experience',
+        'stats_happy_clients',
+        'stats_client_satisfaction',
+        'value1_icon',
+        'value1_title',
+        'value1_description',
+        'value2_icon',
+        'value2_title',
+        'value2_description',
+        'value3_icon',
+        'value3_title',
+        'value3_description',
         'is_active'
     ];
     

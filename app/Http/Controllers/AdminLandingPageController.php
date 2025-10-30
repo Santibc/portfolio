@@ -15,6 +15,12 @@ use App\Models\Page;
 use App\Models\Seo;
 use App\Models\LandingPricingConfig;
 use App\Models\LandingPricingRange;
+use App\Models\LandingHomeConfig;
+use App\Models\LandingHeroValue;
+use App\Models\LandingTestimonial;
+use App\Models\ServiceExtra;
+use App\Models\RoomTypePrice;
+use App\Models\CleanerHourPrice;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use App\Mail\ContactFormMail;
@@ -24,15 +30,18 @@ class AdminLandingPageController extends Controller
     public function index()
     {
         $config = LandingConfiguracion::first();
-        $carouselImages = LandingCarouselImage::orderBy('order')->get();
         $services = LandingService::orderBy('order')->get();
-        $steps = LandingStep::orderBy('order')->get();
         $contactInfo = LandingContactInfo::first();
         $about = LandingAbout::first();
-        $teamMembers = LandingTeamMember::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
         $pricingConfig = LandingPricingConfig::first();
         $pricingRanges = LandingPricingRange::orderBy('order')->get();
+        $homeConfig = LandingHomeConfig::first();
+        $heroValues = LandingHeroValue::orderBy('order')->get();
+        $testimonials = LandingTestimonial::orderBy('order')->get();
+        $serviceExtras = ServiceExtra::orderBy('order')->get();
+        $roomTypePrices = RoomTypePrice::orderBy('order')->get();
+        $cleanerHourPrices = CleanerHourPrice::orderBy('num_cleaners')->orderBy('num_hours')->get();
 
         // Get or create landing pages
         $this->ensureLandingPagesExist();
@@ -40,9 +49,10 @@ class AdminLandingPageController extends Controller
         $seoConfigs = Seo::with('page')->get();
 
         return view('admin.landing.index', compact(
-            'config', 'carouselImages', 'services', 'steps', 'contactInfo',
-            'about', 'teamMembers', 'layoutConfig', 'pages', 'seoConfigs',
-            'pricingConfig', 'pricingRanges'
+            'config', 'services', 'contactInfo',
+            'about', 'layoutConfig', 'pages', 'seoConfigs',
+            'pricingConfig', 'pricingRanges', 'homeConfig', 'heroValues', 'testimonials',
+            'serviceExtras', 'roomTypePrices', 'cleanerHourPrices'
         ));
     }
     
@@ -254,12 +264,25 @@ class AdminLandingPageController extends Controller
     {
         $request->validate([
             'page_title' => 'required|string|max:255',
+            'page_subtitle' => 'nullable|string|max:255',
             'purpose_title' => 'required|string|max:255',
             'purpose_content' => 'required|string',
             'mission_title' => 'required|string|max:255',
             'mission_content' => 'required|string',
             'vision_title' => 'required|string|max:255',
             'vision_content' => 'required|string',
+            'stats_years_experience' => 'required|integer|min:0',
+            'stats_happy_clients' => 'required|integer|min:0',
+            'stats_client_satisfaction' => 'required|integer|min:0|max:100',
+            'value1_icon' => 'required|string|max:255',
+            'value1_title' => 'required|string|max:255',
+            'value1_description' => 'nullable|string',
+            'value2_icon' => 'required|string|max:255',
+            'value2_title' => 'required|string|max:255',
+            'value2_description' => 'nullable|string',
+            'value3_icon' => 'required|string|max:255',
+            'value3_title' => 'required|string|max:255',
+            'value3_description' => 'nullable|string',
             'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
         
@@ -418,17 +441,45 @@ class AdminLandingPageController extends Controller
             'footer_city' => 'required|string|max:255',
             'footer_phone' => 'required|string|max:255',
             'footer_email' => 'required|email',
-            'copyright_company' => 'required|string|max:255'
+            'copyright_company' => 'required|string|max:255',
+            'footer_description' => 'nullable|string',
+            'footer_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
-        
+
         $layoutConfig = LandingLayoutConfig::first();
-        
-        if ($layoutConfig) {
-            $layoutConfig->update($request->all());
-        } else {
-            LandingLayoutConfig::create($request->all());
+        $data = $request->except('footer_logo');
+
+        // Manejar subida de imagen del logo del footer
+        if ($request->hasFile('footer_logo')) {
+            // Eliminar imagen anterior si existe
+            if ($layoutConfig && $layoutConfig->footer_logo_path) {
+                $oldImagePath = public_path($layoutConfig->footer_logo_path);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            // Crear directorio si no existe
+            $uploadPath = public_path('images/layout');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            // Generar nombre único para la imagen
+            $fileName = 'footer_logo_' . time() . '.' . $request->file('footer_logo')->getClientOriginalExtension();
+
+            // Mover la imagen al directorio público
+            $request->file('footer_logo')->move($uploadPath, $fileName);
+
+            $data['footer_logo_path'] = 'images/layout/' . $fileName;
         }
-        
+
+        if ($layoutConfig) {
+            $layoutConfig->update($data);
+        } else {
+            LandingLayoutConfig::create($data);
+        }
+
         return redirect()->back()->with('success', 'Configuración del sitio actualizada correctamente.');
     }
     
@@ -494,7 +545,6 @@ class AdminLandingPageController extends Controller
     public function updatePricingConfig(Request $request)
     {
         $request->validate([
-            'whatsapp_number' => 'required|string|max:20',
             'extra_heavy_duty' => 'required|numeric|min:0',
             'inside_fridge_ea' => 'required|numeric|min:0',
             'inside_oven_ea' => 'required|numeric|min:0',
@@ -534,5 +584,266 @@ class AdminLandingPageController extends Controller
         $range->update($request->all());
 
         return redirect()->back()->with('success', 'Rango de precios actualizado correctamente.');
+    }
+
+    public function updateHomeConfig(Request $request)
+    {
+        $request->validate([
+            'hero_title' => 'required|string|max:255',
+            'hero_subtitle' => 'required|string|max:255',
+            'hero_description' => 'nullable|string',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'hero_services_button_url' => 'nullable|string|max:255',
+            'hero_estimate_button_url' => 'nullable|string|max:255',
+            'about_title' => 'required|string|max:255',
+            'about_lead' => 'nullable|string',
+            'about_description' => 'nullable|string',
+            'about_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'about_years_experience' => 'required|integer|min:0',
+            'about_happy_clients' => 'required|integer|min:0',
+            'about_client_satisfaction' => 'required|integer|min:0|max:100',
+            'facebook_url' => 'nullable|url',
+            'instagram_url' => 'nullable|url',
+            'linkedin_url' => 'nullable|url',
+            'youtube_url' => 'nullable|url',
+        ]);
+
+        $homeConfig = LandingHomeConfig::first();
+        $data = $request->except(['hero_image', 'about_image']);
+
+        // Manejar subida de imagen hero
+        if ($request->hasFile('hero_image')) {
+            if ($homeConfig && $homeConfig->hero_image_path) {
+                $oldImagePath = public_path($homeConfig->hero_image_path);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            $uploadPath = public_path('images/home');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            $fileName = 'hero_' . time() . '.' . $request->file('hero_image')->getClientOriginalExtension();
+            $request->file('hero_image')->move($uploadPath, $fileName);
+            $data['hero_image_path'] = 'images/home/' . $fileName;
+        }
+
+        // Manejar subida de imagen about
+        if ($request->hasFile('about_image')) {
+            if ($homeConfig && $homeConfig->about_image_path) {
+                $oldImagePath = public_path($homeConfig->about_image_path);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+
+            $uploadPath = public_path('images/home');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            $fileName = 'about_' . time() . '.' . $request->file('about_image')->getClientOriginalExtension();
+            $request->file('about_image')->move($uploadPath, $fileName);
+            $data['about_image_path'] = 'images/home/' . $fileName;
+        }
+
+        if ($homeConfig) {
+            $homeConfig->update($data);
+        } else {
+            LandingHomeConfig::create($data);
+        }
+
+        return redirect()->back()->with('success', 'Configuración del Home actualizada correctamente.');
+    }
+
+    // Hero Values CRUD
+    public function storeHeroValue(Request $request)
+    {
+        $request->validate([
+            'icon_class' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+        ]);
+
+        $maxOrder = LandingHeroValue::max('order') ?? 0;
+
+        LandingHeroValue::create([
+            'icon_class' => $request->icon_class,
+            'title' => $request->title,
+            'order' => $maxOrder + 1,
+            'is_active' => true
+        ]);
+
+        return redirect()->back()->with('success', 'Hero value agregado correctamente.');
+    }
+
+    public function updateHeroValue(Request $request, $id)
+    {
+        $request->validate([
+            'icon_class' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+        ]);
+
+        $heroValue = LandingHeroValue::findOrFail($id);
+        $heroValue->update($request->all());
+
+        return redirect()->back()->with('success', 'Hero value actualizado correctamente.');
+    }
+
+    public function deleteHeroValue($id)
+    {
+        $heroValue = LandingHeroValue::findOrFail($id);
+        $heroValue->delete();
+
+        return redirect()->back()->with('success', 'Hero value eliminado correctamente.');
+    }
+
+    // Testimonials CRUD
+    public function storeTestimonial(Request $request)
+    {
+        $request->validate([
+            'client_name' => 'required|string|max:255',
+            'client_role' => 'nullable|string|max:255',
+            'testimonial' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
+
+        $maxOrder = LandingTestimonial::max('order') ?? 0;
+
+        LandingTestimonial::create([
+            'client_name' => $request->client_name,
+            'client_role' => $request->client_role,
+            'testimonial' => $request->testimonial,
+            'rating' => $request->rating,
+            'order' => $maxOrder + 1,
+            'is_active' => true
+        ]);
+
+        return redirect()->back()->with('success', 'Testimonio agregado correctamente.');
+    }
+
+    public function updateTestimonial(Request $request, $id)
+    {
+        $request->validate([
+            'client_name' => 'required|string|max:255',
+            'client_role' => 'nullable|string|max:255',
+            'testimonial' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
+
+        $testimonial = LandingTestimonial::findOrFail($id);
+        $testimonial->update($request->only(['client_name', 'client_role', 'testimonial', 'rating']));
+
+        return redirect()->back()->with('success', 'Testimonio actualizado correctamente.');
+    }
+
+    public function deleteTestimonial($id)
+    {
+        $testimonial = LandingTestimonial::findOrFail($id);
+        $testimonial->delete();
+
+        return redirect()->back()->with('success', 'Testimonio eliminado correctamente.');
+    }
+
+    // Service Extras CRUD
+    public function storeServiceExtra(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'icon_class' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $maxOrder = ServiceExtra::max('order') ?? 0;
+
+        ServiceExtra::create([
+            'name' => $request->name,
+            'icon_class' => $request->icon_class,
+            'price' => $request->price,
+            'order' => $maxOrder + 1,
+            'is_active' => true
+        ]);
+
+        return redirect()->back()->with('success', 'Extra agregado correctamente.');
+    }
+
+    public function updateServiceExtra(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'icon_class' => 'nullable|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $extra = ServiceExtra::findOrFail($id);
+        $extra->update($request->only(['name', 'icon_class', 'price']));
+
+        return redirect()->back()->with('success', 'Extra actualizado correctamente.');
+    }
+
+    public function deleteServiceExtra($id)
+    {
+        $extra = ServiceExtra::findOrFail($id);
+        $extra->delete();
+
+        return redirect()->back()->with('success', 'Extra eliminado correctamente.');
+    }
+
+    // Room Type Prices CRUD
+    public function updateRoomTypePrice(Request $request, $id)
+    {
+        $request->validate([
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $roomType = RoomTypePrice::findOrFail($id);
+        $roomType->update(['price' => $request->price]);
+
+        return redirect()->back()->with('success', 'Precio actualizado correctamente.');
+    }
+
+    // Cleaner Hour Prices CRUD
+    public function updateCleanerHourPrice(Request $request, $id)
+    {
+        $request->validate([
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $price = CleanerHourPrice::findOrFail($id);
+        $price->update(['price' => $request->price]);
+
+        return redirect()->back()->with('success', 'Precio actualizado correctamente.');
+    }
+
+    // Base Pricing Configuration
+    public function updateBasePricing(Request $request)
+    {
+        $request->validate([
+            'cleaner_price' => 'required|numeric|min:0',
+            'hour_price' => 'required|numeric|min:0',
+            'normal_service_price' => 'required|numeric|min:0',
+            'deep_service_price' => 'required|numeric|min:0',
+        ]);
+
+        $pricingConfig = LandingPricingConfig::first();
+
+        if ($pricingConfig) {
+            $pricingConfig->update([
+                'cleaner_price' => $request->cleaner_price,
+                'hour_price' => $request->hour_price,
+                'normal_service_price' => $request->normal_service_price,
+                'deep_service_price' => $request->deep_service_price,
+            ]);
+        } else {
+            LandingPricingConfig::create([
+                'cleaner_price' => $request->cleaner_price,
+                'hour_price' => $request->hour_price,
+                'normal_service_price' => $request->normal_service_price,
+                'deep_service_price' => $request->deep_service_price,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Configuración de precios base actualizada correctamente.');
     }
 }

@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/team/{id}', [AdminLandingPageController::class, 'updateTeamMember'])->name('team.update');
         Route::delete('/team/{id}', [AdminLandingPageController::class, 'deleteTeamMember'])->name('team.delete');
         Route::post('/layout/update', [AdminLandingPageController::class, 'updateLayoutConfig'])->name('layout.update');
+        Route::post('/home/update', [AdminLandingPageController::class, 'updateHomeConfig'])->name('home.update');
         Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
         Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');
         Route::delete('/seo/{id}', [AdminLandingPageController::class, 'deleteSeo'])->name('seo.delete');
@@ -94,6 +95,30 @@ Route::middleware('auth')->group(function () {
         Route::post('/pricing/range/store', [AdminLandingPageController::class, 'storePricingRange'])->name('pricing.range.store');
         Route::put('/pricing/range/{id}', [AdminLandingPageController::class, 'updatePricingRange'])->name('pricing.range.update');
         Route::delete('/pricing/range/{id}', [AdminLandingPageController::class, 'deletePricingRange'])->name('pricing.range.delete');
+
+        // Hero Values CRUD
+        Route::post('/hero-values/store', [AdminLandingPageController::class, 'storeHeroValue'])->name('hero-values.store');
+        Route::put('/hero-values/{id}', [AdminLandingPageController::class, 'updateHeroValue'])->name('hero-values.update');
+        Route::delete('/hero-values/{id}', [AdminLandingPageController::class, 'deleteHeroValue'])->name('hero-values.delete');
+
+        // Testimonials CRUD
+        Route::post('/testimonials/store', [AdminLandingPageController::class, 'storeTestimonial'])->name('testimonials.store');
+        Route::put('/testimonials/{id}', [AdminLandingPageController::class, 'updateTestimonial'])->name('testimonials.update');
+        Route::delete('/testimonials/{id}', [AdminLandingPageController::class, 'deleteTestimonial'])->name('testimonials.delete');
+
+        // Service Extras CRUD
+        Route::post('/service-extras/store', [AdminLandingPageController::class, 'storeServiceExtra'])->name('service-extras.store');
+        Route::put('/service-extras/{id}', [AdminLandingPageController::class, 'updateServiceExtra'])->name('service-extras.update');
+        Route::delete('/service-extras/{id}', [AdminLandingPageController::class, 'deleteServiceExtra'])->name('service-extras.delete');
+
+        // Room Type Prices
+        Route::put('/room-type-prices/{id}', [AdminLandingPageController::class, 'updateRoomTypePrice'])->name('room-type-prices.update');
+
+        // Cleaner Hour Prices
+        Route::put('/cleaner-hour-prices/{id}', [AdminLandingPageController::class, 'updateCleanerHourPrice'])->name('cleaner-hour-prices.update');
+
+        // Base Pricing Configuration
+        Route::put('/pricing/update-base', [AdminLandingPageController::class, 'updateBasePricing'])->name('pricing.update-base');
     });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])

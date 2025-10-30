@@ -60,9 +60,18 @@ class CleaningOrderService
                 'parking' => $data['parking'] ?? null,
                 'property_access' => $data['property_access'] ?? null,
                 'access_notes' => $data['access_notes'] ?? null,
-                'square_footage_range' => $data['square_footage_range'],
-                'service_type' => $data['service_type'],
+                'square_footage_range' => $data['square_footage_range'] ?? null,
+                'num_bathrooms' => $data['num_bathrooms'] ?? null,
+                'num_bedrooms' => $data['num_bedrooms'] ?? null,
+                'num_kitchens' => $data['num_kitchens'] ?? null,
+                'other_rooms' => $data['other_rooms'] ?? null,
+                'num_other_rooms' => $data['num_other_rooms'] ?? null,
+                'other_rooms_desc' => $data['other_rooms_desc'] ?? null,
+                'num_cleaners' => $data['num_cleaners'] ?? null,
+                'num_hours' => $data['num_hours'] ?? null,
+                'service_type' => $data['service_type'] ?? null,
                 'base_price' => $pricing['base_price'],
+                'service_type_price' => $pricing['service_type_price'] ?? 0,
                 'extras_total' => $pricing['extras_total'],
                 'subtotal' => $pricing['subtotal'],
                 'discount_amount' => $pricing['discount_amount'],
@@ -118,9 +127,11 @@ class CleaningOrderService
      */
     public function calculatePricing(array $data): array
     {
+        $roomsPrice = (float) ($data['rooms_price'] ?? 0);
         $basePrice = (float) ($data['base_price'] ?? 0);
+        $serviceTypePrice = (float) ($data['service_type_price'] ?? 0);
         $extrasTotal = (float) ($data['extras_total'] ?? 0);
-        $subtotal = $basePrice + $extrasTotal;
+        $subtotal = $roomsPrice + $basePrice + $serviceTypePrice + $extrasTotal;
         $discountAmount = 0;
         $couponId = null;
         $couponCode = null;
@@ -142,6 +153,7 @@ class CleaningOrderService
 
         return [
             'base_price' => $basePrice,
+            'service_type_price' => $serviceTypePrice,
             'extras_total' => $extrasTotal,
             'subtotal' => $subtotal,
             'discount_amount' => $discountAmount,
@@ -310,9 +322,19 @@ class CleaningOrderService
             'parking' => 'nullable|string|max:255',
             'property_access' => 'nullable|string|max:255',
             'access_notes' => 'nullable|string|max:1000',
-            'square_footage_range' => 'required|string',
-            'service_type' => 'required|in:initial,weekly,biweekly,monthly,deep_clean,move_out',
+            'square_footage_range' => 'nullable|string',
+            'num_bathrooms' => 'required|integer|min:0',
+            'num_bedrooms' => 'required|integer|min:0',
+            'num_kitchens' => 'required|integer|min:0',
+            'other_rooms' => 'nullable|string|max:255',
+            'num_other_rooms' => 'nullable|integer|min:0',
+            'other_rooms_desc' => 'nullable|string|max:255',
+            'num_cleaners' => 'required|integer|min:1',
+            'num_hours' => 'required|integer|min:1',
+            'service_type' => 'nullable|in:normal,deep',
+            'rooms_price' => 'nullable|numeric|min:0',
             'base_price' => 'required|numeric|min:0',
+            'service_type_price' => 'nullable|numeric|min:0',
             'extras_total' => 'nullable|numeric|min:0',
             'extras' => 'nullable|array',
             'coupon_code' => 'nullable|string',

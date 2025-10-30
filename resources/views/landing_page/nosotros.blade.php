@@ -7,7 +7,7 @@
       <!-- Section Title -->
       <div class="container section-title">
         <h2>{{ $about->page_title ?? 'About Us' }}</h2>
-        <p>Learn more about Clean Me</p>
+        <p>{{ $about->page_subtitle ?? 'Learn more about Clean Me' }}</p>
       </div><!-- End Section Title -->
 
       <div class="container">
@@ -42,15 +42,15 @@
               <!-- Stats Row -->
               <div class="stats-row">
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="16" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="{{ $about->stats_years_experience ?? 16 }}" data-purecounter-duration="1" class="purecounter"></span>+</h3>
                   <p>Years Experience</p>
                 </div>
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="500" data-purecounter-duration="1" class="purecounter"></span>+</h3>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="{{ $about->stats_happy_clients ?? 500 }}" data-purecounter-duration="1" class="purecounter"></span>+</h3>
                   <p>Happy Clients</p>
                 </div>
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="100" data-purecounter-duration="1" class="purecounter"></span>%</h3>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="{{ $about->stats_client_satisfaction ?? 100 }}" data-purecounter-duration="1" class="purecounter"></span>%</h3>
                   <p>Client Satisfaction</p>
                 </div>
               </div><!-- End Stats Row -->
@@ -80,30 +80,30 @@
           <div class="col-lg-4 col-md-6">
             <div class="service-card text-center">
               <div class="service-icon">
-                <i class="bi bi-award"></i>
+                <i class="{{ $about->value1_icon ?? 'bi bi-award' }}"></i>
               </div>
-              <h3>Quality Assurance</h3>
-              <p>We use eco-friendly cleaning products and employ highly trained professionals to deliver exceptional results every time.</p>
+              <h3>{{ $about->value1_title ?? 'Quality Assurance' }}</h3>
+              <p>{{ $about->value1_description ?? 'We use eco-friendly cleaning products and employ highly trained professionals to deliver exceptional results every time.' }}</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6">
             <div class="service-card text-center">
               <div class="service-icon">
-                <i class="bi bi-people"></i>
+                <i class="{{ $about->value2_icon ?? 'bi bi-people' }}"></i>
               </div>
-              <h3>Customer Focus</h3>
-              <p>Your satisfaction is our priority. We tailor our services to meet your specific needs and exceed your expectations.</p>
+              <h3>{{ $about->value2_title ?? 'Customer Focus' }}</h3>
+              <p>{{ $about->value2_description ?? 'Your satisfaction is our priority. We tailor our services to meet your specific needs and exceed your expectations.' }}</p>
             </div>
           </div>
 
           <div class="col-lg-4 col-md-6">
             <div class="service-card text-center">
               <div class="service-icon">
-                <i class="bi bi-clock-history"></i>
+                <i class="{{ $about->value3_icon ?? 'bi bi-clock-history' }}"></i>
               </div>
-              <h3>Reliability</h3>
-              <p>Since 2009, we've built our reputation on consistent, dependable service that you can count on.</p>
+              <h3>{{ $about->value3_title ?? 'Reliability' }}</h3>
+              <p>{{ $about->value3_description ?? 'Since 2009, we\'ve built our reputation on consistent, dependable service that you can count on.' }}</p>
             </div>
           </div>
 
