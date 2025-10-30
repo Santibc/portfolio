@@ -18,9 +18,10 @@ class TemplateTiendaSeeder extends Seeder
     /**
      * Ejecuta el seeder para crear los templates iniciales
      *
-     * Crea dos templates:
+     * Crea tres templates:
      * - Default: Template clásico y elegante, marcado como predeterminado
      * - Brasilia: Template dinámico inspirado en tiendas de moda
+     * - Lima: Template moderno con header sticky y sliders Swiper
      *
      * Utiliza updateOrCreate para evitar duplicados en ejecuciones múltiples.
      *
@@ -72,8 +73,34 @@ class TemplateTiendaSeeder extends Seeder
             ]
         );
 
+        // Template Lima - Moderno con Swiper sliders
+        TemplateTienda::updateOrCreate(
+            ['codigo' => 'lima'],
+            [
+                'nombre' => 'Template Lima',
+                'descripcion' => 'Template moderno con header sticky, sliders Swiper y diseño profesional. Ideal para tiendas de indumentaria.',
+                'vista_index' => 'tienda.lima_index',
+                'vista_categoria' => 'tienda.lima_categoria',
+                'vista_producto' => 'tienda.lima_producto',
+                'layout' => 'tienda.lima_layout',
+                'preview_image' => 'images/templates/lima-preview.svg',
+                'activo' => true,
+                'es_default' => false,
+                'orden' => 3,
+                'configuracion' => [
+                    'sticky_header' => true,
+                    'show_adbar' => true,
+                    'show_topbar' => true,
+                    'product_grid_columns_mobile' => 2,
+                    'product_grid_columns_desktop' => 4,
+                    'enable_animations' => true,
+                ],
+            ]
+        );
+
         $this->command->info('Templates de tienda creados exitosamente.');
         $this->command->info('- Template Default (código: default) - Marcado como predeterminado');
         $this->command->info('- Template Brasilia (código: brasilia)');
+        $this->command->info('- Template Lima (código: lima)');
     }
 }
