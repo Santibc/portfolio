@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(cat:*)",
+      "Bash(nul)",
+      "Bash(resources/views/servicio-tecnico/tecnicos/show.blade.php)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

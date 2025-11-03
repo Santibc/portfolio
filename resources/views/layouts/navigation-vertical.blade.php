@@ -15,6 +15,53 @@
             <span>Inicio</span>
         </a>
 
+        {{-- Servicio Técnico (para admin) --}}
+        @if(auth()->user()->hasRole('admin'))
+            <div class="nav-item mb-2">
+                <a href="#" class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('st.*') ? 'active' : 'text-dark' }}"
+                   data-bs-toggle="collapse" data-bs-target="#submenuServicioTecnico"
+                   aria-expanded="{{ request()->routeIs('st.*') ? 'true' : 'false' }}">
+                    <i class="bi bi-tools"></i>
+                    <span>Servicio Técnico</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse {{ request()->routeIs('st.*') ? 'show' : '' }}" id="submenuServicioTecnico">
+                    <div class="nav flex-column ms-3">
+                        <a href="{{ route('st.dashboard') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.dashboard') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ route('st.ordenes.index') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.ordenes.*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-file-earmark-text"></i>
+                            <span>Órdenes</span>
+                        </a>
+                        <a href="{{ route('st.tecnicos.index') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.tecnicos.*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-person-gear"></i>
+                            <span>Técnicos</span>
+                        </a>
+                        <a href="{{ route('st.clientes.index') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.clientes.*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-people"></i>
+                            <span>Clientes</span>
+                        </a>
+                        <a href="{{ route('st.equipos.index') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.equipos.*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-camera-video"></i>
+                            <span>Equipos</span>
+                        </a>
+                        <a href="{{ route('st.repuestos.index') }}"
+                           class="nav-link py-2 d-flex align-items-center gap-2 {{ request()->routeIs('st.repuestos.*') ? 'active' : 'text-dark' }}">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Repuestos</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if (auth()->user()->getRoleNames()->first() == 'admin')
             <a href="/usuarios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
@@ -61,6 +108,7 @@
                 <span>Gestión de Stock</span>
             </a>
         @endif
+
     </nav>
 
     {{-- Botón Salir --}}

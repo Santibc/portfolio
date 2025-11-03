@@ -20,6 +20,7 @@ class ItemSolicitudCotizacion extends Model
         'precio_total',
         'referencia_producto',
         'nombre_producto',
+        'marca_producto',
         'info_variante'
     ];
 

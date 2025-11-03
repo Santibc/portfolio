@@ -11,6 +11,9 @@ use App\Models\SolicitudCotizacion;
 use App\Models\ItemSolicitudCotizacion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\SolicitudCreada;
 
 class CatalogoController extends Controller
 {
@@ -486,15 +489,41 @@ class CatalogoController extends Controller
                     'precio_total' => $precioTotal,
                     'referencia_producto' => $producto->referencia,
                     'nombre_producto' => $producto->nombre,
+                    'marca_producto' => $producto->marca,
                     'info_variante' => $infoVariante
                 ]);
             }
             
             // Actualizar monto total
             $solicitud->update(['monto_total' => $montoTotal]);
-            
+
             DB::commit();
-            
+
+            // Enviar correo de confirmación al cliente
+            try {
+                // Cargar relaciones necesarias para el correo
+                $solicitud->load(['cliente.vendedor', 'items']);
+
+                if ($cliente->email) {
+                    Mail::to($cliente->email)->send(new SolicitudCreada($solicitud));
+                    Log::info('Correo de solicitud creada enviado', [
+                        'solicitud_id' => $solicitud->id,
+                        'cliente_email' => $cliente->email
+                    ]);
+                } else {
+                    Log::warning('No se pudo enviar correo: cliente sin email', [
+                        'solicitud_id' => $solicitud->id,
+                        'cliente_id' => $cliente->id
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // No fallar si el correo no se envía, solo registrar el error
+                Log::error('Error al enviar correo de solicitud creada', [
+                    'solicitud_id' => $solicitud->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'mensaje' => 'Solicitud de cotización creada exitosamente.',

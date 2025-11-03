@@ -71,8 +71,18 @@
               @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            {{-- Marca --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Marca</label>
+              <input name="marca" type="text"
+                     class="form-control @error('marca') is-invalid @enderror"
+                     value="{{ old('marca',$producto->marca) }}"
+                     placeholder="Ej: Nike, Adidas">
+              @error('marca') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
             {{-- Unidad de Venta --}}
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
               <label class="form-label">Unidad de Venta <span class="text-danger">*</span></label>
               <input name="unidad_venta" type="text"
                      class="form-control @error('unidad_venta') is-invalid @enderror"
@@ -83,7 +93,7 @@
             </div>
 
             {{-- Unidad de Empaque --}}
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
               <label class="form-label">Unidad de Empaque <span class="text-danger">*</span></label>
               <input name="unidad_empaque" type="text"
                      class="form-control @error('unidad_empaque') is-invalid @enderror"
@@ -94,7 +104,7 @@
             </div>
 
             {{-- Extensión (Color o Motivo) --}}
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
               <label class="form-label">Extensión (Color/Motivo)</label>
               <input name="extension" type="text"
                      class="form-control @error('extension') is-invalid @enderror"
@@ -104,7 +114,7 @@
             </div>
 
             {{-- Categoría --}}
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
               <label class="form-label">Categoría <span class="text-danger">*</span></label>
               <select name="categoria_id" class="form-select @error('categoria_id') is-invalid @enderror" required>
                 <option value="">-- Seleccionar --</option>

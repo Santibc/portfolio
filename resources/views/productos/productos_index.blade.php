@@ -29,6 +29,7 @@
                 <th>Imagen</th>
                 <th>Referencia</th>
                 <th>Nombre</th>
+                <th>Marca</th>
                 <th>Categoría</th>
                 <th>Unidad Venta</th>
                 <th>Unidad Empaque</th>
@@ -58,6 +59,7 @@
         { data:'imagen',       orderable:false, searchable:false },
         { data:'referencia',   name:'referencia' },
         { data:'nombre',       name:'nombre' },
+        { data:'marca',        name:'marca' },
         { data:'categoria',    orderable:false, searchable:false },
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
@@ -75,10 +77,15 @@
           action: () => window.location.href = "{{ route('productos.form') }}"
         },
         {
-  text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios', 
-  className:'btn btn-outline-warning',
-  action: () => window.location.href = "{{ route('productos.historial-precios') }}"
-}
+          text:'<i class="bi bi-upload"></i> Importar',
+          className:'btn btn-outline-info',
+          action: () => window.location.href = "{{ route('productos.importacion.historial') }}"
+        },
+        {
+          text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios',
+          className:'btn btn-outline-warning',
+          action: () => window.location.href = "{{ route('productos.historial-precios') }}"
+        }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]

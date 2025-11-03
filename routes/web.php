@@ -152,14 +152,66 @@ Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descarg
 Route::get('/solicitudes/exportar-excel', [SolicitudController::class, 'exportarExcel'])->name('solicitudes.exportar-excel');
 Route::middleware(['auth'])->group(function () {
     // ... otras rutas existentes ...
-    
+
+    // Rutas de importación de productos (DEBEN IR ANTES de rutas con parámetros dinámicos)
+    Route::get('/productos/importacion/descargar-plantilla-csv', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaCsv'])->name('productos.importacion.descargar-plantilla-csv');
+    Route::get('/productos/importacion/descargar-plantilla-excel', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaExcel'])->name('productos.importacion.descargar-plantilla-excel');
+    Route::post('/productos/importar-productos', [App\Http\Controllers\ImportacionProductosController::class, 'importarProductos'])->name('productos.importacion.importar');
+    Route::get('/productos/historial-importaciones', [App\Http\Controllers\ImportacionProductosController::class, 'historial'])->name('productos.importacion.historial');
+    Route::get('/productos/importacion/{id}', [App\Http\Controllers\ImportacionProductosController::class, 'verDetalle'])->name('productos.importacion.detalle');
+
     // Actualización de precios
     Route::post('/productos/actualizar-precios-excel', [ProductosController::class, 'actualizarPreciosExcel'])->name('productos.actualizar-precios-excel');
     Route::get('/productos/historial-precios', [ActualizacionPreciosController::class, 'historial'])->name('productos.historial-precios');
     Route::get('/productos/actualizacion-precios/{id}', [ActualizacionPreciosController::class, 'verDetalle'])->name('productos.actualizacion-precios.detalle');
-    
-    // Rutas para descargar plantillas
+
+    // Rutas para descargar plantillas de actualización de precios
     Route::get('/productos/descargar-plantilla-csv', [ActualizacionPreciosController::class, 'descargarPlantillaCsv'])->name('productos.descargar-plantilla-csv');
     Route::get('/productos/descargar-plantilla-excel', [ActualizacionPreciosController::class, 'descargarPlantillaExcel'])->name('productos.descargar-plantilla-excel');
+
+    // ============================================================
+    // MÓDULO DE SERVICIO TÉCNICO
+    // ============================================================
+    Route::prefix('servicio-tecnico')->name('st.')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\ServicioTecnico\DashboardSTController::class, 'index'])->name('dashboard');
+
+        // Clientes de Servicio Técnico
+        Route::resource('clientes', App\Http\Controllers\ServicioTecnico\STClienteController::class)->parameters(['clientes' => 'cliente']);
+
+        // Técnicos
+        Route::resource('tecnicos', App\Http\Controllers\ServicioTecnico\STTecnicoController::class)->parameters(['tecnicos' => 'tecnico']);
+
+        // Equipos
+        Route::resource('equipos', App\Http\Controllers\ServicioTecnico\STEquipoController::class)->parameters(['equipos' => 'equipo']);
+        Route::get('equipos/cliente/{cliente}', [App\Http\Controllers\ServicioTecnico\STEquipoController::class, 'porCliente'])->name('equipos.por-cliente');
+
+        // Órdenes de Servicio
+        Route::resource('ordenes', App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class)->parameters(['ordenes' => 'orden']);
+        Route::post('ordenes/{orden}/cambiar-estado', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'cambiarEstado'])->name('ordenes.cambiar-estado');
+        Route::get('ordenes/{orden}/pdf', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'generarPdf'])->name('ordenes.pdf');
+        Route::get('equipos-cliente/{clienteId}', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'getEquiposByCliente'])->name('equipos-cliente');
+
+        // Diagnósticos
+        Route::post('ordenes/{orden}/diagnosticos', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'agregarDiagnostico'])->name('ordenes.diagnostico.store');
+        Route::post('diagnosticos', [App\Http\Controllers\ServicioTecnico\STDiagnosticoController::class, 'store'])->name('diagnosticos.store');
+        Route::put('diagnosticos/{diagnostico}', [App\Http\Controllers\ServicioTecnico\STDiagnosticoController::class, 'update'])->name('diagnosticos.update');
+
+        // Repuestos
+        Route::resource('repuestos', App\Http\Controllers\ServicioTecnico\STRepuestoController::class)->parameters(['repuestos' => 'repuesto']);
+        Route::get('repuestos-json', [App\Http\Controllers\ServicioTecnico\STRepuestoController::class, 'json'])->name('repuestos.json');
+
+        // Agregar/Quitar repuestos a órdenes
+        Route::post('ordenes/{orden}/repuestos', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'agregarRepuesto'])->name('ordenes.repuesto.store');
+        Route::delete('repuestos-usados/{repuestoUsado}', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'eliminarRepuesto'])->name('ordenes.eliminar-repuesto');
+
+        // Imágenes
+        Route::post('ordenes/{orden}/imagenes', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'subirImagen'])->name('ordenes.subir-imagen');
+        Route::delete('imagenes/{imagen}', [App\Http\Controllers\ServicioTecnico\STOrdenServicioController::class, 'eliminarImagen'])->name('imagenes.eliminar');
+
+        // Reportes
+        Route::get('reportes/ordenes', [App\Http\Controllers\ServicioTecnico\ReportesSTController::class, 'ordenes'])->name('reportes.ordenes');
+        Route::get('reportes/tecnicos', [App\Http\Controllers\ServicioTecnico\ReportesSTController::class, 'tecnicos'])->name('reportes.tecnicos');
+    });
 });
 require __DIR__.'/auth.php';

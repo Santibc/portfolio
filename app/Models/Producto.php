@@ -16,6 +16,7 @@ class Producto extends Model
         'referencia',
         'nombre',
         'descripcion',
+        'marca',
         'unidad_venta',
         'unidad_empaque',
         'extension',

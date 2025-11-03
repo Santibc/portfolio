@@ -653,6 +653,8 @@ $(function(){
       }
     }
     
+    const marcaTag = p.marca ? `<br><small class="text-muted">Marca: ${p.marca}</small>` : '';
+
     return `
       <div class="${colClass} mb-4">
         <div class="${cardClass}" ${clickHandler}>
@@ -664,6 +666,7 @@ $(function(){
             <p class="card-text">
               <small class="text-muted">Ref: ${p.referencia}</small><br>
               <small class="text-muted">${p.categoria.nombre}</small>
+              ${marcaTag}
               ${precioTag}
               ${stockTag}
             </p>
@@ -737,7 +740,9 @@ $(function(){
 
       // Info del producto
       html+='<div class="col-md-6">';
-      html+=`<h4>${p.nombre}</h4><p class="text-muted">Referencia: ${p.referencia}</p><p>${p.descripcion||""}</p>`;
+      html+=`<h4>${p.nombre}</h4><p class="text-muted">Referencia: ${p.referencia}</p>`;
+      if(p.marca) html+=`<p class="text-muted"><strong>Marca:</strong> ${p.marca}</p>`;
+      html+=`<p>${p.descripcion||""}</p>`;
       
       // Precio
       if(mostrarPrecios){
