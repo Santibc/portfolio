@@ -4,7 +4,10 @@
       "Bash(php artisan:*)",
       "Bash(cat:*)",
       "Bash(nul)",
-      "Bash(resources/views/servicio-tecnico/tecnicos/show.blade.php)"
+      "Bash(resources/views/servicio-tecnico/tecnicos/show.blade.php)",
+      "Bash(findstr:*)",
+      "Bash(del /f \"c:\\xampp\\htdocs\\portfolio\\resources\\views\\components\\app-layout.blade.php\")",
+      "Bash(\"c:/xampp/htdocs/portfolio/temp_nav.txt\")"
     ],
     "deny": [],
     "ask": []

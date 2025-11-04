@@ -1,44 +1,46 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2><i class="bi bi-people me-2"></i>Clientes - Servicio Técnico</h2>
-        </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ route('st.clientes.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nuevo Cliente
-            </a>
-        </div>
-    </div>
+    <x-slot name="header">Clientes - Servicio Técnico</x-slot>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <table id="clientesTable" class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tipo Doc</th>
-                        <th>Documento</th>
-                        <th>Nombre / Razón Social</th>
-                        <th>Celular</th>
-                        <th>Email</th>
-                        <th>Tipo Cliente</th>
-                        <th>Equipos</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-            </table>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4 text-end">
+                <a href="{{ route('st.clientes.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                </a>
+            </div>
+
+            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <table id="clientesTable" class="table-responsive w-full text-sm text-left">
+                        <thead class="text-xs uppercase bg-gray-100">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo Doc</th>
+                                <th>Documento</th>
+                                <th>Nombre / Razón Social</th>
+                                <th>Celular</th>
+                                <th>Email</th>
+                                <th>Tipo Cliente</th>
+                                <th>Equipos</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    $('#clientesTable').DataTable({
+document.addEventListener('DOMContentLoaded', function() {
+    const table = $('#clientesTable').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        scrollX: true,
         ajax: '{{ route("st.clientes.index") }}',
         columns: [
             { data: 'id', name: 'id' },

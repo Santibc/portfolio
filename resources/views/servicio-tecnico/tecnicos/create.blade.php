@@ -1,15 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2>
-                        <i class="bi bi-person-gear me-2"></i>
-                        {{ isset($tecnico) ? 'Editar Técnico' : 'Nuevo Técnico' }}
-                    </h2>
-                    <p class="text-muted">{{ isset($tecnico) ? 'Actualizar información del técnico' : 'Registrar nuevo técnico en el sistema' }}</p>
-                </div>
+    <x-slot name="header">{{ isset($tecnico) ? 'Editar Técnico' : 'Nuevo Técnico' }}</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted">{{ isset($tecnico) ? 'Actualizar información del técnico' : 'Registrar nuevo técnico en el sistema' }}</p>
+                        </div>
                 <a href="{{ route('st.tecnicos.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
@@ -200,8 +199,9 @@
                         <i class="bi bi-save me-2"></i>{{ isset($tecnico) ? 'Actualizar' : 'Guardar' }} Técnico
                     </button>
                 </div>
+                </div>
             </div>
+        </form>
         </div>
-    </form>
-</div>
+    </div>
 </x-app-layout>

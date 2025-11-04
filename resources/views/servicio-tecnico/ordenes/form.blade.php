@@ -1,8 +1,10 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="bi bi-clipboard-check me-2"></i>{{ isset($orden) ? 'Editar' : 'Nueva' }} Orden de Servicio</h2>
+    <x-slot name="header">{{ isset($orden) ? 'Editar' : 'Nueva' }} Orden de Servicio</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('st.dashboard') }}">Dashboard</a></li>
@@ -231,10 +233,11 @@
                 <a href="{{ route('st.ordenes.index') }}" class="btn btn-secondary btn-lg">
                     <i class="bi bi-x-circle me-2"></i>Cancelar
                 </a>
+                </div>
             </div>
+        </form>
         </div>
-    </form>
-</div>
+    </div>
 
 @push('scripts')
 <script>

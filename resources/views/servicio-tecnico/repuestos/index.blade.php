@@ -1,12 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-gear me-2"></i>Repuestos</h2>
-                    <p class="text-muted">Gestión de inventario de repuestos y accesorios</p>
-                </div>
+    <x-slot name="header">Repuestos</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted">Gestión de inventario de repuestos y accesorios</p>
+                        </div>
                 <a href="{{ route('st.repuestos.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Nuevo Repuesto
                 </a>
@@ -117,10 +119,10 @@
                         {{-- DataTable will populate this --}}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <script>

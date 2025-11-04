@@ -1,12 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-camera-video me-2"></i>Detalle del Equipo</h2>
-                    <p class="text-muted">Información completa del equipo y su historial</p>
-                </div>
+    <x-slot name="header">Detalle del Equipo</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted">Información completa del equipo y su historial</p>
+                        </div>
                 <div>
                     <a href="{{ route('st.equipos.edit', $equipo->id) }}" class="btn btn-warning">
                         <i class="bi bi-pencil"></i> Editar
@@ -245,9 +247,9 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
     </div>
-</div>
 
 @push('styles')
 <style>

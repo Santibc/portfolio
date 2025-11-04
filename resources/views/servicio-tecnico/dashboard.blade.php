@@ -1,11 +1,11 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="bi bi-tools me-2"></i>Servicio Técnico - Dashboard</h2>
-            <p class="text-muted">Monitoreo y gestión de órdenes de servicio</p>
-        </div>
-    </div>
+    <x-slot name="header">Servicio Técnico - Dashboard</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4">
+                <p class="text-muted">Monitoreo y gestión de órdenes de servicio</p>
+            </div>
 
     {{-- Tarjetas de estadísticas --}}
     <div class="row g-3 mb-4">
@@ -242,8 +242,8 @@
             </div>
         </div>
     </div>
-
-</div>
+        </div>
+    </div>
 
 @push('styles')
 <style>

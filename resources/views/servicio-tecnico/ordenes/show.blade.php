@@ -1,8 +1,10 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="bi bi-clipboard-check me-2"></i>Orden de Servicio #{{ $orden->numero_orden }}</h2>
+    <x-slot name="header">Orden de Servicio #{{ $orden->numero_orden }}</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-md-8">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('st.dashboard') }}">Dashboard</a></li>
@@ -278,9 +280,10 @@
                 </div>
             </div>
             @endif
+            </div>
+        </div>
         </div>
     </div>
-</div>
 
 {{-- Modal Cambiar Estado --}}
 <div class="modal fade" id="modalCambiarEstado" tabindex="-1">

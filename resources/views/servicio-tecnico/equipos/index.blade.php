@@ -1,18 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-camera-video me-2"></i>Equipos</h2>
-                    <p class="text-muted">Gestión de cámaras y equipos de seguridad</p>
-                </div>
+    <x-slot name="header">Equipos</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4">
+                <p class="text-muted mb-3">Gestión de cámaras y equipos de seguridad</p>
                 <a href="{{ route('st.equipos.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Nuevo Equipo
                 </a>
             </div>
-        </div>
-    </div>
 
     {{-- Filtros --}}
     <div class="card shadow mb-4">
@@ -142,4 +138,6 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+        </div>
+    </div>
 </x-app-layout>

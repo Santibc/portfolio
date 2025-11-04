@@ -1,11 +1,9 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="bi bi-camera-video me-2"></i>{{ isset($equipo) ? 'Editar Equipo' : 'Nuevo Equipo' }}</h2>
-            <p class="text-muted">{{ isset($equipo) ? 'Actualizar información del equipo' : 'Registrar nuevo equipo de seguridad' }}</p>
-        </div>
-    </div>
+    <x-slot name="header">{{ isset($equipo) ? 'Editar Equipo' : 'Nuevo Equipo' }}</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <p class="text-muted mb-4">{{ isset($equipo) ? 'Actualizar información del equipo' : 'Registrar nuevo equipo de seguridad' }}</p>
 
     <div class="card shadow">
         <div class="card-body">
@@ -315,4 +313,6 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+        </div>
+    </div>
 </x-app-layout>

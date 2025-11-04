@@ -1,17 +1,15 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="bi bi-people me-2"></i>{{ isset($cliente) ? 'Editar' : 'Nuevo' }} Cliente - Servicio Técnico</h2>
-            <nav aria-label="breadcrumb">
+    <x-slot name="header">{{ isset($cliente) ? 'Editar' : 'Nuevo' }} Cliente - Servicio Técnico</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('st.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('st.clientes.index') }}">Clientes</a></li>
                     <li class="breadcrumb-item active">{{ isset($cliente) ? 'Editar' : 'Nuevo' }}</li>
                 </ol>
             </nav>
-        </div>
-    </div>
 
     <form action="{{ isset($cliente) ? route('st.clientes.update', $cliente) : route('st.clientes.store') }}" method="POST">
         @csrf
@@ -169,4 +167,6 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+        </div>
+    </div>
 </x-app-layout>

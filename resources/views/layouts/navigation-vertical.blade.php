@@ -108,7 +108,6 @@
                 <span>Gestión de Stock</span>
             </a>
         @endif
-
     </nav>
 
     {{-- Botón Salir --}}

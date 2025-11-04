@@ -1,12 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-person-gear me-2"></i>Técnicos</h2>
-                    <p class="text-muted">Gestión de personal técnico</p>
-                </div>
+    <x-slot name="header">Técnicos</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted">Gestión de personal técnico</p>
+                        </div>
                 <a href="{{ route('st.tecnicos.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Nuevo Técnico
                 </a>
@@ -81,10 +83,10 @@
                         {{-- Los datos se cargan vía AJAX --}}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">

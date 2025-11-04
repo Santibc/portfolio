@@ -1,15 +1,15 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2><i class="bi bi-clipboard-check me-2"></i>Órdenes de Servicio</h2>
-        </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ route('st.ordenes.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nueva Orden
-            </a>
-        </div>
-    </div>
+    <x-slot name="header">Órdenes de Servicio</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-md-12 text-end">
+                    <a href="{{ route('st.ordenes.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nueva Orden
+                    </a>
+                </div>
+            </div>
 
     {{-- Filtros --}}
     <div class="card shadow mb-3">
@@ -73,9 +73,9 @@
                     </tr>
                 </thead>
             </table>
+            </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <script>

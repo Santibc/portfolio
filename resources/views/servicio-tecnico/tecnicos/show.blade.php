@@ -1,12 +1,14 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-person-gear me-2"></i>Detalle del Técnico</h2>
-                    <p class="text-muted">Información completa y órdenes asignadas</p>
-                </div>
+    <x-slot name="header">Detalle del Técnico</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted">Información completa y órdenes asignadas</p>
+                        </div>
                 <div class="btn-group">
                     <a href="{{ route('st.tecnicos.edit', $tecnico->id) }}" class="btn btn-warning">
                         <i class="bi bi-pencil me-2"></i>Editar
@@ -219,8 +221,8 @@
                         </div>
                     @endif
                 </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </x-app-layout>

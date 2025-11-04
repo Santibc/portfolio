@@ -1,11 +1,13 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2><i class="bi bi-gear me-2"></i>{{ isset($repuesto) ? 'Editar Repuesto' : 'Nuevo Repuesto' }}</h2>
-            <p class="text-muted">{{ isset($repuesto) ? 'Actualizar información del repuesto' : 'Registrar nuevo repuesto en inventario' }}</p>
-        </div>
-    </div>
+    <x-slot name="header">{{ isset($repuesto) ? 'Editar Repuesto' : 'Nuevo Repuesto' }}</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <p class="text-muted">{{ isset($repuesto) ? 'Actualizar información del repuesto' : 'Registrar nuevo repuesto en inventario' }}</p>
+                </div>
+            </div>
 
     <div class="card shadow">
         <div class="card-body">
@@ -237,9 +239,9 @@
                     </button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
-</div>
 
 @push('scripts')
 <script>

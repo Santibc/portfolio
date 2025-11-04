@@ -1,13 +1,11 @@
 <x-app-layout>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2><i class="bi bi-person-circle me-2"></i>Detalle del Cliente</h2>
-                    <p class="text-muted">Información completa del cliente y sus equipos</p>
-                </div>
-                <div>
+    <x-slot name="header">Detalle del Cliente</x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="mb-4">
+                <p class="text-muted mb-3">Información completa del cliente y sus equipos</p>
+                <div class="d-flex gap-2">
                     <a href="{{ route('st.clientes.edit', $cliente->id) }}" class="btn btn-warning">
                         <i class="bi bi-pencil"></i> Editar
                     </a>
@@ -16,8 +14,6 @@
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
 
     {{-- Información del Cliente --}}
     <div class="card shadow mb-4">
@@ -258,4 +254,6 @@
 }
 </style>
 @endpush
+        </div>
+    </div>
 </x-app-layout>
