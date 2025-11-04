@@ -134,9 +134,7 @@ $(document).ready(function() {
             { data: 'estado', name: 'activo', orderable: false, searchable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }
         ],
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-        },
+        language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
         pageLength: 25,
         order: [[0, 'desc']]
     });
