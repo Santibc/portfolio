@@ -2,95 +2,138 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', isset($empresa) ? $empresa->nombre . ' - Tienda Online' : 'Lima Theme - Tienda Online')</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Preconnect -->
+    <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
+    <meta name="description" content="@yield('description', 'Compra productos de ' . $empresa->nombre . ' online.')">
+
+    {{-- Preconnect for performance --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- Google Fonts - Lexend Exa & Lexend -->
-    <link href="https://fonts.googleapis.com/css?family=Lexend+Exa:400,700|Lexend:400,700&display=swap" rel="stylesheet">
+    {{-- Google Fonts: Lexend Exa & Lexend --}}
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@400;700&family=Lexend:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@400;700&family=Lexend:wght@400;700&display=swap">
 
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper@4.4.2/dist/css/swiper.min.css">
+    {{-- Lima Custom CSS --}}
+    <link rel="stylesheet" href="{{ asset('css/lima-custom.css') }}">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/lima-theme.css') }}">
-
-    <style>
-        /* Apply Lexend fonts globally */
-        :root {
-            --heading-font: "Lexend Exa", sans-serif;
-            --body-font: "Lexend", sans-serif;
-
-            /* Font sizes */
-            --h1: 28px;
-            --h1-huge: 40px;
-            --h1-huge-md: 54px;
-            --h2: 24px;
-            --h3: 20px;
-            --h4: 18px;
-            --h5: 16px;
-            --h6: 14px;
-
-            --font-hugest: 28px;
-            --font-huge: 24px;
-            --font-largest: 20px;
-            --font-large: 18px;
-            --font-big: 16px;
-            --font-base: 14px;
-            --font-small: 12px;
-            --font-smallest: 10px;
-
-            --title-font-weight: 700;
-        }
-
-        body {
-            font-family: var(--body-font) !important;
-            font-size: var(--font-base);
-            margin: 0;
-            padding: 0;
-        }
-
-        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-            font-family: var(--heading-font) !important;
-            font-weight: var(--title-font-weight);
-        }
-
-        h1 { font-size: var(--h1); }
-        h2 { font-size: var(--h2); }
-        h3 { font-size: var(--h3); }
-        h4 { font-size: var(--h4); }
-        h5 { font-size: var(--h5); }
-        h6 { font-size: var(--h6); }
-    </style>
-
+    {{-- Additional styles from sections --}}
     @stack('styles')
 </head>
-<body class="@yield('body-class')">
+<body class="@yield('body-class', 'template-home')">
 
-    <!-- Header -->
+    {{-- Site overlay for modals/menus --}}
+    <div class="js-overlay site-overlay" style="display: none;"></div>
+
+    {{-- Header --}}
     @include('tienda.partials.lima.header')
 
-    <!-- Main Content -->
-    <main id="main-content" @yield('main-class')>
+    {{-- Main content --}}
+    <main>
         @yield('content')
     </main>
 
-    <!-- Footer -->
+    {{-- Footer --}}
     @include('tienda.partials.lima.footer')
 
-    <!-- Modals -->
-    @include('tienda.partials.lima.modals')
+    {{-- Scripts --}}
+    {{-- Swiper JS for carousels --}}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
 
-    <!-- Scripts -->
+    {{-- jQuery --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/swiper@4.4.2/dist/js/swiper.min.js"></script>
-    <script src="{{ asset('js/lima-theme.js') }}"></script>
 
+    {{-- Additional scripts from sections --}}
     @stack('scripts')
+
+    {{-- Lima theme initialization --}}
+    <script>
+        // Initialize Swiper for adbar (black bar)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.querySelector('.js-swiper-adbar')) {
+                new Swiper('.js-swiper-adbar', {
+                    loop: true,
+                    autoplay: {
+                        delay: 3000,
+                        disableOnInteraction: false,
+                    },
+                    navigation: {
+                        nextEl: '.js-swiper-adbar-next',
+                        prevEl: '.js-swiper-adbar-prev',
+                    },
+                });
+            }
+
+            // Initialize Swiper for promotional bar (pink bar)
+            if (document.querySelector('.js-swiper-promotional')) {
+                new Swiper('.js-swiper-promotional', {
+                    loop: true,
+                    autoplay: {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    },
+                    navigation: {
+                        nextEl: '.js-swiper-promotional-next',
+                        prevEl: '.js-swiper-promotional-prev',
+                    },
+                    speed: 600,
+                    slidesPerView: 1,
+                    centeredSlides: true,
+                    spaceBetween: 0,
+                });
+            }
+
+            // Header compress on scroll
+            let lastScroll = 0;
+            const header = document.querySelector('.js-head-main');
+            const topbar = document.querySelector('.js-topbar');
+
+            if (header) {
+                window.addEventListener('scroll', function() {
+                    const currentScroll = window.pageYOffset;
+
+                    if (currentScroll > 30) {
+                        header.classList.add('compress');
+                        if (topbar) {
+                            topbar.style.display = 'none';
+                        }
+                    } else {
+                        header.classList.remove('compress');
+                        if (topbar) {
+                            topbar.style.display = 'block';
+                        }
+                    }
+
+                    lastScroll = currentScroll;
+                });
+            }
+
+            // Mobile menu toggle
+            const menuButton = document.querySelector('[data-toggle="#nav-hamburger"]');
+            const overlay = document.querySelector('.js-overlay');
+
+            if (menuButton && overlay) {
+                menuButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    overlay.style.display = 'block';
+                    // Add mobile menu logic here
+                });
+
+                overlay.addEventListener('click', function() {
+                    overlay.style.display = 'none';
+                });
+            }
+
+            // Make menu and banners row visible
+            const menuRow = document.querySelector('.js-menu-and-banners-row');
+            if (menuRow) {
+                menuRow.style.visibility = 'visible';
+            }
+
+            // Category dropdown - SOLO CSS, sin JavaScript que interfiera
+        });
+    </script>
 </body>
 </html>
