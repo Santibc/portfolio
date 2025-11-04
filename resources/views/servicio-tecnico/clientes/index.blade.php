@@ -54,9 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { data: 'estado_badge', name: 'activo', orderable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false }
         ],
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-        }
+        language: { url: '{{ asset("js/datatables/es-ES.json") }}' }
     });
 });
 
