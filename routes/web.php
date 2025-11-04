@@ -39,6 +39,11 @@ Route::get('/brasilia/productos', function () {
 Route::get('/brasilia/producto/{slug?}', function ($slug = 'vestido-largo-lino') {
     return view('tienda.brasilia_producto');
 })->name('tienda.brasilia.producto');
+
+// Ruta para el tema Sport (demo de tienda)
+Route::get('/sport', function () {
+    return view('tienda.sport_index');
+})->name('tienda.sport');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
