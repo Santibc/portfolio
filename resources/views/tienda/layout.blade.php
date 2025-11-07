@@ -47,12 +47,6 @@
           </div>
 
           <div class="col-lg-4 col-md-12 text-center">
-            @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
-              <a href="https://betogether.com.co" target="_blank" class="watermark-link">
-                <img src="{{ asset('images/ico.png') }}" alt="BeTogether" class="watermark-icon">
-                <span class="watermark-text">Página creada en BeTogether</span>
-              </a>
-            @else
               <div class="announcement-slider swiper init-swiper">
                 <script type="application/json" class="swiper-config">
                   {
@@ -67,7 +61,6 @@
                   }
                 </script>
               </div>
-            @endif
           </div>
 
           <div class="col-lg-4 d-none d-lg-block">
@@ -94,7 +87,7 @@
         <div class="d-flex py-3 align-items-center justify-content-between">
 
           <!-- Logo -->
-          <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="logo d-flex align-items-center">
+          <a href="{{ route('tienda.empresa') }}" class="logo d-flex align-items-center">
             @if($empresa->logo_url)
               <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="max-height: 50px;">
             @else
@@ -103,9 +96,9 @@
           </a>
 
           <!-- Search -->
-          <form class="search-form desktop-search-form" action="#" method="GET">
+          <form class="search-form desktop-search-form" action="{{ route('tienda.categorias') }}" method="GET">
             <div class="input-group">
-              <input type="text" name="buscar" class="form-control" placeholder="Buscar productos">
+              <input type="text" name="buscar" class="form-control" placeholder="Buscar productos por nombre o descripción">
               <button class="btn" type="submit">
                 <i class="bi bi-search"></i>
               </button>
@@ -121,7 +114,7 @@
             </button>
 
             <!-- Cart -->
-            <a href="{{ route('tienda.carrito', $empresa->slug) }}" class="header-action-btn">
+            <a href="{{ route('tienda.carrito') }}" class="header-action-btn">
               <i class="bi bi-cart3"></i>
               @if($carrito->total_items > 0)
                 <span class="badge">{{ $carrito->total_items }}</span>
@@ -141,10 +134,10 @@
       <div class="container-fluid container-xl position-relative">
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="{{ route('tienda.empresa', $empresa->slug) }}" class="@yield('nav-inicio', '')">Inicio</a></li>
+            <li><a href="{{ route('tienda.empresa') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
 {{--             <li><a href="#about" class="@yield('nav-about', '')">Acerca de</a></li> --}}
 {{--             <li><a href="#productos" class="@yield('nav-productos', '')">Productos</a></li> --}}
-            <li><a href="{{ route('tienda.categorias', $empresa->slug) }}" class="@yield('nav-categorias', '')">Categorías</a></li>
+            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-categorias', '')">Categorías</a></li>
 {{--             <li><a href="#contacto" class="@yield('nav-contacto', '')">Contacto</a></li> --}}
           </ul>
         </nav>
@@ -154,7 +147,7 @@
     <!-- Mobile Search Form -->
     <div class="collapse" id="mobileSearch">
       <div class="container">
-        <form class="search-form" action="#" method="GET">
+        <form class="search-form" action="{{ route('tienda.categorias') }}" method="GET">
           <div class="input-group">
             <input type="text" name="buscar" class="form-control" placeholder="Buscar productos">
             <button class="btn" type="submit">
@@ -177,7 +170,7 @@
         <div class="row gy-4">
           <div class="col-lg-4 col-md-6">
             <div class="footer-widget footer-about">
-              <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="logo">
+              <a href="{{ route('tienda.empresa') }}" class="logo">
                 <span class="sitename">{{ $empresa->nombre }}</span>
               </a>
 
@@ -207,8 +200,8 @@
             <div class="footer-widget">
               <h4>Tienda</h4>
               <ul class="footer-links">
-                <li><a href="{{ route('tienda.empresa', $empresa->slug) }}">Productos</a></li>
-                <li><a href="#categorias">Categorías</a></li>
+                <li><a href="{{ route('tienda.categorias') }}">Categorías</a></li>
+                <li><a href="{{ route('tienda.carrito') }}">Carrito</a></li>
               </ul>
             </div>
           </div>

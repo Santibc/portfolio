@@ -19,7 +19,7 @@ class PageSeeder extends Seeder
         // Crear página Welcome
         $welcomePage = Page::create([
             'name' => 'welcome',
-            'title' => 'Betogether - Tu ecosistema de crecimiento',
+            'title' => 'Esnova - Tu ecosistema de crecimiento',
             'slug' => 'inicio',
             'description' => 'Plataforma de membresías para emprendedores y fundaciones en Colombia. Tu tienda online, eventos exclusivos y crecimiento sin límites.',
             'content' => [
@@ -86,7 +86,7 @@ class PageSeeder extends Seeder
                 'whatsapp_url' => 'https://wa.me/#',
                 'whatsapp_text' => 'Contáctanos vía Whatsapp',
 
-                'footer_rights' => '© BETOGETHER.COM.CO - TODOS LOS DERECHOS RESERVADOS',
+                'footer_rights' => '© Esnova.COM.CO - TODOS LOS DERECHOS RESERVADOS',
                 'footer_slogan' => 'TECNOLOGÍA ÚTIL, CERCANA Y SIN COMPLICACIONES.'
             ],
             'is_active' => true
@@ -95,22 +95,22 @@ class PageSeeder extends Seeder
         // Crear SEO para la página Welcome
         Seo::create([
             'page_id' => $welcomePage->id,
-            'meta_title' => 'Betogether - Plataforma de Membresías para Emprendedores y Fundaciones en Colombia',
+            'meta_title' => 'Esnova - Plataforma de Membresías para Emprendedores y Fundaciones en Colombia',
             'meta_description' => 'Únete a la primera membresía en Colombia para emprendedores y fundaciones. Tienda online, eventos exclusivos, pagos seguros y crecimiento sin límites. ¡Regístrate gratis!',
-            'meta_keywords' => 'emprendimiento colombia, fundaciones colombia, tienda online, eventos comerciales, membresía empresarial, betogether, plataforma emprendedores',
+            'meta_keywords' => 'emprendimiento colombia, fundaciones colombia, tienda online, eventos comerciales, membresía empresarial, Esnova, plataforma emprendedores',
             'canonical_url' => url('/'),
             'robots' => 'index,follow',
 
             // Open Graph
-            'og_title' => 'Betogether - Tu ecosistema de crecimiento empresarial',
+            'og_title' => 'Esnova - Tu ecosistema de crecimiento empresarial',
             'og_description' => 'Plataforma de membresías que conecta emprendedores y fundaciones con herramientas digitales, eventos exclusivos y oportunidades de crecimiento en Colombia.',
             'og_type' => 'website',
             'og_url' => url('/'),
-            'og_site_name' => 'Betogether',
+            'og_site_name' => 'Esnova',
 
             // Twitter
             'twitter_card' => 'summary_large_image',
-            'twitter_title' => 'Betogether - Plataforma para Emprendedores',
+            'twitter_title' => 'Esnova - Plataforma para Emprendedores',
             'twitter_description' => 'Únete a la comunidad de emprendedores y fundaciones más grande de Colombia. Tienda online + eventos exclusivos.',
 
             // SEO adicional

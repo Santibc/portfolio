@@ -11,15 +11,15 @@
         </div>
     </div>
 
-    <!-- Adbar Secondary (Verde - Animated) - BeTogether Watermark or Language/Currency -->
+    <!-- Adbar Secondary (Verde - Animated) - Esnova Watermark or Language/Currency -->
     @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
     <div class="js-adbar js-adbar-secondary adbar-secondary adbar adbar-animated adbar-colors adbar-with-messages" data-active="true" data-messages="20" data-animated="true">
         <div class="js-adbar-content js-swiper-adbar-secondary adbar-content-animated">
             <div class="js-adbar-messages-container js-adbar-secondary-messages-container swiper-wrapper adbar-text-container align-items-center" style="gap: 120px !important;">
                 @for($i = 0; $i < 20; $i++)
                 <span class="js-adbar-message-container js-adbar-secondary-message-container adbar-message swiper-slide" style="flex: 0 0 auto !important; width: auto !important;">
-                    <a href="https://betogether.com.co" target="_blank" style="color: inherit; text-decoration: none; white-space: nowrap; display: inline-block; padding: 0 10px;">
-                        Página creada en BeTogether
+                    <a href="https://Esnova.com.co" target="_blank" style="color: inherit; text-decoration: none; white-space: nowrap; display: inline-block; padding: 0 10px;">
+                        Página creada en Esnova
                     </a>
                 </span>
                 @endfor
@@ -51,7 +51,7 @@
         <!-- Logo -->
         <div class="js-logo-container logo-container" style="max-width: 120px !important; width: 120px !important;">
             <div id="logo" class="logo-img-container" style="max-height: 50px !important;">
-                <a href="{{ route('tienda.empresa', $empresa->slug) }}" title="{{ $empresa->nombre }}">
+                <a href="{{ route('tienda.empresa') }}" title="{{ $empresa->nombre }}">
                     <img src="{{ $empresa->logo_url ?? asset('images/default-logo.png') }}"
                          alt="{{ $empresa->nombre }}"
                          class="logo-img transition-soft"
@@ -107,7 +107,7 @@
             <div class="nav-list-container">
                 <ul class="nav-list nav-list-left">
                     <li class="nav-list-item">
-                        <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="nav-list-link">Inicio</a>
+                        <a href="{{ route('tienda.empresa') }}" class="nav-list-link">Inicio</a>
                     </li>
                     @if(isset($categorias) && $categorias && $categorias->count() > 0)
                     <li class="nav-list-item nav-dropdown-parent">
@@ -122,13 +122,13 @@
                                 @endphp
                                 <div class="nav-dropdown-column">
                                     @foreach($primeraColumna as $categoria)
-                                    <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
+                                    <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
                                     @endforeach
                                 </div>
                                 @if($segundaColumna->count() > 0)
                                 <div class="nav-dropdown-column">
                                     @foreach($segundaColumna as $categoria)
-                                    <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
+                                    <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
                                     @endforeach
                                 </div>
                                 @endif

@@ -43,7 +43,7 @@
         <div class="card-body">
           <div class="row">
             {{-- Nombre --}}
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12 mb-3">
               <label class="form-label">Nombre de la Empresa <span class="text-danger">*</span></label>
               <input name="nombre" type="text"
                      class="form-control @error('nombre') is-invalid @enderror"
@@ -51,20 +51,6 @@
                      placeholder="Ej: Mi Tienda Online"
                      required>
               @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            {{-- Slug/URL --}}
-            <div class="col-md-6 mb-3">
-              <label class="form-label">URL de la Tienda</label>
-              <div class="input-group">
-                <span class="input-group-text text-muted">{{ url('') }}/</span>
-                <input name="slug" type="text"
-                       class="form-control @error('slug') is-invalid @enderror"
-                       value="{{ old('slug', $empresa->slug) }}"
-                       placeholder="mi-tienda (se genera automáticamente)">
-              </div>
-              @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
-              <small class="text-muted">Dejar vacío para generar automáticamente</small>
             </div>
 
             {{-- Descripción --}}
@@ -167,153 +153,6 @@
                      value="{{ old('twitter_url', $empresa->twitter_url) }}"
                      placeholder="https://twitter.com/miempresa">
               @error('twitter_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección: Selección de Template de Tienda -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="bi bi-palette"></i> Template de Tienda
-          </h5>
-        </div>
-        <div class="card-body">
-          <p class="text-muted mb-4">
-            Selecciona el diseño visual que quieres para tu tienda online
-          </p>
-
-          <div class="row g-4" id="template-selector">
-            @if(isset($templates))
-              @foreach($templates as $template)
-              <div class="col-md-6 col-lg-4">
-                <div class="template-option {{ $empresa->template_tienda_id == $template->id ? 'selected' : '' }}"
-                     data-template-id="{{ $template->id }}">
-                  <input type="radio"
-                         name="template_tienda_id"
-                         value="{{ $template->id }}"
-                         id="template_{{ $template->id }}"
-                         {{ $empresa->template_tienda_id == $template->id ? 'checked' : '' }}
-                         {{ !$empresa->exists && $template->es_default ? 'checked' : '' }}>
-
-                  <label for="template_{{ $template->id }}" class="template-card">
-                    @if($template->preview_image)
-                    <div class="template-preview">
-                      <img src="{{ asset($template->preview_image) }}"
-                           alt="{{ $template->nombre }}"
-                           class="img-fluid">
-                    </div>
-                    @else
-                    <div class="template-preview bg-light d-flex align-items-center justify-content-center">
-                      <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
-                    </div>
-                    @endif
-
-                    <div class="template-info">
-                      <h6 class="template-name">{{ $template->nombre }}</h6>
-                      <p class="template-description">{{ $template->descripcion }}</p>
-
-                      @if($template->es_default)
-                      <span class="badge bg-primary">Por defecto</span>
-                      @endif
-                    </div>
-
-                    <div class="template-check">
-                      <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                  </label>
-                </div>
-              </div>
-              @endforeach
-            @endif
-          </div>
-        </div>
-      </div>
-
-      {{-- Hero Video Section (Solo para Template Brasilia) --}}
-      <div class="card mb-4" id="hero-video-section" style="display: none;">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="bi bi-camera-video"></i> Video Hero (Template Brasilia)
-          </h5>
-        </div>
-        <div class="card-body">
-          <p class="text-muted mb-4">
-            Configura el video principal que se mostrará en la página de inicio del template Brasilia
-          </p>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="hero_video_file" class="form-label">Video del Hero</label>
-              <input type="file"
-                     class="form-control @error('hero_video_file') is-invalid @enderror"
-                     id="hero_video_file"
-                     name="hero_video_file"
-                     accept="video/*">
-              @error('hero_video_file')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-              <small class="text-muted">Acepta cualquier formato de video. Recomendado: 1920x1080px. Máximo 50MB</small>
-
-              @if($empresa->hero_video_url)
-                <div class="mt-2">
-                  <label class="text-muted">Video actual:</label>
-                  <div class="border rounded p-2 mt-1" style="max-width: 300px;">
-                    <video width="100%" controls>
-                      <source src="{{ asset($empresa->hero_video_url) }}" type="video/mp4">
-                      Tu navegador no soporta el video.
-                    </video>
-                  </div>
-                  <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="remove_hero_video" id="remove_hero_video" value="1">
-                    <label class="form-check-label text-danger" for="remove_hero_video">
-                      Eliminar video actual
-                    </label>
-                  </div>
-                </div>
-              @endif
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <label for="hero_video_button_text" class="form-label">Texto del Botón</label>
-              <input type="text"
-                     class="form-control @error('hero_video_button_text') is-invalid @enderror"
-                     id="hero_video_button_text"
-                     name="hero_video_button_text"
-                     value="{{ old('hero_video_button_text', $empresa->hero_video_button_text) }}"
-                     placeholder="Ver Colección"
-                     maxlength="100">
-              @error('hero_video_button_text')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <label for="hero_video_button_link" class="form-label">Link del Botón</label>
-              <input type="url"
-                     class="form-control @error('hero_video_button_link') is-invalid @enderror"
-                     id="hero_video_button_link"
-                     name="hero_video_button_link"
-                     value="{{ old('hero_video_button_link', $empresa->hero_video_button_link) }}"
-                     placeholder="https://ejemplo.com/coleccion">
-              @error('hero_video_button_link')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-
-            <div class="col-md-12 mb-3">
-              <label for="hero_video_message" class="form-label">Mensaje del Video</label>
-              <textarea class="form-control @error('hero_video_message') is-invalid @enderror"
-                        id="hero_video_message"
-                        name="hero_video_message"
-                        rows="3"
-                        maxlength="500"
-                        placeholder="Descubre nuestra nueva colección de moda">{{ old('hero_video_message', $empresa->hero_video_message) }}</textarea>
-              @error('hero_video_message')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-              <small class="text-muted">Máximo 500 caracteres</small>
             </div>
           </div>
         </div>
@@ -536,134 +375,12 @@
       background-color: #e9ecef;
       cursor: not-allowed;
     }
-
-    .template-option {
-      position: relative;
-    }
-
-    .template-option input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-    }
-
-    .template-card {
-      display: block;
-      border: 2px solid #dee2e6;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-
-    .template-card:hover {
-      border-color: #0d6efd;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .template-option.selected .template-card,
-    .template-option input:checked + .template-card {
-      border-color: #0d6efd;
-      box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-    }
-
-    .template-preview {
-      height: 200px;
-      overflow: hidden;
-      background: #f8f9fa;
-    }
-
-    .template-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .template-info {
-      padding: 1rem;
-    }
-
-    .template-name {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .template-description {
-      font-size: 0.875rem;
-      color: #6c757d;
-      margin-bottom: 0.5rem;
-    }
-
-    .template-check {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: white;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .template-option.selected .template-check,
-    .template-option input:checked ~ .template-card .template-check {
-      opacity: 1;
-    }
-
-    .template-check i {
-      color: #0d6efd;
-      font-size: 1.5rem;
-    }
   </style>
   @endpush
 
   @push('scripts')
   <script>
     $(document).ready(function() {
-      // Selector de templates
-      const templateOptions = document.querySelectorAll('.template-option');
-
-      templateOptions.forEach(option => {
-        option.addEventListener('click', function() {
-          // Remover clase selected de todos
-          templateOptions.forEach(opt => opt.classList.remove('selected'));
-
-          // Agregar clase selected al clickeado
-          this.classList.add('selected');
-
-          // Marcar el radio button
-          const radio = this.querySelector('input[type="radio"]');
-          radio.checked = true;
-
-          // Mostrar/ocultar sección de hero video
-          toggleHeroVideoSection(radio);
-        });
-      });
-
-      // Función para mostrar/ocultar sección de hero video
-      function toggleHeroVideoSection(radio) {
-        const heroSection = document.getElementById('hero-video-section');
-        const templateLabel = radio.closest('.template-option').querySelector('.template-card .template-info h6');
-        const templateName = templateLabel ? templateLabel.textContent.toLowerCase() : '';
-
-        // Mostrar solo si es template Brasilia
-        if (templateName.includes('brasilia')) {
-          heroSection.style.display = 'block';
-        } else {
-          heroSection.style.display = 'none';
-        }
-      }
-
-      // Ejecutar al cargar la página para el template seleccionado
-      const selectedRadio = document.querySelector('input[name="template_tienda_id"]:checked');
-      if (selectedRadio) {
-        toggleHeroVideoSection(selectedRadio);
-      }
-
       // Contador para carrusel
       let carruselIndex = 0;
       

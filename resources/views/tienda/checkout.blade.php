@@ -313,7 +313,7 @@
         <div class="container py-3">
             <div class="row align-items-center">
                 <div class="col-6">
-                    <a href="{{ route('tienda.empresa', $empresa->slug) }}" class="d-flex align-items-center text-decoration-none">
+                    <a href="{{ route('tienda.empresa') }}" class="d-flex align-items-center text-decoration-none">
                         <div class="logo-container">
                             <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" class="img-fluid">
                         </div>

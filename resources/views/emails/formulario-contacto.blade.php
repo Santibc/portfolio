@@ -48,7 +48,7 @@
 <body>
     <div class="header">
         <h1>🚨 Nueva Solicitud Lista de Espera</h1>
-        <p>Betogether - Formulario de Contacto</p>
+        <p>Esnova - Formulario de Contacto</p>
     </div>
     
     <div class="content">
@@ -121,8 +121,8 @@
     </div>
     
     <div class="footer">
-        <p>Este email fue generado automáticamente desde el formulario de lista de espera de Betogether.</p>
-        <p><strong>Betogether.com.co</strong> - Tu ecosistema de crecimiento sin límites</p>
+        <p>Este email fue generado automáticamente desde el formulario de lista de espera de Esnova.</p>
+        <p><strong>Esnova.com.co</strong> - Tu ecosistema de crecimiento sin límites</p>
     </div>
 </body>
 </html>

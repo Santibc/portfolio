@@ -24,8 +24,22 @@ use App\Http\Controllers\ActualizacionPreciosController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
-Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
+// Ruta raíz - Muestra la tienda de la primera empresa (single-tenant)
+Route::get('/', function () {
+    $empresa = \App\Models\Empresa::orderBy('id')->first();
+
+    if (!$empresa) {
+        // Si no hay empresa, mostrar mensaje o redirigir al login
+        return redirect()->route('login')->with('info', 'Por favor inicia sesión para configurar tu tienda.');
+    }
+
+    // Redirigir al TiendaController con el slug de la empresa
+    return app(\App\Http\Controllers\TiendaController::class)->show($empresa->slug, request());
+})->name('tienda.empresa'); // Ruta nombrada para compatibilidad
+
+// Landing page deshabilitada - Single-tenant
+// Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
+// Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
 
 // Ruta para el tema Brasilia (demo de tienda)
 Route::get('/brasilia', function () {
@@ -52,11 +66,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
-    Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
-    Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
-    Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
-    Route::post('/usuarios/cambiar-estado-empresa', [UsuariosController::class, 'cambiarEstadoEmpresa'])->name('usuarios.cambiar-estado-empresa');
+
+    // MÓDULO DE USUARIOS DESHABILITADO - Single-tenant
+    // Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
+    // Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
+    // Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
+    // Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+    // Route::post('/usuarios/cambiar-estado-empresa', [UsuariosController::class, 'cambiarEstadoEmpresa'])->name('usuarios.cambiar-estado-empresa');
 
 
 
@@ -233,29 +249,28 @@ Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, '
     ->name('webhooks.wompi')
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
-// Agregar estas rutas al final de web.php, antes del require __DIR__.'/auth.php';
-// Agregar después de las otras rutas de tienda
-Route::get('/{slug}/categorias', [App\Http\Controllers\TiendaController::class, 'categorias'])->name('tienda.categorias');
-
 require __DIR__.'/auth.php';
 
 // ========== RUTAS DE TIENDA (DEBEN IR AL FINAL) ==========
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\DashboardAdminController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/empresa/{id}', [App\Http\Controllers\DashboardAdminController::class, 'detalleEmpresa'])->name('dashboard.empresa');
-    Route::post('/dashboard/pagar', [App\Http\Controllers\DashboardAdminController::class, 'marcarComoPagadas'])->name('dashboard.pagar');
-    Route::get('/dashboard/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporte'])->name('dashboard.exportar');
-    Route::get('/dashboard/membresias', [App\Http\Controllers\DashboardAdminController::class, 'dashboardMembresias'])->name('dashboard.membresias');
-    Route::get('/dashboard/membresias/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporteMembresias'])->name('dashboard.membresias.exportar');
-    
-    // Rutas de Planes de Membresía
-    Route::prefix('planes-membresia')->name('planes-membresia.')->group(function () {
-        Route::get('/', [App\Http\Controllers\PlanMembresiaController::class, 'index'])->name('index');
-        Route::get('/form/{plan?}', [App\Http\Controllers\PlanMembresiaController::class, 'form'])->name('form');
-        Route::post('/guardar', [App\Http\Controllers\PlanMembresiaController::class, 'guardar'])->name('guardar');
-        Route::post('/{plan}/cambiar-estado', [App\Http\Controllers\PlanMembresiaController::class, 'cambiarEstado'])->name('cambiar-estado');
-        Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
-    });
+    // MÓDULO DE COMISIONES DESHABILITADO - Single-tenant
+    // Route::get('/dashboard', [App\Http\Controllers\DashboardAdminController::class, 'index'])->name('dashboard');
+    // Route::get('/dashboard/empresa/{id}', [App\Http\Controllers\DashboardAdminController::class, 'detalleEmpresa'])->name('dashboard.empresa');
+    // Route::post('/dashboard/pagar', [App\Http\Controllers\DashboardAdminController::class, 'marcarComoPagadas'])->name('dashboard.pagar');
+    // Route::get('/dashboard/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporte'])->name('dashboard.exportar');
+
+    // MÓDULO DE DASHBOARD MEMBRESÍAS DESHABILITADO - Single-tenant
+    // Route::get('/dashboard/membresias', [App\Http\Controllers\DashboardAdminController::class, 'dashboardMembresias'])->name('dashboard.membresias');
+    // Route::get('/dashboard/membresias/exportar', [App\Http\Controllers\DashboardAdminController::class, 'exportarReporteMembresias'])->name('dashboard.membresias.exportar');
+
+    // MÓDULO DE PLANES DE MEMBRESÍA DESHABILITADO - Single-tenant
+    // Route::prefix('planes-membresia')->name('planes-membresia.')->group(function () {
+    //     Route::get('/', [App\Http\Controllers\PlanMembresiaController::class, 'index'])->name('index');
+    //     Route::get('/form/{plan?}', [App\Http\Controllers\PlanMembresiaController::class, 'form'])->name('form');
+    //     Route::post('/guardar', [App\Http\Controllers\PlanMembresiaController::class, 'guardar'])->name('guardar');
+    //     Route::post('/{plan}/cambiar-estado', [App\Http\Controllers\PlanMembresiaController::class, 'cambiarEstado'])->name('cambiar-estado');
+    //     Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
+    // });
 
     // Rutas de Content Manager
     Route::prefix('content-manager')->name('content-manager.')->group(function () {
@@ -266,71 +281,72 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-Route::middleware(['auth'])->group(function () {
-    // Membresías
-    Route::prefix('membresias')->name('membresias.')->group(function () {
-        Route::get('/', [App\Http\Controllers\MembresiaController::class, 'index'])->name('index');
-        Route::get('/historial', [App\Http\Controllers\MembresiaController::class, 'historial'])->name('historial');
-        Route::get('/{slug}', [App\Http\Controllers\MembresiaController::class, 'show'])->name('show');
-        Route::post('/{plan}/comprar', [App\Http\Controllers\MembresiaController::class, 'comprar'])->name('comprar');
-        Route::post('/cancelar', [App\Http\Controllers\MembresiaController::class, 'cancelar'])->name('cancelar');
-    });
-});
+// MÓDULO DE MEMBRESÍAS DESHABILITADO - Single-tenant
+// Route::middleware(['auth'])->group(function () {
+//     // Membresías
+//     Route::prefix('membresias')->name('membresias.')->group(function () {
+//         Route::get('/', [App\Http\Controllers\MembresiaController::class, 'index'])->name('index');
+//         Route::get('/historial', [App\Http\Controllers\MembresiaController::class, 'historial'])->name('historial');
+//         Route::get('/{slug}', [App\Http\Controllers\MembresiaController::class, 'show'])->name('show');
+//         Route::post('/{plan}/comprar', [App\Http\Controllers\MembresiaController::class, 'comprar'])->name('comprar');
+//         Route::post('/cancelar', [App\Http\Controllers\MembresiaController::class, 'cancelar'])->name('cancelar');
+//     });
+// });
 
-// Ruta pública para confirmación de pago de membresía
-Route::get('/membresias/pago/confirmacion/{referencia}', [App\Http\Controllers\MembresiaController::class, 'confirmarPago'])->name('membresias.pago.confirmacion');
+// Ruta pública para confirmación de pago de membresía - DESHABILITADA
+// Route::get('/membresias/pago/confirmacion/{referencia}', [App\Http\Controllers\MembresiaController::class, 'confirmarPago'])->name('membresias.pago.confirmacion');
 
-// ========== RUTAS DE TIENDA PÚBLICA (AL FINAL PARA EVITAR CONFLICTOS) ==========
+// ========== RUTAS DE TIENDA PÚBLICA (SINGLE-TENANT - SIN SLUG) ==========
 
-// Tienda principal
-Route::get('/{slug}', [App\Http\Controllers\TiendaController::class, 'show'])
-    ->name('tienda.empresa');
+// Catálogo de productos (con filtros por categoría, precio, etc.)
+Route::get('/catalogo', [App\Http\Controllers\TiendaController::class, 'categorias'])
+    ->name('tienda.categorias');
 
 // Producto individual
-Route::get('/{slug}/producto/{producto}', [App\Http\Controllers\TiendaController::class, 'producto'])
+Route::get('/producto/{producto}', [App\Http\Controllers\TiendaController::class, 'producto'])
     ->name('tienda.producto');
 
 // Carrito
-Route::get('/{slug}/carrito', [App\Http\Controllers\TiendaController::class, 'verCarrito'])
+Route::get('/carrito', [App\Http\Controllers\TiendaController::class, 'verCarrito'])
     ->name('tienda.carrito');
 
-Route::post('/{slug}/carrito/agregar', [App\Http\Controllers\TiendaController::class, 'agregarCarrito'])
+Route::post('/carrito/agregar', [App\Http\Controllers\TiendaController::class, 'agregarCarrito'])
     ->name('tienda.carrito.agregar');
 
-Route::post('/{slug}/carrito/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarCarrito'])
+Route::post('/carrito/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarCarrito'])
     ->name('tienda.carrito.actualizar');
 
-Route::post('/{slug}/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
+Route::post('/carrito/quitar', [App\Http\Controllers\TiendaController::class, 'quitarDelCarrito'])
     ->name('tienda.carrito.quitar');
 
 // Descuentos
-Route::post('/{slug}/carrito/aplicar-descuento', [App\Http\Controllers\TiendaController::class, 'aplicarDescuento'])
+Route::post('/carrito/aplicar-descuento', [App\Http\Controllers\TiendaController::class, 'aplicarDescuento'])
     ->name('tienda.carrito.aplicar-descuento');
 
-Route::post('/{slug}/carrito/remover-descuento', [App\Http\Controllers\TiendaController::class, 'removerDescuento'])
+Route::post('/carrito/remover-descuento', [App\Http\Controllers\TiendaController::class, 'removerDescuento'])
     ->name('tienda.carrito.remover-descuento');
 
-Route::post('/{slug}/stock/info', [App\Http\Controllers\TiendaController::class, 'obtenerStockInfo'])
+Route::post('/stock/info', [App\Http\Controllers\TiendaController::class, 'obtenerStockInfo'])
     ->name('tienda.stock.info');
 
-Route::post('/{slug}/carrito/validar-stock', [App\Http\Controllers\TiendaController::class, 'validarStockCarrito'])
+Route::post('/carrito/validar-stock', [App\Http\Controllers\TiendaController::class, 'validarStockCarrito'])
     ->name('tienda.carrito.validar-stock');
 
 // Checkout y pago
-Route::get('/{slug}/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
+Route::get('/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
     ->name('tienda.checkout');
 
-Route::post('/{slug}/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
+Route::post('/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
     ->name('tienda.procesar-compra');
 
 // Confirmación de pago (callback de Wompi)
-Route::get('/{slug}/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
+Route::get('/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
     ->name('tienda.pago.confirmacion');
 
 // Página de pago pendiente
-Route::get('/{slug}/pago/pendiente/{referencia}', function($slug, $referencia) {
-    $empresa = \App\Models\Empresa::where('slug', $slug)->firstOrFail();
+Route::get('/pago/pendiente/{referencia}', function($referencia) {
+    $empresa = \App\Models\Empresa::orderBy('id')->firstOrFail();
     $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
-    
+
     return view('tienda.pago-pendiente', compact('empresa', 'transaccion'));
 })->name('tienda.pago.pendiente');

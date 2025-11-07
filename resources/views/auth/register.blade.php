@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - BeTogether</title>
+    <title>Registro - Esnova</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
     
     <!-- Tailwind CSS -->
@@ -119,7 +119,7 @@
     <!-- Contenedor principal -->
     <div class="content-container">
         
-        <img src="{{ asset('images/logo1.png') }}" alt="Logo BeTogether" class="brand-logo-img mb-8">
+        <img src="{{ asset('images/logo1.png') }}" alt="Logo Esnova" class="brand-logo-img mb-8">
 
         <div class="register-card">
             <form method="POST" action="{{ route('register') }}">
@@ -209,7 +209,7 @@
                     <h3 class="text-sm font-semibold text-blue-900 mb-2">🎁 Plan Fundador - GRATIS</h3>
                     <ul class="text-xs text-blue-700 space-y-1">
                         <li>✓ 10 productos en tu catálogo</li>
-                        <li>✓ Subdominio propio (tunombre.betogether.com.co)</li>
+                        <li>✓ Subdominio propio (tunombre.Esnova.com.co)</li>
                         <li>✓ Pasarela de pagos integrada</li>
                         <li>✓ Comisión: 6.09% + $900 por transacción</li>
                     </ul>

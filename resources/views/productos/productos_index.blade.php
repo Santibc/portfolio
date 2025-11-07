@@ -18,67 +18,6 @@
         </div>
       @endif
 
-      @if(session('show_upgrade'))
-        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-          <h5 class="alert-heading">¡Actualiza tu plan!</h5>
-          <p>Has alcanzado el límite de productos de tu plan actual. Para crear más productos, necesitas actualizar tu membresía.</p>
-          <hr>
-          <a href="{{ route('membresias.index') }}" class="btn btn-warning">Ver planes disponibles</a>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      @endif
-
-      {{-- Información de límites de membresía --}}
-      <div class="row mb-4">
-        <div class="col-lg-12">
-          <div class="card bg-light">
-            <div class="card-body">
-              <div class="row align-items-center">
-                <div class="col-md-8">
-                  <h5 class="mb-1">
-                    <i class="bi bi-box-seam me-2"></i>
-                    Estado de tu inventario - Plan {{ $membresiaActual->nombre }}
-                  </h5>
-                  <div class="progress mt-2 mb-2" style="height: 25px;">
-                    @php
-                      $porcentajeUso = ($productosActivos / $limiteProductos) * 100;
-                      $colorBarra = 'bg-success';
-                      if ($porcentajeUso >= 90) {
-                        $colorBarra = 'bg-danger';
-                      } elseif ($porcentajeUso >= 70) {
-                        $colorBarra = 'bg-warning';
-                      }
-                    @endphp
-                    <div class="progress-bar {{ $colorBarra }}" 
-                         role="progressbar" 
-                         style="width: {{ $porcentajeUso }}%"
-                         aria-valuenow="{{ $productosActivos }}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="{{ $limiteProductos }}">
-                      {{ $productosActivos }} / {{ $limiteProductos }} productos
-                    </div>
-                  </div>
-                  <p class="mb-0 text-muted">
-                    @if($productosRestantes > 0)
-                      Puedes crear {{ $productosRestantes }} producto(s) más con tu plan actual
-                    @else
-                      Has alcanzado el límite de productos de tu plan
-                    @endif
-                  </p>
-                </div>
-                <div class="col-md-4 text-end">
-                  @if(!$puedeCrearProductos)
-                    <a href="{{ route('membresias.index') }}" class="btn btn-warning">
-                      <i class="bi bi-arrow-up-circle"></i> Actualizar Plan
-                    </a>
-                  @endif
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           <h4 class="text-2xl font-semibold mb-4">Listado de Productos</h4>
@@ -112,10 +51,6 @@
   @push('scripts')
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Variable para controlar si puede crear productos
-    const puedeCrearProductos = {{ $puedeCrearProductos ? 'true' : 'false' }};
-    const productosRestantes = {{ $productosRestantes }};
-    
     const table = $('#productos-table').DataTable({
       processing: true,
       serverSide: true,
@@ -144,29 +79,14 @@
         { extend:'colvis',     className:'btn btn-outline-dark', text:'Columnas', columns:':not(.noVis)' },
         { extend:'excelHtml5', className:'btn btn-outline-success', text:'Excel' },
         {
-          text:'Nuevo', 
-          className: puedeCrearProductos ? 'btn btn-outline-primary' : 'btn btn-outline-primary disabled',
+          text:'Nuevo',
+          className: 'btn btn-outline-primary',
           action: function(e, dt, node, config) {
-            if (!puedeCrearProductos) {
-              Swal.fire({
-                title: 'Límite alcanzado',
-                text: 'Has alcanzado el límite de productos para tu plan actual. ¿Deseas actualizar tu membresía?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ver planes',
-                cancelButtonText: 'Cancelar'
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  window.location.href = "{{ route('membresias.index') }}";
-                }
-              });
-              return false;
-            }
             window.location.href = "{{ route('productos.form') }}";
           }
         },
         {
-          text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios', 
+          text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios',
           className:'btn btn-outline-warning',
           action: () => window.location.href = "{{ route('productos.historial-precios') }}"
         }
@@ -174,18 +94,6 @@
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]
     });
-
-    // Agregar tooltip al botón Nuevo si está deshabilitado
-    if (!puedeCrearProductos) {
-      setTimeout(() => {
-        const btnNuevo = document.querySelector('.buttons-html5.btn-outline-primary.disabled');
-        if (btnNuevo) {
-          btnNuevo.setAttribute('title', `Límite alcanzado (${productosRestantes} productos restantes)`);
-          btnNuevo.setAttribute('data-bs-toggle', 'tooltip');
-          new bootstrap.Tooltip(btnNuevo);
-        }
-      }, 500);
-    }
 
     table.on('buttons-action', () => {
       setTimeout(() => {

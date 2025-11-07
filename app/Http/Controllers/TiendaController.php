@@ -30,15 +30,31 @@ class TiendaController extends Controller
     {
         $this->templateResolver = $templateResolver;
     }
+
+    /**
+     * Obtener la empresa principal (single-tenant)
+     * En modo single-tenant siempre hay una sola empresa activa
+     */
+    private function getEmpresa()
+    {
+        return Empresa::where('activo', true)
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
     /**
      * Mostrar la tienda de una empresa
+     * NOTA: El parámetro $slug se mantiene por compatibilidad pero no se usa
      */
-    public function show($slug, Request $request)
+    public function show($slug = null, Request $request = null)
     {
-        $empresa = Empresa::where('slug', $slug)
-            ->where('activo', true)
-            ->with(['carruselImagenesActivas'])
-            ->firstOrFail();
+        // Si $request es null (llamado desde closure de ruta raíz), obtener del helper global
+        if ($request === null) {
+            $request = request();
+        }
+
+        $empresa = $this->getEmpresa();
+        $empresa->load(['carruselImagenesActivas']);
 
         // Obtener primera lista de precios activa
         $listaPrecio = ListaPrecio::activas()->first();
@@ -240,11 +256,9 @@ class TiendaController extends Controller
     /**
      * Mostrar detalle de producto
      */
-    public function producto($slug, $productoId)
+    public function producto($productoId)
     {
-        $empresa = Empresa::where('slug', $slug)
-            ->where('activo', true)
-            ->firstOrFail();
+        $empresa = $this->getEmpresa();
 
         $producto = Producto::where('id', $productoId)
             ->where('empresa_id', $empresa->id)
@@ -320,11 +334,9 @@ class TiendaController extends Controller
     /**
      * Ver carrito
      */
-    public function verCarrito($slug)
+    public function verCarrito()
     {
-        $empresa = Empresa::where('slug', $slug)
-            ->where('activo', true)
-            ->firstOrFail();
+        $empresa = $this->getEmpresa();
 
         $carrito = $this->obtenerCarrito($empresa->id);
         $listaPrecio = ListaPrecio::activas()->first();
@@ -335,31 +347,29 @@ class TiendaController extends Controller
     /**
      * Agregar producto al carrito
      */
-    public function agregarCarrito(Request $request, $slug)
+    public function agregarCarrito(Request $request)
     {
-        // En TiendaController@agregarCarrito
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $empresa = $this->getEmpresa();
 
-        // Verificar límite de transacciones del mes
-        $transaccionesMes = Compra::where('empresa_id', $empresa->id)
-            ->where('estado', 'pagada')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count();
+        // LÍMITE DE TRANSACCIONES DESHABILITADO - Single-tenant
+        // $transaccionesMes = Compra::where('empresa_id', $empresa->id)
+        //     ->where('estado', 'pagada')
+        //     ->whereMonth('created_at', now()->month)
+        //     ->whereYear('created_at', now()->year)
+        //     ->count();
+        //
+        // if ($empresa->planMembresia->limite_transacciones &&
+        //     $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
+        //     return response()->json([
+        //         'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
+        //     ], 403);
+        // }
 
-        if ($empresa->planMembresia->limite_transacciones && 
-            $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
-            return response()->json([
-                'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
-            ], 403);
-        }
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
             'cantidad' => 'required|integer|min:1',
             'variante_id' => 'nullable|exists:variantes_productos,id'
         ]);
-
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
         $producto = Producto::findOrFail($request->producto_id);
         
         // Verificar que el producto pertenece a la empresa
@@ -398,8 +408,9 @@ class TiendaController extends Controller
     /**
      * Actualizar cantidad en carrito
      */
-    public function actualizarCarrito(Request $request, $slug)
+    public function actualizarCarrito(Request $request)
     {
+        $empresa = $this->getEmpresa();
         $request->validate([
             'key' => 'required|string',
             'cantidad' => 'required|integer|min:0'
@@ -433,13 +444,12 @@ class TiendaController extends Controller
     /**
      * Quitar item del carrito
      */
-    public function quitarDelCarrito(Request $request, $slug)
+    public function quitarDelCarrito(Request $request)
     {
+        $empresa = $this->getEmpresa();
         $request->validate([
             'key' => 'required|string'
         ]);
-
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
         $carrito = $this->obtenerCarrito($empresa->id);
         $carrito->quitarItem($request->key);
 
@@ -453,11 +463,9 @@ class TiendaController extends Controller
     /**
      * Mostrar checkout
      */
-    public function checkout($slug)
+    public function checkout()
     {
-        $empresa = Empresa::where('slug', $slug)
-            ->where('activo', true)
-            ->firstOrFail();
+        $empresa = $this->getEmpresa();
 
         $carrito = $this->obtenerCarrito($empresa->id);
 
@@ -520,24 +528,24 @@ class TiendaController extends Controller
 /**
  * Procesar compra y redirigir a Wompi
  */
-public function procesarCompra(Request $request, $slug)
+public function procesarCompra(Request $request)
 {
-    // En TiendaController@agregarCarrito
-    $empresa = Empresa::where('slug', $slug)->firstOrFail();
+    $empresa = $this->getEmpresa();
 
-    // Verificar límite de transacciones del mes
-    $transaccionesMes = Compra::where('empresa_id', $empresa->id)
-        ->where('estado', 'pagada')
-        ->whereMonth('created_at', now()->month)
-        ->whereYear('created_at', now()->year)
-        ->count();
+    // LÍMITE DE TRANSACCIONES DESHABILITADO - Single-tenant
+    // $transaccionesMes = Compra::where('empresa_id', $empresa->id)
+    //     ->where('estado', 'pagada')
+    //     ->whereMonth('created_at', now()->month)
+    //     ->whereYear('created_at', now()->year)
+    //     ->count();
+    //
+    // if ($empresa->planMembresia->limite_transacciones &&
+    //     $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
+    //     return response()->json([
+    //         'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
+    //     ], 403);
+    // }
 
-    if ($empresa->planMembresia->limite_transacciones && 
-        $transaccionesMes >= $empresa->planMembresia->limite_transacciones) {
-        return response()->json([
-            'error' => 'La tienda ha alcanzado el límite de ventas mensuales. Por favor contacta al vendedor.'
-        ], 403);
-    }
     $request->validate([
         'nombre' => 'required|string|max:255',
         'email' => 'required|email|max:255',
@@ -644,10 +652,11 @@ public function procesarCompra(Request $request, $slug)
 /**
  * Confirmación de pago (callback de Wompi)
  */
-public function confirmarPago(Request $request, $slug, $referencia)
+public function confirmarPago(Request $request, $referencia)
 {
+    $empresa = $this->getEmpresa();
     $transaccion = TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
-    
+
     // Verificar si ya fue procesada
     if ($transaccion->estado !== 'pendiente') {
         if ($transaccion->estado === 'aprobada') {
@@ -799,11 +808,9 @@ private function liberarStockCompra($compra)
 /**
  * Mostrar página de categorías con filtros
  */
-public function categorias($slug, Request $request)
+public function categorias(Request $request)
 {
-    $empresa = Empresa::where('slug', $slug)
-        ->where('activo', true)
-        ->firstOrFail();
+    $empresa = $this->getEmpresa();
 
     // Obtener primera lista de precios activa
     $listaPrecio = ListaPrecio::activas()->first();
@@ -974,8 +981,9 @@ public function categorias($slug, Request $request)
     /**
      * Obtener información de stock por AJAX
      */
-    public function obtenerStockInfo(Request $request, $slug)
+    public function obtenerStockInfo(Request $request)
     {
+        $empresa = $this->getEmpresa();
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
             'variante_id' => 'nullable|exists:variantes_productos,id'
@@ -994,9 +1002,9 @@ public function categorias($slug, Request $request)
     /**
      * Validar stock completo del carrito
      */
-    public function validarStockCarrito(Request $request, $slug)
+    public function validarStockCarrito(Request $request)
     {
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $empresa = $this->getEmpresa();
         $carrito = $this->obtenerCarrito($empresa->id);
         
         $stockErrors = [];
@@ -1036,13 +1044,12 @@ public function categorias($slug, Request $request)
     /**
      * Aplicar código de descuento al carrito
      */
-    public function aplicarDescuento(Request $request, $slug)
+    public function aplicarDescuento(Request $request)
     {
+        $empresa = $this->getEmpresa();
         $request->validate([
             'codigo' => 'required|string'
         ]);
-
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
         $carrito = $this->obtenerCarrito($empresa->id);
 
         if (empty($carrito->items)) {
@@ -1076,9 +1083,9 @@ public function categorias($slug, Request $request)
     /**
      * Remover descuento del carrito
      */
-    public function removerDescuento($slug)
+    public function removerDescuento()
     {
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
+        $empresa = $this->getEmpresa();
         $carrito = $this->obtenerCarrito($empresa->id);
 
         $carrito->removerDescuento();

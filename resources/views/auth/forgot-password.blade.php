@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Contraseña - BeTogether</title>
+    <title>Recuperar Contraseña - Esnova</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
 
     <!-- Tailwind CSS -->
@@ -122,7 +122,7 @@
     <!-- Contenedor principal -->
     <div class="content-container">
 
-        <img src="{{ asset('images/logo1.png') }}" alt="Logo BeTogether" class="brand-logo-img mb-4">
+        <img src="{{ asset('images/logo1.png') }}" alt="Logo Esnova" class="brand-logo-img mb-4">
 
         <div class="login-card">
             <div class="description-text">

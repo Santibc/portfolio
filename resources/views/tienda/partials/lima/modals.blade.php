@@ -39,10 +39,10 @@
                             <strong class="js-cart-total cart-total">$0.00</strong>
                         </div>
                     </div>
-                    <a href="{{ route('tienda.carrito', $empresa->slug ?? 'tienda') }}" class="btn btn-primary btn-block">
+                    <a href="{{ route('tienda.carrito') }}" class="btn btn-primary btn-block">
                         Ver Carrito Completo
                     </a>
-                    <a href="{{ route('tienda.checkout', $empresa->slug ?? 'tienda') }}" class="btn btn-secondary btn-block mt-2">
+                    <a href="{{ route('tienda.checkout') }}" class="btn btn-secondary btn-block mt-2">
                         Finalizar Compra
                     </a>
                 </div>
@@ -73,7 +73,7 @@
             <div class="modal-body">
                 <ul class="mobile-nav-list">
                     <li class="mobile-nav-item">
-                        <a href="{{ route('tienda.empresa', $empresa->slug ?? 'tienda') }}" class="mobile-nav-link">
+                        <a href="{{ route('tienda.empresa') }}" class="mobile-nav-link">
                             Inicio
                         </a>
                     </li>
@@ -82,7 +82,7 @@
                         @foreach($categorias as $categoria)
                         <li class="mobile-nav-item {{ $categoria->subcategorias && $categoria->subcategorias->count() > 0 ? 'has-submenu' : '' }}">
                             <div class="mobile-nav-link-container">
-                                <a href="{{ route('tienda.categorias', [($empresa->slug ?? 'tienda'), 'categoria' => $categoria->id]) }}" class="mobile-nav-link">
+                                <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="mobile-nav-link">
                                     {{ $categoria->nombre }}
                                 </a>
                                 @if($categoria->subcategorias && $categoria->subcategorias->count() > 0)
@@ -98,7 +98,7 @@
                             <ul class="mobile-nav-submenu" style="display: none;">
                                 @foreach($categoria->subcategorias as $subcategoria)
                                 <li class="mobile-nav-item">
-                                    <a href="{{ route('tienda.categorias', [($empresa->slug ?? 'tienda'), 'categoria' => $subcategoria->id]) }}" class="mobile-nav-link submenu-link">
+                                    <a href="{{ route('tienda.empresa', ['categoria' => $subcategoria->id]) }}" class="mobile-nav-link submenu-link">
                                         {{ $subcategoria->nombre }}
                                     </a>
                                 </li>

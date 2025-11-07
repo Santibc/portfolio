@@ -18,48 +18,9 @@
             <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
-            <a href="{{ route('membresias.index') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('membresias*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Membresias"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('membresias*') ? '' : 'transparent' }}'">
-                <i class="bi bi-award"></i>
-                <span>Membresias</span>
-            </a>
+
         {{-- Menú Admin --}}
         @if (auth()->user()->getRoleNames()->first() == 'admin')
-            <a href="{{ route('usuarios') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('usuarios*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Usuarios"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('usuarios*') ? '' : 'transparent' }}'">
-                <i class="bi bi-person-circle"></i>
-                <span>Usuarios</span>
-            </a>
-            <a href="{{ route('admin.dashboard') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/dashboard') && !request()->is('admin/dashboard/membresias') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Comisiones"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('admin/dashboard') && !request()->is('admin/dashboard/membresias') ? '' : 'transparent' }}'">
-                <i class="bi bi-currency-dollar"></i>
-                <span>Comisiones</span>
-            </a>
-            <a href="{{ route('admin.dashboard.membresias') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/dashboard/membresias*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Membresías"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('admin/dashboard/membresias*') ? '' : 'transparent' }}'">
-                <i class="bi bi-award"></i>
-                <span>Dashboard Membresías</span>
-            </a>
-            <a href="{{ route('admin.planes-membresia.index') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/planes-membresia*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Planes de Membresía"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('admin/planes-membresia*') ? '' : 'transparent' }}'">
-                <i class="bi bi-credit-card"></i>
-                <span>Planes Membresía</span>
-            </a>
             <a href="{{ route('admin.content-manager.index') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/content-manager*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
                title="Gestor de Contenido"

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Empresa;
 use App\Models\CarruselEmpresa;
-use App\Repositories\TemplateRepository;
-use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -52,7 +50,7 @@ class EmpresasController extends Controller
     /**
      * Mostrar formulario de creación/edición
      */
-    public function form(TemplateRepository $templateRepo)
+    public function form()
     {
         $empresa = auth()->user()->empresa;
 
@@ -63,17 +61,14 @@ class EmpresasController extends Controller
             $empresa = new Empresa();
         }
 
-        // Obtener templates disponibles para el selector
-        $templates = $templateRepo->getForSelector();
-
-        return view('empresa.form', compact('empresa', 'templates'));
+        return view('empresa.form', compact('empresa'));
     }
 
     /**
      * Guardar o actualizar la empresa
      * - Guarda archivos directamente en /public sin usar storage:link
      */
-    public function guardar(Request $request, TemplateResolver $templateResolver)
+    public function guardar(Request $request)
     {
         $empresa = auth()->user()->empresa ?? new Empresa();
 
@@ -93,12 +88,6 @@ class EmpresasController extends Controller
             'facebook_url'   => ['nullable', 'url', 'max:255'],
             'twitter_url'    => ['nullable', 'url', 'max:255'],
             'whatsapp'       => ['nullable', 'string', 'max:255'],
-            'template_tienda_id' => ['nullable', 'exists:templates_tienda,id'],
-            'hero_video_file' => ['nullable', 'file', 'max:51200'], // 50MB max - sin validación de tipo
-            'remove_hero_video' => ['nullable', 'boolean'],
-            'hero_video_message' => ['nullable', 'string', 'max:500'],
-            'hero_video_button_text' => ['nullable', 'string', 'max:100'],
-            'hero_video_button_link' => ['nullable', 'url', 'max:255'],
             'logo'           => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'imagen_portada' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             // Horario de atención
@@ -134,8 +123,6 @@ class EmpresasController extends Controller
             'horario_atencion.*.apertura.date_format' => 'Ingrese una hora de apertura válida (HH:MM).',
             'horario_atencion.*.cierre.date_format'   => 'Ingrese una hora de cierre válida (HH:MM).',
             'horario_atencion.*.cierre.after'         => 'La hora de cierre debe ser posterior a la hora de apertura.',
-            'hero_video_file.file'                    => 'Debe seleccionar un archivo válido.',
-            'hero_video_file.max'                     => 'El video no debe superar 50MB.',
         ];
 
         $data = $request->validate($rules, $messages);
@@ -179,34 +166,34 @@ class EmpresasController extends Controller
             if ($esNueva) {
                 $data['usuario_id'] = auth()->id();
                 $data['activo'] = true;
-                
+
                 // Asignar plan gratuito por defecto
                 $planGratuito = \App\Models\PlanMembresia::where('precio', 0)->first();
                 if ($planGratuito) {
                     $data['plan_membresia_id'] = $planGratuito->id;
                 }
+
+                // Asignar template por defecto (Clásico)
+                $templateDefault = \App\Models\TemplateTienda::where('es_default', true)->first();
+                if ($templateDefault) {
+                    $data['template_tienda_id'] = $templateDefault->id;
+                }
             }
 
             // No intentes guardar archivos en $data antes de moverlos
-            unset($data['logo'], $data['imagen_portada'], $data['carrusel'], $data['carrusel_existente'], $data['hero_video_file'], $data['remove_hero_video']);
+            unset($data['logo'], $data['imagen_portada'], $data['carrusel'], $data['carrusel_existente']);
 
             // Guardar/actualizar datos básicos primero para tener ID
             $empresa->fill($data)->save();
-
-            // Si cambió el template, limpiar cache
-            if ($empresa->wasChanged('template_tienda_id')) {
-                $templateResolver->clearCache($empresa);
-            }
 
             // Rutas base en /public
             $baseDir = public_path('imagenes/empresas/' . $empresa->id);
             $logoDir = $baseDir . '/logo';
             $portadaDir = $baseDir . '/portada';
             $carruselDir = $baseDir . '/carrusel';
-            $videoDir = $baseDir . '/videos';
 
             // Crear directorios si no existen
-            foreach ([$baseDir, $logoDir, $portadaDir, $carruselDir, $videoDir] as $dir) {
+            foreach ([$baseDir, $logoDir, $portadaDir, $carruselDir] as $dir) {
                 if (!File::exists($dir)) {
                     File::makeDirectory($dir, 0755, true);
                 }
@@ -320,46 +307,6 @@ class EmpresasController extends Controller
                 }
             }
 
-            // ---- HERO VIDEO (mover a /public/imagenes/empresas/{id}/videos) ----
-            // Eliminar video si se marcó la opción
-            if ($request->has('remove_hero_video') && $request->remove_hero_video) {
-                if (!empty($empresa->hero_video_url)) {
-                    $posiblesRutas = [
-                        public_path($empresa->hero_video_url),
-                    ];
-                    foreach ($posiblesRutas as $ruta) {
-                        if (File::exists($ruta)) {
-                            File::delete($ruta);
-                        }
-                    }
-                    $empresa->hero_video_url = null;
-                    $empresa->save();
-                }
-            }
-
-            // Subir nuevo video si se proporciona
-            if ($request->hasFile('hero_video_file')) {
-                // Eliminar video anterior si existe
-                if (!empty($empresa->hero_video_url)) {
-                    $posiblesRutas = [
-                        public_path($empresa->hero_video_url),
-                    ];
-                    foreach ($posiblesRutas as $ruta) {
-                        if (File::exists($ruta)) {
-                            File::delete($ruta);
-                        }
-                    }
-                }
-
-                $video = $request->file('hero_video_file');
-                $videoFilename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $video->getClientOriginalName());
-                $video->move($videoDir, $videoFilename);
-
-                // Guardar ruta relativa a /public
-                $empresa->hero_video_url = 'imagenes/empresas/' . $empresa->id . '/videos/' . $videoFilename;
-                $empresa->save();
-            }
-
             DB::commit();
 
             $mensaje = $esNueva
@@ -407,8 +354,9 @@ class EmpresasController extends Controller
                 ->with('error', 'Debe crear su empresa primero.');
         }
 
+        // Redirigir a la raíz (single-tenant - no requiere slug)
         return redirect()
-            ->route('tienda.empresa', $empresa->slug)
+            ->route('tienda.empresa')
             ->with('info', 'Esta es la vista previa de su tienda.');
     }
 }

@@ -145,20 +145,7 @@ class ProductosController extends Controller
                 ->make(true);
         }
 
-        // INFORMACIÓN DE LÍMITES PARA LA VISTA
-        $productosActivos = $empresa->productos()->where('activo', true)->count();
-        $limiteProductos = $empresa->limite_productos;
-        $productosRestantes = max(0, $limiteProductos - $productosActivos);
-        $puedeCrearProductos = $empresa->puedeCrearProductos();
-        $membresiaActual = $empresa->planMembresia;
-
-        return view('productos.productos_index', compact(
-            'productosActivos',
-            'limiteProductos',
-            'productosRestantes',
-            'puedeCrearProductos',
-            'membresiaActual'
-        ));
+        return view('productos.productos_index');
     }
 
     public function form(Producto $producto = null)
@@ -169,16 +156,7 @@ class ProductosController extends Controller
             return redirect()->route('empresa.crear')
                         ->with('warning', 'Debe crear su empresa antes de gestionar productos.');
         }
-        
-        // VERIFICAR LÍMITE DE PRODUCTOS SI ES NUEVO
-        if (!$producto || !$producto->exists) {
-            if (!$empresa->puedeCrearProductos()) {
-                return redirect()->route('productos')
-                    ->with('error', 'Has alcanzado el límite de ' . $empresa->limite_productos . ' productos para tu plan ' . $empresa->planMembresia->nombre . '. Por favor actualiza tu membresía para crear más productos.')
-                    ->with('show_upgrade', true); // Flag para mostrar opciones de upgrade
-            }
-        }
-        
+
         // Si es edición, verificar que el producto pertenezca a la empresa
         if ($producto && $producto->exists && $producto->empresa_id !== $empresa->id) {
             abort(403, 'No tiene permisos para editar este producto.');
@@ -228,13 +206,6 @@ class ProductosController extends Controller
         // Si es edición, verificar que el producto pertenezca a la empresa
         if ($producto->exists && $producto->empresa_id !== $empresa->id) {
             abort(403, 'No tiene permisos para editar este producto.');
-        }
-
-        // VERIFICAR LÍMITE ANTES DE CREAR NUEVO PRODUCTO
-        if (!$producto->exists && !$empresa->puedeCrearProductos()) {
-            return back()->withInput()
-                ->with('error', 'Has alcanzado el límite de ' . $empresa->limite_productos . ' productos para tu plan. Por favor actualiza tu membresía.')
-                ->with('show_upgrade', true);
         }
 
         $rules = [

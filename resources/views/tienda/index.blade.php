@@ -123,7 +123,7 @@
                     }
                 @endphp
                 <div class="product-card featured">
-                  <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[0]->id]) }}">
+                  <a href="{{ route('tienda.producto', $destacados[0]->id) }}">
                     <img
                       src="{{ $destacados[0]->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
                       alt="{{ $destacados[0]->nombre }}"
@@ -138,7 +138,7 @@
                   @endif
                   <div class="product-info">
                     <h4>
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[0]->id]) }}">
+                      <a href="{{ route('tienda.producto', $destacados[0]->id) }}">
                         {{ $destacados[0]->nombre }}
                       </a>
                     </h4>
@@ -190,7 +190,7 @@
                     }
                   @endphp
                   <div class="product-mini" data-aos="zoom-in" data-aos-delay="400">
-                    <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[1]->id]) }}">
+                    <a href="{{ route('tienda.producto', $destacados[1]->id) }}">
                       <img
                         src="{{ $destacados[1]->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
                         alt="{{ $destacados[1]->nombre }}"
@@ -237,7 +237,7 @@
                     }
                   @endphp
                   <div class="product-mini" data-aos="zoom-in" data-aos-delay="500">
-                    <a href="{{ route('tienda.producto', [$empresa->slug, $destacados[2]->id]) }}">
+                    <a href="{{ route('tienda.producto', $destacados[2]->id) }}">
                       <img
                         src="{{ $destacados[2]->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
                         alt="{{ $destacados[2]->nombre }}"
@@ -321,7 +321,7 @@
                   <span class="category-tag">Destacado</span>
                   <h2>{{ $featured->nombre }}</h2>
                   <p>{{ $featured->descripcion ?? 'Descubre nuestra selección de productos en esta categoría.' }}</p>
-                  <a href="{{ route('tienda.empresa', [$empresa->slug, 'categoria' => $featured->id]) }}" class="btn-shop">
+                  <a href="{{ route('tienda.categorias', ['categoria' => $featured->id]) }}" class="btn-shop">
                     Explorar Categoría <i class="bi bi-arrow-right"></i>
                   </a>
                 </div>
@@ -350,7 +350,7 @@
                       <div class="category-content">
                         <h4>{{ $categoria->nombre }}</h4>
                         <p>{{ $categoria->productos_count ?? 0 }} productos</p>
-                        <a href="{{ route('tienda.empresa', [$empresa->slug, 'categoria' => $categoria->id]) }}" class="card-link">
+                        <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="card-link">
                           Ver Productos <i class="bi bi-arrow-right"></i>
                         </a>
                       </div>
@@ -440,7 +440,7 @@
                   </button>
                 </div>
                 @if($producto->tiene_variantes)
-                  <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="cart-btn">Ver Opciones</a>
+                  <a href="{{ route('tienda.producto', $producto->id) }}" class="cart-btn">Ver Opciones</a>
                 @else
                   <button class="cart-btn quick-add-btn"
                           data-producto-id="{{ $producto->id }}"
@@ -453,7 +453,7 @@
               <div class="product-info">
                 <div class="product-category">{{ $producto->categoria->nombre }}</div>
                 <h4 class="product-name">
-                  <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}">{{ $producto->nombre }}</a>
+                  <a href="{{ route('tienda.producto', $producto->id) }}">{{ $producto->nombre }}</a>
                 </h4>
                 <div class="product-rating">
                   <div class="stars">
@@ -544,16 +544,16 @@
                   <button class="action-btn wishlist-btn">
                     <i class="bi bi-heart"></i>
                   </button>
-                  <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}" class="action-btn quickview-btn">
+                  <a href="{{ route('tienda.producto', $oferta->id) }}" class="action-btn quickview-btn">
                     <i class="bi bi-zoom-in"></i>
                   </a>
                 </div>
-                <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}" class="cart-btn">Ver Oferta</a>
+                <a href="{{ route('tienda.producto', $oferta->id) }}" class="cart-btn">Ver Oferta</a>
               </div>
               <div class="product-info">
                 <div class="product-category">{{ $oferta->categoria->nombre ?? 'Producto' }}</div>
                 <h4 class="product-name">
-                  <a href="{{ route('tienda.producto', [$empresa->slug, $oferta->id]) }}">{{ $oferta->nombre }}</a>
+                  <a href="{{ route('tienda.producto', $oferta->id) }}">{{ $oferta->nombre }}</a>
                 </h4>
                 @if($oferta->precio_actual)
                   <div class="product-price">

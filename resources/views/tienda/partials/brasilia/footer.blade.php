@@ -79,8 +79,8 @@
             <div class="col-12 text-center">
                 <p class="footer-copyright mb-0">
                     @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
-                    <a href="https://betogether.com.co" target="_blank" style="text-decoration: none; color: inherit;">
-                        Página creada en BeTogether
+                    <a href="https://Esnova.com.co" target="_blank" style="text-decoration: none; color: inherit;">
+                        Página creada en Esnova
                     </a><br>
                     @endif
                     Copyright © {{ $empresa->nombre }} - {{ date('Y') }}. Todos los derechos reservados.

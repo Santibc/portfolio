@@ -10,9 +10,9 @@
     <h1 class="mb-2 mb-lg-0">{{ $categoriaSeleccionada ? $categoriaSeleccionada->nombre : 'Todas las Categorías' }}</h1>
     <nav class="breadcrumbs">
       <ol>
-        <li><a href="{{ route('tienda.empresa', $empresa->slug) }}">Inicio</a></li>
+        <li><a href="{{ route('tienda.empresa') }}">Inicio</a></li>
         @if($categoriaSeleccionada)
-          <li><a href="{{ route('tienda.categorias', $empresa->slug) }}">Categorías</a></li>
+          <li><a href="{{ route('tienda.categorias') }}">Categorías</a></li>
           <li class="current">{{ $categoriaSeleccionada->nombre }}</li>
         @else
           <li class="current">Categorías</li>
@@ -38,7 +38,7 @@
             @foreach($categorias as $categoria)
             <li class="category-item">
               <div class="d-flex justify-content-between align-items-center category-header">
-                <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}" 
+                <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" 
                    class="category-link {{ request('categoria') == $categoria->id ? 'active' : '' }}">
                   {{ $categoria->nombre }}
                   <span class="category-count">({{ $categoria->productos_count ?? 0 }})</span>
@@ -50,7 +50,7 @@
             @if($categorias->count() > 0)
             <li class="category-item mt-3">
               <div class="d-flex justify-content-between align-items-center category-header">
-                <a href="{{ route('tienda.categorias', $empresa->slug) }}" 
+                <a href="{{ route('tienda.categorias') }}"
                    class="category-link {{ !request('categoria') ? 'active' : '' }}">
                   Ver Todas
                 </a>
@@ -66,7 +66,7 @@
 
           <h3 class="widget-title">Rango de Precio</h3>
 
-          <form id="priceRangeForm" method="GET" action="{{ route('tienda.categorias', $empresa->slug) }}">
+          <form id="priceRangeForm" method="GET" action="{{ route('tienda.categorias') }}">
             @foreach(request()->except(['precio_min', 'precio_max', 'precio_min_input', 'precio_max_input']) as $key => $value)
               @if($value)
                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -138,7 +138,7 @@
 
           <!-- Filter and Sort Options -->
           <div class="filter-container mb-4" data-aos="fade-up" data-aos-delay="100">
-            <form method="GET" action="{{ route('tienda.categorias', $empresa->slug) }}" id="filterForm">
+            <form method="GET" action="{{ route('tienda.categorias') }}" id="filterForm">
               @foreach(request()->except(['buscar', 'orden', 'rango_precio', 'por_pagina']) as $key => $value)
                 @if($value && !in_array($key, ['buscar', 'orden', 'rango_precio', 'por_pagina']))
                   <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -219,8 +219,8 @@
                   <div class="filter-tags">
                     @if($categoriaSeleccionada)
                       <span class="filter-tag">
-                        {{ $categoriaSeleccionada->nombre }} 
-                        <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => null] + request()->except('categoria')) }}" class="filter-remove">
+                        {{ $categoriaSeleccionada->nombre }}
+                        <a href="{{ route('tienda.categorias', request()->except('categoria')) }}" class="filter-remove">
                           <i class="bi bi-x"></i>
                         </a>
                       </span>
@@ -229,7 +229,7 @@
                     @if(request('buscar'))
                       <span class="filter-tag">
                         Búsqueda: {{ request('buscar') }}
-                        <a href="{{ route('tienda.categorias', [$empresa->slug] + request()->except('buscar')) }}" class="filter-remove">
+                        <a href="{{ route('tienda.categorias', request()->except('buscar')) }}" class="filter-remove">
                           <i class="bi bi-x"></i>
                         </a>
                       </span>
@@ -238,7 +238,7 @@
                     @if(request('precio_min') || request('precio_max'))
                       <span class="filter-tag">
                         Precio: ${{ number_format(request('precio_min', $precioMin), 0, ',', '.') }} - ${{ number_format(request('precio_max', $precioMax), 0, ',', '.') }}
-                        <a href="{{ route('tienda.categorias', [$empresa->slug] + request()->except(['precio_min', 'precio_max', 'precio_min_input', 'precio_max_input'])) }}" class="filter-remove">
+                        <a href="{{ route('tienda.categorias', request()->except(['precio_min', 'precio_max', 'precio_min_input', 'precio_max_input'])) }}" class="filter-remove">
                           <i class="bi bi-x"></i>
                         </a>
                       </span>
@@ -256,13 +256,13 @@
                         @else
                           ${{ number_format($min, 0, ',', '.') }} - ${{ number_format($max, 0, ',', '.') }}
                         @endif
-                        <a href="{{ route('tienda.categorias', [$empresa->slug] + request()->except('rango_precio')) }}" class="filter-remove">
+                        <a href="{{ route('tienda.categorias', request()->except('rango_precio')) }}" class="filter-remove">
                           <i class="bi bi-x"></i>
                         </a>
                       </span>
                     @endif
                     
-                    <a href="{{ route('tienda.categorias', $empresa->slug) }}" class="clear-all-btn">Limpiar Todo</a>
+                    <a href="{{ route('tienda.categorias') }}" class="clear-all-btn">Limpiar Todo</a>
                   </div>
                 </div>
               </div>
@@ -330,12 +330,12 @@
                   @endif
                   <div class="product-overlay">
                     <div class="product-actions">
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}"
+                      <a href="{{ route('tienda.producto', $producto->id) }}"
                          class="action-btn" data-bs-toggle="tooltip" title="Ver Detalles">
                         <i class="bi bi-eye"></i>
                       </a>
                       @if($producto->tiene_variantes)
-                        <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}"
+                        <a href="{{ route('tienda.producto', $producto->id) }}"
                            class="action-btn" data-bs-toggle="tooltip" title="Ver Opciones">
                           <i class="bi bi-cart-plus"></i>
                         </a>
@@ -363,7 +363,7 @@
                 <div class="product-details">
                   <div class="product-category">{{ $producto->categoria->nombre }}</div>
                   <h4 class="product-title">
-                    <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}">{{ $producto->nombre }}</a>
+                    <a href="{{ route('tienda.producto', $producto->id) }}">{{ $producto->nombre }}</a>
                   </h4>
                   <div class="product-meta">
                     @if($producto->precio_actual)
@@ -391,7 +391,7 @@
               <div class="alert alert-info text-center">
                 <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
                 <p class="mb-0">No se encontraron productos con los filtros seleccionados.</p>
-                <a href="{{ route('tienda.categorias', $empresa->slug) }}" class="btn btn-primary mt-3">
+                <a href="{{ route('tienda.categorias') }}" class="btn btn-primary mt-3">
                   Ver todos los productos
                 </a>
               </div>
@@ -406,12 +406,12 @@
               <div class="product-list-item">
                 <div class="row align-items-center">
                   <div class="col-md-3">
-                    <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}">
+                    <a href="{{ route('tienda.producto', $producto->id) }}">
                       <img src="{{ $producto->url_imagen_principal }}" class="img-fluid" alt="{{ $producto->nombre }}">
                     </a>
                   </div>
                   <div class="col-md-6">
-                    <h4><a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}">{{ $producto->nombre }}</a></h4>
+                    <h4><a href="{{ route('tienda.producto', $producto->id) }}">{{ $producto->nombre }}</a></h4>
                     <p class="text-muted mb-2">{{ $producto->categoria->nombre }}</p>
                     <p>{{ Str::limit($producto->descripcion, 150) }}</p>
                     <div class="product-rating">
@@ -432,7 +432,7 @@
                       <div class="product-price text-muted mb-2">Precio no disponible</div>
                     @endif
                     @if($producto->tiene_variantes)
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $producto->id]) }}" class="btn btn-primary">
+                      <a href="{{ route('tienda.producto', $producto->id) }}" class="btn btn-primary">
                         Ver Opciones
                       </a>
                     @else
@@ -453,7 +453,7 @@
               <div class="alert alert-info text-center">
                 <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
                 <p class="mb-0">No se encontraron productos con los filtros seleccionados.</p>
-                <a href="{{ route('tienda.categorias', $empresa->slug) }}" class="btn btn-primary mt-3">
+                <a href="{{ route('tienda.categorias') }}" class="btn btn-primary mt-3">
                   Ver todos los productos
                 </a>
               </div>
@@ -646,7 +646,7 @@ $(document).ready(function() {
     btn.html('<span class="spinner-border spinner-border-sm"></span>');
     
     $.ajax({
-      url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+      url: "{{ route('tienda.carrito.agregar') }}",
       method: 'POST',
       data: {
         producto_id: productoId,

@@ -48,8 +48,8 @@
         <h1 class="mb-2 mb-lg-0">{{ $producto->nombre }}</h1>
         <nav class="breadcrumbs">
           <ol>
-            <li><a href="{{ route('tienda.empresa', $empresa->slug) }}">Inicio</a></li>
-            <li><a href="{{ route('tienda.empresa', [$empresa->slug, 'categoria' => $producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
+            <li><a href="{{ route('tienda.empresa') }}">Inicio</a></li>
+            <li><a href="{{ route('tienda.empresa', ['categoria' =>$producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
             <li class="current">{{ $producto->nombre }}</li>
           </ol>
         </nav>
@@ -586,7 +586,7 @@
                     @endif
                     <div class="product-overlay">
                       <div class="product-actions">
-                        <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}"
+                        <a href="{{ route('tienda.producto', $relacionado->id) }}"
                            class="action-btn" data-bs-toggle="tooltip" title="Ver Detalles">
                           <i class="bi bi-eye"></i>
                         </a>
@@ -598,7 +598,7 @@
                       {{ $relacionado->categoria->nombre }}
                     </div>
                     <h4 class="product-title" style="font-size: 1rem; margin-bottom: 0.75rem; line-height: 1.4;">
-                      <a href="{{ route('tienda.producto', [$empresa->slug, $relacionado->id]) }}"
+                      <a href="{{ route('tienda.producto', $relacionado->id) }}"
                          style="text-decoration: none; color: #212529;">
                         {{ Str::limit($relacionado->nombre, 50) }}
                       </a>

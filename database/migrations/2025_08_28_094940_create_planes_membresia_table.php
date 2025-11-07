@@ -42,7 +42,7 @@ return new class extends Migration
                 'descripcion' => 'Plan gratuito para empezar',
                 'caracteristicas' => json_encode([
                     '10 productos en tu catálogo',
-                    'Subdominio propio (tumarca.betogether.com.co)',
+                    'Subdominio propio (tumarca.Esnova.com.co)',
                     'Pasarela de Pagos integrada y segura'
                 ]),
                 'orden' => 1
@@ -59,7 +59,7 @@ return new class extends Migration
                 'caracteristicas' => json_encode([
                     '20 productos en tu tienda',
                     'Puntos Colombia para fidelización',
-                    'Sin marca de agua de BeTogether',
+                    'Sin marca de agua de Esnova',
                     'Logística prioritaria AM',
                     'Programa Embajadores de marca'
                 ]),

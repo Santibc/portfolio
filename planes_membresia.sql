@@ -50,8 +50,8 @@ CREATE TABLE `planes_membresia` (
 --
 
 INSERT INTO `planes_membresia` (`id`, `nombre`, `slug`, `precio`, `limite_productos`, `limite_transacciones`, `porcentaje_comision`, `comision_fija`, `descripcion`, `caracteristicas`, `activo`, `marca_de_agua`, `orden`, `created_at`, `updated_at`) VALUES
-(1, 'Plan Fundador', 'plan-fundador', 0.00, 10, 50, 6.09, 900.00, 'Plan gratuito para empezar', '[\"10 productos en tu cat\\u00e1logo\",\"Subdominio propio (tumarca.betogether.com.co)\",\"Pasarela de Pagos integrada y segura\"]', 1, 0, 1, NULL, NULL),
-(2, 'Emprendedor', 'emprendedor', 85000.00, 20, 50, 5.09, 900.00, 'Para emprendedores en crecimiento', '[\"20 productos en tu tienda\",\"Puntos Colombia para fidelizaci\\u00f3n\",\"Sin marca de agua de BeTogether\",\"Log\\u00edstica prioritaria AM\",\"Programa Embajadores de marca\"]', 1, 0, 2, NULL, '2025-09-05 23:27:57'),
+(1, 'Plan Fundador', 'plan-fundador', 0.00, 10, 50, 6.09, 900.00, 'Plan gratuito para empezar', '[\"10 productos en tu cat\\u00e1logo\",\"Subdominio propio (tumarca.Esnova.com.co)\",\"Pasarela de Pagos integrada y segura\"]', 1, 0, 1, NULL, NULL),
+(2, 'Emprendedor', 'emprendedor', 85000.00, 20, 50, 5.09, 900.00, 'Para emprendedores en crecimiento', '[\"20 productos en tu tienda\",\"Puntos Colombia para fidelizaci\\u00f3n\",\"Sin marca de agua de Esnova\",\"Log\\u00edstica prioritaria AM\",\"Programa Embajadores de marca\"]', 1, 0, 2, NULL, '2025-09-05 23:27:57'),
 (3, 'Emprendedor PRO', 'emprendedor-pro', 110000.00, 50, 60, 5.09, 800.00, 'Máximo poder para tu negocio', '[\"50 productos en tu tienda\",\"Todo lo del plan Emprendedor +\",\"Prioridad AM y PM en entregas\",\"IA para Creativos - Genera piezas para Instagram y Facebook\",\"IA para Estrategia - Planes de marketing de 15 d\\u00edas\"]', 1, 0, 3, NULL, NULL),
 (4, 'Crecimiento', 'crecimiento', 500000.00, 200, 100, 4.09, 700.00, 'Para marcas establecidas', '[\"200 productos en tu tienda\",\"Todo lo del plan PRO +\",\"Embajador de Marca en marketing\",\"Descuento en eventos presenciales\",\"1 Sesi\\u00f3n mensual con profesional\",\"Opci\\u00f3n Pasaporte a Canad\\u00e1\"]', 1, 0, 4, NULL, NULL);
 
