@@ -17,7 +17,11 @@
       "Bash(curl:*)",
       "Bash(Select-Object -First 50)",
       "Bash(findstr:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(php:*)",
+      "Bash(Select-Object -First 5)",
+      "Bash(Select-Object -First 1)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []

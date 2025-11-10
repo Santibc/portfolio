@@ -8,6 +8,7 @@ use App\Services\Templates\Contracts\TemplateStrategyInterface;
 use App\Services\Templates\Strategies\DefaultTemplateStrategy;
 use App\Services\Templates\Strategies\BrasiliaTemplateStrategy;
 use App\Services\Templates\Strategies\LimaTemplateStrategy;
+use App\Services\Templates\Strategies\SportTemplateStrategy;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -29,6 +30,7 @@ class TemplateResolver
         'default' => DefaultTemplateStrategy::class,
         'brasilia' => BrasiliaTemplateStrategy::class,
         'lima' => LimaTemplateStrategy::class,
+        'sport' => SportTemplateStrategy::class,
     ];
 
     /**

@@ -239,7 +239,10 @@ public function getUrlImagenPrincipalAttribute()
         return $query->where(function($q) use ($termino) {
             $q->where('nombre', 'like', "%{$termino}%")
               ->orWhere('referencia', 'like', "%{$termino}%")
-              ->orWhere('descripcion', 'like', "%{$termino}%");
+              ->orWhere('descripcion', 'like', "%{$termino}%")
+              ->orWhereHas('categoria', function($query) use ($termino) {
+                  $query->where('nombre', 'like', "%{$termino}%");
+              });
         });
     }
 

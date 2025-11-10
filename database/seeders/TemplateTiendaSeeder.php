@@ -98,9 +98,35 @@ class TemplateTiendaSeeder extends Seeder
             ]
         );
 
+        // Template Sport - Dinámico para deportes y lifestyle urbano
+        TemplateTienda::updateOrCreate(
+            ['codigo' => 'sport'],
+            [
+                'nombre' => 'Template Sport',
+                'descripcion' => 'Template dinámico para tiendas de deportes y lifestyle urbano. Diseño moderno tipo skate shop con tipografía bold.',
+                'vista_index' => 'tienda.sport_index',
+                'vista_categoria' => 'tienda.sport_categoria',
+                'vista_producto' => 'tienda.sport_producto',
+                'layout' => 'tienda.sport_layout',
+                'preview_image' => 'images/templates/sport-preview.jpg',
+                'activo' => true,
+                'es_default' => false,
+                'orden' => 4,
+                'configuracion' => [
+                    'color_primario' => '#000000',
+                    'color_accent' => '#ff0000',
+                    'font_heading' => 'Big Shoulders Display',
+                    'font_body' => 'Chivo',
+                    'mostrar_newsletter' => true,
+                    'habilitar_slider_hero' => true,
+                ],
+            ]
+        );
+
         $this->command->info('Templates de tienda creados exitosamente.');
         $this->command->info('- Template Default (código: default) - Marcado como predeterminado');
         $this->command->info('- Template Brasilia (código: brasilia)');
         $this->command->info('- Template Lima (código: lima)');
+        $this->command->info('- Template Sport (código: sport)');
     }
 }

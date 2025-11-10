@@ -2,9 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Tienda Online')</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
+    <meta name="description" content="@yield('description', $empresa->descripcion ?? 'Tienda online de productos deportivos')">
+
+    <!-- Favicon -->
+    <link href="{{ $empresa->logo_url ?? asset('images/ico.png') }}" rel="icon">
 
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,10 +18,18 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700&family=Chivo:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- CSS Variables -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
+
     <style>
         :root {
-            /* Colors */
+            /* Colores */
             --main-foreground: #000000;
             --main-background: #FFFFFF;
             --accent-color: #000000;
@@ -27,25 +40,30 @@
             --footer-background: #000000;
             --footer-foreground: #FFFFFF;
 
-            /* Fonts */
+            /* Fuentes */
             --heading-font: "Big Shoulders Display", sans-serif;
             --body-font: "Chivo", sans-serif;
 
-            /* Font Sizes */
+            /* Tamaños de fuente */
             --h1: 28px;
+            --h1-huge: 100px;
+            --h1-huge-md: 125px;
             --h2: 24px;
+            --h2-huge: 70px;
             --h3: 20px;
+            --h3-huge: 50px;
             --h4: 18px;
             --font-base: 14px;
             --font-large: 18px;
             --font-small: 12px;
 
-            /* Spacing */
+            /* Espaciados */
             --gutter: 15px;
             --section-distance: 30px;
+            --section-distance-huge: 60px;
 
-            /* Border */
-            --border-radius: 4px;
+            /* Bordes */
+            --border-radius: 0;
         }
 
         * {
@@ -73,20 +91,23 @@
         h3 { font-size: var(--h3); }
         h4 { font-size: var(--h4); }
 
+        .h1-huge { font-size: var(--h1-huge); }
+        .h2-huge { font-size: var(--h2-huge); }
+        .h3-huge { font-size: var(--h3-huge); }
+
         a {
             text-decoration: none;
             color: inherit;
+            transition: opacity 0.3s;
+        }
+
+        a:hover {
+            opacity: 0.7;
         }
 
         img {
             max-width: 100%;
             height: auto;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--gutter);
         }
 
         .btn {
@@ -109,96 +130,244 @@
         }
 
         .btn-link {
-            background: none;
-            padding: 0;
+            background: transparent;
+            color: var(--main-foreground);
             text-decoration: underline;
+            padding: 0;
         }
 
-        /* Header Styles */
+        /* Header */
         header {
             background-color: var(--header-background);
             color: var(--header-foreground);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
-        }
-
-        .header-top {
-            background-color: var(--main-foreground);
-            color: var(--main-background);
-            padding: 8px 0;
-            text-align: center;
-            font-size: var(--font-small);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .header-main {
-            padding: 15px 0;
+            padding: 20px 0;
         }
 
         .header-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            justify-content: space-between;
             gap: 20px;
         }
 
+        /* Left utilities */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        /* Center logo */
         .logo {
             font-family: var(--heading-font);
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            grid-column: 2;
         }
 
-        .nav-primary {
-            display: flex;
-            list-style: none;
-            gap: 30px;
+        @media (min-width: 768px) {
+            .logo {
+                font-size: 36px;
+            }
         }
 
-        .nav-primary a {
-            font-family: var(--heading-font);
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: var(--font-base);
-            transition: opacity 0.3s;
-        }
-
-        .nav-primary a:hover {
-            opacity: 0.7;
-        }
-
-        .header-utilities {
+        /* Right utilities */
+        .header-right {
             display: flex;
             align-items: center;
             gap: 20px;
+            justify-content: flex-end;
         }
 
-        .search-icon,
-        .cart-icon,
-        .menu-icon {
+        /* Header buttons */
+        .header-btn {
+            background: none;
+            border: none;
+            color: var(--header-foreground);
+            font-family: var(--heading-font);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px;
             cursor: pointer;
-            padding: 8px;
-            transition: opacity 0.3s;
+            padding: 8px 12px;
+            position: relative;
+            transition: opacity 0.3s ease;
         }
 
-        .search-icon:hover,
-        .cart-icon:hover,
-        .menu-icon:hover {
+        .header-btn:hover {
             opacity: 0.7;
+        }
+
+        @media (min-width: 768px) {
+            .header-btn {
+                font-size: 16px;
+            }
         }
 
         .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
             background-color: var(--accent-color);
             color: var(--button-foreground);
-            border-radius: 50%;
-            padding: 2px 6px;
+            border-radius: 0;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 10px;
             font-weight: 700;
-            margin-left: 4px;
+            padding: 0 4px;
         }
 
-        /* Footer Styles */
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Menu Modal */
+        .menu-modal {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background-color: var(--main-background);
+            z-index: 2001;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .menu-modal.active {
+            left: 0;
+        }
+
+        .modal-header {
+            padding: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: var(--heading-font);
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            padding: 30px;
+        }
+
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-list li {
+            margin-bottom: 20px;
+        }
+
+        .category-list a {
+            font-family: var(--heading-font);
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--main-foreground);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .category-list a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Search Modal */
+        .search-modal {
+            position: fixed;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--main-background);
+            z-index: 2001;
+            transition: top 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .search-modal.active {
+            top: 0;
+        }
+
+        .search-container {
+            padding: 40px 30px;
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            gap: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            font-size: 18px;
+            font-family: var(--body-font);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        /* Footer */
         footer {
             background-color: var(--footer-background);
             color: var(--footer-foreground);
@@ -220,6 +389,7 @@
 
         .footer-column ul {
             list-style: none;
+            padding: 0;
         }
 
         .footer-column ul li {
@@ -228,11 +398,32 @@
 
         .footer-column a {
             opacity: 0.8;
-            transition: opacity 0.3s;
         }
 
         .footer-column a:hover {
             opacity: 1;
+        }
+
+        .footer-logo-section {
+            margin: 60px 0 40px;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: var(--heading-font);
+            font-size: 80px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--footer-foreground);
+            line-height: 1;
+        }
+
+        @media (min-width: 768px) {
+            .footer-logo {
+                font-size: 120px;
+                letter-spacing: 8px;
+            }
         }
 
         .footer-bottom {
@@ -256,8 +447,8 @@
             width: 40px;
             height: 40px;
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            transition: all 0.3s;
+            border-radius: 0;
+            font-size: 20px;
         }
 
         .social-links a:hover {
@@ -265,96 +456,146 @@
             border-color: var(--accent-color);
         }
 
-        /* Mobile Menu */
-        .menu-icon {
-            display: none;
+        .cart-badge {
+            display: inline-block !important;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-primary {
+        .cart-badge[style*="display: none"] {
+            display: none !important;
+        }
+
+        /* Newsletter */
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            font-family: var(--body-font);
+        }
+
+        .newsletter-form button {
+            padding: 12px 24px;
+        }
+
+        /* Menu hamburguesa */
+        .menu-toggle {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .menu-toggle {
                 display: none;
             }
-
-            .menu-icon {
-                display: block;
-            }
-
-            .logo {
-                font-size: 24px;
-            }
-
-            .footer-main {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
         }
 
-        /* SVG Icons */
+        /* Icons SVG */
         .icon {
             width: 24px;
             height: 24px;
             fill: currentColor;
         }
 
-        .icon-sm {
-            width: 16px;
-            height: 16px;
+        /* Transition */
+        .transition-soft {
+            transition: all 0.3s ease;
+        }
+
+        /* Container */
+        .container-fluid {
+            padding-left: var(--gutter);
+            padding-right: var(--gutter);
+        }
+
+        @media (min-width: 768px) {
+            .container-fluid {
+                padding-left: 30px;
+                padding-right: 30px;
+            }
         }
     </style>
 
     @stack('styles')
 </head>
-<body class="@yield('body-class')">
+<body>
+
+    <!-- SVG Icons Sprite -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="hidden" style="display: none;">
+        <symbol id="arrow-long" viewBox="0 0 512 512">
+            <path d="M442.7,243.2l-54.95-54.95,18.1-18.1L491.7,256l-85.85,85.85-18.1-18.1L442.7,268.8H25.6V243.2Z"></path>
+        </symbol>
+    </svg>
 
     <!-- Header -->
     <header>
-        <div class="header-top">
-            🚚 ENVÍO GRATIS en compras mayores a $50.000
-        </div>
-
         <div class="header-main">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="header-container">
-                    <!-- Logo -->
-                    <div class="logo">
-                        <a href="/">SPORT STORE</a>
+                    <!-- Left: Menu & Search buttons -->
+                    <div class="header-left">
+                        <button class="header-btn" id="openMenuBtn">MENU</button>
+                        <button class="header-btn" id="openSearchBtn">BUSCAR</button>
                     </div>
 
-                    <!-- Navigation -->
-                    <nav class="nav-primary">
-                        <a href="/productos">TODOS</a>
-                        <a href="/categoria/calzado">CALZADO</a>
-                        <a href="/categoria/indumentaria">INDUMENTARIA</a>
-                        <a href="/categoria/accesorios">ACCESORIOS</a>
-                        <a href="/ofertas">OFERTAS</a>
-                    </nav>
+                    <!-- Center: Logo -->
+                    <div class="logo">
+                        <a href="{{ route('tienda.empresa', $empresa->slug) }}">
+                            @if($empresa->logo_url)
+                                <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="max-height: 60px; width: auto;">
+                            @else
+                                {{ strtoupper($empresa->nombre) }}
+                            @endif
+                        </a>
+                    </div>
 
-                    <!-- Utilities -->
-                    <div class="header-utilities">
-                        <div class="search-icon">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                            </svg>
-                        </div>
-
-                        <div class="cart-icon">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
-                            </svg>
-                            <span class="cart-badge">0</span>
-                        </div>
-
-                        <div class="menu-icon">
-                            <svg class="icon" viewBox="0 0 24 24">
-                                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-                            </svg>
-                        </div>
+                    <!-- Right: Cart button -->
+                    <div class="header-right">
+                        <button class="header-btn" id="cartBtn">
+                            CARRITO
+                            <span class="cart-badge cart-count" @if(!isset($carrito) || $carrito->total_items == 0) style="display: none;" @endif>
+                                {{ isset($carrito) ? $carrito->total_items : 0 }}
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Menu Modal -->
+    <div class="modal-overlay" id="menuOverlay"></div>
+    <div class="menu-modal" id="menuModal">
+        <div class="modal-header">
+            <h2 class="modal-title">CATEGORÍAS</h2>
+            <button class="close-modal" id="closeMenuBtn">&times;</button>
+        </div>
+        <div class="modal-content">
+            <ul class="category-list">
+                <li><a href="{{ route('tienda.categorias', $empresa->slug) }}">TODOS LOS PRODUCTOS</a></li>
+                @if(isset($categorias) && $categorias->count() > 0)
+                    @foreach($categorias as $categoria)
+                        <li><a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}">{{ strtoupper($categoria->nombre) }}</a></li>
+                    @endforeach
+                @endif
+            </ul>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" placeholder="Buscar productos..." id="searchInput">
+                <button class="btn" id="searchSubmitBtn">BUSCAR</button>
+                <button class="btn" id="closeSearchBtn">CERRAR</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main>
@@ -363,68 +604,207 @@
 
     <!-- Footer -->
     <footer>
-        <div class="container">
+        <div class="container-fluid">
             <div class="footer-main">
-                <div class="footer-column">
-                    <h4>SOBRE NOSOTROS</h4>
-                    <p>Somos una tienda especializada en productos deportivos de alta calidad. Encuentra todo lo que necesitas para tu deporte favorito.</p>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                            </svg>
-                        </a>
-                        <a href="#" aria-label="Instagram">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
-                            </svg>
-                        </a>
-                        <a href="#" aria-label="Twitter">
-                            <svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
+                <!-- Column 1: Menu -->
                 <div class="footer-column">
                     <h4>NAVEGACIÓN</h4>
                     <ul>
-                        <li><a href="/">Inicio</a></li>
-                        <li><a href="/productos">Productos</a></li>
-                        <li><a href="/ofertas">Ofertas</a></li>
-                        <li><a href="/nosotros">Sobre Nosotros</a></li>
-                        <li><a href="/contacto">Contacto</a></li>
+                        <li><a href="{{ route('tienda.empresa', $empresa->slug) }}">INICIO</a></li>
+                        <li><a href="{{ route('tienda.categorias', $empresa->slug) }}">PRODUCTOS</a></li>
+                        @if(isset($categorias) && $categorias->count() > 0)
+                            @foreach($categorias->take(3) as $categoria)
+                                <li><a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}">{{ strtoupper($categoria->nombre) }}</a></li>
+                            @endforeach
+                        @endif
                     </ul>
                 </div>
 
+                <!-- Column 2: Horario -->
                 <div class="footer-column">
-                    <h4>AYUDA</h4>
-                    <ul>
-                        <li><a href="/preguntas-frecuentes">Preguntas Frecuentes</a></li>
-                        <li><a href="/envios">Información de Envíos</a></li>
-                        <li><a href="/devoluciones">Devoluciones</a></li>
-                        <li><a href="/terminos">Términos y Condiciones</a></li>
-                        <li><a href="/privacidad">Política de Privacidad</a></li>
-                    </ul>
+                    <h4>HORARIO</h4>
+                    @if($empresa->horario_atencion)
+                        <ul style="list-style: none; padding: 0; opacity: 0.8; font-size: 14px; line-height: 1.8;">
+                            @php
+                                $dias = ['lunes' => 'Lun', 'martes' => 'Mar', 'miercoles' => 'Mié',
+                                         'jueves' => 'Jue', 'viernes' => 'Vie', 'sabado' => 'Sáb', 'domingo' => 'Dom'];
+                                foreach($dias as $key => $dia) {
+                                    if(isset($empresa->horario_atencion[$key])) {
+                                        if($empresa->horario_atencion[$key]['cerrado'] ?? false) {
+                                            echo '<li>' . $dia . ': Cerrado</li>';
+                                        } else {
+                                            echo '<li>' . $dia . ': ' . ($empresa->horario_atencion[$key]['apertura'] ?? '09:00') . ' - ' .
+                                                ($empresa->horario_atencion[$key]['cierre'] ?? '18:00') . '</li>';
+                                        }
+                                    }
+                                }
+                            @endphp
+                        </ul>
+                    @else
+                        <p style="opacity: 0.8;">Lun - Vie: 9:00 - 18:00</p>
+                    @endif
                 </div>
 
+                <!-- Column 3: Social -->
+                <div class="footer-column">
+                    <h4>REDES SOCIALES</h4>
+                    <div class="social-links">
+                        @if($empresa->facebook_url)
+                            <a href="{{ $empresa->facebook_url }}" target="_blank" aria-label="Facebook">
+                                <i class="bi bi-facebook"></i>
+                            </a>
+                        @endif
+                        @if($empresa->instagram_url)
+                            <a href="{{ $empresa->instagram_url }}" target="_blank" aria-label="Instagram">
+                                <i class="bi bi-instagram"></i>
+                            </a>
+                        @endif
+                        @if($empresa->twitter_url)
+                            <a href="{{ $empresa->twitter_url }}" target="_blank" aria-label="Twitter">
+                                <i class="bi bi-twitter-x"></i>
+                            </a>
+                        @endif
+                        @if($empresa->whatsapp)
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $empresa->whatsapp) }}" target="_blank" aria-label="WhatsApp">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Column 4: Contact -->
                 <div class="footer-column">
                     <h4>CONTACTO</h4>
                     <ul>
-                        <li>📍 Av. Principal 1234, Buenos Aires</li>
-                        <li>📞 +54 11 1234-5678</li>
-                        <li>✉️ info@sportstore.com</li>
-                        <li>🕐 Lun - Vie: 9:00 - 18:00</li>
+                        @if($empresa->telefono)
+                            <li>Tel: {{ $empresa->telefono }}</li>
+                        @endif
+                        @if($empresa->email)
+                            <li>Email: {{ $empresa->email }}</li>
+                        @endif
+                        @if($empresa->direccion)
+                            <li>{{ $empresa->direccion }}</li>
+                        @endif
                     </ul>
                 </div>
             </div>
 
+            <!-- Footer Logo -->
+            <div class="footer-logo-section">
+                <div class="footer-logo">{{ strtoupper($empresa->nombre) }}</div>
+            </div>
+
+            <!-- Footer Bottom -->
             <div class="footer-bottom">
-                <p>&copy; {{ date('Y') }} Sport Store. Todos los derechos reservados.</p>
+                <p>&copy; {{ date('Y') }} {{ $empresa->nombre }}. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <!-- Header Modals Script -->
+    <script>
+        // Menu Modal
+        const menuModal = document.getElementById('menuModal');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const openMenuBtn = document.getElementById('openMenuBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+        function openMenu() {
+            menuModal.classList.add('active');
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            menuModal.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        openMenuBtn.addEventListener('click', openMenu);
+        closeMenuBtn.addEventListener('click', closeMenu);
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // Search Modal
+        const searchModal = document.getElementById('searchModal');
+        const openSearchBtn = document.getElementById('openSearchBtn');
+        const closeSearchBtn = document.getElementById('closeSearchBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchSubmitBtn = document.getElementById('searchSubmitBtn');
+
+        function openSearch() {
+            searchModal.classList.add('active');
+            menuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+        }
+
+        function closeSearch() {
+            searchModal.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        openSearchBtn.addEventListener('click', openSearch);
+        closeSearchBtn.addEventListener('click', closeSearch);
+        menuOverlay.addEventListener('click', () => {
+            if (searchModal.classList.contains('active')) {
+                closeSearch();
+            }
+        });
+
+        searchSubmitBtn.addEventListener('click', function() {
+            const query = searchInput.value.trim();
+            if (query) {
+                window.location.href = "{{ route('tienda.categorias', $empresa->slug) }}?buscar=" + encodeURIComponent(query);
+            }
+        });
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchSubmitBtn.click();
+            }
+        });
+
+        // Cart Button
+        const cartBtn = document.getElementById('cartBtn');
+        cartBtn.addEventListener('click', function() {
+            window.location.href = "{{ route('tienda.carrito', $empresa->slug) }}";
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (menuModal.classList.contains('active')) {
+                    closeMenu();
+                }
+                if (searchModal.classList.contains('active')) {
+                    closeSearch();
+                }
+            }
+        });
+
+        // Update cart badge function (can be called from other pages)
+        window.updateCartBadge = function(count) {
+            const cartBadge = document.querySelector('.cart-count');
+            if (cartBadge) {
+                if (count > 0) {
+                    cartBadge.textContent = count;
+                    cartBadge.style.display = 'flex';
+                } else {
+                    cartBadge.style.display = 'none';
+                }
+            }
+        };
+    </script>
 
     @stack('scripts')
 </body>

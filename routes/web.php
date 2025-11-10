@@ -40,10 +40,18 @@ Route::get('/brasilia/producto/{slug?}', function ($slug = 'vestido-largo-lino')
     return view('tienda.brasilia_producto');
 })->name('tienda.brasilia.producto');
 
-// Ruta para el tema Sport (demo de tienda)
+// Rutas para el tema Sport (demo de tienda)
 Route::get('/sport', function () {
     return view('tienda.sport_index');
 })->name('tienda.sport');
+
+Route::get('/sport/categoria', function () {
+    return view('tienda.sport_categoria');
+})->name('tienda.sport.categoria');
+
+Route::get('/sport/producto/{slug?}', function ($slug = 'zapatillas-sporty') {
+    return view('tienda.sport_producto');
+})->name('tienda.sport.producto');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
