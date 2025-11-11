@@ -983,7 +983,7 @@
     <div class="banner-grid {{ $gridClass }}">
         @foreach($categoriasAleatorias as $index => $categoria)
         <div class="textbanner">
-            <a href="#">
+            <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}">
                 <div class="overlay">
                     @if($categoria->imagen)
                         <img src="{{ asset($categoria->imagen) }}" alt="{{ $categoria->nombre }}">
@@ -1330,21 +1330,19 @@
 @endif
 
 <!-- Categorías Animadas (solo texto, sin imágenes) -->
+@if($categorias && $categorias->count() > 0)
 <section class="section-categories-animated">
     <div class="categories-animated">
-        <a href="#" class="category-text">REPUESTOS</a>
-        <a href="#" class="category-text">INDUMENTARIA</a>
-        <a href="#" class="category-text">SKATES</a>
-        <a href="#" class="category-text">CALZADO</a>
-        <a href="#" class="category-text">ACCESORIOS</a>
+        @foreach($categorias as $categoria)
+        <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}" class="category-text">{{ strtoupper($categoria->nombre) }}</a>
+        @endforeach
         <!-- Duplicados para efecto infinito -->
-        <a href="#" class="category-text">REPUESTOS</a>
-        <a href="#" class="category-text">INDUMENTARIA</a>
-        <a href="#" class="category-text">SKATES</a>
-        <a href="#" class="category-text">CALZADO</a>
-        <a href="#" class="category-text">ACCESORIOS</a>
+        @foreach($categorias as $categoria)
+        <a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}" class="category-text">{{ strtoupper($categoria->nombre) }}</a>
+        @endforeach
     </div>
 </section>
+@endif
 
 <!-- Sección: Más Productos -->
 @if($productosDestacados && $productosDestacados->count() > 0)
