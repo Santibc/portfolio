@@ -12,6 +12,7 @@ class STTecnico extends Model
     protected $table = 'st_tecnicos';
 
     protected $fillable = [
+        'user_id',
         'codigo',
         'nombre_completo',
         'documento',
@@ -31,6 +32,11 @@ class STTecnico extends Model
     ];
 
     // Relaciones
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function ordenesServicio()
     {
         return $this->hasMany(STOrdenServicio::class, 'st_tecnico_id');

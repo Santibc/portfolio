@@ -431,7 +431,16 @@
                     <small class="text-muted">Ref: ${item.referencia}</small>
                     ${item.variante?`<br><small class="text-info">${item.variante}</small>`:''}
                     ${(mostrarPrecios && !isNaN(precioUnit))
-                      ?`<br><small>${precioUnit.toFixed(2)} c/u ${item.unidad_venta ? `<span class="text-muted">Und/V: ${item.unidad_venta}</span>` : ''}</small>`
+                      ?`<br><div class="input-group input-group-sm mt-1" style="width:150px">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control form-control-sm"
+                                 value="${precioUnit.toFixed(2)}"
+                                 onchange="actualizarPrecio(${i}, this.value)"
+                                 min="0" step="0.01"
+                                 style="font-size:0.8rem">
+                        </div>
+                        <small class="text-muted">c/u ${item.unidad_venta ? `- Und/V: ${item.unidad_venta}` : ''}</small>
+                        ${item.editado ? '<br><small class="badge bg-warning text-dark">Precio editado</small>' : ''}`
                       :''}
                   </div>
                   <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${i})">
@@ -445,7 +454,7 @@
                         onchange="actualizarCantidad(${i},this.value)">
                   <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidad(${i},1)">+</button>
                   ${mostrarPrecios
-                    ?`<span class="ms-auto">${subtotal.toFixed(2)}</span>`
+                    ?`<span class="ms-auto"><strong>$${subtotal.toFixed(2)}</strong></span>`
                     :''}
                 </div>
               </div>
@@ -472,15 +481,37 @@
       if(val>0){ carrito[i].cantidad=val; actualizarCarrito(); }
     };
 
-    function agregarAlCarrito(producto,cantidad,variante=null){
+    window.actualizarPrecio = (i, nuevoPrecio)=>{
+      const precio = parseFloat(nuevoPrecio);
+      if(!isNaN(precio) && precio >= 0) {
+        carrito[i].precio = precio;
+        carrito[i].editado = true;
+        if(!carrito[i].precio_original) {
+          carrito[i].precio_original = precio;
+        }
+        actualizarCarrito();
+      }
+    };
+
+    function agregarAlCarrito(producto, cantidad, variante=null, precioEditado=null){
       const precioRaw   = variante? variante.precio_final: producto.precio;
-      const precioUnit = parseFloat(precioRaw)||0;
+      const precioOriginal = parseFloat(precioRaw)||0;
+
+      // Usar precio editado si se proporciona, sino usar el precio original
+      const precioUnit = precioEditado !== null ? parseFloat(precioEditado) : precioOriginal;
+
       const idx = carrito.findIndex(it=>
         it.producto_id===producto.id &&
         it.variante_id === (variante?.id||null)
       );
       if(idx > -1){
         carrito[idx].cantidad += cantidad;
+        // Si se proporciona un precio editado, actualizar el precio
+        if(precioEditado !== null) {
+          carrito[idx].precio = precioUnit;
+          carrito[idx].precio_original = precioOriginal;
+          carrito[idx].editado = true;
+        }
       } else {
         carrito.push({
           producto_id: producto.id,
@@ -489,7 +520,9 @@
           nombre: producto.nombre,
           variante: variante? `${variante.talla||''} ${variante.color||''}`.trim():null,
           precio: precioUnit,
-          unidad_venta: producto.unidad_venta || '', // Agregamos la unidad de venta
+          precio_original: precioOriginal,
+          editado: precioEditado !== null,
+          unidad_venta: producto.unidad_venta || '',
           cantidad
         });
       }
@@ -500,21 +533,24 @@
       const cnt = parseInt($('#cantidadProducto').val())||0;
       if(cnt>0){
         const prod = window.productoActual || productosCargados[id];
-        
+
         // Verificar stock solo si se muestra Y se controla Y no permite sin stock
         if(mostrarStock && prod.stock_info && prod.stock_info.controla_stock && !prod.stock_info.permite_sin_stock) {
           if(!prod.stock_info.tiene_stock) {
             mostrarNotificacion('No hay stock disponible para este producto', 'warning');
             return;
           }
-          
+
           if(cnt > prod.stock_info.cantidad_disponible) {
             mostrarNotificacion(`Cantidad solicitada (${cnt}) excede el stock disponible (${prod.stock_info.cantidad_disponible})`, 'warning');
             return;
           }
         }
-        
-        agregarAlCarrito(prod,cnt);
+
+        // Capturar precio editado
+        const precioEditado = parseFloat($('#precioEditableProducto').val()) || null;
+
+        agregarAlCarrito(prod, cnt, null, precioEditado);
         $('#modalProducto').modal('hide');
         mostrarNotificacion('Producto agregado al carrito','success');
       }
@@ -771,7 +807,18 @@ function cargarProductos(page=1){
         // Precio
         if(mostrarPrecios){
           const raw=p.precio, num=parseFloat(raw);
-          if(raw!=null&&!isNaN(num)) html+=`<h5 class="text-primary">${num.toFixed(2)}</h5>`;
+          if(raw!=null&&!isNaN(num)) {
+            html+=`<div class="mb-3">
+              <label class="form-label text-muted"><small>Precio de Lista:</small></label>
+              <p class="mb-2 text-muted">$${num.toFixed(2)}</p>
+              <label class="form-label"><strong>Precio a Cotizar:</strong></label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="precioEditableProducto"
+                       value="${num.toFixed(2)}" min="0" step="0.01">
+              </div>
+            </div>`;
+          }
         }
         
         // Información de stock del producto principal
@@ -828,7 +875,7 @@ function cargarProductos(page=1){
         // Variantes o cantidad simple
         if(p.tiene_variantes&&p.variantes?.length){
           html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Variante</th><th>SKU</th>';
-          if(mostrarPrecios) html+='<th>Precio</th>';
+          if(mostrarPrecios) html+='<th>Precio Lista</th><th>Precio a Cotizar</th>';
           if(mostrarStock) html+='<th>Stock</th>';
           html+='<th>Cantidad</th></tr></thead><tbody>';
           
@@ -837,7 +884,17 @@ function cargarProductos(page=1){
             html+=`<td>${v.nombre_variante||"Estándar"}</td><td><small>${v.sku}</small></td>`;
             
             // Precio de variante
-            if(mostrarPrecios) html+=`<td>${(v.precio_final||0).toFixed(2)}</td>`;
+            if(mostrarPrecios) {
+              const precioVariante = (v.precio_final||0).toFixed(2);
+              html+=`<td class="text-muted">$${precioVariante}</td>`;
+              html+=`<td><div class="input-group input-group-sm">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control variante-precio"
+                       data-variante-index="${i}"
+                       value="${precioVariante}"
+                       min="0" step="0.01">
+              </div></td>`;
+            }
             
             // Stock de variante
             if(mostrarStock && v.stock_info) {
@@ -945,21 +1002,24 @@ function cargarProductos(page=1){
         const cnt=parseInt($(this).val())||0;
         if(cnt>0){
           const idx=$(this).data('variante-index'), v=prod.variantes[idx];
-          
+
           // Verificar stock solo si se muestra Y se controla Y no permite sin stock
           if(mostrarStock && v.stock_info && v.stock_info.controla_stock && !v.stock_info.permite_sin_stock) {
             if(!v.stock_info.tiene_stock) {
               mostrarNotificacion(`No hay stock disponible para la variante: ${v.nombre_variante}`, 'warning');
               return;
             }
-            
+
             if(cnt > v.stock_info.cantidad_disponible) {
               mostrarNotificacion(`Cantidad solicitada (${cnt}) excede el stock disponible (${v.stock_info.cantidad_disponible}) para: ${v.nombre_variante}`, 'warning');
               return;
             }
           }
-          
-          agregarAlCarrito(prod,cnt,v);
+
+          // Capturar precio editado de la variante
+          const precioEditado = parseFloat($(`.variante-precio[data-variante-index="${idx}"]`).val()) || null;
+
+          agregarAlCarrito(prod, cnt, v, precioEditado);
           ok=true;
         }
       });
@@ -979,7 +1039,13 @@ function cargarProductos(page=1){
     $('#btnConfirmarSolicitud').click(()=>{
       const notas = $('#notasSolicitud').val();
       $('#loadingOverlay').show();
-      const items = carrito.map(i=>({producto_id:i.producto_id,variante_id:i.variante_id,cantidad:i.cantidad}));
+      const items = carrito.map(i=>({
+        producto_id: i.producto_id,
+        variante_id: i.variante_id,
+        cantidad: i.cantidad,
+        precio_manual: i.editado ? i.precio : null,
+        precio_original: i.precio_original || null
+      }));
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,
         enlace_token:enlaceToken,items,notas_cliente:notas

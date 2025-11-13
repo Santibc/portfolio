@@ -15,14 +15,14 @@
             <span>Inicio</span>
         </a>
 
-        {{-- Servicio Técnico (para admin) --}}
-        @if(auth()->user()->hasRole('admin'))
+        {{-- Servicio Técnico (para admin y técnico) --}}
+        @if(auth()->user()->hasRole(['admin', 'tecnico']))
             <div class="nav-item mb-2">
                 <a href="#" class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('st.*') ? 'active' : 'text-dark' }}"
                    data-bs-toggle="collapse" data-bs-target="#submenuServicioTecnico"
                    aria-expanded="{{ request()->routeIs('st.*') ? 'true' : 'false' }}">
                     <i class="bi bi-tools"></i>
-                    <span>Servicio Técnico</span>
+                    <span>Servicio</span>
                     <i class="bi bi-chevron-down ms-auto"></i>
                 </a>
                 <div class="collapse {{ request()->routeIs('st.*') ? 'show' : '' }}" id="submenuServicioTecnico">
@@ -63,15 +63,15 @@
         @endif
 
         @if (auth()->user()->getRoleNames()->first() == 'admin')
+            <a href="{{ route('dashboard.metricas') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('dashboard.metricas') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Métricas</span>
+            </a>
             <a href="/usuarios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-people"></i>
                 <span>Usuarios</span>
-            </a>
-            <a href="/clientes"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-person-badge"></i>
-                <span>Clientes</span>
             </a>
             <a href="/categorias"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
@@ -83,6 +83,20 @@
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
+            <a href="{{ route('solicitudes') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-clipboard-data"></i>
+                <span>Solicitudes</span>
+            </a>
+        @endif
+
+        {{-- Clientes (para vendedor y admin) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin']))
+            <a href="/clientes"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-person-badge"></i>
+                <span>Clientes</span>
+            </a>
         @endif
 
         {{-- Catálogo (para vendedor y admin) --}}
@@ -91,11 +105,6 @@
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-cart"></i>
                 <span>Catálogo</span>
-            </a>
-            <a href="{{ route('solicitudes') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-clipboard-data"></i>
-                <span>Solicitudes</span>
             </a>
             <a href="{{ route('enlaces') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">

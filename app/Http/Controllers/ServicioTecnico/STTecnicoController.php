@@ -4,7 +4,10 @@ namespace App\Http\Controllers\ServicioTecnico;
 
 use App\Http\Controllers\Controller;
 use App\Models\STTecnico;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
 
 class STTecnicoController extends Controller
@@ -96,7 +99,7 @@ class STTecnicoController extends Controller
             'codigo' => 'required|string|max:20|unique:st_tecnicos,codigo',
             'nombre_completo' => 'required|string|max:255',
             'documento' => 'required|string|max:50|unique:st_tecnicos,documento',
-            'email' => 'required|email|max:255|unique:st_tecnicos,email',
+            'email' => 'required|email|max:255|unique:st_tecnicos,email|unique:users,email',
             'telefono' => 'required|string|max:20',
             'celular' => 'required|string|max:20',
             'especialidad' => 'nullable|string|max:255',
@@ -106,10 +109,34 @@ class STTecnicoController extends Controller
 
         $validated['activo'] = true;
 
-        STTecnico::create($validated);
+        DB::beginTransaction();
 
-        return redirect()->route('st.tecnicos.index')
-            ->with('success', 'Técnico registrado exitosamente');
+        try {
+            // Crear el usuario primero
+            $user = User::create([
+                'name' => $validated['nombre_completo'],
+                'email' => $validated['email'],
+                'password' => Hash::make('12345678'), // Contraseña por defecto
+            ]);
+
+            // Asignar el rol de técnico
+            $user->assignRole('tecnico');
+
+            // Crear el técnico con el user_id
+            $validated['user_id'] = $user->id;
+            STTecnico::create($validated);
+
+            DB::commit();
+
+            return redirect()->route('st.tecnicos.index')
+                ->with('success', 'Técnico registrado exitosamente. Usuario creado con contraseña: 12345678');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al crear el técnico: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -160,10 +187,34 @@ class STTecnicoController extends Controller
             'activo' => 'boolean',
         ]);
 
-        $tecnico->update($validated);
+        DB::beginTransaction();
 
-        return redirect()->route('st.tecnicos.index')
-            ->with('success', 'Técnico actualizado exitosamente');
+        try {
+            // Actualizar el técnico
+            $tecnico->update($validated);
+
+            // Si el técnico tiene un usuario asociado, actualizar sus datos
+            if ($tecnico->user) {
+                $tecnico->user->update([
+                    'name' => $validated['nombre_completo'],
+                    'email' => $validated['email'],
+                ]);
+
+                // Si se desactiva el técnico, también desactivar su usuario (si quieres)
+                // Nota: Laravel no tiene campo 'active' por defecto, esto depende de tu implementación
+            }
+
+            DB::commit();
+
+            return redirect()->route('st.tecnicos.index')
+                ->with('success', 'Técnico actualizado exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al actualizar el técnico: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -182,9 +233,26 @@ class STTecnicoController extends Controller
                 ->with('error', 'No se puede eliminar el técnico porque tiene órdenes de servicio asignadas');
         }
 
-        $tecnico->delete();
+        DB::beginTransaction();
 
-        return redirect()->route('st.tecnicos.index')
-            ->with('success', 'Técnico eliminado exitosamente');
+        try {
+            // Eliminar el usuario asociado si existe
+            if ($tecnico->user) {
+                $tecnico->user->delete();
+            }
+
+            // Eliminar el técnico
+            $tecnico->delete();
+
+            DB::commit();
+
+            return redirect()->route('st.tecnicos.index')
+                ->with('success', 'Técnico eliminado exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('st.tecnicos.index')
+                ->with('error', 'Error al eliminar el técnico: ' . $e->getMessage());
+        }
     }
 }

@@ -18,9 +18,27 @@
         </div>
       @endif
 
+      {{-- Alerta de solicitudes antiguas --}}
+      @if(isset($totalAntiguas) && $totalAntiguas > 0)
+        <div class="alert alert-warning alert-dismissible fade show mb-4 d-flex align-items-center" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+          <div>
+            <strong>Atención:</strong> Hay <strong>{{ $totalAntiguas }}</strong> {{ $totalAntiguas === 1 ? 'solicitud pendiente' : 'solicitudes pendientes' }} con más de 3 días sin procesar.
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
-          <h4 class="text-2xl font-semibold mb-4">Listado de Solicitudes</h4>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="text-2xl font-semibold mb-0">Listado de Solicitudes</h4>
+            @if(isset($totalAntiguas) && $totalAntiguas > 0)
+              <span class="badge bg-danger fs-6">
+                <i class="bi bi-clock-history"></i> {{ $totalAntiguas }} pendientes >3 días
+              </span>
+            @endif
+          </div>
 
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
@@ -41,6 +59,24 @@
       </div>
     </div>
   </div>
+
+  @push('styles')
+  <style>
+    /* Estilo para solicitudes antiguas (más de 3 días pendientes) */
+    tr.solicitud-antigua {
+      background-color: #ffebee !important;
+    }
+
+    tr.solicitud-antigua:hover {
+      background-color: #ffcdd2 !important;
+    }
+
+    /* Asegurar que el color se aplique a todas las celdas */
+    tr.solicitud-antigua td {
+      background-color: inherit !important;
+    }
+  </style>
+  @endpush
 
   @push('scripts')
   <script>
@@ -93,6 +129,19 @@
           }
         },
         {
+          text:'<i class="bi bi-funnel"></i> Rechazadas',
+          className:'btn btn-outline-danger',
+          action: function(e, dt, node, config) {
+            if ($(node).hasClass('active')) {
+              $(node).removeClass('active');
+              dt.column(7).search('').draw();
+            } else {
+              $(node).addClass('active');
+              dt.column(7).search('Rechazada').draw();
+            }
+          }
+        },
+        {
           text:'<i class="bi bi-file-earmark-excel"></i> Exportar Todo',
           className:'btn btn-outline-info',
           action: function() {
@@ -139,20 +188,20 @@
 
   function confirmarAplicar(solicitudId) {
     const observaciones = $('#observacionesAdmin').val();
-    
+
     // Mostrar loading
     $('#modalDetalleContent').append(
       '<div class="loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;">' +
       '<div class="spinner-border" role="status"></div></div>'
     );
-    
+
     $.post(`/solicitudes/${solicitudId}/aplicar`, {
       _token: '{{ csrf_token() }}',
       observaciones: observaciones
     }, function(response) {
       if (response.success) {
         $('#modalDetalle').modal('hide');
-        
+
         // Mostrar mensaje de éxito
         const alert = `
           <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -161,13 +210,56 @@
           </div>
         `;
         $('.max-w-7xl').prepend(alert);
-        
+
         // Recargar tabla
         $('#solicitudes-table').DataTable().ajax.reload();
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
       alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al aplicar la solicitud'));
+    });
+  }
+
+  function confirmarRechazo(solicitudId) {
+    const motivoRechazo = $('#observacionesAdmin').val();
+
+    if (!motivoRechazo || motivoRechazo.trim() === '') {
+      alert('Por favor ingrese el motivo del rechazo en el campo de observaciones');
+      return;
+    }
+
+    if (!confirm('¿Está seguro de rechazar esta solicitud? Se enviará un correo al cliente con el motivo del rechazo.')) {
+      return;
+    }
+
+    // Mostrar loading
+    $('#modalDetalleContent').append(
+      '<div class="loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;">' +
+      '<div class="spinner-border text-danger" role="status"></div></div>'
+    );
+
+    $.post(`/solicitudes/${solicitudId}/rechazar`, {
+      _token: '{{ csrf_token() }}',
+      motivo_rechazo: motivoRechazo
+    }, function(response) {
+      if (response.success) {
+        $('#modalDetalle').modal('hide');
+
+        // Mostrar mensaje de éxito
+        const alert = `
+          <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            ${response.mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        `;
+        $('.max-w-7xl').prepend(alert);
+
+        // Recargar tabla
+        $('#solicitudes-table').DataTable().ajax.reload();
+      }
+    }).fail(function(xhr) {
+      $('.loading-overlay').remove();
+      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al rechazar la solicitud'));
     });
   }
   
@@ -224,6 +316,7 @@
                 <option value="">Todos los estados</option>
                 <option value="pendiente">Solo Pendientes</option>
                 <option value="aplicada">Solo Aplicadas</option>
+                <option value="rechazada">Solo Rechazadas</option>
               </select>
             </div>
             

@@ -44,29 +44,19 @@ class CatalogoController extends Controller
     {
         // Solo vendedores autenticados
         $this->middleware('auth');
-        
+
         $user = Auth::user();
-        
-        // Si es vendedor, mostrar selector de clientes
-        if ($user->hasRole('vendedor')) {
-            $clientes = Cliente::where('vendedor_id', $user->id)
-                              ->activos()
-                              ->orderBy('nombre_contacto')
-                              ->get();
-                              
-            return view('catalogo.seleccionar_cliente', compact('clientes'));
-        }
-        
-        // Si es admin, puede ver todos los clientes
-        if ($user->hasRole('admin')) {
+
+        // Tanto vendedores como admin pueden ver todos los clientes
+        if ($user->hasRole(['vendedor', 'admin'])) {
             $clientes = Cliente::activos()
                               ->with('vendedor')
                               ->orderBy('nombre_contacto')
                               ->get();
-                              
+
             return view('catalogo.seleccionar_cliente', compact('clientes'));
         }
-        
+
         return redirect()->route('dashboard')->with('error', 'No tiene permisos para acceder al catálogo.');
     }
     
@@ -76,23 +66,16 @@ class CatalogoController extends Controller
     public function mostrarParaCliente(Request $request)
     {
         $this->middleware('auth');
-        
+
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id'
         ]);
-        
-        $user = Auth::user();
+
         $cliente = Cliente::findOrFail($request->cliente_id);
-        
-        // Verificar permisos
-        if ($user->hasRole('vendedor') && $cliente->vendedor_id !== $user->id) {
-            return redirect()->route('catalogo')
-                           ->with('error', 'No tiene permisos para cotizar a este cliente.');
-        }
-        
+
         $categorias = Categoria::activas()->get();
         $enlace = null; // No hay enlace en el flujo B
-        
+
         return view('catalogo.index', compact('cliente', 'categorias', 'enlace'));
     }
     
@@ -408,6 +391,8 @@ class CatalogoController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
+            'items.*.precio_manual' => 'nullable|numeric|min:0',
+            'items.*.precio_original' => 'nullable|numeric|min:0',
             'notas_cliente' => 'nullable|string|max:1000'
         ]);
         
@@ -427,13 +412,8 @@ class CatalogoController extends Controller
                 $cliente = $enlace->cliente;
             }
             elseif ($request->input('cliente_id') !== null) {
-                // Flujo B: Vendedor
+                // Flujo B: Vendedor/Admin
                 $cliente = Cliente::findOrFail($request->cliente_id);
-
-                // Verificar permisos
-                if (Auth::user()->hasRole('vendedor') && $cliente->vendedor_id !== Auth::id()) {
-                    throw new \Exception('No tiene permisos para crear solicitudes para este cliente.');
-                }
             }
             else {
                 throw new \Exception('No se pudo identificar el cliente.');
@@ -443,6 +423,7 @@ class CatalogoController extends Controller
             $solicitud = new SolicitudCotizacion([
                 'cliente_id' => $cliente->id,
                 'enlace_acceso_id' => $enlace ? $enlace->id : null,
+                'created_by' => Auth::check() ? Auth::id() : null,
                 'estado' => 'pendiente',
                 'notas_cliente' => $request->notas_cliente
             ]);
@@ -464,21 +445,38 @@ class CatalogoController extends Controller
                 
                 // Determinar precio
                 $precioUnitario = 0;
+                $precioOriginal = 0;
+                $precioEditado = false;
                 $infoVariante = null;
-                
-                if (!empty($item['variante_id'])) {
-                    // Producto con variante
-                    $variante = $producto->variantes()->findOrFail($item['variante_id']);
-                    $precioUnitario = $variante->getPrecioFinal($listaPrecioId) ?? 0;
-                    $infoVariante = $variante->nombre_variante;
+
+                // Si se proporciona precio manual, usarlo
+                if (!empty($item['precio_manual'])) {
+                    $precioUnitario = floatval($item['precio_manual']);
+                    $precioEditado = true;
+
+                    // Obtener precio original de la BD para auditoría
+                    if (!empty($item['variante_id'])) {
+                        $variante = $producto->variantes()->findOrFail($item['variante_id']);
+                        $precioOriginal = $variante->getPrecioFinal($listaPrecioId) ?? 0;
+                        $infoVariante = $variante->nombre_variante;
+                    } else {
+                        $precioOriginal = $producto->getPrecioPorLista($listaPrecioId) ?? 0;
+                    }
                 } else {
-                    // Producto sin variante
-                    $precioUnitario = $producto->getPrecioPorLista($listaPrecioId) ?? 0;
+                    // Flujo normal: obtener precio de BD
+                    if (!empty($item['variante_id'])) {
+                        $variante = $producto->variantes()->findOrFail($item['variante_id']);
+                        $precioUnitario = $variante->getPrecioFinal($listaPrecioId) ?? 0;
+                        $infoVariante = $variante->nombre_variante;
+                    } else {
+                        $precioUnitario = $producto->getPrecioPorLista($listaPrecioId) ?? 0;
+                    }
+                    $precioOriginal = $precioUnitario;
                 }
-                
+
                 $precioTotal = $precioUnitario * $item['cantidad'];
                 $montoTotal += $precioTotal;
-                
+
                 // Crear item
                 ItemSolicitudCotizacion::create([
                     'solicitud_cotizacion_id' => $solicitud->id,
@@ -487,6 +485,8 @@ class CatalogoController extends Controller
                     'cantidad' => $item['cantidad'],
                     'precio_unitario' => $precioUnitario,
                     'precio_total' => $precioTotal,
+                    'precio_editado_manualmente' => $precioEditado,
+                    'precio_original' => $precioOriginal,
                     'referencia_producto' => $producto->referencia,
                     'nombre_producto' => $producto->nombre,
                     'marca_producto' => $producto->marca,

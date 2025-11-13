@@ -26,27 +26,30 @@ class SolicitudController extends Controller
     
     public function index(Request $request)
     {
+        // Verificar que el usuario sea admin
+        $user = Auth::user();
+        if (!$user->hasRole('admin')) {
+            abort(403, 'No tienes permisos para acceder a este módulo.');
+        }
+
         if ($request->ajax()) {
-            $user = Auth::user();
-            
-            $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'items'])
+            $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
                                        ->select('solicitudes_cotizacion.*');
-            
-            // Filtrar por rol
-            if ($user->hasRole('vendedor')) {
-                // Vendedor solo ve solicitudes de sus clientes
-                $query->whereHas('cliente', function($q) use ($user) {
-                    $q->where('vendedor_id', $user->id);
-                });
-            }
-            // Admin ve todas las solicitudes (no se aplica filtro adicional)
-            
+
+            // Admin ve todas las solicitudes
+
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function($s) {
                     return $s->cliente->nombre_contacto;
                 })
                 ->addColumn('vendedor', function($s) {
-                    return $s->cliente->vendedor?->name ?? 'Sin vendedor';
+                    // Mostrar quién creó la solicitud, o el vendedor del cliente si no hay creador
+                    if ($s->createdBy) {
+                        return $s->createdBy->name;
+                    } elseif ($s->cliente->vendedor) {
+                        return $s->cliente->vendedor->name . ' (cliente)';
+                    }
+                    return 'Sin asignar';
                 })
                 ->addColumn('fecha', function($s) {
                     return $s->created_at->format('d/m/Y H:i');
@@ -58,35 +61,35 @@ class SolicitudController extends Controller
                     return '$' . number_format($s->monto_total, 2);
                 })
                 ->addColumn('estado_badge', function($s) {
-                    $class = $s->estado === 'pendiente' ? 'warning' : 'success';
-                    $text = $s->estado === 'pendiente' ? 'Pendiente' : 'Aplicada';
+                    if ($s->estado === 'pendiente') {
+                        $class = 'warning';
+                        $text = 'Pendiente';
+                    } elseif ($s->estado === 'aplicada') {
+                        $class = 'success';
+                        $text = 'Aplicada';
+                    } else {
+                        $class = 'danger';
+                        $text = 'Rechazada';
+                    }
                     return '<span class="badge bg-'.$class.'">'.$text.'</span>';
                 })
                 ->addColumn('action', function($s) {
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
-                    
-                    // Botón ver detalle
-                    $buttons .= '<button type="button" class="btn btn-outline-info btn-sm" 
+
+                    // Botón ver detalle (desde aquí se puede aprobar o rechazar)
+                    $buttons .= '<button type="button" class="btn btn-outline-info btn-sm"
                                         title="Ver Detalle" onclick="verDetalle('.$s->id.')">
                                    <i class="bi bi-eye"></i>
                                 </button>';
-                    
-                    // Botón aplicar (solo si está pendiente)
-                    if ($s->estado === 'pendiente') {
-                        $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" 
-                                            title="Marcar como Aplicada" onclick="marcarAplicada('.$s->id.')">
-                                       <i class="bi bi-check-circle"></i>
-                                    </button>';
-                    }
-                    
+
                     // Botón descargar PDF
-                    $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm" 
+                    $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm"
                                     title="Descargar PDF" target="_blank">
                                    <i class="bi bi-file-earmark-pdf"></i>
                                 </a>';
-                    
+
                     $buttons .= '</div>';
-                    
+
                     return $buttons;
                 })
                 ->filterColumn('cliente_nombre', function($query, $keyword) {
@@ -99,18 +102,32 @@ class SolicitudController extends Controller
                         $q->where('name', 'like', "%{$keyword}%");
                     });
                 })
+                ->setRowClass(function($s) {
+                    // Verificar si es pendiente y tiene más de 3 días
+                    if ($s->estado === 'pendiente') {
+                        $diasDiferencia = now()->diffInDays($s->created_at);
+                        if ($diasDiferencia > 3) {
+                            return 'solicitud-antigua';
+                        }
+                    }
+                    return '';
+                })
                 ->rawColumns(['estado_badge', 'action'])
                 ->make(true);
         }
-        
-        return view('solicitudes.solicitudes_index');
+
+        // Contar solicitudes pendientes con más de 3 días (solo admin)
+        $totalAntiguas = SolicitudCotizacion::where('estado', 'pendiente')
+            ->where('created_at', '<', now()->subDays(3))
+            ->count();
+
+        return view('solicitudes.solicitudes_index', compact('totalAntiguas'));
     }
     
     public function detalle(SolicitudCotizacion $solicitud)
     {
-        // Verificar permisos
-        $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        // Verificar que sea admin
+        if (!Auth::user()->hasRole('admin')) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
         
@@ -138,8 +155,10 @@ class SolicitudController extends Controller
         $html .= '<tr><td><strong>Estado:</strong></td><td>';
         if ($solicitud->estado === 'pendiente') {
             $html .= '<span class="badge bg-warning">Pendiente</span>';
-        } else {
+        } elseif ($solicitud->estado === 'aplicada') {
             $html .= '<span class="badge bg-success">Aplicada</span>';
+        } else {
+            $html .= '<span class="badge bg-danger">Rechazada</span>';
         }
         $html .= '</td></tr>';
         
@@ -153,7 +172,12 @@ class SolicitudController extends Controller
             $html .= '<tr><td><strong>Aplicada por:</strong></td><td>' . $solicitud->aplicadaPor?->name . '</td></tr>';
             $html .= '<tr><td><strong>Fecha aplicación:</strong></td><td>' . $solicitud->aplicada_en->format('d/m/Y H:i') . '</td></tr>';
         }
-        
+
+        if ($solicitud->estado === 'rechazada') {
+            $html .= '<tr><td><strong>Rechazada por:</strong></td><td>' . $solicitud->rechazadaPor?->name . '</td></tr>';
+            $html .= '<tr><td><strong>Fecha rechazo:</strong></td><td>' . $solicitud->rechazada_en->format('d/m/Y H:i') . '</td></tr>';
+        }
+
         $html .= '</table>';
         $html .= '</div>';
         
@@ -222,28 +246,46 @@ class SolicitudController extends Controller
             $html .= '<div class="alert alert-secondary">' . nl2br(e($solicitud->observaciones_admin)) . '</div>';
             $html .= '</div>';
         }
-        
+
+        // Motivo de rechazo (si está rechazada)
+        if ($solicitud->estado === 'rechazada' && $solicitud->motivo_rechazo) {
+            $html .= '<div class="col-12 mt-3">';
+            $html .= '<h6>Motivo del Rechazo</h6>';
+            $html .= '<div class="alert alert-warning">' . nl2br(e($solicitud->motivo_rechazo)) . '</div>';
+            $html .= '</div>';
+        }
+
         // Campo de observaciones si está pendiente
         if ($solicitud->estado === 'pendiente') {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
-            $html .= '<label class="form-label">Observaciones del Administrador</label>';
-            $html .= '<textarea class="form-control" id="observacionesAdmin" rows="3" 
-                              placeholder="Ingrese cualquier observación sobre esta solicitud..."></textarea>';
+            $html .= '<label class="form-label">Observaciones del Administrador / Motivo de Rechazo</label>';
+            $html .= '<textarea class="form-control" id="observacionesAdmin" rows="3"
+                              placeholder="Ingrese observaciones si va a aprobar, o motivo detallado si va a rechazar..."></textarea>';
+            $html .= '<small class="text-muted">Este campo se usará como observaciones si aprueba, o como motivo de rechazo si rechaza.</small>';
             $html .= '</div>';
             $html .= '<div class="mb-3">';
             $html .= '<div class="form-check">';
             $html .= '<input class="form-check-input" type="checkbox" id="procesarStock" checked>';
             $html .= '<label class="form-check-label" for="procesarStock">';
-            $html .= '<strong>Procesar Stock:</strong> Descontar automáticamente del inventario';
+            $html .= '<strong>Procesar Stock:</strong> Descontar automáticamente del inventario (solo al aprobar)';
             $html .= '</label>';
             $html .= '</div>';
             $html .= '<small class="text-muted">Si está marcado, se descontará el stock de los productos que lo controlen.</small>';
             $html .= '</div>';
+            $html .= '<div class="row g-2">';
+            $html .= '<div class="col-md-6">';
             $html .= '<button type="button" class="btn btn-success w-100" onclick="confirmarAplicar(' . $solicitud->id . ')">
                         <i class="bi bi-check-circle"></i> Marcar como Aplicada
                       </button>';
+            $html .= '</div>';
+            $html .= '<div class="col-md-6">';
+            $html .= '<button type="button" class="btn btn-danger w-100" onclick="confirmarRechazo(' . $solicitud->id . ')">
+                        <i class="bi bi-x-circle"></i> Rechazar Solicitud
+                      </button>';
+            $html .= '</div>';
+            $html .= '</div>';
             $html .= '</div>';
         }
         
@@ -298,9 +340,8 @@ class SolicitudController extends Controller
     
     public function aplicar(Request $request, SolicitudCotizacion $solicitud)
     {
-        // Verificar permisos
-        $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        // Verificar que sea admin
+        if (!Auth::user()->hasRole('admin')) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
@@ -403,7 +444,77 @@ class SolicitudController extends Controller
             ], 500);
         }
     }
-    
+
+    /**
+     * Rechazar solicitud de cotización
+     */
+    public function rechazar(Request $request, SolicitudCotizacion $solicitud)
+    {
+        // Verificar que sea admin
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para rechazar esta solicitud'
+            ], 403);
+        }
+
+        $user = Auth::user();
+
+        // Verificar que esté pendiente
+        if ($solicitud->estado !== 'pendiente') {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Esta solicitud ya fue procesada'
+            ], 400);
+        }
+
+        $request->validate([
+            'motivo_rechazo' => 'required|string|max:1000'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Marcar como rechazada
+            $solicitud->marcarComoRechazada($user->id, $request->motivo_rechazo);
+
+            // Cargar relaciones necesarias para el email
+            $solicitud->load([
+                'cliente',
+                'cliente.vendedor',
+                'items.producto',
+                'rechazadaPor'
+            ]);
+
+            // Enviar email de notificación de rechazo
+            try {
+                Mail::to($solicitud->cliente->email)
+                    ->send(new \App\Mail\SolicitudRechazada($solicitud));
+
+                $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
+            } catch (\Exception $e) {
+                // Log del error pero no fallar el rechazo
+                Log::error('Error al enviar email de solicitud rechazada: ' . $e->getMessage());
+                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Solicitud rechazada exitosamente.' . $mensajeEmail
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al rechazar la solicitud: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Procesar stock de un item individual
      */
@@ -506,9 +617,8 @@ class SolicitudController extends Controller
      */
     public function descargarPdf(SolicitudCotizacion $solicitud)
     {
-        // Verificar permisos
-        $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        // Verificar que sea admin
+        if (!Auth::user()->hasRole('admin')) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
         
@@ -534,22 +644,19 @@ class SolicitudController extends Controller
      */
     public function exportarExcel(Request $request)
     {
-        $user = Auth::user();
-        
-        // Aplicar filtros según el rol
+        // Verificar que sea admin
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'No tiene permisos para exportar solicitudes');
+        }
+
+        // Aplicar filtros
         $query = SolicitudCotizacion::with([
-            'cliente', 
-            'cliente.vendedor', 
+            'cliente',
+            'cliente.vendedor',
             'items.producto',
             'items.varianteProducto',
             'aplicadaPor'
         ]);
-        
-        if ($user->hasRole('vendedor')) {
-            $query->whereHas('cliente', function($q) use ($user) {
-                $q->where('vendedor_id', $user->id);
-            });
-        }
         
         // Filtros opcionales
         if ($request->has('estado') && $request->estado) {

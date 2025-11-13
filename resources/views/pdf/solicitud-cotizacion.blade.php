@@ -177,7 +177,13 @@
     </div>
     
     <div class="watermark">
-        {{ $solicitud->estado === 'aplicada' ? 'CONFIRMADA' : 'PENDIENTE' }}
+        @if($solicitud->estado === 'aplicada')
+            CONFIRMADA
+        @elseif($solicitud->estado === 'rechazada')
+            RECHAZADA
+        @else
+            PENDIENTE
+        @endif
     </div>
     
     <div class="content">
@@ -218,9 +224,19 @@
                         <span class="info-label">Fecha de Solicitud:</span> {{ $solicitud->created_at->format('d/m/Y H:i') }}
                     </div>
                     <div class="info-col">
-                        <span class="info-label">Estado:</span> 
-                        <span class="badge {{ $solicitud->estado === 'aplicada' ? 'badge-success' : 'badge-warning' }}">
-                            {{ $solicitud->estado === 'aplicada' ? 'CONFIRMADA' : 'PENDIENTE' }}
+                        <span class="info-label">Estado:</span>
+                        <span class="badge
+                            @if($solicitud->estado === 'aplicada') badge-success
+                            @elseif($solicitud->estado === 'rechazada') badge-danger
+                            @else badge-warning
+                            @endif">
+                            @if($solicitud->estado === 'aplicada')
+                                CONFIRMADA
+                            @elseif($solicitud->estado === 'rechazada')
+                                RECHAZADA
+                            @else
+                                PENDIENTE
+                            @endif
                         </span>
                     </div>
                 </div>
@@ -231,6 +247,15 @@
                     </div>
                     <div class="info-col">
                         <span class="info-label">Procesada por:</span> {{ $solicitud->aplicadaPor->name }}
+                    </div>
+                </div>
+                @elseif($solicitud->estado === 'rechazada')
+                <div class="info-row">
+                    <div class="info-col">
+                        <span class="info-label">Fecha de Rechazo:</span> {{ $solicitud->rechazada_en->format('d/m/Y H:i') }}
+                    </div>
+                    <div class="info-col">
+                        <span class="info-label">Rechazada por:</span> {{ $solicitud->rechazadaPor->name }}
                     </div>
                 </div>
                 @endif
@@ -303,6 +328,13 @@
         <div class="notes-box">
             <h3 style="margin-top: 0;">Observaciones del Vendedor:</h3>
             <p>{{ $solicitud->observaciones_admin }}</p>
+        </div>
+        @endif
+
+        @if($solicitud->estado === 'rechazada' && $solicitud->motivo_rechazo)
+        <div class="notes-box" style="background-color: #fff3cd; border-left: 4px solid #ffc107;">
+            <h3 style="margin-top: 0; color: #856404;">Motivo del Rechazo:</h3>
+            <p style="color: #856404;">{{ $solicitud->motivo_rechazo }}</p>
         </div>
         @endif
     </div>

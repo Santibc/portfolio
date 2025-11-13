@@ -16,17 +16,22 @@ class SolicitudCotizacion extends Model
         'numero_solicitud',
         'cliente_id',
         'enlace_acceso_id',
+        'created_by',
         'estado',
         'monto_total',
         'notas_cliente',
         'observaciones_admin',
+        'motivo_rechazo',
         'aplicada_en',
-        'aplicada_por'
+        'aplicada_por',
+        'rechazada_en',
+        'rechazada_por'
     ];
 
     protected $casts = [
         'monto_total' => 'decimal:2',
         'aplicada_en' => 'datetime',
+        'rechazada_en' => 'datetime',
     ];
 
     public function cliente()
@@ -44,9 +49,19 @@ class SolicitudCotizacion extends Model
         return $this->hasMany(ItemSolicitudCotizacion::class, 'solicitud_cotizacion_id');
     }
 
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function aplicadaPor()
     {
         return $this->belongsTo(User::class, 'aplicada_por');
+    }
+
+    public function rechazadaPor()
+    {
+        return $this->belongsTo(User::class, 'rechazada_por');
     }
 
     public function getTotalItemsAttribute()
@@ -71,6 +86,16 @@ class SolicitudCotizacion extends Model
         ]);
     }
 
+    public function marcarComoRechazada($usuarioId, $motivoRechazo)
+    {
+        $this->update([
+            'estado' => 'rechazada',
+            'rechazada_en' => now(),
+            'rechazada_por' => $usuarioId,
+            'motivo_rechazo' => $motivoRechazo
+        ]);
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -90,6 +115,11 @@ class SolicitudCotizacion extends Model
     public function scopeAplicadas($query)
     {
         return $query->where('estado', 'aplicada');
+    }
+
+    public function scopeRechazadas($query)
+    {
+        return $query->where('estado', 'rechazada');
     }
 
     public function scopePorCliente($query, $clienteId)

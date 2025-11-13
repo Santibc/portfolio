@@ -18,6 +18,8 @@ class ItemSolicitudCotizacion extends Model
         'cantidad',
         'precio_unitario',
         'precio_total',
+        'precio_editado_manualmente',
+        'precio_original',
         'referencia_producto',
         'nombre_producto',
         'marca_producto',
@@ -27,6 +29,8 @@ class ItemSolicitudCotizacion extends Model
     protected $casts = [
         'precio_unitario' => 'decimal:2',
         'precio_total' => 'decimal:2',
+        'precio_original' => 'decimal:2',
+        'precio_editado_manualmente' => 'boolean',
     ];
 
     public function solicitudCotizacion()

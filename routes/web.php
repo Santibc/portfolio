@@ -29,6 +29,11 @@ Route::redirect('/', '/login'); // 302 por defecto
 
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 
+// Dashboard de Métricas (solo admin)
+Route::get('/dashboard-metricas', [App\Http\Controllers\DashboardMetricasController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard.metricas');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -113,6 +118,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
+    Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
 });
 
 
