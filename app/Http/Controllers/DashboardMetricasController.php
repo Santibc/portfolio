@@ -43,7 +43,17 @@ class DashboardMetricasController extends Controller
 
         // 2. Valor cotizado por asesor comercial (usuario que creó la solicitud)
         $valorPorAsesor = (clone $querySolicitudes)
-            ->select('created_by', DB::raw('COUNT(*) as total_solicitudes'), DB::raw('SUM(monto_total) as valor_total'))
+            ->select(
+                'created_by',
+                DB::raw('COUNT(*) as total_solicitudes'),
+                DB::raw('SUM(monto_total) as valor_total'),
+                DB::raw('SUM(CASE WHEN estado = "pendiente" THEN monto_total ELSE 0 END) as valor_pendientes'),
+                DB::raw('SUM(CASE WHEN estado = "rechazada" THEN monto_total ELSE 0 END) as valor_rechazadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END) as valor_aprobadas'),
+                DB::raw('SUM(CASE WHEN estado = "pendiente" THEN 1 ELSE 0 END) as total_pendientes'),
+                DB::raw('SUM(CASE WHEN estado = "rechazada" THEN 1 ELSE 0 END) as total_rechazadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN 1 ELSE 0 END) as total_aprobadas')
+            )
             ->whereNotNull('created_by')
             ->groupBy('created_by')
             ->with('createdBy:id,name')
@@ -52,7 +62,13 @@ class DashboardMetricasController extends Controller
                 return [
                     'asesor' => $item->createdBy ? $item->createdBy->name : 'Sin asignar',
                     'total_solicitudes' => $item->total_solicitudes,
-                    'valor_total' => $item->valor_total
+                    'valor_total' => $item->valor_total,
+                    'valor_pendientes' => $item->valor_pendientes,
+                    'total_pendientes' => $item->total_pendientes,
+                    'valor_rechazadas' => $item->valor_rechazadas,
+                    'total_rechazadas' => $item->total_rechazadas,
+                    'valor_aprobadas' => $item->valor_aprobadas,
+                    'total_aprobadas' => $item->total_aprobadas
                 ];
             });
 

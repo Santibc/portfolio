@@ -12,15 +12,17 @@ class SolicitudRechazada extends Mailable
     use Queueable, SerializesModels;
 
     public $solicitud;
+    protected $pdf;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(SolicitudCotizacion $solicitud)
+    public function __construct(SolicitudCotizacion $solicitud, $pdf = null)
     {
         $this->solicitud = $solicitud;
+        $this->pdf = $pdf;
     }
 
     /**
@@ -30,7 +32,15 @@ class SolicitudRechazada extends Mailable
      */
     public function build()
     {
-        return $this->subject('Solicitud de Cotización #' . $this->solicitud->numero_solicitud . ' - Rechazada')
-                    ->view('emails.solicitud-rechazada');
+        $mail = $this->subject('Solicitud de Cotización #' . $this->solicitud->numero_solicitud . ' - Rechazada')
+                     ->view('emails.solicitud-rechazada');
+
+        if ($this->pdf) {
+            $mail->attachData($this->pdf->output(), 'cotizacion-' . $this->solicitud->numero_solicitud . '.pdf', [
+                'mime' => 'application/pdf',
+            ]);
+        }
+
+        return $mail;
     }
 }

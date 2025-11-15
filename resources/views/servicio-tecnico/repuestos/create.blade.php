@@ -70,12 +70,12 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="marca_compatible" class="form-label">Marca Compatible</label>
-                                <input type="text" name="marca_compatible" id="marca_compatible"
-                                       class="form-control @error('marca_compatible') is-invalid @enderror"
-                                       value="{{ old('marca_compatible', $repuesto->marca_compatible ?? '') }}"
+                                <label for="marca" class="form-label">Marca Compatible</label>
+                                <input type="text" name="marca" id="marca"
+                                       class="form-control @error('marca') is-invalid @enderror"
+                                       value="{{ old('marca', $repuesto->marca ?? '') }}"
                                        placeholder="Ej: Hikvision, Dahua, Universal">
-                                @error('marca_compatible')
+                                @error('marca')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -149,14 +149,14 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="precio_compra" class="form-label">Precio de Compra</label>
+                                <label for="precio_costo" class="form-label">Precio de Compra</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" name="precio_compra" id="precio_compra"
-                                           class="form-control @error('precio_compra') is-invalid @enderror"
-                                           value="{{ old('precio_compra', $repuesto->precio_compra ?? '') }}"
+                                    <input type="number" name="precio_costo" id="precio_costo"
+                                           class="form-control @error('precio_costo') is-invalid @enderror"
+                                           value="{{ old('precio_costo', $repuesto->precio_costo ?? '') }}"
                                            step="0.01" min="0" placeholder="0.00">
-                                    @error('precio_compra')
+                                    @error('precio_costo')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -260,7 +260,7 @@ $(document).ready(function() {
 
     // Calcular margen de ganancia
     function calcularMargen() {
-        const precioCompra = parseFloat($('#precio_compra').val()) || 0;
+        const precioCompra = parseFloat($('#precio_costo').val()) || 0;
         const precioVenta = parseFloat($('#precio_venta').val()) || 0;
 
         if (precioCompra > 0 && precioVenta > 0) {
@@ -275,7 +275,7 @@ $(document).ready(function() {
     }
 
     $('#stock_actual, #stock_minimo').on('input', verificarStock);
-    $('#precio_compra, #precio_venta').on('input', calcularMargen);
+    $('#precio_costo, #precio_venta').on('input', calcularMargen);
 
     // Inicializar
     verificarStock();

@@ -70,6 +70,13 @@ class STTecnicoController extends Controller
                         </div>
                     ';
                 })
+                ->filterColumn('contacto', function($query, $keyword) {
+                    $query->where(function($q) use ($keyword) {
+                        $q->where('telefono', 'like', "%{$keyword}%")
+                          ->orWhere('celular', 'like', "%{$keyword}%")
+                          ->orWhere('email', 'like', "%{$keyword}%");
+                    });
+                })
                 ->rawColumns(['codigo', 'contacto', 'estado', 'action'])
                 ->make(true);
         }

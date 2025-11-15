@@ -24,7 +24,7 @@
         .header {
             background-color: #007bff;
             color: white;
-            padding: 20px;
+            padding: 10px;
             text-align: center;
             border-radius: 10px 10px 0 0;
             margin: -20px -20px 20px -20px;
@@ -78,6 +78,10 @@
 </head>
 <body>
     <div class="container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{{ $message->embed(public_path('images/logo.png')) }}" alt="Logo Innovatech" style="height: 60px; width: auto;">
+        </div>
+
         <div class="header">
             <div class="success-icon">✓</div>
             <h1>¡Solicitud Recibida!</h1>

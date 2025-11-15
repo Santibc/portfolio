@@ -41,45 +41,53 @@ class ProductosController extends Controller
                     if (!$p->controlar_stock) {
                         return '<span class="badge bg-secondary">No controlado</span>';
                     }
-                    
+
                     $stockDisponible = $p->stock_disponible;
                     $badge = 'success';
-                    
+
                     if ($stockDisponible <= 0) {
                         $badge = 'danger';
                     } elseif ($p->tiene_stock_bajo) {
                         $badge = 'warning';
                     }
-                    
+
                     return '<span class="badge bg-'.$badge.'">' . $stockDisponible . '</span>';
                 })
                 ->addColumn('variantes', fn($p) => $p->tiene_variantes ? 'Sí' : 'No')
                 ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
                 ->addColumn('action', function($p) {
                     $url = route('productos.form', $p->id);
-                    
+
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
                     $buttons .= '<a href="'.$url.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
-                    
+
                     // Botón de variantes si tiene
                     if ($p->tiene_variantes) {
                         $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm" title="Ver Variantes" onclick="verVariantes('.$p->id.')"><i class="bi bi-list-ul"></i></button>';
                     }
-                    
+
                     // Botón de imágenes
                     $buttons .= '<button type="button" class="btn btn-outline-primary btn-sm" title="Ver Imágenes" onclick="verImagenes('.$p->id.')"><i class="bi bi-image"></i></button>';
-                    
+
                     // Botón de precios
                     $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" title="Ver Precios" onclick="verPrecios('.$p->id.')"><i class="bi bi-currency-dollar"></i></button>';
-                    
+
                     // Botón de stock (NUEVO)
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
-                    
+
                     $buttons .= '</div>';
-                    
+
                     return $buttons;
+                })
+                ->filterColumn('categoria', function($query, $keyword) {
+                    $query->whereHas('categoria', function($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('marca', function($query, $keyword) {
+                    $query->where('marca', 'like', "%{$keyword}%");
                 })
                 ->rawColumns(['imagen', 'stock', 'action'])
                 ->make(true);

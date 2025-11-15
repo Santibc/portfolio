@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\SolicitudCreada;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class CatalogoController extends Controller
 {
@@ -171,24 +172,26 @@ class CatalogoController extends Controller
                 $q->activas()->with(['stock' => function($sq) {
                     $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
                 }]);
-            }, 
+            },
             'imagenes',
             'stock' => function($q) {
                 $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
             }
         ]);
-        
+
         // Obtener configuración según el contexto
         $listaPrecioId = null;
         $mostrarPrecios = false;
         $mostrarStock = false;
-        
+        $esFlujoBInterno = false;
+
         if ($request->has('cliente_id')) {
             $cliente = Cliente::find($request->cliente_id);
             if ($cliente) {
                 $listaPrecioId = $cliente->lista_precio_id;
                 $mostrarPrecios = true;
                 $mostrarStock = true;
+                $esFlujoBInterno = true;
             }
         } elseif ($request->has('enlace_token')) {
             $enlace = EnlaceAcceso::where('token', $request->enlace_token)->first();
@@ -198,33 +201,51 @@ class CatalogoController extends Controller
                 $mostrarStock = $enlace->mostrar_stock;
             }
         }
-        
+
         // Agregar precios y stock
         if ($mostrarPrecios && $listaPrecioId) {
             $producto->precio = $producto->getPrecioPorLista($listaPrecioId);
-            
+
             // Precios de variantes
             foreach ($producto->variantes as $variante) {
                 $variante->precio_final = $variante->getPrecioFinal($listaPrecioId);
             }
         }
-        
+
+        // Si es flujo B interno, obtener todas las listas de precios del producto
+        $todasListasPrecios = [];
+        if ($esFlujoBInterno) {
+            $preciosProducto = $producto->precios()
+                ->with('listaPrecio')
+                ->get();
+
+            foreach ($preciosProducto as $precio) {
+                if ($precio->precio > 0 && $precio->listaPrecio) {
+                    $todasListasPrecios[] = [
+                        'nombre' => $precio->listaPrecio->nombre,
+                        'precio' => $precio->precio
+                    ];
+                }
+            }
+        }
+
         if ($mostrarStock) {
             $producto->stock_info = $this->obtenerStockProducto($producto);
-            
+
             // Stock de variantes
             foreach ($producto->variantes as $variante) {
                 $variante->stock_info = $this->obtenerStockVariante($producto, $variante);
             }
         }
-        
+
         // Asegurarse de que unidad_venta esté incluida
         $producto->unidad_venta = $producto->unidad_venta;
-        
+
         return response()->json([
             'producto' => $producto,
             'mostrar_precios' => $mostrarPrecios,
-            'mostrar_stock' => $mostrarStock
+            'mostrar_stock' => $mostrarStock,
+            'todas_listas_precios' => $todasListasPrecios
         ]);
     }
     
@@ -501,11 +522,20 @@ class CatalogoController extends Controller
 
             // Enviar correo de confirmación al cliente
             try {
-                // Cargar relaciones necesarias para el correo
-                $solicitud->load(['cliente.vendedor', 'items']);
+                // Cargar relaciones necesarias para el correo y PDF
+                $solicitud->load([
+                    'cliente.vendedor',
+                    'cliente.ciudad',
+                    'cliente.ciudad.departamento',
+                    'items.producto.imagenPrincipal'
+                ]);
 
                 if ($cliente->email) {
-                    Mail::to($cliente->email)->send(new SolicitudCreada($solicitud));
+                    // Generar PDF
+                    $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+                    $pdf->setPaper('letter', 'portrait');
+
+                    Mail::to($cliente->email)->send(new SolicitudCreada($solicitud, $pdf));
                     Log::info('Correo de solicitud creada enviado', [
                         'solicitud_id' => $solicitud->id,
                         'cliente_email' => $cliente->email

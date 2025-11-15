@@ -7,7 +7,13 @@
       "Bash(resources/views/servicio-tecnico/tecnicos/show.blade.php)",
       "Bash(findstr:*)",
       "Bash(del /f \"c:\\xampp\\htdocs\\portfolio\\resources\\views\\components\\app-layout.blade.php\")",
-      "Bash(\"c:/xampp/htdocs/portfolio/temp_nav.txt\")"
+      "Bash(\"c:/xampp/htdocs/portfolio/temp_nav.txt\")",
+      "Bash(php:*)",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(del \"c:\\xampp\\htdocs\\portfolio\\test-pdf.php\")",
+      "Bash(del \"c:\\xampp\\htdocs\\portfolio\\public\\cotizacion-test-SC-20251102094511-ZK65.pdf\")",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []

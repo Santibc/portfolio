@@ -138,6 +138,9 @@
                     <th>Asesor Comercial</th>
                     <th class="text-center">Total Solicitudes</th>
                     <th class="text-end">Valor Total Cotizado</th>
+                    <th class="text-center">Pendientes</th>
+                    <th class="text-center">Rechazadas</th>
+                    <th class="text-center">Aprobadas</th>
                     <th class="text-end">Promedio por Solicitud</th>
                   </tr>
                 </thead>
@@ -154,6 +157,24 @@
                       <td class="text-end">
                         <strong>${{ number_format($asesor['valor_total'], 2) }}</strong>
                       </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge bg-warning text-dark mb-1">{{ $asesor['total_pendientes'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_pendientes'], 0) }}</small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge bg-danger mb-1">{{ $asesor['total_rechazadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_rechazadas'], 0) }}</small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge bg-success mb-1">{{ $asesor['total_aprobadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_aprobadas'], 0) }}</small>
+                        </div>
+                      </td>
                       <td class="text-end text-muted">
                         ${{ number_format($asesor['valor_total'] / $asesor['total_solicitudes'], 2) }}
                       </td>
@@ -165,6 +186,24 @@
                     <th>Total General</th>
                     <th class="text-center">{{ $valorPorAsesor->sum('total_solicitudes') }}</th>
                     <th class="text-end">${{ number_format($valorPorAsesor->sum('valor_total'), 2) }}</th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge bg-warning text-dark mb-1">{{ $valorPorAsesor->sum('total_pendientes') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_pendientes'), 0) }}</small>
+                      </div>
+                    </th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge bg-danger mb-1">{{ $valorPorAsesor->sum('total_rechazadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_rechazadas'), 0) }}</small>
+                      </div>
+                    </th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge bg-success mb-1">{{ $valorPorAsesor->sum('total_aprobadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_aprobadas'), 0) }}</small>
+                      </div>
+                    </th>
                     <th></th>
                   </tr>
                 </tfoot>

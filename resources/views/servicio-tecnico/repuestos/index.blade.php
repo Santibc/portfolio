@@ -142,10 +142,10 @@ $(document).ready(function() {
             { data: 'codigo', name: 'codigo' },
             { data: 'nombre', name: 'nombre' },
             { data: 'categoria', name: 'categoria' },
-            { data: 'marca_modelo', name: 'marca_compatible', orderable: false },
+            { data: 'marca_modelo', name: 'marca_modelo', orderable: false },
             { data: 'stock_actual', name: 'stock_actual' },
             { data: 'stock_minimo', name: 'stock_minimo' },
-            { data: 'precio_compra', name: 'precio_compra' },
+            { data: 'precio_compra', name: 'precio_costo' },
             { data: 'estado', name: 'activo', orderable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false }
         ],

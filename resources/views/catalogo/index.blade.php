@@ -337,7 +337,7 @@
       <strong id="cartTotal">$0.00</strong>
     </div>
     <button class="btn btn-success w-100" id="btnFinalizarSolicitud" disabled>
-      <i class="bi bi-check-circle"></i> Finalizar Solicitud
+      <i class="bi bi-check-circle"></i> Finalizar Cotización
     </button>
   </div>
 </div>
@@ -378,7 +378,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-primary" id="btnConfirmarSolicitud">
-            <i class="bi bi-send"></i> Enviar Solicitud
+            <i class="bi bi-send"></i> Enviar Cotización
           </button>
         </div>
       </div>
@@ -808,10 +808,29 @@ function cargarProductos(page=1){
         if(mostrarPrecios){
           const raw=p.precio, num=parseFloat(raw);
           if(raw!=null&&!isNaN(num)) {
-            html+=`<div class="mb-3">
-              <label class="form-label text-muted"><small>Precio de Lista:</small></label>
-              <p class="mb-2 text-muted">$${num.toFixed(2)}</p>
-              <label class="form-label"><strong>Precio a Cotizar:</strong></label>
+            html+=`<div class="mb-3">`;
+
+            // Mostrar todas las listas de precios si están disponibles (solo flujo B interno)
+            if(resp.todas_listas_precios && resp.todas_listas_precios.length > 0) {
+              html+=`<label class="form-label text-muted"><small>Precios de Lista:</small></label>`;
+              html+=`<div class="mb-2">`;
+              resp.todas_listas_precios.forEach(lista => {
+                const precioFormateado = new Intl.NumberFormat('es-CO', {
+                  style: 'currency',
+                  currency: 'COP',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                }).format(lista.precio);
+                html+=`<p class="mb-1 text-muted small"><strong>${lista.nombre}:</strong> ${precioFormateado}</p>`;
+              });
+              html+=`</div>`;
+            } else {
+              // Mostrar precio de lista normal (flujo A o cuando no hay listas)
+              html+=`<label class="form-label text-muted"><small>Precio de Lista:</small></label>
+              <p class="mb-2 text-muted">$${num.toFixed(2)}</p>`;
+            }
+
+            html+=`<label class="form-label"><strong>Precio a Cotizar:</strong></label>
               <div class="input-group">
                 <span class="input-group-text">$</span>
                 <input type="number" class="form-control" id="precioEditableProducto"

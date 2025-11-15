@@ -327,7 +327,7 @@
       <strong id="cartTotal">$0.00</strong>
     </div>
     <button class="btn btn-success w-100" id="btnFinalizarSolicitud" disabled>
-      <i class="bi bi-check-circle"></i> Finalizar Solicitud
+      <i class="bi bi-check-circle"></i> Finalizar Cotización
     </button>
   </div>
 </div>
@@ -368,7 +368,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-primary" id="btnConfirmarSolicitud">
-          <i class="bi bi-send"></i> Enviar Solicitud
+          <i class="bi bi-send"></i> Enviar Cotización
         </button>
       </div>
     </div>

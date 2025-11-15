@@ -42,7 +42,7 @@ class STRepuestoController extends Controller
             return DataTables::of($query)
                 ->addColumn('marca_modelo', function ($repuesto) {
                     $info = [];
-                    if ($repuesto->marca_compatible) $info[] = $repuesto->marca_compatible;
+                    if ($repuesto->marca) $info[] = $repuesto->marca;
                     if ($repuesto->modelo_compatible) $info[] = $repuesto->modelo_compatible;
                     return implode(' - ', $info) ?: 'Universal';
                 })
@@ -55,7 +55,7 @@ class STRepuestoController extends Controller
                     return '<span class="badge bg-success">' . $repuesto->stock_actual . '</span>';
                 })
                 ->editColumn('precio_compra', function ($repuesto) {
-                    return '$' . number_format($repuesto->precio_compra ?? 0, 0, ',', '.');
+                    return '$' . number_format($repuesto->precio_costo ?? 0, 0, ',', '.');
                 })
                 ->addColumn('estado', function ($repuesto) {
                     if ($repuesto->activo) {
@@ -78,6 +78,12 @@ class STRepuestoController extends Controller
                             </form>
                         </div>
                     ';
+                })
+                ->filterColumn('marca_modelo', function($query, $keyword) {
+                    $query->where(function($q) use ($keyword) {
+                        $q->where('marca', 'like', "%{$keyword}%")
+                          ->orWhere('modelo_compatible', 'like', "%{$keyword}%");
+                    });
                 })
                 ->rawColumns(['stock_actual', 'estado', 'action'])
                 ->make(true);
@@ -116,12 +122,12 @@ class STRepuestoController extends Controller
             'codigo' => 'required|string|max:50|unique:st_repuestos,codigo',
             'nombre' => 'required|string|max:255',
             'categoria' => 'required|string|max:100',
-            'marca_compatible' => 'nullable|string|max:100',
+            'marca' => 'nullable|string|max:100',
             'modelo_compatible' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
             'stock_actual' => 'required|integer|min:0',
             'stock_minimo' => 'required|integer|min:0',
-            'precio_compra' => 'nullable|numeric|min:0',
+            'precio_costo' => 'nullable|numeric|min:0',
             'precio_venta' => 'nullable|numeric|min:0',
             'proveedor' => 'nullable|string|max:255',
         ]);
@@ -173,12 +179,12 @@ class STRepuestoController extends Controller
             'codigo' => 'required|string|max:50|unique:st_repuestos,codigo,' . $id,
             'nombre' => 'required|string|max:255',
             'categoria' => 'required|string|max:100',
-            'marca_compatible' => 'nullable|string|max:100',
+            'marca' => 'nullable|string|max:100',
             'modelo_compatible' => 'nullable|string|max:100',
             'descripcion' => 'nullable|string',
             'stock_actual' => 'required|integer|min:0',
             'stock_minimo' => 'required|integer|min:0',
-            'precio_compra' => 'nullable|numeric|min:0',
+            'precio_costo' => 'nullable|numeric|min:0',
             'precio_venta' => 'nullable|numeric|min:0',
             'proveedor' => 'nullable|string|max:255',
             'activo' => 'boolean',

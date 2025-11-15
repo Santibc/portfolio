@@ -86,7 +86,7 @@
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>
-                <span>Solicitudes</span>
+                <span>Cotizaciones</span>
             </a>
         @endif
 

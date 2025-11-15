@@ -118,6 +118,11 @@ class EnlacesController extends Controller
                         $q->where('nombre_contacto', 'like', "%{$keyword}%");
                     });
                 })
+                ->filterColumn('creado_por_nombre', function($query, $keyword) {
+                    $query->whereHas('creadoPor', function($q) use ($keyword) {
+                        $q->where('name', 'like', "%{$keyword}%");
+                    });
+                })
                 ->rawColumns(['estado', 'mostrar_precios_badge', 'mostrar_stock_badge', 'ultimo_acceso_formateado', 'action'])
                 ->make(true);
         }

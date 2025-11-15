@@ -85,6 +85,16 @@ class STOrdenServicioController extends Controller
                     $class = $dias > 7 ? 'text-danger' : ($dias > 3 ? 'text-warning' : 'text-success');
                     return '<span class="' . $class . '">' . $dias . ' días</span>';
                 })
+                ->filterColumn('cliente_nombre', function($query, $keyword) {
+                    $query->whereHas('cliente', function($q) use ($keyword) {
+                        $q->where('nombre_completo', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('tecnico_nombre', function($query, $keyword) {
+                    $query->whereHas('tecnico', function($q) use ($keyword) {
+                        $q->where('nombre_completo', 'like', "%{$keyword}%");
+                    });
+                })
                 ->rawColumns(['action', 'estado_badge', 'prioridad_badge', 'tecnico_nombre', 'dias_transcurridos'])
                 ->make(true);
         }

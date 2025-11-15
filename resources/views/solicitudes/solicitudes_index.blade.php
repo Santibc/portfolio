@@ -1,5 +1,5 @@
 <x-app-layout>
-  <x-slot name="header">Gestión de Solicitudes de Cotización</x-slot>
+  <x-slot name="header">Gestión de Cotizaciones</x-slot>
 
   <div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -10,7 +10,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       @endif
-      
+
       @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
           {{ session('error') }}
@@ -18,12 +18,12 @@
         </div>
       @endif
 
-      {{-- Alerta de solicitudes antiguas --}}
+      {{-- Alerta de cotizaciones antiguas --}}
       @if(isset($totalAntiguas) && $totalAntiguas > 0)
         <div class="alert alert-warning alert-dismissible fade show mb-4 d-flex align-items-center" role="alert">
           <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
           <div>
-            <strong>Atención:</strong> Hay <strong>{{ $totalAntiguas }}</strong> {{ $totalAntiguas === 1 ? 'solicitud pendiente' : 'solicitudes pendientes' }} con más de 3 días sin procesar.
+            <strong>Atención:</strong> Hay <strong>{{ $totalAntiguas }}</strong> {{ $totalAntiguas === 1 ? 'cotización pendiente' : 'cotizaciones pendientes' }} con más de 3 días sin procesar.
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -32,7 +32,7 @@
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="text-2xl font-semibold mb-0">Listado de Solicitudes</h4>
+            <h4 class="text-2xl font-semibold mb-0">Listado de Cotizaciones</h4>
             @if(isset($totalAntiguas) && $totalAntiguas > 0)
               <span class="badge bg-danger fs-6">
                 <i class="bi bi-clock-history"></i> {{ $totalAntiguas }} pendientes >3 días
@@ -40,11 +40,24 @@
             @endif
           </div>
 
+          {{-- Filtro de Vendedor --}}
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Filtrar por Vendedor:</label>
+              <select id="filtroVendedor" class="form-select">
+                <option value="">Todos los vendedores</option>
+                @foreach($vendedores as $vendedor)
+                  <option value="{{ $vendedor->id }}">{{ $vendedor->name }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
                 <th>Acciones</th>
-                <th>Nº Solicitud</th>
+                <th>Nº Cotización</th>
                 <th>Cliente</th>
                 <th>Vendedor</th>
                 <th>Fecha</th>
@@ -86,7 +99,12 @@
       serverSide: true,
       responsive: true,
       scrollX: true,
-      ajax: "{{ route('solicitudes') }}",
+      ajax: {
+        url: "{{ route('solicitudes') }}",
+        data: function(d) {
+          d.vendedor_id = $('#filtroVendedor').val();
+        }
+      },
       columns: [
         { data:'action', orderable:false, searchable:false },
         { data:'numero_solicitud', name:'numero_solicitud' },
@@ -164,6 +182,11 @@
           .addClass('block w-full text-left px-4 py-2 rounded hover:bg-gray-100');
       }, 50);
     });
+
+    // Filtro de vendedor
+    $('#filtroVendedor').on('change', function() {
+      table.ajax.reload();
+    });
   });
 
   // Funciones para los modales
@@ -216,7 +239,7 @@
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
-      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al aplicar la solicitud'));
+      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al aplicar la cotización'));
     });
   }
 
@@ -228,7 +251,7 @@
       return;
     }
 
-    if (!confirm('¿Está seguro de rechazar esta solicitud? Se enviará un correo al cliente con el motivo del rechazo.')) {
+    if (!confirm('¿Está seguro de rechazar esta cotización? Se enviará un correo al cliente con el motivo del rechazo.')) {
       return;
     }
 
@@ -259,7 +282,7 @@
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
-      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al rechazar la solicitud'));
+      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al rechazar la cotización'));
     });
   }
   
@@ -277,7 +300,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Detalle de Solicitud de Cotización</h5>
+          <h5 class="modal-title">Detalle de Cotización</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="modalDetalleContent">
@@ -290,13 +313,13 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Modal para Exportar Excel -->
   <div class="modal fade" id="modalExportarExcel" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Exportar Solicitudes a Excel</h5>
+          <h5 class="modal-title">Exportar Cotizaciones a Excel</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <form id="formExportarExcel" action="{{ route('solicitudes.exportar-excel') }}" method="GET">
@@ -304,9 +327,9 @@
             <p class="text-muted mb-4">
               Este reporte incluirá tres hojas:
               <ul class="small text-muted">
-                <li><strong>Resumen:</strong> Información general de cada solicitud</li>
-                <li><strong>Detalle:</strong> Todos los items de todas las solicitudes</li>
-                <li><strong>Productos:</strong> Resumen de productos más solicitados</li>
+                <li><strong>Resumen:</strong> Información general de cada cotización</li>
+                <li><strong>Detalle:</strong> Todos los items de todas las cotizaciones</li>
+                <li><strong>Productos:</strong> Resumen de productos más cotizados</li>
               </ul>
             </p>
             

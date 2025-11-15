@@ -60,7 +60,7 @@
         { data:'referencia',   name:'referencia' },
         { data:'nombre',       name:'nombre' },
         { data:'marca',        name:'marca' },
-        { data:'categoria',    orderable:false, searchable:false },
+        { data:'categoria',    name:'categoria', orderable:false },
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
         { data:'extension',    name:'extension' },

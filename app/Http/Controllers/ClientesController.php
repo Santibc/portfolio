@@ -35,6 +35,26 @@ class ClientesController extends Controller
 </div>
 HTML;
                 })
+                ->filterColumn('pais', function($query, $keyword) {
+                    $query->whereHas('pais', function($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('ciudad', function($query, $keyword) {
+                    $query->whereHas('ciudad', function($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('vendedor', function($query, $keyword) {
+                    $query->whereHas('vendedor', function($q) use ($keyword) {
+                        $q->where('name', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('lista_precio', function($query, $keyword) {
+                    $query->whereHas('listaPrecio', function($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
                 ->rawColumns(['action'])
                 ->make(true);
         }

@@ -44,7 +44,7 @@
               <div class="alert alert-info mb-4">
                 <i class="bi bi-info-circle"></i> 
                 Este enlace permitirá al cliente acceder al catálogo de productos sin necesidad de autenticarse.
-                El cliente podrá ver los productos, agregar al carrito y enviar solicitudes de cotización.
+                El cliente podrá ver los productos, agregar al carrito y enviar cotizaciones de cotización.
               </div>
 
               {{-- Cliente --}}

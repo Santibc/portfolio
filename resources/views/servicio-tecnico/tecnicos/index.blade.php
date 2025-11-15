@@ -129,7 +129,7 @@ $(document).ready(function() {
             { data: 'nombre_completo', name: 'nombre_completo' },
             { data: 'documento', name: 'documento' },
             { data: 'especialidad', name: 'especialidad' },
-            { data: 'contacto', name: 'contacto', orderable: false, searchable: false },
+            { data: 'contacto', name: 'contacto', orderable: false },
             { data: 'fecha_ingreso', name: 'fecha_ingreso' },
             { data: 'estado', name: 'activo', orderable: false, searchable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' }

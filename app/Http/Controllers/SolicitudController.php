@@ -36,6 +36,17 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
                                        ->select('solicitudes_cotizacion.*');
 
+            // Filtrar por vendedor si se proporciona
+            if ($request->filled('vendedor_id')) {
+                $vendedorId = $request->vendedor_id;
+                $query->where(function($q) use ($vendedorId) {
+                    $q->where('created_by', $vendedorId)
+                      ->orWhereHas('cliente', function($subQ) use ($vendedorId) {
+                          $subQ->where('vendedor_id', $vendedorId);
+                      });
+                });
+            }
+
             // Admin ve todas las solicitudes
 
             return DataTables::of($query)
@@ -98,8 +109,15 @@ class SolicitudController extends Controller
                     });
                 })
                 ->filterColumn('vendedor', function($query, $keyword) {
-                    $query->whereHas('cliente.vendedor', function($q) use ($keyword) {
-                        $q->where('name', 'like', "%{$keyword}%");
+                    $query->where(function($q) use ($keyword) {
+                        // Buscar en el usuario que creó la solicitud (createdBy)
+                        $q->whereHas('createdBy', function($subQ) use ($keyword) {
+                            $subQ->where('name', $keyword);
+                        })
+                        // O buscar en el vendedor del cliente
+                        ->orWhereHas('cliente.vendedor', function($subQ) use ($keyword) {
+                            $subQ->where('name', $keyword);
+                        });
                     });
                 })
                 ->setRowClass(function($s) {
@@ -121,7 +139,19 @@ class SolicitudController extends Controller
             ->where('created_at', '<', now()->subDays(3))
             ->count();
 
-        return view('solicitudes.solicitudes_index', compact('totalAntiguas'));
+        // Obtener lista de vendedores únicos (usuarios que han creado solicitudes o son vendedores de clientes)
+        $vendedores = \App\Models\User::whereIn('id', function($query) {
+            $query->select('created_by')
+                  ->from('solicitudes_cotizacion')
+                  ->whereNotNull('created_by')
+                  ->union(
+                      \DB::table('clientes')
+                          ->select('vendedor_id')
+                          ->whereNotNull('vendedor_id')
+                  );
+        })->orderBy('name')->get();
+
+        return view('solicitudes.solicitudes_index', compact('totalAntiguas', 'vendedores'));
     }
     
     public function detalle(SolicitudCotizacion $solicitud)
@@ -134,7 +164,7 @@ class SolicitudController extends Controller
         $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso']);
         
         $html = '<div class="row">';
-        
+
         // Información del cliente
         $html .= '<div class="col-md-6">';
         $html .= '<h6>Información del Cliente</h6>';
@@ -145,10 +175,10 @@ class SolicitudController extends Controller
         $html .= '<tr><td><strong>Lista de Precios:</strong></td><td>' . ($solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista') . '</td></tr>';
         $html .= '</table>';
         $html .= '</div>';
-        
-        // Información de la solicitud
+
+        // Información de la cotización
         $html .= '<div class="col-md-6">';
-        $html .= '<h6>Información de la Solicitud</h6>';
+        $html .= '<h6>Información de la Cotización</h6>';
         $html .= '<table class="table table-sm">';
         $html .= '<tr><td><strong>Número:</strong></td><td><code>' . $solicitud->numero_solicitud . '</code></td></tr>';
         $html .= '<tr><td><strong>Fecha:</strong></td><td>' . $solicitud->created_at->format('d/m/Y H:i') . '</td></tr>';
@@ -189,9 +219,9 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
         
-        // Items de la solicitud
+        // Items de la cotización
         $html .= '<div class="col-12">';
-        $html .= '<h6>Productos Solicitados</h6>';
+        $html .= '<h6>Productos Cotizados</h6>';
         $html .= '<div class="table-responsive">';
         $html .= '<table class="table table-striped">';
         $html .= '<thead>';
@@ -282,7 +312,7 @@ class SolicitudController extends Controller
             $html .= '</div>';
             $html .= '<div class="col-md-6">';
             $html .= '<button type="button" class="btn btn-danger w-100" onclick="confirmarRechazo(' . $solicitud->id . ')">
-                        <i class="bi bi-x-circle"></i> Rechazar Solicitud
+                        <i class="bi bi-x-circle"></i> Rechazar Cotización
                       </button>';
             $html .= '</div>';
             $html .= '</div>';
@@ -347,7 +377,9 @@ class SolicitudController extends Controller
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
             ], 403);
         }
-        
+
+        $user = Auth::user();
+
         // Verificar que esté pendiente
         if ($solicitud->estado !== 'pendiente') {
             return response()->json([
@@ -355,14 +387,14 @@ class SolicitudController extends Controller
                 'mensaje' => 'Esta solicitud ya fue aplicada'
             ], 400);
         }
-        
+
         $request->validate([
             'observaciones' => 'nullable|string|max:1000',
             'procesar_stock' => 'boolean'
         ]);
-        
+
         DB::beginTransaction();
-        
+
         try {
             $procesarStock = $request->boolean('procesar_stock', true);
             $stockProcesado = [];
@@ -397,17 +429,18 @@ class SolicitudController extends Controller
             
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
-                'cliente', 
-                'cliente.listaPrecio', 
+                'cliente',
+                'cliente.listaPrecio',
                 'cliente.vendedor',
                 'cliente.ciudad',
+                'cliente.ciudad.departamento',
                 'cliente.pais',
-                'items.producto.imagenPrincipal', 
+                'items.producto.imagenPrincipal',
                 'aplicadaPor'
             ]);
-            
-            // Generar PDF
-            $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
+
+            // Generar PDF con nuevo formato
+            $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
             $pdf->setPaper('letter', 'portrait');
             
             // Enviar email con PDF adjunto
@@ -478,18 +511,24 @@ class SolicitudController extends Controller
             // Marcar como rechazada
             $solicitud->marcarComoRechazada($user->id, $request->motivo_rechazo);
 
-            // Cargar relaciones necesarias para el email
+            // Cargar relaciones necesarias para el email y PDF
             $solicitud->load([
                 'cliente',
                 'cliente.vendedor',
-                'items.producto',
+                'cliente.ciudad',
+                'cliente.ciudad.departamento',
+                'items.producto.imagenPrincipal',
                 'rechazadaPor'
             ]);
 
             // Enviar email de notificación de rechazo
             try {
+                // Generar PDF
+                $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+                $pdf->setPaper('letter', 'portrait');
+
                 Mail::to($solicitud->cliente->email)
-                    ->send(new \App\Mail\SolicitudRechazada($solicitud));
+                    ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
 
                 $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
             } catch (\Exception $e) {
@@ -624,19 +663,20 @@ class SolicitudController extends Controller
         
         // Cargar relaciones necesarias
         $solicitud->load([
-            'cliente', 
-            'cliente.listaPrecio', 
+            'cliente',
+            'cliente.listaPrecio',
             'cliente.vendedor',
             'cliente.ciudad',
+            'cliente.ciudad.departamento',
             'cliente.pais',
-            'items.producto.imagenPrincipal', 
+            'items.producto.imagenPrincipal',
             'aplicadaPor'
         ]);
-        
-        $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
+
+        $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
         $pdf->setPaper('letter', 'portrait');
-        
-        return $pdf->download('solicitud-' . $solicitud->numero_solicitud . '.pdf');
+
+        return $pdf->download('cotizacion-' . $solicitud->numero_solicitud . '.pdf');
     }
     
     /**

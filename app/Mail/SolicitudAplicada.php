@@ -34,7 +34,7 @@ class SolicitudAplicada extends Mailable
     {
         return $this->subject('Solicitud de Cotización #' . $this->solicitud->numero_solicitud . ' - Confirmada')
                     ->view('emails.solicitud-aplicada')
-                    ->attachData($this->pdf->output(), 'solicitud-' . $this->solicitud->numero_solicitud . '.pdf', [
+                    ->attachData($this->pdf->output(), 'cotizacion-' . $this->solicitud->numero_solicitud . '.pdf', [
                         'mime' => 'application/pdf',
                     ]);
     }
