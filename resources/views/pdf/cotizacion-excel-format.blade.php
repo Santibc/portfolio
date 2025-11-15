@@ -321,21 +321,6 @@
                     <span class="dato-valor">{{ $solicitud->cliente->telefono ?? '' }}</span>
                 </div>
                 <div class="dato-row">
-                    <span class="dato-label">Direccion</span>
-                    <span class="dato-valor">
-                        @php
-                            $direccionCompleta = $solicitud->cliente->direccion ?? '';
-                            if ($solicitud->cliente->direccion && $solicitud->cliente->ciudad) {
-                                $direccionCompleta .= ', ' . $solicitud->cliente->ciudad->nombre;
-                            }
-                            if ($solicitud->cliente->ciudad && $solicitud->cliente->ciudad->departamento) {
-                                $direccionCompleta .= ', ' . $solicitud->cliente->ciudad->departamento->nombre;
-                            }
-                        @endphp
-                        {{ $direccionCompleta }}
-                    </span>
-                </div>
-                <div class="dato-row">
                     <span class="dato-label">Correo electronico</span>
                     <span class="dato-valor">{{ $solicitud->cliente->email ?? '' }}</span>
                 </div>
