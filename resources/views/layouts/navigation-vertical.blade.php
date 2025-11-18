@@ -83,6 +83,10 @@
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
+        @endif
+
+        {{-- Cotizaciones (para vendedor y admin) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin']))
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>

@@ -87,7 +87,8 @@
               {{-- Vendedor --}}
               <div class="col-md-6 mb-3">
                 <label class="form-label">Vendedor <span class="text-danger">*</span></label>
-                <select name="vendedor_id" class="form-select">
+                <select name="vendedor_id" class="form-select"
+                  @if($cliente->exists && !auth()->user()->hasRole('admin')) disabled @endif>
                   <option value="">-- Seleccionar --</option>
                   @foreach($vendedores as $id=>$name)
                     <option value="{{ $id }}"
@@ -96,6 +97,11 @@
                     </option>
                   @endforeach
                 </select>
+                {{-- Campo oculto para mantener el valor cuando está deshabilitado --}}
+                @if($cliente->exists && !auth()->user()->hasRole('admin'))
+                  <input type="hidden" name="vendedor_id" value="{{ $cliente->vendedor_id }}">
+                  <small class="text-muted">Solo administradores pueden cambiar el vendedor asignado.</small>
+                @endif
                 @error('vendedor_id') <small class="text-danger">{{ $message }}</small> @enderror
               </div>
 

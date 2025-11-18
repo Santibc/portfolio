@@ -40,7 +40,8 @@
             @endif
           </div>
 
-          {{-- Filtro de Vendedor --}}
+          {{-- Filtro de Vendedor (solo para admin) --}}
+          @if(auth()->user()->hasRole('admin'))
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Filtrar por Vendedor:</label>
@@ -52,6 +53,7 @@
               </select>
             </div>
           </div>
+          @endif
 
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
@@ -102,7 +104,10 @@
       ajax: {
         url: "{{ route('solicitudes') }}",
         data: function(d) {
-          d.vendedor_id = $('#filtroVendedor').val();
+          // Solo enviar filtro de vendedor si existe (es decir, si es admin)
+          if ($('#filtroVendedor').length) {
+            d.vendedor_id = $('#filtroVendedor').val();
+          }
         }
       },
       columns: [
@@ -183,10 +188,12 @@
       }, 50);
     });
 
-    // Filtro de vendedor
-    $('#filtroVendedor').on('change', function() {
-      table.ajax.reload();
-    });
+    // Filtro de vendedor (solo si existe en la página, es decir, si es admin)
+    if ($('#filtroVendedor').length) {
+      $('#filtroVendedor').on('change', function() {
+        table.ajax.reload();
+      });
+    }
   });
 
   // Funciones para los modales
@@ -251,7 +258,7 @@
       return;
     }
 
-    if (!confirm('¿Está seguro de rechazar esta cotización? Se enviará un correo al cliente con el motivo del rechazo.')) {
+    if (!confirm('¿Está seguro de rechazar esta cotización?')) {
       return;
     }
 

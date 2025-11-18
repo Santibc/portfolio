@@ -26,9 +26,9 @@ class SolicitudController extends Controller
     
     public function index(Request $request)
     {
-        // Verificar que el usuario sea admin
+        // Verificar que el usuario sea admin o vendedor
         $user = Auth::user();
-        if (!$user->hasRole('admin')) {
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
             abort(403, 'No tienes permisos para acceder a este módulo.');
         }
 
@@ -36,8 +36,15 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
                                        ->select('solicitudes_cotizacion.*');
 
-            // Filtrar por vendedor si se proporciona
-            if ($request->filled('vendedor_id')) {
+            // Si es vendedor (y NO es admin), filtrar solo solicitudes de sus clientes asignados
+            if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+                $query->whereHas('cliente', function($subQ) use ($user) {
+                    $subQ->where('vendedor_id', $user->id);
+                });
+            }
+
+            // Filtrar por vendedor si se proporciona (solo admin puede usar este filtro)
+            if ($request->filled('vendedor_id') && $user->hasRole('admin')) {
                 $vendedorId = $request->vendedor_id;
                 $query->where(function($q) use ($vendedorId) {
                     $q->where('created_by', $vendedorId)
@@ -47,7 +54,7 @@ class SolicitudController extends Controller
                 });
             }
 
-            // Admin ve todas las solicitudes
+            // Admin ve todas las solicitudes (si no hay filtro), vendedor ve solo las suyas
 
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function($s) {
@@ -134,10 +141,18 @@ class SolicitudController extends Controller
                 ->make(true);
         }
 
-        // Contar solicitudes pendientes con más de 3 días (solo admin)
-        $totalAntiguas = SolicitudCotizacion::where('estado', 'pendiente')
-            ->where('created_at', '<', now()->subDays(3))
-            ->count();
+        // Contar solicitudes pendientes con más de 3 días
+        $queryAntiguas = SolicitudCotizacion::where('estado', 'pendiente')
+            ->where('created_at', '<', now()->subDays(3));
+
+        // Si es vendedor (y NO es admin), filtrar solo solicitudes de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            $queryAntiguas->whereHas('cliente', function($subQ) use ($user) {
+                $subQ->where('vendedor_id', $user->id);
+            });
+        }
+
+        $totalAntiguas = $queryAntiguas->count();
 
         // Obtener lista de vendedores únicos (usuarios que han creado solicitudes o son vendedores de clientes)
         $vendedores = \App\Models\User::whereIn('id', function($query) {
@@ -156,11 +171,20 @@ class SolicitudController extends Controller
     
     public function detalle(SolicitudCotizacion $solicitud)
     {
-        // Verificar que sea admin
-        if (!Auth::user()->hasRole('admin')) {
+        $user = Auth::user();
+
+        // Verificar que sea admin o vendedor
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
-        
+
+        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
+            }
+        }
+
         $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso']);
         
         $html = '<div class="row">';
@@ -285,12 +309,12 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones si está pendiente
-        if ($solicitud->estado === 'pendiente') {
+        // Campo de observaciones y botones si está pendiente (para admin y vendedor)
+        if ($solicitud->estado === 'pendiente' && ($user->hasRole('admin') || $user->hasRole('vendedor'))) {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
-            $html .= '<label class="form-label">Observaciones del Administrador / Motivo de Rechazo</label>';
+            $html .= '<label class="form-label">Observaciones / Motivo de Rechazo</label>';
             $html .= '<textarea class="form-control" id="observacionesAdmin" rows="3"
                               placeholder="Ingrese observaciones si va a aprobar, o motivo detallado si va a rechazar..."></textarea>';
             $html .= '<small class="text-muted">Este campo se usará como observaciones si aprueba, o como motivo de rechazo si rechaza.</small>';
@@ -370,15 +394,25 @@ class SolicitudController extends Controller
     
     public function aplicar(Request $request, SolicitudCotizacion $solicitud)
     {
-        // Verificar que sea admin
-        if (!Auth::user()->hasRole('admin')) {
+        $user = Auth::user();
+
+        // Verificar que sea admin o vendedor
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
             ], 403);
         }
 
-        $user = Auth::user();
+        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'No tiene permisos para aplicar esta solicitud'
+                ], 403);
+            }
+        }
 
         // Verificar que esté pendiente
         if ($solicitud->estado !== 'pendiente') {
@@ -443,17 +477,18 @@ class SolicitudController extends Controller
             $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
             $pdf->setPaper('letter', 'portrait');
             
-            // Enviar email con PDF adjunto
-            try {
-                Mail::to($solicitud->cliente->email)
-                    ->send(new SolicitudAplicada($solicitud, $pdf));
-                    
-                $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
-            } catch (\Exception $e) {
-                // Log del error pero no fallar la aplicación
-                Log::error('Error al enviar email de solicitud aplicada: ' . $e->getMessage());
-                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
-            }
+            // Envío de email deshabilitado (solo se envía al crear la solicitud)
+            // try {
+            //     Mail::to($solicitud->cliente->email)
+            //         ->send(new SolicitudAplicada($solicitud, $pdf));
+            //
+            //     $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
+            // } catch (\Exception $e) {
+            //     // Log del error pero no fallar la aplicación
+            //     Log::error('Error al enviar email de solicitud aplicada: ' . $e->getMessage());
+            //     $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            // }
+            $mensajeEmail = '';
             
             DB::commit();
             
@@ -483,15 +518,25 @@ class SolicitudController extends Controller
      */
     public function rechazar(Request $request, SolicitudCotizacion $solicitud)
     {
-        // Verificar que sea admin
-        if (!Auth::user()->hasRole('admin')) {
+        $user = Auth::user();
+
+        // Verificar que sea admin o vendedor
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar esta solicitud'
             ], 403);
         }
 
-        $user = Auth::user();
+        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'No tiene permisos para rechazar esta solicitud'
+                ], 403);
+            }
+        }
 
         // Verificar que esté pendiente
         if ($solicitud->estado !== 'pendiente') {
@@ -521,21 +566,22 @@ class SolicitudController extends Controller
                 'rechazadaPor'
             ]);
 
-            // Enviar email de notificación de rechazo
-            try {
-                // Generar PDF
-                $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
-                $pdf->setPaper('letter', 'portrait');
-
-                Mail::to($solicitud->cliente->email)
-                    ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
-
-                $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
-            } catch (\Exception $e) {
-                // Log del error pero no fallar el rechazo
-                Log::error('Error al enviar email de solicitud rechazada: ' . $e->getMessage());
-                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
-            }
+            // Envío de email deshabilitado (solo se envía al crear la solicitud)
+            // try {
+            //     // Generar PDF
+            //     $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+            //     $pdf->setPaper('letter', 'portrait');
+            //
+            //     Mail::to($solicitud->cliente->email)
+            //         ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
+            //
+            //     $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
+            // } catch (\Exception $e) {
+            //     // Log del error pero no fallar el rechazo
+            //     Log::error('Error al enviar email de solicitud rechazada: ' . $e->getMessage());
+            //     $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            // }
+            $mensajeEmail = '';
 
             DB::commit();
 
@@ -656,11 +702,20 @@ class SolicitudController extends Controller
      */
     public function descargarPdf(SolicitudCotizacion $solicitud)
     {
-        // Verificar que sea admin
-        if (!Auth::user()->hasRole('admin')) {
+        $user = Auth::user();
+
+        // Verificar que sea admin o vendedor
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
-        
+
+        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                abort(403, 'No tiene permisos para descargar este PDF');
+            }
+        }
+
         // Cargar relaciones necesarias
         $solicitud->load([
             'cliente',
