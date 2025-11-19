@@ -73,31 +73,6 @@ class TemplateTiendaSeeder extends Seeder
             ]
         );
 
-        // Template Lima - Moderno con Swiper sliders
-        TemplateTienda::updateOrCreate(
-            ['codigo' => 'lima'],
-            [
-                'nombre' => 'Template Lima',
-                'descripcion' => 'Template moderno con header sticky, sliders Swiper y diseño profesional. Ideal para tiendas de indumentaria.',
-                'vista_index' => 'tienda.lima_index',
-                'vista_categoria' => 'tienda.lima_categoria',
-                'vista_producto' => 'tienda.lima_producto',
-                'layout' => 'tienda.lima_layout',
-                'preview_image' => 'images/templates/lima-preview.svg',
-                'activo' => true,
-                'es_default' => false,
-                'orden' => 3,
-                'configuracion' => [
-                    'sticky_header' => true,
-                    'show_adbar' => true,
-                    'show_topbar' => true,
-                    'product_grid_columns_mobile' => 2,
-                    'product_grid_columns_desktop' => 4,
-                    'enable_animations' => true,
-                ],
-            ]
-        );
-
         // Template Sport - Dinámico para deportes y lifestyle urbano
         TemplateTienda::updateOrCreate(
             ['codigo' => 'sport'],
@@ -123,10 +98,31 @@ class TemplateTiendaSeeder extends Seeder
             ]
         );
 
+        // Template Recife - Elegante para muebles y decoración
+        TemplateTienda::updateOrCreate(
+            ['codigo' => 'recife'],
+            [
+                'nombre' => 'Template Recife',
+                'descripcion' => 'Template elegante inspirado en tiendas de muebles y decoración. Diseño limpio y moderno con énfasis en las imágenes.',
+                'vista_index' => 'tienda.recife_index',
+                'vista_categoria' => 'tienda.recife_categoria',
+                'vista_producto' => 'tienda.recife_producto',
+                'layout' => 'tienda.recife_layout',
+                'preview_image' => 'images/templates/recife-preview.jpg',
+                'activo' => true,
+                'es_default' => false,
+                'orden' => 5,
+                'configuracion' => [
+                    'color_primario' => '#7c41e8',
+                    'color_secundario' => '#333333',
+                ],
+            ]
+        );
+
         $this->command->info('Templates de tienda creados exitosamente.');
         $this->command->info('- Template Default (código: default) - Marcado como predeterminado');
         $this->command->info('- Template Brasilia (código: brasilia)');
-        $this->command->info('- Template Lima (código: lima)');
         $this->command->info('- Template Sport (código: sport)');
+        $this->command->info('- Template Recife (código: recife)');
     }
 }

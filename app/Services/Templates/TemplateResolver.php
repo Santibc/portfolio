@@ -7,8 +7,8 @@ use App\Models\TemplateTienda;
 use App\Services\Templates\Contracts\TemplateStrategyInterface;
 use App\Services\Templates\Strategies\DefaultTemplateStrategy;
 use App\Services\Templates\Strategies\BrasiliaTemplateStrategy;
-use App\Services\Templates\Strategies\LimaTemplateStrategy;
 use App\Services\Templates\Strategies\SportTemplateStrategy;
+use App\Services\Templates\Strategies\RecifeTemplateStrategy;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -29,8 +29,8 @@ class TemplateResolver
     private array $strategyMap = [
         'default' => DefaultTemplateStrategy::class,
         'brasilia' => BrasiliaTemplateStrategy::class,
-        'lima' => LimaTemplateStrategy::class,
         'sport' => SportTemplateStrategy::class,
+        'recife' => RecifeTemplateStrategy::class,
     ];
 
     /**

@@ -1,0 +1,195 @@
+/* Recife Template - Fixes para topbar y adbar */
+
+/* Fix 1: Topbar no debe ocupar toda la pantalla */
+.js-topbar.section-topbar {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 50px !important;
+    overflow: hidden;
+}
+
+/* Asegurar que el container del topbar tenga altura correcta */
+.js-topbar .container {
+    height: auto !important;
+    min-height: auto !important;
+}
+
+.js-topbar .row {
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* Fix 2: Adbar debe ser visible con la línea morada - REDUCIDA 40% */
+.js-adbar.section-adbar {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+    min-height: 24px !important; /* Reducido de 40px a 24px (40% menos) */
+    opacity: 1 !important;
+    padding: 4px 0 !important; /* Reducido padding vertical */
+}
+
+/* Asegurar que el adbar tenga el fondo morado correcto */
+.section-adbar-colors {
+    background-color: var(--adbar-background, #814df0) !important;
+    color: var(--adbar-foreground, #FFFFFF) !important;
+}
+
+/* Asegurar que el mensaje del adbar sea visible - ALTURA REDUCIDA */
+.adbar-message {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px 10px !important; /* Reducido de 10px 15px */
+    font-weight: 500 !important;
+    font-size: 13px !important; /* Tamaño de fuente más pequeño */
+    line-height: 1.2 !important;
+}
+
+/* Fix para el swiper del adbar - ALTURA REDUCIDA */
+.js-swiper-adbar {
+    height: auto !important;
+    min-height: 24px !important; /* Reducido de 40px a 24px */
+}
+
+.swiper-wrapper.adbar-text-container {
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 24px !important; /* Reducido */
+}
+
+/* Asegurar que el header no bloquee el contenido */
+.js-head-main {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+}
+
+/* El topbar debe tener altura fija */
+.section-topbar {
+    flex-shrink: 0 !important;
+}
+
+/* Fix 3: Imágenes del slider principal - FORZAR altura automática */
+.js-main-slider-section,
+.js-main-slider-section .container,
+.js-home-slider,
+.js-home-slider.swiper-container,
+.js-main-slider,
+.js-main-slider .swiper-wrapper,
+.js-main-slider .swiper-slide,
+.js-main-slider .swiper-slide .slide-container {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+}
+
+.js-main-slider .swiper-slide img {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+/* Eliminar cualquier padding-bottom que cause problemas */
+.js-main-slider .slide-container {
+    padding: 0 !important;
+}
+
+/* Asegurar que el slide sea visible */
+.js-main-slider .swiper-slide {
+    overflow: visible !important;
+}
+
+/* Flechas del slider principal - asegurar visibilidad */
+.js-swiper-home-prev,
+.js-swiper-home-next {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+.js-swiper-home-prev {
+    left: 20px !important;
+}
+
+.js-swiper-home-next {
+    right: 20px !important;
+}
+
+.js-swiper-home-prev svg,
+.js-swiper-home-next svg {
+    fill: #333 !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Fix 4: Sección de categorías - Ahora manejada con CSS propio inline */
+/* La nueva sección recife-categories-section tiene su propio CSS */
+
+/* Fix 6: Ocultar sección de productos relacionados original */
+#related-products.js-related-products {
+    display: none !important;
+}
+
+/* Fix 7: Centrar verticalmente el texto de la sección de bienvenida */
+.home-sections-container>.section-home:first-child {
+    margin-top: 40px !important;
+    padding-top: 0 !important;
+}
+
+.section-welcome.section-welcome-animated {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 80px !important; /* Altura mínima para centrar el texto */
+    padding: 0 !important; /* Eliminar padding para que use solo la altura */
+}
+
+.welcome-animated {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.welcome-text {
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* Fix 8: Agrandar cards de productos 10% */
+.js-products-featured-grid .js-item-product,
+.js-products-new-grid .js-item-product {
+    transform: scale(1.1);
+    margin: 10px 0;
+}
+
+/* Fix 9: Sección de Instagram compacta */
+.section-instagram-home {
+    margin-top: 30px !important;
+    margin-bottom: 30px !important;
+}
+
+.section-instagram-home .instagram-box {
+    padding: 30px 20px !important;
+}
+
+@media (max-width: 768px) {
+    .section-instagram-home .instagram-box {
+        padding: 20px 15px !important;
+    }
+}

@@ -52,6 +52,20 @@ Route::get('/sport/categoria', function () {
 Route::get('/sport/producto/{slug?}', function ($slug = 'zapatillas-sporty') {
     return view('tienda.sport_producto');
 })->name('tienda.sport.producto');
+
+// Rutas para el tema Recife (demo de tienda)
+Route::get('/recife', function () {
+    return view('tienda.recife_index');
+})->name('tienda.recife');
+
+Route::get('/recife/categoria', function () {
+    return view('tienda.recife_categoria');
+})->name('tienda.recife.categoria');
+
+Route::get('/recife/producto/{slug?}', function ($slug = 'silla-drago') {
+    return view('tienda.recife_producto');
+})->name('tienda.recife.producto');
+
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
 Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
