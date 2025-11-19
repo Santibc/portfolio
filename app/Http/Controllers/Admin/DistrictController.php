@@ -60,6 +60,14 @@ class DistrictController extends Controller
     {
         $district->delete();
 
+        // Return JSON response for AJAX requests
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'District deleted successfully.'
+            ]);
+        }
+
         return redirect()->route('admin.districts.index')
             ->with('success', 'District deleted successfully.');
     }
