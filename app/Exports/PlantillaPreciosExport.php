@@ -18,76 +18,64 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
 {
     public function collection()
     {
-        $productos = Producto::limit(20)->get();
+        $productos = Producto::limit(2)->get();
         $data = collect();
-        
+
         foreach ($productos as $producto) {
             // Obtener precios actuales
             $row = [
-                'referencia' => $producto->referencia,
+                'nombre' => $producto->nombre,
             ];
-            
-            // Agregar precios de cada lista
-            for ($i = 1; $i <= 6; $i++) {
+
+            // Agregar precios de cada lista con nombres reales
+            $nombresListas = ['COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'];
+            for ($i = 1; $i <= 5; $i++) {
                 $precio = $producto->precios()->where('lista_precio_id', $i)->first();
-                $nombreLista = $i <= 2 ? "Export{$i}" : "Local" . ($i - 2);
-                $row[$nombreLista] = $precio ? $precio->precio : null;
+                $row[$nombresListas[$i - 1]] = $precio ? $precio->precio : null;
             }
-            
+
             $data->push($row);
         }
-        
+
         // Si no hay productos, agregar ejemplos
         if ($data->isEmpty()) {
             $data->push([
-                'referencia' => 'PROD001',
-                'Export1' => 100.00,
-                'Export2' => 110.00,
-                'Local1' => 90.00,
-                'Local2' => 95.00,
-                'Local3' => 92.00,
-                'Local4' => 93.00,
+                'nombre' => 'Producto Ejemplo 1',
+                'COSTO' => 100.00,
+                'PRECIO VENTA ORO' => 110.00,
+                'PRECIO VENTA INSTALADOR ESPECIAL' => 90.00,
+                'PRECIO VENTA INSTALADOR' => 95.00,
+                'PRECIO VENTA FINAL' => 92.00,
             ]);
             $data->push([
-                'referencia' => 'PROD002',
-                'Export1' => 200.00,
-                'Export2' => 220.00,
-                'Local1' => 180.00,
-                'Local2' => 190.00,
-                'Local3' => 185.00,
-                'Local4' => 187.00,
-            ]);
-            $data->push([
-                'referencia' => 'PROD003',
-                'Export1' => null,
-                'Export2' => null,
-                'Local1' => null,
-                'Local2' => null,
-                'Local3' => null,
-                'Local4' => null,
+                'nombre' => 'Producto Ejemplo 2',
+                'COSTO' => 200.00,
+                'PRECIO VENTA ORO' => 220.00,
+                'PRECIO VENTA INSTALADOR ESPECIAL' => 180.00,
+                'PRECIO VENTA INSTALADOR' => 190.00,
+                'PRECIO VENTA FINAL' => 185.00,
             ]);
         }
-        
+
         return $data;
     }
     
     public function headings(): array
     {
         return [
-            'Referencia',
-            'Export1',
-            'Export2',
-            'Local1',
-            'Local2',
-            'Local3',
-            'Local4'
+            'Nombre',
+            'COSTO',
+            'PRECIO VENTA ORO',
+            'PRECIO VENTA INSTALADOR ESPECIAL',
+            'PRECIO VENTA INSTALADOR',
+            'PRECIO VENTA FINAL'
         ];
     }
     
     public function styles(Worksheet $sheet)
     {
-        // Estilo para los encabezados
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        // Estilo para los encabezados (6 columnas: A-F)
+        $sheet->getStyle('A1:F1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -113,7 +101,7 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
         
         // Aplicar bordes a todas las celdas con datos
         $highestRow = $sheet->getHighestRow();
-        $sheet->getStyle("A2:G{$highestRow}")->applyFromArray([
+        $sheet->getStyle("A2:F{$highestRow}")->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -121,9 +109,9 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
                 ],
             ],
         ]);
-        
+
         // Formato de moneda para las columnas de precios
-        $sheet->getStyle("B2:G{$highestRow}")
+        $sheet->getStyle("B2:F{$highestRow}")
             ->getNumberFormat()
             ->setFormatCode('#,##0.00');
         
@@ -140,13 +128,12 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
     public function columnWidths(): array
     {
         return [
-            'A' => 20,  // Referencia
-            'B' => 15,  // Export1
-            'C' => 15,  // Export2
-            'D' => 15,  // Local1
-            'E' => 15,  // Local2
-            'F' => 15,  // Local3
-            'G' => 15,  // Local4
+            'A' => 50,  // Nombre
+            'B' => 18,  // COSTO
+            'C' => 22,  // PRECIO VENTA ORO
+            'D' => 35,  // PRECIO VENTA INSTALADOR ESPECIAL
+            'E' => 28,  // PRECIO VENTA INSTALADOR
+            'F' => 25,  // PRECIO VENTA FINAL
         ];
     }
     

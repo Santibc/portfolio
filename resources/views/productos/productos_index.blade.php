@@ -119,7 +119,7 @@
   }
 
   function verPrecios(productoId) {
-    $.get(`/productos/${productoId}/precios-ajax`, function(data) {
+    $.get(`/productos/${productoId}/precios-ajax?_=${Date.now()}`, function(data) {
       $('#modalPreciosContent').html(data);
       $('#modalPrecios').modal('show');
     });

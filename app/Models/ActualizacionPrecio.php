@@ -39,24 +39,24 @@ class ActualizacionPrecio extends Model
         return round(($this->actualizaciones_exitosas / $this->total_filas) * 100, 2);
     }
 
-    public function agregarError($fila, $referencia, $mensaje)
+    public function agregarError($fila, $nombre, $mensaje)
     {
         $errores = $this->errores ?? [];
         $errores[] = [
             'fila' => $fila,
-            'referencia' => $referencia,
+            'nombre' => $nombre,
             'mensaje' => $mensaje,
             'timestamp' => now()->toISOString()
         ];
         $this->errores = $errores;
     }
 
-    public function agregarProcesado($fila, $referencia, $listaPrecio, $precioAnterior, $precioNuevo)
+    public function agregarProcesado($fila, $nombre, $listaPrecio, $precioAnterior, $precioNuevo)
     {
         $procesados = $this->detalles_procesados ?? [];
         $procesados[] = [
             'fila' => $fila,
-            'referencia' => $referencia,
+            'nombre' => $nombre,
             'lista_precio' => $listaPrecio,
             'precio_anterior' => $precioAnterior,
             'precio_nuevo' => $precioNuevo,

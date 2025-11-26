@@ -512,16 +512,16 @@ public function actualizarPreciosExcel(Request $request)
     public function preciosAjax(Producto $producto)
     {
         $precios = $producto->precios()->with('listaPrecio')->get();
-        
+
         $html = '<div class="table-responsive">';
-        
+
         if ($precios->isEmpty()) {
             $html .= '<p class="text-center text-muted">Este producto no tiene precios configurados.</p>';
         } else {
             $html .= '<table class="table table-striped">';
             $html .= '<thead><tr><th>Lista de Precios</th><th>Código</th><th>Precio</th><th>Estado</th></tr></thead>';
             $html .= '<tbody>';
-            
+
             foreach ($precios as $precio) {
                 $html .= '<tr>';
                 $html .= '<td>' . $precio->listaPrecio->nombre . '</td>';
@@ -530,13 +530,15 @@ public function actualizarPreciosExcel(Request $request)
                 $html .= '<td>' . ($precio->activo ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-secondary">Inactivo</span>') . '</td>';
                 $html .= '</tr>';
             }
-            
+
             $html .= '</tbody></table>';
         }
-        
+
         $html .= '</div>';
-        
-        return response($html);
+
+        return response($html)->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                              ->header('Pragma', 'no-cache')
+                              ->header('Expires', '0');
     }
 
     // Método AJAX para ver stock (NUEVO)

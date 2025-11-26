@@ -123,33 +123,30 @@
               <table class="table table-sm table-bordered mt-2 mb-0">
                 <thead class="table-dark">
                   <tr>
-                    <th>Referencia</th>
-                    <th>Export1</th>
-                    <th>Export2</th>
-                    <th>Local1</th>
-                    <th>Local2</th>
-                    <th>Local3</th>
-                    <th>Local4</th>
+                    <th>Nombre</th>
+                    <th>COSTO</th>
+                    <th>PRECIO VENTA ORO</th>
+                    <th>PRECIO VENTA INSTALADOR ESPECIAL</th>
+                    <th>PRECIO VENTA INSTALADOR</th>
+                    <th>PRECIO VENTA FINAL</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><code>PROD001</code></td>
+                    <td><code>Producto Ejemplo 1</code></td>
                     <td>100.00</td>
                     <td>110.00</td>
                     <td>90.00</td>
                     <td>95.00</td>
                     <td>92.00</td>
-                    <td>93.00</td>
                   </tr>
                   <tr>
-                    <td><code>PROD002</code></td>
+                    <td><code>Producto Ejemplo 2</code></td>
                     <td>200.00</td>
                     <td><em class="text-muted">vacío</em></td>
                     <td>180.00</td>
                     <td><em class="text-muted">vacío</em></td>
                     <td>185.00</td>
-                    <td>187.00</td>
                   </tr>
                 </tbody>
               </table>
@@ -181,7 +178,7 @@
                 <i class="bi bi-exclamation-triangle"></i> Notas Importantes
               </h6>
               <ul class="small mb-0">
-                <li>La columna <strong>Referencia</strong> debe coincidir exactamente con los códigos en el sistema</li>
+                <li>La columna <strong>Nombre</strong> debe coincidir exactamente con los nombres de productos en el sistema</li>
                 <li>Los precios deben ser números positivos (pueden incluir decimales)</li>
                 <li>El sistema procesará todas las filas válidas, aunque algunas tengan errores</li>
                 <li>Recibirá un reporte detallado al finalizar el proceso</li>
@@ -246,7 +243,7 @@
                       <thead>
                         <tr>
                           <th>Fila</th>
-                          <th>Referencia</th>
+                          <th>Nombre</th>
                           <th>Lista</th>
                           <th>Precio Anterior</th>
                           <th>Precio Nuevo</th>
@@ -256,14 +253,14 @@
                     </table>
                   </div>
                 </div>
-                
+
                 <div class="tab-pane fade" id="tab-errores">
                   <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                     <table class="table table-sm">
                       <thead>
                         <tr>
                           <th>Fila</th>
-                          <th>Referencia</th>
+                          <th>Nombre</th>
                           <th>Error</th>
                         </tr>
                       </thead>
@@ -327,7 +324,7 @@
           procesadosHtml += `
             <tr>
               <td>${item.fila}</td>
-              <td><code>${item.referencia}</code></td>
+              <td><code>${item.nombre}</code></td>
               <td>${item.lista_precio}</td>
               <td>${item.precio_anterior ? '$' + parseFloat(item.precio_anterior).toFixed(2) : '-'}</td>
               <td class="text-success">$${parseFloat(item.precio_nuevo).toFixed(2)}</td>
@@ -335,7 +332,7 @@
           `;
         });
         $('#tbody-procesados').html(procesadosHtml || '<tr><td colspan="5" class="text-center">No hay registros</td></tr>');
-        
+
         // Llenar errores
         $('#count-errores').text(response.errores.length);
         let erroresHtml = '';
@@ -343,7 +340,7 @@
           erroresHtml += `
             <tr>
               <td>${item.fila}</td>
-              <td><code>${item.referencia || '-'}</code></td>
+              <td><code>${item.nombre || '-'}</code></td>
               <td class="text-danger">${item.mensaje}</td>
             </tr>
           `;

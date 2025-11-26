@@ -87,42 +87,40 @@ if ($a->ruta_archivo && file_exists(public_path($a->ruta_archivo))) {
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            
+
             // Agregar BOM para UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Encabezados con punto y coma
-            fputcsv($file, ['Referencia', 'Export1', 'Export2', 'Local1', 'Local2', 'Local3', 'Local4'], ';');
-            
-            // Obtener algunos productos de ejemplo
-            $productos = Producto::limit(10)->get();
-            
+
+            // Encabezados con punto y coma (nombres reales de listas de precios)
+            fputcsv($file, ['Nombre', 'COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'], ';');
+
+            // Obtener algunos productos de ejemplo (solo 2)
+            $productos = Producto::limit(2)->get();
+
             if ($productos->count() > 0) {
                 foreach ($productos as $producto) {
-                    // Obtener precios actuales si existen
+                    // Obtener precios actuales si existen (solo 5 listas)
                     $precios = [];
-                    for ($i = 1; $i <= 6; $i++) {
+                    for ($i = 1; $i <= 5; $i++) {
                         $precio = $producto->precios()->where('lista_precio_id', $i)->first();
                         $precios[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
                     }
-                    
+
                     fputcsv($file, [
-                        $producto->referencia,
-                        $precios[0], // Export1
-                        $precios[1], // Export2
-                        $precios[2], // Local1
-                        $precios[3], // Local2
-                        $precios[4], // Local3
-                        $precios[5], // Local4
+                        $producto->nombre,
+                        $precios[0], // COSTO
+                        $precios[1], // PRECIO VENTA ORO
+                        $precios[2], // PRECIO VENTA INSTALADOR ESPECIAL
+                        $precios[3], // PRECIO VENTA INSTALADOR
+                        $precios[4], // PRECIO VENTA FINAL
                     ], ';');
                 }
             } else {
                 // Ejemplos genéricos si no hay productos
-                fputcsv($file, ['PROD001', '100.00', '110.00', '90.00', '95.00', '92.00', '93.00'], ';');
-                fputcsv($file, ['PROD002', '200.00', '220.00', '180.00', '190.00', '185.00', '187.00'], ';');
-                fputcsv($file, ['PROD003', '', '', '', '', '', ''], ';');
+                fputcsv($file, ['Producto Ejemplo 1', '100.00', '110.00', '90.00', '95.00', '92.00'], ';');
+                fputcsv($file, ['Producto Ejemplo 2', '200.00', '220.00', '180.00', '190.00', '185.00'], ';');
             }
-            
+
             fclose($file);
         };
 

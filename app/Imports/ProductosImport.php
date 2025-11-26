@@ -9,11 +9,12 @@ use App\Models\ImportacionProducto;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
+class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings, WithCalculatedFormulas
 {
     protected $importacion;
     protected $mapeoListasPrecios;
@@ -94,6 +95,17 @@ class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSett
                     // Validar que el item no esté vacío
                     if (empty($item)) {
                         $this->importacion->agregarError($filaActual, '', 'El campo ITEM es obligatorio');
+                        $fallidos++;
+                        $filaActual++;
+                        continue;
+                    }
+
+                    // Verificar si ya existe un producto con el mismo nombre (solo productos no eliminados)
+                    $productoExistente = Producto::where('nombre', $item)
+                                                   ->where('eliminado', false)
+                                                   ->first();
+                    if ($productoExistente) {
+                        $this->importacion->agregarError($filaActual, $item, "Ya existe un producto con este nombre (Ref: {$productoExistente->referencia})");
                         $fallidos++;
                         $filaActual++;
                         continue;

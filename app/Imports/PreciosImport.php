@@ -9,10 +9,11 @@ use App\Models\ActualizacionPrecio;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
-class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
+class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings, WithCalculatedFormulas
 {
     protected $actualizacion;
     protected $mapeoListas;
@@ -22,7 +23,16 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
         $this->actualizacion = $actualizacion;
         
         // Mapeo de nombres de columnas a IDs de listas de precios
+        // Las columnas del Excel son: Nombre, COSTO, PRECIO VENTA ORO, PRECIO VENTA INSTALADOR ESPECIAL, PRECIO VENTA INSTALADOR, PRECIO VENTA FINAL
+        // Las listas de precios son: 1=COSTO, 2=PRECIO VENTA ORO, 3=PRECIO VENTA INSTALADOR ESPECIAL, 4=PRECIO VENTA INSTALADOR, 5=PRECIO VENTA FINAL
         $this->mapeoListas = [
+            // Nombres completos (como aparecen en el Excel)
+            'costo' => 1,
+            'precioventaoro' => 2,
+            'precioventainstaladorespecial' => 3,
+            'precioventainstalador' => 4,
+            'precioventafinal' => 5,
+            // Compatibilidad con formato anterior (Export1, Export2, Local1-3)
             'export1' => 1,
             'export_1' => 1,
             'export2' => 2,
@@ -33,8 +43,6 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
             'local_2' => 4,
             'local3' => 5,
             'local_3' => 5,
-            'local4' => 6,
-            'local_4' => 6,
         ];
     }
 
@@ -74,27 +82,28 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
                     $rowNormalized[$cleanKey] = $value;
                 }
                 
-                // Buscar la referencia con diferentes posibles nombres
-                $referencia = trim(
-                    $rowNormalized['referencia'] ?? 
-                    $rowNormalized['ref'] ?? 
-                    $rowNormalized['codigo'] ?? 
-                    $rowNormalized['sku'] ?? 
+                // Buscar el nombre con diferentes posibles nombres de columna
+                $nombre = trim(
+                    $rowNormalized['nombre'] ??
+                    $rowNormalized['item'] ??
+                    $rowNormalized['producto'] ??
                     ''
                 );
-                
-                if (empty($referencia)) {
-                    $this->actualizacion->agregarError($filaActual, '', 'Referencia vacía');
+
+                if (empty($nombre)) {
+                    $this->actualizacion->agregarError($filaActual, '', 'Nombre vacío');
                     $fallidas++;
                     $filaActual++;
                     continue;
                 }
 
-                // Buscar el producto
-                $producto = Producto::where('referencia', $referencia)->first();
-                
+                // Buscar el producto por nombre (solo productos no eliminados)
+                $producto = Producto::where('nombre', $nombre)
+                                   ->where('eliminado', false)
+                                   ->first();
+
                 if (!$producto) {
-                    $this->actualizacion->agregarError($filaActual, $referencia, "Producto con referencia '{$referencia}' no encontrado");
+                    $this->actualizacion->agregarError($filaActual, $nombre, "Producto con nombre '{$nombre}' no encontrado o está eliminado");
                     $fallidas++;
                     $filaActual++;
                     continue;
@@ -113,20 +122,20 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
                         // Validar que el precio sea positivo
                         if ($precio < 0) {
                             $this->actualizacion->agregarError(
-                                $filaActual, 
-                                $referencia, 
+                                $filaActual,
+                                $nombre,
                                 "Precio negativo no permitido para lista {$columna}: {$precio}"
                             );
                             continue;
                         }
-                        
+
                         // Obtener precio anterior
                         $precioAnterior = PrecioProducto::where('producto_id', $producto->id)
                                                         ->where('lista_precio_id', $listaId)
                                                         ->first();
-                        
+
                         $valorAnterior = $precioAnterior ? $precioAnterior->precio : null;
-                        
+
                         // Actualizar o crear precio
                         PrecioProducto::updateOrCreate(
                             [
@@ -138,32 +147,32 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
                                 'activo' => true
                             ]
                         );
-                        
+
                         // Registrar en detalles procesados
                         $listaNombre = ListaPrecio::find($listaId)->nombre ?? $columna;
                         $this->actualizacion->agregarProcesado(
                             $filaActual,
-                            $referencia,
+                            $nombre,
                             $listaNombre,
                             $valorAnterior,
                             $precio
                         );
-                        
+
                         $alMenosUnPrecioActualizado = true;
-                        
+
                         Log::info('Precio actualizado', [
-                            'producto' => $referencia,
+                            'producto' => $nombre,
                             'lista' => $listaNombre,
                             'precio_anterior' => $valorAnterior,
                             'precio_nuevo' => $precio
                         ]);
                     }
                 }
-                
+
                 if ($alMenosUnPrecioActualizado) {
                     $exitosas++;
                 } else {
-                    $this->actualizacion->agregarError($filaActual, $referencia, 'No se encontraron precios válidos para actualizar');
+                    $this->actualizacion->agregarError($filaActual, $nombre, 'No se encontraron precios válidos para actualizar');
                     $fallidas++;
                 }
                 
@@ -195,7 +204,7 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
                 'estado' => 'error',
                 'errores' => [[
                     'fila' => 0,
-                    'referencia' => '',
+                    'nombre' => '',
                     'mensaje' => 'Error general: ' . $e->getMessage()
                 ]]
             ]);

@@ -17,7 +17,8 @@
       "Bash(if not exist \"c:\\xampp\\htdocs\\portfolio\\public\\documentacion\" mkdir \"c:\\xampp\\htdocs\\portfolio\\public\\documentacion\")",
       "Bash(cmd /c:*)",
       "Bash(composer require:*)",
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "Bash(del \"c:\\xampp\\htdocs\\portfolio\\leer-excel-headers.php\")"
     ],
     "deny": [],
     "ask": []
