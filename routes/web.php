@@ -75,6 +75,7 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
+    Route::delete('/{id}/eliminar', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
     Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');

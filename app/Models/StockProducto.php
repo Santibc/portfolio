@@ -199,16 +199,25 @@ class StockProducto extends Model
     public function scopeConStockBajo($query)
     {
         return $query->whereRaw('(cantidad_disponible - cantidad_reservada) <= stock_minimo')
-                     ->where('alerta_stock_bajo', true);
+                     ->where('alerta_stock_bajo', true)
+                     ->whereHas('producto', function($q) {
+                         $q->where('eliminado', false);
+                     });
     }
 
     public function scopeSinStock($query)
     {
-        return $query->whereRaw('(cantidad_disponible - cantidad_reservada) <= 0');
+        return $query->whereRaw('(cantidad_disponible - cantidad_reservada) <= 0')
+                     ->whereHas('producto', function($q) {
+                         $q->where('eliminado', false);
+                     });
     }
 
     public function scopeConStock($query)
     {
-        return $query->whereRaw('(cantidad_disponible - cantidad_reservada) > 0');
+        return $query->whereRaw('(cantidad_disponible - cantidad_reservada) > 0')
+                     ->whereHas('producto', function($q) {
+                         $q->where('eliminado', false);
+                     });
     }
 }

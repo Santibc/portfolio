@@ -26,6 +26,7 @@ class ProductosController extends Controller
     {
         if ($request->ajax()) {
             $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal'])
+                            ->where('eliminado', false)
                             ->select('productos.*');
 
             return DataTables::of($query)
@@ -76,6 +77,9 @@ class ProductosController extends Controller
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
+
+                    // Botón de eliminar
+                    $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="eliminarProducto('.$p->id.')"><i class="bi bi-trash"></i></button>';
 
                     $buttons .= '</div>';
 
@@ -573,5 +577,24 @@ public function actualizarPreciosExcel(Request $request)
         $html .= '</div>';
         
         return response($html);
+    }
+
+    public function eliminar($id)
+    {
+        try {
+            $producto = Producto::findOrFail($id);
+            $producto->eliminado = true;
+            $producto->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Producto eliminado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el producto: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

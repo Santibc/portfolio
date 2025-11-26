@@ -24,7 +24,8 @@ class Producto extends Model
         'activo',
         'tiene_variantes',
         'controlar_stock',
-        'permitir_venta_sin_stock'
+        'permitir_venta_sin_stock',
+        'eliminado'
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class Producto extends Model
         'tiene_variantes' => 'boolean',
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
+        'eliminado' => 'boolean',
     ];
 
     public function categoria()
@@ -176,7 +178,7 @@ class Producto extends Model
 
     public function scopeActivos($query)
     {
-        return $query->where('activo', true);
+        return $query->where('activo', true)->where('eliminado', false);
     }
 
     public function scopePorCategoria($query, $categoriaId)

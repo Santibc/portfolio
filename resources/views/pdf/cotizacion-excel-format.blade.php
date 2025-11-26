@@ -292,9 +292,13 @@
             <td class="empresa-info-left">
                 <div class="empresa-nombre">INNOVATECH GLOBAL SAS</div>
                 <div class="empresa-detalle">NIT: 901543944-6</div>
-                <div class="empresa-detalle">TELEFONO: 3145954725 - 305 2774730 - 3152443850</div>
-                <div class="empresa-detalle">CORREO: comercial4@innovatechglobal.com.co</div>
-                <div class="empresa-detalle">DIRECCION: CALLE 24AN #5N 58 LOCAL 12 CC ASTROCENTRO - SEDE NORTE</div>
+                <div class="empresa-detalle"><strong>TELEFONOS CALI:</strong> 3174422343 - 3043097203 - 3145954725 - 3022040377 - 3022040377 - 3</div>
+                <div class="empresa-detalle"><strong>TELEFONOS PEREIRA:</strong> 3002942179 - 3002942155 - 3004036493</div>
+                <div class="empresa-detalle"><strong>CORREO:</strong> ventas@innovatechglobal.com.co</div>
+                <div class="empresa-detalle"><strong>DIRECCION CALI NORTE:</strong> CALLE 24AN #5N 58 LOCAL 12 CC ASTROCENTRO</div>
+                <div class="empresa-detalle"><strong>DIRECCION CALI SEDE CC CHINA:</strong> Carrera 6 # 16-17, Local 113</div>
+                <div class="empresa-detalle"><strong>DIRECCION CALI SEDE SAN NICOLAS:</strong> Carrera 6 # 18-13</div>
+                <div class="empresa-detalle"><strong>DIRECCION PEREIRA:</strong> Calle 16 # 4 - 44 centro</div>
                 <div class="empresa-detalle">WEB: WWW.INNOVATECHGLOBAL.COM.CO</div>
             </td>
             <td class="empresa-info-right">
@@ -395,19 +399,17 @@
         </tbody>
     </table>
 
-    {{-- TEXTOS LEGALES --}}
-    <div class="texto-legal">
-        <strong>LOS METODOS DE PAGO EN EFECTIVO, POR TARJETA O TRANSFERENCIA A NUESTRA CUENTA AHORROS DE BANCOLOMBIA # 825-00005436 A NOMBRE DE INOVATECH GLOBAL SAS</strong>
-        <br><br>
-        Autorizo a INOVATECH GLOBAL S.A.S. para recaudar, almacenar, utilizar y actualizar mis datos personales con fines exclusivamente comerciales garantizándome que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.
-    </div>
-
     {{-- TOTAL --}}
     <div class="totales-container">
         <div class="total-row">
             <span class="total-label">TOTAL:</span>
             <span class="total-valor">$ {{ number_format($totalGeneral, 0) }}</span>
         </div>
+    </div>
+
+    {{-- TEXTOS LEGALES --}}
+    <div class="texto-legal">
+        Autorizo a INOVATECH GLOBAL S.A.S. para recaudar, almacenar, utilizar y actualizar mis datos personales con fines exclusivamente comerciales garantizándome que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.
     </div>
 
     {{-- CONDICIONES FINALES --}}

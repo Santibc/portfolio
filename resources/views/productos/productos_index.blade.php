@@ -124,6 +124,29 @@
       $('#modalPrecios').modal('show');
     });
   }
+
+  function eliminarProducto(productoId) {
+    if (confirm('¿Está seguro de que desea eliminar este producto? Esta acción no se puede deshacer.')) {
+      $.ajax({
+        url: `/productos/${productoId}/eliminar`,
+        type: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+          if (response.success) {
+            $('#productos-table').DataTable().ajax.reload();
+            alert(response.message);
+          } else {
+            alert('Error: ' + response.message);
+          }
+        },
+        error: function(xhr) {
+          alert('Error al eliminar el producto');
+        }
+      });
+    }
+  }
   </script>
 {{-- Agregar esta función JavaScript junto con las otras funciones --}}
 <script>

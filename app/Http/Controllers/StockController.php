@@ -18,6 +18,9 @@ class StockController extends Controller
     {
         if ($request->ajax()) {
             $query = StockProducto::with(['producto', 'variante'])
+                ->whereHas('producto', function($q) {
+                    $q->where('eliminado', false);
+                })
                 ->select('stock_productos.*');
 
             // Filtrar por producto si se especifica
@@ -305,7 +308,7 @@ class StockController extends Controller
     public function dashboard()
     {
         // Estadísticas generales
-        $totalProductos = Producto::where('controlar_stock', true)->count();
+        $totalProductos = Producto::where('controlar_stock', true)->where('eliminado', false)->count();
         $productosConStock = StockProducto::conStock()->count();
         $productosSinStock = StockProducto::sinStock()->count();
         $productosStockBajo = StockProducto::conStockBajo()->count();
@@ -396,7 +399,7 @@ class StockController extends Controller
     {
         DB::beginTransaction();
         try {
-            $productos = Producto::where('controlar_stock', true)->get();
+            $productos = Producto::where('controlar_stock', true)->where('eliminado', false)->get();
             
             foreach ($productos as $producto) {
                 $producto->inicializarStock();
@@ -420,7 +423,8 @@ class StockController extends Controller
     // Obtener productos para selector (AJAX)
     public function productosJson(Request $request)
     {
-        $query = Producto::where('controlar_stock', true);
+        $query = Producto::where('controlar_stock', true)
+                        ->where('eliminado', false);
         
         if ($request->has('q')) {
             $search = $request->q;
