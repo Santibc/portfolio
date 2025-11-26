@@ -320,7 +320,7 @@
                     </a>
                 </div>
                 <div class="col-6 text-end">
-                    <a href="{{ route('tienda.carrito', $empresa->slug) }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('tienda.carrito') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Volver al Carrito
                     </a>
                 </div>
@@ -361,7 +361,7 @@
     <!-- Main Content -->
     <main class="py-4">
         <div class="container">
-            <form action="{{ route('tienda.procesar-compra', $empresa->slug) }}" method="POST" id="checkoutForm">
+            <form action="{{ route('tienda.procesar-compra') }}" method="POST" id="checkoutForm">
                 @csrf
                 <div class="row">
                     <!-- Checkout Form -->

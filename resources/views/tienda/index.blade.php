@@ -732,9 +732,9 @@
       
       btn.prop('disabled', true);
       btn.html('<span class="spinner-border spinner-border-sm"></span>');
-      
+
       $.ajax({
-        url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+        url: "{{ route('tienda.carrito.agregar') }}",
         method: 'POST',
         data: {
           producto_id: productoId,

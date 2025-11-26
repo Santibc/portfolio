@@ -416,7 +416,6 @@ class TiendaController extends Controller
             'cantidad' => 'required|integer|min:0'
         ]);
 
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
         $carrito = $this->obtenerCarrito($empresa->id);
 
         if ($request->cantidad == 0) {
@@ -470,7 +469,7 @@ class TiendaController extends Controller
         $carrito = $this->obtenerCarrito($empresa->id);
 
         if (empty($carrito->items)) {
-            return redirect()->route('tienda.carrito', $slug)
+            return redirect()->route('tienda.carrito')
                 ->with('error', 'El carrito está vacío');
         }
 
@@ -506,8 +505,8 @@ class TiendaController extends Controller
                 $errorMessage .= "• {$error['producto']}{$varianteInfo}: Stock disponible {$error['stock_disponible']}, solicitaste {$error['cantidad_solicitada']}<br>";
             }
             $errorMessage .= 'Por favor ajusta las cantidades en tu carrito.';
-            
-            return redirect()->route('tienda.carrito', $slug)
+
+            return redirect()->route('tienda.carrito')
                 ->with('error', $errorMessage);
         }
 
@@ -555,11 +554,10 @@ public function procesarCompra(Request $request)
         'notas' => 'nullable|string'
     ]);
 
-    $empresa = Empresa::where('slug', $slug)->firstOrFail();
     $carrito = $this->obtenerCarrito($empresa->id);
 
     if (empty($carrito->items)) {
-        return redirect()->route('tienda.carrito', $slug)
+        return redirect()->route('tienda.carrito')
             ->with('error', 'El carrito está vacío');
     }
 
@@ -798,7 +796,7 @@ private function liberarStockCompra($compra)
             return redirect()->away($resultado['payment_url']);
         } else {
             // Si falla, mostrar página de error o volver al checkout
-            return redirect()->route('tienda.checkout', $compra->empresa->slug)
+            return redirect()->route('tienda.checkout')
                 ->with('error', 'Error al procesar el pago. Por favor intente nuevamente.');
         }
     }
@@ -989,7 +987,6 @@ public function categorias(Request $request)
             'variante_id' => 'nullable|exists:variantes_productos,id'
         ]);
 
-        $empresa = Empresa::where('slug', $slug)->firstOrFail();
         $producto = Producto::where('id', $request->producto_id)
             ->where('empresa_id', $empresa->id)
             ->firstOrFail();

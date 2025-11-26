@@ -572,7 +572,7 @@
             $('#cartLoading').show();
             
             $.ajax({
-                url: "{{ route('tienda.carrito.actualizar', $empresa->slug) }}",
+                url: "{{ route('tienda.carrito.actualizar') }}",
                 method: 'POST',
                 data: {
                     key: key,
@@ -605,7 +605,7 @@
             $('#cartLoading').show();
             
             $.ajax({
-                url: "{{ route('tienda.carrito.quitar', $empresa->slug) }}",
+                url: "{{ route('tienda.carrito.quitar') }}",
                 method: 'POST',
                 data: {
                     key: key
@@ -672,7 +672,7 @@
         // Validar stock del carrito
         function validateCartStock() {
             $.ajax({
-                url: "{{ route('tienda.carrito.validar-stock', $empresa->slug) }}",
+                url: "{{ route('tienda.carrito.validar-stock') }}",
                 method: 'POST',
                 success: function(response) {
                     const checkoutBtn = $('#checkoutBtn');
@@ -720,12 +720,12 @@
             checkoutSpinner.removeClass('d-none');
             
             $.ajax({
-                url: "{{ route('tienda.carrito.validar-stock', $empresa->slug) }}",
+                url: "{{ route('tienda.carrito.validar-stock') }}",
                 method: 'POST',
                 success: function(response) {
                     if (response.valid) {
                         // Stock válido, proceder al checkout
-                        window.location.href = "{{ route('tienda.checkout', $empresa->slug) }}";
+                        window.location.href = "{{ route('tienda.checkout') }}";
                     } else {
                         // Stock inválido, mostrar errores
                         let errorMessage = 'Algunos productos ya no tienen stock suficiente:\\n';
@@ -773,7 +773,7 @@
 
             errorEl.classList.add('d-none');
 
-            fetch("{{ route('tienda.carrito.aplicar-descuento', $empresa->slug) }}", {
+            fetch("{{ route('tienda.carrito.aplicar-descuento') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -798,7 +798,7 @@
         }
 
         function removerDescuento() {
-            fetch("{{ route('tienda.carrito.remover-descuento', $empresa->slug) }}", {
+            fetch("{{ route('tienda.carrito.remover-descuento') }}", {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content

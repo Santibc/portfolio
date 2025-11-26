@@ -731,7 +731,7 @@
       if (selectedVariant) data.variante_id = selectedVariant.id;
 
       $.ajax({
-        url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+        url: "{{ route('tienda.carrito.agregar') }}",
         method: 'POST',
         data: data,
         success: function(response) {
@@ -872,7 +872,7 @@
   function updateStockInfo(varianteId) {
     // Obtener información de stock vía AJAX
     $.ajax({
-      url: "{{ route('tienda.stock.info', $empresa->slug) }}",
+      url: "{{ route('tienda.stock.info') }}",
       method: 'POST',
       data: {
         producto_id: {{ $producto->id }},
@@ -939,12 +939,12 @@
     if (selectedVariant) data.variante_id = selectedVariant.id;
 
     $.ajax({
-      url: "{{ route('tienda.carrito.agregar', $empresa->slug) }}",
+      url: "{{ route('tienda.carrito.agregar') }}",
       method: 'POST',
       data: data,
       success: function(response) {
         // Redirigir al checkout
-        window.location.href = "{{ route('tienda.checkout', $empresa->slug) }}";
+        window.location.href = "{{ route('tienda.checkout') }}";
       },
       error: function(xhr) {
         const error = xhr.responseJSON?.error || 'Error al procesar la compra';

@@ -34,7 +34,7 @@
                 <h5 class="footer-title">Categorías</h5>
                 <ul class="footer-links">
                     @foreach($categorias->take(5) as $categoria)
-                    <li><a href="{{ route('tienda.categorias', [$empresa->slug, 'categoria' => $categoria->id]) }}">{{ $categoria->nombre }}</a></li>
+                    <li><a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}">{{ $categoria->nombre }}</a></li>
                     @endforeach
                 </ul>
             </div>

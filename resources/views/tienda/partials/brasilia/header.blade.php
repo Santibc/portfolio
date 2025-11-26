@@ -84,7 +84,7 @@
         <div class="utilities-container">
             <!-- Cart -->
             <span id="ajax-cart" data-component="cart-button">
-                <a href="{{ route('tienda.carrito', $empresa->slug) }}" class="header-utility">
+                <a href="{{ route('tienda.carrito') }}" class="header-utility">
                     <span class="js-header-utility-icon header-icon-big utility-icon-md-colors">
                         <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#bag"></use></svg>
                         <span class="js-cart-widget-amount badge d-md-none">{{ $carrito->total_items ?? 0 }}</span>
