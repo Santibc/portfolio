@@ -16,42 +16,6 @@
             <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
-        @if (auth()->user()->getRoleNames()->first() == 'admin')
-            <a href="/usuarios"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}"
-               title="Usuarios">
-                <i class="bi bi-people-fill"></i>
-                <span>Usuarios</span>
-            </a>
-        @endif
-        @if(auth()->user()->empresa)
-            <div class="nav-item">
-                <a href="#empresaSubmenu" 
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'active' : 'text-dark' }}"
-                   data-bs-toggle="collapse" 
-                   aria-expanded="{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'true' : 'false' }}">
-                    <i class="bi bi-building"></i>
-                    <span>Mi Empresa</span>
-                    <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
-                </a>
-                <div class="collapse {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'show' : '' }}" id="empresaSubmenu">
-                    <div class="ps-3">
-                        <a href="/empresa"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa') ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-gear"></i>
-                            <span>Configuración</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        @else
-            <a href="/empresa"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-building"></i>
-                <span>Mi Empresa</span>
-            </a>
-        @endif
-
     </nav>
 
     {{-- Botón Salir --}}
