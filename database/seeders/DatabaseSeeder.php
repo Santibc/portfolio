@@ -16,9 +16,19 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
+            // Datos geográficos
             PaisSeeder::class,
             DepartamentoSeeder::class,
             CiudadSeeder::class,
+
+            // Roles y permisos (DEBE ejecutarse antes de crear usuarios)
+            RolesAndPermissionsSeeder::class,
+
+            // Usuario administrador
+            AdminUserSeeder::class,
+
+            // Usuarios de prueba para todos los roles
+            TestUsersSeeder::class,
         ]);
 
     }

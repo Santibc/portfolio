@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout:*)"
+      "Bash(php artisan route:list:*)",
+      "SlashCommand(/dev-start)",
+      "Bash(php artisan db:seed:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(php -r:*)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan:*)",
+      "Bash(php artisan view:clear:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(mysql:*)",
+      "Bash(php check_roi.php:*)"
     ],
     "deny": [],
     "ask": []

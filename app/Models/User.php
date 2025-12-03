@@ -9,9 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles; 
 use App\Models\Lead;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +26,14 @@ class User extends Authenticatable
         'password',
         'telefono',
         'activo',
-        'ultimo_login'
+        'ultimo_login',
+        'documento_identidad',
+        'tipo_documento',
+        'kyc_status',
+        'kyc_aprobado_por',
+        'kyc_aprobado_at',
+        'codigo_referido',
+        'referido_por'
     ];
 
     /**
@@ -45,8 +54,10 @@ class User extends Authenticatable
     protected $casts = [
         'last_synced_at' => 'datetime',
         'email_verified_at' => 'datetime',
-               'activo' => 'boolean',
+        'activo' => 'boolean',
         'ultimo_login' => 'datetime',
+        'kyc_aprobado_at' => 'datetime',
+        'deleted_at' => 'datetime'
     ];
 public function empresa()
 {
@@ -117,5 +128,86 @@ public function puedeCrearEmpresa()
     public function scopeAdministradores($query)
     {
         return $query->where('tipo_usuario', 'admin');
+    }
+
+    // Relaciones AGROMARKET
+    public function billetera()
+    {
+        return $this->hasOne(Billetera::class, 'usuario_id');
+    }
+
+    public function inversiones()
+    {
+        return $this->hasMany(Inversion::class, 'usuario_id');
+    }
+
+    public function proyectosCreados()
+    {
+        return $this->hasMany(Proyecto::class, 'agricultor_id');
+    }
+
+    public function transaccionesBilletera()
+    {
+        return $this->hasMany(TransaccionBilletera::class, 'usuario_id');
+    }
+
+    public function dividendos()
+    {
+        return $this->hasMany(Dividendo::class, 'usuario_id');
+    }
+
+    public function retiros()
+    {
+        return $this->hasMany(Retiro::class, 'usuario_id');
+    }
+
+    public function depositos()
+    {
+        return $this->hasMany(Deposito::class, 'usuario_id');
+    }
+
+    public function documentosKyc()
+    {
+        return $this->hasMany(DocumentoKyc::class, 'usuario_id');
+    }
+
+    public function cuentasBancarias()
+    {
+        return $this->hasMany(CuentaBancaria::class, 'usuario_id');
+    }
+
+    public function notificaciones()
+    {
+        return $this->hasMany(Notificacion::class, 'usuario_id');
+    }
+
+    public function mensajesEnviados()
+    {
+        return $this->hasMany(Mensaje::class, 'remitente_id');
+    }
+
+    public function mensajesRecibidos()
+    {
+        return $this->hasMany(Mensaje::class, 'destinatario_id');
+    }
+
+    public function referidoPor()
+    {
+        return $this->belongsTo(User::class, 'referido_por');
+    }
+
+    public function referidos()
+    {
+        return $this->hasMany(User::class, 'referido_por');
+    }
+
+    public function aprobadorKyc()
+    {
+        return $this->belongsTo(User::class, 'kyc_aprobado_por');
+    }
+
+    public function comprasCrossFund()
+    {
+        return $this->hasMany(CompraCrossFund::class, 'usuario_id');
     }
 }

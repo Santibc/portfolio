@@ -1,106 +1,82 @@
-<div class="d-flex flex-column h-100">
-    {{-- Logo --}}
-    <div class="d-flex justify-content-center align-items-center py-3 border-bottom">
-        <a href="/" class="text-decoration-none">
-            <img style="width: 80%; margin-left: 5%;" src="{{ asset('images/logo.png') }}" class="logo-full" width="100" alt="Logo">
-            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
-        </a>
-    </div>
-
-    {{-- Navegación --}}
-    <nav class="nav flex-column px-2 py-3 overflow-auto flex-grow-1">
-        {{-- Inicio --}}
-        <a href="/dashboard"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}"
-           title="Inicio">
-            <i class="bi bi-house-door-fill"></i>
+<nav class="sidebar-nav">
+    <div class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+        <a href="{{ route('dashboard') }}" class="nav-link">
+            <i class="fas fa-home"></i>
             <span>Inicio</span>
         </a>
-    </nav>
-
-    {{-- Botón Salir --}}
-    <div class="mt-auto p-3 border-top">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-start gap-2">
-                <i class="bi bi-box-arrow-right"></i>
-                <span class="logout-label">Salir</span>
-            </button>
-        </form>
     </div>
-</div>
 
-<style>
-    /* Estilos para submenús */
-    .nav-item .nav-link[data-bs-toggle="collapse"] {
-        position: relative;
-    }
-    
-    .submenu-icon {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-    
-    .nav-link[aria-expanded="true"] .submenu-icon {
-        transform: rotate(180deg);
-    }
-    
-    .collapse .ps-3 {
-        border-left: 2px solid #dee2e6;
-        margin-left: 1rem;
-    }
-    
-    .collapse .ps-3 .nav-link {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.75rem;
-    }
-    
-    /* Ocultar iconos de submenú cuando sidebar está colapsado */
-    .sidebar.collapsed .submenu-icon {
-        display: none;
-    }
-    
-    /* Ajustar submenús cuando sidebar está colapsado */
-    .sidebar.collapsed .collapse {
-        position: absolute;
-        left: 70px;
-        top: 0;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-        min-width: 200px;
-        z-index: 1050;
-    }
-    
-    .sidebar.collapsed .collapse .ps-3 {
-        border-left: none;
-        margin-left: 0;
-        padding: 0.5rem;
-    }
-    
-    /* Asegurar que el menú es scrolleable */
-    .nav.overflow-auto {
-        max-height: calc(100vh - 200px);
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    
-    /* Estilo para scrollbar */
-    .nav.overflow-auto::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 3px;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-</style>
+    {{-- MÓDULO 3: Gestión de Proyectos --}}
+    @role('Agricultor')
+    <div class="nav-item {{ request()->routeIs('farmer.projects.*') ? 'active' : '' }}">
+        <a href="{{ route('farmer.projects.index') }}" class="nav-link">
+            <i class="fas fa-seedling"></i>
+            <span>Mis Proyectos</span>
+        </a>
+    </div>
+    @endrole
+
+    @role('Administrador')
+    <div class="nav-item {{ request()->routeIs('admin.projects.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.projects.review.index') }}" class="nav-link">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Revisar Proyectos</span>
+        </a>
+    </div>
+    @endrole
+
+    {{-- TODO: Descomentar cuando se implementen los módulos --}}
+    {{--
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-chart-pie"></i>
+            <span>Mi Portafolio</span>
+        </a>
+    </div>
+
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-search"></i>
+            <span>Explorar Proyectos</span>
+        </a>
+    </div>
+
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-wallet"></i>
+            <span>Billetera</span>
+        </a>
+    </div>
+
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-history"></i>
+            <span>Historial</span>
+        </a>
+    </div>
+
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            <span>Análisis</span>
+        </a>
+    </div>
+
+    <div class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>Configuración</span>
+        </a>
+    </div>
+    --}}
+</nav>
+
+<div class="sidebar-footer">
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesión</span>
+        </button>
+    </form>
+</div>
