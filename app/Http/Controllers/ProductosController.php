@@ -392,11 +392,40 @@ class ProductosController extends Controller
                         ]);
                     }
                 } else {
+                    // Actualizar configuración de stock
                     $stock->update([
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
                         'ubicacion' => $request->input('ubicacion_stock')
                     ]);
+
+                    // Manejar cambio de stock desde el formulario de edición
+                    if ($request->has('stock_actual') && $request->has('stock_anterior')) {
+                        $stockNuevo = (int) $request->input('stock_actual');
+                        $stockAnterior = (int) $request->input('stock_anterior');
+                        $diferencia = $stockNuevo - $stockAnterior;
+
+                        if ($diferencia !== 0) {
+                            // Usar los métodos del modelo para mantener trazabilidad
+                            if ($diferencia > 0) {
+                                // Aumentó el stock - registrar como entrada
+                                $stock->entrada(
+                                    $diferencia,
+                                    'ajuste_inventario',
+                                    null,
+                                    'Ajuste desde formulario de producto'
+                                );
+                            } else {
+                                // Disminuyó el stock - registrar como salida
+                                $stock->salida(
+                                    abs($diferencia),
+                                    'ajuste_inventario',
+                                    null,
+                                    'Ajuste desde formulario de producto'
+                                );
+                            }
+                        }
+                    }
                 }
             }
             
@@ -472,6 +501,56 @@ class ProductosController extends Controller
             DB::rollBack();
             return back()->withInput()
                          ->with('error', 'Error al guardar el producto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar imagen de producto vía AJAX
+     */
+    public function eliminarImagen($imagenId)
+    {
+        try {
+            $imagen = ImagenProducto::findOrFail($imagenId);
+
+            // Verificar que el producto pertenece a la empresa del usuario
+            $producto = Producto::find($imagen->producto_id);
+            if (!$producto || $producto->empresa_id != auth()->user()->empresa->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tiene permiso para eliminar esta imagen'
+                ], 403);
+            }
+
+            // Eliminar archivo físico
+            $filePath = public_path($imagen->ruta_imagen);
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+
+            // Si era la imagen principal, asignar otra como principal
+            $esPrincipal = $imagen->es_principal;
+
+            // Eliminar de la base de datos
+            $imagen->delete();
+
+            // Si era principal, asignar la primera imagen restante como principal
+            if ($esPrincipal) {
+                $primeraImagen = $producto->imagenes()->first();
+                if ($primeraImagen) {
+                    $primeraImagen->update(['es_principal' => true]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Imagen eliminada correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la imagen: ' . $e->getMessage()
+            ], 500);
         }
     }
 

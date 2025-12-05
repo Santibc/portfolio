@@ -216,10 +216,14 @@
       if (!sidebar || !appHeader || !appMainContent || !toggleBtn) return;
 
       let isManuallyToggled = false;
-      const TRANSITION_MS = 300;
+      const SIDEBAR_EXPANDED = 250;
+      const SIDEBAR_COLLAPSED = 70;
 
-      const updateLayout = () => {
-        const sidebarWidth = sidebar.offsetWidth; // 70px o 250px
+      // Actualiza el layout usando el ancho destino (no el actual animado)
+      const updateLayout = (targetWidth = null) => {
+        const sidebarWidth = targetWidth !== null
+          ? targetWidth
+          : (sidebar.classList.contains('collapsed') ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED);
         appHeader.style.left = `${sidebarWidth}px`;
         appHeader.style.right = '0';
         appMainContent.style.marginLeft = `${sidebarWidth}px`;
@@ -236,7 +240,7 @@
         } else {
           sidebar.classList.remove('collapsed');
         }
-        setTimeout(updateLayout, TRANSITION_MS);
+        updateLayout();
       };
 
       const restoreSidebarState = () => {
@@ -248,7 +252,7 @@
         } else {
           handleResponsive();
         }
-        setTimeout(updateLayout, TRANSITION_MS);
+        updateLayout();
       };
 
       document.addEventListener('DOMContentLoaded', () => {
@@ -259,12 +263,14 @@
         tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
       });
 
-      // Toggle manual
+      // Toggle manual - actualizar inmediatamente para sincronizar animaciones
       toggleBtn.addEventListener('click', () => {
         isManuallyToggled = true;
         sidebar.classList.toggle('collapsed');
         saveSidebarState();
-        setTimeout(updateLayout, TRANSITION_MS);
+        // Calcular el ancho destino y actualizar inmediatamente
+        const targetWidth = sidebar.classList.contains('collapsed') ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED;
+        updateLayout(targetWidth);
       });
 
       // Redimensionamiento (debounce)

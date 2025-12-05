@@ -202,9 +202,9 @@ class StockController extends Controller
             
             $resultado = $stock->salida(
                 $request->cantidad,
-                'venta',
+                'otro',
                 $request->referencia,
-                $request->motivo
+                $request->motivo ?: 'Salida manual desde módulo de stock'
             );
 
             if (!$resultado) {
@@ -383,16 +383,20 @@ class StockController extends Controller
         $movimientosMes = MovimientoStock::whereHas('producto', function($q) use ($empresa) {
             $q->where('empresa_id', $empresa->id);
         })->delMes()->get();
-        
+
         $entradasMes = $movimientosMes->where('tipo_movimiento', 'entrada')->sum('cantidad');
-        $salidasMes = $movimientosMes->where('tipo_movimiento', 'salida')->sum('cantidad');
-        
-        // Productos con mayor rotación de la empresa
+        // Solo contar salidas por venta real (no salidas manuales u otros ajustes)
+        $salidasMes = $movimientosMes->where('tipo_movimiento', 'salida')
+                                     ->where('origen', 'venta')
+                                     ->sum('cantidad');
+
+        // Productos con mayor rotación de la empresa (solo ventas reales)
         $productosTopRotacion = DB::table('movimientos_stock')
             ->join('productos', 'movimientos_stock.producto_id', '=', 'productos.id')
             ->select('movimientos_stock.producto_id', DB::raw('SUM(movimientos_stock.cantidad) as total_movimiento'))
             ->where('productos.empresa_id', $empresa->id)
             ->where('movimientos_stock.tipo_movimiento', 'salida')
+            ->where('movimientos_stock.origen', 'venta') // Solo ventas reales
             ->whereBetween('movimientos_stock.created_at', [Carbon::now()->subMonth(), Carbon::now()])
             ->groupBy('movimientos_stock.producto_id')
             ->orderBy('total_movimiento', 'desc')

@@ -93,23 +93,70 @@
                                 </div>
                                 <span class="hidden" data-store="stock-product-{{ $producto->id }}-infinite"></span>
                                 <div class="swiper-wrapper">
-                                    <div class="js-product-slide w-100 swiper-slide product-slide slider-slide swiper-slide-active"
-                                        data-image="538793924" data-image-position="0">
-                                        <a href="{{ $producto->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
-                                            data-fancybox="product-gallery"
-                                            class="js-product-slide-link d-block position-relative"
-                                            style="padding-bottom: 139.89071038251%;">
+                                    @php
+                                        $todasImagenes = $producto->imagenes;
+                                        $tieneMultiplesImagenes = $todasImagenes->count() > 1;
+                                    @endphp
+                                    @if($todasImagenes->count() > 0)
+                                        @foreach($todasImagenes as $index => $imagen)
+                                            <div class="js-product-slide w-100 swiper-slide product-slide slider-slide {{ $index === 0 ? 'swiper-slide-active' : '' }}"
+                                                data-image="{{ $imagen->id }}" data-image-position="{{ $index }}">
+                                                <a href="{{ $imagen->url }}"
+                                                    data-glightbox="gallery1"
+                                                    class="js-product-slide-link d-block product-image-container glightbox">
+                                                    <img {{ $index === 0 ? 'fetchpriority=high' : 'loading=lazy' }}
+                                                        src="{{ $imagen->url }}"
+                                                        class="js-product-slide-img product-slider-image"
+                                                        alt="{{ $producto->nombre }} - Imagen {{ $index + 1 }}">
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="js-product-slide w-100 swiper-slide product-slide slider-slide swiper-slide-active"
+                                            data-image="0" data-image-position="0">
+                                            <a href="{{ asset('assets/img/product/placeholder.webp') }}"
+                                                data-glightbox="gallery1"
+                                                class="js-product-slide-link d-block product-image-container glightbox">
+                                                <img fetchpriority="high"
+                                                    src="{{ asset('assets/img/product/placeholder.webp') }}"
+                                                    class="js-product-slide-img product-slider-image"
+                                                    alt="{{ $producto->nombre }}">
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
 
+                                @if($tieneMultiplesImagenes ?? false)
+                                <!-- Navigation arrows -->
+                                <button type="button" class="product-nav-btn product-nav-prev" aria-label="Imagen anterior">
+                                    <svg class="icon-inline" viewBox="0 0 24 24" width="20" height="20">
+                                        <polyline points="15 18 9 12 15 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                    </svg>
+                                </button>
+                                <button type="button" class="product-nav-btn product-nav-next" aria-label="Imagen siguiente">
+                                    <svg class="icon-inline" viewBox="0 0 24 24" width="20" height="20">
+                                        <polyline points="9 18 15 12 9 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                    </svg>
+                                </button>
+                                @endif
+                            </div>
 
-
-                                            <img fetchpriority="high"
-                                                src="{{ $producto->url_imagen_principal ?? asset('assets/img/product/placeholder.webp') }}"
-                                                class="js-product-slide-img product-slider-image img-absolute img-absolute-centered "
-                                                width="1464" height="2048" alt="{{ $producto->nombre }}">
-                                        </a>
-                                    </div>
+                            @if(($tieneMultiplesImagenes ?? false) && $todasImagenes->count() > 1)
+                            <!-- Thumbnails -->
+                            <div class="product-thumbnails mt-3">
+                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                    @foreach($todasImagenes as $index => $imagen)
+                                        <div class="product-thumbnail {{ $index === 0 ? 'active' : '' }}"
+                                             data-index="{{ $index }}"
+                                             onclick="changeProductImage({{ $index }})">
+                                            <img src="{{ $imagen->url }}"
+                                                 alt="{{ $producto->nombre }} - Miniatura {{ $index + 1 }}"
+                                                 loading="lazy">
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -200,8 +247,17 @@
 
                             </div>
 
-
-
+                            <!-- Cuotas sin interés -->
+                            <div class="installments-info mb-3 p-3" style="background: var(--background-100, #f8f9fa); border-radius: 8px;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <svg class="icon-inline icon-sm mr-2" style="width: 20px; height: 20px;"><use xlink:href="#credit-card"></use></svg>
+                                    <strong class="font-small">3 cuotas sin interés de ${{ number_format($precioConDescuento / 3, 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="font-small opacity-80">
+                                    Total en 1 pago: <strong>${{ number_format($precioConDescuento, 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="font-small opacity-60">con todas las tarjetas.</div>
+                            </div>
 
                             <div data-toggle="#installments-modal" data-modal-url="modal-fullscreen-payments"
                                 class="js-modal-open js-fullscreen-modal-open js-product-payments-container mb-3 col-md-8 px-0">
@@ -221,12 +277,6 @@
                                         @endif
                                     </div>
                                 @endif
-                                <a id="btn-installments" class="font-small" href="#">
-                                    <svg class="icon-inline icon-lg svg-icon-text">
-                                        <use xlink:href="#credit-card"></use>
-                                    </svg>
-                                    Ver más detalles
-                                </a>
                             </div>
 
 
@@ -841,8 +891,8 @@
                                         );
                                     @endphp
 
-                                    <a class="social-share-button d-inline-block d-md-none" data-network="whatsapp"
-                                        target="_blank" href="whatsapp://send?text={{ $productUrl }}"
+                                    <a class="social-share-button" data-network="whatsapp"
+                                        target="_blank" href="https://wa.me/?text={{ $productUrlEncoded }}"
                                         title="Compartir en WhatsApp" aria-label="Compartir en WhatsApp">
                                         <svg class="icon-inline font-big svg-icon-text">
                                             <use xlink:href="#whatsapp"></use>
@@ -1080,6 +1130,10 @@
         <style>
             .recife-related-products {
                 overflow: hidden;
+                position: relative;
+                z-index: 1;
+                clear: both;
+                margin-top: 0;
             }
 
             .recife-related-slider {
@@ -1367,3 +1421,416 @@
     </section>
 
 @endsection
+
+@push('styles')
+<style>
+    /* Ensure product section has proper stacking context */
+    #single-product {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Product Slider Container */
+    .js-swiper-product {
+        position: relative;
+        background: #f8f9fa;
+    }
+
+    /* Product Image Container - Adapts to all image sizes */
+    .product-image-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        padding: 20px;
+    }
+
+    .product-slider-image {
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* Remove old absolute positioning */
+    .img-absolute,
+    .img-absolute-centered {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+    }
+
+    /* Swiper slide */
+    .js-swiper-product .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Product Thumbnails */
+    .product-thumbnails {
+        padding: 10px 0;
+    }
+
+    .product-thumbnail {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .product-thumbnail:hover {
+        border-color: #999;
+    }
+
+    .product-thumbnail.active {
+        border-color: var(--primary-color, #000);
+    }
+
+    .product-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Product Navigation Buttons */
+    .product-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        transition: all 0.2s ease;
+    }
+
+    .product-nav-btn:hover {
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .product-nav-prev {
+        left: 10px;
+    }
+
+    .product-nav-next {
+        right: 10px;
+    }
+
+    .product-nav-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Share Tooltip Styles - Override all external styles */
+    .js-tooltip-open {
+        cursor: pointer;
+    }
+
+    .social-share {
+        position: relative;
+    }
+
+    .social-share .js-tooltip.tooltip {
+        position: absolute !important;
+        bottom: calc(100% + 10px) !important;
+        left: 0 !important;
+        top: auto !important;
+        right: auto !important;
+        background: #fff !important;
+        border: 1px solid #ddd !important;
+        border-radius: 10px !important;
+        padding: 10px 12px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.12) !important;
+        white-space: nowrap !important;
+        z-index: 1000 !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: auto !important;
+        height: auto !important;
+        transform: none !important;
+    }
+
+    /* When tooltip is shown via JavaScript (display: block) */
+    .social-share .js-tooltip.tooltip[style*="display: block"] {
+        display: flex !important;
+    }
+
+    .social-share .js-tooltip.tooltip .tooltip-arrow,
+    .social-share .js-tooltip.tooltip .tooltip-arrow-up {
+        display: none !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.social-share-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        max-width: 36px !important;
+        max-height: 36px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        background: #f0f0f0 !important;
+        color: #333 !important;
+        text-decoration: none !important;
+        transition: background 0.2s ease !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.social-share-button:hover {
+        background: #e0e0e0 !important;
+        color: #000 !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.social-share-button svg,
+    .social-share .js-tooltip.tooltip a.social-share-button svg.icon-inline,
+    .social-share .js-tooltip.tooltip a.social-share-button svg.font-big,
+    .social-share .js-tooltip.tooltip a.social-share-button svg.svg-icon-text {
+        width: 16px !important;
+        height: 16px !important;
+        max-width: 16px !important;
+        max-height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        font-size: 16px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.js-tooltip-close {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
+        border-radius: 50% !important;
+        background: #f0f0f0 !important;
+        color: #888 !important;
+        text-decoration: none !important;
+        margin: 0 0 0 4px !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.js-tooltip-close:hover {
+        background: #e0e0e0 !important;
+        color: #333 !important;
+    }
+
+    .social-share .js-tooltip.tooltip a.js-tooltip-close svg {
+        width: 12px !important;
+        height: 12px !important;
+        max-width: 12px !important;
+        max-height: 12px !important;
+    }
+
+    /* Gap utility for older browsers */
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+        /* Mobile: Ensure image section contains thumbnails */
+        #single-product > .container > .row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #single-product > .container > .row > .col-md-7 {
+            order: 1;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        #single-product > .container > .row > .col {
+            order: 2;
+            width: 100%;
+        }
+
+        /* Keep thumbnails inside image section */
+        .product-with-one-image {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-thumbnails {
+            order: 2;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .js-swiper-product {
+            order: 1;
+        }
+
+        .product-image-container {
+            padding: 10px;
+        }
+
+        .product-slider-image {
+            max-height: 50vh;
+        }
+
+        .product-thumbnail {
+            width: 50px;
+            height: 50px;
+        }
+
+        .product-nav-btn {
+            width: 32px;
+            height: 32px;
+        }
+
+        .product-nav-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .social-share .js-tooltip.tooltip {
+            left: auto !important;
+            right: 0 !important;
+            padding: 8px 10px !important;
+        }
+
+        .social-share .js-tooltip.tooltip a.social-share-button {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            max-width: 32px !important;
+            max-height: 32px !important;
+        }
+
+        .social-share .js-tooltip.tooltip a.social-share-button svg {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        .social-share .js-tooltip.tooltip a.js-tooltip-close {
+            width: 24px !important;
+            height: 24px !important;
+            min-width: 24px !important;
+            min-height: 24px !important;
+        }
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+    // Product Image Gallery functionality
+    (function() {
+        let currentImageIndex = 0;
+        const slides = document.querySelectorAll('.js-swiper-product .swiper-slide');
+        const thumbnails = document.querySelectorAll('.product-thumbnail');
+
+        // Change product image when clicking thumbnail
+        window.changeProductImage = function(index) {
+            if (index < 0 || index >= slides.length) return;
+
+            currentImageIndex = index;
+
+            // Update slides
+            slides.forEach((slide, i) => {
+                slide.classList.remove('swiper-slide-active');
+                slide.style.display = i === index ? 'block' : 'none';
+            });
+            slides[index].classList.add('swiper-slide-active');
+
+            // Update thumbnails
+            thumbnails.forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === index);
+            });
+        };
+
+        // Initialize - show only first slide
+        if (slides.length > 1) {
+            slides.forEach((slide, i) => {
+                slide.style.display = i === 0 ? 'block' : 'none';
+            });
+        }
+
+        // Navigation arrows - new selectors
+        const prevBtn = document.querySelector('.product-nav-prev');
+        const nextBtn = document.querySelector('.product-nav-next');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : slides.length - 1;
+                changeProductImage(newIndex);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const newIndex = currentImageIndex < slides.length - 1 ? currentImageIndex + 1 : 0;
+                changeProductImage(newIndex);
+            });
+        }
+    })();
+
+    // Share tooltip functionality (Vanilla JS fallback)
+    (function() {
+        // Handle tooltip open
+        document.querySelectorAll('.js-tooltip-open').forEach(function(trigger) {
+            trigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tooltip = this.nextElementSibling;
+                if (tooltip && tooltip.classList.contains('js-tooltip')) {
+                    // Hide all other tooltips first
+                    document.querySelectorAll('.js-tooltip').forEach(t => t.style.display = 'none');
+                    tooltip.style.display = tooltip.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+        });
+
+        // Handle tooltip close
+        document.querySelectorAll('.js-tooltip-close').forEach(function(closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tooltip = this.closest('.js-tooltip');
+                if (tooltip) {
+                    tooltip.style.display = 'none';
+                }
+            });
+        });
+
+        // Close tooltip when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.js-tooltip-open') && !e.target.closest('.js-tooltip')) {
+                document.querySelectorAll('.js-tooltip').forEach(t => t.style.display = 'none');
+            }
+        });
+    })();
+</script>
+@endpush

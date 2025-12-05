@@ -404,6 +404,14 @@
                     </div>
                 </div>
                 @endif
+
+                <div class="col-md-4">
+                    <div class="feature-banner-item">
+                        <img src="{{ asset('images/Logo-Puntos-CO.jpg') }}" alt="Puntos Colombia" class="feature-banner-img mb-2" style="height: 40px; width: auto;">
+                        <h5 class="feature-banner-title">Plan de Fidelización</h5>
+                        <p class="feature-banner-text">Paga y redime usando Puntos Colombia</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

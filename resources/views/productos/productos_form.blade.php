@@ -202,8 +202,13 @@
             @php
               $stockActual = $producto->stockPrincipal ? $producto->stockPrincipal->cantidad_disponible : 0;
             @endphp
-            <input type="text" class="form-control" value="{{ $stockActual }}" readonly>
-            <small class="text-muted">Use el módulo de stock para modificar</small>
+            <input type="number" name="stock_actual"
+                   class="form-control @error('stock_actual') is-invalid @enderror"
+                   value="{{ old('stock_actual', $stockActual) }}"
+                   min="0">
+            <input type="hidden" name="stock_anterior" value="{{ $stockActual }}">
+            @error('stock_actual') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <small class="text-muted">Los cambios se registrarán como ajuste de inventario</small>
           </div>
         @endif
 
@@ -313,10 +318,10 @@
               <div class="mb-3">
                 <label class="form-label">Agregar Imágenes</label>
                 <div class="input-group">
-                  <input type="file" class="form-control" 
-                         accept="image/jpeg,image/jpg,image/png,image/webp" 
+                  <input type="file" class="form-control"
+                         accept="image/jpeg,image/jpg,image/png,image/webp"
                          multiple="multiple" id="imagenesInput">
-                  <button class="btn btn-outline-secondary" type="button" id="btnAgregarImagenes">
+                  <button class="btn btn-primary" type="button" id="btnAgregarImagenes">
                     <i class="bi bi-plus-circle"></i> Agregar
                   </button>
                 </div>
@@ -340,33 +345,28 @@
               {{-- Imágenes existentes --}}
               @if($producto->exists && $producto->imagenes->count() > 0)
                 <h6>Imágenes Actuales:</h6>
-                <div class="row">
+                <div class="row" id="imagenesExistentes">
                   @foreach($producto->imagenes as $imagen)
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3" id="imagen-container-{{ $imagen->id }}">
                       <div class="card">
-                        <img src="{{ asset($imagen->ruta_imagen) }}" 
-                             class="card-img-top" 
+                        <img src="{{ asset($imagen->ruta_imagen) }}"
+                             class="card-img-top"
                              alt="{{ $imagen->texto_alternativo }}"
                              style="height: 150px; object-fit: cover;">
                         <div class="card-body p-2">
                           <div class="form-check mb-2">
-                            <input class="form-check-input imagen-principal-existente" type="radio" 
-                                   name="imagen_principal_existente" value="{{ $imagen->id }}" 
+                            <input class="form-check-input imagen-principal-existente" type="radio"
+                                   name="imagen_principal_existente" value="{{ $imagen->id }}"
                                    id="principal_{{ $imagen->id }}"
                                    {{ $imagen->es_principal ? 'checked' : '' }}>
                             <label class="form-check-label" for="principal_{{ $imagen->id }}">
                               Principal
                             </label>
                           </div>
-                          <div class="form-check">
-                            <input type="checkbox" name="eliminar_imagenes[]" 
-                                   value="{{ $imagen->id }}" 
-                                   class="form-check-input"
-                                   id="eliminar_{{ $imagen->id }}">
-                            <label class="form-check-label text-danger" for="eliminar_{{ $imagen->id }}">
-                              Eliminar
-                            </label>
-                          </div>
+                          <button type="button" class="btn btn-danger btn-sm w-100 btn-eliminar-imagen"
+                                  data-imagen-id="{{ $imagen->id }}">
+                            <i class="bi bi-trash"></i> Eliminar
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -750,10 +750,60 @@
         renderizarImagenes();
       });
       
+      // Eliminar imagen existente vía AJAX
+      $(document).on('click', '.btn-eliminar-imagen', function() {
+        const btn = $(this);
+        const imagenId = btn.data('imagen-id');
+        const container = $(`#imagen-container-${imagenId}`);
+
+        // Confirmar eliminación
+        if (!confirm('¿Está seguro de eliminar esta imagen? Esta acción no se puede deshacer.')) {
+          return;
+        }
+
+        // Deshabilitar botón mientras procesa
+        btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Eliminando...');
+
+        $.ajax({
+          url: `/productos/imagen/${imagenId}`,
+          type: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          },
+          success: function(response) {
+            if (response.success) {
+              // Animar y eliminar el contenedor
+              container.fadeOut(300, function() {
+                $(this).remove();
+
+                // Verificar si quedan imágenes
+                if ($('#imagenesExistentes .col-md-3').length === 0) {
+                  $('#imagenesExistentes').prev('h6').remove();
+                  $('#imagenesExistentes').remove();
+                }
+
+                // Si no hay más imágenes con radio seleccionado, seleccionar el primero disponible
+                if ($('.imagen-principal-existente:checked').length === 0) {
+                  $('.imagen-principal-existente:first').prop('checked', true);
+                }
+              });
+            } else {
+              alert(response.message || 'Error al eliminar la imagen');
+              btn.prop('disabled', false).html('<i class="bi bi-trash"></i> Eliminar');
+            }
+          },
+          error: function(xhr) {
+            const message = xhr.responseJSON?.message || 'Error al eliminar la imagen';
+            alert(message);
+            btn.prop('disabled', false).html('<i class="bi bi-trash"></i> Eliminar');
+          }
+        });
+      });
+
       // Validación del formulario
       $('#productoForm').submit(function(e) {
         let isValid = true;
-        
+
         // Validar que si tiene variantes, al menos tenga una
         if ($('#tiene_variantes').is(':checked')) {
           const variantes = $('#variantesContainer .variante-row');
@@ -763,7 +813,7 @@
             isValid = false;
           }
         }
-        
+
         return isValid;
       });
     });

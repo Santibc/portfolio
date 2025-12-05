@@ -63,12 +63,12 @@
 
         <!-- Search Form -->
         <div class="search-container" style="flex: 1; display: flex; justify-content: center; max-width: 500px; margin: 0 auto;">
-            <form class="js-search-form search-form" action="/search/" method="get">
+            <form class="js-search-form search-form" action="{{ route('tienda.categorias', $empresa->slug) }}" method="get">
                 <div class="form-group position-relative m-0">
                     <input class="js-search-input form-control search-input"
                            autocomplete="off"
                            type="search"
-                           name="q"
+                           name="buscar"
                            placeholder="¿Qué estás buscando?"
                            aria-label="¿Qué estás buscando?">
                     <button type="submit" class="js-search-input-submit search-btn search-submit-btn svg-icon-mask" value="Buscar" aria-label="Buscar">

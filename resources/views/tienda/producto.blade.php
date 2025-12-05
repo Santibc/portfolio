@@ -151,6 +151,18 @@
                   <span class="discount-percent">({{ $textoDescuento }})</span>
                 </div>
                 @endif
+
+                <!-- Cuotas sin interés -->
+                <div class="installments-info mt-3 p-3 bg-light rounded">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-credit-card me-2 text-primary"></i>
+                    <strong>3 cuotas sin interés de ${{ number_format($precioConDescuento / 3, 0, ',', '.') }}</strong>
+                  </div>
+                  <div class="text-muted small">
+                    Total en 1 pago: <strong>${{ number_format($precioConDescuento, 0, ',', '.') }}</strong>
+                  </div>
+                  <div class="text-muted small">con todas las tarjetas.</div>
+                </div>
                 @else
                 <div class="price-display">
                   <span class="text-muted">Precio no disponible</span>

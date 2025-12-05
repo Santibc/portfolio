@@ -285,10 +285,12 @@
           <div class="col-lg-6 col-md-12">
             <div class="d-flex flex-wrap justify-content-lg-end justify-content-center align-items-center gap-4">
               <div class="payment-methods">
-                <div class="payment-icons">
-                  <i class="bi bi-credit-card" aria-label="Tarjeta de Crédito"></i>
-                  <i class="bi bi-paypal" aria-label="PayPal"></i>
-                  <i class="bi bi-cash" aria-label="Efectivo"></i>
+                <div class="payment-icons d-flex align-items-center gap-2">
+                  <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/visa@2x.png" alt="Visa" style="height: 25px;">
+                  <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mastercard@2x.png" alt="Mastercard" style="height: 25px;">
+                  <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/amex@2x.png" alt="Amex" style="height: 25px;">
+                  <img src="{{ asset('images/WompiLogo.png') }}" alt="Wompi" style="height: 25px;">
+                  <img src="{{ asset('images/Logo-Puntos-CO.jpg') }}" alt="Puntos Colombia" style="height: 25px;">
                 </div>
               </div>
 

@@ -646,6 +646,11 @@
                                                         </div>
                                                     </div>
                                                 </a>
+                                                <button type="button" class="btn btn-primary btn-add-to-cart-card w-100 mt-2"
+                                                    onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);"
+                                                    {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'disabled' : '' }}>
+                                                    {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'Sin stock' : 'Agregar al carrito' }}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -850,6 +855,11 @@
                                                     </div>
                                                 </div>
                                             </a>
+                                            <button type="button" class="btn btn-primary btn-add-to-cart-card w-100 mt-2"
+                                                onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);"
+                                                {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'disabled' : '' }}>
+                                                {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'Sin stock' : 'Agregar al carrito' }}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -978,6 +988,11 @@
                                                         </div>
                                                     </div>
                                                 </a>
+                                                <button type="button" class="btn btn-primary btn-add-to-cart-card w-100 mt-2"
+                                                    onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);"
+                                                    {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'disabled' : '' }}>
+                                                    {{ (!$stockInfo['hay_stock'] && $stockInfo['controlar_stock']) ? 'Sin stock' : 'Agregar al carrito' }}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -1114,6 +1129,81 @@
                     height: 40px !important;
                 }
             }
+
+            /* Estilos para botón agregar al carrito en cards */
+            .btn-add-to-cart-card {
+                font-size: 0.75rem;
+                padding: 8px 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+
+            .btn-add-to-cart-card:hover:not(:disabled) {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            .btn-add-to-cart-card:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            @media (max-width: 576px) {
+                .btn-add-to-cart-card {
+                    font-size: 0.65rem;
+                    padding: 6px 8px;
+                }
+            }
         </style>
     </section>
 @endsection
+
+@push('scripts')
+<script>
+    // Función para agregar al carrito
+    function agregarAlCarrito(productoId, btn) {
+        if (!btn) return;
+
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '...';
+
+        fetch("{{ route('tienda.carrito.agregar', $empresa->slug) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({
+                producto_id: productoId,
+                cantidad: 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = '✓ Agregado';
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }, 2000);
+
+            // Actualizar contador del carrito si existe
+            const cartCounters = document.querySelectorAll('.js-cart-widget-amount, .cart-count');
+            cartCounters.forEach(counter => {
+                if (data.total_items !== undefined) {
+                    counter.textContent = data.total_items;
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            alert('Error al agregar al carrito');
+        });
+    }
+</script>
+@endpush

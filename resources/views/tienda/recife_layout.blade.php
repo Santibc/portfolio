@@ -9,6 +9,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Tienda Online de recife.muebles</title>
     <meta name="description"
         content="Comprá productos de recife.muebles por internet. Tenemos sillas, bancos y más. Hacé tu pedido y pagalo online.">
@@ -365,12 +366,8 @@
     <meta name="“robots”" content="“noindex,nofollow”/">
 
 
-    <link
-        href="//dcdn-us.mitiendanube.com/stores/003/765/060/themes/common/logo-691482039-1695829430-d6b6c60fc9b40902105c6cadeb4f33941695829430.ico?0"
-        class="js-favicon" rel="icon" type="image/x-icon">
-    <link
-        href="//dcdn-us.mitiendanube.com/stores/003/765/060/themes/common/logo-691482039-1695829430-d6b6c60fc9b40902105c6cadeb4f33941695829430.ico?0"
-        class="js-favicon" rel="shortcut icon" type="image/x-icon">
+    <link href="{{ $empresa->logo_url ?? asset('images/ico.png') }}" rel="icon" type="image/x-icon">
+    <link href="{{ $empresa->logo_url ?? asset('images/ico.png') }}" rel="shortcut icon" type="image/x-icon">
     <link rel="canonical" href="https://recife-home.mitiendanube.com/">
 
     <meta name="nuvempay-logo"
@@ -16927,7 +16924,56 @@
         div[class="adsbygoogle"][id="ad-detector"] {
             display: block !important;
         }
+
+    /* Hamburger Modal - Vanilla JS fallback styles */
+    #nav-hamburger {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        background: #fff;
+        z-index: 2000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+    }
+    #nav-hamburger.modal-show {
+        transform: translateX(0);
+    }
+    .js-modal-overlay[data-modal-id="#nav-hamburger"] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1999;
+    }
+    /* Hamburger submenu panel */
+    #nav-hamburger .js-menu-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        background: #fff;
+        z-index: 2001;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+    }
+    #nav-hamburger .js-menu-panel.nav-list-panel-show {
+        transform: translateX(0);
+    }
     </style>
+
+    <!-- GLightbox CSS for image lightbox (no jQuery dependency) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/css/glightbox.min.css">
+
+    @stack('styles')
 </head>
 
 <body class=" template-home">
@@ -17015,6 +17061,18 @@
         <symbol id="truck" viewBox="0 0 512 512">
             <path
                 d="M357.56,360.65c-6.53-2.77-14.09-1.33-19.14,3.65s-6.58,12.53-3.89,19.09c2.69,6.56,9.09,10.85,16.18,10.85,9.58,0,17.38-7.7,17.49-17.28,.09-7.09-4.12-13.54-10.65-16.31Zm127.77-136.65v114.99c0,32.4-26.27,58.67-58.67,58.67h-26.67c-8.32,19.8-27.7,32.68-49.17,32.68s-40.86-12.88-49.17-32.68h-119.68c-10.03,24.07-36.11,37.25-61.45,31.03-25.33-6.22-42.35-29.96-40.1-55.95,2.25-25.98,23.1-46.45,49.13-48.22,26.02-1.77,49.45,15.69,55.19,41.14h113.92c5.25-24.61,26.99-42.21,52.16-42.21s46.91,17.59,52.16,42.21h23.68c7.26,0,14.21-2.95,19.24-8.18,5.03-5.24,7.71-12.29,7.42-19.55v-90.67h-90.67c-8.84,0-16-7.16-16-16s7.16-16,16-16h89.6c-1.14-4.25-3.35-8.14-6.4-11.31l-22.4-21.33c-4.93-5.07-11.7-7.92-18.77-7.89h-85.33v90.67c0,8.84-7.16,16-16,16s-16-7.16-16-16V130.35c0-14.73-11.94-26.67-26.67-26.67H85.33c-8.84,0-16-7.16-16-16s7.16-16,16-16h176c32.4,0,58.67,26.27,58.67,58.67v12.37h85.33c15.18,.28,29.64,6.49,40.32,17.28l22.4,22.4c11.09,11,17.31,25.98,17.28,41.6Zm-256-32c-.12-8.79-7.21-15.89-16-16H42.67c-8.84,0-16,7.16-16,16s7.16,16,16,16H213.33c8.79-.11,15.88-7.21,16-16Zm-122.67,48c-8.84,0-16,7.16-16,16s7.16,16,16,16h106.67c8.84,0,16-7.16,16-16s-7.16-16-16-16H106.67Zm31.94,120.51c-6.53-2.77-14.09-1.33-19.14,3.65s-6.58,12.53-3.89,19.09c2.69,6.56,9.09,10.85,16.18,10.85,9.58,0,17.38-7.7,17.49-17.28,.09-7.09-4.12-13.54-10.65-16.31Z">
+            </path>
+        </symbol>
+
+        <symbol id="refresh" viewBox="0 0 512 512">
+            <path
+                d="M370.72,133.28C339.458,104.008,298.888,87.962,256.8,88c-77.458.068-144.328,53.178-162.016,128.448-17.688,75.27,17.058,153.548,84.216,189.632,6.83,3.64,15.284,1.232,19.192-5.464,3.964-6.56,1.768-15.048-4.792-19.016-54.984-29.632-83.168-93.928-68.344-155.896,14.824-61.968,69.32-105.696,132.16-106.016,34.266-.012,67.194,13.596,91.384,37.792l-27.144,27.144c-5.436,5.164-7.128,13.084-4.256,19.924,2.872,6.84,9.504,11.292,16.684,11.196h80c8.836,0,16-7.164,16-16v-80c-.08-7.172-4.516-13.8-11.344-16.68-6.828-2.88-14.744-1.196-20.252,4.304l-27.316,27.32Zm44.72,191.256c-3.964,6.56-1.768,15.048,4.792,19.016,54.984,29.632,83.168,93.928,68.344,155.896-14.824,61.968-69.32,105.696-132.16,106.016-34.266.012-67.194-13.596-91.384-37.792l27.144-27.144c5.436-5.164,7.128-13.084,4.256-19.924-2.872-6.84-9.504-11.292-16.684-11.196h-80c-8.836,0-16,7.164-16,16v80c.08,7.172,4.516,13.8,11.344,16.68,6.828,2.88,14.744,1.196,20.252-4.304l27.316-27.32c31.264,29.272,71.834,45.316,113.94,45.28,77.458-.068,144.328-53.178,162.016-128.448,17.688-75.27-17.058-153.548-84.216-189.632-6.83-3.64-15.284-1.232-19.192,5.464l.032-.592Z">
+            </path>
+        </symbol>
+
+        <symbol id="shield-check" viewBox="0 0 512 512">
+            <path
+                d="M466.5,83.71l-192-80c-12.95-5.31-27.56-5.31-40.51,0l-192,80c-15.84,6.65-26.04,22.01-26,39.18v88.32c0,130.62,93.1,248.89,218,288.3,124.9-39.41,218-157.68,218-288.3v-88.32c0-17.17-10.16-32.53-26-39.18Zm-26,127.5c0,109.17-75.52,208.68-176,247.54-100.48-38.86-176-138.37-176-247.54v-88.32c.07-2.87,1.82-5.48,4.42-6.56l192-80c2.14-.89,4.55-.89,6.69,0l192,80c2.83,1.19,4.72,3.99,4.89,7.14v87.74Zm-65.61-71.68-110.17,110.18-49.19-49.18c-6.08-6.42-16.22-6.68-22.64-.6-6.42,6.08-6.68,16.22-.6,22.64l60.36,60.36c6.25,6.25,16.38,6.25,22.62,0l121.33-121.33c5.44-6.64,4.45-16.43-2.19-21.87-6.65-5.44-16.43-4.45-21.87,2.19l1.35-2.39Z">
             </path>
         </symbol>
 
@@ -18272,6 +18330,19 @@
                                 </li>
                             @endif
                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Métodos de Pago --}}
+            <div class="row mt-4 pt-3 border-top">
+                <div class="col-12 text-center">
+                    <div class="footer-payments mb-3">
+                        <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/visa@2x.png" alt="Visa" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                        <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mastercard@2x.png" alt="Mastercard" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                        <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/amex@2x.png" alt="Amex" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                        <img src="{{ asset('images/WompiLogo.png') }}" alt="Wompi" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                        <img src="{{ asset('images/Logo-Puntos-CO.jpg') }}" alt="Puntos Colombia" class="payment-logo" style="height: 30px; margin: 0 8px;">
                     </div>
                 </div>
             </div>
@@ -20470,6 +20541,93 @@
                 }
             });
 
+            // Hamburger Menu Modal - Vanilla JS fallback for mobile categories
+            const hamburgerModal = document.getElementById('nav-hamburger');
+            const hamburgerOverlay = document.querySelector('.js-modal-overlay[data-modal-id="#nav-hamburger"]');
+            const openHamburgerBtn = document.querySelector('.js-modal-open[data-toggle="#nav-hamburger"]');
+            const closeHamburgerBtns = document.querySelectorAll('#nav-hamburger .js-modal-close, #nav-hamburger .js-toggle-menu-close');
+
+            function openHamburger() {
+                if (hamburgerModal && hamburgerOverlay) {
+                    hamburgerModal.style.display = 'block';
+                    hamburgerOverlay.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(() => {
+                        hamburgerModal.classList.add('modal-show');
+                    }, 10);
+                }
+            }
+
+            function closeHamburger() {
+                if (hamburgerModal && hamburgerOverlay) {
+                    hamburgerModal.classList.remove('modal-show');
+                    setTimeout(() => {
+                        hamburgerModal.style.display = 'none';
+                        hamburgerOverlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+            }
+
+            if (openHamburgerBtn) {
+                openHamburgerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openHamburger();
+                });
+            }
+
+            if (closeHamburgerBtns) {
+                closeHamburgerBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        closeHamburger();
+                    });
+                });
+            }
+
+            if (hamburgerOverlay) {
+                hamburgerOverlay.addEventListener('click', function() {
+                    closeHamburger();
+                });
+            }
+
+            // Close hamburger on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && hamburgerModal && hamburgerModal.style.display === 'block') {
+                    closeHamburger();
+                }
+            });
+
+            // Hamburger submenu panel toggle (for categories)
+            const toggleMenuPanels = document.querySelectorAll('#nav-hamburger .js-toggle-menu-panel');
+            const toggleMenuBacks = document.querySelectorAll('#nav-hamburger .js-toggle-menu-back');
+
+            toggleMenuPanels.forEach(function(panel) {
+                panel.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const subPanel = this.nextElementSibling;
+                    if (subPanel && subPanel.classList.contains('js-menu-panel')) {
+                        subPanel.style.display = 'block';
+                        setTimeout(() => {
+                            subPanel.classList.add('nav-list-panel-show');
+                        }, 10);
+                    }
+                });
+            });
+
+            toggleMenuBacks.forEach(function(backBtn) {
+                backBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const subPanel = this.closest('.js-menu-panel');
+                    if (subPanel) {
+                        subPanel.classList.remove('nav-list-panel-show');
+                        setTimeout(() => {
+                            subPanel.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+
         });
     </script>
 
@@ -20484,27 +20642,98 @@
         crossorigin="anonymous"></script>
 
 
-    <!-- Search Modal -->
-    <div class="modal-overlay" id="searchOverlay"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; display: none; opacity: 0; transition: opacity 0.3s ease;">
-    </div>
-    <div class="search-modal" id="searchModal"
-        style="position: fixed; top: -100%; left: 0; width: 100%; background-color: #FFFFFF; z-index: 2001; transition: top 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <div class="search-container" style="padding: 40px 30px;">
-            <div class="search-input-wrapper" style="display: flex; gap: 10px; max-width: 800px; margin: 0 auto;">
-                <input type="text" class="search-input" placeholder="Buscar productos..." id="searchInput"
-                    style="flex: 1; padding: 15px 20px; border: 2px solid rgba(0,0,0,0.2); font-size: 18px;">
-                <button class="btn" id="searchSubmitBtn"
-                    style="display: inline-block; padding: 12px 30px; background-color: #000000; color: #FFFFFF; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;">BUSCAR</button>
-                <button class="btn" id="closeSearchBtn"
-                    style="display: inline-block; padding: 12px 30px; background-color: #000000; color: #FFFFFF; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;">CERRAR</button>
+    <!-- Search Modal - Mobile Optimized -->
+    <style>
+        #searchOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #searchModal {
+            position: fixed;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            background-color: #FFFFFF;
+            z-index: 2001;
+            transition: top 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        #searchModal .search-container {
+            padding: 20px 15px;
+        }
+        #searchModal .search-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #searchModal .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0,0,0,0.2);
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        #searchModal .search-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        #searchModal .search-buttons .btn {
+            flex: 1;
+            padding: 12px 15px;
+            background-color: #000000;
+            color: #FFFFFF;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        @media (min-width: 768px) {
+            #searchModal .search-container {
+                padding: 40px 30px;
+            }
+            #searchModal .search-input-wrapper {
+                flex-direction: row;
+            }
+            #searchModal .search-input {
+                flex: 1;
+            }
+            #searchModal .search-buttons {
+                flex-shrink: 0;
+            }
+            #searchModal .search-buttons .btn {
+                padding: 12px 30px;
+            }
+        }
+    </style>
+    <div id="searchOverlay"></div>
+    <div id="searchModal">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" placeholder="Buscar productos..." id="searchInput">
+                <div class="search-buttons">
+                    <button class="btn" id="searchSubmitBtn">BUSCAR</button>
+                    <button class="btn" id="closeSearchBtn">CERRAR</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Search Modal functionality
+        // Search Modal functionality - Wait for DOM to be ready
         (function() {
+            function initSearchModal() {
                 const searchModal = document.getElementById('searchModal');
                 const searchOverlay = document.getElementById('searchOverlay');
                 const openSearchBtn = document.querySelector('.js-search-button');
@@ -20513,7 +20742,12 @@
                 const searchSubmitBtn = document.getElementById('searchSubmitBtn');
 
                 if (!openSearchBtn) {
-                    console.error('Search button not found');
+                    console.warn('Search button (.js-search-button) not found');
+                    return;
+                }
+
+                if (!searchModal || !searchOverlay) {
+                    console.warn('Search modal elements not found');
                     return;
                 }
 
@@ -20525,7 +20759,7 @@
                     }, 10);
                     document.body.style.overflow = 'hidden';
                     setTimeout(() => {
-                        searchInput.focus();
+                        if (searchInput) searchInput.focus();
                     }, 300);
                 }
 
@@ -20540,30 +20774,48 @@
 
                 openSearchBtn.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     openSearch();
                 });
 
-                closeSearchBtn.addEventListener('click', closeSearch);
-
+                if (closeSearchBtn) {
+                    closeSearchBtn.addEventListener('click', closeSearch);
+                }
                 searchOverlay.addEventListener('click', closeSearch);
 
-                searchSubmitBtn.addEventListener('click', function() {
-                    const query = searchInput.value.trim();
-                    if (query) {
-                        window.location.href = "{{ route('tienda.categorias', $empresa->slug) }}?buscar=" +
-                            encodeURIComponent(query);
-                    }
-                });
+                if (searchSubmitBtn && searchInput) {
+                    searchSubmitBtn.addEventListener('click', function() {
+                        const query = searchInput.value.trim();
+                        if (query) {
+                            window.location.href = "{{ route('tienda.categorias', $empresa->slug) }}?buscar=" +
+                                encodeURIComponent(query);
+                        }
+                    });
 
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        searchSubmitBtn.click();
-                    }
-                });
+                    searchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            searchSubmitBtn.click();
+                        }
+                    });
+                }
 
                 // Close modal on Escape key
-            },
-        });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && searchModal.style.top === '0px') {
+                        closeSearch();
+                    }
+                });
+
+                console.log('Search modal initialized successfully');
+            }
+
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSearchModal);
+            } else {
+                initSearchModal();
+            }
+        })();
 
         var directionVal = 'vertical';
 
@@ -20578,10 +20830,6 @@
             prevEl: '.js-swiper-product-thumbs-prev-demo',
         },
         slidesPerView: 'auto',
-        });
-
-
-
         });
 
         // Recife Search Form - Redirect to categories with search parameter
@@ -20606,66 +20854,7 @@
             });
         }
 
-        // Search Modal - Based on sport_layout.blade.php
-        const searchModal = document.getElementById('nav-search');
-        const searchOverlay = document.querySelector('.js-modal-overlay[data-modal-id="#nav-search"]');
-        const openSearchBtn = document.querySelector(
-            '.js-search-button, .js-modal-open[data-toggle="#nav-search"], a[aria-label="Buscador"]');
-        const closeSearchBtns = document.querySelectorAll(
-            '#nav-search .js-modal-close, #nav-search .js-fullscreen-modal-close');
-
-        function openSearch() {
-            if (searchModal && searchOverlay) {
-                searchModal.style.display = 'block';
-                searchOverlay.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                setTimeout(() => {
-                    if (recifeSearchInput) {
-                        recifeSearchInput.focus();
-                    }
-                }, 300);
-            }
-        }
-
-        function closeSearch() {
-            if (searchModal && searchOverlay) {
-                searchModal.style.display = 'none';
-                searchOverlay.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-        }
-
-        if (openSearchBtn) {
-            openSearchBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                openSearch();
-            });
-        }
-
-        if (closeSearchBtns) {
-            closeSearchBtns.forEach(function(btn) {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    closeSearch();
-                });
-            });
-        }
-
-        if (searchOverlay) {
-            searchOverlay.addEventListener('click', function() {
-                if (searchModal.style.display === 'block') {
-                    closeSearch();
-                }
-            });
-        }
-
-        document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && searchModal && searchModal.style.display === 'block') {
-            closeSearch();
-        }
-        });
-
-        });
+        // Duplicate search modal code removed - using #searchModal instead
     </script>
 
 
@@ -20679,90 +20868,120 @@
         crossorigin="anonymous"></script>
 
 
-    <!-- Search Modal -->
-    <div class="modal-overlay" id="searchOverlay"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 2000; display: none; opacity: 0; transition: opacity 0.3s ease;">
-    </div>
-    <div class="search-modal" id="searchModal"
-        style="position: fixed; top: -100%; left: 0; width: 100%; background-color: #FFFFFF; z-index: 2001; transition: top 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <div class="search-container" style="padding: 40px 30px;">
-            <div class="search-input-wrapper" style="display: flex; gap: 10px; max-width: 800px; margin: 0 auto;">
-                <input type="text" class="search-input" placeholder="Buscar productos..." id="searchInput"
-                    style="flex: 1; padding: 15px 20px; border: 2px solid rgba(0,0,0,0.2); font-size: 18px;">
-                <button class="btn" id="searchSubmitBtn"
-                    style="display: inline-block; padding: 12px 30px; background-color: #000000; color: #FFFFFF; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;">BUSCAR</button>
-                <button class="btn" id="closeSearchBtn"
-                    style="display: inline-block; padding: 12px 30px; background-color: #000000; color: #FFFFFF; border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Hamburger Menu - Standalone Script (no jQuery dependency) -->
     <script>
-        // Search Modal functionality
         (function() {
-            const searchModal = document.getElementById('searchModal');
-            const searchOverlay = document.getElementById('searchOverlay');
-            const openSearchBtn = document.querySelector('.js-search-button');
-            const closeSearchBtn = document.getElementById('closeSearchBtn');
-            const searchInput = document.getElementById('searchInput');
-            const searchSubmitBtn = document.getElementById('searchSubmitBtn');
-
-            if (!openSearchBtn) {
-                console.error('Search button not found');
-                return;
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initHamburgerMenu);
+            } else {
+                initHamburgerMenu();
             }
 
-            function openSearch() {
-                searchModal.style.top = '0';
-                searchOverlay.style.display = 'block';
-                setTimeout(() => {
-                    searchOverlay.style.opacity = '1';
-                }, 10);
-                document.body.style.overflow = 'hidden';
-                setTimeout(() => {
-                    searchInput.focus();
-                }, 300);
+            function initHamburgerMenu() {
+                const hamburgerModal = document.getElementById('nav-hamburger');
+                const hamburgerOverlay = document.querySelector('.js-modal-overlay[data-modal-id="#nav-hamburger"]');
+                const openHamburgerBtn = document.querySelector('.js-modal-open[data-toggle="#nav-hamburger"]');
+                const closeHamburgerBtns = document.querySelectorAll('#nav-hamburger .js-modal-close, #nav-hamburger .js-toggle-menu-close');
+
+                if (!hamburgerModal || !openHamburgerBtn) {
+                    console.log('Hamburger menu elements not found');
+                    return;
+                }
+
+                function openHamburger() {
+                    hamburgerModal.style.display = 'block';
+                    if (hamburgerOverlay) hamburgerOverlay.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                    setTimeout(() => {
+                        hamburgerModal.classList.add('modal-show');
+                    }, 10);
+                }
+
+                function closeHamburger() {
+                    hamburgerModal.classList.remove('modal-show');
+                    setTimeout(() => {
+                        hamburgerModal.style.display = 'none';
+                        if (hamburgerOverlay) hamburgerOverlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+
+                // Open hamburger menu
+                openHamburgerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openHamburger();
+                });
+
+                // Close buttons
+                closeHamburgerBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        closeHamburger();
+                    });
+                });
+
+                // Close on overlay click
+                if (hamburgerOverlay) {
+                    hamburgerOverlay.addEventListener('click', function() {
+                        closeHamburger();
+                    });
+                }
+
+                // Close on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && hamburgerModal.style.display === 'block') {
+                        closeHamburger();
+                    }
+                });
+
+                // Submenu panel toggle (for categories)
+                const toggleMenuPanels = document.querySelectorAll('#nav-hamburger .js-toggle-menu-panel');
+                const toggleMenuBacks = document.querySelectorAll('#nav-hamburger .js-toggle-menu-back');
+
+                toggleMenuPanels.forEach(function(panel) {
+                    panel.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const subPanel = this.nextElementSibling;
+                        if (subPanel && subPanel.classList.contains('js-menu-panel')) {
+                            subPanel.style.display = 'block';
+                            setTimeout(() => {
+                                subPanel.classList.add('nav-list-panel-show');
+                            }, 10);
+                        }
+                    });
+                });
+
+                toggleMenuBacks.forEach(function(backBtn) {
+                    backBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const subPanel = this.closest('.js-menu-panel');
+                        if (subPanel) {
+                            subPanel.classList.remove('nav-list-panel-show');
+                            setTimeout(() => {
+                                subPanel.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                });
             }
-
-            function closeSearch() {
-                searchModal.style.top = '-100%';
-                searchOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    searchOverlay.style.display = 'none';
-                }, 300);
-                document.body.style.overflow = '';
-            }
-
-            openSearchBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                openSearch();
-            });
-
-            closeSearchBtn.addEventListener('click', closeSearch);
-
-            searchOverlay.addEventListener('click', closeSearch);
-
-            searchSubmitBtn.addEventListener('click', function() {
-                const query = searchInput.value.trim();
-                if (query) {
-                    window.location.href = "{{ route('tienda.categorias', $empresa->slug) }}?buscar=" +
-                        encodeURIComponent(query);
-                }
-            });
-
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchSubmitBtn.click();
-                }
-            });
-
-            // Close modal on Escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && searchModal.style.top === '0px') {
-                    closeSearch();
-                }
-            });
         })();
+    </script>
+
+    <!-- GLightbox JS for image lightbox (no jQuery dependency) -->
+    <script src="https://cdn.jsdelivr.net/npm/glightbox@3.2.0/dist/js/glightbox.min.js"></script>
+    <script>
+        // Initialize GLightbox for product gallery
+        document.addEventListener('DOMContentLoaded', function() {
+            const lightbox = GLightbox({
+                selector: '[data-glightbox]',
+                touchNavigation: true,
+                loop: true,
+                closeButton: true,
+                zoomable: true
+            });
+        });
     </script>
 
     @stack('scripts')

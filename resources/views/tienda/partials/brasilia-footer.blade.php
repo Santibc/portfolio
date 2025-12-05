@@ -64,7 +64,8 @@
                     <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/visa@2x.png" alt="Visa" class="payment-logo">
                     <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mastercard@2x.png" alt="Mastercard" class="payment-logo">
                     <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/amex@2x.png" alt="Amex" class="payment-logo">
-                    <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mercadopago@2x.png" alt="MercadoPago" class="payment-logo">
+                    <img src="{{ asset('images/WompiLogo.png') }}" alt="Wompi" class="payment-logo">
+                    <img src="{{ asset('images/Logo-Puntos-CO.jpg') }}" alt="Puntos Colombia" class="payment-logo">
                 </div>
             </div>
         </div>

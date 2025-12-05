@@ -919,6 +919,19 @@
         margin-right: 60px;
     }
 
+    /* Botón VER MÁS en banners - siempre blanco */
+    .textbanner .btn-link {
+        color: #fff !important;
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 2px solid #fff;
+        padding-bottom: 2px;
+    }
+
+    .textbanner .btn-link:hover {
+        opacity: 0.8;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .banner-grid {
@@ -927,6 +940,38 @@
 
         .textbanner {
             height: 400px;
+        }
+
+        /* Texto de banners más pequeño en móvil */
+        .textbanner-text {
+            left: 20px;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .textbanner-text h3 {
+            font-size: 24px !important;
+            line-height: 1.1;
+            word-wrap: break-word;
+        }
+
+        .textbanner-text div[style*="font-size: 18px"] {
+            font-size: 14px !important;
+        }
+
+        /* Instagram section responsive */
+        .instagram-header {
+            padding: 20px 15px;
+            text-align: center;
+        }
+
+        .instagram-handle {
+            font-size: 18px !important;
+            word-break: break-all;
+        }
+
+        .instagram-follow {
+            font-size: 12px;
         }
 
         .home-institutional h2 {
@@ -964,6 +1009,17 @@
 
         .main-image-container-single {
             height: 400px;
+        }
+    }
+
+    /* Extra small devices */
+    @media (max-width: 480px) {
+        .textbanner-text h3 {
+            font-size: 20px !important;
+        }
+
+        .instagram-handle {
+            font-size: 16px !important;
         }
     }
 </style>
@@ -1119,7 +1175,7 @@
                                     Consultar precio
                                 @endif
                             </div>
-                            <button class="btn btn-add-to-cart" onclick="alert('Funcionalidad de carrito próximamente')">AGREGAR AL CARRITO</button>
+                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $nuevo->id }}, this);">AGREGAR AL CARRITO</button>
                         </div>
                     </div>
                     @endforeach
@@ -1416,7 +1472,7 @@
                                     Consultar precio
                                 @endif
                             </div>
-                            <button class="btn btn-add-to-cart" onclick="alert('Funcionalidad de carrito próximamente')">AGREGAR AL CARRITO</button>
+                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);">AGREGAR AL CARRITO</button>
                         </div>
                     </div>
                     @endforeach
@@ -1480,14 +1536,50 @@
                 },
             });
         }
-
-        // Add to cart functionality (placeholder)
-        document.querySelectorAll('.btn-add-to-cart').forEach(button => {
-            button.addEventListener('click', function() {
-                alert('Producto agregado al carrito!');
-            });
-        });
     });
+
+    // Agregar al carrito function
+    function agregarAlCarrito(productoId, btn) {
+        if (!btn) return;
+
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span style="font-size: 12px;">...</span>';
+
+        fetch("{{ route('tienda.carrito.agregar', $empresa->slug) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({
+                producto_id: productoId,
+                cantidad: 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.innerHTML = '✓ AGREGADO';
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }, 2000);
+
+            // Actualizar contador del carrito si existe
+            const cartCounters = document.querySelectorAll('.js-cart-widget-amount, .cart-count');
+            cartCounters.forEach(counter => {
+                if (data.total_items !== undefined) {
+                    counter.textContent = data.total_items;
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            alert('Error al agregar al carrito');
+        });
+    }
 
     // Single Product Gallery
     function changeImageSingle(thumbnail, imageUrl) {

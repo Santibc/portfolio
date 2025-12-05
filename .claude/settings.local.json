@@ -40,7 +40,8 @@
       "Bash(del e:xampp8.20htdocsbetogereplace_products.php)",
       "Bash(node:*)",
       "Bash(Select-Object -First 10)",
-      "Bash(Copy-Item \"e:\\xampp8.20\\htdocs\\betoge\\resources\\views\\tienda\\recife_producto.blade.php\" \"e:\\xampp8.20\\htdocs\\betoge\\resources\\views\\tienda\\recife_producto_backup.blade.php\" -Force)"
+      "Bash(Copy-Item \"e:\\xampp8.20\\htdocs\\betoge\\resources\\views\\tienda\\recife_producto.blade.php\" \"e:\\xampp8.20\\htdocs\\betoge\\resources\\views\\tienda\\recife_producto_backup.blade.php\" -Force)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

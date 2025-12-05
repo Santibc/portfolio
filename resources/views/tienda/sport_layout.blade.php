@@ -694,6 +694,15 @@
                 <div class="footer-logo">{{ strtoupper($empresa->nombre) }}</div>
             </div>
 
+            <!-- Métodos de Pago -->
+            <div class="footer-payments text-center my-4">
+                <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/visa@2x.png" alt="Visa" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/mastercard@2x.png" alt="Mastercard" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                <img src="https://d26lpennugtm8s.cloudfront.net/assets/common/img/logos/payment/new_logos_payment/amex@2x.png" alt="Amex" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                <img src="{{ asset('images/WompiLogo.png') }}" alt="Wompi" class="payment-logo" style="height: 30px; margin: 0 8px;">
+                <img src="{{ asset('images/Logo-Puntos-CO.jpg') }}" alt="Puntos Colombia" class="payment-logo" style="height: 30px; margin: 0 8px;">
+            </div>
+
             <!-- Footer Bottom -->
             <div class="footer-bottom">
                 <p>&copy; {{ date('Y') }} {{ $empresa->nombre }}. Todos los derechos reservados.</p>

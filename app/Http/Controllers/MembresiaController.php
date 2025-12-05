@@ -21,9 +21,69 @@ class MembresiaController extends Controller
     {
         $planes = PlanMembresia::activos()->get();
         $empresa = Auth::user()->empresa()->with('planMembresia')->first();
+
+        // Si el usuario no tiene empresa, redirigir a crearla
+        if (!$empresa) {
+            return redirect()->route('empresa.form')
+                ->with('warning', 'Primero debes crear tu empresa para gestionar tu membresía.');
+        }
+
+        // Verificar y asignar membresía gratuita si no tiene ninguna
         $membresiaActiva = $empresa->membresiaActiva;
-        
+
+        if (!$membresiaActiva) {
+            // Asignar membresía gratuita automáticamente
+            $this->asignarMembresiaGratuitaAutomatica($empresa);
+
+            // Recargar la empresa con la nueva membresía
+            $empresa->refresh();
+            $empresa->load('planMembresia');
+            $membresiaActiva = $empresa->membresiaActiva;
+        }
+
         return view('membresias.index', compact('planes', 'empresa', 'membresiaActiva'));
+    }
+
+    /**
+     * Asignar membresía gratuita automáticamente a una empresa
+     */
+    private function asignarMembresiaGratuitaAutomatica($empresa)
+    {
+        $planGratuito = PlanMembresia::planGratuito();
+
+        if (!$planGratuito) {
+            // Si no hay plan gratuito, buscar por precio 0
+            $planGratuito = PlanMembresia::where('precio', 0)->first();
+        }
+
+        if ($planGratuito) {
+            DB::beginTransaction();
+
+            try {
+                // Crear membresía gratuita
+                Membresia::create([
+                    'empresa_id' => $empresa->id,
+                    'plan_membresia_id' => $planGratuito->id,
+                    'estado' => 'activa',
+                    'precio_pagado' => 0,
+                    'fecha_inicio' => now(),
+                    'fecha_fin' => null // Plan gratuito no expira
+                ]);
+
+                // Actualizar empresa con el plan
+                $empresa->update(['plan_membresia_id' => $planGratuito->id]);
+
+                DB::commit();
+
+                Log::info("Membresía gratuita asignada automáticamente a empresa ID: {$empresa->id}");
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error("Error al asignar membresía gratuita automática: " . $e->getMessage());
+            }
+        } else {
+            Log::warning("No se encontró plan gratuito para asignar a empresa ID: {$empresa->id}");
+        }
     }
 
     /**
@@ -33,13 +93,18 @@ class MembresiaController extends Controller
     {
         $plan = PlanMembresia::where('slug', $slug)->firstOrFail();
         $empresa = Auth::user()->empresa;
-        
+
+        if (!$empresa) {
+            return redirect()->route('empresa.form')
+                ->with('warning', 'Primero debes crear tu empresa para ver los planes.');
+        }
+
         // Si es el plan actual, redirigir
         if ($empresa->plan_membresia_id == $plan->id) {
             return redirect()->route('membresias.index')
                 ->with('info', 'Ya tienes este plan activo');
         }
-        
+
         return view('membresias.show', compact('plan', 'empresa'));
     }
 
@@ -50,7 +115,12 @@ class MembresiaController extends Controller
     {
         $plan = PlanMembresia::findOrFail($planId);
         $empresa = Auth::user()->empresa;
-        
+
+        if (!$empresa) {
+            return redirect()->route('empresa.form')
+                ->with('warning', 'Primero debes crear tu empresa para adquirir un plan.');
+        }
+
         // Validar que no sea el plan actual
         if ($empresa->plan_membresia_id == $plan->id) {
             return back()->with('error', 'Ya tienes este plan activo');
@@ -141,8 +211,14 @@ class MembresiaController extends Controller
     public function cancelar(Request $request)
     {
         $empresa = Auth::user()->empresa;
+
+        if (!$empresa) {
+            return redirect()->route('empresa.form')
+                ->with('warning', 'Primero debes crear tu empresa.');
+        }
+
         $membresiaActiva = $empresa->membresiaActiva;
-        
+
         if (!$membresiaActiva) {
             return back()->with('error', 'No tienes una membresía activa');
         }
@@ -163,6 +239,12 @@ class MembresiaController extends Controller
     public function historial()
     {
         $empresa = Auth::user()->empresa;
+
+        if (!$empresa) {
+            return redirect()->route('empresa.form')
+                ->with('warning', 'Primero debes crear tu empresa para ver el historial.');
+        }
+
         $membresias = $empresa->membresias()
             ->with('plan', 'pagos')
             ->orderBy('created_at', 'desc')
