@@ -19,20 +19,15 @@ class RoleService
     public function assignDefaultRole(User $user, string $roleType = 'Inversionista'): void
     {
         try {
-            // Verificar si el rol existe
             $role = Role::where('name', $roleType)->first();
 
             if (!$role) {
-                Log::warning("Rol '{$roleType}' no encontrado. Asignando rol Inversionista por defecto.");
-                $role = Role::where('name', 'Inversionista')->first();
+                Log::warning("Rol '{$roleType}' no encontrado.");
+                return;
             }
 
-            if ($role) {
-                $user->assignRole($role);
-                Log::info("Rol '{$role->name}' asignado al usuario {$user->id}");
-            } else {
-                Log::error("No se pudo asignar ningún rol al usuario {$user->id}");
-            }
+            $user->assignRole($role);
+            Log::info("Rol '{$role->name}' asignado al usuario {$user->id}");
         } catch (\Exception $e) {
             Log::error("Error asignando rol al usuario {$user->id}: " . $e->getMessage());
         }
@@ -50,7 +45,6 @@ class RoleService
         try {
             DB::beginTransaction();
 
-            // Verificar que el rol existe
             $role = Role::where('name', $newRole)->first();
 
             if (!$role) {
@@ -58,7 +52,6 @@ class RoleService
                 return false;
             }
 
-            // Remover todos los roles actuales y asignar el nuevo
             $user->syncRoles([$role]);
 
             DB::commit();
@@ -73,7 +66,7 @@ class RoleService
     }
 
     /**
-     * Agregar un rol adicional al usuario (múltiples roles).
+     * Agregar un rol adicional al usuario.
      *
      * @param User $user
      * @param string $roleName
@@ -116,31 +109,14 @@ class RoleService
     }
 
     /**
-     * Obtener la ruta del dashboard según el rol del usuario.
+     * Obtener la ruta del dashboard.
      *
      * @param User $user
      * @return string
      */
     public function getDashboardRoute(User $user): string
     {
-        if ($user->hasRole('Administrador')) {
-            return 'admin.dashboard';
-        }
-
-        if ($user->hasRole('Supervisor')) {
-            return 'supervisor.dashboard';
-        }
-
-        if ($user->hasRole('Agricultor')) {
-            return 'farmer.dashboard';
-        }
-
-        if ($user->hasRole('Vendedor')) {
-            return 'vendedor.dashboard';
-        }
-
-        // Por defecto, inversionista
-        return 'inversionista.dashboard';
+        return 'dashboard';
     }
 
     /**
@@ -163,17 +139,5 @@ class RoleService
     public function getAllRoles()
     {
         return Role::all();
-    }
-
-    /**
-     * Verificar si el usuario necesita completar KYC.
-     *
-     * @param User $user
-     * @return bool
-     */
-    public function requiresKyc(User $user): bool
-    {
-        // Solo los inversionistas requieren KYC aprobado
-        return $user->hasRole('Inversionista') && $user->kyc_status !== 'aprobado';
     }
 }

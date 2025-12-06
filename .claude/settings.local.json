@@ -12,7 +12,8 @@
       "Bash(find:*)",
       "Bash(tree:*)",
       "Bash(mysql:*)",
-      "Bash(php check_roi.php:*)"
+      "Bash(php check_roi.php:*)",
+      "Bash(php artisan config:clear:*)"
     ],
     "deny": [],
     "ask": []
