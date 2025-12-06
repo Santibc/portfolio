@@ -89,8 +89,8 @@
             color: white;
             position: fixed;
             top: 0;
+            left: 250px;
             right: 0;
-            transition: left 0.3s ease;
             padding-right: 1rem;
         }
 
@@ -112,7 +112,7 @@
 
         main {
             padding-top: 80px;
-            transition: margin-left 0.3s ease;
+            margin-left: 250px;
         }
 
         #toggleSidebar {

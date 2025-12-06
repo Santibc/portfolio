@@ -663,65 +663,50 @@
         </section>
     @endif
 
-    <!-- Banner Página creada en BetoGether -->
+    <!-- Banner Página creada en BetoGether o Banner Personalizado -->
+    @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
+    {{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
     <section class="section-home section-welcome section-home-color section-welcome-home-colors section-welcome-animated"
         data-store="home-welcome-message">
         <div class="js-welcome-animated welcome-animated"
             style="animation: 118.175s linear 0s infinite normal none running marquee;">
-            <a href="/">
+            <a href="https://betogether.com.co" target="_blank">
                 <span class="js-welcome-text-container">
+                    @for($i = 0; $i < 16; $i++)
                     <span class="welcome-text h3 mr-4">
                         Página creada en <strong>BetoGether</strong>
                     </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
-                    <span class="welcome-text h3 mr-4">
-                        Página creada en <strong>BetoGether</strong>
-                    </span>
+                    @endfor
                 </span>
             </a>
         </div>
     </section>
+    @elseif($empresa->banner_mensaje)
+    {{-- Plan pago con banner personalizado --}}
+    <section class="section-home section-welcome section-home-color section-welcome-home-colors section-welcome-animated"
+        data-store="home-welcome-message">
+        <div class="js-welcome-animated welcome-animated"
+            style="animation: 118.175s linear 0s infinite normal none running marquee;">
+            @if($empresa->banner_link)
+            <a href="{{ $empresa->banner_link }}" target="_blank">
+            @else
+            <span>
+            @endif
+                <span class="js-welcome-text-container">
+                    @for($i = 0; $i < 16; $i++)
+                    <span class="welcome-text h3 mr-4">
+                        {{ $empresa->banner_mensaje }}
+                    </span>
+                    @endfor
+                </span>
+            @if($empresa->banner_link)
+            </a>
+            @else
+            </span>
+            @endif
+        </div>
+    </section>
+    @endif
 
     <!-- Sección de Productos -->
     <section class="js-section-products-featured section-home section-featured-home section-featured-products-home"

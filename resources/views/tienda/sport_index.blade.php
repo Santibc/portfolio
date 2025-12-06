@@ -1077,28 +1077,54 @@
 
 <!-- Sección 3: Anuncio Animado (derecha a izquierda) -->
 @if($empresa->planMembresia && $empresa->planMembresia->esGratuito())
+{{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
 <section class="section-home-text-animated">
     <div class="home-text-animated">
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
+        @for($i = 0; $i < 6; $i++)
+        <span class="home-text"><a href="https://betogether.com.co" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
+        @endfor
+    </div>
+</section>
+@elseif($empresa->banner_mensaje)
+{{-- Plan pago con banner personalizado --}}
+<section class="section-home-text-animated">
+    <div class="home-text-animated">
+        @for($i = 0; $i < 6; $i++)
+        <span class="home-text">
+            @if($empresa->banner_link)
+            <a href="{{ $empresa->banner_link }}" target="_blank">{{ strtoupper($empresa->banner_mensaje) }}</a>
+            @else
+            <span>{{ strtoupper($empresa->banner_mensaje) }}</span>
+            @endif
+        </span>
+        @endfor
     </div>
 </section>
 @endif
 
 <!-- Nueva: Anuncio Animado Invertido (izquierda a derecha) -->
 @if($empresa->planMembresia && $empresa->planMembresia->esGratuito())
+{{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
 <section class="section-home-text-animated-reverse">
     <div class="home-text-animated-reverse">
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
-        <span class="home-text"><a href="/" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
+        @for($i = 0; $i < 6; $i++)
+        <span class="home-text"><a href="https://betogether.com.co" target="_blank">PÁGINA CREADA EN BETOGETHER</a></span>
+        @endfor
+    </div>
+</section>
+@elseif($empresa->banner_mensaje)
+{{-- Plan pago con banner personalizado --}}
+<section class="section-home-text-animated-reverse">
+    <div class="home-text-animated-reverse">
+        @for($i = 0; $i < 6; $i++)
+        <span class="home-text">
+            @if($empresa->banner_link)
+            <a href="{{ $empresa->banner_link }}" target="_blank">{{ strtoupper($empresa->banner_mensaje) }}</a>
+            @else
+            <span>{{ strtoupper($empresa->banner_mensaje) }}</span>
+            @endif
+        </span>
+        @endfor
     </div>
 </section>
 @endif

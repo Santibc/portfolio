@@ -11,8 +11,9 @@
         </div>
     </div>
 
-    <!-- Adbar Secondary (Verde - Animated) - BeTogether Watermark or Language/Currency -->
+    <!-- Adbar Secondary (Verde - Animated) - BeTogether Watermark, Banner Personalizado o Language/Currency -->
     @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
+    {{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
     <div class="js-adbar js-adbar-secondary adbar-secondary adbar adbar-animated adbar-colors adbar-with-messages" data-active="true" data-messages="20" data-animated="true">
         <div class="js-adbar-content js-swiper-adbar-secondary adbar-content-animated">
             <div class="js-adbar-messages-container js-adbar-secondary-messages-container swiper-wrapper adbar-text-container align-items-center" style="gap: 120px !important;">
@@ -26,7 +27,29 @@
             </div>
         </div>
     </div>
+    @elseif($empresa->banner_mensaje)
+    {{-- Plan pago con banner personalizado --}}
+    <div class="js-adbar js-adbar-secondary adbar-secondary adbar adbar-animated adbar-colors adbar-with-messages" data-active="true" data-messages="20" data-animated="true">
+        <div class="js-adbar-content js-swiper-adbar-secondary adbar-content-animated">
+            <div class="js-adbar-messages-container js-adbar-secondary-messages-container swiper-wrapper adbar-text-container align-items-center" style="gap: 120px !important;">
+                @for($i = 0; $i < 20; $i++)
+                <span class="js-adbar-message-container js-adbar-secondary-message-container adbar-message swiper-slide" style="flex: 0 0 auto !important; width: auto !important;">
+                    @if($empresa->banner_link)
+                    <a href="{{ $empresa->banner_link }}" target="_blank" style="color: inherit; text-decoration: none; white-space: nowrap; display: inline-block; padding: 0 10px;">
+                        {{ $empresa->banner_mensaje }}
+                    </a>
+                    @else
+                    <span style="white-space: nowrap; display: inline-block; padding: 0 10px;">
+                        {{ $empresa->banner_mensaje }}
+                    </span>
+                    @endif
+                </span>
+                @endfor
+            </div>
+        </div>
+    </div>
     @else
+    {{-- Plan pago sin banner: mostrar idioma/moneda --}}
     <div class="js-adbar js-adbar-secondary adbar-secondary adbar adbar-colors adbar-with-messages" data-active="true" data-messages="1" data-animated="false">
         <div class="js-adbar-content js-swiper-adbar-secondary swiper-container text-center container">
             <div class="js-adbar-messages-container js-adbar-secondary-messages-container swiper-wrapper adbar-text-container align-items-center">
@@ -82,6 +105,10 @@
 
         <!-- Utilities -->
         <div class="utilities-container">
+            <!-- Search Icon (Mobile only) -->
+            <a href="#" class="header-utility js-search-button d-md-none" aria-label="Buscar">
+                <svg class="icon-inline utility-icon icon-lg"><use xlink:href="#search"></use></svg>
+            </a>
             <!-- Cart -->
             <span id="ajax-cart" data-component="cart-button">
                 <a href="{{ route('tienda.carrito', $empresa->slug) }}" class="header-utility">

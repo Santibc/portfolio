@@ -99,6 +99,9 @@ class EmpresasController extends Controller
             'hero_video_message' => ['nullable', 'string', 'max:500'],
             'hero_video_button_text' => ['nullable', 'string', 'max:100'],
             'hero_video_button_link' => ['nullable', 'url', 'max:255'],
+            // Banner informativo
+            'banner_mensaje' => ['nullable', 'string', 'max:500'],
+            'banner_link'    => ['nullable', 'url', 'max:255'],
             'logo'           => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'imagen_portada' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             // Horario de atención

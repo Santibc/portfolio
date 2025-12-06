@@ -319,6 +319,51 @@
         </div>
       </div>
 
+      {{-- Banner Informativo --}}
+      <div class="card shadow mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-megaphone me-2"></i>Banner Informativo</h5>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Nota:</strong> Este mensaje reemplaza el texto "Página creada en BeTogether" en tu tienda.
+            Solo disponible para planes pagos. Si dejas vacío el mensaje, el banner no se mostrará.
+          </div>
+
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              <label for="banner_mensaje" class="form-label">Mensaje del Banner</label>
+              <input type="text"
+                     class="form-control @error('banner_mensaje') is-invalid @enderror"
+                     id="banner_mensaje"
+                     name="banner_mensaje"
+                     value="{{ old('banner_mensaje', $empresa->banner_mensaje) }}"
+                     placeholder="Ej: Envío gratis en compras mayores a $100.000"
+                     maxlength="500">
+              @error('banner_mensaje')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <small class="text-muted">Máximo 500 caracteres. Deja vacío para ocultar el banner.</small>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label for="banner_link" class="form-label">Link del Banner (opcional)</label>
+              <input type="url"
+                     class="form-control @error('banner_link') is-invalid @enderror"
+                     id="banner_link"
+                     name="banner_link"
+                     value="{{ old('banner_link', $empresa->banner_link) }}"
+                     placeholder="https://ejemplo.com/promocion">
+              @error('banner_link')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+              <small class="text-muted">URL a la que llevará el banner al hacer clic.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {{-- Imágenes --}}
       <div class="card shadow mb-4">
         <div class="card-header">

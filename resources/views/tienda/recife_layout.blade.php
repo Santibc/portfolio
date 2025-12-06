@@ -17501,18 +17501,37 @@
 
 
 
+    @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
+    {{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
     <section class="js-adbar section-adbar transition-soft section-adbar-colors adbar-with-messages">
         <div class="js-swiper-adbar swiper-container text-center container">
             <div class="swiper-wrapper adbar-text-container align-items-center">
                 <span class="adbar-message swiper-slide slide-container">
-                    <a href="/" style="color: var(--adbar-foreground); text-decoration: none;">
-                        Página creada en <strong>BetoGether</strong>
+                    <a href="https://betogether.com.co" target="_blank" style="color: var(--adbar-foreground); text-decoration: none;">
+                        Página creada en <strong>BeTogether</strong>
                     </a>
                 </span>
             </div>
         </div>
-
     </section>
+    @elseif($empresa->banner_mensaje)
+    {{-- Plan pago con banner personalizado --}}
+    <section class="js-adbar section-adbar transition-soft section-adbar-colors adbar-with-messages">
+        <div class="js-swiper-adbar swiper-container text-center container">
+            <div class="swiper-wrapper adbar-text-container align-items-center">
+                <span class="adbar-message swiper-slide slide-container">
+                    @if($empresa->banner_link)
+                    <a href="{{ $empresa->banner_link }}" target="_blank" style="color: var(--adbar-foreground); text-decoration: none;">
+                        {{ $empresa->banner_mensaje }}
+                    </a>
+                    @else
+                    <span style="color: var(--adbar-foreground);">{{ $empresa->banner_mensaje }}</span>
+                    @endif
+                </span>
+            </div>
+        </div>
+    </section>
+    @endif
 
 
 

@@ -34,7 +34,9 @@ class Empresa extends Model
         'hero_video_url',
         'hero_video_message',
         'hero_video_button_text',
-        'hero_video_button_link'
+        'hero_video_button_link',
+        'banner_mensaje',
+        'banner_link'
     ];
 
     protected $casts = [

@@ -48,25 +48,20 @@
 
           <div class="col-lg-4 col-md-12 text-center">
             @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
+              {{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
               <a href="https://betogether.com.co" target="_blank" class="watermark-link">
                 <img src="{{ asset('images/ico.png') }}" alt="BeTogether" class="watermark-icon">
                 <span class="watermark-text">Página creada en BeTogether</span>
               </a>
-            @else
-              <div class="announcement-slider swiper init-swiper">
-                <script type="application/json" class="swiper-config">
-                  {
-                    "loop": true,
-                    "speed": 600,
-                    "autoplay": {
-                      "delay": 5000
-                    },
-                    "slidesPerView": 1,
-                    "direction": "vertical",
-                    "effect": "slide"
-                  }
-                </script>
-              </div>
+            @elseif($empresa->banner_mensaje)
+              {{-- Plan pago con banner personalizado --}}
+              @if($empresa->banner_link)
+                <a href="{{ $empresa->banner_link }}" target="_blank" class="watermark-link">
+                  <span class="watermark-text">{{ $empresa->banner_mensaje }}</span>
+                </a>
+              @else
+                <span class="watermark-text">{{ $empresa->banner_mensaje }}</span>
+              @endif
             @endif
           </div>
 

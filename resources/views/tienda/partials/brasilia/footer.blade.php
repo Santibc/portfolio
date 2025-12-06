@@ -80,9 +80,19 @@
             <div class="col-12 text-center">
                 <p class="footer-copyright mb-0">
                     @if($empresa->planMembresia && $empresa->planMembresia->marca_de_agua)
+                    {{-- Plan gratuito: mostrar marca de agua de BeTogether --}}
                     <a href="https://betogether.com.co" target="_blank" style="text-decoration: none; color: inherit;">
                         Página creada en BeTogether
                     </a><br>
+                    @elseif($empresa->banner_mensaje)
+                    {{-- Plan pago con banner personalizado --}}
+                    @if($empresa->banner_link)
+                    <a href="{{ $empresa->banner_link }}" target="_blank" style="text-decoration: none; color: inherit;">
+                        {{ $empresa->banner_mensaje }}
+                    </a><br>
+                    @else
+                    {{ $empresa->banner_mensaje }}<br>
+                    @endif
                     @endif
                     Copyright © {{ $empresa->nombre }} - {{ date('Y') }}. Todos los derechos reservados.
                 </p>
