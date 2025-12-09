@@ -22,6 +22,9 @@ class DatabaseSeeder extends Seeder
 
             // Usuarios de prueba
             TestUsersSeeder::class,
+
+            // Datos de demostración GVA (categorías, cursos, videos)
+            GVADemoSeeder::class,
         ]);
     }
 }

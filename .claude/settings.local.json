@@ -13,7 +13,9 @@
       "Bash(tree:*)",
       "Bash(mysql:*)",
       "Bash(php check_roi.php:*)",
-      "Bash(php artisan config:clear:*)"
+      "Bash(php artisan config:clear:*)",
+      "Bash(grep:*)",
+      "Bash(dir \"c:\\xampp\\htdocs\\developments\\portfolio\\public\\images\")"
     ],
     "deny": [],
     "ask": []

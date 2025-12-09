@@ -13,24 +13,75 @@ class RolesAndPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear roles básicos
-        Role::firstOrCreate(['name' => 'Administrador']);
-        Role::firstOrCreate(['name' => 'Usuario']);
-
-        // Crear permisos básicos
+        // Crear permisos
         $permisos = [
+            // Usuarios
             'ver_usuarios',
             'crear_usuarios',
             'editar_usuarios',
             'eliminar_usuarios',
+
+            // Categorías
+            'ver_categorias',
+            'crear_categorias',
+            'editar_categorias',
+            'eliminar_categorias',
+
+            // Cursos
+            'ver_cursos',
+            'crear_cursos',
+            'editar_cursos',
+            'eliminar_cursos',
+
+            // Videos
+            'ver_videos',
+            'crear_videos',
+            'editar_videos',
+            'eliminar_videos',
+
+            // Notas
+            'ver_notas',
+            'crear_notas',
+            'editar_notas',
+            'eliminar_notas',
+
+            // Reportes
+            'ver_reportes',
+            'exportar_reportes',
         ];
 
         foreach ($permisos as $permiso) {
             Permission::firstOrCreate(['name' => $permiso]);
         }
 
+        // Crear roles
+        $adminRole = Role::firstOrCreate(['name' => 'Administrador']);
+        $estudianteRole = Role::firstOrCreate(['name' => 'Estudiante']);
+
         // Asignar todos los permisos al Administrador
-        $adminRole = Role::findByName('Administrador');
         $adminRole->givePermissionTo(Permission::all());
+
+        // Asignar permisos limitados al Estudiante
+        $estudianteRole->givePermissionTo([
+            'ver_categorias',
+            'ver_cursos',
+            'ver_videos',
+            'ver_notas',
+            'crear_notas',
+            'editar_notas',
+            'eliminar_notas',
+        ]);
+
+        // Eliminar el rol "Usuario" anterior si existe (opcional, para limpieza)
+        $usuarioRole = Role::where('name', 'Usuario')->first();
+        if ($usuarioRole) {
+            // Migrar usuarios con rol "Usuario" a "Estudiante"
+            $usuarios = \App\Models\User::role('Usuario')->get();
+            foreach ($usuarios as $usuario) {
+                $usuario->removeRole('Usuario');
+                $usuario->assignRole('Estudiante');
+            }
+            // No eliminamos el rol para mantener compatibilidad
+        }
     }
 }
