@@ -24,7 +24,12 @@ use App\Http\Controllers\ActualizacionPreciosController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);
+Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index'])->name('home');
+Route::get('/planes', [App\Http\Controllers\WelcomeController::class, 'planes'])->name('planes');
+Route::get('/contacto', [App\Http\Controllers\WelcomeController::class, 'contacto'])->name('contacto');
+Route::get('/eventos', [App\Http\Controllers\WelcomeController::class, 'eventos'])->name('eventos');
+Route::get('/eventos/{slug}', [App\Http\Controllers\WelcomeController::class, 'eventoDetalle'])->name('eventos.show');
+Route::get('/sobre-nosotros', [App\Http\Controllers\WelcomeController::class, 'sobreNosotros'])->name('sobre-nosotros');
 Route::post('/formulario-contacto', [App\Http\Controllers\WelcomeController::class, 'enviarFormularioContacto'])->name('formulario.contacto');
 
 // Ruta para el tema Brasilia (demo de tienda)
@@ -286,6 +291,41 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/{page}/edit', [App\Http\Controllers\AdminContentManagerController::class, 'edit'])->name('edit');
         Route::put('/{page}', [App\Http\Controllers\AdminContentManagerController::class, 'update'])->name('update');
         Route::post('/upload-image', [App\Http\Controllers\AdminContentManagerController::class, 'uploadImage'])->name('upload-image');
+    });
+
+    // Rutas de Landing Page
+    Route::prefix('landing')->name('landing.')->group(function () {
+        // Configuración (Layout)
+        Route::get('/configuracion', [App\Http\Controllers\LandingConfiguracionController::class, 'edit'])->name('configuracion.edit');
+        Route::put('/configuracion', [App\Http\Controllers\LandingConfiguracionController::class, 'update'])->name('configuracion.update');
+
+        // Páginas
+        Route::get('/paginas/{slug}', [App\Http\Controllers\LandingPaginaController::class, 'edit'])->name('paginas.edit');
+        Route::put('/paginas/{slug}', [App\Http\Controllers\LandingPaginaController::class, 'update'])->name('paginas.update');
+
+        // Eventos CRUD
+        Route::get('/eventos', [App\Http\Controllers\LandingEventoController::class, 'index'])->name('eventos.index');
+        Route::get('/eventos/crear', [App\Http\Controllers\LandingEventoController::class, 'create'])->name('eventos.create');
+        Route::post('/eventos', [App\Http\Controllers\LandingEventoController::class, 'store'])->name('eventos.store');
+        Route::get('/eventos/{id}/editar', [App\Http\Controllers\LandingEventoController::class, 'edit'])->name('eventos.edit');
+        Route::put('/eventos/{id}', [App\Http\Controllers\LandingEventoController::class, 'update'])->name('eventos.update');
+        Route::delete('/eventos/{id}', [App\Http\Controllers\LandingEventoController::class, 'destroy'])->name('eventos.destroy');
+
+        // Valores CRUD
+        Route::get('/valores', [App\Http\Controllers\LandingValorController::class, 'index'])->name('valores.index');
+        Route::get('/valores/crear', [App\Http\Controllers\LandingValorController::class, 'create'])->name('valores.create');
+        Route::post('/valores', [App\Http\Controllers\LandingValorController::class, 'store'])->name('valores.store');
+        Route::get('/valores/{id}/editar', [App\Http\Controllers\LandingValorController::class, 'edit'])->name('valores.edit');
+        Route::put('/valores/{id}', [App\Http\Controllers\LandingValorController::class, 'update'])->name('valores.update');
+        Route::delete('/valores/{id}', [App\Http\Controllers\LandingValorController::class, 'destroy'])->name('valores.destroy');
+
+        // Estadísticas CRUD
+        Route::get('/estadisticas', [App\Http\Controllers\LandingEstadisticaController::class, 'index'])->name('estadisticas.index');
+        Route::get('/estadisticas/crear', [App\Http\Controllers\LandingEstadisticaController::class, 'create'])->name('estadisticas.create');
+        Route::post('/estadisticas', [App\Http\Controllers\LandingEstadisticaController::class, 'store'])->name('estadisticas.store');
+        Route::get('/estadisticas/{id}/editar', [App\Http\Controllers\LandingEstadisticaController::class, 'edit'])->name('estadisticas.edit');
+        Route::put('/estadisticas/{id}', [App\Http\Controllers\LandingEstadisticaController::class, 'update'])->name('estadisticas.update');
+        Route::delete('/estadisticas/{id}', [App\Http\Controllers\LandingEstadisticaController::class, 'destroy'])->name('estadisticas.destroy');
     });
 });
 

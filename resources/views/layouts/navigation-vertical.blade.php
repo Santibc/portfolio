@@ -68,6 +68,73 @@
                 <i class="bi bi-file-earmark-text"></i>
                 <span>Gestor de Contenido</span>
             </a>
+
+            {{-- Landing Page (con submenú) --}}
+            <div class="nav-item">
+                <a href="#landingSubmenu"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+                   title="Landing Page"
+                   data-bs-toggle="collapse"
+                   aria-expanded="{{ request()->is('admin/landing*') ? 'true' : 'false' }}"
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('admin/landing*') ? '' : 'transparent' }}'">
+                    <i class="bi bi-globe"></i>
+                    <span>Landing Page</span>
+                    <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
+                </a>
+                <div class="collapse {{ request()->is('admin/landing*') ? 'show' : '' }}" id="landingSubmenu">
+                    <div class="ps-3">
+                        <a href="{{ route('admin.landing.configuracion.edit') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/configuracion*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Layout"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/configuracion*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-gear"></i>
+                            <span>Layout</span>
+                        </a>
+                        <a href="{{ route('admin.landing.paginas.edit', 'inicio') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/paginas/inicio*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Inicio"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/paginas/inicio*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-house"></i>
+                            <span>Inicio</span>
+                        </a>
+                        <a href="{{ route('admin.landing.paginas.edit', 'planes') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/paginas/planes*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Planes"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/paginas/planes*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            <span>Planes</span>
+                        </a>
+                        <a href="{{ route('admin.landing.eventos.index') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/eventos*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Eventos"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/eventos*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Eventos</span>
+                        </a>
+                        <a href="{{ route('admin.landing.paginas.edit', 'contacto') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/paginas/contacto*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Contacto"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/paginas/contacto*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-envelope"></i>
+                            <span>Contacto</span>
+                        </a>
+                        <a href="{{ route('admin.landing.paginas.edit', 'nosotros') }}"
+                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('admin/landing/paginas/nosotros*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                           title="Sobre Nosotros"
+                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                           onmouseout="this.style.backgroundColor='{{ request()->is('admin/landing/paginas/nosotros*') ? '' : 'transparent' }}'">
+                            <i class="bi bi-people"></i>
+                            <span>Sobre Nosotros</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         @endif
 
         {{-- Mi Empresa (con submenú) --}}
