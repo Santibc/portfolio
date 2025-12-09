@@ -138,11 +138,11 @@
                 </table>
             </div>
         </div>
-        @if(isset($usuarios) && $usuarios->hasPages())
+    @if(isset($usuarios) && is_object($usuarios) && method_exists($usuarios, 'hasPages') && $usuarios->hasPages())
         <div class="card-footer bg-transparent border-0">
             {{ $usuarios->links() }}
         </div>
-        @endif
+    @endif
     </div>
 </div>
 

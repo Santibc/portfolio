@@ -153,11 +153,16 @@
                 </table>
             </div>
         </div>
-        @if(isset($cursos) && $cursos->hasPages())
+    @if(
+        isset($cursos) && 
+        is_object($cursos) && 
+        method_exists($cursos, 'hasPages') && 
+        $cursos->hasPages()
+    )
         <div class="card-footer bg-transparent border-0">
             {{ $cursos->links() }}
         </div>
-        @endif
+    @endif
     </div>
 </div>
 
