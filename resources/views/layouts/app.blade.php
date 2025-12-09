@@ -16,6 +16,19 @@
     {{-- Bootstrap Icons --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
+    {{-- Bootstrap 5 CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {{-- Tailwind CSS (para componentes Blade - con preflight deshabilitado) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: {
+                preflight: false,
+            }
+        }
+    </script>
+
     {{-- GVA CSS --}}
     <link href="{{ asset('css/gva-global.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-dashboard.css') }}" rel="stylesheet">
@@ -83,11 +96,19 @@
             </div>
         @endif
 
-        @yield('content')
+        {{-- Soporte para @yield('content') y {{ $slot }} --}}
+        @hasSection('content')
+            @yield('content')
+        @else
+            {{ $slot ?? '' }}
+        @endif
     </main>
 
     {{-- JavaScript --}}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    {{-- Bootstrap 5 JS (para modales) --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     {{-- DataTables --}}
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>

@@ -21,10 +21,10 @@
                             <small class="text-muted">{{ $nota->course->category->name ?? '' }}</small>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-three-dots-vertical"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
                                 <li>
                                     <a class="dropdown-item" href="{{ route('cursos.show', $nota->course) }}">
                                         <i class="bi bi-eye me-2"></i>Ver curso
@@ -104,6 +104,21 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+/* Fix para dropdowns en cards */
+.card {
+    overflow: visible !important;
+}
+.card-header {
+    overflow: visible !important;
+}
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>

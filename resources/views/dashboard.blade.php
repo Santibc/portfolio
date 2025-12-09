@@ -15,9 +15,9 @@
                             <p class="mb-0 opacity-75">Continúa tu aprendizaje donde lo dejaste</p>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <div class="d-inline-block bg-white bg-opacity-20 rounded-3 p-3">
-                                <h3 class="mb-0">{{ $overallProgress['percentage'] ?? 0 }}%</h3>
-                                <small>Progreso general</small>
+                            <div class="d-inline-block rounded-3 p-3" style="background: rgba(255,255,255,0.2);">
+                                <h3 class="mb-0" style="color: #fff;">{{ $overallProgress['percentage'] ?? 0 }}%</h3>
+                                <small style="color: rgba(255,255,255,0.9);">Progreso general</small>
                             </div>
                         </div>
                     </div>

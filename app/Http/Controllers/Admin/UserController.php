@@ -14,7 +14,8 @@ class UserController extends Controller
     public function index()
     {
         $usuarios = User::with('roles')->orderBy('created_at', 'desc')->get();
-        return view('admin.users.index', compact('usuarios'));
+        $roles = Role::all();
+        return view('admin.users.index', compact('usuarios', 'roles'));
     }
 
     public function create()
@@ -54,17 +55,27 @@ class UserController extends Controller
             ->with('success', 'Usuario creado exitosamente.');
     }
 
-    public function edit(User $usuario)
+    public function edit(Request $request, User $user)
     {
+        // Si es petición AJAX, devolver JSON
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->roles->first()->name ?? 'Estudiante',
+            ]);
+        }
+
         $roles = Role::all();
-        return view('admin.users.edit', compact('usuario', 'roles'));
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
-    public function update(Request $request, User $usuario)
+    public function update(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role' => 'required|exists:roles,name',
         ], [
@@ -78,31 +89,31 @@ class UserController extends Controller
             'role.exists' => 'El rol seleccionado no existe.',
         ]);
 
-        $usuario->update([
+        $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
         ]);
 
         if (!empty($validated['password'])) {
-            $usuario->update(['password' => Hash::make($validated['password'])]);
+            $user->update(['password' => Hash::make($validated['password'])]);
         }
 
         // Sincronizar rol
-        $usuario->syncRoles([$validated['role']]);
+        $user->syncRoles([$validated['role']]);
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    public function destroy(User $usuario)
+    public function destroy(User $user)
     {
         // Evitar eliminar el propio usuario
-        if ($usuario->id === auth()->id()) {
+        if ($user->id === auth()->id()) {
             return redirect()->route('admin.usuarios.index')
                 ->with('error', 'No puedes eliminar tu propio usuario.');
         }
 
-        $usuario->delete();
+        $user->delete();
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario eliminado exitosamente.');

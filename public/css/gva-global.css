@@ -325,7 +325,7 @@ body {
     background: var(--gva-white);
     border-radius: var(--gva-radius-lg);
     box-shadow: var(--gva-shadow);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .card-header {

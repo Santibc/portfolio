@@ -44,12 +44,25 @@ class CategoryController extends Controller
             ->with('success', 'Categoría creada exitosamente.');
     }
 
-    public function edit(Category $categoria)
+    public function edit(Request $request, Category $category)
     {
-        return view('admin.categories.edit', compact('categoria'));
+        // Si es petición AJAX, devolver JSON
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'is_active' => $category->is_active,
+            ]);
+        }
+
+        return view('admin.categories.edit', ['categoria' => $category]);
     }
 
-    public function update(UpdateCategoryRequest $request, Category $categoria)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
         $data = $request->validated();
 
@@ -57,21 +70,21 @@ class CategoryController extends Controller
             $data['image'] = $request->file('image');
         }
 
-        $this->categoryService->update($categoria, $data);
+        $this->categoryService->update($category, $data);
 
         return redirect()->route('admin.categorias.index')
             ->with('success', 'Categoría actualizada exitosamente.');
     }
 
-    public function destroy(Category $categoria)
+    public function destroy(Category $category)
     {
         // Verificar si tiene cursos
-        if ($categoria->courses()->count() > 0) {
+        if ($category->courses()->count() > 0) {
             return redirect()->route('admin.categorias.index')
                 ->with('error', 'No se puede eliminar una categoría que tiene cursos asociados.');
         }
 
-        $this->categoryService->delete($categoria);
+        $this->categoryService->delete($category);
 
         return redirect()->route('admin.categorias.index')
             ->with('success', 'Categoría eliminada exitosamente.');
@@ -89,11 +102,11 @@ class CategoryController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function toggleActive(Category $categoria)
+    public function toggleActive(Category $category)
     {
-        $categoria->update(['is_active' => !$categoria->is_active]);
+        $category->update(['is_active' => !$category->is_active]);
 
-        $status = $categoria->is_active ? 'activada' : 'desactivada';
+        $status = $category->is_active ? 'activada' : 'desactivada';
         return redirect()->route('admin.categorias.index')
             ->with('success', "Categoría {$status} exitosamente.");
     }

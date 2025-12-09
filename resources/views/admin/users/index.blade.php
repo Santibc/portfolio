@@ -242,7 +242,12 @@
 @push('scripts')
 <script>
 function editUser(userId) {
-    fetch(`{{ url('admin/usuarios') }}/${userId}/edit`)
+    fetch(`{{ url('admin/usuarios') }}/${userId}/edit`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             document.getElementById('editName').value = data.name;
@@ -252,6 +257,7 @@ function editUser(userId) {
             new bootstrap.Modal(document.getElementById('editUserModal')).show();
         })
         .catch(error => {
+            console.error('Error:', error);
             Swal.fire('Error', 'No se pudo cargar el usuario', 'error');
         });
 }

@@ -81,7 +81,6 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
 
     // Gestión de Usuarios
     Route::resource('usuarios', AdminUserController::class)->parameters(['usuarios' => 'user']);
-    Route::get('/usuarios/{user}/edit', [AdminUserController::class, 'edit'])->name('usuarios.edit');
 
     // Gestión de Categorías
     Route::resource('categorias', AdminCategoryController::class)->parameters(['categorias' => 'category']);

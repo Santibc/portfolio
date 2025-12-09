@@ -56,14 +56,28 @@ class CourseController extends Controller
             ->with('success', 'Curso creado exitosamente.');
     }
 
-    public function edit(Course $curso)
+    public function edit(Request $request, Course $course)
     {
+        // Si es petición AJAX, devolver JSON
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'id' => $course->id,
+                'category_id' => $course->category_id,
+                'title' => $course->title,
+                'slug' => $course->slug,
+                'description' => $course->description,
+                'thumbnail' => $course->thumbnail,
+                'duration_hours' => $course->duration_hours,
+                'is_published' => $course->is_published,
+            ]);
+        }
+
         $categorias = Category::ordered()->get();
-        $curso->load('videos');
-        return view('admin.courses.edit', compact('curso', 'categorias'));
+        $course->load('videos');
+        return view('admin.courses.edit', ['curso' => $course, 'categorias' => $categorias]);
     }
 
-    public function update(UpdateCourseRequest $request, Course $curso)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
         $data = $request->validated();
 
@@ -71,25 +85,25 @@ class CourseController extends Controller
             $data['thumbnail'] = $request->file('thumbnail');
         }
 
-        $this->courseService->update($curso, $data);
+        $this->courseService->update($course, $data);
 
         return redirect()->route('admin.cursos.index')
             ->with('success', 'Curso actualizado exitosamente.');
     }
 
-    public function destroy(Course $curso)
+    public function destroy(Course $course)
     {
-        $this->courseService->delete($curso);
+        $this->courseService->delete($course);
 
         return redirect()->route('admin.cursos.index')
             ->with('success', 'Curso eliminado exitosamente.');
     }
 
-    public function togglePublish(Course $curso)
+    public function togglePublish(Course $course)
     {
-        $this->courseService->togglePublish($curso);
+        $this->courseService->togglePublish($course);
 
-        $status = $curso->fresh()->is_published ? 'publicado' : 'despublicado';
+        $status = $course->fresh()->is_published ? 'publicado' : 'despublicado';
         return redirect()->route('admin.cursos.index')
             ->with('success', "Curso {$status} exitosamente.");
     }

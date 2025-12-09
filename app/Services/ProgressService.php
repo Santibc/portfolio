@@ -48,12 +48,12 @@ class ProgressService
             ->toArray();
 
         $completedCount = count($completedVideoIds);
-        $percentage = $totalVideos > 0 ? round(($completedCount / $totalVideos) * 100) : 0;
+        $percentage = $totalVideos > 0 ? (int) round(($completedCount / $totalVideos) * 100) : 0;
 
         return [
             'total_videos' => $totalVideos,
             'completed_videos' => $completedCount,
-            'percentage' => (int) $percentage,
+            'percentage' => $percentage,
             'is_completed' => $percentage === 100,
             'completed_video_ids' => $completedVideoIds,
         ];
@@ -88,12 +88,12 @@ class ProgressService
 
         return [
             'total_courses' => $totalCourses,
-            'completed_courses' => $completedCourses,
+            'courses_completed' => $completedCourses,
             'courses_in_progress' => $coursesInProgress,
             'not_started_courses' => $totalCourses - $completedCourses - $coursesInProgress,
             'total_videos' => $totalVideos,
             'completed_videos' => $completedVideos,
-            'overall_percentage' => (int) $overallPercentage,
+            'percentage' => (int) $overallPercentage,
         ];
     }
 
@@ -191,7 +191,7 @@ public function getNextVideoToWatch(User $user): ?Video
             if ($progress['completed_videos'] > 0) {
                 $studentsWithProgress++;
             }
-            if ($progress['overall_percentage'] === 100) {
+            if ($progress['percentage'] === 100) {
                 $studentsCompleted++;
             }
         }
