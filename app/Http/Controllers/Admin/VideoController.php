@@ -40,10 +40,22 @@ class VideoController extends Controller
             $data['video'] = $request->file('video');
         }
 
-        $this->videoService->create($course, $data);
+        try {
+            $this->videoService->create($course, $data);
 
-        return redirect()->route('admin.cursos.videos.index', $course)
-            ->with('success', 'Video subido exitosamente.');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Video subido exitosamente.']);
+            }
+
+            return redirect()->route('admin.cursos.videos.index', $course)
+                ->with('success', 'Video subido exitosamente.');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al subir el video: ' . $e->getMessage()], 500);
+            }
+
+            return redirect()->back()->with('error', 'Error al subir el video.');
+        }
     }
 
     public function edit(Course $course, Video $video)

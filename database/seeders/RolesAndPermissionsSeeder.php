@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -72,16 +74,29 @@ class RolesAndPermissionsSeeder extends Seeder
             'eliminar_notas',
         ]);
 
+        // Crear usuario administrador por defecto
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@gva.com'],
+            [
+                'name' => 'Administrador',
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        // Asignar rol de Administrador
+        if (!$admin->hasRole('Administrador')) {
+            $admin->assignRole('Administrador');
+        }
+
         // Eliminar el rol "Usuario" anterior si existe (opcional, para limpieza)
         $usuarioRole = Role::where('name', 'Usuario')->first();
         if ($usuarioRole) {
             // Migrar usuarios con rol "Usuario" a "Estudiante"
-            $usuarios = \App\Models\User::role('Usuario')->get();
+            $usuarios = User::role('Usuario')->get();
             foreach ($usuarios as $usuario) {
                 $usuario->removeRole('Usuario');
                 $usuario->assignRole('Estudiante');
             }
-            // No eliminamos el rol para mantener compatibilidad
         }
     }
 }

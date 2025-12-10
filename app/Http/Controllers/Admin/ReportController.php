@@ -51,7 +51,7 @@ class ReportController extends Controller
     public function students(Request $request)
     {
         $estudiantes = User::role('Estudiante')
-            ->withCount('videoCompletions')
+            ->withCount(['videoCompletions', 'notes'])
             ->orderBy('video_completions_count', 'desc')
             ->get();
 

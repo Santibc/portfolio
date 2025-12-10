@@ -27,8 +27,7 @@
                             <th class="text-center">Videos Completados</th>
                             <th class="text-center">Cursos Completados</th>
                             <th>Progreso General</th>
-                            <th class="text-center">Notas</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            <th class="text-center pe-4">Notas</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,21 +67,15 @@
                                     <small class="text-muted">{{ $estudiante->progress['percentage'] ?? 0 }}%</small>
                                 </div>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center pe-4">
                                 <span class="badge bg-warning-subtle text-warning">
                                     {{ $estudiante->notes_count ?? 0 }}
                                 </span>
                             </td>
-                            <td class="text-end pe-4">
-                                <a href="{{ route('admin.reportes.estudiante', $estudiante) }}"
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye me-1"></i>Ver detalle
-                                </a>
-                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-people display-4 d-block mb-3"></i>
                                 No hay estudiantes registrados
                             </td>

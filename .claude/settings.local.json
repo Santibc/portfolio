@@ -20,7 +20,8 @@
       "Bash(php check_courses.php:*)",
       "Bash(findstr:*)",
       "Bash(cat:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(dir /s /b \"c:\\xampp\\htdocs\\developments\\portfolio\\resources\\views\\admin\")"
     ],
     "deny": [],
     "ask": []

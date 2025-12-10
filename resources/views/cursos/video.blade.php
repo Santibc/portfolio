@@ -23,7 +23,7 @@
                         <video id="videoPlayer" class="w-100" controls
                                style="max-height: 500px;"
                                poster="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : '' }}">
-                            <source src="{{ asset('videos/' . $video->video_path) }}" type="video/mp4">
+                            <source src="{{ asset($video->video_path) }}" type="video/mp4">
                             Tu navegador no soporta el elemento de video.
                         </video>
                     </div>

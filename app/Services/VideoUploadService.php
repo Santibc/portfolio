@@ -18,8 +18,9 @@ class VideoUploadService
         $data['course_id'] = $course->id;
 
         if (isset($data['video']) && $data['video'] instanceof UploadedFile) {
-            $data['video_path'] = $this->uploadVideo($data['video'], $course);
+            // Obtener duración ANTES de mover el archivo (ya que move() elimina el temporal)
             $data['duration_seconds'] = $this->getVideoDuration($data['video']);
+            $data['video_path'] = $this->uploadVideo($data['video'], $course);
             unset($data['video']);
         }
 
@@ -32,11 +33,13 @@ class VideoUploadService
     public function update(Video $video, array $data): Video
     {
         if (isset($data['video']) && $data['video'] instanceof UploadedFile) {
+            // Obtener duración ANTES de mover el archivo (ya que move() elimina el temporal)
+            $data['duration_seconds'] = $this->getVideoDuration($data['video']);
+
             // Eliminar video anterior
             $this->deleteVideo($video->video_path);
 
             $data['video_path'] = $this->uploadVideo($data['video'], $video->course);
-            $data['duration_seconds'] = $this->getVideoDuration($data['video']);
             unset($data['video']);
         }
 

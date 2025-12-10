@@ -16,7 +16,7 @@ class RoleService
      * @param string $roleType
      * @return void
      */
-    public function assignDefaultRole(User $user, string $roleType = 'Inversionista'): void
+    public function assignDefaultRole(User $user, string $roleType = 'Estudiante'): void
     {
         try {
             $role = Role::where('name', $roleType)->first();

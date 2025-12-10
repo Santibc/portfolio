@@ -203,18 +203,22 @@ document.getElementById('uploadVideoForm').addEventListener('submit', function(e
     });
 
     xhr.addEventListener('load', function() {
-        if (xhr.status === 200 || xhr.status === 302) {
-            uploadStatus.textContent = 'Video subido exitosamente. Redirigiendo...';
-            progressBar.classList.remove('progress-bar-animated');
-            progressBar.classList.add('bg-success');
-            window.location.href = '{{ route("admin.cursos.videos.index", $curso) }}';
-        } else {
-            try {
-                const response = JSON.parse(xhr.responseText);
+        try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                uploadStatus.textContent = 'Video subido exitosamente. Redirigiendo...';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-success');
+                window.location.href = '{{ route("admin.cursos.videos.index", $curso) }}';
+            } else {
                 Swal.fire('Error', response.message || 'Error al subir el video', 'error');
-            } catch {
-                Swal.fire('Error', 'Error al subir el video', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Subir Video';
+                progressContainer.classList.add('d-none');
             }
+        } catch {
+            // Si no es JSON, probablemente es un error de validación HTML
+            Swal.fire('Error', 'Error al subir el video. Verifica que el archivo sea válido.', 'error');
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Subir Video';
             progressContainer.classList.add('d-none');
@@ -230,6 +234,8 @@ document.getElementById('uploadVideoForm').addEventListener('submit', function(e
 
     xhr.open('POST', this.action);
     xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('Accept', 'application/json');
     xhr.send(formData);
 });
 </script>

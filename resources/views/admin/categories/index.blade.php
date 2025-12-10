@@ -58,7 +58,7 @@
                 </div>
                 <div class="card-body text-center">
                     @if($categoria->image)
-                    <img src="{{ asset('storage/' . $categoria->image) }}"
+                    <img src="{{ asset($categoria->image) }}"
                          alt="{{ $categoria->name }}"
                          class="rounded-3 mb-3"
                          style="width: 100%; height: 120px; object-fit: cover;">

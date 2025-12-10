@@ -19,8 +19,15 @@ class UpdateCourseRequest extends FormRequest
             'description' => 'nullable|string|max:10000',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'order' => 'nullable|integer|min:0',
-            'is_published' => 'boolean',
+            'is_published' => 'nullable',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_published' => $this->has('is_published') ? true : false,
+        ]);
     }
 
     public function messages(): array

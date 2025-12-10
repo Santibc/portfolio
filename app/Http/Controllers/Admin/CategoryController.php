@@ -56,7 +56,7 @@ class CategoryController extends Controller
             'color' => $category->color,
             'is_active' => $category->is_active,
             'image' => $category->image,
-            'image_url' => $category->image ? asset('storage/' . $category->image) : null,
+            'image_url' => $category->image ? asset($category->image) : null,
         ]);
     }
 
