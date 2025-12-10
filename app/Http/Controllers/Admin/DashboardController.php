@@ -44,31 +44,47 @@ class DashboardController extends Controller
         $progressStats = $this->progressService->getAdminStats();
 
         // Cursos más populares (con más completaciones)
-        $cursosPopulares = Course::withCount(['videos as completaciones' => function ($query) {
-            $query->join('video_completions', 'videos.id', '=', 'video_completions.video_id');
-        }])->published()
-            ->orderByDesc('completaciones')
-            ->limit(5)
-            ->get();
+        $popularCourses = Course::with('category')
+            ->withCount('videos')
+            ->published()
+            ->get()
+            ->map(function ($curso) {
+                $completionsCount = VideoCompletion::whereIn('video_id', $curso->videos()->pluck('id'))->count();
+                $totalPossible = $curso->videos_count * User::role('Estudiante')->count();
+                $curso->completions_count = $completionsCount;
+                $curso->completion_rate = $totalPossible > 0 ? round(($completionsCount / $totalPossible) * 100) : 0;
+                return $curso;
+            })
+            ->sortByDesc('completions_count')
+            ->take(5);
 
         // Actividad reciente
-        $actividadReciente = VideoCompletion::with(['user', 'video.course'])
+        $recentActivity = VideoCompletion::with(['user', 'video.course'])
             ->orderBy('completed_at', 'desc')
             ->limit(10)
             ->get();
 
-        // Notas recientes
-        $notasRecientes = Note::with(['user', 'course'])
-            ->orderBy('created_at', 'desc')
+        // Categorías con conteo de cursos
+        $categorias = Category::withCount('courses')->active()->ordered()->get();
+
+        // Estudiantes destacados (con más videos completados)
+        $topStudents = User::role('Estudiante')
+            ->withCount('videoCompletions')
+            ->orderBy('video_completions_count', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($student) {
+                $student->progress = $this->progressService->getOverallProgress($student);
+                return $student;
+            });
 
         return view('admin.dashboard.index', compact(
             'stats',
             'progressStats',
-            'cursosPopulares',
-            'actividadReciente',
-            'notasRecientes'
+            'popularCourses',
+            'recentActivity',
+            'categorias',
+            'topStudents'
         ));
     }
 

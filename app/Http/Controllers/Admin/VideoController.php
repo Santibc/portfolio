@@ -19,18 +19,20 @@ class VideoController extends Controller
         $this->videoService = $videoService;
     }
 
-    public function index(Course $curso)
+    public function index(Course $course)
     {
-        $videos = $this->videoService->getVideosForCourse($curso);
+        $curso = $course;
+        $videos = $this->videoService->getVideosForCourse($course);
         return view('admin.videos.index', compact('curso', 'videos'));
     }
 
-    public function create(Course $curso)
+    public function create(Course $course)
     {
+        $curso = $course;
         return view('admin.videos.create', compact('curso'));
     }
 
-    public function store(StoreVideoRequest $request, Course $curso)
+    public function store(StoreVideoRequest $request, Course $course)
     {
         $data = $request->validated();
 
@@ -38,19 +40,19 @@ class VideoController extends Controller
             $data['video'] = $request->file('video');
         }
 
-        $this->videoService->create($curso, $data);
+        $this->videoService->create($course, $data);
 
-        return redirect()->route('admin.cursos.videos.index', $curso)
+        return redirect()->route('admin.cursos.videos.index', $course)
             ->with('success', 'Video subido exitosamente.');
     }
 
-    public function edit(Video $video)
+    public function edit(Course $course, Video $video)
     {
-        $curso = $video->course;
+        $curso = $course;
         return view('admin.videos.edit', compact('video', 'curso'));
     }
 
-    public function update(UpdateVideoRequest $request, Video $video)
+    public function update(UpdateVideoRequest $request, Course $course, Video $video)
     {
         $data = $request->validated();
 
@@ -60,27 +62,26 @@ class VideoController extends Controller
 
         $this->videoService->update($video, $data);
 
-        return redirect()->route('admin.cursos.videos.index', $video->course)
+        return redirect()->route('admin.cursos.videos.index', $course)
             ->with('success', 'Video actualizado exitosamente.');
     }
 
-    public function destroy(Video $video)
+    public function destroy(Course $course, Video $video)
     {
-        $curso = $video->course;
         $this->videoService->delete($video);
 
-        return redirect()->route('admin.cursos.videos.index', $curso)
+        return redirect()->route('admin.cursos.videos.index', $course)
             ->with('success', 'Video eliminado exitosamente.');
     }
 
-    public function reorder(Request $request, Course $curso)
+    public function reorder(Request $request, Course $course)
     {
         $request->validate([
             'order' => 'required|array',
             'order.*' => 'exists:videos,id',
         ]);
 
-        $this->videoService->reorder($curso, $request->order);
+        $this->videoService->reorder($course, $request->order);
 
         return response()->json(['success' => true]);
     }

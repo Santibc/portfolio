@@ -310,7 +310,12 @@ if (tableBody && tableBody.children.length > 1) {
 }
 
 function editCourse(courseId) {
-    fetch(`{{ url('admin/cursos') }}/${courseId}/edit`)
+    fetch(`{{ url('admin/cursos') }}/${courseId}/edit`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             document.getElementById('editCourseTitle').value = data.title;
@@ -329,6 +334,7 @@ function editCourse(courseId) {
             new bootstrap.Modal(document.getElementById('editCourseModal')).show();
         })
         .catch(error => {
+            console.error('Error:', error);
             Swal.fire('Error', 'No se pudo cargar el curso', 'error');
         });
 }

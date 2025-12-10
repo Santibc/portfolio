@@ -22,18 +22,35 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $categorias = Category::ordered()->get();
-        $categoryFilter = $request->get('category');
 
-        $query = Course::with(['category', 'videos'])->orderBy('category_id')->orderBy('order');
+        $query = Course::with(['category', 'videos'])->withCount('videos')->orderBy('category_id')->orderBy('order');
 
-        if ($categoryFilter) {
-            $query->where('category_id', $categoryFilter);
+        // Filtro por búsqueda
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        // Filtro por categoría (acepta 'categoria' o 'category')
+        if ($request->filled('categoria')) {
+            $query->where('category_id', $request->categoria);
+        } elseif ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Filtro por estado
+        if ($request->filled('status')) {
+            if ($request->status === 'published') {
+                $query->where('is_published', true);
+            } elseif ($request->status === 'draft') {
+                $query->where('is_published', false);
+            }
         }
 
         $cursos = $query->get();
         $stats = $this->courseService->getStats();
 
-        return view('admin.courses.index', compact('cursos', 'categorias', 'stats', 'categoryFilter'));
+        return view('admin.courses.index', compact('cursos', 'categorias', 'stats'));
     }
 
     public function create()
@@ -67,6 +84,7 @@ class CourseController extends Controller
                 'slug' => $course->slug,
                 'description' => $course->description,
                 'thumbnail' => $course->thumbnail,
+                'thumbnail_url' => $course->thumbnail ? asset('storage/' . $course->thumbnail) : null,
                 'duration_hours' => $course->duration_hours,
                 'is_published' => $course->is_published,
             ]);

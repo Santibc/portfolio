@@ -231,7 +231,12 @@ if (container) {
 }
 
 function editCategory(categoryId) {
-    fetch(`{{ url('admin/categorias') }}/${categoryId}/edit`)
+    fetch(`{{ url('admin/categorias') }}/${categoryId}/edit`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             document.getElementById('editCategoryName').value = data.name;
@@ -249,6 +254,7 @@ function editCategory(categoryId) {
             new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
         })
         .catch(error => {
+            console.error('Error:', error);
             Swal.fire('Error', 'No se pudo cargar la categoría', 'error');
         });
 }

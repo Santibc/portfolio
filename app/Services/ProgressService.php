@@ -184,6 +184,7 @@ public function getNextVideoToWatch(User $user): ?Video
 
         $studentsWithProgress = 0;
         $studentsCompleted = 0;
+        $coursesCompletedTotal = 0;
         $totalCompletions = VideoCompletion::count();
 
         foreach ($users as $user) {
@@ -194,17 +195,101 @@ public function getNextVideoToWatch(User $user): ?Video
             if ($progress['percentage'] === 100) {
                 $studentsCompleted++;
             }
+            $coursesCompletedTotal += $progress['courses_completed'];
         }
+
+        // Actividad de hoy
+        $today = now()->startOfDay();
+        $todayCompletions = VideoCompletion::where('completed_at', '>=', $today)->count();
+        $todayNotes = \App\Models\Note::where('created_at', '>=', $today)->count();
+        $activeStudentsToday = VideoCompletion::where('completed_at', '>=', $today)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // Actividad reciente
+        $recentActivity = VideoCompletion::with(['user', 'video.course'])
+            ->orderBy('completed_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Calcular tasa de completación general
+        $totalVideos = Video::count();
+        $totalPossibleCompletions = $totalVideos * $totalStudents;
+        $overallCompletionRate = $totalPossibleCompletions > 0
+            ? round(($totalCompletions / $totalPossibleCompletions) * 100)
+            : 0;
+
+        // Promedio de videos por estudiante
+        $avgVideosPerStudent = $totalStudents > 0
+            ? round($totalCompletions / $totalStudents, 1)
+            : 0;
+
+        // Día más activo de la semana
+        $mostActiveDay = $this->getMostActiveDay();
+
+        // Tiempo promedio de completación (aproximado)
+        $avgCompletionTime = $this->getAverageCompletionTime();
 
         return [
             'total_students' => $totalStudents,
             'students_with_progress' => $studentsWithProgress,
             'students_completed' => $studentsCompleted,
+            'courses_completed' => $coursesCompletedTotal,
             'total_completions' => $totalCompletions,
             'average_completion_rate' => $totalStudents > 0
                 ? round(($studentsCompleted / $totalStudents) * 100)
                 : 0,
+            'today_completions' => $todayCompletions,
+            'today_notes' => $todayNotes,
+            'active_students_today' => $activeStudentsToday,
+            'recent_activity' => $recentActivity,
+            'overall_completion_rate' => $overallCompletionRate,
+            'avg_videos_per_student' => $avgVideosPerStudent,
+            'most_active_day' => $mostActiveDay,
+            'avg_completion_time' => $avgCompletionTime,
         ];
+    }
+
+    /**
+     * Obtener el día más activo de la semana
+     */
+    protected function getMostActiveDay(): string
+    {
+        $result = VideoCompletion::selectRaw('DAYOFWEEK(completed_at) as day_of_week, COUNT(*) as count')
+            ->groupBy('day_of_week')
+            ->orderBy('count', 'desc')
+            ->first();
+
+        if (!$result) {
+            return 'N/A';
+        }
+
+        $days = ['', 'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        return $days[$result->day_of_week] ?? 'N/A';
+    }
+
+    /**
+     * Obtener tiempo promedio de completación de cursos
+     */
+    protected function getAverageCompletionTime(): string
+    {
+        // Esta es una implementación simplificada
+        // En producción, se calcularía basándose en las fechas de completación
+        $totalDuration = Video::sum('duration_seconds');
+        $totalCourses = Course::published()->count();
+
+        if ($totalCourses === 0) {
+            return 'N/A';
+        }
+
+        $avgDuration = $totalDuration / $totalCourses;
+        $hours = floor($avgDuration / 3600);
+        $minutes = floor(($avgDuration % 3600) / 60);
+
+        if ($hours > 0) {
+            return "{$hours}h {$minutes}m";
+        }
+        return "{$minutes} min";
     }
 
     /**

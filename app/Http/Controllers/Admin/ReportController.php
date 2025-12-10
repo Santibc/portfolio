@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\VideoCompletion;
 use App\Services\ProgressService;
 use Illuminate\Http\Request;
 
@@ -22,10 +23,27 @@ class ReportController extends Controller
     {
         $stats = $this->progressService->getAdminStats();
 
-        // Progreso por categoría
+        // Progreso por categoría con tasa de completación por curso
+        $totalStudents = User::role('Estudiante')->count();
+
         $categorias = Category::with(['courses' => function ($query) {
             $query->published()->withCount('videos');
-        }])->active()->get();
+        }])->active()->get()->map(function ($categoria) use ($totalStudents) {
+            $categoria->courses = $categoria->courses->map(function ($curso) use ($totalStudents) {
+                // Calcular completaciones totales de los videos del curso
+                $videoIds = $curso->videos()->pluck('id');
+                $completionsCount = VideoCompletion::whereIn('video_id', $videoIds)->count();
+
+                // Total posible = videos del curso * estudiantes
+                $totalPossible = $curso->videos_count * $totalStudents;
+                $curso->completion_rate = $totalPossible > 0
+                    ? round(($completionsCount / $totalPossible) * 100)
+                    : 0;
+
+                return $curso;
+            });
+            return $categoria;
+        });
 
         return view('admin.reports.index', compact('stats', 'categorias'));
     }

@@ -13,9 +13,34 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $usuarios = User::with(['roles', 'assignedCourses'])->orderBy('created_at', 'desc')->get();
+        $query = User::with(['roles', 'assignedCourses']);
+
+        // Filtro por búsqueda (nombre o email)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtro por rol
+        if ($request->filled('role')) {
+            $query->role($request->role);
+        }
+
+        // Filtro por estado (basado en email_verified_at)
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->whereNotNull('email_verified_at');
+            } elseif ($request->status === 'inactive') {
+                $query->whereNull('email_verified_at');
+            }
+        }
+
+        $usuarios = $query->orderBy('created_at', 'desc')->get();
         $roles = Role::all();
         $cursos = Course::with('category')->published()->ordered()->get();
         return view('admin.users.index', compact('usuarios', 'roles', 'cursos'));
