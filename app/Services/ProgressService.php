@@ -120,6 +120,43 @@ class ProgressService
     }
 
     /**
+     * Obtener progreso por categoría para un usuario
+     */
+    public function getProgressByCategory(User $user): array
+    {
+        $categories = \App\Models\Category::active()
+            ->with(['courses' => function ($query) {
+                $query->published();
+            }])
+            ->ordered()
+            ->get();
+
+        $result = [];
+
+        foreach ($categories as $category) {
+            $totalVideos = 0;
+            $completedVideos = 0;
+
+            foreach ($category->courses as $course) {
+                $progress = $this->getCourseProgress($user, $course);
+                $totalVideos += $progress['total_videos'];
+                $completedVideos += $progress['completed_videos'];
+            }
+
+            $percentage = $totalVideos > 0 ? (int) round(($completedVideos / $totalVideos) * 100) : 0;
+
+            $result[] = [
+                'name' => $category->name,
+                'percentage' => $percentage,
+                'completed_videos' => $completedVideos,
+                'total_videos' => $totalVideos,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * Obtener el siguiente video a ver en un curso
      */
 public function getNextVideoToWatch(User $user): ?Video

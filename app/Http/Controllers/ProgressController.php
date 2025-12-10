@@ -171,7 +171,7 @@ class ProgressController extends Controller
         $recentActivity = $this->progressService->getRecentActivity($user, 20);
 
         // Progreso por categoría
-        $progressByCategory = $this->progressService->getCoursesInProgress($user);
+        $progressByCategory = $this->progressService->getProgressByCategory($user);
 
         // Cursos completados
         $cursosCompletados = $user->getCompletedCourses();
