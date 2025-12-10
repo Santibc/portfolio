@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Manual de Usuario - GVA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 15px; margin-bottom: 30px; font-size: 2.5em; }
+        h2 { color: #2980b9; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ecf0f1; font-size: 1.8em; }
+        h3 { color: #34495e; margin-top: 25px; margin-bottom: 15px; font-size: 1.4em; }
+        h4 { color: #7f8c8d; margin-top: 20px; margin-bottom: 10px; font-size: 1.1em; }
+        p { margin-bottom: 15px; text-align: justify; }
+        ul, ol { margin-left: 25px; margin-bottom: 20px; }
+        li { margin-bottom: 8px; }
+        .cover { text-align: center; padding: 100px 20px; page-break-after: always; }
+        .cover h1 { font-size: 3em; border: none; color: #2c3e50; }
+        .cover .subtitle { font-size: 1.5em; color: #7f8c8d; margin-top: 20px; }
+        .cover .version { margin-top: 50px; color: #95a5a6; }
+        .toc { page-break-after: always; }
+        .toc h2 { border-bottom: 2px solid #3498db; }
+        .toc ul { list-style: none; margin-left: 0; }
+        .toc li { padding: 8px 0; border-bottom: 1px dotted #bdc3c7; }
+        .toc a { text-decoration: none; color: #2c3e50; }
+        .section { page-break-before: always; }
+        .highlight { background: #e8f6ff; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .warning { background: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .tip { background: #e8f5e9; padding: 15px; border-left: 4px solid #4caf50; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .step { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid #e9ecef; }
+        .step-number { display: inline-block; width: 30px; height: 30px; background: #3498db; color: white; border-radius: 50%; text-align: center; line-height: 30px; margin-right: 10px; font-weight: bold; }
+        .icon { color: #3498db; margin-right: 8px; }
+        @media print {
+            body { padding: 20px; }
+            .section { page-break-before: always; }
+            h2 { page-break-after: avoid; }
+            .step, .highlight, .warning, .tip { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+    <h1>GVA</h1>
+    <p class="subtitle">Plataforma de Aprendizaje en Línea</p>
+    <p class="subtitle" style="font-size: 1.2em; margin-top: 30px;">Manual de Usuario</p>
+    <p class="version">Versión 1.0<br>Diciembre 2024</p>
+</div>
+
+<!-- TABLA DE CONTENIDOS -->
+<div class="toc">
+    <h2>Tabla de Contenidos</h2>
+    <ul>
+        <li><strong>1.</strong> Introducción al Sistema</li>
+        <li><strong>2.</strong> Roles de Usuario</li>
+        <li><strong>3.</strong> Guía para Estudiantes</li>
+        <li style="padding-left: 20px;">3.1 Acceso al Sistema</li>
+        <li style="padding-left: 20px;">3.2 Dashboard Principal</li>
+        <li style="padding-left: 20px;">3.3 Navegación por Categorías</li>
+        <li style="padding-left: 20px;">3.4 Ver Cursos y Videos</li>
+        <li style="padding-left: 20px;">3.5 Tomar Notas en Videos</li>
+        <li style="padding-left: 20px;">3.6 Seguimiento de Progreso</li>
+        <li style="padding-left: 20px;">3.7 Gestión del Perfil</li>
+        <li><strong>4.</strong> Guía para Administradores</li>
+        <li style="padding-left: 20px;">4.1 Dashboard Administrativo</li>
+        <li style="padding-left: 20px;">4.2 Gestión de Usuarios</li>
+        <li style="padding-left: 20px;">4.3 Gestión de Categorías</li>
+        <li style="padding-left: 20px;">4.4 Gestión de Cursos</li>
+        <li style="padding-left: 20px;">4.5 Gestión de Videos</li>
+        <li style="padding-left: 20px;">4.6 Reportes y Estadísticas</li>
+        <li><strong>5.</strong> Preguntas Frecuentes</li>
+    </ul>
+</div>
+
+<!-- SECCIÓN 1: INTRODUCCIÓN -->
+<div class="section">
+    <h2>1. Introducción al Sistema</h2>
+
+    <p><strong>GVA</strong> es una plataforma de aprendizaje en línea (LMS - Learning Management System) diseñada para facilitar la capacitación y formación de usuarios mediante cursos organizados en categorías.</p>
+
+    <h3>Características Principales</h3>
+    <ul>
+        <li><strong>Cursos organizados por categorías:</strong> El contenido está estructurado de forma lógica para facilitar la navegación.</li>
+        <li><strong>Videos con seguimiento de progreso:</strong> El sistema registra automáticamente qué videos has completado.</li>
+        <li><strong>Notas personales:</strong> Puedes tomar notas en momentos específicos de cada video.</li>
+        <li><strong>Progreso visual:</strong> Barras de progreso que muestran tu avance en cada curso y en general.</li>
+        <li><strong>Acceso secuencial:</strong> Los cursos se desbloquean conforme completas los anteriores.</li>
+    </ul>
+
+    <div class="highlight">
+        <strong>Requisitos para usar el sistema:</strong>
+        <ul style="margin-top: 10px; margin-bottom: 0;">
+            <li>Navegador web actualizado (Chrome, Firefox, Edge, Safari)</li>
+            <li>Conexión a internet estable</li>
+            <li>Cuenta de usuario proporcionada por el administrador</li>
+        </ul>
+    </div>
+</div>
+
+<!-- SECCIÓN 2: ROLES -->
+<div class="section">
+    <h2>2. Roles de Usuario</h2>
+
+    <p>El sistema cuenta con dos tipos de usuarios, cada uno con funcionalidades específicas:</p>
+
+    <table>
+        <tr>
+            <th>Rol</th>
+            <th>Descripción</th>
+            <th>Funcionalidades</th>
+        </tr>
+        <tr>
+            <td><strong>Estudiante</strong></td>
+            <td>Usuario que consume el contenido educativo</td>
+            <td>
+                <ul style="margin: 0;">
+                    <li>Ver categorías y cursos asignados</li>
+                    <li>Reproducir videos</li>
+                    <li>Tomar notas</li>
+                    <li>Ver su progreso</li>
+                    <li>Gestionar su perfil</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Administrador</strong></td>
+            <td>Usuario con control total del sistema</td>
+            <td>
+                <ul style="margin: 0;">
+                    <li>Todo lo del Estudiante</li>
+                    <li>Gestionar usuarios</li>
+                    <li>Crear/editar categorías</li>
+                    <li>Crear/editar cursos</li>
+                    <li>Subir videos</li>
+                    <li>Ver reportes</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- SECCIÓN 3: GUÍA ESTUDIANTES -->
+<div class="section">
+    <h2>3. Guía para Estudiantes</h2>
+
+    <h3>3.1 Acceso al Sistema</h3>
+
+    <p>Para ingresar a la plataforma GVA:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <strong>Abrir el navegador</strong> e ingresar la dirección URL del sistema proporcionada por tu administrador.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <strong>Ingresar credenciales:</strong> Escribe tu correo electrónico y contraseña en los campos correspondientes.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <strong>Hacer clic en "Iniciar Sesión"</strong> para acceder al sistema.
+    </div>
+
+    <div class="tip">
+        <strong>Consejo:</strong> Si olvidaste tu contraseña, contacta al administrador del sistema para que te asigne una nueva.
+    </div>
+
+    <h3>3.2 Dashboard Principal</h3>
+
+    <p>Al iniciar sesión, verás tu <strong>Dashboard</strong> o panel principal con la siguiente información:</p>
+
+    <ul>
+        <li><strong>Progreso General:</strong> Un porcentaje que indica cuánto has avanzado en todos tus cursos.</li>
+        <li><strong>Estadísticas:</strong> Número de cursos disponibles, completados y videos vistos.</li>
+        <li><strong>Continuar Viendo:</strong> El último video donde te quedaste para retomar rápidamente.</li>
+        <li><strong>Cursos en Progreso:</strong> Lista de cursos que has iniciado pero no completado.</li>
+        <li><strong>Cursos Completados:</strong> Lista de cursos que ya terminaste al 100%.</li>
+    </ul>
+
+    <h3>3.3 Navegación por Categorías</h3>
+
+    <p>Los cursos están organizados en <strong>categorías</strong> temáticas. Para explorarlos:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En el menú lateral izquierdo, haz clic en <strong>"Categorías"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Verás todas las categorías disponibles con un indicador de tu progreso en cada una.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Haz clic en una categoría para ver los cursos que contiene.
+    </div>
+
+    <p>Cada categoría muestra:</p>
+    <ul>
+        <li>Nombre y descripción de la categoría</li>
+        <li>Número de cursos que contiene</li>
+        <li>Tu porcentaje de avance en esa categoría</li>
+    </ul>
+
+    <h3>3.4 Ver Cursos y Videos</h3>
+
+    <h4>Acceder a un Curso</h4>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Desde <strong>"Mis Cursos"</strong> en el menú o desde una categoría, haz clic en el curso que deseas ver.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Verás la página del curso con:
+        <ul>
+            <li>Título y descripción del curso</li>
+            <li>Lista de videos ordenados</li>
+            <li>Tu progreso en el curso</li>
+            <li>Indicador de videos completados (palomita verde)</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Haz clic en cualquier video de la lista para reproducirlo.
+    </div>
+
+    <div class="warning">
+        <strong>Importante - Acceso Secuencial:</strong> Algunos cursos requieren que completes los cursos anteriores de la misma categoría antes de poder acceder. Si ves un curso "bloqueado", completa primero los cursos previos.
+    </div>
+
+    <h4>Reproducir un Video</h4>
+
+    <p>En la página del video encontrarás:</p>
+    <ul>
+        <li><strong>Reproductor de video:</strong> Controles para reproducir, pausar, ajustar volumen y pantalla completa.</li>
+        <li><strong>Lista de videos:</strong> Panel lateral con todos los videos del curso para navegar fácilmente.</li>
+        <li><strong>Botones de navegación:</strong> "Anterior" y "Siguiente" para moverte entre videos.</li>
+        <li><strong>Botón "Marcar como completado":</strong> Al terminar de ver el video, haz clic para registrar tu progreso.</li>
+    </ul>
+
+    <div class="tip">
+        <strong>Consejo:</strong> Marca los videos como completados conforme los termines para mantener un registro preciso de tu avance.
+    </div>
+
+    <h3>3.5 Tomar Notas en Videos</h3>
+
+    <p>Puedes crear notas personales mientras ves los videos:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Mientras reproduces un video, localiza la sección de <strong>"Notas"</strong> debajo o al lado del reproductor.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en <strong>"Agregar Nota"</strong> o el botón correspondiente.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Escribe tu nota. El sistema guardará automáticamente el momento del video donde creaste la nota.
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        Para editar o eliminar una nota, usa los botones de edición junto a cada nota.
+    </div>
+
+    <p>Las notas te permiten:</p>
+    <ul>
+        <li>Guardar puntos importantes del video</li>
+        <li>Volver a un momento específico haciendo clic en la nota</li>
+        <li>Revisar tus apuntes después</li>
+    </ul>
+
+    <h3>3.6 Seguimiento de Progreso</h3>
+
+    <p>Para ver tu progreso detallado:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En el menú lateral, haz clic en <strong>"Mi Progreso"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Verás un resumen completo con:
+        <ul>
+            <li>Progreso general (porcentaje total)</li>
+            <li>Progreso por categoría</li>
+            <li>Cursos completados</li>
+            <li>Cursos en progreso</li>
+            <li>Actividad reciente (últimos videos vistos)</li>
+        </ul>
+    </div>
+
+    <p>Las barras de progreso usan colores para indicar el estado:</p>
+    <table>
+        <tr>
+            <th>Color</th>
+            <th>Significado</th>
+        </tr>
+        <tr>
+            <td style="background: #28a745; color: white;">Verde</td>
+            <td>Completado (100%)</td>
+        </tr>
+        <tr>
+            <td style="background: #17a2b8; color: white;">Azul</td>
+            <td>En progreso</td>
+        </tr>
+        <tr>
+            <td style="background: #6c757d; color: white;">Gris</td>
+            <td>Sin iniciar (0%)</td>
+        </tr>
+    </table>
+
+    <h3>3.7 Gestión del Perfil</h3>
+
+    <p>Para actualizar tu información personal:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Haz clic en <strong>"Mi Perfil"</strong> en el menú lateral o en tu nombre en la esquina superior.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Puedes modificar:
+        <ul>
+            <li><strong>Nombre:</strong> Tu nombre de usuario</li>
+            <li><strong>Correo electrónico:</strong> Tu email de acceso</li>
+            <li><strong>Contraseña:</strong> Cambiar tu contraseña actual</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Haz clic en <strong>"Guardar Cambios"</strong> para aplicar las modificaciones.
+    </div>
+
+    <div class="warning">
+        <strong>Importante:</strong> Si cambias tu correo electrónico, deberás verificarlo nuevamente antes de poder acceder al sistema.
+    </div>
+</div>
+
+<!-- SECCIÓN 4: GUÍA ADMINISTRADORES -->
+<div class="section">
+    <h2>4. Guía para Administradores</h2>
+
+    <p>Como administrador, tienes acceso a todas las funcionalidades del sistema, incluyendo la gestión completa de usuarios, contenido y reportes.</p>
+
+    <h3>4.1 Dashboard Administrativo</h3>
+
+    <p>Al iniciar sesión como administrador, serás dirigido al <strong>Dashboard Administrativo</strong> que muestra:</p>
+
+    <ul>
+        <li><strong>Estadísticas Globales:</strong>
+            <ul>
+                <li>Total de usuarios (estudiantes y administradores)</li>
+                <li>Total de categorías (activas e inactivas)</li>
+                <li>Total de cursos (publicados y borradores)</li>
+                <li>Total de videos y duración total del contenido</li>
+            </ul>
+        </li>
+        <li><strong>Cursos Más Populares:</strong> Los cursos con más completaciones.</li>
+        <li><strong>Estudiantes Destacados:</strong> Usuarios con mayor progreso.</li>
+        <li><strong>Actividad Reciente:</strong> Últimas completaciones de videos.</li>
+    </ul>
+
+    <h3>4.2 Gestión de Usuarios</h3>
+
+    <p>Para administrar los usuarios del sistema:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En el menú lateral, sección "Administración", haz clic en <strong>"Usuarios"</strong>.
+    </div>
+
+    <h4>Crear un Nuevo Usuario</h4>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en el botón <strong>"Nuevo Usuario"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Completa el formulario:
+        <ul>
+            <li><strong>Nombre:</strong> Nombre completo del usuario</li>
+            <li><strong>Email:</strong> Correo electrónico (será su usuario de acceso)</li>
+            <li><strong>Contraseña:</strong> Contraseña inicial (mínimo 8 caracteres)</li>
+            <li><strong>Confirmar Contraseña:</strong> Repetir la contraseña</li>
+            <li><strong>Rol:</strong> Seleccionar "Estudiante" o "Administrador"</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        Haz clic en <strong>"Crear Usuario"</strong>.
+    </div>
+
+    <h4>Editar un Usuario</h4>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En la lista de usuarios, haz clic en el botón de <strong>editar</strong> (ícono de lápiz) del usuario deseado.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Modifica los campos necesarios. Si es un estudiante, también puedes:
+        <ul>
+            <li><strong>Asignar Cursos:</strong> Selecciona los cursos que tendrá disponibles este estudiante.</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Haz clic en <strong>"Guardar Cambios"</strong>.
+    </div>
+
+    <div class="highlight">
+        <strong>Asignación de Cursos:</strong> Los estudiantes solo pueden ver los cursos que les asignes. Esto permite personalizar el contenido disponible para cada usuario.
+    </div>
+
+    <h4>Eliminar un Usuario</h4>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Haz clic en el botón de <strong>eliminar</strong> (ícono de papelera) del usuario.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Confirma la acción en el mensaje de confirmación.
+    </div>
+
+    <div class="warning">
+        <strong>Advertencia:</strong> No puedes eliminar tu propio usuario. Esta acción es irreversible.
+    </div>
+
+    <h3>4.3 Gestión de Categorías</h3>
+
+    <p>Las categorías organizan los cursos por temática:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Ve a <strong>"Administración" → "Categorías"</strong>.
+    </div>
+
+    <h4>Crear una Categoría</h4>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en <strong>"Nueva Categoría"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Completa:
+        <ul>
+            <li><strong>Nombre:</strong> Nombre de la categoría</li>
+            <li><strong>Descripción:</strong> Breve descripción (opcional)</li>
+            <li><strong>Ícono:</strong> Ícono representativo (opcional)</li>
+            <li><strong>Color:</strong> Color distintivo (opcional)</li>
+            <li><strong>Imagen:</strong> Imagen de portada (opcional)</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        Haz clic en <strong>"Guardar"</strong>.
+    </div>
+
+    <h4>Ordenar Categorías</h4>
+    <p>Puedes arrastrar y soltar las categorías para cambiar su orden de aparición.</p>
+
+    <h4>Activar/Desactivar Categorías</h4>
+    <p>Usa el botón de activar/desactivar para mostrar u ocultar categorías a los estudiantes sin eliminarlas.</p>
+
+    <h3>4.4 Gestión de Cursos</h3>
+
+    <p>Para administrar los cursos:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Ve a <strong>"Administración" → "Cursos"</strong>.
+    </div>
+
+    <h4>Crear un Curso</h4>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en <strong>"Nuevo Curso"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Completa:
+        <ul>
+            <li><strong>Título:</strong> Nombre del curso</li>
+            <li><strong>Categoría:</strong> Selecciona la categoría a la que pertenece</li>
+            <li><strong>Descripción:</strong> Descripción del contenido</li>
+            <li><strong>Imagen de portada:</strong> Thumbnail del curso (opcional)</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        Haz clic en <strong>"Guardar"</strong>. El curso se creará como "Borrador".
+    </div>
+
+    <h4>Publicar un Curso</h4>
+    <p>Los cursos nuevos se crean como borradores. Para hacerlos visibles a los estudiantes:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En la lista de cursos, haz clic en el botón de <strong>publicar</strong> del curso.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        El curso cambiará a estado "Publicado" y será visible para los estudiantes que lo tengan asignado.
+    </div>
+
+    <div class="tip">
+        <strong>Consejo:</strong> Agrega todos los videos al curso antes de publicarlo para evitar mostrar cursos incompletos.
+    </div>
+
+    <h3>4.5 Gestión de Videos</h3>
+
+    <p>Para agregar videos a un curso:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        En la lista de cursos, haz clic en <strong>"Ver Videos"</strong> o en el ícono de videos del curso deseado.
+    </div>
+
+    <h4>Agregar un Video</h4>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en <strong>"Nuevo Video"</strong>.
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        Completa:
+        <ul>
+            <li><strong>Título:</strong> Nombre del video</li>
+            <li><strong>Descripción:</strong> Descripción del contenido (opcional)</li>
+            <li><strong>Archivo de video:</strong> Sube el archivo de video</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        Haz clic en <strong>"Guardar"</strong>. El video se agregará al final de la lista.
+    </div>
+
+    <h4>Ordenar Videos</h4>
+    <p>Arrastra y suelta los videos para cambiar el orden en que aparecerán en el curso.</p>
+
+    <h3>4.6 Reportes y Estadísticas</h3>
+
+    <p>Para ver informes detallados del uso del sistema:</p>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        Ve a <strong>"Administración" → "Reportes"</strong>.
+    </div>
+
+    <h4>Dashboard de Reportes</h4>
+    <p>Vista general con estadísticas consolidadas de toda la plataforma.</p>
+
+    <h4>Reporte de Estudiantes</h4>
+    <div class="step">
+        <span class="step-number">1</span>
+        Haz clic en <strong>"Estudiantes"</strong> para ver la lista de todos los estudiantes con su progreso.
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        Haz clic en un estudiante para ver su <strong>detalle</strong>:
+        <ul>
+            <li>Progreso general</li>
+            <li>Progreso por cada curso</li>
+            <li>Actividad reciente</li>
+            <li>Notas creadas</li>
+        </ul>
+    </div>
+
+    <h4>Reporte de Cursos</h4>
+    <div class="step">
+        <span class="step-number">1</span>
+        Haz clic en <strong>"Cursos"</strong> para ver estadísticas por curso:
+        <ul>
+            <li>Total de estudiantes por curso</li>
+            <li>Estudiantes que completaron el curso</li>
+            <li>Estudiantes en progreso</li>
+            <li>Tasa de completación</li>
+        </ul>
+    </div>
+</div>
+
+<!-- SECCIÓN 5: FAQ -->
+<div class="section">
+    <h2>5. Preguntas Frecuentes</h2>
+
+    <h4>¿Cómo recupero mi contraseña?</h4>
+    <p>Contacta al administrador del sistema para que te asigne una nueva contraseña.</p>
+
+    <h4>¿Por qué no puedo ver un curso?</h4>
+    <p>Puede ser por dos razones:</p>
+    <ul>
+        <li>El curso no te ha sido asignado. Contacta al administrador.</li>
+        <li>Necesitas completar los cursos anteriores de esa categoría primero (acceso secuencial).</li>
+    </ul>
+
+    <h4>¿Cómo marco un video como completado?</h4>
+    <p>Después de ver el video, haz clic en el botón "Marcar como completado" que aparece debajo del reproductor.</p>
+
+    <h4>¿Puedo desmarcar un video como completado?</h4>
+    <p>Sí, puedes hacer clic en el botón correspondiente para desmarcar un video si lo marcaste por error.</p>
+
+    <h4>¿Mis notas son privadas?</h4>
+    <p>Sí, las notas que tomas en los videos son personales y solo tú puedes verlas.</p>
+
+    <h4>¿Puedo ver mi progreso histórico?</h4>
+    <p>Sí, en la sección "Mi Progreso" puedes ver tu actividad reciente y el estado de todos tus cursos.</p>
+
+    <h4>¿Qué significa el candado en un curso?</h4>
+    <p>Indica que el curso está bloqueado. Debes completar los cursos anteriores de esa categoría para desbloquearlo.</p>
+
+    <h4>¿Cómo contacto al soporte?</h4>
+    <p>Contacta al administrador de tu organización que gestiona la plataforma GVA.</p>
+
+    <div class="highlight" style="margin-top: 40px;">
+        <h4 style="margin-top: 0;">Resumen de Navegación</h4>
+        <table style="margin-bottom: 0;">
+            <tr>
+                <th>Sección</th>
+                <th>Ubicación en Menú</th>
+            </tr>
+            <tr>
+                <td>Dashboard</td>
+                <td>Inicio → Dashboard</td>
+            </tr>
+            <tr>
+                <td>Ver Categorías</td>
+                <td>Aprendizaje → Categorías</td>
+            </tr>
+            <tr>
+                <td>Mis Cursos</td>
+                <td>Aprendizaje → Mis Cursos</td>
+            </tr>
+            <tr>
+                <td>Mi Progreso</td>
+                <td>Aprendizaje → Mi Progreso</td>
+            </tr>
+            <tr>
+                <td>Mi Perfil</td>
+                <td>Cuenta → Mi Perfil</td>
+            </tr>
+            <tr>
+                <td>Gestión (Admin)</td>
+                <td>Administración → [Opción]</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 60px; padding: 30px; background: #f8f9fa; border-radius: 10px;">
+    <h3 style="color: #2c3e50; margin-bottom: 15px;">Manual de Usuario GVA</h3>
+    <p style="color: #7f8c8d; margin: 0;">Versión 1.0 - Diciembre 2024</p>
+    <p style="color: #95a5a6; font-size: 0.9em; margin-top: 10px;">Para soporte técnico, contacte al administrador del sistema.</p>
+</div>
+
+</body>
+</html>

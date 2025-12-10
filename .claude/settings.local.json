@@ -21,7 +21,8 @@
       "Bash(findstr:*)",
       "Bash(cat:*)",
       "Bash(curl:*)",
-      "Bash(dir /s /b \"c:\\xampp\\htdocs\\developments\\portfolio\\resources\\views\\admin\")"
+      "Bash(dir /s /b \"c:\\xampp\\htdocs\\developments\\portfolio\\resources\\views\\admin\")",
+      "Bash(del \"c:\\xampp\\htdocs\\developments\\portfolio\\app\\Http\\Controllers\\Admin\\DocumentationController.php\")"
     ],
     "deny": [],
     "ask": []
