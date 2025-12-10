@@ -184,23 +184,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Obtener el progreso general del usuario (% de cursos asignados)
+     * Obtener el progreso general del usuario (promedio de progreso en todos los cursos asignados)
      */
     public function getOverallProgressAttribute(): int
     {
         // Admin ve todos los cursos publicados
         if ($this->hasRole('Administrador')) {
-            $totalCourses = Course::published()->count();
+            $courses = Course::published()->get();
         } else {
-            $totalCourses = $this->assignedCourses()->published()->count();
+            $courses = $this->assignedCourses()->published()->get();
         }
 
-        if ($totalCourses === 0) {
+        if ($courses->isEmpty()) {
             return 0;
         }
 
-        $completedCourses = $this->getCompletedCourses()->count();
-        return (int) round(($completedCourses / $totalCourses) * 100);
+        $totalProgress = 0;
+        foreach ($courses as $course) {
+            $totalProgress += $this->getCourseProgressPercentage($course);
+        }
+
+        return (int) round($totalProgress / $courses->count());
     }
 
     /**
