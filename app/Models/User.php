@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -62,6 +63,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación: Cursos asignados al usuario por el admin
+     */
+    public function assignedCourses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'course_user')
+            ->withPivot(['order', 'assigned_by', 'assigned_at'])
+            ->orderByPivot('order');
+    }
+
+    /**
      * Obtener los videos completados para un curso específico
      */
     public function getCompletedVideosForCourse(Course $course): Collection
@@ -94,7 +105,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Verificar si el usuario puede acceder a un curso (lógica secuencial)
+     * Verificar si el usuario puede acceder a un curso (basado en asignación por admin)
      */
     public function canAccessCourse(Course $course): bool
     {
@@ -108,45 +119,56 @@ class User extends Authenticatable
             return false;
         }
 
-        // Si es el primer curso de la categoría, siempre es accesible
-        if ($course->order == 1) {
-            return true;
-        }
-
-        // Obtener cursos anteriores de la misma categoría
-        $previousCourses = Course::where('category_id', $course->category_id)
-            ->where('order', '<', $course->order)
-            ->where('is_published', true)
-            ->orderBy('order')
-            ->get();
-
-        // Verificar que todos los cursos anteriores estén completados
-        foreach ($previousCourses as $previousCourse) {
-            if (!$this->hasCourseCompleted($previousCourse)) {
-                return false;
-            }
-        }
-
-        return true;
+        // Verificar si el curso está asignado al usuario
+        return $this->assignedCourses()->where('courses.id', $course->id)->exists();
     }
 
     /**
-     * Obtener todos los cursos completados por el usuario
+     * Verificar si el usuario tiene asignado un curso específico
+     */
+    public function hasCourseAssigned(Course $course): bool
+    {
+        return $this->assignedCourses()->where('courses.id', $course->id)->exists();
+    }
+
+    /**
+     * Obtener el orden de un curso asignado para este usuario
+     */
+    public function getCourseOrder(Course $course): ?int
+    {
+        $pivot = $this->assignedCourses()->where('courses.id', $course->id)->first();
+        return $pivot?->pivot?->order;
+    }
+
+    /**
+     * Obtener todos los cursos completados por el usuario (de los asignados)
      */
     public function getCompletedCourses(): Collection
     {
-        $courses = Course::published()->get();
+        // Admin ve todos los cursos publicados
+        if ($this->hasRole('Administrador')) {
+            $courses = Course::published()->get();
+        } else {
+            $courses = $this->assignedCourses()->published()->get();
+        }
+
         return $courses->filter(function ($course) {
             return $this->hasCourseCompleted($course);
         });
     }
 
     /**
-     * Obtener cursos en progreso (iniciados pero no completados)
+     * Obtener cursos en progreso (iniciados pero no completados, de los asignados)
      */
     public function getCoursesInProgress(): Collection
     {
-        $courses = Course::published()->get();
+        // Admin ve todos los cursos publicados
+        if ($this->hasRole('Administrador')) {
+            $courses = Course::published()->get();
+        } else {
+            $courses = $this->assignedCourses()->published()->get();
+        }
+
         return $courses->filter(function ($course) {
             $progress = $this->getCourseProgressPercentage($course);
             return $progress > 0 && $progress < 100;
@@ -162,11 +184,17 @@ class User extends Authenticatable
     }
 
     /**
-     * Obtener el progreso general del usuario (% de todos los cursos)
+     * Obtener el progreso general del usuario (% de cursos asignados)
      */
     public function getOverallProgressAttribute(): int
     {
-        $totalCourses = Course::published()->count();
+        // Admin ve todos los cursos publicados
+        if ($this->hasRole('Administrador')) {
+            $totalCourses = Course::published()->count();
+        } else {
+            $totalCourses = $this->assignedCourses()->published()->count();
+        }
+
         if ($totalCourses === 0) {
             return 0;
         }

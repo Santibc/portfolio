@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Note;
 use App\Models\User;
+use App\Models\Video;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,23 +12,37 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class NoteService
 {
     /**
-     * Obtener notas de un curso (públicas para todos)
+     * Obtener notas de un video
      */
-    public function getNotesForCourse(Course $course, int $perPage = 15): LengthAwarePaginator
+    public function getNotesForVideo(Video $video, int $perPage = 15): LengthAwarePaginator
     {
         return Note::with('user')
-            ->where('course_id', $course->id)
+            ->where('video_id', $video->id)
+            ->orderBy('timestamp_seconds', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
     /**
-     * Obtener todas las notas de un curso sin paginación
+     * Obtener todas las notas de un video sin paginación
      */
-    public function getAllNotesForCourse(Course $course): Collection
+    public function getAllNotesForVideo(Video $video): Collection
     {
         return Note::with('user')
-            ->where('course_id', $course->id)
+            ->where('video_id', $video->id)
+            ->orderBy('timestamp_seconds', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Obtener notas de un usuario en un video específico
+     */
+    public function getUserNotesForVideo(User $user, Video $video): Collection
+    {
+        return Note::where('user_id', $user->id)
+            ->where('video_id', $video->id)
+            ->orderBy('timestamp_seconds', 'asc')
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -37,30 +52,37 @@ class NoteService
      */
     public function getNotesForUser(User $user, int $perPage = 15): LengthAwarePaginator
     {
-        return Note::with('course')
+        return Note::with(['video.course'])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
 
     /**
-     * Crear una nueva nota
+     * Crear una nueva nota en un video
      */
-    public function create(User $user, Course $course, string $content): Note
+    public function create(User $user, Video $video, string $content, ?int $timestampSeconds = null): Note
     {
         return Note::create([
             'user_id' => $user->id,
-            'course_id' => $course->id,
+            'video_id' => $video->id,
             'content' => $content,
+            'timestamp_seconds' => $timestampSeconds,
         ]);
     }
 
     /**
      * Actualizar una nota
      */
-    public function update(Note $note, string $content): Note
+    public function update(Note $note, string $content, ?int $timestampSeconds = null): Note
     {
-        $note->update(['content' => $content]);
+        $data = ['content' => $content];
+
+        if ($timestampSeconds !== null) {
+            $data['timestamp_seconds'] = $timestampSeconds;
+        }
+
+        $note->update($data);
         return $note->fresh();
     }
 
@@ -89,19 +111,19 @@ class NoteService
     }
 
     /**
-     * Obtener el conteo de notas por curso
+     * Obtener el conteo de notas por video
      */
-    public function getNotesCountByCourse(Course $course): int
+    public function getNotesCountByVideo(Video $video): int
     {
-        return Note::where('course_id', $course->id)->count();
+        return Note::where('video_id', $video->id)->count();
     }
 
     /**
-     * Obtener notas recientes de todos los cursos
+     * Obtener notas recientes
      */
     public function getRecentNotes(int $limit = 10): Collection
     {
-        return Note::with(['user', 'course'])
+        return Note::with(['user', 'video.course'])
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
@@ -110,13 +132,13 @@ class NoteService
     /**
      * Buscar notas por contenido
      */
-    public function search(string $query, ?Course $course = null): Collection
+    public function search(string $query, ?Video $video = null): Collection
     {
-        $notes = Note::with(['user', 'course'])
+        $notes = Note::with(['user', 'video.course'])
             ->where('content', 'like', "%{$query}%");
 
-        if ($course) {
-            $notes->where('course_id', $course->id);
+        if ($video) {
+            $notes->where('video_id', $video->id);
         }
 
         return $notes->orderBy('created_at', 'desc')->get();
@@ -129,9 +151,9 @@ class NoteService
     {
         return [
             'total' => Note::count(),
-            'by_course' => Note::selectRaw('course_id, COUNT(*) as count')
-                ->groupBy('course_id')
-                ->with('course:id,title')
+            'by_video' => Note::selectRaw('video_id, COUNT(*) as count')
+                ->groupBy('video_id')
+                ->with('video:id,title,course_id')
                 ->get(),
             'today' => Note::whereDate('created_at', today())->count(),
             'this_week' => Note::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
@@ -148,6 +170,19 @@ class NoteService
             ->orderByDesc('notes_count')
             ->limit($limit)
             ->with('user:id,name')
+            ->get();
+    }
+
+    /**
+     * Obtener todas las notas de un curso (a través de sus videos)
+     */
+    public function getNotesForCourse(Course $course): Collection
+    {
+        $videoIds = $course->videos()->pluck('id');
+
+        return Note::with(['user', 'video'])
+            ->whereIn('video_id', $videoIds)
+            ->orderBy('created_at', 'desc')
             ->get();
     }
 }

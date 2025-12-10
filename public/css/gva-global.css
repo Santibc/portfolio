@@ -889,3 +889,18 @@ select.form-control {
         display: none;
     }
 }
+
+/* ==============================================
+   Modales
+   ============================================== */
+
+.modal-dialog {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: auto;
+}
+.modal-content {
+    border-radius: var(--gva-radius-lg);
+    box-shadow: var(--gva-shadow-lg);
+    border: none;
+}

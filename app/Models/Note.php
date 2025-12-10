@@ -12,8 +12,13 @@ class Note extends Model
 
     protected $fillable = [
         'user_id',
-        'course_id',
+        'video_id',
         'content',
+        'timestamp_seconds',
+    ];
+
+    protected $casts = [
+        'timestamp_seconds' => 'integer',
     ];
 
     /**
@@ -30,6 +35,22 @@ class Note extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /**
+     * Relación: Una nota pertenece a un video
+     */
+    public function video(): BelongsTo
+    {
+        return $this->belongsTo(Video::class);
+    }
+
+    /**
+     * Obtener el curso a través del video
+     */
+    public function getCourseAttribute(): ?Course
+    {
+        return $this->video?->course;
     }
 
     /**
@@ -58,6 +79,26 @@ class Note extends Model
     }
 
     /**
+     * Obtener el timestamp formateado (MM:SS o HH:MM:SS)
+     */
+    public function getFormattedTimestampAttribute(): ?string
+    {
+        if ($this->timestamp_seconds === null) {
+            return null;
+        }
+
+        $seconds = $this->timestamp_seconds;
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+
+        if ($hours > 0) {
+            return sprintf('%d:%02d:%02d', $hours, $minutes, $secs);
+        }
+        return sprintf('%d:%02d', $minutes, $secs);
+    }
+
+    /**
      * Scope: Ordenar por fecha más reciente
      */
     public function scopeLatest($query)
@@ -74,10 +115,18 @@ class Note extends Model
     }
 
     /**
-     * Scope: Notas de un curso específico
+     * Scope: Notas de un video específico
      */
-    public function scopeByCourse($query, Course $course)
+    public function scopeByVideo($query, Video $video)
     {
-        return $query->where('course_id', $course->id);
+        return $query->where('video_id', $video->id);
+    }
+
+    /**
+     * Scope: Ordenar por timestamp del video
+     */
+    public function scopeOrderByTimestamp($query)
+    {
+        return $query->orderBy('timestamp_seconds', 'asc');
     }
 }

@@ -63,6 +63,14 @@ class Video extends Model
     }
 
     /**
+     * Relación: Un video tiene muchas notas
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class)->orderBy('timestamp_seconds')->orderBy('created_at', 'desc');
+    }
+
+    /**
      * Obtener la URL del video
      */
     public function getVideoUrlAttribute(): string

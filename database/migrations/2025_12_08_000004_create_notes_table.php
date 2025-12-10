@@ -8,18 +8,20 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * Las notas están vinculadas a videos específicos (estilo Platzi)
      */
     public function up(): void
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->foreignId('video_id')->constrained()->onDelete('cascade');
             $table->text('content');
+            $table->unsignedInteger('timestamp_seconds')->nullable(); // Momento del video donde se tomó la nota
             $table->timestamps();
 
-            $table->index(['course_id', 'created_at']);
-            $table->index(['user_id', 'course_id']);
+            $table->index(['video_id', 'created_at']);
+            $table->index(['user_id', 'video_id']);
         });
     }
 

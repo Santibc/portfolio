@@ -76,13 +76,6 @@
         </a>
     </div>
 
-    <div class="nav-item {{ request()->routeIs('notas.*') ? 'active' : '' }}">
-        <a href="{{ route('notas.mis-notas') }}" class="nav-link">
-            <i class="bi bi-journal-text"></i>
-            <span>Mis Notas</span>
-        </a>
-    </div>
-
     {{-- SECCIÓN CUENTA --}}
     <div class="nav-section-title">Cuenta</div>
 

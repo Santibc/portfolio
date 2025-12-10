@@ -55,6 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
     ====================================================== */
     document.addEventListener("click", function (e) {
         if (window.innerWidth <= 1024) {
+            // No cerrar si el click fue en un dropdown o sus hijos
+            if (e.target.closest('.dropdown') || e.target.closest('.dropdown-menu')) {
+                return;
+            }
             if (
                 sidebar &&
                 !sidebar.contains(e.target) &&

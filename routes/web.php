@@ -63,13 +63,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/progreso/curso/{course}', [ProgressController::class, 'getCourseProgress'])
         ->name('progreso.curso');
 
-    // Notas
-    Route::get('/mis-notas', [NoteController::class, 'misNotas'])->name('notas.mis-notas');
-    Route::get('/cursos/{course}/notas', [NoteController::class, 'index'])->name('notas.index');
-    Route::post('/cursos/{course}/notas', [NoteController::class, 'store'])->name('notas.store');
+    // Notas (vinculadas a videos)
+    Route::get('/videos/{video}/notas', [NoteController::class, 'index'])->name('notas.index');
+    Route::post('/videos/{video}/notas', [NoteController::class, 'store'])->name('notas.store');
     Route::put('/notas/{note}', [NoteController::class, 'update'])->name('notas.update');
     Route::delete('/notas/{note}', [NoteController::class, 'destroy'])->name('notas.destroy');
-    Route::get('/notas/buscar', [NoteController::class, 'search'])->name('notas.search');
 });
 
 // ==========================================
@@ -107,7 +105,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::get('/reportes', [AdminReportController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/estudiantes', [AdminReportController::class, 'students'])->name('reportes.estudiantes');
     Route::get('/reportes/estudiantes/{user}', [AdminReportController::class, 'studentDetail'])->name('reportes.estudiante');
-    Route::get('/reportes/cursos', [AdminReportController::class, 'courses'])->name('reportes.cursos');
+    Route::get('/reportes/cursos', [AdminReportController::class, 'courseProgress'])->name('reportes.cursos');
 });
 
 require __DIR__.'/auth.php';

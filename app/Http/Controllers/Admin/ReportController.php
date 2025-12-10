@@ -84,8 +84,7 @@ class ReportController extends Controller
     public function studentDetail(User $estudiante)
     {
         if (!$estudiante->hasRole('Estudiante')) {
-            return redirect()->route('admin.reportes.estudiantes')
-                ->with('error', 'El usuario no es un estudiante.');
+            return redirect()->route('admin.reportes.estudiantes');
         }
 
         $progress = $this->progressService->getOverallProgress($estudiante);

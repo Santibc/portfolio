@@ -15,7 +15,11 @@
       "Bash(php check_roi.php:*)",
       "Bash(php artisan config:clear:*)",
       "Bash(grep:*)",
-      "Bash(dir \"c:\\xampp\\htdocs\\developments\\portfolio\\public\\images\")"
+      "Bash(dir \"c:\\xampp\\htdocs\\developments\\portfolio\\public\\images\")",
+      "Bash(del \"c:\\xampp\\htdocs\\developments\\portfolio\\resources\\views\\notas\\index.blade.php\")",
+      "Bash(php check_courses.php:*)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

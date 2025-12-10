@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Note;
-use App\Models\Course;
+use App\Models\Video;
 use App\Services\NoteService;
 use App\Http\Requests\StoreNoteRequest;
 use Illuminate\Http\Request;
@@ -19,19 +19,30 @@ class NoteController extends Controller
     }
 
     /**
-     * Obtener notas de un curso
+     * Obtener notas de un video
      */
-    public function index(Request $request, Course $course): JsonResponse
+    public function index(Request $request, Video $video): JsonResponse
     {
+        $user = $request->user();
+        $course = $video->course;
+
+        // Verificar que el curso esté publicado
         if (!$course->is_published) {
             return response()->json([
                 'success' => false,
-                'message' => 'Curso no encontrado.',
+                'message' => 'Video no encontrado.',
             ], 404);
         }
 
-        $perPage = $request->input('per_page', 15);
-        $notas = $this->noteService->getNotesForCourse($course, $perPage);
+        // Verificar acceso al curso
+        if ($user && !$user->canAccessCourse($course)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes acceso a este video.',
+            ], 403);
+        }
+
+        $notas = $this->noteService->getAllNotesForVideo($video);
 
         return response()->json([
             'success' => true,
@@ -40,9 +51,9 @@ class NoteController extends Controller
     }
 
     /**
-     * Crear una nueva nota
+     * Crear una nueva nota en un video
      */
-    public function store(StoreNoteRequest $request, Course $course): JsonResponse
+    public function store(StoreNoteRequest $request, Video $video): JsonResponse
     {
         $user = $request->user();
 
@@ -53,10 +64,12 @@ class NoteController extends Controller
             ], 401);
         }
 
+        $course = $video->course;
+
         if (!$course->is_published) {
             return response()->json([
                 'success' => false,
-                'message' => 'Curso no encontrado.',
+                'message' => 'Video no encontrado.',
             ], 404);
         }
 
@@ -64,14 +77,15 @@ class NoteController extends Controller
         if (!$user->canAccessCourse($course)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tienes acceso a este curso.',
+                'message' => 'No tienes acceso a este video.',
             ], 403);
         }
 
         $nota = $this->noteService->create(
             $user,
-            $course,
-            $request->validated()['content']
+            $video,
+            $request->validated()['content'],
+            $request->input('timestamp_seconds')
         );
 
         $nota->load('user');
@@ -105,7 +119,11 @@ class NoteController extends Controller
             ], 403);
         }
 
-        $nota = $this->noteService->update($note, $request->validated()['content']);
+        $nota = $this->noteService->update(
+            $note,
+            $request->validated()['content'],
+            $request->input('timestamp_seconds')
+        );
         $nota->load('user');
 
         return response()->json([
@@ -142,40 +160,6 @@ class NoteController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Nota eliminada exitosamente.',
-        ]);
-    }
-
-    /**
-     * Ver todas las notas del usuario
-     */
-    public function misNotas(Request $request)
-    {
-        $user = $request->user();
-        $notas = $this->noteService->getNotesForUser($user, 20);
-
-        return view('notas.index', compact('notas'));
-    }
-
-    /**
-     * Buscar notas
-     */
-    public function search(Request $request): JsonResponse
-    {
-        $request->validate([
-            'q' => 'required|string|min:2',
-            'course_id' => 'nullable|exists:courses,id',
-        ]);
-
-        $course = null;
-        if ($request->has('course_id')) {
-            $course = Course::find($request->course_id);
-        }
-
-        $notas = $this->noteService->search($request->q, $course);
-
-        return response()->json([
-            'success' => true,
-            'data' => $notas,
         ]);
     }
 }

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
@@ -13,9 +15,10 @@ class UserController extends Controller
 {
     public function index()
     {
-        $usuarios = User::with('roles')->orderBy('created_at', 'desc')->get();
+        $usuarios = User::with(['roles', 'assignedCourses'])->orderBy('created_at', 'desc')->get();
         $roles = Role::all();
-        return view('admin.users.index', compact('usuarios', 'roles'));
+        $cursos = Course::with('category')->published()->ordered()->get();
+        return view('admin.users.index', compact('usuarios', 'roles', 'cursos'));
     }
 
     public function create()
@@ -64,20 +67,27 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()->name ?? 'Estudiante',
+                'assigned_courses' => $user->assignedCourses()->pluck('courses.id')->toArray(),
             ]);
         }
 
         $roles = Role::all();
-        return view('admin.users.edit', compact('user', 'roles'));
+        $cursos = Course::with('category')->published()->ordered()->get();
+        return view('admin.users.edit', compact('user', 'roles', 'cursos'));
     }
 
     public function update(Request $request, User $user)
     {
+        Log::info('UPDATE USER - Request data:', $request->all());
+        Log::info('UPDATE USER - User ID:', ['id' => $user->id]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'role' => 'required|exists:roles,name',
+            'courses' => 'nullable|array',
+            'courses.*' => 'exists:courses,id',
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -100,6 +110,32 @@ class UserController extends Controller
 
         // Sincronizar rol
         $user->syncRoles([$validated['role']]);
+
+        // Sincronizar cursos asignados (solo para estudiantes)
+        \Log::info('UPDATE USER - Role check:', [
+            'validated_role' => $validated['role'],
+            'is_estudiante' => $validated['role'] === 'Estudiante',
+            'has_courses' => isset($validated['courses']),
+            'courses' => $validated['courses'] ?? 'NOT SET'
+        ]);
+
+        if ($validated['role'] === 'Estudiante' && isset($validated['courses'])) {
+            $coursesData = [];
+            foreach ($validated['courses'] as $index => $courseId) {
+                $coursesData[$courseId] = [
+                    'order' => $index + 1,
+                    'assigned_by' => auth()->id(),
+                    'assigned_at' => now(),
+                ];
+            }
+            \Log::info('UPDATE USER - Syncing courses:', $coursesData);
+            $user->assignedCourses()->sync($coursesData);
+            \Log::info('UPDATE USER - Sync complete');
+        } else {
+            \Log::info('UPDATE USER - Detaching courses');
+            // Si no es estudiante, quitar cursos asignados
+            $user->assignedCourses()->detach();
+        }
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario actualizado exitosamente.');

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -61,11 +62,22 @@ class Course extends Model
     }
 
     /**
-     * Relación: Un curso tiene muchas notas
+     * Relación: Usuarios que tienen asignado este curso
      */
-    public function notes(): HasMany
+    public function assignedUsers(): BelongsToMany
     {
-        return $this->hasMany(Note::class)->orderBy('created_at', 'desc');
+        return $this->belongsToMany(User::class, 'course_user')
+            ->withPivot(['order', 'assigned_by', 'assigned_at']);
+    }
+
+    /**
+     * Obtener todas las notas del curso (a través de los videos)
+     */
+    public function getAllNotesAttribute()
+    {
+        return Note::whereIn('video_id', $this->videos()->pluck('id'))
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     /**
@@ -127,7 +139,7 @@ class Course extends Model
     }
 
     /**
-     * Verificar si un usuario puede acceder al curso (lógica secuencial)
+     * Verificar si un usuario puede acceder al curso (basado en asignación por admin)
      */
     public function canBeAccessedBy(User $user): bool
     {
@@ -136,25 +148,13 @@ class Course extends Model
             return true;
         }
 
-        // Si es el primer curso de la categoría, siempre es accesible
-        if ($this->order == 1) {
-            return true;
+        // Si el curso no está publicado, no puede acceder
+        if (!$this->is_published) {
+            return false;
         }
 
-        // Obtener el curso anterior en la misma categoría
-        $previousCourse = Course::where('category_id', $this->category_id)
-            ->where('order', '<', $this->order)
-            ->where('is_published', true)
-            ->orderBy('order', 'desc')
-            ->first();
-
-        // Si no hay curso anterior, es accesible
-        if (!$previousCourse) {
-            return true;
-        }
-
-        // Verificar que el curso anterior esté completado
-        return $user->hasCourseCompleted($previousCourse);
+        // Verificar si el curso está asignado al usuario
+        return $user->hasCourseAssigned($this);
     }
 
     /**

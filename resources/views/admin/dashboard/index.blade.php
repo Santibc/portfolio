@@ -31,7 +31,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Estudiantes</h6>
-                            <h3 class="mb-0">{{ $stats['total_students'] ?? 0 }}</h3>
+                            <h3 class="mb-0">{{ $stats['total_estudiantes'] ?? 0 }}</h3>
                         </div>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Cursos</h6>
-                            <h3 class="mb-0">{{ $stats['total_courses'] ?? 0 }}</h3>
+                            <h3 class="mb-0">{{ $stats['total_cursos'] ?? 0 }}</h3>
                         </div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Completados</h6>
-                            <h3 class="mb-0">{{ $stats['total_completions'] ?? 0 }}</h3>
+                            <h3 class="mb-0">{{ $stats['total_completaciones'] ?? 0 }}</h3>
                         </div>
                     </div>
                 </div>

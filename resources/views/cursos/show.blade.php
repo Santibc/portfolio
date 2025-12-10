@@ -77,36 +77,12 @@
                 </div>
             </div>
 
-            <!-- Notas del Curso -->
+            <!-- Info de notas -->
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">
-                            <i class="bi bi-chat-left-text me-2 text-warning"></i>
-                            Notas del Curso
-                        </h6>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
-                            <i class="bi bi-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
-                    <div class="list-group list-group-flush" id="notesList">
-                        @forelse($notas ?? [] as $nota)
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <strong class="small">{{ $nota->user->name ?? 'Usuario' }}</strong>
-                                <small class="text-muted">{{ $nota->created_at->diffForHumans() }}</small>
-                            </div>
-                            <p class="mb-0 small text-muted">{{ Str::limit($nota->content, 100) }}</p>
-                        </div>
-                        @empty
-                        <div class="list-group-item text-center text-muted py-4">
-                            <i class="bi bi-chat-left d-block mb-2"></i>
-                            Sin notas aún
-                        </div>
-                        @endforelse
-                    </div>
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-sticky text-warning display-6 d-block mb-2"></i>
+                    <p class="text-muted mb-0">Las notas se toman directamente en cada video</p>
+                    <small class="text-muted">Selecciona un video para comenzar</small>
                 </div>
             </div>
         </div>
@@ -158,58 +134,4 @@
     </div>
 </div>
 
-<!-- Modal Agregar Nota -->
-<div class="modal fade" id="addNoteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addNoteForm">
-                @csrf
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Agregar Nota</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <textarea name="content" class="form-control" rows="4"
-                              placeholder="Escribe tu nota aquí..." required maxlength="1000"></textarea>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Nota</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script>
-document.getElementById('addNoteForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const content = this.querySelector('textarea[name="content"]').value;
-
-    fetch('{{ route("notas.store", $course) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ content: content })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('addNoteModal')).hide();
-            this.reset();
-            location.reload();
-        } else {
-            Swal.fire('Error', data.message || 'No se pudo guardar la nota', 'error');
-        }
-    })
-    .catch(error => {
-        Swal.fire('Error', 'Error al guardar la nota', 'error');
-    });
-});
-</script>
-@endpush
 @endsection

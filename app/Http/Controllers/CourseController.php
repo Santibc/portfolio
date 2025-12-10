@@ -90,16 +90,13 @@ class CourseController extends Controller
             $courseProgress = $this->progressService->getCourseProgress($user, $course);
         }
 
-        // Notas del curso (públicas)
-        $notas = $this->noteService->getNotesForCourse($course);
-
         // Marcar videos completados
         $course->videos = $course->videos->map(function ($video) use ($user) {
             $video->is_completed = $user ? $video->isCompletedBy($user) : false;
             return $video;
         });
 
-        return view('cursos.show', compact('course', 'courseProgress', 'notas'));
+        return view('cursos.show', compact('course', 'courseProgress'));
     }
 
     /**
@@ -156,17 +153,13 @@ class CourseController extends Controller
         // Verificar si el video actual está completado
         $videoCompleted = $user ? $video->isCompletedBy($user) : false;
 
-        // Notas del curso
-        $notas = $this->noteService->getNotesForCourse($course, 10);
-
         return view('cursos.video', compact(
             'course',
             'video',
             'previousVideo',
             'nextVideo',
             'courseProgress',
-            'videoCompleted',
-            'notas'
+            'videoCompleted'
         ));
     }
 }
