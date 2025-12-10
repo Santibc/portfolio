@@ -174,22 +174,24 @@ table.dataTable.no-footer {
 }
 
 .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
     min-width: 180px;
     background: var(--gva-white);
     border-radius: var(--gva-radius-md);
     box-shadow: var(--gva-shadow-lg);
     padding: 0.5rem 0;
     z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: var(--gva-transition);
 }
 
+/* Bootstrap 5 usa .show para mostrar el dropdown */
+.dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Compatibilidad con clase .open (legacy) */
 .dropdown.open .dropdown-menu {
+    display: block;
     opacity: 1;
     visibility: visible;
     transform: translateY(0);

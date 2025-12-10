@@ -118,7 +118,7 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            onclick="editCourse({{ $curso->id }})" title="Editar">
+                                            onclick="editCourse('{{ $curso->slug }}')" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <a href="{{ route('admin.cursos.videos.index', $curso) }}"
@@ -126,12 +126,12 @@
                                         <i class="bi bi-play-btn"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm {{ $curso->is_published ? 'btn-outline-warning' : 'btn-outline-success' }}"
-                                            onclick="toggleCourse({{ $curso->id }})"
+                                            onclick="toggleCourse('{{ $curso->slug }}')"
                                             title="{{ $curso->is_published ? 'Despublicar' : 'Publicar' }}">
                                         <i class="bi {{ $curso->is_published ? 'bi-eye-slash' : 'bi-check-lg' }}"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-outline-danger"
-                                            onclick="deleteCourse({{ $curso->id }}, '{{ $curso->title }}')" title="Eliminar">
+                                            onclick="deleteCourse('{{ $curso->slug }}', '{{ $curso->title }}')" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -309,14 +309,21 @@ if (tableBody && tableBody.children.length > 1) {
     });
 }
 
-function editCourse(courseId) {
-    fetch(`{{ url('admin/cursos') }}/${courseId}/edit`, {
+function editCourse(courseSlug) {
+    // Usar la ruta show que devuelve JSON (usa slug por el getRouteKeyName del modelo)
+    fetch(`/admin/cursos/${courseSlug}`, {
+        method: 'GET',
+        credentials: 'same-origin',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos');
+            }
+            return response.json();
+        })
         .then(data => {
             document.getElementById('editCourseTitle').value = data.title;
             document.getElementById('editCourseDescription').value = data.description || '';
@@ -330,7 +337,8 @@ function editCourse(courseId) {
                 thumbContainer.innerHTML = '<span class="text-muted">Sin thumbnail</span>';
             }
 
-            document.getElementById('editCourseForm').action = `{{ url('admin/cursos') }}/${courseId}`;
+            // Usar el slug para la acción del form
+            document.getElementById('editCourseForm').action = `/admin/cursos/${courseSlug}`;
             new bootstrap.Modal(document.getElementById('editCourseModal')).show();
         })
         .catch(error => {
@@ -339,13 +347,13 @@ function editCourse(courseId) {
         });
 }
 
-function toggleCourse(courseId) {
+function toggleCourse(courseSlug) {
     const form = document.getElementById('toggleCourseForm');
-    form.action = `{{ url('admin/cursos') }}/${courseId}/toggle`;
+    form.action = `/admin/cursos/${courseSlug}/toggle`;
     form.submit();
 }
 
-function deleteCourse(courseId, courseTitle) {
+function deleteCourse(courseSlug, courseTitle) {
     Swal.fire({
         title: '¿Eliminar curso?',
         text: `¿Estás seguro de eliminar "${courseTitle}"? Se eliminarán también todos los videos asociados.`,
@@ -358,7 +366,7 @@ function deleteCourse(courseId, courseTitle) {
     }).then((result) => {
         if (result.isConfirmed) {
             const form = document.getElementById('deleteCourseForm');
-            form.action = `{{ url('admin/cursos') }}/${courseId}`;
+            form.action = `/admin/cursos/${courseSlug}`;
             form.submit();
         }
     });

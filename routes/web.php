@@ -80,17 +80,15 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     // Gestión de Usuarios
     Route::resource('usuarios', AdminUserController::class)->parameters(['usuarios' => 'user']);
 
-    // Gestión de Categorías
-    Route::resource('categorias', AdminCategoryController::class)->parameters(['categorias' => 'category']);
-    Route::get('/categorias/{category}/edit', [AdminCategoryController::class, 'edit'])->name('categorias.edit.ajax');
-    Route::patch('/categorias/{category}/toggle', [AdminCategoryController::class, 'toggleActive'])->name('categorias.toggle');
+    // Gestión de Categorías (rutas específicas ANTES del resource)
     Route::post('/categorias/reorder', [AdminCategoryController::class, 'reorder'])->name('categorias.reorder');
+    Route::patch('/categorias/{category}/toggle', [AdminCategoryController::class, 'toggleActive'])->name('categorias.toggle');
+    Route::resource('categorias', AdminCategoryController::class)->parameters(['categorias' => 'category']);
 
-    // Gestión de Cursos
-    Route::resource('cursos', AdminCourseController::class)->parameters(['cursos' => 'course']);
-    Route::get('/cursos/{course}/edit', [AdminCourseController::class, 'edit'])->name('cursos.edit.ajax');
-    Route::patch('/cursos/{course}/toggle', [AdminCourseController::class, 'togglePublish'])->name('cursos.toggle');
+    // Gestión de Cursos (rutas específicas ANTES del resource)
     Route::post('/cursos/reorder', [AdminCourseController::class, 'reorder'])->name('cursos.reorder');
+    Route::patch('/cursos/{course}/toggle', [AdminCourseController::class, 'togglePublish'])->name('cursos.toggle');
+    Route::resource('cursos', AdminCourseController::class)->parameters(['cursos' => 'course']);
 
     // Gestión de Videos (anidado en cursos)
     Route::get('/cursos/{course}/videos', [AdminVideoController::class, 'index'])->name('cursos.videos.index');

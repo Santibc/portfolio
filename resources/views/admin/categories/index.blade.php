@@ -36,19 +36,19 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <button class="dropdown-item" onclick="editCategory({{ $categoria->id }})">
+                                    <button class="dropdown-item" onclick="editCategory('{{ $categoria->slug }}', {{ $categoria->id }})">
                                         <i class="bi bi-pencil me-2"></i>Editar
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="dropdown-item" onclick="toggleCategory({{ $categoria->id }})">
+                                    <button class="dropdown-item" onclick="toggleCategory('{{ $categoria->slug }}')">
                                         <i class="bi bi-toggle-on me-2"></i>
                                         {{ $categoria->is_active ? 'Desactivar' : 'Activar' }}
                                     </button>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <button class="dropdown-item text-danger" onclick="deleteCategory({{ $categoria->id }}, '{{ $categoria->name }}')">
+                                    <button class="dropdown-item text-danger" onclick="deleteCategory('{{ $categoria->slug }}', '{{ $categoria->name }}')">
                                         <i class="bi bi-trash me-2"></i>Eliminar
                                     </button>
                                 </li>
@@ -230,14 +230,21 @@ if (container) {
     });
 }
 
-function editCategory(categoryId) {
-    fetch(`{{ url('admin/categorias') }}/${categoryId}/edit`, {
+function editCategory(categorySlug, categoryId) {
+    // Usar la ruta show que devuelve JSON (usa slug por el getRouteKeyName del modelo)
+    fetch(`/admin/categorias/${categorySlug}`, {
+        method: 'GET',
+        credentials: 'same-origin',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos');
+            }
+            return response.json();
+        })
         .then(data => {
             document.getElementById('editCategoryName').value = data.name;
             document.getElementById('editCategoryDescription').value = data.description || '';
@@ -250,7 +257,8 @@ function editCategory(categoryId) {
                 imageContainer.innerHTML = '<span class="text-muted">Sin imagen</span>';
             }
 
-            document.getElementById('editCategoryForm').action = `{{ url('admin/categorias') }}/${categoryId}`;
+            // Usar el slug para la acción del form (consistente con el route model binding)
+            document.getElementById('editCategoryForm').action = `/admin/categorias/${categorySlug}`;
             new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
         })
         .catch(error => {
@@ -259,13 +267,13 @@ function editCategory(categoryId) {
         });
 }
 
-function toggleCategory(categoryId) {
+function toggleCategory(categorySlug) {
     const form = document.getElementById('toggleCategoryForm');
-    form.action = `{{ url('admin/categorias') }}/${categoryId}/toggle`;
+    form.action = `/admin/categorias/${categorySlug}/toggle`;
     form.submit();
 }
 
-function deleteCategory(categoryId, categoryName) {
+function deleteCategory(categorySlug, categoryName) {
     Swal.fire({
         title: '¿Eliminar categoría?',
         text: `¿Estás seguro de eliminar "${categoryName}"? Los cursos asociados quedarán sin categoría.`,
@@ -278,7 +286,7 @@ function deleteCategory(categoryId, categoryName) {
     }).then((result) => {
         if (result.isConfirmed) {
             const form = document.getElementById('deleteCategoryForm');
-            form.action = `{{ url('admin/categorias') }}/${categoryId}`;
+            form.action = `/admin/categorias/${categorySlug}`;
             form.submit();
         }
     });

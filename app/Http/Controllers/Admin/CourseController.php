@@ -73,23 +73,24 @@ class CourseController extends Controller
             ->with('success', 'Curso creado exitosamente.');
     }
 
+    public function show(Course $course)
+    {
+        // Devolver JSON para peticiones AJAX (usado en el modal de edición)
+        return response()->json([
+            'id' => $course->id,
+            'category_id' => $course->category_id,
+            'title' => $course->title,
+            'slug' => $course->slug,
+            'description' => $course->description,
+            'thumbnail' => $course->thumbnail,
+            'thumbnail_url' => $course->thumbnail ? asset('storage/' . $course->thumbnail) : null,
+            'duration_hours' => $course->duration_hours,
+            'is_published' => $course->is_published,
+        ]);
+    }
+
     public function edit(Request $request, Course $course)
     {
-        // Si es petición AJAX, devolver JSON
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'id' => $course->id,
-                'category_id' => $course->category_id,
-                'title' => $course->title,
-                'slug' => $course->slug,
-                'description' => $course->description,
-                'thumbnail' => $course->thumbnail,
-                'thumbnail_url' => $course->thumbnail ? asset('storage/' . $course->thumbnail) : null,
-                'duration_hours' => $course->duration_hours,
-                'is_published' => $course->is_published,
-            ]);
-        }
-
         $categorias = Category::ordered()->get();
         $course->load('videos');
         return view('admin.courses.edit', ['curso' => $course, 'categorias' => $categorias]);

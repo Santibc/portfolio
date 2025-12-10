@@ -44,23 +44,24 @@ class CategoryController extends Controller
             ->with('success', 'Categoría creada exitosamente.');
     }
 
+    public function show(Category $category)
+    {
+        // Devolver JSON para peticiones AJAX (usado en el modal de edición)
+        return response()->json([
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'description' => $category->description,
+            'icon' => $category->icon,
+            'color' => $category->color,
+            'is_active' => $category->is_active,
+            'image' => $category->image,
+            'image_url' => $category->image ? asset('storage/' . $category->image) : null,
+        ]);
+    }
+
     public function edit(Request $request, Category $category)
     {
-        // Si es petición AJAX, devolver JSON
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'id' => $category->id,
-                'name' => $category->name,
-                'slug' => $category->slug,
-                'description' => $category->description,
-                'icon' => $category->icon,
-                'color' => $category->color,
-                'is_active' => $category->is_active,
-                'image' => $category->image,
-                'image_url' => $category->image ? asset('storage/' . $category->image) : null,
-            ]);
-        }
-
         return view('admin.categories.edit', ['categoria' => $category]);
     }
 
