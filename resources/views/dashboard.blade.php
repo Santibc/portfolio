@@ -312,7 +312,7 @@
                             <a href="{{ route('categorias.show', $categoria) }}" class="text-decoration-none">
                                 <div class="border rounded-3 p-3 text-center h-100 category-card-hover">
                                     @if($categoria->image)
-                                    <img src="{{ asset('storage/' . $categoria->image) }}"
+                                    <img src="{{ asset($categoria->image) }}"
                                          alt="{{ $categoria->name }}"
                                          class="rounded-circle mb-2"
                                          style="width: 60px; height: 60px; object-fit: cover;">

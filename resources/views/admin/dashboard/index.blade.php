@@ -235,7 +235,7 @@
                             <div class="border rounded p-3 h-100">
                                 <div class="d-flex align-items-center mb-2">
                                     @if($categoria->image)
-                                    <img src="{{ asset('storage/' . $categoria->image) }}"
+                                    <img src="{{ asset($categoria->image) }}"
                                          alt="{{ $categoria->name }}"
                                          class="rounded me-2"
                                          style="width: 40px; height: 40px; object-fit: cover;">

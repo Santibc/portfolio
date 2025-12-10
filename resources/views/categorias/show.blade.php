@@ -19,7 +19,7 @@
             <div class="row align-items-center">
                 <div class="col-md-2 text-center mb-3 mb-md-0">
                     @if($categoria->image)
-                    <img src="{{ asset('storage/' . $categoria->image) }}"
+                    <img src="{{ asset($categoria->image) }}"
                          alt="{{ $categoria->name }}"
                          class="rounded-3"
                          style="width: 120px; height: 120px; object-fit: cover;">

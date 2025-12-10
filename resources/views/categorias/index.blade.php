@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         @if($categoria->image)
-                        <img src="{{ asset('storage/' . $categoria->image) }}"
+                        <img src="{{ asset($categoria->image) }}"
                              alt="{{ $categoria->name }}"
                              class="rounded-3 me-3"
                              style="width: 80px; height: 80px; object-fit: cover;">
