@@ -523,6 +523,150 @@
           </div>
         </div>
 
+        {{-- Sección de Reseñas - SIEMPRE VISIBLE --}}
+        <div class="row mt-5" data-aos="fade-up" data-aos-delay="350">
+          <div class="col-12">
+            <div class="reviews-section" style="background: #f8f9fa; border-radius: 12px; padding: 2rem;">
+              <h3 class="mb-4" style="font-weight: 600;">
+                <i class="bi bi-star-fill text-warning me-2"></i>Reseñas de Clientes
+              </h3>
+
+              <div class="row g-4">
+                {{-- Resumen de Calificaciones --}}
+                <div class="col-lg-4">
+                  <div class="rating-summary" style="background: white; border-radius: 10px; padding: 1.5rem; text-align: center;">
+                    <div class="average-rating" style="font-size: 3.5rem; font-weight: 700; color: #212529;">
+                      {{ number_format($promedioCalificacion ?? 0, 1) }}
+                    </div>
+                    <div class="stars-display mb-2">
+                      @for($i = 1; $i <= 5; $i++)
+                        @if($i <= round($promedioCalificacion ?? 0))
+                          <i class="bi bi-star-fill" style="color: #ffc107; font-size: 1.25rem;"></i>
+                        @elseif($i - 0.5 <= ($promedioCalificacion ?? 0))
+                          <i class="bi bi-star-half" style="color: #ffc107; font-size: 1.25rem;"></i>
+                        @else
+                          <i class="bi bi-star" style="color: #ffc107; font-size: 1.25rem;"></i>
+                        @endif
+                      @endfor
+                    </div>
+                    <div class="total-reviews" style="color: #6c757d;">
+                      {{ $totalCalificaciones ?? 0 }} {{ ($totalCalificaciones ?? 0) == 1 ? 'reseña' : 'reseñas' }}
+                    </div>
+
+                    {{-- Distribución de Estrellas --}}
+                    <div class="rating-distribution mt-4" style="text-align: left;">
+                      @for($stars = 5; $stars >= 1; $stars--)
+                        @php
+                          $count = $distribucionCalificaciones[$stars] ?? 0;
+                          $percentage = ($totalCalificaciones ?? 0) > 0 ? ($count / $totalCalificaciones) * 100 : 0;
+                        @endphp
+                        <div class="rating-bar d-flex align-items-center mb-2">
+                          <span style="min-width: 30px; font-size: 0.875rem;">{{ $stars }}★</span>
+                          <div class="progress flex-grow-1 mx-2" style="height: 8px; background: #e9ecef;">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: {{ $percentage }}%; background: #ffc107;"
+                                 aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                          <span style="min-width: 25px; font-size: 0.875rem; color: #6c757d;">{{ $count }}</span>
+                        </div>
+                      @endfor
+                    </div>
+                  </div>
+
+                  {{-- Botón Escribir Reseña --}}
+                  <div class="write-review-cta mt-3" style="background: white; border-radius: 10px; padding: 1.5rem; text-align: center;">
+                    @auth
+                      @if($puedeCalificar ?? false)
+                        <h5 class="mb-2">¡Comparte tu experiencia!</h5>
+                        <p class="text-muted small mb-3">Tu opinión ayuda a otros compradores</p>
+                        <a href="{{ route('cliente.calificar', $itemCompraParaCalificar) }}" class="btn btn-primary">
+                          <i class="bi bi-pencil-square me-1"></i> Escribir Reseña
+                        </a>
+                      @else
+                        <p class="text-muted small mb-0">
+                          <i class="bi bi-info-circle me-1"></i>
+                          Solo puedes calificar productos que hayas comprado
+                        </p>
+                      @endif
+                    @else
+                      <h5 class="mb-2">¿Ya compraste este producto?</h5>
+                      <p class="text-muted small mb-3">Inicia sesión para dejar tu reseña</p>
+                      <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                      </a>
+                      <a href="{{ route('register.cliente') }}" class="btn btn-primary">
+                        <i class="bi bi-person-plus me-1"></i> Registrarse
+                      </a>
+                    @endauth
+                  </div>
+                </div>
+
+                {{-- Lista de Reseñas --}}
+                <div class="col-lg-8">
+                  @if(($calificaciones ?? collect())->count() > 0)
+                    <div class="reviews-list">
+                      @foreach($calificaciones as $calificacion)
+                        <div class="review-item" style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem;">
+                          <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="reviewer-info">
+                              <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-circle" style="width: 40px; height: 40px; background: linear-gradient(135deg, #FF00C1, #0B00F9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                  {{ strtoupper(substr($calificacion->user->name ?? 'U', 0, 1)) }}
+                                </div>
+                                <div>
+                                  <div style="font-weight: 600;">{{ $calificacion->user->name ?? 'Usuario' }}</div>
+                                  <div class="d-flex align-items-center gap-2">
+                                    <div class="stars-small">
+                                      @for($i = 1; $i <= 5; $i++)
+                                        @if($i <= $calificacion->estrellas)
+                                          <i class="bi bi-star-fill" style="color: #ffc107; font-size: 0.875rem;"></i>
+                                        @else
+                                          <i class="bi bi-star" style="color: #ffc107; font-size: 0.875rem;"></i>
+                                        @endif
+                                      @endfor
+                                    </div>
+                                    @if($calificacion->verificada)
+                                      <span class="badge bg-success" style="font-size: 0.7rem;">
+                                        <i class="bi bi-patch-check-fill me-1"></i>Compra verificada
+                                      </span>
+                                    @endif
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <small class="text-muted">{{ $calificacion->created_at->diffForHumans() }}</small>
+                          </div>
+
+                          @if($calificacion->titulo)
+                            <h6 class="mb-2" style="font-weight: 600;">{{ $calificacion->titulo }}</h6>
+                          @endif
+
+                          @if($calificacion->comentario)
+                            <p class="mb-0" style="color: #495057;">{{ $calificacion->comentario }}</p>
+                          @endif
+                        </div>
+                      @endforeach
+
+                      {{-- Paginación --}}
+                      @if($calificaciones->hasPages())
+                        <div class="d-flex justify-content-center mt-4">
+                          {{ $calificaciones->links() }}
+                        </div>
+                      @endif
+                    </div>
+                  @else
+                    <div class="no-reviews" style="background: white; border-radius: 10px; padding: 3rem; text-align: center;">
+                      <i class="bi bi-chat-square-text" style="font-size: 3rem; color: #dee2e6;"></i>
+                      <h5 class="mt-3 mb-2">Aún no hay reseñas</h5>
+                      <p class="text-muted mb-0">Sé el primero en compartir tu experiencia con este producto</p>
+                    </div>
+                  @endif
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {{-- Productos relacionados --}}
         @if($relacionados->count() > 0)
         <div class="row mt-5" data-aos="fade-up" data-aos-delay="400">
@@ -622,11 +766,22 @@
                       @else
                         <div class="product-price text-muted" style="font-size: 0.875rem;">Precio no disponible</div>
                       @endif
+                      @if(($relacionado->total_calificaciones ?? 0) > 0)
                       <div class="product-rating" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
-                        <i class="bi bi-star-fill" style="color: #ffc107;"></i>
-                        {{ number_format(rand(35, 50) / 10, 1) }}
-                        <span style="color: #6c757d;">({{ rand(10, 50) }})</span>
+                        @php $promedioRel = $relacionado->promedio_calificaciones ?? 0; @endphp
+                        @for($i = 1; $i <= 5; $i++)
+                          @if($i <= round($promedioRel))
+                            <i class="bi bi-star-fill" style="color: #ffc107;"></i>
+                          @elseif($i - 0.5 <= $promedioRel)
+                            <i class="bi bi-star-half" style="color: #ffc107;"></i>
+                          @else
+                            <i class="bi bi-star" style="color: #ffc107;"></i>
+                          @endif
+                        @endfor
+                        {{ number_format($promedioRel, 1) }}
+                        <span style="color: #6c757d;">({{ $relacionado->total_calificaciones }})</span>
                       </div>
+                      @endif
                     </div>
                   </div>
                 </div>

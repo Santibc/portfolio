@@ -93,6 +93,45 @@ class Producto extends Model
         return $this->hasMany(ItemSolicitudCotizacion::class, 'producto_id');
     }
 
+    /**
+     * Relación con calificaciones del producto
+     */
+    public function calificaciones()
+    {
+        return $this->hasMany(CalificacionProducto::class, 'producto_id');
+    }
+
+    /**
+     * Obtener promedio de calificaciones aprobadas
+     */
+    public function getPromedioCalificacionAttribute()
+    {
+        return $this->calificaciones()->aprobadas()->avg('estrellas') ?? 0;
+    }
+
+    /**
+     * Obtener total de calificaciones aprobadas
+     */
+    public function getTotalCalificacionesAttribute()
+    {
+        return $this->calificaciones()->aprobadas()->count();
+    }
+
+    /**
+     * Obtener distribución de calificaciones (5★, 4★, 3★, 2★, 1★)
+     */
+    public function getDistribucionCalificacionesAttribute()
+    {
+        $distribucion = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $distribucion[$i] = $this->calificaciones()
+                ->aprobadas()
+                ->where('estrellas', $i)
+                ->count();
+        }
+        return $distribucion;
+    }
+
     // Obtener precio por lista de precios
     public function getPrecioPorLista($listaPrecioId)
     {

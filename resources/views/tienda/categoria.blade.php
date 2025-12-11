@@ -378,10 +378,21 @@
                     @else
                       <div class="product-price text-muted">Precio no disponible</div>
                     @endif
+                    @if(($producto->total_calificaciones ?? 0) > 0)
                     <div class="product-rating">
-                      <i class="bi bi-star-fill"></i>
-                      {{ number_format(rand(35, 50) / 10, 1) }} <span>({{ rand(10, 50) }})</span>
+                      @php $promedio = $producto->promedio_calificaciones ?? 0; @endphp
+                      @for($i = 1; $i <= 5; $i++)
+                        @if($i <= round($promedio))
+                          <i class="bi bi-star-fill"></i>
+                        @elseif($i - 0.5 <= $promedio)
+                          <i class="bi bi-star-half"></i>
+                        @else
+                          <i class="bi bi-star"></i>
+                        @endif
+                      @endfor
+                      {{ number_format($promedio, 1) }} <span>({{ $producto->total_calificaciones }})</span>
                     </div>
+                    @endif
                   </div>
                 </div>
               </div>
@@ -414,16 +425,23 @@
                     <h4><a href="{{ route('tienda.producto', $producto->id) }}">{{ $producto->nombre }}</a></h4>
                     <p class="text-muted mb-2">{{ $producto->categoria->nombre }}</p>
                     <p>{{ Str::limit($producto->descripcion, 150) }}</p>
+                    @if(($producto->total_calificaciones ?? 0) > 0)
                     <div class="product-rating">
                       <div class="stars">
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star-fill"></i>
-                        <i class="bi bi-star"></i>
+                        @php $promedio = $producto->promedio_calificaciones ?? 0; @endphp
+                        @for($i = 1; $i <= 5; $i++)
+                          @if($i <= round($promedio))
+                            <i class="bi bi-star-fill"></i>
+                          @elseif($i - 0.5 <= $promedio)
+                            <i class="bi bi-star-half"></i>
+                          @else
+                            <i class="bi bi-star"></i>
+                          @endif
+                        @endfor
                       </div>
-                      <span class="rating-count">({{ rand(10, 50) }})</span>
+                      <span class="rating-count">({{ $producto->total_calificaciones }})</span>
                     </div>
+                    @endif
                   </div>
                   <div class="col-md-3 text-md-end">
                     @if($producto->precio_actual)

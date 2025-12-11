@@ -371,7 +371,25 @@
                             <h2 class="section-title">
                                 <i class="bi bi-person"></i> Información del Cliente
                             </h2>
-                            
+
+                            @guest
+                            <div class="alert alert-info d-flex align-items-start mb-4" role="alert" style="background: linear-gradient(135deg, rgba(255,0,193,0.1), rgba(11,0,249,0.1)); border: 1px solid rgba(255,0,193,0.3); border-radius: 0.75rem;">
+                                <i class="bi bi-gift-fill me-3" style="font-size: 1.5rem; color: #FF00C1;"></i>
+                                <div>
+                                    <strong style="color: #FF00C1;">¿Quieres ver tu historial de compras?</strong>
+                                    <p class="mb-2 small text-secondary">
+                                        Regístrate para acceder a tus compras anteriores y poder calificar los productos que compres.
+                                    </p>
+                                    <a href="{{ route('register.cliente') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #FF00C1, #0B00F9); color: white; border: none;">
+                                        <i class="bi bi-person-plus me-1"></i> Crear Cuenta
+                                    </a>
+                                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> Ya tengo cuenta
+                                    </a>
+                                </div>
+                            </div>
+                            @endguest
+
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label for="nombre" class="form-label">Nombre completo *</label>

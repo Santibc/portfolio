@@ -14,9 +14,11 @@ use App\Models\TransaccionPago;
 use App\Models\Ciudad;
 use App\Models\Departamento;
 use App\Models\ConfiguracionPasarela;
+use App\Models\CalificacionProducto;
 use App\Services\WompiService;
 use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
@@ -78,10 +80,16 @@ class TiendaController extends Controller
             ->orderBy('orden')
             ->get();
 
-        // Query base de productos
+        // Query base de productos con calificaciones
         $query = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
-            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal']);
+            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
+            ->withCount(['calificaciones as total_calificaciones' => function($q) {
+                $q->where('aprobada', true);
+            }])
+            ->withAvg(['calificaciones as promedio_calificaciones' => function($q) {
+                $q->where('aprobada', true);
+            }], 'estrellas');
 
         // Filtros
         if ($request->filled('categoria')) {
@@ -294,12 +302,18 @@ class TiendaController extends Controller
             ->orderBy('orden')
             ->get();
 
-        // Productos relacionados
+        // Productos relacionados con calificaciones
         $relacionados = Producto::where('empresa_id', $empresa->id)
             ->where('categoria_id', $producto->categoria_id)
             ->where('id', '!=', $producto->id)
             ->where('activo', true)
             ->with('imagenPrincipal')
+            ->withCount(['calificaciones as total_calificaciones' => function($q) {
+                $q->where('aprobada', true);
+            }])
+            ->withAvg(['calificaciones as promedio_calificaciones' => function($q) {
+                $q->where('aprobada', true);
+            }], 'estrellas')
             ->limit(4)
             ->get();
 
@@ -316,6 +330,52 @@ class TiendaController extends Controller
             ->disponibles()
             ->get();
 
+        // Cargar calificaciones del producto
+        $calificaciones = CalificacionProducto::where('producto_id', $producto->id)
+            ->aprobadas()
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Obtener estadísticas de calificaciones
+        $promedioCalificacion = CalificacionProducto::getPromedioEstrellas($producto->id);
+        $totalCalificaciones = CalificacionProducto::getTotalCalificaciones($producto->id);
+        $distribucionCalificaciones = CalificacionProducto::getDistribucion($producto->id);
+
+        // Verificar si el usuario autenticado puede calificar este producto
+        $puedeCalificar = false;
+        $itemCompraParaCalificar = null;
+
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            // Buscar compras del usuario que contengan este producto y que se puedan calificar
+            $comprasDelUsuario = Compra::where(function($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                          ->orWhere('email_cliente', $user->email);
+                })
+                ->whereIn('estado', ['pagada', 'enviada', 'entregada'])
+                ->with(['items' => function($q) use ($producto) {
+                    $q->where('producto_id', $producto->id);
+                }])
+                ->get();
+
+            // Buscar un item que aún no haya sido calificado por el usuario
+            foreach ($comprasDelUsuario as $compra) {
+                foreach ($compra->items as $item) {
+                    $yaCalificado = CalificacionProducto::where('user_id', $user->id)
+                        ->where('item_compra_id', $item->id)
+                        ->exists();
+
+                    if (!$yaCalificado) {
+                        $puedeCalificar = true;
+                        $itemCompraParaCalificar = $item->id;
+                        break 2;
+                    }
+                }
+            }
+        }
+
         $strategy = $this->templateResolver->resolveForEmpresa($empresa);
 
         $data = $strategy->prepareData(compact(
@@ -325,7 +385,13 @@ class TiendaController extends Controller
             'categorias',
             'listaPrecio',
             'carrito',
-            'descuentosActivos'
+            'descuentosActivos',
+            'calificaciones',
+            'promedioCalificacion',
+            'totalCalificaciones',
+            'distribucionCalificaciones',
+            'puedeCalificar',
+            'itemCompraParaCalificar'
         ));
 
         return view($strategy->getViewProducto(), $data);
@@ -567,6 +633,7 @@ public function procesarCompra(Request $request)
         // Crear compra
         $compra = Compra::create([
             'empresa_id' => $empresa->id,
+            'user_id' => Auth::check() ? Auth::id() : null, // Vincular a usuario autenticado
             'nombre_cliente' => $request->nombre,
             'email_cliente' => $request->email,
             'telefono_cliente' => $request->telefono,
@@ -838,10 +905,16 @@ public function categorias(Request $request)
         $categoriaSeleccionada = Categoria::find($request->categoria);
     }
 
-    // Query base de productos
+    // Query base de productos con calificaciones
     $query = Producto::where('empresa_id', $empresa->id)
         ->where('productos.activo', true)
-        ->with(['imagenPrincipal', 'imagenes', 'categoria', 'stockPrincipal']);
+        ->with(['imagenPrincipal', 'imagenes', 'categoria', 'stockPrincipal'])
+        ->withCount(['calificaciones as total_calificaciones' => function($q) {
+            $q->where('aprobada', true);
+        }])
+        ->withAvg(['calificaciones as promedio_calificaciones' => function($q) {
+            $q->where('aprobada', true);
+        }], 'estrellas');
 
     // Filtro por categoría
     if ($request->filled('categoria')) {

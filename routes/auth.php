@@ -8,14 +8,21 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\RegisterClienteController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    // REGISTRO DESHABILITADO - Aplicación single-tenant
+    // REGISTRO DE EMPRESAS DESHABILITADO - Aplicación single-tenant
     // Route::get('register', [RegisteredUserController::class, 'create'])
     //             ->name('register');
     // Route::post('register', [RegisteredUserController::class, 'store']);
+
+    // Registro de clientes (habilitado)
+    Route::get('registro', [RegisterClienteController::class, 'create'])
+                ->name('register.cliente');
+    Route::post('registro', [RegisterClienteController::class, 'store'])
+                ->name('register.cliente.store');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
                 ->name('login');

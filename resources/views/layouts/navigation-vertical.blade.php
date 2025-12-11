@@ -19,6 +19,17 @@
             <span>Inicio</span>
         </a>
 
+        {{-- Panel Cliente - Solo para usuarios con rol cliente --}}
+        @if(auth()->user()->hasRole('cliente'))
+            <a href="{{ route('cliente.compras') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('cliente.*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+               title="Mis Compras"
+               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('cliente.*') ? '' : 'transparent' }}'">
+                <i class="bi bi-bag-check"></i>
+                <span>Mis Compras</span>
+            </a>
+        @endif
 
         {{-- Mi Empresa (con submenú) --}}
         @if(auth()->user()->empresa)

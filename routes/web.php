@@ -343,3 +343,17 @@ Route::get('/pago/pendiente/{referencia}', function($referencia) {
 
     return view('tienda.pago-pendiente', compact('empresa', 'transaccion'));
 })->name('tienda.pago.pendiente');
+
+// ============================================
+// PANEL DE CLIENTE - Mis Compras y Calificaciones
+// ============================================
+Route::middleware(['auth'])->prefix('cliente')->group(function () {
+    Route::get('/mis-compras', [App\Http\Controllers\Cliente\MisComprasController::class, 'index'])
+        ->name('cliente.compras');
+    Route::get('/mis-compras/{id}', [App\Http\Controllers\Cliente\MisComprasController::class, 'show'])
+        ->name('cliente.compras.show');
+    Route::get('/calificar/{itemCompraId}', [App\Http\Controllers\Cliente\MisComprasController::class, 'calificar'])
+        ->name('cliente.calificar');
+    Route::post('/calificar', [App\Http\Controllers\Cliente\MisComprasController::class, 'guardarCalificacion'])
+        ->name('cliente.calificar.guardar');
+});

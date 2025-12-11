@@ -11,6 +11,7 @@ class Compra extends Model
     protected $fillable = [
         'numero_compra',
         'empresa_id',
+        'user_id',
         'nombre_cliente',
         'email_cliente',
         'telefono_cliente',
@@ -38,6 +39,30 @@ class Compra extends Model
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);
+    }
+
+    /**
+     * Relación con el usuario (cliente)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relación con las calificaciones de los productos de esta compra
+     */
+    public function calificaciones()
+    {
+        return $this->hasMany(CalificacionProducto::class);
+    }
+
+    /**
+     * Verificar si la compra puede ser calificada (estados válidos)
+     */
+    public function puedeSerCalificada()
+    {
+        return in_array($this->estado, ['pagada', 'enviada', 'entregada']);
     }
 
     public function ciudad()

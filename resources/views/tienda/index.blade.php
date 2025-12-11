@@ -416,7 +416,7 @@
               $stockInfo = $producto->getStockInfo();
           @endphp
           <div class="col-lg-3 col-md-6">
-            <div class="product-item">
+            <div class="product-item product-card-clickable" data-href="{{ route('tienda.producto', $producto->id) }}" style="cursor: pointer;">
               <div class="product-image">
                 @if($descuentoProducto)
                   <div class="product-badge sale-badge">{{ $textoDescuentoProducto }}</div>
@@ -429,22 +429,23 @@
                 @endif
                 <img src="{{ $producto->url_imagen_principal }}" alt="{{ $producto->nombre }}" class="img-fluid" loading="lazy">
                 <div class="product-actions">
-                  <button class="action-btn wishlist-btn">
+                  <button class="action-btn wishlist-btn" onclick="event.stopPropagation();">
                     <i class="bi bi-heart"></i>
                   </button>
-                  <button class="action-btn compare-btn">
+                  <button class="action-btn compare-btn" onclick="event.stopPropagation();">
                     <i class="bi bi-arrow-left-right"></i>
                   </button>
-                  <button class="action-btn quickview-btn">
+                  <a href="{{ route('tienda.producto', $producto->id) }}" class="action-btn quickview-btn" onclick="event.stopPropagation();">
                     <i class="bi bi-zoom-in"></i>
-                  </button>
+                  </a>
                 </div>
                 @if($producto->tiene_variantes)
-                  <a href="{{ route('tienda.producto', $producto->id) }}" class="cart-btn">Ver Opciones</a>
+                  <a href="{{ route('tienda.producto', $producto->id) }}" class="cart-btn" onclick="event.stopPropagation();">Ver Opciones</a>
                 @else
                   <button class="cart-btn quick-add-btn"
                           data-producto-id="{{ $producto->id }}"
                           data-precio="{{ $producto->precio_actual }}"
+                          onclick="event.stopPropagation();"
                           {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
                     {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'Sin Stock' : 'Agregar al Carrito' }}
                   </button>
@@ -453,18 +454,25 @@
               <div class="product-info">
                 <div class="product-category">{{ $producto->categoria->nombre }}</div>
                 <h4 class="product-name">
-                  <a href="{{ route('tienda.producto', $producto->id) }}">{{ $producto->nombre }}</a>
+                  <a href="{{ route('tienda.producto', $producto->id) }}" onclick="event.stopPropagation();">{{ $producto->nombre }}</a>
                 </h4>
+                @if(($producto->total_calificaciones ?? 0) > 0)
                 <div class="product-rating">
                   <div class="stars">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star"></i>
+                    @php $promedio = $producto->promedio_calificaciones ?? 0; @endphp
+                    @for($i = 1; $i <= 5; $i++)
+                      @if($i <= round($promedio))
+                        <i class="bi bi-star-fill"></i>
+                      @elseif($i - 0.5 <= $promedio)
+                        <i class="bi bi-star-half"></i>
+                      @else
+                        <i class="bi bi-star"></i>
+                      @endif
+                    @endfor
                   </div>
-                  <span class="rating-count">({{ rand(10, 50) }})</span>
+                  <span class="rating-count">({{ $producto->total_calificaciones }})</span>
                 </div>
+                @endif
                 @if($producto->precio_actual)
                   @if($descuentoProducto)
                     <div class="product-price">
@@ -716,6 +724,14 @@
 @push('scripts')
 <script>
   $(document).ready(function() {
+    // Make entire product card clickable
+    $('.product-card-clickable').on('click', function(e) {
+      // Only navigate if the click wasn't on an interactive element
+      if (!$(e.target).closest('button, a, .cart-btn, .action-btn').length) {
+        window.location.href = $(this).data('href');
+      }
+    });
+
     // Quick add to cart
     $('.quick-add-btn').on('click', function(e) {
       e.preventDefault();

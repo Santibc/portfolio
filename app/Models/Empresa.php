@@ -25,7 +25,7 @@ class Empresa extends Model
         'direccion',
         'instagram_url',
         'facebook_url',
-        'twitter_url',
+        'tiktok_url',
         'whatsapp',
         'horario_atencion',
         'activo',

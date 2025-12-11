@@ -121,6 +121,40 @@
               @endif
             </a>
 
+            <!-- User Account / Auth Buttons -->
+            @guest
+              <a href="{{ route('login') }}" class="header-action-btn d-none d-lg-flex" title="Iniciar Sesión">
+                <i class="bi bi-box-arrow-in-right"></i>
+              </a>
+              <a href="{{ route('register.cliente') }}" class="btn btn-sm btn-primary d-none d-lg-flex ms-2" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                <i class="bi bi-person-plus me-1"></i> Registrarse
+              </a>
+            @else
+              @if(auth()->user()->hasRole('cliente'))
+                <a href="{{ route('cliente.compras') }}" class="header-action-btn d-none d-lg-flex" title="Mis Compras">
+                  <i class="bi bi-bag-check"></i>
+                </a>
+              @endif
+              <div class="dropdown d-none d-lg-flex ms-2">
+                <a href="#" class="header-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="{{ auth()->user()->name }}">
+                  <i class="bi bi-person-circle"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><span class="dropdown-item-text text-muted small">{{ auth()->user()->name }}</span></li>
+                  <li><hr class="dropdown-divider"></li>
+                  @if(auth()->user()->hasRole('cliente'))
+                    <li><a class="dropdown-item" href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
+                  @endif
+                  <li>
+                    <form method="POST" action="{{ route('logout') }}">
+                      @csrf
+                      <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</button>
+                    </form>
+                  </li>
+                </ul>
+              </div>
+            @endguest
+
             <!-- Mobile Navigation Toggle -->
             <i class="mobile-nav-toggle d-xl-none bi bi-list me-0"></i>
 
@@ -183,8 +217,8 @@
                   @if($empresa->instagram_url)
                     <a href="{{ $empresa->instagram_url }}" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
                   @endif
-                  @if($empresa->twitter_url)
-                    <a href="{{ $empresa->twitter_url }}" target="_blank" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                  @if($empresa->tiktok_url)
+                    <a href="{{ $empresa->tiktok_url }}" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
                   @endif
                   @if($empresa->whatsapp)
                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $empresa->whatsapp) }}" target="_blank" aria-label="WhatsApp">
@@ -202,6 +236,28 @@
               <ul class="footer-links">
                 <li><a href="{{ route('tienda.categorias') }}">Categorías</a></li>
                 <li><a href="{{ route('tienda.carrito') }}">Carrito</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-lg-2 col-md-6 col-sm-6">
+            <div class="footer-widget">
+              <h4>Mi Cuenta</h4>
+              <ul class="footer-links">
+                @guest
+                  <li><a href="{{ route('login') }}">Iniciar Sesión</a></li>
+                  <li><a href="{{ route('register.cliente') }}">Crear Cuenta</a></li>
+                @else
+                  @if(auth()->user()->hasRole('cliente'))
+                    <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
+                  @endif
+                  <li>
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                      @csrf
+                      <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Cerrar Sesión</a>
+                    </form>
+                  </li>
+                @endguest
               </ul>
             </div>
           </div>

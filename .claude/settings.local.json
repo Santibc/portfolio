@@ -20,7 +20,9 @@
       "Bash(cat:*)",
       "Bash(php:*)",
       "Bash(Select-Object -First 5)",
-      "Bash(Select-Object -First 1)"
+      "Bash(Select-Object -First 1)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

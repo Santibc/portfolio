@@ -145,14 +145,14 @@
               @error('instagram_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            {{-- Twitter --}}
+            {{-- TikTok --}}
             <div class="col-md-6 mb-3">
-              <label class="form-label"><i class="bi bi-twitter text-info"></i> Twitter</label>
-              <input name="twitter_url" type="url"
-                     class="form-control @error('twitter_url') is-invalid @enderror"
-                     value="{{ old('twitter_url', $empresa->twitter_url) }}"
-                     placeholder="https://twitter.com/miempresa">
-              @error('twitter_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <label class="form-label"><i class="bi bi-tiktok"></i> TikTok</label>
+              <input name="tiktok_url" type="url"
+                     class="form-control @error('tiktok_url') is-invalid @enderror"
+                     value="{{ old('tiktok_url', $empresa->tiktok_url) }}"
+                     placeholder="https://tiktok.com/@miempresa">
+              @error('tiktok_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
           </div>
         </div>
