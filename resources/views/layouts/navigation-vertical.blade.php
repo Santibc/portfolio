@@ -31,74 +31,75 @@
             </a>
         @endif
 
-        {{-- Mi Empresa (con submenú) --}}
-        @if(auth()->user()->empresa)
-            <div class="nav-item">
-                <a href="#empresaSubmenu" 
-                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                   title="Mi empresa"
-                   data-bs-toggle="collapse" 
-                   aria-expanded="{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'true' : 'false' }}"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
-                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? '' : 'transparent' }}'">
-                    <i class="bi bi-building"></i>
-                    <span>Mi Empresa</span>
-                    <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
-                </a>
-                <div class="collapse {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'show' : '' }}" id="empresaSubmenu">
-                    <div class="ps-3">
-                        <a href="{{ route('empresa.index') }}"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                           title="Configuración"
-                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                           onmouseout="this.style.backgroundColor='{{ request()->is('empresa') ? '' : 'transparent' }}'">
-                            <i class="bi bi-gear"></i>
-                            <span>Configuración</span>
-                        </a>
-                        <a href="{{ route('categorias') }}"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('categorias*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                           title="Categorías"
-                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                           onmouseout="this.style.backgroundColor='{{ request()->is('categorias*') ? '' : 'transparent' }}'">
-                            <i class="bi bi-folder"></i>
-                            <span>Categorías</span>
-                        </a>
-                        <a href="{{ route('productos') }}"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('productos*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                           title="Productos"
-                           onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                           onmouseout="this.style.backgroundColor='{{ request()->is('productos*') ? '' : 'transparent' }}'">
-                            <i class="bi bi-box"></i>
-                            <span>Productos</span>
-                        </a>
-{{--                         <a href="{{ route('clientes.index') }}"
-                           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
-                            <i class="bi bi-person-badge"></i>
-                            <span>Clientes</span>
-                        </a> --}}
-                        @if(auth()->user()->empresa->activo)
-                            <a href="{{ route('empresa.preview') }}" target="_blank"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa.preview') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Ver mi tienda"
+        {{-- Mi Empresa y otras opciones - Solo para NO clientes --}}
+        @unless(auth()->user()->hasRole('cliente'))
+            @if(auth()->user()->empresa)
+                <div class="nav-item">
+                    <a href="#empresaSubmenu"
+                       class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+                       title="Mi empresa"
+                       data-bs-toggle="collapse"
+                       aria-expanded="{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'true' : 'false' }}"
+                       onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+                       onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? '' : 'transparent' }}'">
+                        <i class="bi bi-building"></i>
+                        <span>Mi Empresa</span>
+                        <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
+                    </a>
+                    <div class="collapse {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'show' : '' }}" id="empresaSubmenu">
+                        <div class="ps-3">
+                            <a href="{{ route('empresa.index') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                               title="Configuración"
                                onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                               onmouseout="this.style.backgroundColor='{{ request()->is('empresa.preview') ? '' : 'transparent' }}'">
-                                <i class="bi bi-eye"></i>
-                                <span>Ver Mi Tienda</span>
+                               onmouseout="this.style.backgroundColor='{{ request()->is('empresa') ? '' : 'transparent' }}'">
+                                <i class="bi bi-gear"></i>
+                                <span>Configuración</span>
                             </a>
-                        @endif
+                            <a href="{{ route('categorias') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('categorias*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                               title="Categorías"
+                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                               onmouseout="this.style.backgroundColor='{{ request()->is('categorias*') ? '' : 'transparent' }}'">
+                                <i class="bi bi-folder"></i>
+                                <span>Categorías</span>
+                            </a>
+                            <a href="{{ route('productos') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('productos*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                               title="Productos"
+                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                               onmouseout="this.style.backgroundColor='{{ request()->is('productos*') ? '' : 'transparent' }}'">
+                                <i class="bi bi-box"></i>
+                                <span>Productos</span>
+                            </a>
+{{--                             <a href="{{ route('clientes.index') }}"
+                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Clientes</span>
+                            </a> --}}
+                            @if(auth()->user()->empresa->activo)
+                                <a href="{{ route('empresa.preview') }}" target="_blank"
+                                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa.preview') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                                   title="Ver mi tienda"
+                                   onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
+                                   onmouseout="this.style.backgroundColor='{{ request()->is('empresa.preview') ? '' : 'transparent' }}'">
+                                    <i class="bi bi-eye"></i>
+                                    <span>Ver Mi Tienda</span>
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
-        @else
-            <a href="{{ route('empresa.index') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Mi empresa"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('empresa*') ? '' : 'transparent' }}'">
-                <i class="bi bi-building"></i>
-                <span>Mi Empresa</span>
-            </a>
-        @endif
+            @else
+                <a href="{{ route('empresa.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+                   title="Mi empresa"
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('empresa*') ? '' : 'transparent' }}'">
+                    <i class="bi bi-building"></i>
+                    <span>Mi Empresa</span>
+                </a>
+            @endif
 
             @if(auth()->user()->empresa)
                 <div class="nav-item">
@@ -164,12 +165,13 @@
                 <a href="{{ route('stock.index') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.index') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
                    title="Gestión de stock"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
                    onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('stock.index') ? '' : 'transparent' }}'">
                     <i class="bi bi-archive"></i>
                     <span>Gestión de Stock</span>
                 </a>
             @endif
+        @endunless
 
     </nav>
 
