@@ -3,10 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catálogo de Productos</title>
+  <title>Catálogo de Productos - Miracle Beauty Experts</title>
+  <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    /* Variables de Marca Miracle */
+    :root {
+      --miracle-pink: #FF84D5;
+      --miracle-pink-light: #FFE4F3;
+      --miracle-pink-hover: #ff6bc9;
+      --miracle-lilac: #BCA9F5;
+      --miracle-lilac-light: #E8E1FA;
+      --miracle-gold: #D4AF37;
+      --miracle-cream: #FFF1DD;
+      --miracle-aqua: #B9DFDE;
+      --miracle-dark: #382E65;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--miracle-dark);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Comfortaa', cursive;
+    }
     .producto-card { transition: transform .2s; cursor: pointer; }
     .producto-card:hover { transform: translateY(-5px); }
     .cart-badge { position: absolute; top: -8px; right: -8px; }
@@ -61,9 +86,9 @@
     }
     
     .carousel-nav-btn {
-      background: #87ceeb; /* Azul claro */
+      background: var(--miracle-lilac);
       border: none;
-      color: #333;
+      color: white;
       border-radius: 50%;
       width: 45px;
       height: 45px;
@@ -73,21 +98,21 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 1.2rem;
-      box-shadow: 0 2px 8px rgba(135,206,235,0.3);
+      box-shadow: 0 2px 8px rgba(188,169,245,0.3);
     }
-    
+
     .carousel-nav-btn:hover {
-      background: #4682b4;
+      background: var(--miracle-pink);
       transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(70,130,180,0.4);
+      box-shadow: 0 4px 12px rgba(255,132,213,0.4);
     }
-    
+
     .carousel-nav-btn:disabled {
-      background: #d3d3d3; /* Gris más claro */
+      background: var(--miracle-lilac-light);
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
-      color: #888;
+      color: #999;
     }
     
     .carousel-info {
@@ -111,42 +136,42 @@
 
     #itemsPerPageSelect { width: auto; display: inline-block; margin-left: 0.5rem; }
 
-    /* Estilos para indicadores de stock actualizados */
+    /* Estilos para indicadores de stock - Miracle */
     .stock-badge {
       font-size: 0.75rem;
       padding: 0.25rem 0.5rem;
       border-radius: 0.375rem;
       font-weight: 500;
     }
-    .stock-disponible { 
-      background-color: #d4edda; 
-      color: #155724; 
-      border: 1px solid #c3e6cb;
+    .stock-disponible {
+      background-color: var(--miracle-aqua);
+      color: var(--miracle-dark);
+      border: 1px solid #9ed1cf;
     }
-    .stock-limitado { 
-      background-color: #fff3cd; 
-      color: #856404; 
-      border: 1px solid #ffeaa7;
+    .stock-limitado {
+      background-color: var(--miracle-cream);
+      color: var(--miracle-dark);
+      border: 1px solid var(--miracle-gold);
     }
-    .stock-bajo { 
-      background-color: #f8d7da; 
-      color: #721c24; 
-      border: 1px solid #f1aeb5;
+    .stock-bajo {
+      background-color: var(--miracle-pink-light);
+      color: var(--miracle-dark);
+      border: 1px solid var(--miracle-pink);
     }
-    .sin-stock { 
-      background-color: #f1f3f4; 
-      color: #6c757d; 
+    .sin-stock {
+      background-color: #f1f3f4;
+      color: #6c757d;
       border: 1px solid #dee2e6;
     }
     .sin-stock-permitido {
-      background-color: #fff3cd; 
-      color: #856404; 
-      border: 1px solid #ffeaa7;
+      background-color: var(--miracle-cream);
+      color: var(--miracle-dark);
+      border: 1px solid var(--miracle-gold);
     }
     .stock-ilimitado {
-      background-color: #e7f3ff; 
-      color: #004085; 
-      border: 1px solid #b3d7ff;
+      background-color: var(--miracle-lilac-light);
+      color: var(--miracle-dark);
+      border: 1px solid var(--miracle-lilac);
     }
     
     /* Productos sin stock (solo cuando NO se permite venta sin stock) */
@@ -163,34 +188,34 @@
       box-shadow: none;
     }
     
-    /* Información de stock en detalle */
+    /* Información de stock en detalle - Miracle */
     .stock-info-detalle {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-top: 0.5rem;
       padding: 0.5rem;
-      background-color: #f8f9fa;
+      background-color: #faf8fc;
       border-radius: 0.375rem;
       border-left: 4px solid;
     }
     .stock-info-detalle.disponible {
-      border-left-color: #28a745;
+      border-left-color: var(--miracle-aqua);
     }
     .stock-info-detalle.limitado {
-      border-left-color: #ffc107;
+      border-left-color: var(--miracle-gold);
     }
     .stock-info-detalle.bajo {
-      border-left-color: #dc3545;
+      border-left-color: var(--miracle-pink);
     }
     .stock-info-detalle.sin-stock {
       border-left-color: #6c757d;
     }
     .stock-info-detalle.sin-stock-permitido {
-      border-left-color: #ffc107;
+      border-left-color: var(--miracle-gold);
     }
     .stock-info-detalle.ilimitado {
-      border-left-color: #007bff;
+      border-left-color: var(--miracle-lilac);
     }
     
     /* Tabla de variantes con estados de stock */
@@ -233,10 +258,77 @@
       border: 1px solid #ffeaa7;
     }
     #cartItems {
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 100%;
-}
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: 100%;
+    }
+
+    /* Botones Miracle */
+    .btn-primary {
+      background-color: var(--miracle-pink) !important;
+      border-color: var(--miracle-pink) !important;
+      color: white !important;
+    }
+    .btn-primary:hover {
+      background-color: var(--miracle-pink-hover) !important;
+      border-color: var(--miracle-pink-hover) !important;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--miracle-pink) 0%, var(--miracle-lilac) 100%) !important;
+      border: none !important;
+      color: white !important;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, var(--miracle-pink-hover) 0%, #a896e8 100%) !important;
+    }
+    .btn-outline-secondary {
+      border-color: var(--miracle-lilac) !important;
+      color: var(--miracle-dark) !important;
+    }
+    .btn-outline-secondary:hover {
+      background-color: var(--miracle-lilac) !important;
+      color: white !important;
+    }
+
+    /* Spinner Miracle */
+    .spinner-border {
+      color: var(--miracle-pink) !important;
+    }
+
+    /* Form controls */
+    .form-control:focus, .form-select:focus {
+      border-color: var(--miracle-pink);
+      box-shadow: 0 0 0 0.2rem rgba(255,132,213,0.25);
+    }
+
+    /* Modal header */
+    .modal-header {
+      background-color: var(--miracle-lilac-light);
+      border-bottom-color: var(--miracle-lilac);
+    }
+
+    /* Cards */
+    .card {
+      border-color: var(--miracle-lilac-light);
+    }
+    .producto-card:hover {
+      box-shadow: 0 4px 15px rgba(188,169,245,0.3);
+    }
+
+    /* Background */
+    .bg-light {
+      background-color: #faf8fc !important;
+    }
+
+    /* Toast success */
+    .bg-success {
+      background: linear-gradient(135deg, var(--miracle-pink) 0%, var(--miracle-lilac) 100%) !important;
+    }
+
+    /* Badge danger for cart */
+    .bg-danger {
+      background-color: var(--miracle-pink) !important;
+    }
   </style>
 </head>
 <body class="bg-light">

@@ -50,12 +50,13 @@
         }
 
         .cotizacion-label {
-            background-color: #000000;
+            background-color: #FF84D5;
             color: #FFFFFF;
             padding: 5px 15px;
             font-size: 12pt;
             font-weight: bold;
             display: inline-block;
+            border-radius: 4px;
         }
 
         .cotizacion-numero {
@@ -63,7 +64,9 @@
             font-weight: bold;
             padding: 5px 15px;
             display: inline-block;
-            border: 1px solid #000000;
+            border: 2px solid #BCA9F5;
+            border-radius: 4px;
+            color: #382E65;
         }
 
         .empresa-info {
@@ -117,13 +120,14 @@
         }
 
         .dato-label {
-            background-color: #000000;
+            background-color: #BCA9F5;
             color: #FFFFFF;
             font-size: 11pt;
             font-weight: bold;
             padding: 4px 8px;
             display: inline-block;
             min-width: 120px;
+            border-radius: 3px;
         }
 
         .dato-valor {
@@ -142,22 +146,24 @@
         }
 
         .estado-pendiente {
-            background-color: #ffc107;
-            color: #000;
+            background-color: #FFF1DD;
+            color: #382E65;
+            border: 1px solid #D4AF37;
         }
 
         .estado-confirmada {
-            background-color: #28a745;
-            color: #fff;
+            background-color: #B9DFDE;
+            color: #382E65;
         }
 
         .estado-rechazada {
-            background-color: #dc3545;
-            color: #fff;
+            background-color: #FFE4F3;
+            color: #382E65;
+            border: 1px solid #FF84D5;
         }
 
         .estado-aplicada {
-            background-color: #007bff;
+            background-color: #BCA9F5;
             color: #fff;
         }
 
@@ -169,20 +175,21 @@
         }
 
         .productos-table th {
-            background-color: #000000;
+            background-color: #FF84D5;
             color: #FFFFFF;
             font-size: 11pt;
             font-weight: bold;
             padding: 8px 5px;
-            border: 1px solid #000000;
+            border: 1px solid #BCA9F5;
             text-align: center;
         }
 
         .productos-table td {
-            border: 1px solid #000000;
+            border: 1px solid #BCA9F5;
             padding: 6px 5px;
             vertical-align: middle;
             font-size: 10pt;
+            color: #382E65;
         }
 
         .productos-table .col-referencia {
@@ -273,11 +280,11 @@
     </style>
 </head>
 <body>
-    {{-- HEADER: Logo y Cotización --}}
+    {{-- HEADER: Logo centrado y Cotización --}}
     <table class="header-section">
         <tr>
-            <td class="logo-cell">
-                <img src="{{ public_path('images/logo.png') }}" alt="INNOVATECH Global" class="logo-img">
+            <td class="logo-cell" style="text-align: center;">
+                <img src="{{ public_path('images/logo.png') }}" alt="Miracle Beauty Experts" class="logo-img" style="height: 80px;">
             </td>
             <td class="cotizacion-header">
                 <span class="cotizacion-label">COTIZACION</span>
@@ -286,27 +293,8 @@
         </tr>
     </table>
 
-    {{-- DATOS DE LA EMPRESA Y MARCAS --}}
-    <table class="empresa-info">
-        <tr>
-            <td class="empresa-info-left">
-                <div class="empresa-nombre">INNOVATECH GLOBAL SAS</div>
-                <div class="empresa-detalle">NIT: 901543944-6</div>
-                <div class="empresa-detalle"><strong>TELEFONOS CALI:</strong> 3174422343 - 3043097203 - 3145954725 - 3022040377 - 3022040377 - 3</div>
-                <div class="empresa-detalle"><strong>TELEFONOS PEREIRA:</strong> 3002942179 - 3002942155 - 3004036493</div>
-                <div class="empresa-detalle"><strong>CORREO:</strong> ventas@innovatechglobal.com.co</div>
-                <div class="empresa-detalle"><strong>DIRECCION CALI NORTE:</strong> CALLE 24AN #5N 58 LOCAL 12 CC ASTROCENTRO</div>
-                <div class="empresa-detalle"><strong>DIRECCION CALI SEDE CC CHINA:</strong> Carrera 6 # 16-17, Local 113</div>
-                <div class="empresa-detalle"><strong>DIRECCION CALI SEDE SAN NICOLAS:</strong> Carrera 6 # 18-13</div>
-                <div class="empresa-detalle"><strong>DIRECCION PEREIRA:</strong> Calle 16 # 4 - 44 centro</div>
-                <div class="empresa-detalle">WEB: WWW.INNOVATECHGLOBAL.COM.CO</div>
-            </td>
-            <td class="empresa-info-right">
-                <div class="marcas-titulo">DISTRIBUIMOS LAS MEJORES MARCAS</div>
-                <img src="{{ public_path('images/marcas-distribuidas.png') }}" alt="Marcas" class="marcas-img">
-            </td>
-        </tr>
-    </table>
+    {{-- Línea decorativa --}}
+    <div style="border-bottom: 2px solid #FF84D5; margin: 10px 0 15px 0;"></div>
 
     {{-- DATOS DEL CLIENTE Y ASESOR --}}
     <table class="cliente-asesor-section">
@@ -408,13 +396,13 @@
     </div>
 
     {{-- TEXTOS LEGALES --}}
-    <div class="texto-legal">
-        Autorizo a INOVATECH GLOBAL S.A.S. para recaudar, almacenar, utilizar y actualizar mis datos personales con fines exclusivamente comerciales garantizándome que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.
+    <div class="texto-legal" style="color: #382E65; border-left: 3px solid #BCA9F5; padding-left: 10px;">
+        Autorizo el tratamiento de mis datos personales con fines exclusivamente comerciales, garantizándose que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.
     </div>
 
     {{-- CONDICIONES FINALES --}}
-    <div class="condiciones-finales">
-        LA FECHA DE ENTREGA SE DETERMINARÁ EN EL MOMENTO DE EFECTUAR EL PEDIDO, LOS PRECIOS DE ESTA OFERTA SE PODRÁN MODIFICAR SIN PREVIO AVISO
+    <div class="condiciones-finales" style="background-color: #FFF1DD; padding: 15px; border-radius: 5px; color: #382E65;">
+        LA FECHA DE ENTREGA SE DETERMINARÁ EN EL MOMENTO DE EFECTUAR EL PEDIDO. LOS PRECIOS DE ESTA OFERTA SE PODRÁN MODIFICAR SIN PREVIO AVISO.
     </div>
 </body>
 </html>

@@ -70,9 +70,9 @@
     }
     
     .carousel-nav-btn {
-      background: #87ceeb;
+      background: var(--miracle-lilac, #BCA9F5);
       border: none;
-      color: #333;
+      color: white;
       border-radius: 50%;
       width: 45px;
       height: 45px;
@@ -82,21 +82,21 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 1.2rem;
-      box-shadow: 0 2px 8px rgba(135,206,235,0.3);
+      box-shadow: 0 2px 8px rgba(188,169,245,0.3);
     }
-    
+
     .carousel-nav-btn:hover {
-      background: #4682b4;
+      background: var(--miracle-pink, #FF84D5);
       transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(70,130,180,0.4);
+      box-shadow: 0 4px 12px rgba(255,132,213,0.4);
     }
-    
+
     .carousel-nav-btn:disabled {
-      background: #d3d3d3;
+      background: var(--miracle-lilac-light, #E8E1FA);
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
-      color: #888;
+      color: #999;
     }
     
     .carousel-info {
@@ -121,42 +121,42 @@
 
     #itemsPerPageSelect { width: auto; display: inline-block; margin-left: 0.5rem; }
 
-    /* Estilos para indicadores de stock actualizados */
+    /* Estilos para indicadores de stock - Miracle */
     .stock-badge {
       font-size: 0.75rem;
       padding: 0.25rem 0.5rem;
       border-radius: 0.375rem;
       font-weight: 500;
     }
-    .stock-disponible { 
-      background-color: #d4edda; 
-      color: #155724; 
-      border: 1px solid #c3e6cb;
+    .stock-disponible {
+      background-color: var(--miracle-aqua, #B9DFDE);
+      color: var(--miracle-dark, #382E65);
+      border: 1px solid #9ed1cf;
     }
-    .stock-limitado { 
-      background-color: #fff3cd; 
-      color: #856404; 
-      border: 1px solid #ffeaa7;
+    .stock-limitado {
+      background-color: var(--miracle-cream, #FFF1DD);
+      color: var(--miracle-dark, #382E65);
+      border: 1px solid var(--miracle-gold, #D4AF37);
     }
-    .stock-bajo { 
-      background-color: #f8d7da; 
-      color: #721c24; 
-      border: 1px solid #f1aeb5;
+    .stock-bajo {
+      background-color: var(--miracle-pink-light, #FFE4F3);
+      color: var(--miracle-dark, #382E65);
+      border: 1px solid var(--miracle-pink, #FF84D5);
     }
-    .sin-stock { 
-      background-color: #f1f3f4; 
-      color: #6c757d; 
+    .sin-stock {
+      background-color: #f1f3f4;
+      color: #6c757d;
       border: 1px solid #dee2e6;
     }
     .sin-stock-permitido {
-      background-color: #fff3cd; 
-      color: #856404; 
-      border: 1px solid #ffeaa7;
+      background-color: var(--miracle-cream, #FFF1DD);
+      color: var(--miracle-dark, #382E65);
+      border: 1px solid var(--miracle-gold, #D4AF37);
     }
     .stock-ilimitado {
-      background-color: #e7f3ff; 
-      color: #004085; 
-      border: 1px solid #b3d7ff;
+      background-color: var(--miracle-lilac-light, #E8E1FA);
+      color: var(--miracle-dark, #382E65);
+      border: 1px solid var(--miracle-lilac, #BCA9F5);
     }
     
     /* Productos sin stock (solo cuando NO se permite venta sin stock) */
@@ -173,34 +173,34 @@
       box-shadow: none;
     }
     
-    /* Información de stock en detalle */
+    /* Información de stock en detalle - Miracle */
     .stock-info-detalle {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-top: 0.5rem;
       padding: 0.5rem;
-      background-color: #f8f9fa;
+      background-color: #faf8fc;
       border-radius: 0.375rem;
       border-left: 4px solid;
     }
     .stock-info-detalle.disponible {
-      border-left-color: #28a745;
+      border-left-color: var(--miracle-aqua, #B9DFDE);
     }
     .stock-info-detalle.limitado {
-      border-left-color: #ffc107;
+      border-left-color: var(--miracle-gold, #D4AF37);
     }
     .stock-info-detalle.bajo {
-      border-left-color: #dc3545;
+      border-left-color: var(--miracle-pink, #FF84D5);
     }
     .stock-info-detalle.sin-stock {
       border-left-color: #6c757d;
     }
     .stock-info-detalle.sin-stock-permitido {
-      border-left-color: #ffc107;
+      border-left-color: var(--miracle-gold, #D4AF37);
     }
     .stock-info-detalle.ilimitado {
-      border-left-color: #007bff;
+      border-left-color: var(--miracle-lilac, #BCA9F5);
     }
     
     /* Tabla de variantes con estados de stock */

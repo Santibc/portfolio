@@ -8,8 +8,8 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f4f4f4;
+            color: #382E65;
+            background-color: #faf8fc;
             margin: 0;
             padding: 0;
         }
@@ -19,11 +19,11 @@
             background: #fff;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(188,169,245,0.2);
         }
         .header {
-            background-color: #dc3545;
-            color: white;
+            background: linear-gradient(135deg, #FFE4F3 0%, #BCA9F5 100%);
+            color: #382E65;
             padding: 10px;
             text-align: center;
             border-radius: 10px 10px 0 0;
@@ -34,15 +34,15 @@
             margin-bottom: 10px;
         }
         .info-box {
-            background-color: #f8f9fa;
-            border-left: 4px solid #dc3545;
+            background-color: #faf8fc;
+            border-left: 4px solid #BCA9F5;
             padding: 15px;
             margin: 20px 0;
         }
         .motivo-box {
-            background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            border-left: 4px solid #ffc107;
+            background-color: #FFF1DD;
+            border: 1px solid #D4AF37;
+            border-left: 4px solid #D4AF37;
             padding: 15px;
             margin: 20px 0;
         }
@@ -52,31 +52,31 @@
             margin: 20px 0;
         }
         .table th {
-            background-color: #6c757d;
+            background-color: #BCA9F5;
             color: white;
             padding: 10px;
             text-align: left;
         }
         .table td {
             padding: 10px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #E8E1FA;
         }
         .total-row {
-            background-color: #f8f9fa;
+            background-color: #FFF1DD;
             font-weight: bold;
         }
         .footer {
             text-align: center;
-            color: #666;
+            color: #382E65;
             font-size: 14px;
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #BCA9F5;
         }
         .alert {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background-color: #FFE4F3;
+            border: 1px solid #FF84D5;
+            color: #382E65;
             padding: 15px;
             border-radius: 5px;
             margin: 20px 0;
@@ -86,7 +86,7 @@
 <body>
     <div class="container">
         <div style="text-align: center; margin-bottom: 20px;">
-            <img src="{{ $message->embed(public_path('images/logo.png')) }}" alt="Logo Innovatech" style="height: 60px; width: auto;">
+            <img src="{{ $message->embed(public_path('images/logo.png')) }}" alt="Miracle Beauty Experts" style="height: 60px; width: auto;">
         </div>
 
         <div class="header">

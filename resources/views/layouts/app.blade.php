@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
+    <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}"/>
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     {{-- CSS personalizado y Bootstrap --}}
@@ -12,15 +12,40 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    {{-- Google Fonts - Miracle Brand --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
    @stack('styles')
     <style>
+        /* Variables de Marca Miracle Beauty Experts */
+        :root {
+            --miracle-pink: #FF84D5;
+            --miracle-pink-light: #FFE4F3;
+            --miracle-pink-hover: #ff6bc9;
+            --miracle-lilac: #BCA9F5;
+            --miracle-lilac-light: #E8E1FA;
+            --miracle-gold: #D4AF37;
+            --miracle-cream: #FFF1DD;
+            --miracle-aqua: #B9DFDE;
+            --miracle-dark: #382E65;
+        }
+
         body {
-            background-color: #f8f9fa;
+            background-color: #faf8fc;
+            font-family: 'Roboto', sans-serif;
+            color: var(--miracle-dark);
+        }
+
+        h1, h2, h3, h4, h5, h6, .fw-semibold {
+            font-family: 'Comfortaa', cursive;
         }
 
         .sidebar {
             width: 250px;
             transition: all 0.3s ease;
+            background: linear-gradient(180deg, #ffffff 0%, var(--miracle-lilac-light) 100%) !important;
+            border-right: 2px solid var(--miracle-lilac) !important;
         }
 
         .sidebar.collapsed {
@@ -46,7 +71,7 @@
         }
 
         .sidebar.collapsed .btn-outline-danger {
-            justify-content: center !important; /* Center the icon when text is hidden */
+            justify-content: center !important;
         }
 
         header {
@@ -54,9 +79,10 @@
             background-color: white;
             position: fixed;
             top: 0;
-            right: 0; /* Keep it aligned to the right */
-            transition: left 0.3s ease; /* Smooth transition only for left */
-            padding-right: 1rem; /* Add some padding to the right edge */
+            right: 0;
+            transition: left 0.3s ease;
+            padding-right: 1rem;
+            border-bottom: 2px solid var(--miracle-pink) !important;
         }
 
         main {
@@ -67,25 +93,123 @@
         #toggleSidebar {
             border: none !important;
             background-color: transparent;
+            color: var(--miracle-pink);
         }
 
         #toggleSidebar:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: var(--miracle-cream);
+            color: var(--miracle-pink-hover);
         }
 
         .nav-link {
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
             padding: 0.5rem 0.75rem;
+            color: var(--miracle-dark) !important;
+            transition: all 0.2s ease;
         }
 
         .nav-link:hover {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: var(--miracle-cream) !important;
+            color: var(--miracle-pink) !important;
         }
 
         .nav-link.active {
-            background-color: rgba(0, 0, 0, 0.08) !important;
-            color: #000 !important;
+            background-color: var(--miracle-pink-light) !important;
+            color: var(--miracle-pink) !important;
             font-weight: 600;
+            border-left: 3px solid var(--miracle-pink);
+        }
+
+        .nav-link i {
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover i,
+        .nav-link.active i {
+            color: var(--miracle-pink) !important;
+        }
+
+        /* Botones con estilo Miracle */
+        .btn-primary {
+            background-color: var(--miracle-pink) !important;
+            border-color: var(--miracle-pink) !important;
+            color: white !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--miracle-pink-hover) !important;
+            border-color: var(--miracle-pink-hover) !important;
+        }
+
+        .btn-outline-primary {
+            color: var(--miracle-pink) !important;
+            border-color: var(--miracle-pink) !important;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--miracle-pink) !important;
+            color: white !important;
+        }
+
+        .btn-info {
+            background-color: var(--miracle-lilac) !important;
+            border-color: var(--miracle-lilac) !important;
+            color: white !important;
+        }
+
+        .btn-info:hover {
+            background-color: #a896e8 !important;
+            border-color: #a896e8 !important;
+        }
+
+        .btn-success {
+            background-color: var(--miracle-aqua) !important;
+            border-color: var(--miracle-aqua) !important;
+            color: var(--miracle-dark) !important;
+        }
+
+        .btn-success:hover {
+            background-color: #9ed1cf !important;
+            border-color: #9ed1cf !important;
+        }
+
+        /* Badges Miracle */
+        .bg-info {
+            background-color: var(--miracle-lilac) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--miracle-pink) !important;
+        }
+
+        /* Spinner */
+        .spinner-border {
+            color: var(--miracle-pink) !important;
+        }
+
+        /* Cards con estilo suave */
+        .card {
+            border: 1px solid var(--miracle-lilac-light);
+            box-shadow: 0 2px 8px rgba(188, 169, 245, 0.1);
+        }
+
+        .card-header {
+            background-color: var(--miracle-lilac-light);
+            border-bottom: 1px solid var(--miracle-lilac);
+        }
+
+        /* Tables */
+        .table thead th {
+            background-color: var(--miracle-lilac-light);
+            color: var(--miracle-dark);
+            border-color: var(--miracle-lilac);
+        }
+
+        /* Form controls focus */
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--miracle-pink);
+            box-shadow: 0 0 0 0.2rem rgba(255, 132, 213, 0.25);
         }
 
         /* Ensure user info in header expands as needed, remove max-width constraints if possible */
@@ -125,7 +249,7 @@
 <body>
 
     {{-- Sidebar fijo --}}
-    <div class="sidebar position-fixed top-0 start-0 bg-white border-end vh-100 d-flex flex-column" style="z-index: 1030;">
+    <div class="sidebar position-fixed top-0 start-0 vh-100 d-flex flex-column" style="z-index: 1030;">
         @include('layouts.navigation-vertical')
     </div>
 
@@ -141,8 +265,8 @@
                     <div class="fw-semibold">{{ Auth::user()->name }}</div>
                     <div class="text-muted small">{{ Auth::user()->email }}</div>
                 </div>
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff"
-                     class="rounded-circle flex-shrink-0" width="40" height="40" alt="Avatar">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=FF84D5&color=fff"
+                     class="rounded-circle flex-shrink-0" width="40" height="40" alt="Avatar" style="border: 2px solid var(--miracle-lilac);">
             </div>
         </header>
 

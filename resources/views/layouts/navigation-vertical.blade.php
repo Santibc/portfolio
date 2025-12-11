@@ -1,9 +1,9 @@
 <div class="d-flex flex-column h-100">
     {{-- Logo --}}
-    <div class="d-flex justify-content-center align-items-center py-3 border-bottom">
+    <div class="d-flex justify-content-center align-items-center py-3 border-bottom" style="border-color: var(--miracle-lilac) !important; background-color: white;">
         <a href="/" class="text-decoration-none">
-            <img style="width: 80%; margin-left: 5%;" src="{{ asset('images/logo.png') }}" class="logo-full" width="100" alt="Logo">
-            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
+            <img style="width: 80%; margin-left: 5%;" src="{{ asset('images/logo.png') }}" class="logo-full" width="100" alt="Miracle Beauty Experts">
+            <img src="{{ asset('images/ico.png') }}" class="logo-icon d-none" width="40" alt="Miracle">
         </a>
     </div>
 
@@ -15,7 +15,7 @@
             <span>Inicio</span>
         </a>
 
-        {{-- Servicio Técnico (para admin y técnico) --}}
+        {{-- Servicio Técnico (para admin y técnico) - OCULTO TEMPORALMENTE
         @if(auth()->user()->hasRole(['admin', 'tecnico']))
             <div class="nav-item mb-2">
                 <a href="#" class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('st.*') ? 'active' : 'text-dark' }}"
@@ -61,6 +61,7 @@
                 </div>
             </div>
         @endif
+        --}}
 
         @if (auth()->user()->getRoleNames()->first() == 'admin')
             <a href="{{ route('dashboard.metricas') }}"
@@ -124,10 +125,13 @@
     </nav>
 
     {{-- Botón Salir --}}
-    <div class="mt-auto p-3 border-top">
+    <div class="mt-auto p-3 border-top" style="border-color: var(--miracle-lilac) !important;">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-start gap-2">
+            <button type="submit" class="btn w-100 d-flex align-items-center justify-content-start gap-2"
+                    style="background-color: var(--miracle-pink-light); color: var(--miracle-pink); border: 1px solid var(--miracle-pink); transition: all 0.2s ease;"
+                    onmouseover="this.style.backgroundColor='var(--miracle-pink)'; this.style.color='white';"
+                    onmouseout="this.style.backgroundColor='var(--miracle-pink-light)'; this.style.color='var(--miracle-pink)';">
                 <i class="fas fa-sign-out-alt"></i>
                 <span class="logout-label">Salir</span>
             </button>
