@@ -119,7 +119,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea name="description" class="form-control" rows="3" maxlength="500"></textarea>
+                        <div id="createQuillEditor" style="height: 100px;"></div>
+                        <input type="hidden" name="description" id="createDescriptionInput">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Imagen</label>
@@ -160,7 +161,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <textarea name="description" id="editCategoryDescription" class="form-control" rows="3" maxlength="500"></textarea>
+                        <div id="editQuillEditor" style="height: 100px;"></div>
+                        <input type="hidden" name="description" id="editDescriptionInput">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Imagen actual</label>
@@ -195,9 +197,78 @@
     @method('DELETE')
 </form>
 
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.ql-editor {
+    min-height: 60px;
+}
+.ql-toolbar.ql-snow {
+    border-radius: 0.375rem 0.375rem 0 0;
+    border-color: #dee2e6;
+}
+.ql-container.ql-snow {
+    border-radius: 0 0 0.375rem 0.375rem;
+    border-color: #dee2e6;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
+// Configuración común de Quill
+const quillConfig = {
+    theme: 'snow',
+    placeholder: 'Describe la categoría...',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+    }
+};
+
+// Inicializar Quill para el modal de crear
+const createQuill = new Quill('#createQuillEditor', quillConfig);
+
+// Inicializar Quill para el modal de editar
+const editQuill = new Quill('#editQuillEditor', quillConfig);
+
+// Funciones para sincronizar contenido de Quill
+function syncCreateQuill() {
+    const content = createQuill.root.innerHTML;
+    document.getElementById('createDescriptionInput').value = content === '<p><br></p>' ? '' : content;
+}
+
+function syncEditQuill() {
+    const content = editQuill.root.innerHTML;
+    document.getElementById('editDescriptionInput').value = content === '<p><br></p>' ? '' : content;
+}
+
+// Sincronizar en cada cambio del editor
+createQuill.on('text-change', syncCreateQuill);
+editQuill.on('text-change', syncEditQuill);
+
+// Capturar contenido de Quill antes de enviar formulario de crear
+document.querySelector('#createCategoryModal form').addEventListener('submit', function(e) {
+    syncCreateQuill();
+});
+
+// Capturar contenido de Quill antes de enviar formulario de editar
+document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
+    syncEditQuill();
+});
+
+// Limpiar editor de crear cuando se cierra el modal
+document.getElementById('createCategoryModal').addEventListener('hidden.bs.modal', function() {
+    createQuill.root.innerHTML = '';
+    document.getElementById('createDescriptionInput').value = '';
+});
+
 // Sortable para reordenar categorías
 const container = document.getElementById('categoriesContainer');
 if (container) {
@@ -247,7 +318,7 @@ function editCategory(categorySlug, categoryId) {
         })
         .then(data => {
             document.getElementById('editCategoryName').value = data.name;
-            document.getElementById('editCategoryDescription').value = data.description || '';
+            editQuill.root.innerHTML = data.description || '';
             document.getElementById('editCategoryIsActive').checked = data.is_active;
 
             const imageContainer = document.getElementById('currentCategoryImage');

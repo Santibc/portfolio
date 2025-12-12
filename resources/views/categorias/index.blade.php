@@ -37,7 +37,7 @@
                     </div>
 
                     @if($categoria->description)
-                    <p class="text-muted mb-3">{{ Str::limit($categoria->description, 100) }}</p>
+                    <div class="text-muted mb-3 description-content">{!! Str::limit(strip_tags($categoria->description), 100) !!}</div>
                     @endif
 
                     <!-- Progreso del usuario en la categoría -->

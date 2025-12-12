@@ -42,7 +42,7 @@
                     </div>
 
                     @if($course->description)
-                    <p class="text-muted">{{ $course->description }}</p>
+                    <div class="text-muted description-content">{!! $course->description !!}</div>
                     @endif
 
                     <!-- Progreso -->
@@ -115,7 +115,7 @@
                                         {{ $video->title }}
                                     </h6>
                                     @if($video->description)
-                                    <p class="mb-0 small text-muted">{{ Str::limit($video->description, 80) }}</p>
+                                    <p class="mb-0 small text-muted">{!! Str::limit(strip_tags($video->description), 80) !!}</p>
                                     @endif
                                 </div>
                                 <div class="text-end">
@@ -134,4 +134,23 @@
     </div>
 </div>
 
+@push('styles')
+<style>
+/* Estilos para contenido de descripción (Quill) */
+.description-content p {
+    margin-bottom: 0.5rem;
+}
+.description-content p:last-child {
+    margin-bottom: 0;
+}
+.description-content ul,
+.description-content ol {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+.description-content a {
+    color: var(--gva-primary, #0d6efd);
+}
+</style>
+@endpush
 @endsection

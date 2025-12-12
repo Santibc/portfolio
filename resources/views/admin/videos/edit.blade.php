@@ -40,14 +40,16 @@
 
                         <div class="mb-4">
                             <label class="form-label">Descripción</label>
-                            <textarea name="description" class="form-control @error('description') is-invalid @enderror"
-                                      rows="3" maxlength="1000">{{ old('description', $video->description) }}</textarea>
+                            <div id="quillEditor" style="height: 150px;"></div>
+                            <input type="hidden" name="description" id="descriptionInput">
+                            <div id="initialDescription" class="d-none">{!! old('description', $video->description) !!}</div>
                             @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="text-danger small mt-2">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- Video actual -->
+                        @if($video->video_path)
                         <div class="mb-4">
                             <label class="form-label">Video Actual</label>
                             <div class="border rounded-3 p-3 bg-light">
@@ -68,10 +70,19 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Reemplazar video -->
+                        @else
                         <div class="mb-4">
-                            <label class="form-label">Reemplazar Video <small class="text-muted">(opcional)</small></label>
+                            <label class="form-label">Video Actual</label>
+                            <div class="border rounded-3 p-3 bg-light text-center">
+                                <i class="bi bi-camera-video-off text-muted fs-3 d-block mb-2"></i>
+                                <p class="text-muted mb-0">Esta clase no tiene video asignado</p>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Subir/Reemplazar video -->
+                        <div class="mb-4">
+                            <label class="form-label">{{ $video->video_path ? 'Reemplazar Video' : 'Subir Video' }} <small class="text-muted">(opcional)</small></label>
                             <input type="file" name="video" class="form-control @error('video') is-invalid @enderror"
                                    accept="video/mp4,video/webm,video/ogg,video/quicktime">
                             <small class="text-muted">Selecciona un nuevo archivo solo si deseas reemplazar el video actual. Máximo 500MB.</small>
@@ -98,7 +109,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="border rounded p-3 text-center">
-                                        <h4 class="text-success mb-1">{{ $video->duration_seconds ? gmdate('H:i:s', $video->duration_seconds) : '00:00' }}</h4>
+                                        <h4 class="text-success mb-1">{{ $video->duration_seconds ? gmdate('H:i:s', $video->duration_seconds) : ($video->video_path ? '00:00' : 'N/A') }}</h4>
                                         <small class="text-muted">Duración</small>
                                     </div>
                                 </div>
@@ -121,4 +132,65 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+#quillEditor {
+    background: #fff;
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+.ql-toolbar.ql-snow {
+    border-radius: 0.375rem 0.375rem 0 0;
+    border-color: #dee2e6;
+}
+.ql-container.ql-snow {
+    border-color: #dee2e6;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+// Inicializar Quill Editor
+const quill = new Quill('#quillEditor', {
+    theme: 'snow',
+    placeholder: 'Describe brevemente el contenido del video...',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+    }
+});
+
+// Cargar contenido existente desde el div oculto
+const initialContent = document.getElementById('initialDescription').innerHTML.trim();
+if (initialContent) {
+    quill.root.innerHTML = initialContent;
+}
+
+// Función para sincronizar contenido de Quill al input hidden
+function syncQuillContent() {
+    const descriptionContent = quill.root.innerHTML;
+    const cleanContent = descriptionContent === '<p><br></p>' ? '' : descriptionContent;
+    document.getElementById('descriptionInput').value = cleanContent;
+}
+
+// Sincronizar en cada cambio del editor
+quill.on('text-change', syncQuillContent);
+
+// Sincronizar contenido inicial
+syncQuillContent();
+
+// También capturar antes del submit por seguridad
+const form = document.querySelector('form');
+form.addEventListener('submit', function(e) {
+    syncQuillContent();
+});
+</script>
+@endpush
 @endsection

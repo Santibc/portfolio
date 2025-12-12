@@ -18,6 +18,7 @@
         <div class="col-xl-8">
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-0">
+                    @if($video->video_path)
                     <!-- Player de Video -->
                     <div class="video-player-container bg-dark rounded-top">
                         <video id="videoPlayer" class="w-100" controls
@@ -27,6 +28,7 @@
                             Tu navegador no soporta el elemento de video.
                         </video>
                     </div>
+                    @endif
 
                     <div class="p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -50,7 +52,7 @@
                         @if($video->description)
                         <div class="border-top pt-3">
                             <h6>Descripción</h6>
-                            <p class="text-muted mb-0">{{ $video->description }}</p>
+                            <div class="text-muted description-content">{!! $video->description !!}</div>
                         </div>
                         @endif
 
@@ -204,12 +206,15 @@ let currentNotes = [];
 // FUNCIONES DE VIDEO
 // =====================================================
 
-// Marcar como completado al terminar el video
-videoPlayer.addEventListener('ended', function() {
-    if (!isCompleted) {
-        markAsComplete();
-    }
-});
+// Solo agregar eventos si existe el reproductor de video
+if (videoPlayer) {
+    // Marcar como completado al terminar el video
+    videoPlayer.addEventListener('ended', function() {
+        if (!isCompleted) {
+            markAsComplete();
+        }
+    });
+}
 
 // Marcar manualmente como completado
 markCompleteBtn.addEventListener('click', function() {
@@ -351,9 +356,11 @@ function renderNotes() {
     // Agregar event listeners
     document.querySelectorAll('.seek-to-time').forEach(btn => {
         btn.addEventListener('click', function() {
-            const time = parseInt(this.dataset.time);
-            videoPlayer.currentTime = time;
-            videoPlayer.play();
+            if (videoPlayer) {
+                const time = parseInt(this.dataset.time);
+                videoPlayer.currentTime = time;
+                videoPlayer.play();
+            }
         });
     });
 
@@ -476,7 +483,7 @@ function hideNoteForm() {
 }
 
 function updateCurrentTimestamp() {
-    const time = Math.floor(videoPlayer.currentTime);
+    const time = videoPlayer ? Math.floor(videoPlayer.currentTime) : 0;
     document.getElementById('currentTimestamp').textContent = formatTime(time);
 }
 
@@ -493,18 +500,20 @@ document.getElementById('noteForm').addEventListener('submit', function(e) {
     }
 
     const editId = document.getElementById('noteFormContainer').dataset.editId;
-    const timestamp = Math.floor(videoPlayer.currentTime);
+    const timestamp = videoPlayer ? Math.floor(videoPlayer.currentTime) : 0;
 
     saveNote(content, timestamp, editId ? parseInt(editId) : null);
 });
 
 // Actualizar timestamp mientras el video corre
-videoPlayer.addEventListener('timeupdate', function() {
-    if (document.getElementById('noteFormContainer').style.display !== 'none' &&
-        !document.getElementById('noteFormContainer').dataset.editId) {
-        updateCurrentTimestamp();
-    }
-});
+if (videoPlayer) {
+    videoPlayer.addEventListener('timeupdate', function() {
+        if (document.getElementById('noteFormContainer').style.display !== 'none' &&
+            !document.getElementById('noteFormContainer').dataset.editId) {
+            updateCurrentTimestamp();
+        }
+    });
+}
 
 // Cargar notas al iniciar
 document.addEventListener('DOMContentLoaded', loadNotes);
@@ -531,6 +540,21 @@ document.addEventListener('DOMContentLoaded', loadNotes);
 }
 .seek-to-time:hover {
     text-decoration: underline;
+}
+/* Estilos para contenido de descripción (Quill) */
+.description-content p {
+    margin-bottom: 0.5rem;
+}
+.description-content p:last-child {
+    margin-bottom: 0;
+}
+.description-content ul,
+.description-content ol {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+.description-content a {
+    color: var(--gva-primary, #0d6efd);
 }
 </style>
 @endpush

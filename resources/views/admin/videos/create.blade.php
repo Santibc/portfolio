@@ -40,21 +40,20 @@
 
                         <div class="mb-4">
                             <label class="form-label">Descripción</label>
-                            <textarea name="description" class="form-control @error('description') is-invalid @enderror"
-                                      rows="3" maxlength="1000"
-                                      placeholder="Describe brevemente el contenido del video...">{{ old('description') }}</textarea>
+                            <div id="quillEditor" style="height: 150px;"></div>
+                            <input type="hidden" name="description" id="descriptionInput">
+                            <div id="initialDescription" class="d-none">{!! old('description') !!}</div>
                             @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="text-danger small mt-2">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Archivo de Video <span class="text-danger">*</span></label>
+                            <label class="form-label">Archivo de Video <small class="text-muted">(opcional)</small></label>
                             <div class="upload-zone border-2 border-dashed rounded-3 p-5 text-center" id="uploadZone">
                                 <input type="file" name="video" id="videoInput"
                                        class="d-none @error('video') is-invalid @enderror"
-                                       accept="video/mp4,video/webm,video/ogg,video/quicktime"
-                                       required>
+                                       accept="video/mp4,video/webm,video/ogg,video/quicktime">
                                 <div id="uploadPlaceholder">
                                     <i class="bi bi-cloud-arrow-up display-3 text-muted"></i>
                                     <h5 class="mt-3">Arrastra un video aquí</h5>
@@ -108,7 +107,28 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
+// Inicializar Quill Editor
+const quill = new Quill('#quillEditor', {
+    theme: 'snow',
+    placeholder: 'Describe brevemente el contenido del video...',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link'],
+            ['clean']
+        ]
+    }
+});
+
+// Cargar contenido existente si hay old input (desde el div oculto)
+const initialContent = document.getElementById('initialDescription').innerHTML;
+if (initialContent) {
+    quill.root.innerHTML = initialContent;
+}
+
 const uploadZone = document.getElementById('uploadZone');
 const videoInput = document.getElementById('videoInput');
 const uploadPlaceholder = document.getElementById('uploadPlaceholder');
@@ -181,20 +201,31 @@ function formatFileSize(bytes) {
 document.getElementById('uploadVideoForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    // Capturar contenido de Quill
+    const descriptionContent = quill.root.innerHTML;
+    document.getElementById('descriptionInput').value = descriptionContent === '<p><br></p>' ? '' : descriptionContent;
+
     const formData = new FormData(this);
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('uploadProgress');
     const uploadStatus = document.getElementById('uploadStatus');
     const submitBtn = document.getElementById('submitBtn');
+    const hasVideo = videoInput.files.length > 0;
 
-    progressContainer.classList.remove('d-none');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+
+    // Solo mostrar barra de progreso si hay video
+    if (hasVideo) {
+        progressContainer.classList.remove('d-none');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subiendo...';
+    } else {
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+    }
 
     const xhr = new XMLHttpRequest();
 
     xhr.upload.addEventListener('progress', function(e) {
-        if (e.lengthComputable) {
+        if (e.lengthComputable && hasVideo) {
             const percent = Math.round((e.loaded / e.total) * 100);
             progressBar.style.width = percent + '%';
             progressBar.textContent = percent + '%';
@@ -206,29 +237,31 @@ document.getElementById('uploadVideoForm').addEventListener('submit', function(e
         try {
             const response = JSON.parse(xhr.responseText);
             if (response.success) {
-                uploadStatus.textContent = 'Video subido exitosamente. Redirigiendo...';
-                progressBar.classList.remove('progress-bar-animated');
-                progressBar.classList.add('bg-success');
+                if (hasVideo) {
+                    uploadStatus.textContent = 'Video subido exitosamente. Redirigiendo...';
+                    progressBar.classList.remove('progress-bar-animated');
+                    progressBar.classList.add('bg-success');
+                }
                 window.location.href = '{{ route("admin.cursos.videos.index", $curso) }}';
             } else {
-                Swal.fire('Error', response.message || 'Error al subir el video', 'error');
+                Swal.fire('Error', response.message || 'Error al guardar', 'error');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Subir Video';
+                submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Guardar';
                 progressContainer.classList.add('d-none');
             }
         } catch {
             // Si no es JSON, probablemente es un error de validación HTML
-            Swal.fire('Error', 'Error al subir el video. Verifica que el archivo sea válido.', 'error');
+            Swal.fire('Error', 'Error al guardar. Verifica los datos.', 'error');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Subir Video';
+            submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Guardar';
             progressContainer.classList.add('d-none');
         }
     });
 
     xhr.addEventListener('error', function() {
-        Swal.fire('Error', 'Error de conexión al subir el video', 'error');
+        Swal.fire('Error', 'Error de conexión', 'error');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Subir Video';
+        submitBtn.innerHTML = '<i class="bi bi-upload me-2"></i>Guardar';
         progressContainer.classList.add('d-none');
     });
 
@@ -242,6 +275,7 @@ document.getElementById('uploadVideoForm').addEventListener('submit', function(e
 @endpush
 
 @push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
 .upload-zone {
     cursor: pointer;
@@ -251,6 +285,17 @@ document.getElementById('uploadVideoForm').addEventListener('submit', function(e
 .upload-zone:hover {
     border-color: var(--gva-primary);
     background-color: rgba(var(--gva-primary-rgb), 0.05);
+}
+#quillEditor {
+    background: #fff;
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+.ql-toolbar.ql-snow {
+    border-radius: 0.375rem 0.375rem 0 0;
+    border-color: #dee2e6;
+}
+.ql-container.ql-snow {
+    border-color: #dee2e6;
 }
 </style>
 @endpush

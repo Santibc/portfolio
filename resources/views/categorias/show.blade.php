@@ -33,7 +33,7 @@
                 <div class="col-md-7">
                     <h1 class="h2 mb-2">{{ $categoria->name }}</h1>
                     @if($categoria->description)
-                    <p class="text-muted mb-3">{{ $categoria->description }}</p>
+                    <div class="text-muted mb-3 description-content">{!! $categoria->description !!}</div>
                     @endif
                     <div class="d-flex gap-3">
                         <span class="badge bg-primary-subtle text-primary fs-6">
@@ -123,7 +123,7 @@
 
                 <div class="card-body">
                     <h5 class="card-title">{{ $curso->title }}</h5>
-                    <p class="card-text text-muted small">{{ Str::limit($curso->description, 80) }}</p>
+                    <p class="card-text text-muted small">{!! Str::limit(strip_tags($curso->description), 80) !!}</p>
 
                     <div class="d-flex gap-2 mb-3">
                         <span class="badge bg-info-subtle text-info">
@@ -206,6 +206,21 @@
 }
 .course-locked:hover {
     transform: none;
+}
+/* Estilos para contenido de descripción (Quill) */
+.description-content p {
+    margin-bottom: 0.5rem;
+}
+.description-content p:last-child {
+    margin-bottom: 0;
+}
+.description-content ul,
+.description-content ol {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+.description-content a {
+    color: var(--gva-primary, #0d6efd);
 }
 </style>
 @endpush

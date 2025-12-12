@@ -16,7 +16,7 @@ class StoreVideoRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:5000',
-            'video' => 'required|file|mimes:mp4,webm,ogg,mov,avi|max:512000', // 500MB max
+            'video' => 'nullable|file|mimes:mp4,webm,ogg,mov,avi|max:512000', // 500MB max
             'order' => 'nullable|integer|min:0',
         ];
     }
@@ -27,7 +27,6 @@ class StoreVideoRequest extends FormRequest
             'title.required' => 'El título del video es obligatorio.',
             'title.max' => 'El título no puede exceder los 255 caracteres.',
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
-            'video.required' => 'El archivo de video es obligatorio.',
             'video.file' => 'Debe subir un archivo válido.',
             'video.mimes' => 'El video debe ser de tipo: mp4, webm, ogg, mov o avi.',
             'video.max' => 'El video no puede superar los 500MB.',
