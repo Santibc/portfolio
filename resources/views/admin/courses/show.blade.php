@@ -46,17 +46,21 @@
                     <hr>
 
                     <div class="row text-center">
-                        <div class="col-4">
+                        <div class="col-3">
                             <h4 class="mb-1">{{ $curso->videos_count ?? 0 }}</h4>
                             <small class="text-muted">Videos</small>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
+                            <h4 class="mb-1">{{ $curso->documents_count ?? $curso->documents->count() ?? 0 }}</h4>
+                            <small class="text-muted">Docs</small>
+                        </div>
+                        <div class="col-3">
                             <h4 class="mb-1">{{ $curso->total_duration ?? '0:00' }}</h4>
                             <small class="text-muted">Duración</small>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <h4 class="mb-1">{{ $curso->completions_count ?? 0 }}</h4>
-                            <small class="text-muted">Completados</small>
+                            <small class="text-muted">Completo</small>
                         </div>
                     </div>
 
@@ -68,6 +72,9 @@
                         </button>
                         <a href="{{ route('admin.cursos.videos.index', $curso) }}" class="btn btn-primary">
                             <i class="bi bi-play-btn me-2"></i>Gestionar Videos
+                        </a>
+                        <a href="{{ route('admin.cursos.documents.index', $curso) }}" class="btn btn-info">
+                            <i class="bi bi-file-earmark-text me-2"></i>Gestionar Documentos
                         </a>
                     </div>
                 </div>

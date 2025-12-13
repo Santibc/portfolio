@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\VideoController as AdminVideoController;
+use App\Http\Controllers\Admin\DocumentController as AdminDocumentController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -98,6 +99,16 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::put('/cursos/{course}/videos/{video}', [AdminVideoController::class, 'update'])->name('cursos.videos.update');
     Route::delete('/cursos/{course}/videos/{video}', [AdminVideoController::class, 'destroy'])->name('cursos.videos.destroy');
     Route::post('/cursos/{course}/videos/reorder', [AdminVideoController::class, 'reorder'])->name('cursos.videos.reorder');
+
+    // Gestión de Documentos (anidado en cursos)
+    Route::get('/cursos/{course}/documents', [AdminDocumentController::class, 'index'])->name('cursos.documents.index');
+    Route::get('/cursos/{course}/documents/create', [AdminDocumentController::class, 'create'])->name('cursos.documents.create');
+    Route::post('/cursos/{course}/documents', [AdminDocumentController::class, 'store'])->name('cursos.documents.store');
+    Route::get('/cursos/{course}/documents/{document}/edit', [AdminDocumentController::class, 'edit'])->name('cursos.documents.edit');
+    Route::put('/cursos/{course}/documents/{document}', [AdminDocumentController::class, 'update'])->name('cursos.documents.update');
+    Route::delete('/cursos/{course}/documents/{document}', [AdminDocumentController::class, 'destroy'])->name('cursos.documents.destroy');
+    Route::post('/cursos/{course}/documents/reorder', [AdminDocumentController::class, 'reorder'])->name('cursos.documents.reorder');
+    Route::get('/cursos/{course}/documents/{document}/download', [AdminDocumentController::class, 'download'])->name('cursos.documents.download');
 
     // Reportes
     Route::get('/reportes', [AdminReportController::class, 'index'])->name('reportes.index');

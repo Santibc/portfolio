@@ -92,7 +92,7 @@
                                     @endif
                                     <div>
                                         <h6 class="mb-0">{{ $curso->title }}</h6>
-                                        <small class="text-muted">{{ Str::limit($curso->description, 50) }}</small>
+                                        <small class="text-muted">{!! Str::limit(strip_tags($curso->description), 50) !!}</small>
                                     </div>
                                 </div>
                             </td>
@@ -124,6 +124,10 @@
                                     <a href="{{ route('admin.cursos.videos.index', $curso) }}"
                                        class="btn btn-sm btn-outline-info" title="Gestionar videos">
                                         <i class="bi bi-play-btn"></i>
+                                    </a>
+                                    <a href="{{ route('admin.cursos.documents.index', $curso) }}"
+                                       class="btn btn-sm btn-outline-secondary" title="Gestionar documentos">
+                                        <i class="bi bi-file-earmark-text"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm {{ $curso->is_published ? 'btn-outline-warning' : 'btn-outline-success' }}"
                                             onclick="toggleCourse('{{ $curso->slug }}')"

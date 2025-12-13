@@ -87,45 +87,77 @@
             </div>
         </div>
 
-        <!-- Lista de Videos -->
+        <!-- Lista de Contenido (Videos y Documentos) -->
         <div class="col-xl-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0 py-3">
                     <h5 class="mb-0">
-                        <i class="bi bi-play-btn me-2 text-primary"></i>
-                        Videos del Curso
+                        <i class="bi bi-collection me-2 text-primary"></i>
+                        Contenido del Curso
                     </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        @foreach($course->videos as $index => $video)
-                        <a href="{{ route('cursos.video', [$course, $video]) }}"
-                           class="list-group-item list-group-item-action py-3 {{ $video->is_completed ? 'bg-success bg-opacity-10' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="badge {{ $video->is_completed ? 'bg-success' : 'bg-secondary' }} me-3 rounded-circle"
-                                      style="width: 32px; height: 32px; line-height: 24px;">
-                                    @if($video->is_completed)
-                                    <i class="bi bi-check"></i>
-                                    @else
-                                    {{ $index + 1 }}
-                                    @endif
-                                </span>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 {{ $video->is_completed ? 'text-success' : '' }}">
-                                        {{ $video->title }}
-                                    </h6>
-                                    @if($video->description)
-                                    <p class="mb-0 small text-muted">{!! Str::limit(strip_tags($video->description), 80) !!}</p>
-                                    @endif
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge bg-light text-muted">
-                                        <i class="bi bi-clock me-1"></i>
-                                        {{ $video->formatted_duration ?? '0:00' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
+                        @foreach($courseContent as $index => $content)
+                            @if($content['type'] === 'video')
+                                @php $video = $content['item']; @endphp
+                                <a href="{{ route('cursos.video', [$course, $video]) }}"
+                                   class="list-group-item list-group-item-action py-3 {{ $video->is_completed ? 'bg-success bg-opacity-10' : '' }}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge {{ $video->is_completed ? 'bg-success' : 'bg-primary' }} me-3 rounded-circle"
+                                              style="width: 32px; height: 32px; line-height: 24px;">
+                                            @if($video->is_completed)
+                                            <i class="bi bi-check"></i>
+                                            @else
+                                            <i class="bi bi-play-fill"></i>
+                                            @endif
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 {{ $video->is_completed ? 'text-success' : '' }}">
+                                                {{ $video->title }}
+                                            </h6>
+                                            @if($video->description)
+                                            <p class="mb-0 small text-muted">{!! Str::limit(strip_tags($video->description), 80) !!}</p>
+                                            @endif
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-light text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                {{ $video->formatted_duration ?? '0:00' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            @else
+                                @php $document = $content['item']; @endphp
+                                <a href="{{ asset($document->file_path) }}"
+                                   class="list-group-item list-group-item-action py-3"
+                                   target="_blank" download>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary me-3 rounded-circle"
+                                              style="width: 32px; height: 32px; line-height: 24px;">
+                                            <i class="bi bi-download"></i>
+                                        </span>
+                                        <div class="me-3">
+                                            <i class="bi {{ $document->file_icon }} fs-4 {{ $document->file_icon_color }}"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">
+                                                {{ $document->title }}
+                                            </h6>
+                                            @if($document->description)
+                                            <p class="mb-0 small text-muted">{!! Str::limit(strip_tags($document->description), 80) !!}</p>
+                                            @endif
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-light text-muted">
+                                                <i class="bi bi-file-earmark me-1"></i>
+                                                {{ strtoupper($document->file_type) }} - {{ $document->formatted_file_size }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>

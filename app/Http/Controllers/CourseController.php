@@ -63,7 +63,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Mostrar un curso con sus videos
+     * Mostrar un curso con sus videos y documentos
      */
     public function show(Request $request, Course $course)
     {
@@ -82,6 +82,8 @@ class CourseController extends Controller
 
         $course->load(['category', 'videos' => function ($query) {
             $query->ordered();
+        }, 'documents' => function ($query) {
+            $query->ordered();
         }]);
 
         // Progreso del usuario en el curso
@@ -96,7 +98,29 @@ class CourseController extends Controller
             return $video;
         });
 
-        return view('cursos.show', compact('course', 'courseProgress'));
+        // Crear colección mixta de contenido (videos + documentos) ordenada
+        $courseContent = collect();
+
+        foreach ($course->videos as $video) {
+            $courseContent->push([
+                'type' => 'video',
+                'item' => $video,
+                'order' => $video->order,
+            ]);
+        }
+
+        foreach ($course->documents as $document) {
+            $courseContent->push([
+                'type' => 'document',
+                'item' => $document,
+                'order' => $document->order,
+            ]);
+        }
+
+        // Ordenar por campo order
+        $courseContent = $courseContent->sortBy('order')->values();
+
+        return view('cursos.show', compact('course', 'courseProgress', 'courseContent'));
     }
 
     /**

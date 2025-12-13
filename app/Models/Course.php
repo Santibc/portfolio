@@ -62,6 +62,14 @@ class Course extends Model
     }
 
     /**
+     * Relación: Un curso tiene muchos documentos
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class)->orderBy('order');
+    }
+
+    /**
      * Relación: Usuarios que tienen asignado este curso
      */
     public function assignedUsers(): BelongsToMany
