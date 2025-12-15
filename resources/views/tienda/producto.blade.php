@@ -158,10 +158,6 @@
                 @endif
               </div>
 
-              <div class="product-description">
-                <p>{{ $producto->descripcion ?: 'No hay descripción disponible para este producto.' }}</p>
-              </div>
-
               {{-- Estado de disponibilidad --}}
               <div class="availability-status">
                 @if($producto->tiene_variantes)
