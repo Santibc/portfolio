@@ -32,6 +32,22 @@
       </div>
     @endif
 
+    @if(session('warning') && !session('desde_membresias'))
+      <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        {{ session('warning') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    @endif
+
+    @if(session('desde_membresias'))
+      <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>¡Casi listo!</strong> Para adquirir un plan de membresía, primero debes crear tu empresa.
+        <br><small>Una vez creada, podrás seleccionar el plan que mejor se adapte a tu negocio.</small>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    @endif
+
     <form method="POST" action="{{ route('empresa.guardar') }}" enctype="multipart/form-data" id="empresaForm">
       @csrf
       
@@ -257,7 +273,7 @@
               <small class="text-muted">Acepta cualquier formato de video. Recomendado: 1920x1080px. Máximo 50MB</small>
 
               @if($empresa->hero_video_url)
-                <div class="mt-2">
+                <div class="mt-2" id="video-actual-container">
                   <label class="text-muted">Video actual:</label>
                   <div class="border rounded p-2 mt-1" style="max-width: 300px;">
                     <video width="100%" controls>
@@ -265,12 +281,9 @@
                       Tu navegador no soporta el video.
                     </video>
                   </div>
-                  <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="remove_hero_video" id="remove_hero_video" value="1">
-                    <label class="form-check-label text-danger" for="remove_hero_video">
-                      Eliminar video actual
-                    </label>
-                  </div>
+                  <button type="button" class="btn btn-danger btn-sm mt-2" id="btn-eliminar-hero-video">
+                    <i class="bi bi-trash"></i> Eliminar video
+                  </button>
                 </div>
               @endif
             </div>
@@ -799,7 +812,7 @@
       // Validación del formulario
       $('#empresaForm').submit(function(e) {
         let isValid = true;
-        
+
         // Validar que al menos tenga nombre
         const nombre = $('input[name="nombre"]').val();
         if (!nombre || nombre.trim() === '') {
@@ -807,8 +820,46 @@
           alert('El nombre de la empresa es obligatorio.');
           isValid = false;
         }
-        
+
         return isValid;
+      });
+
+      // Eliminar hero video vía AJAX
+      $('#btn-eliminar-hero-video').click(function() {
+        const btn = $(this);
+        const container = $('#video-actual-container');
+
+        // Confirmar eliminación
+        if (!confirm('¿Está seguro de eliminar este video? Esta acción no se puede deshacer.')) {
+          return;
+        }
+
+        // Deshabilitar botón mientras procesa
+        btn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Eliminando...');
+
+        $.ajax({
+          url: '{{ route("empresa.eliminar-hero-video") }}',
+          type: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          success: function(response) {
+            if (response.success) {
+              // Animar y eliminar el contenedor
+              container.fadeOut(300, function() {
+                $(this).remove();
+              });
+            } else {
+              alert(response.message || 'Error al eliminar el video');
+              btn.prop('disabled', false).html('<i class="bi bi-trash"></i> Eliminar video');
+            }
+          },
+          error: function(xhr) {
+            const message = xhr.responseJSON?.message || 'Error al eliminar el video';
+            alert(message);
+            btn.prop('disabled', false).html('<i class="bi bi-trash"></i> Eliminar video');
+          }
+        });
       });
     });
   </script>

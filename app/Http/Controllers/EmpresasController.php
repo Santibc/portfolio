@@ -399,6 +399,50 @@ class EmpresasController extends Controller
     }
 
     /**
+     * Eliminar video hero vía AJAX
+     */
+    public function eliminarHeroVideo()
+    {
+        $empresa = auth()->user()->empresa;
+
+        if (!$empresa) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tiene empresa registrada'
+            ], 404);
+        }
+
+        if (empty($empresa->hero_video_url)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay video para eliminar'
+            ], 404);
+        }
+
+        try {
+            // Eliminar archivo físico
+            $rutaVideo = public_path($empresa->hero_video_url);
+            if (File::exists($rutaVideo)) {
+                File::delete($rutaVideo);
+            }
+
+            // Limpiar campo en BD
+            $empresa->hero_video_url = null;
+            $empresa->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Video eliminado correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el video: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Vista previa de la tienda
      */
     public function preview()

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:og="http://opengraphprotocol.org/schema/">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -7,6 +7,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
     <meta name="description" content="@yield('description', $empresa->descripcion ?? 'Tienda online de productos deportivos')">
+
+    <!-- Open Graph Meta Tags (WhatsApp, Facebook, etc.) -->
+    <meta property="og:site_name" content="{{ $empresa->nombre }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@yield('og_title', $empresa->nombre . ' - Tienda Online')">
+    <meta property="og:description" content="@yield('og_description', $empresa->descripcion ?? 'Visita nuestra tienda online')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if($empresa->logo_url)
+    <meta property="og:image" content="{{ $empresa->logo_url }}">
+    @endif
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', $empresa->nombre . ' - Tienda Online')">
+    <meta name="twitter:description" content="@yield('og_description', $empresa->descripcion ?? 'Visita nuestra tienda online')">
+    @if($empresa->logo_url)
+    <meta name="twitter:image" content="{{ $empresa->logo_url }}">
+    @endif
 
     <!-- Favicon -->
     <link href="{{ $empresa->logo_url ?? asset('images/ico.png') }}" rel="icon">

@@ -21,24 +21,21 @@ class MembresiaController extends Controller
     {
         $planes = PlanMembresia::activos()->get();
         $empresa = Auth::user()->empresa()->with('planMembresia')->first();
+        $membresiaActiva = null;
 
-        // Si el usuario no tiene empresa, redirigir a crearla
-        if (!$empresa) {
-            return redirect()->route('empresa.form')
-                ->with('warning', 'Primero debes crear tu empresa para gestionar tu membresía.');
-        }
-
-        // Verificar y asignar membresía gratuita si no tiene ninguna
-        $membresiaActiva = $empresa->membresiaActiva;
-
-        if (!$membresiaActiva) {
-            // Asignar membresía gratuita automáticamente
-            $this->asignarMembresiaGratuitaAutomatica($empresa);
-
-            // Recargar la empresa con la nueva membresía
-            $empresa->refresh();
-            $empresa->load('planMembresia');
+        // Si el usuario tiene empresa, verificar y asignar membresía gratuita si no tiene ninguna
+        if ($empresa) {
             $membresiaActiva = $empresa->membresiaActiva;
+
+            if (!$membresiaActiva) {
+                // Asignar membresía gratuita automáticamente
+                $this->asignarMembresiaGratuitaAutomatica($empresa);
+
+                // Recargar la empresa con la nueva membresía
+                $empresa->refresh();
+                $empresa->load('planMembresia');
+                $membresiaActiva = $empresa->membresiaActiva;
+            }
         }
 
         return view('membresias.index', compact('planes', 'empresa', 'membresiaActiva'));
@@ -94,13 +91,8 @@ class MembresiaController extends Controller
         $plan = PlanMembresia::where('slug', $slug)->firstOrFail();
         $empresa = Auth::user()->empresa;
 
-        if (!$empresa) {
-            return redirect()->route('empresa.form')
-                ->with('warning', 'Primero debes crear tu empresa para ver los planes.');
-        }
-
-        // Si es el plan actual, redirigir
-        if ($empresa->plan_membresia_id == $plan->id) {
+        // Si tiene empresa y es el plan actual, redirigir
+        if ($empresa && $empresa->plan_membresia_id == $plan->id) {
             return redirect()->route('membresias.index')
                 ->with('info', 'Ya tienes este plan activo');
         }
@@ -118,7 +110,8 @@ class MembresiaController extends Controller
 
         if (!$empresa) {
             return redirect()->route('empresa.form')
-                ->with('warning', 'Primero debes crear tu empresa para adquirir un plan.');
+                ->with('desde_membresias', true)
+                ->with('warning', 'Para adquirir un plan de membresía, primero debes crear tu empresa.');
         }
 
         // Validar que no sea el plan actual

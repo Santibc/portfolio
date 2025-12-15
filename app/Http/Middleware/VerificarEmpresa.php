@@ -30,7 +30,9 @@ class VerificarEmpresa
                 'empresa.form',
                 'empresa.guardar',
                 'dashboard',
-                'logout'
+                'logout',
+                'membresias.index',
+                'membresias.show',
             ];
 
             // Si la ruta actual no está exenta, redirigir a crear empresa

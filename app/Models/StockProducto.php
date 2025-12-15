@@ -198,12 +198,16 @@ class StockProducto extends Model
     // Scopes
     public function scopeConStockBajo($query)
     {
+        // Stock bajo: tiene algo de stock pero está por debajo del mínimo
+        // Excluye productos sin stock (esos se cuentan en sinStock)
         return $query->whereRaw('(cantidad_disponible - cantidad_reservada) <= stock_minimo')
+                     ->whereRaw('(cantidad_disponible - cantidad_reservada) > 0')
                      ->where('alerta_stock_bajo', true);
     }
 
     public function scopeSinStock($query)
     {
+        // Sin stock: 0 o menos disponible
         return $query->whereRaw('(cantidad_disponible - cantidad_reservada) <= 0');
     }
 

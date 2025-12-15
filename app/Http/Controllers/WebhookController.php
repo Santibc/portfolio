@@ -214,6 +214,9 @@ class WebhookController extends Controller
                 $compra = $transaccion->compra;
                 $compra->update(['estado' => 'pagada']);
 
+                // Descontar stock (solo cuando el pago es confirmado)
+                $this->descontarStock($compra);
+
                 // Generar comisión
                 $compra->generarComision();
 
@@ -233,8 +236,7 @@ class WebhookController extends Controller
                 // Actualizar compra
                 $transaccion->compra->update(['estado' => 'cancelada']);
 
-                // Liberar stock
-                $this->liberarStock($transaccion->compra);
+                // NOTA: No se libera stock porque nunca se descontó (se descuenta solo al aprobar)
 
                 Log::info("Pago rechazado: {$transaccion->referencia_transaccion}");
                 break;
@@ -251,8 +253,7 @@ class WebhookController extends Controller
                 // Actualizar compra
                 $transaccion->compra->update(['estado' => 'cancelada']);
 
-                // Liberar stock
-                $this->liberarStock($transaccion->compra);
+                // NOTA: No se libera stock porque nunca se descontó (se descuenta solo al aprobar)
 
                 Log::error("Error en pago: {$transaccion->referencia_transaccion}");
                 break;
@@ -309,7 +310,33 @@ class WebhookController extends Controller
     }
 
     /**
-     * Liberar stock de productos
+     * Descontar stock de productos (cuando el pago es confirmado)
+     */
+    private function descontarStock($compra)
+    {
+        foreach ($compra->items as $item) {
+            if ($item->producto && $item->producto->controlar_stock) {
+                $stock = $item->variante_producto_id
+                    ? $item->producto->stock()->where('variante_producto_id', $item->variante_producto_id)->first()
+                    : $item->producto->stockPrincipal;
+
+                if ($stock) {
+                    $stock->salida(
+                        $item->cantidad,
+                        'venta',
+                        $compra->numero_compra,
+                        'Venta confirmada por pago'
+                    );
+                }
+            }
+        }
+
+        Log::info("Stock descontado para compra: {$compra->numero_compra}");
+    }
+
+    /**
+     * Liberar stock de productos (ya no se usa porque el stock solo se descuenta al confirmar pago)
+     * Se mantiene por si se necesita para devoluciones futuras
      */
     private function liberarStock($compra)
     {

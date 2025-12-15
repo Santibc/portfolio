@@ -206,6 +206,7 @@ Route::prefix('empresa')->middleware(['auth', 'verificar.empresa', 'verificar.me
     Route::get('/editar', [App\Http\Controllers\EmpresasController::class, 'form'])->name('form');
     Route::post('/guardar', [App\Http\Controllers\EmpresasController::class, 'guardar'])->name('guardar');
     Route::post('/cambiar-estado', [App\Http\Controllers\EmpresasController::class, 'cambiarEstado'])->name('cambiar-estado');
+    Route::delete('/hero-video', [App\Http\Controllers\EmpresasController::class, 'eliminarHeroVideo'])->name('eliminar-hero-video');
     Route::get('/preview', [App\Http\Controllers\EmpresasController::class, 'preview'])->name('preview');
 });
 

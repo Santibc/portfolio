@@ -1175,6 +1175,7 @@
                                 }
                             }
                         }
+                        $stockInfoNuevo = $nuevo->getStockInfo();
                     @endphp
                     <div class="product-item">
                         <div class="product-image-container">
@@ -1183,6 +1184,10 @@
                             </a>
                             @if($descuentoNuevo)
                                 <span class="product-label">{{ $textoDescuentoNuevo }}</span>
+                            @elseif($stockInfoNuevo['controlar_stock'] && !$stockInfoNuevo['permitir_venta_sin_stock'] && $stockInfoNuevo['stock_disponible'] == 0)
+                                <span class="product-label">SIN STOCK</span>
+                            @elseif($stockInfoNuevo['controlar_stock'] && !$stockInfoNuevo['permitir_venta_sin_stock'] && $stockInfoNuevo['stock_disponible'] <= 5 && $stockInfoNuevo['stock_disponible'] > 0)
+                                <span class="product-label">¡ÚLTIMAS!</span>
                             @else
                                 <span class="product-label">NUEVO</span>
                             @endif
@@ -1201,7 +1206,10 @@
                                     Consultar precio
                                 @endif
                             </div>
-                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $nuevo->id }}, this);">AGREGAR AL CARRITO</button>
+                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $nuevo->id }}, this);"
+                                    {{ (!$stockInfoNuevo['hay_stock'] && $stockInfoNuevo['stock_limitado']) ? 'disabled' : '' }}>
+                                {{ (!$stockInfoNuevo['hay_stock'] && $stockInfoNuevo['stock_limitado']) ? 'SIN STOCK' : 'AGREGAR AL CARRITO' }}
+                            </button>
                         </div>
                     </div>
                     @endforeach
@@ -1472,6 +1480,7 @@
                                 }
                             }
                         }
+                        $stockInfo = $producto->getStockInfo();
                     @endphp
                     <div class="product-item">
                         <div class="product-image-container">
@@ -1480,6 +1489,10 @@
                             </a>
                             @if($descuentoActivo)
                                 <span class="product-label">{{ $textoDescuento }}</span>
+                            @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'] && $stockInfo['stock_disponible'] == 0)
+                                <span class="product-label">SIN STOCK</span>
+                            @elseif($stockInfo['controlar_stock'] && !$stockInfo['permitir_venta_sin_stock'] && $stockInfo['stock_disponible'] <= 5 && $stockInfo['stock_disponible'] > 0)
+                                <span class="product-label">¡ÚLTIMAS!</span>
                             @else
                                 <span class="product-label">NUEVO</span>
                             @endif
@@ -1498,7 +1511,10 @@
                                     Consultar precio
                                 @endif
                             </div>
-                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);">AGREGAR AL CARRITO</button>
+                            <button class="btn btn-add-to-cart" onclick="event.preventDefault(); event.stopPropagation(); agregarAlCarrito({{ $producto->id }}, this);"
+                                    {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'disabled' : '' }}>
+                                {{ (!$stockInfo['hay_stock'] && $stockInfo['stock_limitado']) ? 'SIN STOCK' : 'AGREGAR AL CARRITO' }}
+                            </button>
                         </div>
                     </div>
                     @endforeach
@@ -1591,13 +1607,10 @@
                 btn.innerHTML = originalText;
             }, 2000);
 
-            // Actualizar contador del carrito si existe
-            const cartCounters = document.querySelectorAll('.js-cart-widget-amount, .cart-count');
-            cartCounters.forEach(counter => {
-                if (data.total_items !== undefined) {
-                    counter.textContent = data.total_items;
-                }
-            });
+            // Actualizar badge del carrito usando función global del layout
+            if (typeof window.updateCartBadge === 'function' && data.total_items !== undefined) {
+                window.updateCartBadge(data.total_items);
+            }
         })
         .catch(error => {
             console.error('Error:', error);

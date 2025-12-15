@@ -1,25 +1,26 @@
 <x-app-layout>
-  <x-slot name="header">Cambiar de Plan</x-slot>
+  <x-slot name="header">{{ $empresa ? 'Cambiar de Plan' : 'Detalle del Plan' }}</x-slot>
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h3>Cambiar a {{ $plan->nombre }}</h3>
+                    <h3>{{ $empresa ? 'Cambiar a' : '' }} {{ $plan->nombre }}</h3>
                 </div>
-                
+
                 <div class="card-body">
+                    @if($empresa)
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h5>Plan Actual</h5>
                             <div class="bg-light p-3 rounded">
-                                <h6>{{ $empresa->planMembresia->nombre }}</h6>
+                                <h6>{{ $empresa->planMembresia->nombre ?? 'Sin plan' }}</h6>
                                 <p class="mb-1">{{ $empresa->limite_productos }} productos</p>
                                 <p class="mb-0">{{ $empresa->planMembresia->porcentaje_comision ?? 0 }}% + ${{ number_format($empresa->planMembresia->comision_fija ?? 0, 0) }} por transacción</p>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <h5>Nuevo Plan</h5>
                             <div class="bg-primary text-white p-3 rounded">
@@ -29,7 +30,45 @@
                             </div>
                         </div>
                     </div>
-                    
+                    @else
+                    {{-- Usuario sin empresa - solo mostrar detalles del plan --}}
+                    <div class="mb-4">
+                        <div class="bg-primary text-white p-4 rounded text-center">
+                            <h4 class="mb-3">{{ $plan->nombre }}</h4>
+                            <h2 class="mb-2">
+                                @if($plan->precio == 0)
+                                    GRATIS
+                                @else
+                                    ${{ number_format($plan->precio, 0) }}<small>/mes</small>
+                                @endif
+                            </h2>
+                            <p class="mb-1">{{ $plan->limite_productos }} productos</p>
+                            <p class="mb-0">{{ $plan->porcentaje_comision }}% + ${{ number_format($plan->comision_fija, 0) }} por transacción</p>
+                        </div>
+                    </div>
+
+                    @if($plan->caracteristicas)
+                    <div class="mb-4">
+                        <h5>Características incluidas:</h5>
+                        <ul class="list-group">
+                            @foreach($plan->caracteristicas as $caracteristica)
+                            <li class="list-group-item">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {{ $caracteristica }}
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Para adquirir este plan necesitas crear tu empresa primero.</strong>
+                        <p class="mb-0 mt-2">Una vez creada tu empresa, podrás seleccionar este plan de membresía.</p>
+                    </div>
+                    @endif
+
+                    @if($empresa)
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         <strong>Importante:</strong>
@@ -44,19 +83,19 @@
                             @endif
                         </ul>
                     </div>
-                    
+
                     @if($empresa->productos()->count() > $plan->limite_productos)
                     <div class="alert alert-danger">
                         <i class="bi bi-x-circle me-2"></i>
-                        <strong>Atención:</strong> Tienes {{ $empresa->productos()->count() }} productos activos, 
-                        pero este plan solo permite {{ $plan->limite_productos }}. Deberás desactivar 
+                        <strong>Atención:</strong> Tienes {{ $empresa->productos()->count() }} productos activos,
+                        pero este plan solo permite {{ $plan->limite_productos }}. Deberás desactivar
                         {{ $empresa->productos()->count() - $plan->limite_productos }} productos antes de cambiar.
                     </div>
                     @endif
-                    
+
                     <form action="{{ route('membresias.comprar', $plan->id) }}" method="POST">
                         @csrf
-                        
+
                         @if($plan->precio == 0 && $empresa->tienePlanPremium())
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" name="confirmar" id="confirmar" required>
@@ -65,12 +104,12 @@
                             </label>
                         </div>
                         @endif
-                        
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('membresias.index') }}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Volver
                             </a>
-                            
+
                             @if($empresa->productos()->count() <= $plan->limite_productos)
                             <button type="submit" class="btn btn-primary">
                                 @if($plan->precio > 0)
@@ -86,6 +125,18 @@
                             @endif
                         </div>
                     </form>
+                    @else
+                    {{-- Usuario sin empresa - botones para crear empresa --}}
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ route('membresias.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+
+                        <a href="{{ route('empresa.form') }}" class="btn btn-primary">
+                            <i class="bi bi-building"></i> Crear mi Empresa
+                        </a>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

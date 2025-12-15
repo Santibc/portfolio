@@ -1,18 +1,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml"
-    xmlns:og="http://opengraphprotocol.org/schema/" lang="es" sigcapturewebextension-installed="true">
+    xmlns:og="http://opengraphprotocol.org/schema/" lang="es">
 
 <head>
-    <link rel="preconnect" href="https://dcdn-us.mitiendanube.com">
-    <link rel="dns-prefetch" href="https://dcdn-us.mitiendanube.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Tienda Online de recife.muebles</title>
-    <meta name="description"
-        content="Comprá productos de recife.muebles por internet. Tenemos sillas, bancos y más. Hacé tu pedido y pagalo online.">
+    <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
+    <meta name="description" content="@yield('description', $empresa->descripcion ?? 'Visita nuestra tienda online')">
     <link rel="preload" as="style" href="//fonts.googleapis.com/css?family=Outfit:400,600&amp;display=swap">
     <link rel="preload"
         href="//dcdn-us.mitiendanube.com/stores/003/765/060/themes/recife/dart-style-critical-e140393a49f7ec51b4b294be029e3abd.css"
@@ -44,23 +41,27 @@
 
 
 
-    <meta property="og:site_name" content="recife.muebles">
-
-
-
+    <!-- Open Graph Meta Tags (WhatsApp, Facebook, etc.) -->
+    <meta property="og:site_name" content="{{ $empresa->nombre }}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Tienda Online de recife.muebles">
-    <meta property="og:description"
-        content="Comprá productos de recife.muebles por internet. Tenemos sillas, bancos y más. Hacé tu pedido y pagalo online.">
-    <meta property="og:url" content="https://recife-home.mitiendanube.com">
+    <meta property="og:title" content="@yield('og_title', $empresa->nombre . ' - Tienda Online')">
+    <meta property="og:description" content="@yield('og_description', $empresa->descripcion ?? 'Visita nuestra tienda online')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if($empresa->logo_url)
+    <meta property="og:image" content="{{ $empresa->logo_url }}">
+    <meta property="og:image:secure_url" content="{{ $empresa->logo_url }}">
+    @endif
 
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', $empresa->nombre . ' - Tienda Online')">
+    <meta name="twitter:description" content="@yield('og_description', $empresa->descripcion ?? 'Visita nuestra tienda online')">
+    @if($empresa->logo_url)
+    <meta name="twitter:image" content="{{ $empresa->logo_url }}">
+    @endif
 
-
-
-    <meta property="og:image"
-        content="http://dcdn-us.mitiendanube.com/stores/003/765/060/themes/common/logo-496708304-1695829429-96845cd81317d438649c3b4b0b3a65a61695829429.png?0">
-    <meta property="og:image:secure_url"
-        content="https://dcdn-us.mitiendanube.com/stores/003/765/060/themes/common/logo-496708304-1695829429-96845cd81317d438649c3b4b0b3a65a61695829429.png?0">
+    <!-- Favicon -->
+    <link href="{{ $empresa->logo_url ?? asset('images/ico.png') }}" rel="icon">
 
 
 

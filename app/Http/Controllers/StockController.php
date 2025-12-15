@@ -385,18 +385,28 @@ class StockController extends Controller
         })->delMes()->get();
 
         $entradasMes = $movimientosMes->where('tipo_movimiento', 'entrada')->sum('cantidad');
-        // Solo contar salidas por venta real (no salidas manuales u otros ajustes)
-        $salidasMes = $movimientosMes->where('tipo_movimiento', 'salida')
-                                     ->where('origen', 'venta')
-                                     ->sum('cantidad');
 
-        // Productos con mayor rotación de la empresa (solo ventas reales)
+        // Solo contar salidas por ventas PAGADAS (no pendientes ni rechazadas)
+        $salidasMes = DB::table('movimientos_stock')
+            ->join('productos', 'movimientos_stock.producto_id', '=', 'productos.id')
+            ->join('compras', 'movimientos_stock.referencia_documento', '=', 'compras.numero_compra')
+            ->where('productos.empresa_id', $empresa->id)
+            ->where('movimientos_stock.tipo_movimiento', 'salida')
+            ->where('movimientos_stock.origen', 'venta')
+            ->where('compras.estado', 'pagada')
+            ->whereMonth('movimientos_stock.created_at', now()->month)
+            ->whereYear('movimientos_stock.created_at', now()->year)
+            ->sum('movimientos_stock.cantidad');
+
+        // Productos con mayor rotación de la empresa (solo ventas PAGADAS)
         $productosTopRotacion = DB::table('movimientos_stock')
             ->join('productos', 'movimientos_stock.producto_id', '=', 'productos.id')
+            ->join('compras', 'movimientos_stock.referencia_documento', '=', 'compras.numero_compra')
             ->select('movimientos_stock.producto_id', DB::raw('SUM(movimientos_stock.cantidad) as total_movimiento'))
             ->where('productos.empresa_id', $empresa->id)
             ->where('movimientos_stock.tipo_movimiento', 'salida')
-            ->where('movimientos_stock.origen', 'venta') // Solo ventas reales
+            ->where('movimientos_stock.origen', 'venta')
+            ->where('compras.estado', 'pagada')
             ->whereBetween('movimientos_stock.created_at', [Carbon::now()->subMonth(), Carbon::now()])
             ->groupBy('movimientos_stock.producto_id')
             ->orderBy('total_movimiento', 'desc')

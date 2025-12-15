@@ -31,7 +31,17 @@
                 <p class="text-muted">Elige el plan que mejor se adapte a tu negocio</p>
             </div>
 
-            @if($membresiaActiva)
+            @if(!$empresa)
+            <div class="alert alert-warning mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <div>
+                        <strong>Aún no tienes una empresa creada</strong>
+                        <br><small>Para adquirir un plan de membresía, primero debes <a href="{{ route('empresa.form') }}">crear tu empresa</a>.</small>
+                    </div>
+                </div>
+            </div>
+            @elseif($membresiaActiva)
             <div class="alert alert-info mb-4">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-info-circle me-2"></i>
@@ -47,6 +57,7 @@
             </div>
             @endif
 
+            @if($empresa)
             <!-- Estado actual de la empresa -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -80,18 +91,19 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Planes disponibles -->
             <div class="row">
                 @foreach($planes as $plan)
                 <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="plan-card {{ $empresa->plan_membresia_id == $plan->id ? 'featured' : '' }}" style="background: white; border-radius: 16px; padding: 25px 20px; border: 2px solid #eee; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column;">
-                        @if($empresa->plan_membresia_id == $plan->id)
+                    <div class="plan-card {{ $empresa && $empresa->plan_membresia_id == $plan->id ? 'featured' : '' }}" style="background: white; border-radius: 16px; padding: 25px 20px; border: 2px solid #eee; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 480px; display: flex; flex-direction: column;">
+                        @if($empresa && $empresa->plan_membresia_id == $plan->id)
                         <div style="content: 'PLAN ACTUAL'; position: absolute; top: 15px; right: -30px; background: #ff00c8; color: white; padding: 4px 35px; font-size: 0.75rem; font-weight: 600; transform: rotate(45deg);">
                             <span>Plan Actual</span>
                         </div>
                         @endif
-                        
+
                         <h3 class="plan-name" style="font-size: 1.4rem; font-weight: 700; color: #1c1c1c; margin-bottom: 8px;">{{ $plan->nombre }}</h3>
                         <div class="plan-price {{ $plan->precio == 0 ? 'free' : '' }}" style="font-size: 2rem; font-weight: 800; color: {{ $plan->precio == 0 ? '#25D366' : '#ff00c8' }}; margin-bottom: 4px;">
                             @if($plan->precio == 0)
@@ -103,7 +115,7 @@
                         @if($plan->limite_transacciones)
                         <p class="plan-limit" style="font-size: 0.85rem; color: #666; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">Hasta {{ $plan->limite_transacciones }} transacciones/mes</p>
                         @endif
-                        
+
                         <ul class="plan-features" style="list-style: none; margin-bottom: auto; flex-grow: 1;">
                             @if($plan->caracteristicas)
                                 @foreach($plan->caracteristicas as $caracteristica)
@@ -114,13 +126,17 @@
                                 @endforeach
                             @endif
                         </ul>
-                        
+
                         <div class="commission-box" style="background: linear-gradient(135deg, #ff00c8 0%, #7000ff 100%); color: white; padding: 12px; border-radius: 10px; text-align: center; margin-top: 15px;">
                             <strong style="display: block; font-size: 1.1rem; margin-bottom: 3px;">{{ $plan->porcentaje_comision }}% + ${{ number_format($plan->comision_fija, 0) }}</strong>
                             <span class="commission-label" style="font-size: 0.75rem; opacity: 0.9;">Por transacción exitosa</span>
                         </div>
-                        
-                        @if($empresa->plan_membresia_id == $plan->id)
+
+                        @if(!$empresa)
+                            <a href="{{ route('membresias.show', $plan->slug) }}" class="plan-cta" style="display: block; width: 100%; padding: 12px; background: #ff00c8; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; margin-top: 15px; text-decoration: none; text-align: center;">
+                                Ver Plan
+                            </a>
+                        @elseif($empresa->plan_membresia_id == $plan->id)
                             <button class="plan-cta" style="display: block; width: 100%; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: not-allowed; margin-top: 15px;" disabled>
                                 <i class="bi bi-check"></i> Plan Actual
                             </button>
