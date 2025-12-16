@@ -18,6 +18,11 @@ class Proyecto extends Model
         'agricultor_id',
         'nombre',
         'descripcion',
+        // Campos v2.0 - Datos del cultivo
+        'tipo_cultivo',
+        'area_hectareas',
+        'etapa_cultivo',
+        'ano_inicio_cultivo',
         'ubicacion',
         'coordenadas',
         'monto_objetivo',
@@ -43,7 +48,19 @@ class Proyecto extends Model
         'destacado',
         'orden_destacado',
         'activo',
-        'datos_adicionales'
+        'datos_adicionales',
+        // Campos v2.0 - Detalles del proyecto
+        'objetivo_proyecto',
+        'detalle_proceso_productivo',
+        'cronograma_estimado',
+        // Campos v2.0 - JSON por categoría
+        'datos_financieros',
+        'datos_earn',
+        'datos_futuros',
+        'datos_farming',
+        // Campos v2.0 - Creación por admin
+        'creado_por_admin',
+        'admin_creador_id',
     ];
 
     protected $casts = [
@@ -65,7 +82,15 @@ class Proyecto extends Model
         'destacado' => 'boolean',
         'orden_destacado' => 'integer',
         'activo' => 'boolean',
-        'datos_adicionales' => 'array'
+        'datos_adicionales' => 'array',
+        // Casts v2.0
+        'area_hectareas' => 'decimal:2',
+        'ano_inicio_cultivo' => 'integer',
+        'datos_financieros' => 'array',
+        'datos_earn' => 'array',
+        'datos_futuros' => 'array',
+        'datos_farming' => 'array',
+        'creado_por_admin' => 'boolean',
     ];
 
     // Relaciones
@@ -119,6 +144,33 @@ class Proyecto extends Model
         return $this->hasMany(ProyectoCrossFund::class, 'proyecto_id');
     }
 
+    // Relación v2.0
+    /**
+     * Admin que registró este proyecto (cuando admin crea proyectos)
+     */
+    public function creadoPorAdmin()
+    {
+        return $this->belongsTo(User::class, 'admin_creador_id');
+    }
+
+    // Helpers
+    /**
+     * Verifica si el proyecto puede ser editado
+     */
+    public function canEdit(): bool
+    {
+        return in_array($this->estado, ['borrador', 'rechazado']);
+    }
+
+    /**
+     * Obtiene la imagen principal del proyecto
+     */
+    public function imagenPrincipal()
+    {
+        return $this->imagenes()->where('es_principal', true)->first()
+            ?? $this->imagenes()->orderBy('orden')->first();
+    }
+
     // Scopes
     public function scopePorEstado($query, $estado)
     {
@@ -133,5 +185,90 @@ class Proyecto extends Model
     public function scopeActivos($query)
     {
         return $query->whereIn('estado', ['en_recaudacion', 'fondeado', 'en_ejecucion']);
+    }
+
+    // ==================== SCOPES v2.0 ====================
+
+    /**
+     * Filtrar proyectos creados por admin
+     */
+    public function scopeCreadosPorAdmin($query)
+    {
+        return $query->where('creado_por_admin', true);
+    }
+
+    /**
+     * Filtrar proyectos por categoría código
+     */
+    public function scopeCategoriaCodigo($query, string $codigo)
+    {
+        return $query->whereHas('categoria', function ($q) use ($codigo) {
+            $q->where('codigo', $codigo);
+        });
+    }
+
+    /**
+     * Filtrar proyectos FARMING
+     */
+    public function scopeFarming($query)
+    {
+        return $query->categoriaCodigo('FARMING');
+    }
+
+    /**
+     * Filtrar proyectos por tipo de cultivo
+     */
+    public function scopeTipoCultivo($query, string $tipo)
+    {
+        return $query->where('tipo_cultivo', $tipo);
+    }
+
+    // ==================== ACCESSORS v2.0 ====================
+
+    /**
+     * Verificar si el proyecto fue creado por admin
+     */
+    public function getFueCreadoPorAdminAttribute(): bool
+    {
+        return $this->creado_por_admin === true;
+    }
+
+    /**
+     * Verificar si es proyecto tipo FARMING
+     */
+    public function getEsFarmingAttribute(): bool
+    {
+        return $this->categoria?->codigo === 'FARMING';
+    }
+
+    /**
+     * Verificar si es proyecto tipo EAR
+     */
+    public function getEsEarnAttribute(): bool
+    {
+        return $this->categoria?->codigo === 'EAR';
+    }
+
+    /**
+     * Verificar si es proyecto tipo FUTUROS
+     */
+    public function getEsFuturosAttribute(): bool
+    {
+        return $this->categoria?->codigo === 'FUTUROS';
+    }
+
+    /**
+     * Obtener datos específicos según categoría
+     */
+    public function getDatosEspecificosAttribute(): ?array
+    {
+        $codigo = $this->categoria?->codigo;
+
+        return match ($codigo) {
+            'EAR' => $this->datos_earn,
+            'FUTUROS' => $this->datos_futuros,
+            'FARMING' => $this->datos_farming,
+            default => null,
+        };
     }
 }

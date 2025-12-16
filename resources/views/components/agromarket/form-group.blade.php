@@ -5,7 +5,12 @@
     'type' => 'text',
     'placeholder' => '',
     'required' => false,
-    'value' => ''
+    'value' => '',
+    'options' => [],
+    'rows' => 4,
+    'step' => null,
+    'min' => null,
+    'max' => null,
 ])
 
 <div class="form-group">
@@ -33,7 +38,15 @@
         </div>
     @elseif($type === 'select')
         <select id="{{ $name }}" name="{{ $name }}" class="form-input" {{ $required ? 'required' : '' }}>
-            {{ $slot }}
+            @if(count($options) > 0)
+                @foreach($options as $optionValue => $optionLabel)
+                    <option value="{{ $optionValue }}" {{ old($name, $value) == $optionValue ? 'selected' : '' }}>
+                        {{ $optionLabel }}
+                    </option>
+                @endforeach
+            @else
+                {{ $slot }}
+            @endif
         </select>
     @elseif($type === 'textarea')
         <textarea
@@ -42,7 +55,7 @@
             class="form-input"
             placeholder="{{ $placeholder }}"
             {{ $required ? 'required' : '' }}
-            rows="4"
+            rows="{{ $rows }}"
         >{{ old($name, $value) }}</textarea>
     @else
         <input
@@ -53,6 +66,9 @@
             placeholder="{{ $placeholder }}"
             value="{{ old($name, $value) }}"
             {{ $required ? 'required' : '' }}
+            @if($step) step="{{ $step }}" @endif
+            @if($min !== null) min="{{ $min }}" @endif
+            @if($max !== null) max="{{ $max }}" @endif
         >
     @endif
 

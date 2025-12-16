@@ -39,12 +39,25 @@
                         </x-dropdown-link>
 
                         <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" id="logout-form">
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                                        Swal.fire({
+                                            title: '¿Cerrar sesión?',
+                                            text: '¿Estás seguro que deseas salir?',
+                                            icon: 'question',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#3085d6',
+                                            cancelButtonColor: '#d33',
+                                            confirmButtonText: 'Sí, salir',
+                                            cancelButtonText: 'Cancelar'
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                this.closest('form').submit();
+                                            }
+                                        });">
                                 {{ __('Finalizar la sesión') }}
                             </x-dropdown-link>
                         </form>
@@ -90,7 +103,20 @@
 
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
-                                        this.closest('form').submit();">
+                                Swal.fire({
+                                    title: '¿Cerrar sesión?',
+                                    text: '¿Estás seguro que deseas salir?',
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Sí, salir',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        this.closest('form').submit();
+                                    }
+                                });">
                         {{ __('Salir') }}
                     </x-responsive-nav-link>
                 </form>

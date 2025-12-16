@@ -106,7 +106,16 @@
                                     icon="fas fa-edit"
                                     size="sm"
                                     onclick="window.location.href='{{ route('farmer.projects.edit', $proyecto->id) }}'"
-                                    title="Editar"
+                                    title="Editar datos"
+                                >
+                                </x-agromarket.button>
+
+                                <x-agromarket.button
+                                    variant="icon"
+                                    icon="fas fa-images"
+                                    size="sm"
+                                    onclick="window.location.href='{{ route('farmer.projects.files', $proyecto->id) }}'"
+                                    title="Gestionar archivos"
                                 >
                                 </x-agromarket.button>
                             @endif

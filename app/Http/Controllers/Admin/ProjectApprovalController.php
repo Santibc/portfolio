@@ -47,10 +47,12 @@ class ProjectApprovalController extends Controller
     {
         $proyecto->load([
             'categoria',
-            'agricultor',
+            'agricultor.perfilAgricultor',
+            'agricultor.familia',
             'imagenes',
             'documentos',
-            'actualizaciones'
+            'actualizaciones',
+            'creadoPorAdmin',
         ]);
 
         return view('admin.projects.show', compact('proyecto'));

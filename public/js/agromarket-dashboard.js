@@ -143,11 +143,7 @@ function initSidebar() {
         });
     });
     
-    // Manejar logout
-    const logoutBtn = document.querySelector('.logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
+    // Logout se maneja con SweetAlert en el HTML
 }
 
 // Manejar logout

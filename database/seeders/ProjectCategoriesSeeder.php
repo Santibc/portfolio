@@ -84,11 +84,30 @@ class ProjectCategoriesSeeder extends Seeder
                 'permite_trading' => false,
                 'activo' => true,
                 'orden' => 5
+            ],
+            // NUEVA CATEGORÍA v2.0
+            [
+                'codigo' => 'FARMING',
+                'nombre' => 'Farming - Asociaciones Agrícolas',
+                'descripcion' => 'Inversión en asociaciones y cooperativas agrícolas para exportación de commodities (café, cacao). Retornos a partir de 24 meses con ganancias trimestrales por 15-20 años.',
+                'duracion_minima_meses' => 24,
+                'duracion_maxima_meses' => 240, // 20 años
+                'roi_minimo' => 35.00,
+                'roi_maximo' => 50.00,
+                'inversion_minima' => 5000000.00, // ~$20,000 USD
+                'inversion_maxima' => 500000000.00,
+                'permite_retiro_anticipado' => false,
+                'permite_trading' => false,
+                'activo' => true,
+                'orden' => 6
             ]
         ];
 
         foreach ($categorias as $categoria) {
-            CategoriaProyecto::create($categoria);
+            CategoriaProyecto::updateOrCreate(
+                ['codigo' => $categoria['codigo']],
+                $categoria
+            );
         }
     }
 }

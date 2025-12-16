@@ -3,7 +3,7 @@
         title="Panel Agricultor"
         subtitle="Gestiona tus proyectos agrícolas"
     >
-        <a href="#" class="btn btn-primary">
+        <a href="{{ route('farmer.projects.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Crear Proyecto
         </a>
     </x-agromarket.page-header>
@@ -130,17 +130,15 @@
                                     </div>
 
                                     <div class="project-actions">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('farmer.projects.show', $proyecto['id']) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i> Ver
                                         </a>
                                         @if(in_array($proyecto['estado'], ['borrador', 'rechazado']))
-                                            <a href="#" class="btn btn-sm btn-outline-secondary">
+                                            <a href="{{ route('farmer.projects.edit', $proyecto['id']) }}" class="btn btn-sm btn-outline-secondary">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                        @endif
-                                        @if($proyecto['estado'] === 'aprobado')
-                                            <a href="#" class="btn btn-sm btn-outline-success">
-                                                <i class="fas fa-rocket"></i> Publicar
+                                            <a href="{{ route('farmer.projects.files', $proyecto['id']) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-images"></i> Archivos
                                             </a>
                                         @endif
                                     </div>
@@ -152,7 +150,7 @@
                             <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
                             <h4>No tienes proyectos aún</h4>
                             <p class="text-muted">Crea tu primer proyecto agrícola</p>
-                            <a href="#" class="btn btn-primary mt-3">
+                            <a href="{{ route('farmer.projects.create') }}" class="btn btn-primary mt-3">
                                 <i class="fas fa-plus"></i> Crear Proyecto
                             </a>
                         </div>

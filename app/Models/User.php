@@ -29,11 +29,20 @@ class User extends Authenticatable
         'ultimo_login',
         'documento_identidad',
         'tipo_documento',
+        'fecha_nacimiento',
+        'pais',
+        'ciudad',
+        'direccion',
+        'foto_perfil',
         'kyc_status',
         'kyc_aprobado_por',
         'kyc_aprobado_at',
+        'kyc_notas',
         'codigo_referido',
-        'referido_por'
+        'referido_por',
+        // Campos v2.0
+        'creado_por_admin',
+        'admin_creador_id',
     ];
 
     /**
@@ -57,7 +66,10 @@ class User extends Authenticatable
         'activo' => 'boolean',
         'ultimo_login' => 'datetime',
         'kyc_aprobado_at' => 'datetime',
-        'deleted_at' => 'datetime'
+        'deleted_at' => 'datetime',
+        'fecha_nacimiento' => 'date',
+        // Campos v2.0
+        'creado_por_admin' => 'boolean',
     ];
 public function empresa()
 {
@@ -209,5 +221,95 @@ public function puedeCrearEmpresa()
     public function comprasCrossFund()
     {
         return $this->hasMany(CompraCrossFund::class, 'usuario_id');
+    }
+
+    // ==================== RELACIONES v2.0 ====================
+
+    /**
+     * Perfil extendido del agricultor (datos de Fase 2)
+     */
+    public function perfilAgricultor()
+    {
+        return $this->hasOne(PerfilAgricultor::class, 'user_id');
+    }
+
+    /**
+     * Familiares del agricultor
+     */
+    public function familia()
+    {
+        return $this->hasMany(FamiliaAgricultor::class, 'agricultor_id');
+    }
+
+    /**
+     * Admin que creó este usuario (si fue creado por admin)
+     */
+    public function creadoPor()
+    {
+        return $this->belongsTo(User::class, 'admin_creador_id');
+    }
+
+    /**
+     * Usuarios creados por este admin
+     */
+    public function usuariosCreados()
+    {
+        return $this->hasMany(User::class, 'admin_creador_id');
+    }
+
+    /**
+     * Proyectos creados por este admin (cuando admin registra proyectos)
+     */
+    public function proyectosRegistradosComoAdmin()
+    {
+        return $this->hasMany(Proyecto::class, 'admin_creador_id');
+    }
+
+    // ==================== ACCESSORS v2.0 ====================
+
+    /**
+     * Verificar si el usuario fue creado por un admin
+     */
+    public function getFueCreadoPorAdminAttribute(): bool
+    {
+        return $this->creado_por_admin === true;
+    }
+
+    /**
+     * Obtener URL de la foto de perfil o placeholder
+     */
+    public function getFotoPerfilUrlAttribute(): string
+    {
+        if ($this->foto_perfil) {
+            return asset($this->foto_perfil);
+        }
+
+        return asset('images/default-avatar.png');
+    }
+
+    // ==================== SCOPES v2.0 ====================
+
+    /**
+     * Filtrar usuarios creados por admin
+     */
+    public function scopeCreadosPorAdmin($query)
+    {
+        return $query->where('creado_por_admin', true);
+    }
+
+    /**
+     * Filtrar agricultores
+     */
+    public function scopeAgricultores($query)
+    {
+        return $query->role('Agricultor');
+    }
+
+    /**
+     * Filtrar inversionistas
+     */
+    public function scopeInversionistas($query)
+    {
+        return $query->role('Inversionista');
     }
 }

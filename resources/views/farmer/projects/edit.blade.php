@@ -265,4 +265,25 @@
             </x-agromarket.button>
         </div>
     </form>
+
+    <!-- Link a gestión de archivos -->
+    <div style="background: #e8f5e9; padding: 1.5rem; border-radius: 12px; margin-top: 1.5rem; border: 1px solid #c8e6c9;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h4 style="margin: 0 0 0.5rem 0; color: #2D5A27;">
+                    <i class="fas fa-images"></i> ¿Necesitas subir imágenes o documentos?
+                </h4>
+                <p style="margin: 0; color: #666; font-size: 0.875rem;">
+                    Gestiona las imágenes y documentos de tu proyecto en una página dedicada.
+                </p>
+            </div>
+            <x-agromarket.button
+                variant="primary"
+                icon="fas fa-folder-open"
+                onclick="window.location.href='{{ route('farmer.projects.files', $proyecto->id) }}'"
+            >
+                Gestionar Archivos
+            </x-agromarket.button>
+        </div>
+    </div>
 </x-app-layout>

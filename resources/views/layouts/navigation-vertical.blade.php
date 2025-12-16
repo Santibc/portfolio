@@ -17,10 +17,19 @@
     @endrole
 
     @role('Administrador')
-    <div class="nav-item {{ request()->routeIs('admin.projects.*') ? 'active' : '' }}">
+    <div class="nav-section">
+        <span>Proyectos</span>
+    </div>
+    <div class="nav-item {{ request()->routeIs('admin.projects.registration.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.projects.registration.index') }}" class="nav-link">
+            <i class="fas fa-plus-circle"></i>
+            <span>Registrar Proyecto</span>
+        </a>
+    </div>
+    <div class="nav-item {{ request()->routeIs('admin.projects.review.*') ? 'active' : '' }}">
         <a href="{{ route('admin.projects.review.index') }}" class="nav-link">
             <i class="fas fa-clipboard-check"></i>
-            <span>Revisar Proyectos</span>
+            <span>Aprobar Proyectos</span>
         </a>
     </div>
     @endrole
@@ -72,9 +81,22 @@
 </nav>
 
 <div class="sidebar-footer">
-    <form method="POST" action="{{ route('logout') }}">
+    <form method="POST" action="{{ route('logout') }}" id="logout-form-sidebar">
         @csrf
-        <button type="submit" class="logout-btn">
+        <button type="button" class="logout-btn" onclick="Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: '¿Estás seguro que deseas salir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, salir',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.closest('form').submit();
+            }
+        });">
             <i class="fas fa-sign-out-alt"></i>
             <span>Cerrar Sesión</span>
         </button>
