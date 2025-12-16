@@ -7,7 +7,7 @@
             <x-agromarket.button
                 variant="secondary"
                 icon="fas fa-arrow-left"
-                onclick="window.location.href='{{ route('farmer.projects.show', $proyecto->id) }}'"
+                onclick="window.location.href='{{ route('admin.projects.registration.show', $proyecto) }}'"
             >
                 Volver
             </x-agromarket.button>
@@ -31,24 +31,12 @@
 
     <!-- Contenido de Fase 1 -->
     <div id="tab-fase1" class="tab-content" style="display: block;">
-        <form action="{{ route('farmer.projects.update', $proyecto->id) }}" method="POST" id="fase1Form">
+        <form action="{{ route('admin.projects.registration.update', $proyecto) }}" method="POST" id="fase1Form">
             @csrf
             @method('PUT')
+            <input type="hidden" name="fase" value="1">
 
             <div style="background: white; padding: 2rem; border-radius: 0 0 12px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
-                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #4A7C59;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div>
-                            <strong style="color: #495057;">Codigo:</strong>
-                            <code style="background: white; padding: 0.25rem 0.5rem; border-radius: 4px; margin-left: 0.5rem;">{{ $proyecto->codigo }}</code>
-                        </div>
-                        <div>
-                            <strong style="color: #495057;">Creado:</strong>
-                            <span style="margin-left: 0.5rem;">{{ $proyecto->created_at->format('d/m/Y') }}</span>
-                        </div>
-                    </div>
-                </div>
-
                 <h3 style="margin: 0 0 1.5rem 0; color: #2D5A27; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.75rem;">
                     <i class="fas fa-seedling"></i> Datos del Proyecto
                 </h3>
@@ -195,11 +183,11 @@
 
     <!-- Contenido de Fase 2 -->
     <div id="tab-fase2" class="tab-content" style="display: none;">
-        <form action="{{ route('farmer.projects.phase2.store', $proyecto) }}" method="POST" id="fase2Form">
+        <form action="{{ route('admin.projects.registration.phase2.store', $proyecto) }}" method="POST" id="fase2Form">
             @csrf
 
             @php
-                $perfil = auth()->user()->perfilAgricultor ?? null;
+                $perfil = $proyecto->agricultor->perfilAgricultor ?? null;
             @endphp
 
             <div style="background: white; padding: 2rem; border-radius: 0 0 12px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
@@ -418,7 +406,7 @@
 
     <!-- Contenido de Fase 3 -->
     <div id="tab-fase3" class="tab-content" style="display: none;">
-        <form action="{{ route('farmer.projects.phase3.store', $proyecto) }}" method="POST" id="fase3Form">
+        <form action="{{ route('admin.projects.registration.phase3.store', $proyecto) }}" method="POST" id="fase3Form">
             @csrf
 
             @php
@@ -640,33 +628,6 @@
         </form>
     </div>
 
-    <!-- Acciones adicionales -->
-    <div style="background: white; padding: 1.5rem 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <p style="margin: 0; font-size: 0.875rem; color: #666;">
-                <i class="fas fa-info-circle"></i>
-                Puedes editar cualquier fase y guardar los cambios individualmente.
-            </p>
-        </div>
-        <div style="display: flex; gap: 1rem;">
-            <x-agromarket.button
-                variant="info"
-                icon="fas fa-images"
-                onclick="window.location.href='{{ route('farmer.projects.files', $proyecto) }}'"
-            >
-                Gestionar Archivos
-            </x-agromarket.button>
-
-            <x-agromarket.button
-                variant="secondary"
-                icon="fas fa-eye"
-                onclick="window.location.href='{{ route('farmer.projects.show', $proyecto->id) }}'"
-            >
-                Ver Proyecto
-            </x-agromarket.button>
-        </div>
-    </div>
-
     @push('scripts')
     <script>
         // Tab switching
@@ -746,12 +707,6 @@
             }
             div[style*="grid-template-columns: 1fr 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
-            }
-            div[style*="display: flex; border-bottom: 2px solid"] {
-                flex-wrap: wrap;
-            }
-            .tab-btn {
-                flex: 1 1 100% !important;
             }
         }
     </style>

@@ -13,7 +13,7 @@ class StoreProjectRequest extends FormRequest
      */
     public function authorize()
     {
-        return true; // La autorización se maneja en el middleware
+        return true; // La autorizacion se maneja en el middleware
     }
 
     /**
@@ -24,25 +24,18 @@ class StoreProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'categoria_id' => ['required', 'exists:categorias_proyecto,id'],
-            'nombre' => ['required', 'string', 'max:200'],
-            'descripcion' => ['required', 'string'],
-            'ubicacion' => ['required', 'string'],
-            'coordenadas' => ['nullable', 'string', 'max:100'],
-            'monto_objetivo' => ['required', 'numeric', 'min:0'],
-            'inversion_minima' => ['required', 'numeric', 'min:0', 'lte:monto_objetivo'],
-            'inversion_maxima' => ['nullable', 'numeric', 'gte:inversion_minima', 'lte:monto_objetivo'],
-            'roi_anual' => ['required', 'numeric', 'between:0,100'],
-            'duracion_meses' => ['required', 'integer', 'min:1', 'max:120'],
-            'periodo_cosecha_meses' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'periodo_dividendos_dias' => ['required', 'integer', 'min:1', 'max:365'],
-            'fecha_inicio_recaudacion' => ['required', 'date', 'after:today'],
-            'fecha_cierre_recaudacion' => ['required', 'date', 'after:fecha_inicio_recaudacion'],
-            'fecha_inicio_proyecto' => ['nullable', 'date', 'after:fecha_cierre_recaudacion'],
-            'fecha_fin_proyecto' => ['nullable', 'date', 'after:fecha_inicio_proyecto'],
-            'fecha_primer_dividendo' => ['nullable', 'date', 'after:fecha_cierre_recaudacion'],
-            'nivel_riesgo' => ['required', 'in:bajo,medio,alto'],
-            'datos_adicionales' => ['nullable', 'json'],
+            // Datos del proyecto - Fase 1 (igual que admin)
+            'categoria_id' => 'required|exists:categorias_proyecto,id',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:5000',
+            'tipo_cultivo' => 'required|string|max:100',
+            'area_hectareas' => 'required|numeric|min:0.1|max:99999',
+            'etapa_cultivo' => 'required|in:siembra,crecimiento,cosecha,transformacion,otro',
+            'ano_inicio_cultivo' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
+            'ubicacion' => 'required|string|max:500',
+            'meta_financiamiento' => 'required|numeric|min:100000',
+            'plazo_meses' => 'required|integer|min:1|max:240',
+            'roi_proyectado' => 'required|numeric|min:0|max:100',
         ];
     }
 
@@ -54,21 +47,17 @@ class StoreProjectRequest extends FormRequest
     public function attributes()
     {
         return [
-            'categoria_id' => 'categoría',
-            'monto_objetivo' => 'monto objetivo',
-            'inversion_minima' => 'inversión mínima',
-            'inversion_maxima' => 'inversión máxima',
-            'roi_anual' => 'ROI anual',
-            'duracion_meses' => 'duración en meses',
-            'periodo_cosecha_meses' => 'período de cosecha',
-            'periodo_dividendos_dias' => 'período de dividendos',
-            'fecha_inicio_recaudacion' => 'fecha de inicio de recaudación',
-            'fecha_cierre_recaudacion' => 'fecha de cierre de recaudación',
-            'fecha_inicio_proyecto' => 'fecha de inicio del proyecto',
-            'fecha_fin_proyecto' => 'fecha de fin del proyecto',
-            'fecha_primer_dividendo' => 'fecha del primer dividendo',
-            'nivel_riesgo' => 'nivel de riesgo',
-            'datos_adicionales' => 'datos adicionales',
+            'categoria_id' => 'categoria',
+            'nombre' => 'nombre del proyecto',
+            'descripcion' => 'descripcion',
+            'tipo_cultivo' => 'tipo de cultivo',
+            'area_hectareas' => 'area en hectareas',
+            'etapa_cultivo' => 'etapa del cultivo',
+            'ano_inicio_cultivo' => 'ano de inicio',
+            'ubicacion' => 'ubicacion',
+            'meta_financiamiento' => 'meta de financiamiento',
+            'plazo_meses' => 'plazo en meses',
+            'roi_proyectado' => 'ROI proyectado',
         ];
     }
 
@@ -80,14 +69,25 @@ class StoreProjectRequest extends FormRequest
     public function messages()
     {
         return [
-            'inversion_minima.lte' => 'La inversión mínima no puede ser mayor al monto objetivo.',
-            'inversion_maxima.gte' => 'La inversión máxima debe ser mayor o igual a la inversión mínima.',
-            'inversion_maxima.lte' => 'La inversión máxima no puede ser mayor al monto objetivo.',
-            'fecha_inicio_recaudacion.after' => 'La fecha de inicio de recaudación debe ser posterior a hoy.',
-            'fecha_cierre_recaudacion.after' => 'La fecha de cierre debe ser posterior a la fecha de inicio.',
-            'fecha_inicio_proyecto.after' => 'La fecha de inicio del proyecto debe ser posterior al cierre de recaudación.',
-            'fecha_fin_proyecto.after' => 'La fecha de fin debe ser posterior a la fecha de inicio del proyecto.',
-            'fecha_primer_dividendo.after' => 'La fecha del primer dividendo debe ser posterior al cierre de recaudación.',
+            'categoria_id.required' => 'Debe seleccionar una categoria de proyecto.',
+            'categoria_id.exists' => 'La categoria seleccionada no es valida.',
+            'nombre.required' => 'El nombre del proyecto es obligatorio.',
+            'nombre.max' => 'El nombre no puede tener mas de 255 caracteres.',
+            'descripcion.required' => 'La descripcion del proyecto es obligatoria.',
+            'descripcion.max' => 'La descripcion no puede tener mas de 5000 caracteres.',
+            'tipo_cultivo.required' => 'El tipo de cultivo es obligatorio.',
+            'area_hectareas.required' => 'El area en hectareas es obligatoria.',
+            'area_hectareas.min' => 'El area debe ser al menos 0.1 hectareas.',
+            'etapa_cultivo.required' => 'La etapa del cultivo es obligatoria.',
+            'etapa_cultivo.in' => 'La etapa del cultivo seleccionada no es valida.',
+            'ubicacion.required' => 'La ubicacion es obligatoria.',
+            'meta_financiamiento.required' => 'La meta de financiamiento es obligatoria.',
+            'meta_financiamiento.min' => 'La meta de financiamiento debe ser al menos $100,000.',
+            'plazo_meses.required' => 'El plazo en meses es obligatorio.',
+            'plazo_meses.min' => 'El plazo debe ser al menos 1 mes.',
+            'plazo_meses.max' => 'El plazo no puede ser mayor a 240 meses.',
+            'roi_proyectado.required' => 'El ROI proyectado es obligatorio.',
+            'roi_proyectado.max' => 'El ROI no puede ser mayor al 100%.',
         ];
     }
 }

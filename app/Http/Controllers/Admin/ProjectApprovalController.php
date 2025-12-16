@@ -24,8 +24,9 @@ class ProjectApprovalController extends Controller
     {
         $proyectos = $this->projectService->getPendingReviewProjects();
 
-        // Estadísticas del día
-        $aprobadosHoy = Proyecto::where('estado', 'aprobado')
+        // Estadísticas del día - proyectos aprobados son los que tienen aprobado_at de hoy
+        // (el estado cambia a 'en_recaudacion' después de aprobar, no permanece como 'aprobado')
+        $aprobadosHoy = Proyecto::whereNotNull('aprobado_at')
             ->whereDate('aprobado_at', today())
             ->count();
 

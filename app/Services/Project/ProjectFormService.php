@@ -45,6 +45,7 @@ class ProjectFormService
             'etapa_cultivo' => 'required|in:siembra,crecimiento,cosecha,transformacion,otro',
             'ano_inicio_cultivo' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
             'ubicacion' => 'required|string|max:500',
+            'coordenadas' => 'nullable|string|max:100',
             'meta_financiamiento' => 'required|numeric|min:100000',
             'plazo_meses' => 'required|integer|min:1|max:240',
             'roi_proyectado' => 'required|numeric|min:0|max:100',
@@ -146,6 +147,7 @@ class ProjectFormService
                 'etapa_cultivo' => $data['etapa_cultivo'],
                 'ano_inicio_cultivo' => $data['ano_inicio_cultivo'] ?? null,
                 'ubicacion' => $data['ubicacion'],
+                'coordenadas' => $data['coordenadas'] ?? null,
                 // Campos financieros
                 'monto_objetivo' => $data['meta_financiamiento'],
                 'monto_recaudado' => 0,
@@ -183,6 +185,51 @@ class ProjectFormService
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error en savePhase1: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Actualizar Fase 1 del proyecto (solo datos del proyecto, no agricultor)
+     *
+     * @param Proyecto $proyecto
+     * @param array $data
+     * @return Proyecto
+     * @throws \Exception
+     */
+    public function updatePhase1(Proyecto $proyecto, array $data): Proyecto
+    {
+        try {
+            DB::beginTransaction();
+
+            // Actualizar datos básicos del proyecto
+            $proyecto->update([
+                'categoria_id' => $data['categoria_id'],
+                'nombre' => $data['nombre'],
+                'descripcion' => $data['descripcion'],
+                'tipo_cultivo' => $data['tipo_cultivo'],
+                'area_hectareas' => $data['area_hectareas'],
+                'etapa_cultivo' => $data['etapa_cultivo'],
+                'ano_inicio_cultivo' => $data['ano_inicio_cultivo'] ?? null,
+                'ubicacion' => $data['ubicacion'],
+                'coordenadas' => $data['coordenadas'] ?? null,
+                // Campos financieros (mapeo de nombres de formulario a BD)
+                'monto_objetivo' => $data['meta_financiamiento'],
+                'roi_anual' => $data['roi_proyectado'],
+                'duracion_meses' => $data['plazo_meses'],
+            ]);
+
+            DB::commit();
+
+            Log::info("Proyecto Fase 1 actualizado", [
+                'proyecto_id' => $proyecto->id
+            ]);
+
+            return $proyecto->fresh();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error en updatePhase1: " . $e->getMessage());
             throw $e;
         }
     }

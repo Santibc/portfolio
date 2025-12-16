@@ -296,6 +296,14 @@
                 ></x-agromarket.form-group>
 
                 <x-agromarket.form-group
+                    label="Coordenadas GPS"
+                    name="coordenadas"
+                    icon="fas fa-globe"
+                    placeholder="Ej: 4.6097, -74.0817"
+                    help="Opcional. Formato: latitud, longitud"
+                ></x-agromarket.form-group>
+
+                <x-agromarket.form-group
                     label="Descripción del Proyecto"
                     name="descripcion"
                     type="textarea"

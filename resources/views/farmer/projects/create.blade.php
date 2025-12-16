@@ -1,278 +1,267 @@
 <x-app-layout>
     <x-agromarket.page-header
         title="Crear Nuevo Proyecto"
-        description="Completa la información de tu proyecto agrícola"
-    />
+        description="Fase 1 de 3: Datos Basicos del Proyecto"
+    >
+        <x-slot name="actions">
+            <x-agromarket.button
+                variant="secondary"
+                icon="fas fa-arrow-left"
+                onclick="window.location.href='{{ route('farmer.projects.index') }}'"
+            >
+                Volver
+            </x-agromarket.button>
+        </x-slot>
+    </x-agromarket.page-header>
 
-    @if($errors->any())
-        <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #f5c6cb;">
-            <strong><i class="fas fa-exclamation-circle"></i> Errores de validación:</strong>
-            <ul style="margin: 0.5rem 0 0 1.5rem;">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+    <!-- Indicador de Pasos -->
+    <div style="background: white; padding: 1.5rem 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0;">
+            <!-- Paso 1 -->
+            <div style="display: flex; align-items: center;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #4A7C59; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                    1
+                </div>
+                <div style="margin-left: 0.75rem;">
+                    <div style="font-weight: 600; color: #4A7C59;">Datos Basicos</div>
+                    <div style="font-size: 0.8rem; color: #6c757d;">Proyecto y Cultivo</div>
+                </div>
+            </div>
+            <div style="flex: 1; max-width: 100px; height: 2px; background: #e9ecef; margin: 0 1rem;"></div>
+            <!-- Paso 2 -->
+            <div style="display: flex; align-items: center;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #e9ecef; color: #6c757d; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                    2
+                </div>
+                <div style="margin-left: 0.75rem;">
+                    <div style="font-weight: 600; color: #6c757d;">Evaluacion Tecnica</div>
+                    <div style="font-size: 0.8rem; color: #adb5bd;">Experiencia y Capacidad</div>
+                </div>
+            </div>
+            <div style="flex: 1; max-width: 100px; height: 2px; background: #e9ecef; margin: 0 1rem;"></div>
+            <!-- Paso 3 -->
+            <div style="display: flex; align-items: center;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #e9ecef; color: #6c757d; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                    3
+                </div>
+                <div style="margin-left: 0.75rem;">
+                    <div style="font-weight: 600; color: #6c757d;">Evaluacion Financiera</div>
+                    <div style="font-size: 0.8rem; color: #adb5bd;">Inversion y Proyecciones</div>
+                </div>
+            </div>
         </div>
-    @endif
+    </div>
 
-    <form action="{{ route('farmer.projects.store') }}" method="POST">
+    <!-- Formulario -->
+    <form action="{{ route('farmer.projects.store') }}" method="POST" id="phase1Form">
         @csrf
 
+        <!-- Datos del Proyecto -->
         <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
             <h3 style="margin: 0 0 1.5rem 0; color: #2D5A27; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.75rem;">
-                <i class="fas fa-info-circle"></i> Información General
+                <i class="fas fa-seedling"></i> Datos del Proyecto
             </h3>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Categoría del Proyecto"
-                        name="categoria_id"
-                        type="select"
-                        icon="fas fa-folder"
-                        required
-                    >
-                        <option value="">Selecciona una categoría...</option>
-                        @foreach($categorias as $categoria)
-                            <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>
-                                {{ $categoria->nombre }}
-                            </option>
-                        @endforeach
-                    </x-agromarket.form-group>
-                </div>
+            <x-agromarket.form-group
+                label="Categoria de Inversion"
+                name="categoria_id"
+                type="select"
+                icon="fas fa-tags"
+                :options="$categorias->pluck('nombre', 'id')->prepend('Seleccione una categoria...', '')"
+                required
+            ></x-agromarket.form-group>
 
-                <div>
-                    <x-agromarket.form-group
-                        label="Nombre del Proyecto"
-                        name="nombre"
-                        type="text"
-                        icon="fas fa-seedling"
-                        placeholder="Ej: Aguacate Hass Premium"
-                        :value="old('nombre')"
-                        required
-                    />
-                </div>
-            </div>
+            <x-agromarket.form-group
+                label="Nombre del Proyecto"
+                name="nombre"
+                icon="fas fa-project-diagram"
+                placeholder="Ej: Cultivo de Cafe Organico - Finca La Esperanza"
+                :value="old('nombre')"
+                required
+            ></x-agromarket.form-group>
 
-            <div style="margin-top: 1.5rem;">
+            <x-agromarket.form-group
+                label="Tipo de Cultivo"
+                name="tipo_cultivo"
+                icon="fas fa-leaf"
+                placeholder="Ej: Cafe, Cacao, Aguacate Hass..."
+                :value="old('tipo_cultivo')"
+                required
+            ></x-agromarket.form-group>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <x-agromarket.form-group
-                    label="Descripción del Proyecto"
-                    name="descripcion"
-                    type="textarea"
-                    icon="fas fa-align-left"
-                    placeholder="Describe los detalles de tu proyecto agrícola..."
-                    :value="old('descripcion')"
+                    label="Area (Hectareas)"
+                    name="area_hectareas"
+                    type="number"
+                    icon="fas fa-ruler-combined"
+                    placeholder="10.5"
+                    step="0.1"
+                    min="0.1"
+                    :value="old('area_hectareas')"
                     required
-                />
+                ></x-agromarket.form-group>
+
+                <x-agromarket.form-group
+                    label="Etapa del Cultivo"
+                    name="etapa_cultivo"
+                    type="select"
+                    icon="fas fa-chart-line"
+                    :options="[
+                        '' => 'Seleccione...',
+                        'siembra' => 'Siembra',
+                        'crecimiento' => 'Crecimiento',
+                        'cosecha' => 'Cosecha',
+                        'transformacion' => 'Transformacion',
+                        'otro' => 'Otro'
+                    ]"
+                    required
+                ></x-agromarket.form-group>
             </div>
 
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Ubicación"
-                        name="ubicacion"
-                        type="text"
-                        icon="fas fa-map-marker-alt"
-                        placeholder="Ciudad, Departamento"
-                        :value="old('ubicacion')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Coordenadas (Opcional)"
-                        name="coordenadas"
-                        type="text"
-                        icon="fas fa-globe"
-                        placeholder="Lat, Long"
-                        :value="old('coordenadas')"
-                    />
-                </div>
-            </div>
-        </div>
+            <x-agromarket.form-group
+                label="Ano de Inicio del Cultivo"
+                name="ano_inicio_cultivo"
+                type="number"
+                icon="fas fa-calendar-alt"
+                placeholder="{{ date('Y') }}"
+                min="1990"
+                max="{{ date('Y') + 1 }}"
+                :value="old('ano_inicio_cultivo')"
+            ></x-agromarket.form-group>
 
-        <!-- Información Financiera -->
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
-            <h3 style="margin: 0 0 1.5rem 0; color: #2D5A27; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.75rem;">
-                <i class="fas fa-dollar-sign"></i> Información Financiera
-            </h3>
+            <x-agromarket.form-group
+                label="Ubicacion del Proyecto"
+                name="ubicacion"
+                icon="fas fa-map-marker-alt"
+                placeholder="Vereda, Municipio, Departamento"
+                :value="old('ubicacion')"
+                required
+            ></x-agromarket.form-group>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Monto Objetivo"
-                        name="monto_objetivo"
-                        type="number"
-                        icon="fas fa-money-bill-wave"
-                        placeholder="500000"
-                        :value="old('monto_objetivo')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Inversión Mínima"
-                        name="inversion_minima"
-                        type="number"
-                        icon="fas fa-coins"
-                        placeholder="1000"
-                        :value="old('inversion_minima')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Inversión Máxima (Opcional)"
-                        name="inversion_maxima"
-                        type="number"
-                        icon="fas fa-coins"
-                        placeholder="50000"
-                        :value="old('inversion_maxima')"
-                    />
-                </div>
-            </div>
+            <x-agromarket.form-group
+                label="Coordenadas GPS"
+                name="coordenadas"
+                icon="fas fa-globe"
+                placeholder="Ej: 4.6097, -74.0817"
+                :value="old('coordenadas')"
+                help="Opcional. Formato: latitud, longitud"
+            ></x-agromarket.form-group>
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="ROI Anual (%)"
-                        name="roi_anual"
-                        type="number"
-                        icon="fas fa-percentage"
-                        placeholder="18.5"
-                        :value="old('roi_anual')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Duración (Meses)"
-                        name="duracion_meses"
-                        type="number"
-                        icon="fas fa-calendar-alt"
-                        placeholder="12"
-                        :value="old('duracion_meses')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Período Dividendos (Días)"
-                        name="periodo_dividendos_dias"
-                        type="number"
-                        icon="fas fa-clock"
-                        placeholder="30"
-                        :value="old('periodo_dividendos_dias', 30)"
-                        required
-                    />
-                </div>
-            </div>
+            <x-agromarket.form-group
+                label="Descripcion del Proyecto"
+                name="descripcion"
+                type="textarea"
+                icon="fas fa-align-left"
+                placeholder="Descripcion detallada del proyecto agricola..."
+                rows="4"
+                :value="old('descripcion')"
+                required
+            ></x-agromarket.form-group>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Período Cosecha (Meses - Opcional)"
-                        name="periodo_cosecha_meses"
-                        type="number"
-                        icon="fas fa-leaf"
-                        placeholder="6"
-                        :value="old('periodo_cosecha_meses')"
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Nivel de Riesgo"
-                        name="nivel_riesgo"
-                        type="select"
-                        icon="fas fa-exclamation-triangle"
-                        required
-                    >
-                        <option value="">Selecciona...</option>
-                        <option value="bajo" {{ old('nivel_riesgo') == 'bajo' ? 'selected' : '' }}>Bajo</option>
-                        <option value="medio" {{ old('nivel_riesgo') == 'medio' ? 'selected' : '' }}>Medio</option>
-                        <option value="alto" {{ old('nivel_riesgo') == 'alto' ? 'selected' : '' }}>Alto</option>
-                    </x-agromarket.form-group>
-                </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <x-agromarket.form-group
+                    label="Meta de Financiamiento ($)"
+                    name="meta_financiamiento"
+                    type="number"
+                    icon="fas fa-dollar-sign"
+                    placeholder="10000000"
+                    min="100000"
+                    :value="old('meta_financiamiento')"
+                    required
+                ></x-agromarket.form-group>
+
+                <x-agromarket.form-group
+                    label="Plazo (Meses)"
+                    name="plazo_meses"
+                    type="number"
+                    icon="fas fa-clock"
+                    placeholder="12"
+                    min="1"
+                    max="240"
+                    :value="old('plazo_meses')"
+                    required
+                ></x-agromarket.form-group>
+
+                <x-agromarket.form-group
+                    label="ROI Proyectado (%)"
+                    name="roi_proyectado"
+                    type="number"
+                    icon="fas fa-percentage"
+                    placeholder="15"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    :value="old('roi_proyectado')"
+                    required
+                ></x-agromarket.form-group>
             </div>
         </div>
 
-        <!-- Fechas -->
-        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem;">
-            <h3 style="margin: 0 0 1.5rem 0; color: #2D5A27; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.75rem;">
-                <i class="fas fa-calendar"></i> Fechas Importantes
-            </h3>
-
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Fecha Inicio Recaudación"
-                        name="fecha_inicio_recaudacion"
-                        type="date"
-                        icon="fas fa-calendar-plus"
-                        :value="old('fecha_inicio_recaudacion')"
-                        required
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Fecha Cierre Recaudación"
-                        name="fecha_cierre_recaudacion"
-                        type="date"
-                        icon="fas fa-calendar-minus"
-                        :value="old('fecha_cierre_recaudacion')"
-                        required
-                    />
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-                <div>
-                    <x-agromarket.form-group
-                        label="Fecha Inicio Proyecto (Opcional)"
-                        name="fecha_inicio_proyecto"
-                        type="date"
-                        icon="fas fa-play-circle"
-                        :value="old('fecha_inicio_proyecto')"
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Fecha Fin Proyecto (Opcional)"
-                        name="fecha_fin_proyecto"
-                        type="date"
-                        icon="fas fa-stop-circle"
-                        :value="old('fecha_fin_proyecto')"
-                    />
-                </div>
-                <div>
-                    <x-agromarket.form-group
-                        label="Primer Dividendo (Opcional)"
-                        name="fecha_primer_dividendo"
-                        type="date"
-                        icon="fas fa-gift"
-                        :value="old('fecha_primer_dividendo')"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <!-- Botones -->
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <!-- Botones de Accion -->
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
             <x-agromarket.button
                 variant="secondary"
                 icon="fas fa-times"
-                onclick="window.location.href='{{ route('farmer.projects.index') }}'; return false;"
+                type="button"
+                onclick="window.location.href='{{ route('farmer.projects.index') }}'"
             >
                 Cancelar
             </x-agromarket.button>
 
             <x-agromarket.button
                 variant="primary"
-                icon="fas fa-save"
+                icon="fas fa-arrow-right"
                 type="submit"
             >
-                Guardar como Borrador
+                Continuar a Fase 2
             </x-agromarket.button>
         </div>
     </form>
+
+    @push('scripts')
+    <script>
+        // Manejar errores
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Error en el formulario',
+                html: @json(implode('<br>', $errors->all())),
+                confirmButtonColor: '#4A7C59'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: @json(session('error')),
+                confirmButtonColor: '#4A7C59'
+            });
+        @endif
+    </script>
+    @endpush
+
+    @push('styles')
+    <style>
+        div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        }
+
+        div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+        }
+
+        @media (max-width: 768px) {
+            div[style*="display: flex; align-items: center; justify-content: center"] {
+                flex-wrap: wrap;
+                gap: 1rem !important;
+            }
+
+            div[style*="max-width: 100px"] {
+                display: none;
+            }
+        }
+    </style>
+    @endpush
 </x-app-layout>

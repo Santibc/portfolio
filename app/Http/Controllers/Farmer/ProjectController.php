@@ -52,7 +52,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage (Phase 1).
      *
      * @param  \App\Http\Requests\StoreProjectRequest  $request
      * @return \Illuminate\Http\Response
@@ -60,14 +60,16 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         try {
-            $proyecto = $this->projectService->createProject(
+            // Usar el formService para guardar Fase 1 (igual que admin)
+            $proyecto = $this->formService->savePhase1(
                 $request->validated(),
-                $request->user()
+                $request->user(),
+                false // No es admin
             );
 
             return redirect()
-                ->route('farmer.projects.files', $proyecto->id)
-                ->with('success', 'Proyecto creado exitosamente. Ahora puedes subir imágenes y documentos.');
+                ->route('farmer.projects.phase2', $proyecto->id)
+                ->with('success', 'Fase 1 guardada correctamente. Continua con la evaluacion tecnica.');
 
         } catch (\Exception $e) {
             return back()
@@ -128,7 +130,7 @@ class ProjectController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage (Phase 1 data).
      *
      * @param  \App\Http\Requests\UpdateProjectRequest  $request
      * @param  \App\Models\Proyecto  $project
@@ -141,12 +143,18 @@ class ProjectController extends Controller
             abort(403, 'No tienes permiso para actualizar este proyecto.');
         }
 
+        // Verificar que se pueda editar
+        if (!$this->projectService->canEdit($project)) {
+            return back()->with('error', 'Este proyecto no puede ser editado en su estado actual.');
+        }
+
         try {
-            $this->projectService->updateProject($project, $request->validated());
+            // Usar formService para actualizar Fase 1 (mantiene consistencia)
+            $this->formService->updatePhase1($project, $request->validated());
 
             return redirect()
                 ->route('farmer.projects.show', $project->id)
-                ->with('success', 'Proyecto actualizado exitosamente.');
+                ->with('success', 'Datos basicos actualizados exitosamente.');
 
         } catch (\Exception $e) {
             return back()
@@ -177,7 +185,13 @@ class ProjectController extends Controller
 
         $project->load(['categoria', 'imagenes', 'documentos']);
 
-        return view('farmer.projects.files', ['proyecto' => $project]);
+        // Tipos de documento para el formulario
+        $tiposDocumento = \App\Http\Requests\UploadProjectDocumentRequest::getTiposDocumentoLabels();
+
+        return view('farmer.projects.files', [
+            'proyecto' => $project,
+            'tiposDocumento' => $tiposDocumento
+        ]);
     }
 
     /**

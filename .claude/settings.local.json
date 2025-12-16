@@ -13,7 +13,9 @@
       "Bash(tree:*)",
       "Bash(mysql:*)",
       "Bash(php check_roi.php:*)",
-      "Bash(if not exist \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\" mkdir \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\")"
+      "Bash(if not exist \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\" mkdir \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\")",
+      "Bash(php check_aprobados.php:*)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

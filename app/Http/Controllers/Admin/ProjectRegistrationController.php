@@ -240,7 +240,7 @@ class ProjectRegistrationController extends Controller
     }
 
     /**
-     * Update the specified project.
+     * Update the specified project (Phase 1).
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Proyecto  $proyecto
@@ -251,11 +251,27 @@ class ProjectRegistrationController extends Controller
         $this->authorizeProject($proyecto);
 
         try {
-            $proyecto = $this->projectService->updateProject($proyecto, $request->all());
+            // Validar datos de Fase 1
+            $validated = $request->validate([
+                'categoria_id' => 'required|exists:categorias_proyecto,id',
+                'nombre' => 'required|string|max:255',
+                'descripcion' => 'required|string|max:5000',
+                'tipo_cultivo' => 'required|string|max:100',
+                'area_hectareas' => 'required|numeric|min:0.1|max:99999',
+                'etapa_cultivo' => 'required|in:siembra,crecimiento,cosecha,transformacion,otro',
+                'ano_inicio_cultivo' => 'nullable|integer|min:1990|max:' . (date('Y') + 1),
+                'ubicacion' => 'required|string|max:500',
+                'meta_financiamiento' => 'required|numeric|min:100000',
+                'plazo_meses' => 'required|integer|min:1|max:240',
+                'roi_proyectado' => 'required|numeric|min:0|max:100',
+            ]);
+
+            // Usar formService para actualizar
+            $this->formService->updatePhase1($proyecto, $validated);
 
             return redirect()
-                ->route('admin.projects.registration.show', $proyecto)
-                ->with('success', 'Proyecto actualizado correctamente.');
+                ->route('admin.projects.registration.edit', $proyecto)
+                ->with('success', 'Datos de Fase 1 actualizados correctamente.');
 
         } catch (\Exception $e) {
             return back()
