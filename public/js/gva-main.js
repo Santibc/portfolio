@@ -1,5 +1,5 @@
 /**
- * GVA - Main JavaScript
+ * Manzer - Main JavaScript
  * Plataforma de Cursos Educativos
  */
 

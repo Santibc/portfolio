@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'GVA') }} - Plataforma de Cursos</title>
+    <title>{{ config('app.name', 'Manzer') }}</title>
 
     {{-- Fuentes --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
         }
     </script>
 
-    {{-- GVA CSS --}}
+    {{-- Manzer CSS --}}
     <link href="{{ asset('css/gva-global.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-components.css') }}" rel="stylesheet">
@@ -46,7 +46,7 @@
         <div class="header-container">
             <div class="header-left">
                 <div class="nav-logo">
-                    <i class="fas fa-graduation-cap"></i> GVA
+                    <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 32px; margin-right: 8px;"> Manzer
                 </div>
                 <button class="sidebar-toggle" id="sidebarToggle">
                     <i class="fas fa-bars"></i>
@@ -136,7 +136,7 @@
     {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    {{-- GVA Main JS --}}
+    {{-- Manzer Main JS --}}
     <script src="{{ asset('js/gva-main.js') }}"></script>
 
     @stack('scripts')

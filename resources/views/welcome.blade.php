@@ -13,19 +13,17 @@
 </head>
 <body class="antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <div class="flex flex-col items-center justify-center min-h-screen p-6">
-        <!-- Logo GVA -->
-        <div class="mb-8">
-            <img src="{{ asset('images/GVA_LOGO_AZUL.png') }}" alt="GVA" class="w-full max-w-md">
+        <!-- Logo Manzer -->
+        <div class="mb-8 text-center">
+            <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" class="mx-auto mb-4" style="width: 150px; height: auto;">
+            <h1 class="text-5xl font-bold text-gray-800">Manzer</h1>
         </div>
 
         <!-- Mensaje principal -->
         <div class="text-center mb-8">
             <h2 class="text-4xl font-semibold text-gray-700 mb-4">
-                Bienvenido a GVA Academy
+                Bienvenido a Manzer
             </h2>
-            <p class="text-xl text-gray-600 max-w-md">
-                Aprende, progresa y construye tu futuro con nuestra plataforma de cursos virtuales.
-            </p>
         </div>
 
         <!-- Botones de acción -->

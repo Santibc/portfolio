@@ -1,5 +1,5 @@
 /* ==============================================
-   GVA - Components Styles
+   Manzer - Components Styles
    ============================================== */
 
 /* ==============================================
@@ -16,43 +16,43 @@
 
 .dataTables_wrapper .dataTables_length select {
     padding: 0.375rem 2rem 0.375rem 0.75rem;
-    border: 1px solid var(--gva-gray-300);
-    border-radius: var(--gva-radius);
-    background-color: var(--gva-white);
+    border: 1px solid var(--manzer-gray-300);
+    border-radius: var(--manzer-radius);
+    background-color: var(--manzer-white);
 }
 
 .dataTables_wrapper .dataTables_filter input {
     padding: 0.5rem 0.75rem;
-    border: 1px solid var(--gva-gray-300);
-    border-radius: var(--gva-radius);
+    border: 1px solid var(--manzer-gray-300);
+    border-radius: var(--manzer-radius);
     margin-left: 0.5rem;
 }
 
 .dataTables_wrapper .dataTables_filter input:focus {
     outline: none;
-    border-color: var(--gva-primary);
-    box-shadow: 0 0 0 3px var(--gva-primary-100);
+    border-color: var(--manzer-primary);
+    box-shadow: 0 0 0 3px var(--manzer-primary-100);
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     padding: 0.375rem 0.75rem;
     margin: 0 0.125rem;
-    border-radius: var(--gva-radius);
-    border: 1px solid var(--gva-gray-300) !important;
-    background: var(--gva-white) !important;
-    color: var(--gva-gray-700) !important;
+    border-radius: var(--manzer-radius);
+    border: 1px solid var(--manzer-gray-300) !important;
+    background: var(--manzer-white) !important;
+    color: var(--manzer-gray-700) !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-    background: var(--gva-gray-100) !important;
-    border-color: var(--gva-gray-400) !important;
-    color: var(--gva-gray-800) !important;
+    background: var(--manzer-gray-100) !important;
+    border-color: var(--manzer-gray-400) !important;
+    color: var(--manzer-gray-800) !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--gva-primary) !important;
-    border-color: var(--gva-primary) !important;
-    color: var(--gva-white) !important;
+    background: var(--manzer-primary) !important;
+    border-color: var(--manzer-primary) !important;
+    color: var(--manzer-white) !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
@@ -61,21 +61,22 @@
 }
 
 .dataTables_wrapper .dataTables_info {
-    color: var(--gva-gray-500);
+    color: var(--manzer-gray-500);
     padding-top: 1rem;
 }
 
 table.dataTable thead th {
-    border-bottom: 2px solid var(--gva-gray-300);
+    border-bottom: 2px solid var(--manzer-gray-300);
 }
 
 table.dataTable.no-footer {
-    border-bottom: 1px solid var(--gva-gray-200);
+    border-bottom: 1px solid var(--manzer-gray-200);
 }
 
 /* ==============================================
-   Modal
+   Modal - COMENTADO para usar Bootstrap modals
    ============================================== */
+/*
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -90,7 +91,7 @@ table.dataTable.no-footer {
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .modal-backdrop.show {
@@ -99,15 +100,15 @@ table.dataTable.no-footer {
 }
 
 .modal {
-    background: var(--gva-white);
-    border-radius: var(--gva-radius-lg);
-    box-shadow: var(--gva-shadow-xl);
+    background: var(--manzer-white);
+    border-radius: var(--manzer-radius-lg);
+    box-shadow: var(--manzer-shadow-xl);
     max-width: 500px;
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
     transform: scale(0.95);
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .modal-backdrop.show .modal {
@@ -116,7 +117,7 @@ table.dataTable.no-footer {
 
 .modal-header {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--gva-gray-200);
+    border-bottom: 1px solid var(--manzer-gray-200);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -125,7 +126,7 @@ table.dataTable.no-footer {
 .modal-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--gva-gray-900);
+    color: var(--manzer-gray-900);
     margin: 0;
 }
 
@@ -133,14 +134,14 @@ table.dataTable.no-footer {
     background: none;
     border: none;
     font-size: 1.25rem;
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
     cursor: pointer;
     padding: 0.25rem;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .modal-close:hover {
-    color: var(--gva-gray-600);
+    color: var(--manzer-gray-600);
 }
 
 .modal-body {
@@ -151,7 +152,7 @@ table.dataTable.no-footer {
 
 .modal-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid var(--gva-gray-200);
+    border-top: 1px solid var(--manzer-gray-200);
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
@@ -164,6 +165,7 @@ table.dataTable.no-footer {
 .modal-sm {
     max-width: 400px;
 }
+*/
 
 /* ==============================================
    Dropdown
@@ -175,9 +177,9 @@ table.dataTable.no-footer {
 
 .dropdown-menu {
     min-width: 180px;
-    background: var(--gva-white);
-    border-radius: var(--gva-radius-md);
-    box-shadow: var(--gva-shadow-lg);
+    background: var(--manzer-white);
+    border-radius: var(--manzer-radius-md);
+    box-shadow: var(--manzer-shadow-lg);
     padding: 0.5rem 0;
     z-index: 1000;
 }
@@ -202,9 +204,9 @@ table.dataTable.no-footer {
     align-items: center;
     gap: 0.75rem;
     padding: 0.625rem 1rem;
-    color: var(--gva-gray-700);
+    color: var(--manzer-gray-700);
     text-decoration: none;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
     border: none;
     background: none;
     width: 100%;
@@ -213,26 +215,26 @@ table.dataTable.no-footer {
 }
 
 .dropdown-item:hover {
-    background: var(--gva-gray-100);
-    color: var(--gva-gray-900);
+    background: var(--manzer-gray-100);
+    color: var(--manzer-gray-900);
 }
 
 .dropdown-item i {
     width: 16px;
-    color: var(--gva-gray-500);
+    color: var(--manzer-gray-500);
 }
 
 .dropdown-item.danger {
-    color: var(--gva-danger);
+    color: var(--manzer-danger);
 }
 
 .dropdown-item.danger i {
-    color: var(--gva-danger);
+    color: var(--manzer-danger);
 }
 
 .dropdown-divider {
     height: 1px;
-    background: var(--gva-gray-200);
+    background: var(--manzer-gray-200);
     margin: 0.5rem 0;
 }
 
@@ -241,27 +243,27 @@ table.dataTable.no-footer {
    ============================================== */
 .tabs {
     display: flex;
-    border-bottom: 2px solid var(--gva-gray-200);
+    border-bottom: 2px solid var(--manzer-gray-200);
     margin-bottom: 1.5rem;
 }
 
 .tab-item {
     padding: 0.75rem 1.25rem;
     font-weight: 500;
-    color: var(--gva-gray-500);
+    color: var(--manzer-gray-500);
     text-decoration: none;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .tab-item:hover {
-    color: var(--gva-gray-700);
+    color: var(--manzer-gray-700);
 }
 
 .tab-item.active {
-    color: var(--gva-primary);
-    border-bottom-color: var(--gva-primary);
+    color: var(--manzer-primary);
+    border-bottom-color: var(--manzer-primary);
 }
 
 .tab-content {
@@ -286,14 +288,14 @@ table.dataTable.no-footer {
     left: 50%;
     transform: translateX(-50%) translateY(-4px);
     padding: 0.375rem 0.75rem;
-    background: var(--gva-gray-900);
-    color: var(--gva-white);
+    background: var(--manzer-gray-900);
+    color: var(--manzer-white);
     font-size: 0.75rem;
-    border-radius: var(--gva-radius);
+    border-radius: var(--manzer-radius);
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
     z-index: 1000;
 }
 
@@ -321,44 +323,44 @@ table.dataTable.no-footer {
 }
 
 .file-upload-area {
-    border: 2px dashed var(--gva-gray-300);
-    border-radius: var(--gva-radius-lg);
+    border: 2px dashed var(--manzer-gray-300);
+    border-radius: var(--manzer-radius-lg);
     padding: 2rem;
     text-align: center;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .file-upload:hover .file-upload-area,
 .file-upload-area.dragover {
-    border-color: var(--gva-primary);
-    background: var(--gva-primary-50);
+    border-color: var(--manzer-primary);
+    background: var(--manzer-primary-50);
 }
 
 .file-upload-icon {
     font-size: 2.5rem;
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
     margin-bottom: 1rem;
 }
 
 .file-upload-area.dragover .file-upload-icon {
-    color: var(--gva-primary);
+    color: var(--manzer-primary);
 }
 
 .file-upload-text {
-    color: var(--gva-gray-600);
+    color: var(--manzer-gray-600);
     margin-bottom: 0.5rem;
 }
 
 .file-upload-hint {
     font-size: 0.75rem;
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
 }
 
 .file-preview {
     margin-top: 1rem;
     padding: 1rem;
-    background: var(--gva-gray-50);
-    border-radius: var(--gva-radius-md);
+    background: var(--manzer-gray-50);
+    border-radius: var(--manzer-radius-md);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -366,7 +368,7 @@ table.dataTable.no-footer {
 
 .file-preview-icon {
     font-size: 1.5rem;
-    color: var(--gva-primary);
+    color: var(--manzer-primary);
 }
 
 .file-preview-info {
@@ -375,22 +377,22 @@ table.dataTable.no-footer {
 
 .file-preview-name {
     font-weight: 500;
-    color: var(--gva-gray-800);
+    color: var(--manzer-gray-800);
 }
 
 .file-preview-size {
     font-size: 0.75rem;
-    color: var(--gva-gray-500);
+    color: var(--manzer-gray-500);
 }
 
 .file-preview-remove {
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
     cursor: pointer;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .file-preview-remove:hover {
-    color: var(--gva-danger);
+    color: var(--manzer-danger);
 }
 
 /* ==============================================
@@ -398,7 +400,7 @@ table.dataTable.no-footer {
    ============================================== */
 .video-upload-preview {
     margin-top: 1rem;
-    border-radius: var(--gva-radius-lg);
+    border-radius: var(--manzer-radius-lg);
     overflow: hidden;
     background: #000;
 }
@@ -420,7 +422,7 @@ table.dataTable.no-footer {
 .image-upload-preview img {
     max-width: 200px;
     max-height: 150px;
-    border-radius: var(--gva-radius-md);
+    border-radius: var(--manzer-radius-md);
     object-fit: cover;
 }
 
@@ -430,8 +432,8 @@ table.dataTable.no-footer {
     right: -8px;
     width: 24px;
     height: 24px;
-    background: var(--gva-danger);
-    color: var(--gva-white);
+    background: var(--manzer-danger);
+    color: var(--manzer-white);
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -446,7 +448,7 @@ table.dataTable.no-footer {
    ============================================== */
 .toast-container {
     position: fixed;
-    top: calc(var(--gva-header-height) + 1rem);
+    top: calc(var(--manzer-header-height) + 1rem);
     right: 1rem;
     z-index: 1100;
     display: flex;
@@ -455,9 +457,9 @@ table.dataTable.no-footer {
 }
 
 .toast {
-    background: var(--gva-white);
-    border-radius: var(--gva-radius-md);
-    box-shadow: var(--gva-shadow-lg);
+    background: var(--manzer-white);
+    border-radius: var(--manzer-radius-md);
+    box-shadow: var(--manzer-shadow-lg);
     padding: 1rem 1.25rem;
     display: flex;
     align-items: flex-start;
@@ -484,19 +486,19 @@ table.dataTable.no-footer {
 }
 
 .toast-success .toast-icon {
-    color: var(--gva-success);
+    color: var(--manzer-success);
 }
 
 .toast-error .toast-icon {
-    color: var(--gva-danger);
+    color: var(--manzer-danger);
 }
 
 .toast-warning .toast-icon {
-    color: var(--gva-warning);
+    color: var(--manzer-warning);
 }
 
 .toast-info .toast-icon {
-    color: var(--gva-info);
+    color: var(--manzer-info);
 }
 
 .toast-content {
@@ -505,26 +507,26 @@ table.dataTable.no-footer {
 
 .toast-title {
     font-weight: 600;
-    color: var(--gva-gray-800);
+    color: var(--manzer-gray-800);
     margin-bottom: 0.25rem;
 }
 
 .toast-message {
     font-size: 0.875rem;
-    color: var(--gva-gray-600);
+    color: var(--manzer-gray-600);
 }
 
 .toast-close {
     background: none;
     border: none;
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
     cursor: pointer;
     padding: 0.25rem;
     margin: -0.25rem;
 }
 
 .toast-close:hover {
-    color: var(--gva-gray-600);
+    color: var(--manzer-gray-600);
 }
 
 /* ==============================================
@@ -533,8 +535,8 @@ table.dataTable.no-footer {
 .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--gva-gray-200);
-    border-top-color: var(--gva-primary);
+    border: 3px solid var(--manzer-gray-200);
+    border-top-color: var(--manzer-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -603,13 +605,13 @@ table.dataTable.no-footer {
 }
 
 .avatar-primary {
-    background: var(--gva-primary);
-    color: var(--gva-white);
+    background: var(--manzer-primary);
+    color: var(--manzer-white);
 }
 
 .avatar-secondary {
-    background: var(--gva-secondary);
-    color: var(--gva-white);
+    background: var(--manzer-secondary);
+    color: var(--manzer-white);
 }
 
 .avatar img {
@@ -642,9 +644,9 @@ table.dataTable.no-footer {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--gva-gray-300);
+    background: var(--manzer-gray-300);
     border-radius: 9999px;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .switch-slider::before {
@@ -654,13 +656,13 @@ table.dataTable.no-footer {
     width: 18px;
     left: 3px;
     bottom: 3px;
-    background: var(--gva-white);
+    background: var(--manzer-white);
     border-radius: 50%;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .switch input:checked + .switch-slider {
-    background: var(--gva-primary);
+    background: var(--manzer-primary);
 }
 
 .switch input:checked + .switch-slider::before {
@@ -668,7 +670,7 @@ table.dataTable.no-footer {
 }
 
 .switch input:focus + .switch-slider {
-    box-shadow: 0 0 0 3px var(--gva-primary-100);
+    box-shadow: 0 0 0 3px var(--manzer-primary-100);
 }
 
 /* ==============================================
@@ -683,11 +685,11 @@ table.dataTable.no-footer {
 }
 
 .breadcrumb-item {
-    color: var(--gva-gray-500);
+    color: var(--manzer-gray-500);
 }
 
 .breadcrumb-item a {
-    color: var(--gva-primary);
+    color: var(--manzer-primary);
     text-decoration: none;
 }
 
@@ -696,11 +698,11 @@ table.dataTable.no-footer {
 }
 
 .breadcrumb-separator {
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
 }
 
 .breadcrumb-item.active {
-    color: var(--gva-gray-800);
+    color: var(--manzer-gray-800);
     font-weight: 500;
 }
 
@@ -718,17 +720,17 @@ table.dataTable.no-footer {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: var(--gva-white);
-    border: 1px solid var(--gva-gray-200);
-    border-radius: var(--gva-radius-md);
+    background: var(--manzer-white);
+    border: 1px solid var(--manzer-gray-200);
+    border-radius: var(--manzer-radius-md);
     margin-bottom: 0.5rem;
     cursor: grab;
-    transition: var(--gva-transition);
+    transition: var(--manzer-transition);
 }
 
 .sortable-item:hover {
-    border-color: var(--gva-gray-300);
-    box-shadow: var(--gva-shadow-sm);
+    border-color: var(--manzer-gray-300);
+    box-shadow: var(--manzer-shadow-sm);
 }
 
 .sortable-item.dragging {
@@ -737,12 +739,12 @@ table.dataTable.no-footer {
 }
 
 .sortable-handle {
-    color: var(--gva-gray-400);
+    color: var(--manzer-gray-400);
     cursor: grab;
 }
 
 .sortable-handle:hover {
-    color: var(--gva-gray-600);
+    color: var(--manzer-gray-600);
 }
 
 /* ==============================================
@@ -759,30 +761,30 @@ table.dataTable.no-footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--gva-radius);
+    border-radius: var(--manzer-radius);
     border: none;
     cursor: pointer;
-    transition: var(--gva-transition);
-    background: var(--gva-gray-100);
-    color: var(--gva-gray-600);
+    transition: var(--manzer-transition);
+    background: var(--manzer-gray-100);
+    color: var(--manzer-gray-600);
 }
 
 .action-btn:hover {
-    background: var(--gva-gray-200);
-    color: var(--gva-gray-800);
+    background: var(--manzer-gray-200);
+    color: var(--manzer-gray-800);
 }
 
 .action-btn.edit:hover {
-    background: var(--gva-primary-100);
-    color: var(--gva-primary);
+    background: var(--manzer-primary-100);
+    color: var(--manzer-primary);
 }
 
 .action-btn.delete:hover {
     background: #FEE2E2;
-    color: var(--gva-danger);
+    color: var(--manzer-danger);
 }
 
 .action-btn.view:hover {
-    background: var(--gva-secondary-100);
-    color: var(--gva-secondary);
+    background: var(--manzer-secondary-100);
+    color: var(--manzer-secondary);
 }

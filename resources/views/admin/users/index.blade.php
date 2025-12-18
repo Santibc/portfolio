@@ -62,7 +62,7 @@
                             <th class="ps-4">Usuario</th>
                             <th>Email</th>
                             <th>Rol</th>
-                            <th>Progreso</th>
+                            <th>Estado</th>
                             <th>Registro</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
@@ -91,19 +91,14 @@
                                 @endforeach
                             </td>
                             <td>
-                                @if($usuario->hasRole('Estudiante'))
-                                <div class="d-flex align-items-center">
-                                    <span class="badge bg-info-subtle text-info me-2">
-                                        {{ $usuario->assignedCourses->count() }} cursos
+                                @if($usuario->email_verified_at)
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="bi bi-check-circle me-1"></i>Activo
                                     </span>
-                                    <div class="progress flex-grow-1 me-2" style="width: 60px; height: 6px;">
-                                        <div class="progress-bar bg-success"
-                                             style="width: {{ $usuario->overall_progress ?? 0 }}%"></div>
-                                    </div>
-                                    <small class="text-muted">{{ $usuario->overall_progress ?? 0 }}%</small>
-                                </div>
                                 @else
-                                <span class="text-muted">-</span>
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        <i class="bi bi-clock me-1"></i>Pendiente
+                                    </span>
                                 @endif
                             </td>
                             <td>
@@ -115,12 +110,6 @@
                                             onclick="editUser({{ $usuario->id }})" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    @if($usuario->hasRole('Estudiante'))
-                                    <a href="{{ route('admin.reportes.estudiante', $usuario) }}"
-                                       class="btn btn-sm btn-outline-info" title="Ver progreso">
-                                        <i class="bi bi-graph-up"></i>
-                                    </a>
-                                    @endif
                                     @if($usuario->id !== auth()->id())
                                     <button type="button" class="btn btn-sm btn-outline-danger"
                                             onclick="deleteUser({{ $usuario->id }}, '{{ $usuario->name }}')" title="Eliminar">
@@ -151,11 +140,11 @@
 
 <!-- Modal Crear Usuario -->
 <div class="modal fade" id="createUserModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="{{ route('admin.usuarios.store') }}" method="POST" id="createUserForm">
                 @csrf
-                <div class="modal-header border-0">
+                <div class="modal-header">
                     <h5 class="modal-title">Nuevo Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -174,6 +163,7 @@
                     <div class="mb-3">
                         <label class="form-label">Contraseña <span class="text-danger">*</span></label>
                         <input type="password" name="password" class="form-control" required minlength="8">
+                        <small class="text-muted">Mínimo 8 caracteres</small>
                     </div>
 
                     <div class="mb-3">
@@ -191,7 +181,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer border-0">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Crear Usuario</button>
                 </div>
@@ -200,75 +190,50 @@
     </div>
 </div>
 
-
 <!-- Modal Editar Usuario -->
 <div class="modal fade" id="editUserModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="" method="POST" id="editUserForm">
                 @csrf
                 @method('PUT')
-                <div class="modal-header border-0">
+                <div class="modal-header">
                     <h5 class="modal-title">Editar Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                                <input type="text" name="name" id="editName" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" name="email" id="editEmail" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Nueva Contraseña <small class="text-muted">(dejar vacío para no cambiar)</small></label>
-                                <input type="password" name="password" class="form-control" minlength="8" autocomplete="off">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Confirmar Contraseña</label>
-                                <input type="password" name="password_confirmation" class="form-control" minlength="8" autocomplete="off">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Rol <span class="text-danger">*</span></label>
-                                <select name="role" id="editRole" class="form-select" required onchange="toggleCoursesSection()">
-                                    @foreach($roles ?? [] as $role)
-                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6" id="coursesSection">
-                            <label class="form-label">Cursos Asignados</label>
-                            <p class="text-muted small mb-2">Selecciona los cursos que tendrá disponibles este estudiante. El orden se determina por el orden de selección.</p>
-                            <div class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
-                                <div id="coursesList">
-                                    @foreach($cursos ?? [] as $curso)
-                                    <div class="form-check py-1">
-                                        <input class="form-check-input course-checkbox" type="checkbox"
-                                               name="courses[]" value="{{ $curso->id }}"
-                                               id="course_{{ $curso->id }}">
-                                        <label class="form-check-label" for="course_{{ $curso->id }}">
-                                            <span class="fw-medium">{{ $curso->title }}</span>
-                                            <br>
-                                            <small class="text-muted">{{ $curso->category->name ?? 'Sin categoría' }}</small>
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Cursos seleccionados: <span id="selectedCoursesCount">0</span>
-                                </small>
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="editName" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="editEmail" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Contraseña <small class="text-muted">(dejar vacío para no cambiar)</small></label>
+                        <input type="password" name="password" class="form-control" minlength="8" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirmar Contraseña</label>
+                        <input type="password" name="password_confirmation" class="form-control" minlength="8" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Rol <span class="text-danger">*</span></label>
+                        <select name="role" id="editRole" class="form-select" required>
+                            @foreach($roles ?? [] as $role)
+                            <option value="{{ $role->name }}">{{ $role->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
+
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                 </div>
@@ -283,6 +248,37 @@
     @method('DELETE')
 </form>
 
+@push('styles')
+<style>
+/* Fix para conflicto Bootstrap + Tailwind en modales */
+.modal.show {
+    display: block !important;
+}
+
+.modal-dialog {
+    max-width: 500px !important;
+    width: 500px !important;
+    margin: 1.75rem auto !important;
+    position: relative !important;
+    transform: none !important;
+    top: auto !important;
+}
+
+.modal.show .modal-dialog {
+    transform: none !important;
+}
+
+.modal-content {
+    width: 100% !important;
+    position: relative !important;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 function editUser(userId) {
@@ -292,76 +288,26 @@ function editUser(userId) {
             'Accept': 'application/json'
         }
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('User data loaded:', data);
-            document.getElementById('editName').value = data.name;
-            document.getElementById('editEmail').value = data.email;
-            document.getElementById('editRole').value = data.role;
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('editName').value = data.name;
+        document.getElementById('editEmail').value = data.email;
+        document.getElementById('editRole').value = data.role;
 
-            // Limpiar campos de contraseña
-            document.querySelector('#editUserForm input[name="password"]').value = '';
-            document.querySelector('#editUserForm input[name="password_confirmation"]').value = '';
+        // Limpiar campos de contraseña
+        document.querySelector('#editUserForm input[name="password"]').value = '';
+        document.querySelector('#editUserForm input[name="password_confirmation"]').value = '';
 
-            const formAction = `{{ url('admin/usuarios') }}/${userId}`;
-            console.log('Form action set to:', formAction);
-            document.getElementById('editUserForm').action = formAction;
+        const formAction = `{{ url('admin/usuarios') }}/${userId}`;
+        document.getElementById('editUserForm').action = formAction;
 
-            // Limpiar checkboxes de cursos
-            document.querySelectorAll('.course-checkbox').forEach(cb => cb.checked = false);
-
-            // Marcar cursos asignados
-            if (data.assigned_courses && data.assigned_courses.length > 0) {
-                data.assigned_courses.forEach(courseId => {
-                    const checkbox = document.getElementById(`course_${courseId}`);
-                    if (checkbox) checkbox.checked = true;
-                });
-            }
-
-            // Actualizar contador y visibilidad
-            updateSelectedCoursesCount();
-            toggleCoursesSection();
-
-            new bootstrap.Modal(document.getElementById('editUserModal')).show();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Error', 'No se pudo cargar el usuario', 'error');
-        });
-}
-
-function toggleCoursesSection() {
-    const role = document.getElementById('editRole').value;
-    const section = document.getElementById('coursesSection');
-    if (role === 'Estudiante') {
-        section.style.display = 'block';
-    } else {
-        section.style.display = 'none';
-    }
-}
-
-function updateSelectedCoursesCount() {
-    const count = document.querySelectorAll('.course-checkbox:checked').length;
-    document.getElementById('selectedCoursesCount').textContent = count;
-}
-
-// Escuchar cambios en checkboxes
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.course-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateSelectedCoursesCount);
+        new bootstrap.Modal(document.getElementById('editUserModal')).show();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'No se pudo cargar el usuario', 'error');
     });
-
-    // Debug: interceptar submit del formulario de edición
-    document.getElementById('editUserForm').addEventListener('submit', function(e) {
-        const formData = new FormData(this);
-        console.log('=== FORM SUBMIT DEBUG ===');
-        console.log('Form action:', this.action);
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}: ${value}`);
-        }
-        // No prevenir el submit - solo para debug
-    });
-});
+}
 
 function deleteUser(userId, userName) {
     Swal.fire({
