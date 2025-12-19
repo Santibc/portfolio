@@ -451,7 +451,9 @@ class CatalogoController extends Controller
             
             // Agregar items y verificar stock SOLO si es necesario
             foreach ($request->items as $item) {
-                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])->findOrFail($item['producto_id']);
+                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])
+                    ->noEliminados()
+                    ->findOrFail($item['producto_id']);
                 
                 // Verificar si se puede agregar al carrito
                 $validacion = $this->puedeAgregarAlCarrito($producto, $item['cantidad'], $item['variante_id'] ?? null);

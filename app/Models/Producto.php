@@ -22,6 +22,7 @@ class Producto extends Model
         'extension',
         'categoria_id',
         'activo',
+        'eliminado',
         'tiene_variantes',
         'controlar_stock',
         'empresa_id',
@@ -33,6 +34,7 @@ class Producto extends Model
 
     protected $casts = [
         'activo' => 'boolean',
+        'eliminado' => 'boolean',
         'tiene_variantes' => 'boolean',
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
@@ -265,7 +267,12 @@ public function getUrlImagenPrincipalAttribute()
 
     public function scopeActivos($query)
     {
-        return $query->where('activo', true);
+        return $query->where('activo', true)->noEliminados();
+    }
+
+    public function scopeNoEliminados($query)
+    {
+        return $query->where('eliminado', false);
     }
 
     public function scopePorCategoria($query, $categoriaId)

@@ -36,6 +36,7 @@ class ProductosController extends Controller
         if ($request->ajax()) {
             $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal'])
                             ->where('empresa_id', $empresa->id)
+                            ->noEliminados()
                             ->select('productos.*');
 
             return DataTables::of($query)
@@ -136,6 +137,8 @@ class ProductosController extends Controller
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
+
+                    $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="eliminarProducto('.$p->id.', \''.addslashes($p->nombre).'\')"><i class="bi bi-trash"></i></button>';
 
                     $buttons .= '</div>';
 
@@ -657,7 +660,43 @@ public function actualizarPreciosExcel(Request $request)
         }
         
         $html .= '</div>';
-        
+
         return response($html);
+    }
+
+    /**
+     * Eliminar producto lógicamente
+     */
+    public function eliminar(Request $request)
+    {
+        $empresa = auth()->user()->empresa;
+        if (!$empresa) {
+            return response()->json(['error' => 'No tiene empresa registrada'], 403);
+        }
+
+        $request->validate([
+            'id' => 'required|exists:productos,id'
+        ]);
+
+        try {
+            $producto = Producto::findOrFail($request->id);
+
+            // Verificar que el producto pertenezca a la empresa
+            if ($producto->empresa_id !== $empresa->id) {
+                return response()->json(['error' => 'No tiene permisos para eliminar este producto'], 403);
+            }
+
+            // Realizar eliminación lógica
+            $producto->update(['eliminado' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Producto eliminado correctamente. Los registros de compras se han preservado.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al eliminar el producto: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

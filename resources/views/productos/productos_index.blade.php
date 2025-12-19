@@ -145,6 +145,53 @@
       $('#modalStock').modal('show');
     });
   }
+
+  // Función para eliminar producto
+  function eliminarProducto(productoId, productoNombre) {
+    Swal.fire({
+        title: '¿Eliminar producto?',
+        html: `¿Está seguro que desea eliminar el producto <strong>${productoNombre}</strong>?<br><br>
+               <small class="text-muted">El producto no se eliminará físicamente de la base de datos.<br>
+               Se mantendrá el historial de compras asociadas.</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '{{ route("productos.eliminar") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: productoId
+                },
+                success: function(response) {
+                    Swal.fire({
+                        title: 'Eliminado',
+                        text: response.message,
+                        icon: 'success',
+                        timer: 3000
+                    });
+                    $('#productos-table').DataTable().ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    let message = 'Error al eliminar el producto';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        message = xhr.responseJSON.error;
+                    }
+                    Swal.fire({
+                        title: 'Error',
+                        text: message,
+                        icon: 'error'
+                    });
+                }
+            });
+        }
+    });
+  }
   </script>
   @endpush
 

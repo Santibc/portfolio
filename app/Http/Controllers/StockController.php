@@ -27,7 +27,7 @@ class StockController extends Controller
         if ($request->ajax()) {
             $query = StockProducto::with(['producto', 'variante'])
                 ->whereHas('producto', function($q) use ($empresa) {
-                    $q->where('empresa_id', $empresa->id);
+                    $q->where('empresa_id', $empresa->id)->noEliminados();
                 })
                 ->select('stock_productos.*');
 
@@ -362,18 +362,18 @@ class StockController extends Controller
         }
 
         // Estadísticas generales de la empresa
-        $totalProductos = $empresa->productos()->where('controlar_stock', true)->count();
-        
+        $totalProductos = $empresa->productos()->where('controlar_stock', true)->noEliminados()->count();
+
         $productosConStock = StockProducto::whereHas('producto', function($q) use ($empresa) {
-            $q->where('empresa_id', $empresa->id);
+            $q->where('empresa_id', $empresa->id)->noEliminados();
         })->conStock()->count();
-        
+
         $productosSinStock = StockProducto::whereHas('producto', function($q) use ($empresa) {
-            $q->where('empresa_id', $empresa->id);
+            $q->where('empresa_id', $empresa->id)->noEliminados();
         })->sinStock()->count();
-        
+
         $productosStockBajo = StockProducto::whereHas('producto', function($q) use ($empresa) {
-            $q->where('empresa_id', $empresa->id);
+            $q->where('empresa_id', $empresa->id)->noEliminados();
         })->conStockBajo()->count();
         
         // Valor total del inventario (necesitaría precio de costo)
@@ -381,7 +381,7 @@ class StockController extends Controller
         
         // Movimientos del mes de la empresa
         $movimientosMes = MovimientoStock::whereHas('producto', function($q) use ($empresa) {
-            $q->where('empresa_id', $empresa->id);
+            $q->where('empresa_id', $empresa->id)->noEliminados();
         })->delMes()->get();
         
         $entradasMes = $movimientosMes->where('tipo_movimiento', 'entrada')->sum('cantidad');
@@ -392,17 +392,18 @@ class StockController extends Controller
             ->join('productos', 'movimientos_stock.producto_id', '=', 'productos.id')
             ->select('movimientos_stock.producto_id', DB::raw('SUM(movimientos_stock.cantidad) as total_movimiento'))
             ->where('productos.empresa_id', $empresa->id)
+            ->where('productos.eliminado', false)
             ->where('movimientos_stock.tipo_movimiento', 'salida')
             ->whereBetween('movimientos_stock.created_at', [Carbon::now()->subMonth(), Carbon::now()])
             ->groupBy('movimientos_stock.producto_id')
             ->orderBy('total_movimiento', 'desc')
             ->limit(10)
             ->get();
-        
+
         // Productos críticos (stock bajo) de la empresa
         $productosCriticos = StockProducto::with(['producto', 'variante'])
             ->whereHas('producto', function($q) use ($empresa) {
-                $q->where('empresa_id', $empresa->id);
+                $q->where('empresa_id', $empresa->id)->noEliminados();
             })
             ->conStockBajo()
             ->orderBy('cantidad_disponible', 'asc')
@@ -466,7 +467,8 @@ class StockController extends Controller
         }
 
         $query = Producto::where('empresa_id', $empresa->id)
-                        ->where('controlar_stock', true);
+                        ->where('controlar_stock', true)
+                        ->noEliminados();
         
         if ($request->has('q')) {
             $search = $request->q;
@@ -508,7 +510,7 @@ class StockController extends Controller
         
         $movimientos = MovimientoStock::with(['producto', 'variante', 'usuario'])
             ->whereHas('producto', function($q) use ($empresa) {
-                $q->where('empresa_id', $empresa->id);
+                $q->where('empresa_id', $empresa->id)->noEliminados();
             })
             ->whereBetween('created_at', [$fechaInicio, $fechaFin]);
         

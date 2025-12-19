@@ -83,6 +83,7 @@ class TiendaController extends Controller
         // Query base de productos con calificaciones
         $query = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
+            ->noEliminados()
             ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
             ->withCount(['calificaciones as total_calificaciones' => function($q) {
                 $q->where('aprobada', true);
@@ -149,6 +150,7 @@ class TiendaController extends Controller
         // TODO: Implementar lógica de más vendidos cuando se configure la relación itemsCompra
         $productosDestacados = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
+            ->noEliminados()
             ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
             ->inRandomOrder()
             ->take(6)
@@ -165,6 +167,7 @@ class TiendaController extends Controller
         // Productos nuevos (últimos 6 productos creados)
         $productosNuevos = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
+            ->noEliminados()
             ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
             ->latest('created_at')
             ->take(6)
@@ -181,6 +184,7 @@ class TiendaController extends Controller
         // Producto aleatorio para showcase
         $productoAleatorio = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
+            ->noEliminados()
             ->with(['imagenPrincipal', 'categoria', 'stockPrincipal', 'variantes'])
             ->inRandomOrder()
             ->first();
@@ -206,6 +210,7 @@ class TiendaController extends Controller
             if ($descuento->aplica_a === 'producto' && !empty($descuento->productos_aplicables)) {
                 $prodDescuento = Producto::where('empresa_id', $empresa->id)
                     ->where('activo', true)
+                    ->noEliminados()
                     ->whereIn('id', $descuento->productos_aplicables)
                     ->with(['imagenPrincipal', 'categoria'])
                     ->get();
@@ -221,6 +226,7 @@ class TiendaController extends Controller
             } elseif ($descuento->aplica_a === 'categoria' && !empty($descuento->categorias_aplicables)) {
                 $prodDescuento = Producto::where('empresa_id', $empresa->id)
                     ->where('activo', true)
+                    ->noEliminados()
                     ->whereIn('categoria_id', $descuento->categorias_aplicables)
                     ->with(['imagenPrincipal', 'categoria'])
                     ->take(5)
@@ -271,6 +277,7 @@ class TiendaController extends Controller
         $producto = Producto::where('id', $productoId)
             ->where('empresa_id', $empresa->id)
             ->where('activo', true)
+            ->noEliminados()
             ->with(['imagenes', 'categoria', 'variantes' => function($q) {
                 $q->where('activo', true);
             }])
@@ -908,6 +915,7 @@ public function categorias(Request $request)
     // Query base de productos con calificaciones
     $query = Producto::where('empresa_id', $empresa->id)
         ->where('productos.activo', true)
+        ->noEliminados()
         ->with(['imagenPrincipal', 'imagenes', 'categoria', 'stockPrincipal'])
         ->withCount(['calificaciones as total_calificaciones' => function($q) {
             $q->where('aprobada', true);
