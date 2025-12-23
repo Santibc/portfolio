@@ -310,31 +310,18 @@
                           <h3>Descripción del Producto</h3>
                           <p>{{ $producto->descripcion ?: 'No hay descripción disponible para este producto.' }}</p>
 
+                          @if($producto->caracteristicas->count() > 0)
                           <h4>Características Principales</h4>
                           <div class="highlights-grid">
+                            @foreach($producto->caracteristicas as $caracteristica)
                             <div class="highlight-card">
-                              <i class="bi bi-box"></i>
-                              <h5>Unidad de Venta</h5>
-                              <p>{{ $producto->unidad_venta }}</p>
+                              <i class="{{ $caracteristica->icono_clase }}"></i>
+                              <h5>{{ $caracteristica->titulo }}</h5>
+                              <p>{{ $caracteristica->descripcion }}</p>
                             </div>
-                            <div class="highlight-card">
-                              <i class="bi bi-box-seam"></i>
-                              <h5>Unidad de Empaque</h5>
-                              <p>{{ $producto->unidad_empaque }}</p>
-                            </div>
-                            @if($producto->extension)
-                            <div class="highlight-card">
-                              <i class="bi bi-rulers"></i>
-                              <h5>Extensión</h5>
-                              <p>{{ $producto->extension }}</p>
-                            </div>
-                            @endif
-                            <div class="highlight-card">
-                              <i class="bi bi-tag"></i>
-                              <h5>Referencia</h5>
-                              <p>{{ $producto->referencia }}</p>
-                            </div>
+                            @endforeach
                           </div>
+                          @endif
                         </div>
                       </div>
 
@@ -358,33 +345,23 @@
                   <div class="technical-content">
                     <div class="row g-4">
                       <div class="col-md-12">
+                        @if($producto->caracteristicas->count() > 0)
                         <div class="tech-group">
                           <h4>Especificaciones del Producto</h4>
                           <div class="spec-table">
+                            @foreach($producto->caracteristicas as $caracteristica)
                             <div class="spec-row">
-                              <span class="spec-name">Referencia</span>
-                              <span class="spec-value">{{ $producto->referencia }}</span>
+                              <span class="spec-name">{{ $caracteristica->titulo }}</span>
+                              <span class="spec-value">{{ $caracteristica->descripcion }}</span>
                             </div>
-                            <div class="spec-row">
-                              <span class="spec-name">Categoría</span>
-                              <span class="spec-value">{{ $producto->categoria->nombre }}</span>
-                            </div>
-                            <div class="spec-row">
-                              <span class="spec-name">Unidad de Venta</span>
-                              <span class="spec-value">{{ $producto->unidad_venta }}</span>
-                            </div>
-                            <div class="spec-row">
-                              <span class="spec-name">Unidad de Empaque</span>
-                              <span class="spec-value">{{ $producto->unidad_empaque }}</span>
-                            </div>
-                            @if($producto->extension)
-                            <div class="spec-row">
-                              <span class="spec-name">Extensión</span>
-                              <span class="spec-value">{{ $producto->extension }}</span>
-                            </div>
-                            @endif
+                            @endforeach
                           </div>
                         </div>
+                        @else
+                        <div class="text-center text-muted py-4">
+                          <p>No hay especificaciones técnicas disponibles para este producto.</p>
+                        </div>
+                        @endif
                       </div>
                     </div>
                   </div>

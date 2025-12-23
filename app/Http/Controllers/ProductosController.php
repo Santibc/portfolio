@@ -14,6 +14,7 @@ use App\Models\ListaPrecio;
 use App\Models\VarianteProducto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
+use App\Models\CaracteristicaProducto;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
@@ -189,8 +190,45 @@ class ProductosController extends Controller
                 }
             }
         }
-        
-        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks'));
+
+        // Cargar características existentes
+        $caracteristicas = collect();
+        if ($producto->exists) {
+            $caracteristicas = $producto->caracteristicas()->orderBy('orden')->get();
+        }
+
+        // Iconos disponibles para el selector
+        $iconosDisponibles = [
+            'bi-star' => 'Estrella',
+            'bi-star-fill' => 'Estrella Llena',
+            'bi-box' => 'Caja',
+            'bi-box-seam' => 'Caja Sellada',
+            'bi-truck' => 'Envío',
+            'bi-shield-check' => 'Garantía',
+            'bi-award' => 'Premio',
+            'bi-gem' => 'Calidad',
+            'bi-lightning' => 'Rápido',
+            'bi-heart' => 'Favorito',
+            'bi-check-circle' => 'Verificado',
+            'bi-tools' => 'Herramientas',
+            'bi-gear' => 'Configuración',
+            'bi-palette' => 'Diseño',
+            'bi-rulers' => 'Medidas',
+            'bi-thermometer' => 'Temperatura',
+            'bi-droplet' => 'Resistente Agua',
+            'bi-sun' => 'UV Protección',
+            'bi-battery-full' => 'Batería',
+            'bi-wifi' => 'Conectividad',
+            'bi-clock' => 'Tiempo',
+            'bi-calendar-check' => 'Disponibilidad',
+            'bi-recycle' => 'Ecológico',
+            'bi-leaf' => 'Natural',
+            'bi-hand-thumbs-up' => 'Recomendado',
+            'bi-tag' => 'Etiqueta',
+            'bi-percent' => 'Descuento',
+        ];
+
+        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks', 'caracteristicas', 'iconosDisponibles'));
     }
 
     public function guardar(Request $request)
@@ -241,6 +279,9 @@ class ProductosController extends Controller
             'stock_minimo'  => ['nullable','integer','min:0'],
             'stock_maximo'  => ['nullable','integer','min:0'],
             'ubicacion_stock' => ['nullable','string','max:255'],
+            'caracteristicas.*.icono' => ['nullable','string','max:50'],
+            'caracteristicas.*.titulo' => ['nullable','string','max:100'],
+            'caracteristicas.*.descripcion' => ['nullable','string','max:500'],
         ];
 
         $messages = [
@@ -436,7 +477,31 @@ class ProductosController extends Controller
                     }
                 }
             }
-            
+
+            // Guardar/Actualizar/Eliminar Características
+            if ($request->has('caracteristicas')) {
+                // Eliminar características existentes
+                $producto->caracteristicas()->delete();
+
+                // Guardar nuevas características
+                $orden = 0;
+                foreach ($request->caracteristicas as $caracteristicaData) {
+                    // Solo guardar si tiene título y descripción
+                    if (!empty($caracteristicaData['titulo']) && !empty($caracteristicaData['descripcion'])) {
+                        $orden++;
+                        $producto->caracteristicas()->create([
+                            'icono' => $caracteristicaData['icono'] ?? 'bi-star',
+                            'titulo' => $caracteristicaData['titulo'],
+                            'descripcion' => $caracteristicaData['descripcion'],
+                            'orden' => $orden
+                        ]);
+                    }
+                }
+            } else {
+                // Si no se enviaron características, eliminar todas las existentes
+                $producto->caracteristicas()->delete();
+            }
+
             DB::commit();
             
             return redirect()->route('productos')

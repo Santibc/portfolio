@@ -104,6 +104,22 @@ class Producto extends Model
     }
 
     /**
+     * Relación con características del producto
+     */
+    public function caracteristicas()
+    {
+        return $this->hasMany(CaracteristicaProducto::class, 'producto_id')->orderBy('orden');
+    }
+
+    /**
+     * Verificar si el producto tiene características dinámicas
+     */
+    public function getTieneCaracteristicasAttribute()
+    {
+        return $this->caracteristicas()->count() > 0;
+    }
+
+    /**
      * Obtener promedio de calificaciones aprobadas
      */
     public function getPromedioCalificacionAttribute()

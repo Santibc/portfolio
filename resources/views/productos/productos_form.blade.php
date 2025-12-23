@@ -470,8 +470,72 @@
           
           <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Opcional:</strong> Complete solo los beneficios que apliquen para este producto. 
+            <strong>Opcional:</strong> Complete solo los beneficios que apliquen para este producto.
             Si no completa ningún campo, esta sección no se mostrará en la tienda.
+          </div>
+        </div>
+      </div>
+
+      {{-- Características del Producto --}}
+      <div class="card shadow mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Características del Producto</h5>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="addCaracteristica">
+            <i class="bi bi-plus-circle"></i> Agregar Característica
+          </button>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            <i class="bi bi-info-circle"></i>
+            Agregue características destacadas del producto. Estas se mostrarán en la sección
+            "Características Principales" de la página del producto.
+          </p>
+
+          <div id="caracteristicasContainer">
+            @if(isset($caracteristicas) && $caracteristicas->count() > 0)
+              @foreach($caracteristicas as $index => $caracteristica)
+                <div class="caracteristica-row mb-3 p-3 border rounded bg-light">
+                  <div class="row align-items-end">
+                    <div class="col-md-2 mb-2">
+                      <label class="form-label">Icono</label>
+                      <select name="caracteristicas[{{ $index }}][icono]" class="form-select icono-selector">
+                        @foreach($iconosDisponibles as $iconoKey => $iconoLabel)
+                          <option value="{{ $iconoKey }}" {{ $caracteristica->icono == $iconoKey ? 'selected' : '' }}>
+                            {{ $iconoLabel }}
+                          </option>
+                        @endforeach
+                      </select>
+                      <div class="icono-preview mt-1 text-center">
+                        <i class="bi {{ $caracteristica->icono }} fs-4"></i>
+                      </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                      <label class="form-label">Título <span class="text-danger">*</span></label>
+                      <input type="text" name="caracteristicas[{{ $index }}][titulo]"
+                             class="form-control" value="{{ $caracteristica->titulo }}"
+                             placeholder="Ej: Material Premium">
+                    </div>
+                    <div class="col-md-5 mb-2">
+                      <label class="form-label">Descripción <span class="text-danger">*</span></label>
+                      <input type="text" name="caracteristicas[{{ $index }}][descripcion]"
+                             class="form-control" value="{{ $caracteristica->descripcion }}"
+                             placeholder="Ej: Fabricado con materiales de alta calidad">
+                    </div>
+                    <div class="col-md-2 mb-2">
+                      <button type="button" class="btn btn-danger btn-sm w-100 removeCaracteristica">
+                        <i class="bi bi-trash"></i> Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            @endif
+          </div>
+
+          <div id="noCaracteristicasMsg" class="text-center text-muted py-4"
+               style="{{ isset($caracteristicas) && $caracteristicas->count() > 0 ? 'display:none;' : '' }}">
+            <i class="bi bi-list-ul fs-1 d-block mb-2 opacity-50"></i>
+            <p>No hay características agregadas. Haga clic en "Agregar Característica" para comenzar.</p>
           </div>
         </div>
       </div>
@@ -753,7 +817,7 @@
       // Validación del formulario
       $('#productoForm').submit(function(e) {
         let isValid = true;
-        
+
         // Validar que si tiene variantes, al menos tenga una
         if ($('#tiene_variantes').is(':checked')) {
           const variantes = $('#variantesContainer .variante-row');
@@ -763,8 +827,111 @@
             isValid = false;
           }
         }
-        
+
         return isValid;
+      });
+
+      // =============================================
+      // CARACTERÍSTICAS DEL PRODUCTO
+      // =============================================
+
+      // Lista de iconos disponibles
+      const iconosDisponibles = {
+        'bi-star': 'Estrella',
+        'bi-star-fill': 'Estrella Llena',
+        'bi-box': 'Caja',
+        'bi-box-seam': 'Caja Sellada',
+        'bi-truck': 'Envío',
+        'bi-shield-check': 'Garantía',
+        'bi-award': 'Premio',
+        'bi-gem': 'Calidad',
+        'bi-lightning': 'Rápido',
+        'bi-heart': 'Favorito',
+        'bi-check-circle': 'Verificado',
+        'bi-tools': 'Herramientas',
+        'bi-gear': 'Configuración',
+        'bi-palette': 'Diseño',
+        'bi-rulers': 'Medidas',
+        'bi-thermometer': 'Temperatura',
+        'bi-droplet': 'Resistente Agua',
+        'bi-sun': 'UV Protección',
+        'bi-battery-full': 'Batería',
+        'bi-wifi': 'Conectividad',
+        'bi-clock': 'Tiempo',
+        'bi-calendar-check': 'Disponibilidad',
+        'bi-recycle': 'Ecológico',
+        'bi-leaf': 'Natural',
+        'bi-hand-thumbs-up': 'Recomendado',
+        'bi-tag': 'Etiqueta',
+        'bi-percent': 'Descuento'
+      };
+
+      // Contador para características
+      let caracteristicaIndex = {{ isset($caracteristicas) ? $caracteristicas->count() : 0 }};
+
+      // Generar opciones de iconos
+      function generarOpcionesIconos(selectedIcon = 'bi-star') {
+        let options = '';
+        for (const [key, label] of Object.entries(iconosDisponibles)) {
+          const selected = key === selectedIcon ? 'selected' : '';
+          options += `<option value="${key}" ${selected}>${label}</option>`;
+        }
+        return options;
+      }
+
+      // Agregar nueva característica
+      $('#addCaracteristica').click(function() {
+        const template = `
+          <div class="caracteristica-row mb-3 p-3 border rounded bg-light">
+            <div class="row align-items-end">
+              <div class="col-md-2 mb-2">
+                <label class="form-label">Icono</label>
+                <select name="caracteristicas[${caracteristicaIndex}][icono]" class="form-select icono-selector">
+                  ${generarOpcionesIconos()}
+                </select>
+                <div class="icono-preview mt-1 text-center">
+                  <i class="bi bi-star fs-4"></i>
+                </div>
+              </div>
+              <div class="col-md-3 mb-2">
+                <label class="form-label">Título <span class="text-danger">*</span></label>
+                <input type="text" name="caracteristicas[${caracteristicaIndex}][titulo]"
+                       class="form-control" placeholder="Ej: Material Premium">
+              </div>
+              <div class="col-md-5 mb-2">
+                <label class="form-label">Descripción <span class="text-danger">*</span></label>
+                <input type="text" name="caracteristicas[${caracteristicaIndex}][descripcion]"
+                       class="form-control" placeholder="Ej: Fabricado con materiales de alta calidad">
+              </div>
+              <div class="col-md-2 mb-2">
+                <button type="button" class="btn btn-danger btn-sm w-100 removeCaracteristica">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        $('#caracteristicasContainer').append(template);
+        $('#noCaracteristicasMsg').hide();
+        caracteristicaIndex++;
+      });
+
+      // Eliminar característica
+      $(document).on('click', '.removeCaracteristica', function() {
+        $(this).closest('.caracteristica-row').remove();
+
+        // Mostrar mensaje vacío si no hay características
+        if ($('.caracteristica-row').length === 0) {
+          $('#noCaracteristicasMsg').show();
+        }
+      });
+
+      // Actualizar preview del icono cuando cambia el selector
+      $(document).on('change', '.icono-selector', function() {
+        const selectedIcon = $(this).val();
+        $(this).closest('.col-md-2').find('.icono-preview i')
+               .attr('class', 'bi ' + selectedIcon + ' fs-4');
       });
     });
   </script>
