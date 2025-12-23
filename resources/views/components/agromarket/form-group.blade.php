@@ -57,6 +57,16 @@
             {{ $required ? 'required' : '' }}
             rows="{{ $rows }}"
         >{{ old($name, $value) }}</textarea>
+    @elseif($type === 'file')
+        <input
+            type="file"
+            id="{{ $name }}"
+            name="{{ $name }}"
+            class="form-input form-input-file"
+            {{ $required ? 'required' : '' }}
+            @if($attributes->has('accept')) accept="{{ $attributes->get('accept') }}" @endif
+        >
+        {{ $slot }}
     @else
         <input
             type="{{ $type }}"

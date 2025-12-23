@@ -15,7 +15,14 @@
       "Bash(php check_roi.php:*)",
       "Bash(if not exist \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\" mkdir \"e:\\xampp8.20\\htdocs\\agromarket\\public\\uploads\\proyectos\")",
       "Bash(php check_aprobados.php:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(if not exist \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\storage\\\\app\\\\public\\\\uploads\\\\kyc\" mkdir \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\storage\\\\app\\\\public\\\\uploads\\\\kyc\")",
+      "Bash(if not exist \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\app\\\\Http\\\\Controllers\\\\Public\" mkdir \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\app\\\\Http\\\\Controllers\\\\Public\")",
+      "Bash(php -l:*)",
+      "Bash(php:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(if not exist \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\app\\\\Services\\\\Withdrawal\" mkdir \"e:\\\\xampp8.20\\\\htdocs\\\\agromarket\\\\app\\\\Services\\\\Withdrawal\")"
     ],
     "deny": [],
     "ask": []

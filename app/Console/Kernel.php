@@ -15,7 +15,23 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // MÓDULO 9: Procesamiento de Dividendos
+        // Procesar y pagar dividendos programados - diario a las 6:00 AM
+        $schedule->command('dividendos:procesar')
+            ->dailyAt('06:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/dividendos.log'))
+            ->onSuccess(function () {
+                \Log::info('Dividendos procesados exitosamente');
+            })
+            ->onFailure(function () {
+                \Log::error('Error procesando dividendos');
+            });
+
+        // Notificar dividendos próximos (3 días antes) - diario a las 9:00 AM
+        $schedule->command('dividendos:notificar --dias=3')
+            ->dailyAt('09:00')
+            ->withoutOverlapping();
     }
 
     /**

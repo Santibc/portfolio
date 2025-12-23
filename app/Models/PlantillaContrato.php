@@ -12,20 +12,22 @@ class PlantillaContrato extends Model
     protected $table = 'plantillas_contrato';
 
     protected $fillable = [
-        'categoria_id',
+        'codigo',
         'nombre',
+        'tipo_contrato',
         'version',
         'contenido',
-        'variables_disponibles',
+        'variables_requeridas',
         'activo',
-        'creado_por',
-        'fecha_vigencia'
+        'fecha_vigencia',
+        'fecha_expiracion',
     ];
 
     protected $casts = [
-        'variables_disponibles' => 'array',
+        'variables_requeridas' => 'array',
         'activo' => 'boolean',
-        'fecha_vigencia' => 'date'
+        'fecha_vigencia' => 'date',
+        'fecha_expiracion' => 'date',
     ];
 
     // Relaciones

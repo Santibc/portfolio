@@ -27,22 +27,38 @@ class CheckKycStatus
 
         $user = Auth::user();
 
-        // Verificar si el usuario tiene KYC aprobado
-        if ($user->kyc_status !== 'aprobado') {
+        // Bloquear si NO ha subido documentos
+        if ($user->kyc_status === 'pendiente') {
             // Si es una petición AJAX, retornar JSON
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Debes completar y aprobar tu proceso KYC para realizar esta acción.',
+                    'message' => 'Debes subir tus documentos KYC antes de invertir. Una vez subidos podrás invertir mientras los revisamos.',
                     'kyc_status' => $user->kyc_status
                 ], 403);
             }
 
-            // Si es una petición web, redirigir al KYC
             return redirect()
-                ->route('kyc.index')
-                ->with('warning', 'Debes completar y aprobar tu proceso KYC para realizar esta acción.');
+                ->route('inversionista.kyc.create')
+                ->with('warning', 'Debes subir tus documentos KYC antes de invertir. Una vez subidos podrás invertir mientras los revisamos.');
         }
 
+        // Bloquear si fue RECHAZADO
+        if ($user->kyc_status === 'rechazado') {
+            // Si es una petición AJAX, retornar JSON
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Tu verificación KYC fue rechazada. Debes subir nuevos documentos para poder invertir.',
+                    'motivo' => $user->kyc_notas,
+                    'kyc_status' => $user->kyc_status
+                ], 403);
+            }
+
+            return redirect()
+                ->route('inversionista.kyc.create')
+                ->with('error', 'Tu verificación KYC fue rechazada. Debes subir nuevos documentos para poder invertir. Motivo: ' . $user->kyc_notas);
+        }
+
+        // Estados que SÍ permiten invertir: en_revision, aprobado
         return $next($request);
     }
 }

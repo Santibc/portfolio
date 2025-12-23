@@ -26,7 +26,7 @@
         <p class="project-location">{{ $location }}</p>
         <div class="project-metrics">
             <div class="metric">
-                <span class="metric-label">Rentabilidad</span>
+                <span class="metric-label">ROI</span>
                 <span class="metric-value success">{{ $roi }}% E.A</span>
             </div>
             <div class="metric">
@@ -34,8 +34,8 @@
                 <span class="metric-value">{{ $duration }}</span>
             </div>
             <div class="metric">
-                <span class="metric-label">Min. inversión</span>
-                <span class="metric-value">${{ number_format($minInvestment, 0) }}</span>
+                <span class="metric-label">Mín.</span>
+                <span class="metric-value">${{ number_format($minInvestment, 0, ',', '.') }}</span>
             </div>
         </div>
         <div class="progress-container">

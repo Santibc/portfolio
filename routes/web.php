@@ -12,7 +12,16 @@ use App\Http\Controllers\Farmer\ProjectController;
 use App\Http\Controllers\Farmer\ProjectDocumentController;
 use App\Http\Controllers\Farmer\ProjectImageController;
 use App\Http\Controllers\Investor\DashboardController as InvestorDashboardController;
+use App\Http\Controllers\Investor\KycController;
+use App\Http\Controllers\Admin\KycReviewController;
 use App\Http\Controllers\Sales\DashboardController as SalesDashboardController;
+use App\Http\Controllers\Public\ProjectCatalogController;
+use App\Http\Controllers\Investor\WalletController;
+use App\Http\Controllers\Investor\InvestmentController;
+use App\Http\Controllers\Investor\DividendController;
+use App\Http\Controllers\Admin\DividendManagementController;
+use App\Http\Controllers\Admin\WithdrawalManagementController;
+use App\Http\Controllers\Investor\WithdrawalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,6 +37,14 @@ use Illuminate\Support\Facades\Route;
 
 // Página principal - En construcción
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
+
+// ============================================
+// MÓDULO 6: CATÁLOGO PÚBLICO DE PROYECTOS
+// ============================================
+Route::prefix('catalogo')->name('catalog.')->group(function () {
+    Route::get('/', [ProjectCatalogController::class, 'index'])->name('index');
+    Route::get('/{codigo}', [ProjectCatalogController::class, 'show'])->name('show');
+});
 
 // Dashboard general - Redirige según el rol del usuario
 Route::get('/dashboard', [RoleRedirectController::class, 'redirect'])
@@ -93,10 +110,35 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     Route::post('/proyectos/{proyecto}/aprobar', [ProjectApprovalController::class, 'approve'])->name('projects.approve');
     Route::post('/proyectos/{proyecto}/rechazar', [ProjectApprovalController::class, 'reject'])->name('projects.reject');
 
+    // MÓDULO 5: Revisión de KYC
+    Route::get('/kyc', [KycReviewController::class, 'index'])->name('kyc.index');
+    Route::get('/kyc/{user}', [KycReviewController::class, 'show'])->name('kyc.show');
+    Route::post('/kyc/{user}/aprobar', [KycReviewController::class, 'approve'])->name('kyc.approve');
+    Route::post('/kyc/{user}/rechazar', [KycReviewController::class, 'reject'])->name('kyc.reject');
+
+    // MÓDULO 9: Gestión de Dividendos
+    Route::prefix('dividendos')->name('dividends.')->group(function () {
+        Route::get('/', [DividendManagementController::class, 'index'])->name('index');
+        Route::get('/{dividendo}', [DividendManagementController::class, 'show'])->name('show');
+        Route::post('/{dividendo}/pagar', [DividendManagementController::class, 'pay'])->name('pay');
+        Route::post('/{dividendo}/cancelar', [DividendManagementController::class, 'cancel'])->name('cancel');
+        Route::post('/procesar-todos', [DividendManagementController::class, 'processAll'])->name('process-all');
+        Route::post('/marcar-atrasados', [DividendManagementController::class, 'markOverdue'])->name('mark-overdue');
+    });
+
+    // MÓDULO 11: Gestión de Retiros
+    Route::prefix('retiros')->name('withdrawals.')->group(function () {
+        Route::get('/', [WithdrawalManagementController::class, 'index'])->name('index');
+        Route::get('/pendientes', [WithdrawalManagementController::class, 'pending'])->name('pending');
+        Route::get('/aprobados', [WithdrawalManagementController::class, 'approved'])->name('approved');
+        Route::get('/{retiro}', [WithdrawalManagementController::class, 'show'])->name('show');
+        Route::post('/{retiro}/aprobar', [WithdrawalManagementController::class, 'approve'])->name('approve');
+        Route::post('/{retiro}/rechazar', [WithdrawalManagementController::class, 'reject'])->name('reject');
+        Route::post('/{retiro}/marcar-pagado', [WithdrawalManagementController::class, 'markAsPaid'])->name('mark-paid');
+    });
+
     // Módulos futuros:
     // - Gestión de usuarios
-    // - Aprobación de KYC
-    // - Gestión de retiros
     // - Reportes y analytics
     // - Configuración del sistema
 });
@@ -152,19 +194,47 @@ Route::middleware(['auth', 'role:Agricultor'])->prefix('agricultor')->name('farm
 Route::middleware(['auth', 'role:Inversionista'])->prefix('inversionista')->name('inversionista.')->group(function () {
     Route::get('/dashboard', [InvestorDashboardController::class, 'index'])->name('dashboard');
 
-    // Rutas que NO requieren KYC
-    Route::get('/kyc', function () {
-        return view('kyc.index');
-    })->name('kyc.index');
+    // MÓDULO 5: Rutas de KYC (NO requieren KYC aprobado)
+    Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
+    Route::get('/kyc/upload', [KycController::class, 'create'])->name('kyc.create');
+    Route::post('/kyc', [KycController::class, 'store'])->name('kyc.store');
 
-    // Rutas que SÍ requieren KYC aprobado
-    Route::middleware('kyc.approved')->group(function () {
+    // Rutas que SÍ requieren KYC aprobado (en_revision o aprobado)
+    Route::middleware('check.kyc')->group(function () {
+        // MÓDULO 7: Billetera
+        Route::prefix('billetera')->name('wallet.')->group(function () {
+            Route::get('/', [WalletController::class, 'index'])->name('index');
+            Route::get('/transacciones', [WalletController::class, 'transactions'])->name('transactions');
+        });
+
+        // MÓDULO 8: Inversiones
+        Route::prefix('inversiones')->name('investments.')->group(function () {
+            Route::get('/', [InvestmentController::class, 'index'])->name('index');
+            Route::get('/proyecto/{proyecto}/invertir', [InvestmentController::class, 'create'])->name('create');
+            Route::post('/proyecto/{proyecto}/contrato', [InvestmentController::class, 'showContract'])->name('contract');
+            Route::post('/proyecto/{proyecto}', [InvestmentController::class, 'store'])->name('store');
+            Route::get('/{inversion}', [InvestmentController::class, 'show'])->name('show');
+            // API para calcular retornos (AJAX)
+            Route::post('/proyecto/{proyecto}/calcular', [InvestmentController::class, 'calculateReturns'])->name('calculate');
+        });
+
+        // MÓDULO 9: Dividendos
+        Route::prefix('dividendos')->name('dividends.')->group(function () {
+            Route::get('/', [DividendController::class, 'index'])->name('index');
+            Route::get('/historial', [DividendController::class, 'history'])->name('history');
+        });
+
+        // MÓDULO 11: Retiros
+        Route::prefix('retiros')->name('withdrawals.')->group(function () {
+            Route::get('/', [WithdrawalController::class, 'index'])->name('index');
+            Route::get('/solicitar', [WithdrawalController::class, 'create'])->name('create');
+            Route::post('/', [WithdrawalController::class, 'store'])->name('store');
+            Route::get('/{retiro}', [WithdrawalController::class, 'show'])->name('show');
+            Route::post('/{retiro}/cancelar', [WithdrawalController::class, 'cancel'])->name('cancel');
+        });
+
         // Módulos futuros:
-        // - Catálogo de proyectos
-        // - Mis inversiones
-        // - Billetera
         // - Depósitos
-        // - Retiros
         // - Marketplace (trading)
     });
 });
