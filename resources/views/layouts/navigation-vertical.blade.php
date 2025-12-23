@@ -10,7 +10,32 @@
     @php
         $user = Auth::user();
         $isAdmin = $user->hasRole('Administrador');
+        $canVerTrabajadores = $user->can('ver_trabajadores');
+        $canVerCuadrillas = $user->can('ver_cuadrillas');
     @endphp
+
+    {{-- SECCIÓN RECURSOS HUMANOS - Solo si tiene algún permiso --}}
+    @if($canVerTrabajadores || $canVerCuadrillas)
+        <div class="nav-section-title">Recursos Humanos</div>
+
+        @can('ver_trabajadores')
+        <div class="nav-item {{ request()->routeIs('trabajadores.*') ? 'active' : '' }}">
+            <a href="{{ route('trabajadores.index') }}" class="nav-link">
+                <i class="bi bi-people-fill"></i>
+                <span>Trabajadores</span>
+            </a>
+        </div>
+        @endcan
+
+        @can('ver_cuadrillas')
+        <div class="nav-item {{ request()->routeIs('cuadrillas.*') ? 'active' : '' }}">
+            <a href="{{ route('cuadrillas.index') }}" class="nav-link">
+                <i class="bi bi-diagram-3"></i>
+                <span>Cuadrillas</span>
+            </a>
+        </div>
+        @endcan
+    @endif
 
     @if($isAdmin)
         {{-- SECCIÓN ADMIN --}}

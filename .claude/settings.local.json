@@ -24,7 +24,10 @@
       "Bash(dir /s /b \"c:\\xampp\\htdocs\\developments\\portfolio\\resources\\views\\admin\")",
       "Bash(del \"c:\\xampp\\htdocs\\developments\\portfolio\\app\\Http\\Controllers\\Admin\\DocumentationController.php\")",
       "Bash(php fix_videos.php:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(composer show:*)",
+      "Bash(composer require:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

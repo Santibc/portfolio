@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class VehiculoDocumento extends Model
+{
+    protected $table = 'vehiculo_documentos';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'vehiculo_id',
+        'tipo',
+        'nombre',
+        'archivo_path',
+        'fecha_documento',
+        'fecha_caducidad',
+    ];
+
+    protected $casts = [
+        'fecha_documento' => 'date',
+        'fecha_caducidad' => 'date',
+    ];
+
+    public function vehiculo(): BelongsTo
+    {
+        return $this->belongsTo(Vehiculo::class);
+    }
+}
