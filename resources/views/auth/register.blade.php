@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - Esnova</title>
+    <title>Registro - Flores y Algo Mas</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
     
     <!-- Tailwind CSS -->
@@ -119,7 +119,7 @@
     <!-- Contenedor principal -->
     <div class="content-container">
         
-        <img src="{{ asset('images/logo1.png') }}" alt="Logo Esnova" class="brand-logo-img mb-8">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo Flores y Algo Mas" class="brand-logo-img mb-8">
 
         <div class="register-card">
             <form method="POST" action="{{ route('register') }}">

@@ -4,8 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use Spatie\Permission\Models\Role;
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -19,6 +18,9 @@ class DatabaseSeeder extends Seeder
             PaisSeeder::class,
             DepartamentoSeeder::class,
             CiudadSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            TemplateTiendaSeeder::class,
+            ProductSeeder::class,
         ]);
 
     }

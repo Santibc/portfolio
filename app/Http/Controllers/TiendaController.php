@@ -624,7 +624,15 @@ public function procesarCompra(Request $request)
         'telefono' => 'required|string|max:255',
         'direccion' => 'required|string|max:255',
         'ciudad_id' => 'required|exists:ciudades,id',
-        'notas' => 'nullable|string'
+        'notas' => 'nullable|string',
+        // Campos floristería
+        'nombre_destinatario' => 'nullable|string|max:255',
+        'telefono_destinatario' => 'nullable|string|max:255',
+        'mensaje_tarjeta' => 'nullable|string|max:250',
+        'fecha_entrega_deseada' => 'nullable|date|after_or_equal:today',
+        'horario_entrega' => 'nullable|string|in:manana,tarde,noche',
+        'es_sorpresa' => 'nullable|boolean',
+        'instrucciones_entrega' => 'nullable|string|max:500'
     ]);
 
     $carrito = $this->obtenerCarrito($empresa->id);
@@ -640,7 +648,7 @@ public function procesarCompra(Request $request)
         // Crear compra
         $compra = Compra::create([
             'empresa_id' => $empresa->id,
-            'user_id' => Auth::check() ? Auth::id() : null, // Vincular a usuario autenticado
+            'user_id' => Auth::check() ? Auth::id() : null,
             'nombre_cliente' => $request->nombre,
             'email_cliente' => $request->email,
             'telefono_cliente' => $request->telefono,
@@ -649,11 +657,19 @@ public function procesarCompra(Request $request)
             'subtotal' => $carrito->subtotal,
             'descuento_total' => $carrito->descuento_total ?? 0,
             'descuentos_aplicados' => $carrito->descuentos_aplicados ?? [],
-            'impuestos' => 0, // Calcular según configuración
-            'costo_envio' => 0, // Calcular según ciudad
+            'impuestos' => 0,
+            'costo_envio' => 0,
             'total' => $carrito->total ?? $carrito->subtotal,
             'estado' => 'pendiente',
-            'notas' => $request->notas
+            'notas' => $request->notas,
+            // Campos floristería
+            'nombre_destinatario' => $request->nombre_destinatario,
+            'telefono_destinatario' => $request->telefono_destinatario,
+            'mensaje_tarjeta' => $request->mensaje_tarjeta,
+            'fecha_entrega_deseada' => $request->fecha_entrega_deseada,
+            'horario_entrega' => $request->horario_entrega,
+            'es_sorpresa' => $request->boolean('es_sorpresa'),
+            'instrucciones_entrega' => $request->instrucciones_entrega
         ]);
 
         // Crear items de compra

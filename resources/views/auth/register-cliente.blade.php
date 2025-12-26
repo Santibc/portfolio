@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta - Esnova</title>
+    <title>Crear Cuenta - Flores y Algo Mas</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
 
     <!-- Tailwind CSS -->
@@ -111,7 +111,7 @@
     <!-- Contenedor principal -->
     <div class="content-container">
 
-        <img src="{{ asset('images/logo1.png') }}" alt="Logo Esnova" class="brand-logo-img mb-4">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo Flores y Algo Mas" class="brand-logo-img mb-4">
 
         <div class="login-card">
             <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Crear Cuenta</h2>

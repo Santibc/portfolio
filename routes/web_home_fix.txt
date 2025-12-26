@@ -1,0 +1,10 @@
+Route::get('/', function () {
+    $empresa = \App\Models\Empresa::first();
+    $productos = \App\Models\Producto::where('empresa_id', $empresa->id)
+        ->where('activo', true)
+        ->where('eliminado', false)
+        ->with(['categoria', 'imagenes', 'precios'])
+        ->limit(6)
+        ->get();
+    return view('home', compact('productos', 'empresa'));
+})->name('home');

@@ -22,7 +22,9 @@
       "Bash(Select-Object -First 5)",
       "Bash(Select-Object -First 1)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(/c/xampp/mysql/bin/mysql:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

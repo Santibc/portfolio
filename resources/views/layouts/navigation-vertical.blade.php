@@ -2,8 +2,8 @@
     {{-- Logo --}}
     <div class="d-flex justify-content-center align-items-center py-4">
         <a href="{{ url('/') }}" class="text-decoration-none">
-            <img style="width: 140px;" src="{{ asset('images/logo1.png') }}" class="logo-full" alt="Logo">
-            <img src="{{ asset('images/logo1.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
+            <img style="width: 140px;" src="{{ asset('images/logo.png') }}" class="logo-full" alt="Logo">
+            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
         </a>
     </div>
 
@@ -78,11 +78,11 @@
                                 <span>Clientes</span>
                             </a> --}}
                             @if(auth()->user()->empresa->activo)
-                                <a href="{{ route('empresa.preview') }}" target="_blank"
-                                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa.preview') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
+                                <a href="{{ route('home') }}" target="_blank"
+                                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white" style="transition: transform 0.2s ease, background-color 0.2s ease;"
                                    title="Ver mi tienda"
                                    onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                                   onmouseout="this.style.backgroundColor='{{ request()->is('empresa.preview') ? '' : 'transparent' }}'">
+                                   onmouseout="this.style.backgroundColor='transparent'">
                                     <i class="bi bi-eye"></i>
                                     <span>Ver Mi Tienda</span>
                                 </a>

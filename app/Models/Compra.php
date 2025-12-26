@@ -24,7 +24,15 @@ class Compra extends Model
         'costo_envio',
         'total',
         'estado',
-        'notas'
+        'notas',
+        // Campos específicos floristería
+        'nombre_destinatario',
+        'telefono_destinatario',
+        'mensaje_tarjeta',
+        'fecha_entrega_deseada',
+        'horario_entrega',
+        'es_sorpresa',
+        'instrucciones_entrega'
     ];
 
     protected $casts = [
@@ -33,7 +41,9 @@ class Compra extends Model
         'descuentos_aplicados' => 'array',
         'impuestos' => 'decimal:2',
         'costo_envio' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
+        'fecha_entrega_deseada' => 'date',
+        'es_sorpresa' => 'boolean'
     ];
 
     public function empresa()

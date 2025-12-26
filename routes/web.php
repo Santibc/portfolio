@@ -24,18 +24,27 @@ use App\Http\Controllers\ActualizacionPreciosController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-// Ruta raíz - Muestra la tienda de la primera empresa (single-tenant)
+// Ruta raíz - Redirige a la tienda principal
 Route::get('/', function () {
     $empresa = \App\Models\Empresa::orderBy('id')->first();
 
     if (!$empresa) {
-        // Si no hay empresa, mostrar mensaje o redirigir al login
         return redirect()->route('login')->with('info', 'Por favor inicia sesión para configurar tu tienda.');
     }
 
-    // Redirigir al TiendaController con el slug de la empresa
     return app(\App\Http\Controllers\TiendaController::class)->show($empresa->slug, request());
-})->name('tienda.empresa'); // Ruta nombrada para compatibilidad
+})->name('home');
+
+// Alias para /tienda que usa el mismo controlador
+Route::get('/tienda', function () {
+    $empresa = \App\Models\Empresa::orderBy('id')->first();
+
+    if (!$empresa) {
+        return redirect()->route('login')->with('info', 'Por favor inicia sesión para configurar tu tienda.');
+    }
+
+    return app(\App\Http\Controllers\TiendaController::class)->show($empresa->slug, request());
+})->name('tienda.empresa');
 
 // Landing page deshabilitada - Single-tenant
 // Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index']);

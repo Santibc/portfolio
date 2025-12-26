@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Mi Cuenta') - Esnova</title>
+    <title>@yield('title', 'Mi Cuenta') - Flores y Algo Mas</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
 
     <!-- Bootstrap 5 -->
@@ -105,7 +105,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                <img src="{{ asset('images/logo1.png') }}" alt="Logo">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

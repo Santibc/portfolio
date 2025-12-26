@@ -478,11 +478,114 @@
                                 
                                 <div class="col-12">
                                     <label for="notas" class="form-label">Notas adicionales (opcional)</label>
-                                    <textarea class="form-control" 
-                                              id="notas" 
-                                              name="notas" 
-                                              rows="3" 
+                                    <textarea class="form-control"
+                                              id="notas"
+                                              name="notas"
+                                              rows="3"
                                               placeholder="Instrucciones especiales para la entrega...">{{ old('notas') }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información del Destinatario y Entrega (Floristería) -->
+                        <div class="checkout-container">
+                            <h2 class="section-title">
+                                <i class="bi bi-flower1"></i> Detalles del Envío Floral
+                            </h2>
+
+                            <div class="alert alert-light border mb-4">
+                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                <small>¿El arreglo es para ti o para alguien más? Completa los datos del destinatario.</small>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="mismo_destinatario" checked onchange="toggleDestinatario()">
+                                        <label class="form-check-label" for="mismo_destinatario">
+                                            El pedido es para mí (usar mis datos como destinatario)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="destinatario_fields" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="nombre_destinatario" class="form-label">Nombre del destinatario</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="nombre_destinatario"
+                                                   name="nombre_destinatario"
+                                                   value="{{ old('nombre_destinatario') }}"
+                                                   placeholder="Nombre de quien recibe las flores">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label for="telefono_destinatario" class="form-label">Teléfono del destinatario</label>
+                                            <input type="tel"
+                                                   class="form-control"
+                                                   id="telefono_destinatario"
+                                                   name="telefono_destinatario"
+                                                   value="{{ old('telefono_destinatario') }}"
+                                                   placeholder="Para coordinar la entrega">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="fecha_entrega_deseada" class="form-label">
+                                        <i class="bi bi-calendar-event text-primary"></i> Fecha de entrega deseada
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="fecha_entrega_deseada"
+                                           name="fecha_entrega_deseada"
+                                           value="{{ old('fecha_entrega_deseada', date('Y-m-d', strtotime('+1 day'))) }}"
+                                           min="{{ date('Y-m-d') }}">
+                                    <small class="text-muted">Pedidos antes de las 2pm pueden entregarse el mismo día</small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="horario_entrega" class="form-label">
+                                        <i class="bi bi-clock text-primary"></i> Horario preferido
+                                    </label>
+                                    <select class="form-select" id="horario_entrega" name="horario_entrega">
+                                        <option value="">Cualquier hora del día</option>
+                                        <option value="manana" {{ old('horario_entrega') == 'manana' ? 'selected' : '' }}>Mañana (8am - 12pm)</option>
+                                        <option value="tarde" {{ old('horario_entrega') == 'tarde' ? 'selected' : '' }}>Tarde (12pm - 6pm)</option>
+                                        <option value="noche" {{ old('horario_entrega') == 'noche' ? 'selected' : '' }}>Noche (6pm - 9pm)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="es_sorpresa" name="es_sorpresa" value="1" {{ old('es_sorpresa') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="es_sorpresa">
+                                            <i class="bi bi-gift text-danger"></i> Es una sorpresa (no llamar al destinatario antes de entregar)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="mensaje_tarjeta" class="form-label">
+                                        <i class="bi bi-envelope-heart text-danger"></i> Mensaje para la tarjeta (opcional)
+                                    </label>
+                                    <textarea class="form-control"
+                                              id="mensaje_tarjeta"
+                                              name="mensaje_tarjeta"
+                                              rows="3"
+                                              maxlength="250"
+                                              placeholder="Escribe un mensaje especial que incluiremos en una tarjeta con tu arreglo...">{{ old('mensaje_tarjeta') }}</textarea>
+                                    <small class="text-muted">Máximo 250 caracteres. <span id="mensaje_contador">0</span>/250</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="instrucciones_entrega" class="form-label">Instrucciones especiales de entrega</label>
+                                    <textarea class="form-control"
+                                              id="instrucciones_entrega"
+                                              name="instrucciones_entrega"
+                                              rows="2"
+                                              placeholder="Ej: Dejar en recepción, tocar el timbre 2 veces, preguntar por...">{{ old('instrucciones_entrega') }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -665,7 +768,25 @@
             $('.form-control, .form-select').on('input change', function() {
                 $(this).removeClass('is-invalid');
             });
+
+            // Contador de caracteres para mensaje de tarjeta
+            $('#mensaje_tarjeta').on('input', function() {
+                const count = $(this).val().length;
+                $('#mensaje_contador').text(count);
+            });
         });
+
+        // Toggle campos de destinatario
+        function toggleDestinatario() {
+            const checked = $('#mismo_destinatario').is(':checked');
+            if (checked) {
+                $('#destinatario_fields').slideUp();
+                $('#nombre_destinatario').val('');
+                $('#telefono_destinatario').val('');
+            } else {
+                $('#destinatario_fields').slideDown();
+            }
+        }
     </script>
 </body>
 </html>
