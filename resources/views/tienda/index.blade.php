@@ -68,8 +68,8 @@
             <h1 class="hero-title">{{ $empresa->nombre }}</h1>
             <p class="hero-description">{{ $empresa->descripcion ?? 'Tu tienda online de confianza.' }}</p>
             <div class="hero-actions" data-aos="fade-up" data-aos-delay="200">
-              <a href="#products" class="btn-primary">Comprar ahora</a>
-              <a href="#categories" class="btn-secondary">Categorias</a>
+              <a href="#productos" class="btn-primary">Comprar ahora</a>
+              <a href="#categorias" class="btn-secondary">Categorías</a>
             </div>
             <div class="features-list" data-aos="fade-up" data-aos-delay="300">
               <div class="feature-item">

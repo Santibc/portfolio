@@ -32,7 +32,10 @@ class Compra extends Model
         'fecha_entrega_deseada',
         'horario_entrega',
         'es_sorpresa',
-        'instrucciones_entrega'
+        'instrucciones_entrega',
+        // Repartidor
+        'repartidor_id',
+        'asignado_repartidor_at'
     ];
 
     protected $casts = [
@@ -43,7 +46,8 @@ class Compra extends Model
         'costo_envio' => 'decimal:2',
         'total' => 'decimal:2',
         'fecha_entrega_deseada' => 'date',
-        'es_sorpresa' => 'boolean'
+        'es_sorpresa' => 'boolean',
+        'asignado_repartidor_at' => 'datetime'
     ];
 
     public function empresa()
@@ -103,6 +107,11 @@ class Compra extends Model
     public function envio()
     {
         return $this->hasOne(Envio::class);
+    }
+
+    public function repartidor()
+    {
+        return $this->belongsTo(Repartidor::class);
     }
 
     public function movimientosStock()

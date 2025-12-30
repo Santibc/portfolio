@@ -244,8 +244,21 @@ Route::middleware(['auth', 'verificar.empresa'])->prefix('compras')->name('compr
     Route::get('/{compra}', [App\Http\Controllers\ComprasController::class, 'show'])->name('show');
     Route::post('/{compra}/cambiar-estado', [App\Http\Controllers\ComprasController::class, 'cambiarEstado'])->name('cambiar-estado');
     Route::post('/{compra}/actualizar-envio', [App\Http\Controllers\ComprasController::class, 'actualizarEnvio'])->name('actualizar-envio');
+    Route::post('/{compra}/asignar-repartidor', [App\Http\Controllers\ComprasController::class, 'asignarRepartidor'])->name('asignar-repartidor');
     Route::get('/{compra}/timeline', [App\Http\Controllers\ComprasController::class, 'timeline'])->name('timeline');
+    Route::get('/{compra}/imprimir', [App\Http\Controllers\ComprasController::class, 'imprimir'])->name('imprimir');
     Route::get('/exportar/excel', [App\Http\Controllers\ComprasController::class, 'exportar'])->name('exportar');
+});
+
+// ========== RUTAS DE REPARTIDORES ==========
+Route::middleware(['auth', 'verificar.empresa'])->prefix('repartidores')->name('repartidores.')->group(function () {
+    Route::get('/', [App\Http\Controllers\RepartidoresController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\RepartidoresController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\RepartidoresController::class, 'store'])->name('store');
+    Route::get('/{repartidor}/edit', [App\Http\Controllers\RepartidoresController::class, 'edit'])->name('edit');
+    Route::put('/{repartidor}', [App\Http\Controllers\RepartidoresController::class, 'update'])->name('update');
+    Route::delete('/{repartidor}', [App\Http\Controllers\RepartidoresController::class, 'destroy'])->name('destroy');
+    Route::post('/{repartidor}/toggle-activo', [App\Http\Controllers\RepartidoresController::class, 'toggleActivo'])->name('toggle-activo');
 });
 
 // Alias para la ruta index de compras
@@ -253,6 +266,21 @@ Route::get('/compras', [App\Http\Controllers\ComprasController::class, 'index'])
     ->middleware(['auth', 'verificar.empresa'])
     ->name('compras');
 
+// ========== RUTAS DE GESTIÓN DE CLIENTES ==========
+Route::middleware(['auth', 'verificar.empresa'])->prefix('gestion-clientes')->name('gestion-clientes.')->group(function () {
+    Route::get('/', [App\Http\Controllers\GestionClientesController::class, 'index'])->name('index');
+    Route::get('/{email}', [App\Http\Controllers\GestionClientesController::class, 'show'])->name('show');
+    Route::post('/direcciones', [App\Http\Controllers\GestionClientesController::class, 'guardarDireccion'])->name('direcciones.store');
+    Route::put('/direcciones/{direccion}', [App\Http\Controllers\GestionClientesController::class, 'actualizarDireccion'])->name('direcciones.update');
+    Route::delete('/direcciones/{direccion}', [App\Http\Controllers\GestionClientesController::class, 'eliminarDireccion'])->name('direcciones.destroy');
+    Route::get('/api/direcciones/{email}', [App\Http\Controllers\GestionClientesController::class, 'obtenerDirecciones'])->name('api.direcciones');
+});
+
+// ========== DASHBOARD ANALÍTICO ==========
+Route::middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/dashboard-analitico', [App\Http\Controllers\DashboardAnaliticoController::class, 'index'])->name('dashboard-analitico');
+    Route::get('/dashboard-analitico/ventas-periodo', [App\Http\Controllers\DashboardAnaliticoController::class, 'ventasPorPeriodo'])->name('dashboard-analitico.ventas-periodo');
+});
 
 // Webhook de Wompi (sin CSRF)
 Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
@@ -366,4 +394,71 @@ Route::middleware(['auth'])->prefix('cliente')->group(function () {
         ->name('cliente.calificar');
     Route::post('/calificar', [App\Http\Controllers\Cliente\MisComprasController::class, 'guardarCalificacion'])
         ->name('cliente.calificar.guardar');
+});
+
+// ============================================
+// MÓDULO DE LOGÍSTICA
+// ============================================
+Route::middleware(['auth'])->prefix('logistica')->group(function () {
+    // Zonas de Cobertura
+    Route::get('/zonas', [App\Http\Controllers\LogisticaController::class, 'indexZonas'])
+        ->name('logistica.zonas.index');
+    Route::get('/zonas/create', [App\Http\Controllers\LogisticaController::class, 'createZona'])
+        ->name('logistica.zonas.create');
+    Route::post('/zonas', [App\Http\Controllers\LogisticaController::class, 'storeZona'])
+        ->name('logistica.zonas.store');
+    Route::get('/zonas/{id}/edit', [App\Http\Controllers\LogisticaController::class, 'editZona'])
+        ->name('logistica.zonas.edit');
+    Route::put('/zonas/{id}', [App\Http\Controllers\LogisticaController::class, 'updateZona'])
+        ->name('logistica.zonas.update');
+    Route::delete('/zonas/{id}', [App\Http\Controllers\LogisticaController::class, 'destroyZona'])
+        ->name('logistica.zonas.destroy');
+
+    // Tarifas por Zona
+    Route::get('/tarifas', [App\Http\Controllers\LogisticaController::class, 'indexTarifas'])
+        ->name('logistica.tarifas.index');
+    Route::get('/tarifas/create/{zonaId?}', [App\Http\Controllers\LogisticaController::class, 'createTarifa'])
+        ->name('logistica.tarifas.create');
+    Route::post('/tarifas', [App\Http\Controllers\LogisticaController::class, 'storeTarifa'])
+        ->name('logistica.tarifas.store');
+    Route::get('/tarifas/{id}/edit', [App\Http\Controllers\LogisticaController::class, 'editTarifa'])
+        ->name('logistica.tarifas.edit');
+    Route::put('/tarifas/{id}', [App\Http\Controllers\LogisticaController::class, 'updateTarifa'])
+        ->name('logistica.tarifas.update');
+    Route::delete('/tarifas/{id}', [App\Http\Controllers\LogisticaController::class, 'destroyTarifa'])
+        ->name('logistica.tarifas.destroy');
+
+    // Horarios de Entrega
+    Route::get('/horarios', [App\Http\Controllers\LogisticaController::class, 'indexHorarios'])
+        ->name('logistica.horarios.index');
+    Route::get('/horarios/create/{zonaId?}', [App\Http\Controllers\LogisticaController::class, 'createHorario'])
+        ->name('logistica.horarios.create');
+    Route::post('/horarios', [App\Http\Controllers\LogisticaController::class, 'storeHorario'])
+        ->name('logistica.horarios.store');
+    Route::get('/horarios/{id}/edit', [App\Http\Controllers\LogisticaController::class, 'editHorario'])
+        ->name('logistica.horarios.edit');
+    Route::put('/horarios/{id}', [App\Http\Controllers\LogisticaController::class, 'updateHorario'])
+        ->name('logistica.horarios.update');
+    Route::delete('/horarios/{id}', [App\Http\Controllers\LogisticaController::class, 'destroyHorario'])
+        ->name('logistica.horarios.destroy');
+
+    // Reglas de Capacidad
+    Route::get('/capacidad', [App\Http\Controllers\LogisticaController::class, 'indexCapacidad'])
+        ->name('logistica.capacidad.index');
+    Route::get('/capacidad/create', [App\Http\Controllers\LogisticaController::class, 'createCapacidad'])
+        ->name('logistica.capacidad.create');
+    Route::post('/capacidad', [App\Http\Controllers\LogisticaController::class, 'storeCapacidad'])
+        ->name('logistica.capacidad.store');
+    Route::get('/capacidad/{id}/edit', [App\Http\Controllers\LogisticaController::class, 'editCapacidad'])
+        ->name('logistica.capacidad.edit');
+    Route::put('/capacidad/{id}', [App\Http\Controllers\LogisticaController::class, 'updateCapacidad'])
+        ->name('logistica.capacidad.update');
+    Route::delete('/capacidad/{id}', [App\Http\Controllers\LogisticaController::class, 'destroyCapacidad'])
+        ->name('logistica.capacidad.destroy');
+
+    // API para Checkout
+    Route::post('/api/verificar-disponibilidad', [App\Http\Controllers\LogisticaController::class, 'verificarDisponibilidad'])
+        ->name('logistica.api.verificar-disponibilidad');
+    Route::post('/api/horarios-disponibles', [App\Http\Controllers\LogisticaController::class, 'obtenerHorariosDisponibles'])
+        ->name('logistica.api.horarios-disponibles');
 });

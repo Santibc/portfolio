@@ -13,6 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
     @stack('styles')
+    @yield('css')
 
     <style>
         body {
@@ -24,7 +25,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
         .sidebar {
-            width: 250px;
+            width: 220px;
             transition: all 0.3s ease;
             background: linear-gradient(to bottom, #FF00C1, #0B00F9) !important;
             overflow-x: hidden !important;
@@ -32,55 +33,8 @@
         }
 
         .sidebar.collapsed {
-            width: 70px;
+            width: 60px;
             overflow-x: hidden !important;
-        }
-
-        .sidebar .nav-link span {
-            transition: opacity 0.2s, width 0.2s;
-        }
-
-        .sidebar.collapsed .nav-link span {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-        }
-
-        /* Evitar que botones se desborden horizontalmente */
-        .sidebar.collapsed .nav-link {
-            justify-content: center !important;
-            padding: 0.1rem !important;
-            width: 100% !important;
-            max-width: 45px !important;
-            margin: 0.02rem auto !important;
-            min-height: 25px !important;
-            border-radius: 0.2rem !important;
-        }
-
-        .sidebar.collapsed .nav-link i {
-            margin: 0 !important;
-            font-size: 0.9rem !important;
-        }
-
-        .sidebar.collapsed .nav-item {
-            width: 100% !important;
-            text-align: center !important;
-        }
-
-        /* Ocultar texto de "Salir" cuando está colapsado */
-        .sidebar.collapsed .logout-label {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            transition: opacity 0.2s, width 0.2s;
-        }
-
-        .sidebar.collapsed .btn-outline-danger {
-            justify-content: center !important;
-            padding: 0.1rem !important;
-            max-width: 45px !important;
-            min-height: 25px !important;
-            margin: 0.02rem auto !important;
         }
 
         header {
@@ -195,7 +149,11 @@
 
         {{-- Contenido --}}
         <main id="appMainContent">
-            {{ $slot }}
+            @hasSection('content')
+                @yield('content')
+            @else
+                {{ $slot ?? '' }}
+            @endif
         </main>
     </div>
 
@@ -305,5 +263,6 @@
     </script>
 
     @stack('scripts')
+    @yield('scripts')
 </body>
 </html>

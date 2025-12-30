@@ -24,7 +24,8 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(/c/xampp/mysql/bin/mysql:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

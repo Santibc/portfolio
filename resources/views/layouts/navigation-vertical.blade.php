@@ -1,409 +1,285 @@
-<div class="d-flex flex-column h-100 bg-gradient-to-b from-pink-500 to-purple-600 text-white" style="background: linear-gradient(to bottom, #FF00C1, #0B00F9);">
+<div class="d-flex flex-column h-100 text-white">
     {{-- Logo --}}
-    <div class="d-flex justify-content-center align-items-center py-4">
-        <a href="{{ url('/') }}" class="text-decoration-none">
-            <img style="width: 140px;" src="{{ asset('images/logo.png') }}" class="logo-full" alt="Logo">
-            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
+    <div class="d-flex justify-content-center align-items-center py-3 border-bottom border-white-25" style="min-height: 80px;">
+        <a href="{{ url('/') }}" class="text-decoration-none d-flex justify-content-center">
+            <img src="{{ asset('images/logo.png') }}" class="sidebar-logo-full" style="max-width: 140px; height: auto;" alt="Logo">
+            <img src="{{ asset('images/ico.png') }}" class="sidebar-logo-icon" style="width: 36px; display: none;" alt="Logo">
         </a>
     </div>
 
     {{-- Navegación --}}
-    <nav class="nav flex-column px-3 py-3 overflow-auto flex-grow-1">
+    <nav class="flex-grow-1 overflow-auto py-2 px-2">
         {{-- Inicio --}}
         <a href="{{ route('dashboard') }}"
-           class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('dashboard') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-           title="Inicio"
-           onmouseover="this.style.transform='translateX(5px)'"
-           onmouseout="this.style.transform='translateX(0)'">
+           class="sidebar-link {{ request()->is('dashboard') ? 'active' : '' }}"
+           title="Inicio">
             <i class="bi bi-house-door-fill"></i>
             <span>Inicio</span>
         </a>
 
-        {{-- Panel Cliente - Solo para usuarios con rol cliente --}}
+        {{-- Panel Cliente --}}
         @if(auth()->user()->hasRole('cliente'))
             <a href="{{ route('cliente.compras') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('cliente.*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-               title="Mis Compras"
-               onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-               onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('cliente.*') ? '' : 'transparent' }}'">
+               class="sidebar-link {{ request()->routeIs('cliente.*') ? 'active' : '' }}"
+               title="Mis Compras">
                 <i class="bi bi-bag-check"></i>
                 <span>Mis Compras</span>
             </a>
         @endif
 
-        {{-- Mi Empresa y otras opciones - Solo para NO clientes --}}
+        {{-- Opciones para vendedores/admin --}}
         @unless(auth()->user()->hasRole('cliente'))
             @if(auth()->user()->empresa)
-                <div class="nav-item">
-                    <a href="#empresaSubmenu"
-                       class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                       title="Mi empresa"
+                <a href="{{ route('dashboard-analitico') }}"
+                   class="sidebar-link {{ request()->routeIs('dashboard-analitico*') ? 'active' : '' }}"
+                   title="Dashboard">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="{{ route('compras') }}"
+                   class="sidebar-link {{ request()->routeIs('compras*') ? 'active' : '' }}"
+                   title="Pedidos">
+                    <i class="bi bi-cart-check"></i>
+                    <span>Pedidos</span>
+                </a>
+
+                <a href="{{ route('productos') }}"
+                   class="sidebar-link {{ request()->is('productos*') ? 'active' : '' }}"
+                   title="Productos">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Productos</span>
+                </a>
+
+                <a href="{{ route('categorias') }}"
+                   class="sidebar-link {{ request()->is('categorias*') ? 'active' : '' }}"
+                   title="Categorías">
+                    <i class="bi bi-folder"></i>
+                    <span>Categorías</span>
+                </a>
+
+                <a href="{{ route('gestion-clientes.index') }}"
+                   class="sidebar-link {{ request()->routeIs('gestion-clientes.*') ? 'active' : '' }}"
+                   title="Clientes">
+                    <i class="bi bi-people"></i>
+                    <span>Clientes</span>
+                </a>
+
+                <a href="{{ route('stock.index') }}"
+                   class="sidebar-link {{ request()->routeIs('stock.*') ? 'active' : '' }}"
+                   title="Inventario">
+                    <i class="bi bi-archive"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="{{ route('descuentos.index') }}"
+                   class="sidebar-link {{ request()->routeIs('descuentos*') ? 'active' : '' }}"
+                   title="Descuentos">
+                    <i class="bi bi-tag"></i>
+                    <span>Descuentos</span>
+                </a>
+
+                {{-- Logística con submenú --}}
+                <div class="sidebar-submenu-container">
+                    <a href="#logisticaMenu"
+                       class="sidebar-link {{ request()->routeIs('logistica.*') || request()->routeIs('repartidores.*') ? 'active' : '' }}"
                        data-bs-toggle="collapse"
-                       aria-expanded="{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'true' : 'false' }}"
-                       onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-                       onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? '' : 'transparent' }}'">
-                        <i class="bi bi-building"></i>
-                        <span>Mi Empresa</span>
-                        <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
+                       title="Logística">
+                        <i class="bi bi-truck"></i>
+                        <span>Logística</span>
+                        <i class="bi bi-chevron-down ms-auto sidebar-chevron"></i>
                     </a>
-                    <div class="collapse {{ request()->is(['empresa*', 'productos*', 'clientes*', 'categorias*']) ? 'show' : '' }}" id="empresaSubmenu">
-                        <div class="ps-3">
-                            <a href="{{ route('empresa.index') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Configuración"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                               onmouseout="this.style.backgroundColor='{{ request()->is('empresa') ? '' : 'transparent' }}'">
-                                <i class="bi bi-gear"></i>
-                                <span>Configuración</span>
+                    <div class="collapse {{ request()->routeIs('logistica.*') || request()->routeIs('repartidores.*') ? 'show' : '' }}" id="logisticaMenu">
+                        <div class="sidebar-submenu">
+                            <a href="{{ route('logistica.zonas.index') }}" class="sidebar-sublink {{ request()->routeIs('logistica.zonas.*') ? 'active' : '' }}" title="Zonas">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>Zonas</span>
                             </a>
-                            <a href="{{ route('categorias') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('categorias*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Categorías"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                               onmouseout="this.style.backgroundColor='{{ request()->is('categorias*') ? '' : 'transparent' }}'">
-                                <i class="bi bi-folder"></i>
-                                <span>Categorías</span>
+                            <a href="{{ route('logistica.tarifas.index') }}" class="sidebar-sublink {{ request()->routeIs('logistica.tarifas.*') ? 'active' : '' }}" title="Tarifas">
+                                <i class="bi bi-cash-coin"></i>
+                                <span>Tarifas</span>
                             </a>
-                            <a href="{{ route('productos') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('productos*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Productos"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                               onmouseout="this.style.backgroundColor='{{ request()->is('productos*') ? '' : 'transparent' }}'">
-                                <i class="bi bi-box"></i>
-                                <span>Productos</span>
+                            <a href="{{ route('logistica.horarios.index') }}" class="sidebar-sublink {{ request()->routeIs('logistica.horarios.*') ? 'active' : '' }}" title="Horarios">
+                                <i class="bi bi-clock"></i>
+                                <span>Horarios</span>
                             </a>
-{{--                             <a href="{{ route('clientes.index') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
+                            <a href="{{ route('logistica.capacidad.index') }}" class="sidebar-sublink {{ request()->routeIs('logistica.capacidad.*') ? 'active' : '' }}" title="Capacidad">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>Capacidad</span>
+                            </a>
+                            <a href="{{ route('repartidores.index') }}" class="sidebar-sublink {{ request()->routeIs('repartidores.*') ? 'active' : '' }}" title="Repartidores">
                                 <i class="bi bi-person-badge"></i>
-                                <span>Clientes</span>
-                            </a> --}}
-                            @if(auth()->user()->empresa->activo)
-                                <a href="{{ route('home') }}" target="_blank"
-                                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                                   title="Ver mi tienda"
-                                   onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'"
-                                   onmouseout="this.style.backgroundColor='transparent'">
-                                    <i class="bi bi-eye"></i>
-                                    <span>Ver Mi Tienda</span>
-                                </a>
-                            @endif
+                                <span>Repartidores</span>
+                            </a>
                         </div>
                     </div>
                 </div>
+
+                <hr class="my-2 border-white border-opacity-25">
+
+                <a href="{{ route('empresa.index') }}"
+                   class="sidebar-link {{ request()->is('empresa') ? 'active' : '' }}"
+                   title="Configuración">
+                    <i class="bi bi-gear"></i>
+                    <span>Configuración</span>
+                </a>
+
+                @if(auth()->user()->empresa->activo)
+                    <a href="{{ route('home') }}" target="_blank"
+                       class="sidebar-link"
+                       title="Ver Tienda">
+                        <i class="bi bi-shop"></i>
+                        <span>Ver Tienda</span>
+                    </a>
+                @endif
             @else
                 <a href="{{ route('empresa.index') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->is('empresa*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                   title="Mi empresa"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->is('empresa*') ? '' : 'transparent' }}'">
+                   class="sidebar-link {{ request()->is('empresa*') ? 'active' : '' }}"
+                   title="Mi Empresa">
                     <i class="bi bi-building"></i>
                     <span>Mi Empresa</span>
                 </a>
             @endif
-
-            @if(auth()->user()->empresa)
-                <div class="nav-item">
-                    <a href="#stockSubmenu" 
-                       class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                       title="Gestión de stock"
-                       data-bs-toggle="collapse" 
-                       aria-expanded="{{ request()->routeIs('stock.*') ? 'true' : 'false' }}"
-                       onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'" 
-                       onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('stock.*') ? '' : 'transparent' }}'">
-                        <i class="bi bi-archive"></i>
-                        <span>Gestión de Stock</span>
-                        <i class="bi bi-chevron-down ms-auto submenu-icon"></i>
-                    </a>
-                    <div class="collapse {{ request()->routeIs('stock.*') ? 'show' : '' }}" id="stockSubmenu">
-                        <div class="ps-3">
-                            <a href="{{ route('stock.index') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.index') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Inventario"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" 
-                               onmouseout="this.style.backgroundColor='{{ request()->routeIs('stock.index') ? '' : 'transparent' }}'">
-                                <i class="bi bi-clipboard-check"></i>
-                                <span>Inventario</span>
-                            </a>
-                            <a href="{{ route('stock.dashboard') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.dashboard*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Dashboard"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" 
-                               onmouseout="this.style.backgroundColor='{{ request()->routeIs('stock.dashboard*') ? '' : 'transparent' }}'">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>Dashboard</span>
-                            </a>
-                            <a href="{{ route('stock.reporte-movimiento') }}"
-                               class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.reporte-movimiento*') ? 'bg-pink-500 shadow-lg' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease;"
-                               title="Reportes"
-                               onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" 
-                               onmouseout="this.style.backgroundColor='{{ request()->routeIs('stock.reporte-movimiento*') ? '' : 'transparent' }}'">
-                                <i class="bi bi-file-earmark-bar-graph"></i>
-                                <span>Reportes</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="{{ route('compras') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('compras*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                   title="Compras"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('compras*') ? '' : 'transparent' }}'">
-                    <i class="bi bi-cart-plus"></i>
-                    <span>Compras</span>
-                </a>
-
-                <a href="{{ route('descuentos.index') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('descuentos*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                   title="Descuentos"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('descuentos*') ? '' : 'transparent' }}'">
-                    <i class="bi bi-tag-fill"></i>
-                    <span>Descuentos</span>
-                </a>
-            @else
-                <a href="{{ route('stock.index') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.index') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
-                   title="Gestión de stock"
-                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
-                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('stock.index') ? '' : 'transparent' }}'">
-                    <i class="bi bi-archive"></i>
-                    <span>Gestión de Stock</span>
-                </a>
-            @endif
         @endunless
-
     </nav>
 
     {{-- Botón Salir --}}
-    <div class="mt-auto p-3">
+    <div class="p-2 border-top border-white-25">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="btn w-100 d-flex align-items-center justify-content-start gap-2 text-white" style="border: 2px solid rgba(255,255,255,0.5); background: transparent; transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;" 
-                    onmouseover="this.style.backgroundColor='white'; this.style.color='#FF00C1'; this.style.transform='translateX(5px)'" 
-                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='white'; this.style.transform='translateX(0)'">
+            <button type="submit" class="sidebar-link w-100 text-start border-0 bg-transparent" title="Salir">
                 <i class="bi bi-box-arrow-right"></i>
-                <span class="logout-label">Salir</span>
+                <span>Salir</span>
             </button>
         </form>
     </div>
 </div>
 
 <style>
-    /* Fuente personalizada */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-    
-    .sidebar {
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    /* Estilos para submenús */
-    .nav-item .nav-link[data-bs-toggle="collapse"] {
-        position: relative;
-    }
-    
-    .submenu-icon {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-    
-    .nav-link[aria-expanded="true"] .submenu-icon {
-        transform: rotate(180deg);
-    }
-    
-    .collapse .ps-3 {
-        border-left: 2px solid rgba(255,255,255,0.3);
-        margin-left: 1rem;
-    }
-    
-    .collapse .ps-3 .nav-link {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.75rem;
-    }
-    
-    /* Ocultar iconos de submenú cuando sidebar está colapsado */
-    .sidebar.collapsed .submenu-icon {
-        display: none;
-    }
-    
-    /* Ajustar submenús cuando sidebar está colapsado - mantener distribución vertical y mostrar siempre */
-    .sidebar.collapsed .collapse {
-        position: static;
-        background: rgba(255,255,255,0.1);
-        border: none;
-        border-radius: 0.375rem;
-        box-shadow: none;
-        min-width: auto;
-        z-index: auto;
-        margin: 0.25rem 0;
-        display: block !important;
-        visibility: visible !important;
-        height: auto !important;
-    }
-    
-    .sidebar.collapsed .collapse .ps-3 {
-        border-left: none;
-        margin-left: 0;
-        padding: 0;
-        padding-left: 0 !important;
-    }
-    
-    /* Asegurar que el menú es scrolleable - forzar distribución vertical SIEMPRE */
-    .nav.overflow-auto {
-        max-height: calc(100vh - 200px);
-        overflow-y: auto;
-        overflow-x: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        flex-wrap: nowrap !important;
-        width: 100%;
-    }
-    
-    /* Estilo para scrollbar personalizado */
-    .nav.overflow-auto::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.1);
-        border-radius: 3px;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.3);
-        border-radius: 3px;
-    }
-    
-    .nav.overflow-auto::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.5);
-    }
-    
-    /* Animaciones adicionales */
-    .nav-link {
-        transition: all 0.3s ease;
-        width: 100%;
-        flex-shrink: 0;
-    }
-    
-    .nav-link:hover {
-        transform: translateX(5px) !important;
-    }
-    
-    /* Evitar desplazamiento horizontal cuando sidebar está colapsado */
-    .sidebar.collapsed .nav-link:hover {
-        transform: none !important;
-    }
-    
-    /* Mantener elementos en distribución vertical cuando colapsado */
-    .sidebar.collapsed .nav {
-        align-items: stretch;
-    }
-    
-    .sidebar.collapsed .nav-item,
-    .sidebar.collapsed .nav-link {
-        width: 100%;
-        flex-shrink: 0;
-    }
-    
-    /* Asegurar que los submenús también mantengan distribución vertical sin sangría */
-    .sidebar.collapsed .collapse .ps-3 {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        padding-left: 0 !important;
-        margin-left: 0 !important;
-        border-left: none !important;
-    }
-    
-    .sidebar.collapsed .collapse .ps-3 .nav-link {
-        width: 100%;
-        margin-bottom: 0.25rem;
-    }
-    
-    /* Evitar overflow horizontal en el contenedor principal */
-    .sidebar.collapsed {
-        overflow-x: hidden;
-    }
-    
-    /* Asegurar que el contenido del sidebar no se desborde horizontalmente */
-    .sidebar .nav,
-    .sidebar .nav-item,
-    .sidebar .collapse {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    /* Forzar distribución vertical cuando colapsado - no permitir desbordamiento horizontal */
-    .sidebar.collapsed .nav {
-        flex-wrap: nowrap !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        width: 100% !important;
-    }
-    
-    .sidebar.collapsed .nav-item,
-    .sidebar.collapsed .nav-link,
-    .sidebar.collapsed .collapse {
-        flex-shrink: 0 !important;
-        width: 100% !important;
-        max-width: 50px !important;
-        box-sizing: border-box !important;
-    }
-    
-    .sidebar.collapsed .collapse .ps-3 .nav-link {
-        padding: 0.08rem !important;
-        margin: 0.01rem auto !important;
-        max-width: 45px !important;
-        min-height: 23px !important;
-        font-size: 0.8rem !important;
-        justify-content: center !important;
-    }
-    
-    /* Forzar scroll vertical únicamente */
-    .sidebar.collapsed {
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-    }
-    
-    .sidebar.collapsed .nav.overflow-auto {
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        flex-wrap: nowrap !important;
-    }
-    
-    /* Aplicar los mismos estilos para sidebar expandido */
-    .sidebar .nav {
-        flex-wrap: nowrap !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        overflow-x: hidden !important;
-    }
-    
-    .sidebar .nav-item,
-    .sidebar .nav-link,
-    .sidebar .collapse {
-        flex-shrink: 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        overflow-x: hidden !important;
-    }
-    
-    .sidebar .collapse .ps-3 {
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        overflow-x: hidden !important;
-    }
-    
-    .sidebar .collapse .ps-3 .nav-link {
-        width: 100% !important;
-        margin-bottom: 0.25rem !important;
-        overflow-x: hidden !important;
-    }
-    
-    /* Cuando colapsado, eliminar cualquier margen/padding lateral de submenús */
-    .sidebar.collapsed .collapse {
-        margin: 0.05rem 0 !important;
-        padding: 0 !important;
-    }
+/* ========== ESTILOS DEL SIDEBAR ========== */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    color: white !important;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.15);
+    color: white !important;
+}
+
+.sidebar-link.active {
+    background: rgba(255,255,255,0.25);
+}
+
+.sidebar-link i:first-child {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.sidebar-chevron {
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.sidebar-link[aria-expanded="true"] .sidebar-chevron {
+    transform: rotate(180deg);
+}
+
+/* Submenú */
+.sidebar-submenu {
+    padding-left: 20px;
+    border-left: 2px solid rgba(255,255,255,0.2);
+    margin-left: 22px;
+    margin-bottom: 8px;
+}
+
+.sidebar-sublink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.85) !important;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.2s ease;
+}
+
+.sidebar-sublink:hover {
+    background: rgba(255,255,255,0.1);
+    color: white !important;
+}
+
+.sidebar-sublink.active {
+    background: rgba(255,255,255,0.2);
+    color: white !important;
+}
+
+.sidebar-sublink i {
+    width: 16px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ========== SIDEBAR COLAPSADO ========== */
+.sidebar.collapsed .sidebar-logo-full {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-logo-icon {
+    display: block !important;
+}
+
+.sidebar.collapsed .sidebar-link span,
+.sidebar.collapsed .sidebar-sublink span,
+.sidebar.collapsed .sidebar-chevron {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed .sidebar-link i:first-child {
+    font-size: 18px;
+}
+
+/* Submenú en colapsado */
+.sidebar.collapsed .sidebar-submenu {
+    padding-left: 0;
+    border-left: none;
+    margin-left: 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.sidebar.collapsed .sidebar-sublink {
+    justify-content: center;
+    padding: 8px;
+}
+
+.sidebar.collapsed .sidebar-sublink i {
+    font-size: 14px;
+}
+
+/* Scrollbar */
+nav.overflow-auto::-webkit-scrollbar {
+    width: 4px;
+}
+
+nav.overflow-auto::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+}
 </style>

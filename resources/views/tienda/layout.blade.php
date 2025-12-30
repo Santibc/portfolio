@@ -28,6 +28,35 @@
   <!-- Main CSS File -->
   <link href="{{ asset('assets/css/main.css') }}" rel="stylesheet">
 
+  <!-- Mobile fixes -->
+  <style>
+    /* Ocultar top-bar en móvil para evitar espacio */
+    @media (max-width: 991px) {
+      .header .top-bar {
+        display: none !important;
+      }
+    }
+
+    /* Hacer el icono hamburguesa más visible */
+    .mobile-nav-toggle {
+      color: #333 !important;
+      font-size: 28px !important;
+      background: rgba(0,0,0,0.05);
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .mobile-nav-toggle:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    /* Cuando el menú está activo, icono en blanco */
+    .mobile-nav-active .mobile-nav-toggle {
+      color: #fff !important;
+      background: transparent;
+    }
+  </style>
+
   @stack('styles')
 </head>
 
@@ -169,10 +198,25 @@
         <nav id="navmenu" class="navmenu">
           <ul>
             <li><a href="{{ route('tienda.empresa') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
-{{--             <li><a href="#about" class="@yield('nav-about', '')">Acerca de</a></li> --}}
-{{--             <li><a href="#productos" class="@yield('nav-productos', '')">Productos</a></li> --}}
             <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-categorias', '')">Categorías</a></li>
-{{--             <li><a href="#contacto" class="@yield('nav-contacto', '')">Contacto</a></li> --}}
+
+            {{-- Opciones de cuenta para menú móvil --}}
+            @guest
+              <li class="d-xl-none"><a href="{{ route('login') }}"><i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión</a></li>
+              <li class="d-xl-none"><a href="{{ route('register.cliente') }}"><i class="bi bi-person-plus me-2"></i>Registrarse</a></li>
+            @else
+              @if(auth()->user()->hasRole('cliente'))
+                <li class="d-xl-none"><a href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
+              @else
+                <li class="d-xl-none"><a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
+              @endif
+              <li class="d-xl-none">
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                  @csrf
+                  <a href="#" onclick="event.preventDefault(); this.closest('form').submit();"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a>
+                </form>
+              </li>
+            @endguest
           </ul>
         </nav>
       </div>

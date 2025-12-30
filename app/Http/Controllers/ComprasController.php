@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Compra;
 use App\Models\TransaccionPago;
 use App\Models\Envio;
+use App\Models\Repartidor;
 use App\Services\WompiService;
 use App\Mail\EnvioActualizado;
 use Illuminate\Http\Request;
@@ -87,10 +88,55 @@ class ComprasController extends Controller
             'ciudad.departamento',
             'transaccionesPago',
             'envio',
-            'comision'
+            'comision',
+            'repartidor'
         ]);
 
-        return view('compras.show', compact('compra'));
+        $repartidores = Repartidor::where('empresa_id', $compra->empresa_id)
+            ->activos()
+            ->orderBy('nombre')
+            ->get();
+
+        return view('compras.show', compact('compra', 'repartidores'));
+    }
+
+    /**
+     * Asignar repartidor a la compra
+     */
+    public function asignarRepartidor(Request $request, Compra $compra)
+    {
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'repartidor_id' => 'required|exists:repartidores,id'
+        ]);
+
+        $repartidor = Repartidor::findOrFail($request->repartidor_id);
+
+        // Verificar que el repartidor pertenece a la misma empresa
+        if ($repartidor->empresa_id !== $compra->empresa_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El repartidor no pertenece a esta empresa'
+            ], 403);
+        }
+
+        $compra->update([
+            'repartidor_id' => $repartidor->id,
+            'asignado_repartidor_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Repartidor asignado correctamente',
+            'repartidor' => [
+                'nombre' => $repartidor->nombre,
+                'telefono' => $repartidor->telefono,
+                'vehiculo' => $repartidor->vehiculo
+            ]
+        ]);
     }
 
     /**
@@ -295,12 +341,33 @@ class ComprasController extends Controller
     }
 
     /**
+     * Generar vista de impresion del pedido
+     */
+    public function imprimir(Compra $compra)
+    {
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
+
+        $compra->load([
+            'items.producto',
+            'items.variante',
+            'ciudad.departamento',
+            'envio',
+            'repartidor',
+            'empresa'
+        ]);
+
+        return view('compras.imprimir', compact('compra'));
+    }
+
+    /**
      * Exportar compras a Excel
      */
     public function exportar(Request $request)
     {
         $empresa = auth()->user()->empresa;
-        
+
         $query = Compra::where('empresa_id', $empresa->id)
             ->with(['items', 'ciudad', 'transaccionAprobada']);
 
