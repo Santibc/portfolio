@@ -15,6 +15,7 @@ use App\Models\Ciudad;
 use App\Models\Departamento;
 use App\Models\ConfiguracionPasarela;
 use App\Models\CalificacionProducto;
+use App\Models\PuntoCliente;
 use App\Services\WompiService;
 use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
@@ -784,10 +785,13 @@ public function confirmarPago(Request $request, $referencia)
                     
                     // Actualizar compra
                     $transaccion->compra->update(['estado' => 'pagada']);
-                    
+
                     // Generar comisión
                     $transaccion->compra->generarComision();
-                    
+
+                    // Registrar puntos por compra (1 punto por cada $100)
+                    $this->registrarPuntosCompra($transaccion->compra);
+
                     return view('tienda.confirmacion', [
                         'compra' => $transaccion->compra,
                         'transaccion' => $transaccion
@@ -881,13 +885,41 @@ private function liberarStockCompra($compra)
     {
         $wompiService = new WompiService();
         $resultado = $wompiService->crearLinkPago($compra, $transaccion);
-        
+
         if ($resultado['success'] && $resultado['payment_url']) {
             return redirect()->away($resultado['payment_url']);
         } else {
             // Si falla, mostrar página de error o volver al checkout
             return redirect()->route('tienda.checkout')
                 ->with('error', 'Error al procesar el pago. Por favor intente nuevamente.');
+        }
+    }
+
+    /**
+     * Registrar puntos por compra
+     * Regla: 1 punto por cada $100 de compra
+     */
+    private function registrarPuntosCompra(Compra $compra)
+    {
+        // Solo si la compra tiene un usuario autenticado
+        if (!$compra->user_id) {
+            return;
+        }
+
+        // Calcular puntos (1 punto por cada $100)
+        $puntos = floor($compra->total / 100);
+
+        if ($puntos > 0) {
+            PuntoCliente::registrarPuntos(
+                $compra->user_id,
+                $compra->empresa_id,
+                $puntos,
+                'ganados',
+                "Compra #{$compra->numero_compra}",
+                $compra->id
+            );
+
+            Log::info("Puntos registrados: {$puntos} puntos para usuario {$compra->user_id} por compra {$compra->numero_compra}");
         }
     }
     /**

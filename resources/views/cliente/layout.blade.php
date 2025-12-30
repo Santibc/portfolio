@@ -114,7 +114,22 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('cliente.compras*') ? 'active' : '' }}" href="{{ route('cliente.compras') }}">
-                            <i class="bi bi-bag"></i> Mis Compras
+                            <i class="bi bi-bag"></i> Mis Pedidos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('cliente.direcciones*') ? 'active' : '' }}" href="{{ route('cliente.direcciones') }}">
+                            <i class="bi bi-geo-alt"></i> Direcciones
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('cliente.perfil*') ? 'active' : '' }}" href="{{ route('cliente.perfil') }}">
+                            <i class="bi bi-person"></i> Mi Perfil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('cliente.puntos*') ? 'active' : '' }}" href="{{ route('cliente.puntos') }}">
+                            <i class="bi bi-star"></i> Mis Puntos
                         </a>
                     </li>
                     <li class="nav-item">

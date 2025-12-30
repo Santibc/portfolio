@@ -386,6 +386,7 @@ Route::get('/pago/pendiente/{referencia}', function($referencia) {
 // PANEL DE CLIENTE - Mis Compras y Calificaciones
 // ============================================
 Route::middleware(['auth'])->prefix('cliente')->group(function () {
+    // Mis Compras
     Route::get('/mis-compras', [App\Http\Controllers\Cliente\MisComprasController::class, 'index'])
         ->name('cliente.compras');
     Route::get('/mis-compras/{id}', [App\Http\Controllers\Cliente\MisComprasController::class, 'show'])
@@ -394,6 +395,36 @@ Route::middleware(['auth'])->prefix('cliente')->group(function () {
         ->name('cliente.calificar');
     Route::post('/calificar', [App\Http\Controllers\Cliente\MisComprasController::class, 'guardarCalificacion'])
         ->name('cliente.calificar.guardar');
+
+    // Perfil del Cliente
+    Route::get('/perfil', [App\Http\Controllers\Cliente\PerfilController::class, 'index'])
+        ->name('cliente.perfil');
+    Route::put('/perfil', [App\Http\Controllers\Cliente\PerfilController::class, 'update'])
+        ->name('cliente.perfil.update');
+    Route::put('/perfil/password', [App\Http\Controllers\Cliente\PerfilController::class, 'updatePassword'])
+        ->name('cliente.perfil.password');
+
+    // Direcciones del Cliente
+    Route::get('/direcciones', [App\Http\Controllers\Cliente\DireccionesController::class, 'index'])
+        ->name('cliente.direcciones');
+    Route::post('/direcciones', [App\Http\Controllers\Cliente\DireccionesController::class, 'store'])
+        ->name('cliente.direcciones.store');
+    Route::put('/direcciones/{direccion}', [App\Http\Controllers\Cliente\DireccionesController::class, 'update'])
+        ->name('cliente.direcciones.update');
+    Route::delete('/direcciones/{direccion}', [App\Http\Controllers\Cliente\DireccionesController::class, 'destroy'])
+        ->name('cliente.direcciones.destroy');
+    Route::post('/direcciones/{direccion}/predeterminada', [App\Http\Controllers\Cliente\DireccionesController::class, 'setPredeterminada'])
+        ->name('cliente.direcciones.predeterminada');
+
+    // Puntos y Referidos
+    Route::get('/puntos', [App\Http\Controllers\Cliente\PuntosController::class, 'index'])
+        ->name('cliente.puntos');
+    Route::post('/puntos/fecha', [App\Http\Controllers\Cliente\PuntosController::class, 'storeFechaEspecial'])
+        ->name('cliente.puntos.fecha.store');
+    Route::delete('/puntos/fecha/{fechaEspecial}', [App\Http\Controllers\Cliente\PuntosController::class, 'destroyFechaEspecial'])
+        ->name('cliente.puntos.fecha.destroy');
+    Route::post('/puntos/canjear', [App\Http\Controllers\Cliente\PuntosController::class, 'canjear'])
+        ->name('cliente.puntos.canjear');
 });
 
 // ============================================
