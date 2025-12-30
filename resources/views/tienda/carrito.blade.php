@@ -358,19 +358,65 @@
                             <div id="cartItems">
                                 @foreach($carrito->items as $key => $item)
                                     @php
-                                        $producto = \App\Models\Producto::find($item['producto_id']);
+                                        $esRamoPersonalizado = isset($item['es_ramo_personalizado']) && $item['es_ramo_personalizado'];
+                                        $producto = !$esRamoPersonalizado && isset($item['producto_id']) ? \App\Models\Producto::find($item['producto_id']) : null;
                                     @endphp
                                     <div class="cart-item" data-key="{{ $key }}">
                                         <div class="row align-items-center">
                                             <div class="col-auto">
-                                                <img src="{{ $producto->url_imagen_principal }}" 
-                                                     alt="{{ $item['nombre'] }}" 
-                                                     class="item-image">
+                                                @if($esRamoPersonalizado)
+                                                    {{-- Imagen especial para ramo personalizado --}}
+                                                    <div class="item-image d-flex align-items-center justify-content-center"
+                                                         style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); border-radius: 12px;">
+                                                        <i class="bi bi-flower1" style="font-size: 2.5rem; color: #e91e63;"></i>
+                                                    </div>
+                                                @else
+                                                    <img src="{{ $producto ? $producto->url_imagen_principal : asset('images/productos/default.png') }}"
+                                                         alt="{{ $item['nombre'] }}"
+                                                         class="item-image">
+                                                @endif
                                             </div>
                                             <div class="col">
                                                 <div class="item-details">
                                                     <h5>{{ $item['nombre'] }}</h5>
-                                                    @if(isset($item['info_variante']))
+
+                                                    @if($esRamoPersonalizado && isset($item['detalle_ramo']))
+                                                        {{-- Detalles del ramo personalizado --}}
+                                                        <div class="ramo-details small text-muted">
+                                                            @if(isset($item['detalle_ramo']['tamano']))
+                                                                <span class="badge bg-light text-dark me-1">
+                                                                    <i class="bi bi-rulers"></i> {{ $item['detalle_ramo']['tamano'] }}
+                                                                </span>
+                                                            @endif
+                                                            @if(isset($item['detalle_ramo']['flores']) && count($item['detalle_ramo']['flores']) > 0)
+                                                                <div class="mt-1">
+                                                                    <small><strong>Flores:</strong></small>
+                                                                    @foreach($item['detalle_ramo']['flores'] as $flor)
+                                                                        <span class="badge bg-pink-light text-dark me-1" style="background-color: #fce4ec;">
+                                                                            {{ $flor['cantidad'] }}x {{ $flor['nombre'] }}
+                                                                        </span>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                            @if(isset($item['detalle_ramo']['adicionales']) && count($item['detalle_ramo']['adicionales']) > 0)
+                                                                <div class="mt-1">
+                                                                    <small><strong>Adicionales:</strong></small>
+                                                                    @foreach($item['detalle_ramo']['adicionales'] as $adicional)
+                                                                        <span class="badge bg-success-light text-dark me-1" style="background-color: #e8f5e9;">
+                                                                            {{ $adicional['nombre'] }}
+                                                                        </span>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                            @if(isset($item['detalle_ramo']['mensaje_tarjeta']) && $item['detalle_ramo']['mensaje_tarjeta'])
+                                                                <div class="mt-1">
+                                                                    <small class="fst-italic">
+                                                                        <i class="bi bi-chat-heart"></i> "{{ \Illuminate\Support\Str::limit($item['detalle_ramo']['mensaje_tarjeta'], 50) }}"
+                                                                    </small>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @elseif(isset($item['info_variante']))
                                                         <div class="item-variant">
                                                             @if($item['info_variante']['talla'])
                                                                 Talla: {{ $item['info_variante']['talla'] }}
@@ -380,6 +426,7 @@
                                                             @endif
                                                         </div>
                                                     @endif
+
                                                     <div class="item-reference">Ref: {{ $item['referencia'] }}</div>
 
                                                     {{-- Descuentos aplicados al item --}}
@@ -407,20 +454,27 @@
                                                 </div>
                                             </div>
                                             <div class="col-auto">
-                                                <div class="quantity-controls">
-                                                    <button class="quantity-btn" onclick="updateCartQuantity('{{ $key }}', -1)">
-                                                        <i class="bi bi-dash"></i>
-                                                    </button>
-                                                    <input type="number" class="quantity-value" 
-                                                           id="qty-{{ $key }}" 
-                                                           value="{{ $item['cantidad'] }}" 
-                                                           min="1" 
-                                                           data-key="{{ $key }}"
-                                                           readonly>
-                                                    <button class="quantity-btn" onclick="updateCartQuantity('{{ $key }}', 1)">
-                                                        <i class="bi bi-plus"></i>
-                                                    </button>
-                                                </div>
+                                                @if($esRamoPersonalizado)
+                                                    {{-- Los ramos personalizados no permiten cambiar cantidad --}}
+                                                    <div class="quantity-display text-center">
+                                                        <span class="badge bg-secondary">1 unidad</span>
+                                                    </div>
+                                                @else
+                                                    <div class="quantity-controls">
+                                                        <button class="quantity-btn" onclick="updateCartQuantity('{{ $key }}', -1)">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <input type="number" class="quantity-value"
+                                                               id="qty-{{ $key }}"
+                                                               value="{{ $item['cantidad'] }}"
+                                                               min="1"
+                                                               data-key="{{ $key }}"
+                                                               readonly>
+                                                        <button class="quantity-btn" onclick="updateCartQuantity('{{ $key }}', 1)">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="col-auto text-end">
                                                 <div class="item-price mb-2">

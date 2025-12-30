@@ -188,69 +188,89 @@
 
         {{-- Panel Derecho: Resumen --}}
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-bag-heart"></i> Tu Ramo</h5>
-                </div>
-                <div class="card-body">
-                    {{-- Vista previa visual del ramo --}}
-                    <div class="ramo-preview mb-4 p-3 rounded-3 text-center" style="background: linear-gradient(180deg, #e8f5e9 0%, #fff 100%); min-height: 150px;">
-                        <div id="ramo-visual" class="d-flex flex-wrap justify-content-center gap-1">
-                            <p class="text-muted w-100"><i class="bi bi-flower1"></i> Selecciona flores para ver tu ramo</p>
-                        </div>
+            <div class="resumen-ramo-sticky">
+                <div class="card border-0 shadow rounded-4 overflow-hidden">
+                    {{-- Header con gradiente --}}
+                    <div class="card-header py-3" style="background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);">
+                        <h5 class="mb-0 text-white d-flex align-items-center">
+                            <i class="bi bi-bag-heart-fill me-2"></i> Tu Ramo
+                        </h5>
                     </div>
 
-                    {{-- Resumen de selección --}}
-                    <div id="resumen-flores" class="mb-3">
-                        <h6 class="border-bottom pb-2">Flores seleccionadas</h6>
-                        <div id="lista-flores-resumen" class="small">
-                            <p class="text-muted">Ninguna flor seleccionada</p>
+                    <div class="card-body p-3">
+                        {{-- Vista previa visual del ramo --}}
+                        <div class="ramo-preview mb-3 p-3 rounded-3 text-center position-relative" style="background: linear-gradient(180deg, #fce4ec 0%, #fff 100%); min-height: 120px; border: 2px dashed #f8bbd9;">
+                            <div id="ramo-visual" class="d-flex flex-wrap justify-content-center align-items-center gap-1" style="min-height: 80px;">
+                                <div class="text-muted">
+                                    <i class="bi bi-flower1" style="font-size: 2rem; color: #e91e63; opacity: 0.5;"></i>
+                                    <p class="small mb-0 mt-1">Selecciona flores</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {{-- Adicionales seleccionados --}}
-                    <div id="resumen-adicionales" class="mb-3 d-none">
-                        <h6 class="border-bottom pb-2">Adicionales</h6>
-                        <div id="lista-adicionales-resumen" class="small"></div>
-                    </div>
+                        {{-- Indicador de progreso compacto --}}
+                        <div class="mb-3 p-2 rounded-3" style="background: #f5f5f5;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-medium">Progreso</small>
+                                <span class="badge bg-secondary" id="contador-flores-badge">
+                                    <span id="total-flores-badge">{{ $ramoEnProgreso->total_flores }}</span> flores
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" id="barra-progreso" role="progressbar" style="width: 0%; background: linear-gradient(90deg, #e91e63, #f06292);"></div>
+                            </div>
+                            <small class="text-muted d-block mt-1" id="texto-progreso">Selecciona un tamaño para comenzar</small>
+                        </div>
 
-                    {{-- Totales --}}
-                    <div class="border-top pt-3">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Tamaño (base):</span>
-                            <span id="precio-base">${{ number_format($ramoEnProgreso->precio_base, 0, ',', '.') }}</span>
+                        {{-- Resumen de selección --}}
+                        <div id="resumen-flores" class="mb-3">
+                            <h6 class="small fw-bold text-uppercase text-muted mb-2">
+                                <i class="bi bi-flower2 me-1"></i> Flores seleccionadas
+                            </h6>
+                            <div id="lista-flores-resumen" class="small" style="max-height: 150px; overflow-y: auto;">
+                                <p class="text-muted mb-0 fst-italic">Ninguna flor seleccionada</p>
+                            </div>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Flores:</span>
-                            <span id="subtotal-flores">${{ number_format($ramoEnProgreso->subtotal_flores, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2" id="row-adicionales" style="display: none !important;">
-                            <span>Adicionales:</span>
-                            <span id="subtotal-adicionales">${{ number_format($ramoEnProgreso->subtotal_adicionales, 0, ',', '.') }}</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
-                            <strong>Total:</strong>
-                            <strong class="text-primary fs-4" id="total-ramo">${{ number_format($ramoEnProgreso->total, 0, ',', '.') }}</strong>
-                        </div>
-                    </div>
 
-                    {{-- Botones de acción --}}
-                    <button class="btn btn-primary w-100 mb-2" id="btn-agregar-carrito" {{ $ramoEnProgreso->total_flores == 0 ? 'disabled' : '' }}>
-                        <i class="bi bi-cart-plus"></i> Agregar al Carrito
-                    </button>
-                    <button class="btn btn-outline-secondary w-100" id="btn-reiniciar">
-                        <i class="bi bi-arrow-counterclockwise"></i> Empezar de nuevo
-                    </button>
-                </div>
+                        {{-- Adicionales seleccionados --}}
+                        <div id="resumen-adicionales" class="mb-3 d-none">
+                            <h6 class="small fw-bold text-uppercase text-muted mb-2">
+                                <i class="bi bi-gift me-1"></i> Adicionales
+                            </h6>
+                            <div id="lista-adicionales-resumen" class="small"></div>
+                        </div>
 
-                {{-- Indicador de progreso --}}
-                <div class="card-footer bg-white">
-                    <small class="text-muted d-block mb-2">Progreso:</small>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar bg-success" id="barra-progreso" role="progressbar" style="width: 0%"></div>
+                        {{-- Totales --}}
+                        <div class="bg-light rounded-3 p-3 mb-3">
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-muted">Tamaño (base):</span>
+                                <span class="fw-medium" id="precio-base">${{ number_format($ramoEnProgreso->precio_base, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-muted">Flores:</span>
+                                <span class="fw-medium" id="subtotal-flores">${{ number_format($ramoEnProgreso->subtotal_flores, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 small" id="row-adicionales" style="display: none !important;">
+                                <span class="text-muted">Adicionales:</span>
+                                <span class="fw-medium" id="subtotal-adicionales">${{ number_format($ramoEnProgreso->subtotal_adicionales, 0, ',', '.') }}</span>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>Total:</strong>
+                                <strong class="fs-4" style="color: #e91e63;" id="total-ramo">${{ number_format($ramoEnProgreso->total, 0, ',', '.') }}</strong>
+                            </div>
+                        </div>
+
+                        {{-- Botones de acción --}}
+                        <button class="btn w-100 mb-2 py-2 fw-bold" id="btn-agregar-carrito"
+                                style="background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%); color: white; border: none;"
+                                {{ $ramoEnProgreso->total_flores == 0 ? 'disabled' : '' }}>
+                            <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
+                        </button>
+                        <button class="btn btn-outline-secondary w-100 btn-sm" id="btn-reiniciar">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Empezar de nuevo
+                        </button>
                     </div>
-                    <small class="text-muted" id="texto-progreso">Selecciona un tamaño para comenzar</small>
                 </div>
             </div>
         </div>
@@ -260,6 +280,20 @@
 @push('styles')
 <style>
     .cursor-pointer { cursor: pointer; }
+
+    /* Panel sticky mejorado */
+    .resumen-ramo-sticky {
+        position: sticky;
+        top: 90px;
+        z-index: 100;
+    }
+
+    @media (max-width: 991.98px) {
+        .resumen-ramo-sticky {
+            position: relative;
+            top: 0;
+        }
+    }
 
     .tamano-card { transition: all 0.3s ease; }
     .tamano-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -278,14 +312,15 @@
     .ramo-preview { transition: all 0.3s ease; }
 
     .flor-icono {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 12px;
         animation: aparecer 0.3s ease;
+        margin: 2px;
     }
 
     @keyframes aparecer {
@@ -295,6 +330,30 @@
 
     .tarjeta-preview {
         transition: all 0.3s ease;
+    }
+
+    /* Botón agregar carrito con hover */
+    #btn-agregar-carrito:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(233, 30, 99, 0.4);
+    }
+
+    #btn-agregar-carrito:disabled {
+        background: #ccc !important;
+        cursor: not-allowed;
+    }
+
+    /* Scrollbar personalizado para lista de flores */
+    #lista-flores-resumen::-webkit-scrollbar {
+        width: 4px;
+    }
+    #lista-flores-resumen::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    #lista-flores-resumen::-webkit-scrollbar-thumb {
+        background: #e91e63;
+        border-radius: 4px;
     }
 </style>
 @endpush
@@ -555,7 +614,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funciones de actualización
     function actualizarResumen(data) {
-        document.getElementById('total-flores').textContent = data.total_flores || 0;
+        const totalFlores = data.total_flores || 0;
+        document.getElementById('total-flores').textContent = totalFlores;
+        document.getElementById('total-flores-badge').textContent = totalFlores;
         document.getElementById('precio-base').textContent = '$' + formatNumber(data.ramo?.precio_base || 0);
         document.getElementById('subtotal-flores').textContent = '$' + formatNumber(data.ramo?.subtotal_flores || data.subtotal_flores || 0);
         document.getElementById('subtotal-adicionales').textContent = '$' + formatNumber(data.ramo?.subtotal_adicionales || data.subtotal_adicionales || 0);
@@ -608,7 +669,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('ramo-visual');
 
         if (!flores || flores.length === 0) {
-            container.innerHTML = '<p class="text-muted w-100"><i class="bi bi-flower1"></i> Selecciona flores para ver tu ramo</p>';
+            container.innerHTML = `<div class="text-muted">
+                <i class="bi bi-flower1" style="font-size: 2rem; color: #e91e63; opacity: 0.5;"></i>
+                <p class="small mb-0 mt-1">Selecciona flores</p>
+            </div>`;
             return;
         }
 
@@ -616,14 +680,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const colores = ['#e91e63', '#9c27b0', '#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3'];
 
         flores.forEach((f, idx) => {
-            for (let i = 0; i < Math.min(f.cantidad, 10); i++) {
+            for (let i = 0; i < Math.min(f.cantidad, 8); i++) {
                 const color = colores[idx % colores.length];
                 html += `<span class="flor-icono" style="background-color: ${color}20; color: ${color};">
                     <i class="bi bi-flower1"></i>
                 </span>`;
             }
-            if (f.cantidad > 10) {
-                html += `<span class="badge bg-light text-dark">+${f.cantidad - 10}</span>`;
+            if (f.cantidad > 8) {
+                html += `<span class="badge bg-light text-dark mx-1">+${f.cantidad - 8}</span>`;
             }
         });
 
@@ -634,10 +698,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const tamanoCard = document.querySelector('.tamano-card.selected');
         const barra = document.getElementById('barra-progreso');
         const texto = document.getElementById('texto-progreso');
+        const badge = document.getElementById('contador-flores-badge');
 
         if (!tamanoCard) {
             barra.style.width = '0%';
+            barra.style.background = 'linear-gradient(90deg, #e91e63, #f06292)';
             texto.textContent = 'Selecciona un tamaño para comenzar';
+            badge.className = 'badge bg-secondary';
             return;
         }
 
@@ -647,19 +714,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (totalFlores < min) {
             const progreso = (totalFlores / min) * 100;
             barra.style.width = progreso + '%';
-            barra.classList.remove('bg-success');
-            barra.classList.add('bg-warning');
+            barra.style.background = 'linear-gradient(90deg, #ff9800, #ffb74d)';
             texto.textContent = `Faltan ${min - totalFlores} flores para el mínimo`;
+            badge.className = 'badge bg-warning text-dark';
         } else if (totalFlores >= min && totalFlores <= max) {
             barra.style.width = '100%';
-            barra.classList.remove('bg-warning');
-            barra.classList.add('bg-success');
+            barra.style.background = 'linear-gradient(90deg, #4caf50, #81c784)';
             texto.textContent = '¡Listo para agregar al carrito!';
+            badge.className = 'badge bg-success';
         } else {
             barra.style.width = '100%';
-            barra.classList.remove('bg-success');
-            barra.classList.add('bg-danger');
+            barra.style.background = 'linear-gradient(90deg, #f44336, #ef5350)';
             texto.textContent = `Máximo ${max} flores para este tamaño`;
+            badge.className = 'badge bg-danger';
         }
     }
 
