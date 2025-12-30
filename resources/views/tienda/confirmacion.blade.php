@@ -254,7 +254,7 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <a href="{{ route('tienda.empresa', $compra->empresa->slug) }}" class="btn btn-primary-custom">
+                <a href="{{ route('home') }}" class="btn btn-primary-custom">
                     <i class="bi bi-shop"></i> Seguir Comprando
                 </a>
                 <button class="btn btn-secondary-custom" onclick="window.print()">

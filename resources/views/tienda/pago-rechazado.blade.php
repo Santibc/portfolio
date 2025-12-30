@@ -176,7 +176,7 @@
             <a href="{{ route('tienda.checkout', $compra->empresa->slug) }}" class="btn-primary-custom">
                 <i class="bi bi-arrow-clockwise"></i> Reintentar Pago
             </a>
-            <a href="{{ route('tienda.empresa', $compra->empresa->slug) }}" class="btn-secondary-custom">
+            <a href="{{ route('home') }}" class="btn-secondary-custom">
                 <i class="bi bi-shop"></i> Volver a la Tienda
             </a>
         </div>

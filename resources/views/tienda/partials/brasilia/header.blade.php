@@ -51,7 +51,7 @@
         <!-- Logo -->
         <div class="js-logo-container logo-container" style="max-width: 120px !important; width: 120px !important;">
             <div id="logo" class="logo-img-container" style="max-height: 50px !important;">
-                <a href="{{ route('tienda.empresa') }}" title="{{ $empresa->nombre }}">
+                <a href="{{ route('home') }}" title="{{ $empresa->nombre }}">
                     <img src="{{ $empresa->logo_url ?? asset('images/default-logo.png') }}"
                          alt="{{ $empresa->nombre }}"
                          class="logo-img transition-soft"
@@ -107,7 +107,7 @@
             <div class="nav-list-container">
                 <ul class="nav-list nav-list-left">
                     <li class="nav-list-item">
-                        <a href="{{ route('tienda.empresa') }}" class="nav-list-link">Inicio</a>
+                        <a href="{{ route('home') }}" class="nav-list-link">Inicio</a>
                     </li>
                     @if(isset($categorias) && $categorias && $categorias->count() > 0)
                     <li class="nav-list-item nav-dropdown-parent">
@@ -122,13 +122,13 @@
                                 @endphp
                                 <div class="nav-dropdown-column">
                                     @foreach($primeraColumna as $categoria)
-                                    <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
+                                    <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
                                     @endforeach
                                 </div>
                                 @if($segundaColumna->count() > 0)
                                 <div class="nav-dropdown-column">
                                     @foreach($segundaColumna as $categoria)
-                                    <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
+                                    <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="nav-dropdown-item">{{ $categoria->nombre }}</a>
                                     @endforeach
                                 </div>
                                 @endif

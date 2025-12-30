@@ -116,7 +116,7 @@
         <div class="d-flex py-3 align-items-center justify-content-between">
 
           <!-- Logo -->
-          <a href="{{ route('tienda.empresa') }}" class="logo d-flex align-items-center">
+          <a href="{{ route('home') }}" class="logo d-flex align-items-center">
             @if($empresa->logo_url)
               <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="max-height: 50px;">
             @else
@@ -197,7 +197,7 @@
       <div class="container-fluid container-xl position-relative">
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="{{ route('tienda.empresa') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
+            <li><a href="{{ route('home') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
             <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-categorias', '')">Categorías</a></li>
 
             {{-- Opciones de cuenta para menú móvil --}}
@@ -248,7 +248,7 @@
         <div class="row gy-4">
           <div class="col-lg-4 col-md-6">
             <div class="footer-widget footer-about">
-              <a href="{{ route('tienda.empresa') }}" class="logo">
+              <a href="{{ route('home') }}" class="logo">
                 <span class="sitename">{{ $empresa->nombre }}</span>
               </a>
 

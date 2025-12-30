@@ -48,8 +48,8 @@
         <h1 class="mb-2 mb-lg-0">{{ $producto->nombre }}</h1>
         <nav class="breadcrumbs">
           <ol>
-            <li><a href="{{ route('tienda.empresa') }}">Inicio</a></li>
-            <li><a href="{{ route('tienda.empresa', ['categoria' =>$producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
+            <li><a href="{{ route('home') }}">Inicio</a></li>
+            <li><a href="{{ route('tienda.categorias', ['categoria' => $producto->categoria_id]) }}">{{ $producto->categoria->nombre }}</a></li>
             <li class="current">{{ $producto->nombre }}</li>
           </ol>
         </nav>

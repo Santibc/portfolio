@@ -9,14 +9,14 @@
             <div class="modal-body">
                 <nav class="mobile-nav">
                     <ul class="mobile-nav-list">
-                        <li class="mobile-nav-item"><a href="{{ route('tienda.empresa') }}" class="mobile-nav-link">Inicio</a></li>
+                        <li class="mobile-nav-item"><a href="{{ route('home') }}" class="mobile-nav-link">Inicio</a></li>
                         @if(isset($categorias) && $categorias && $categorias->count() > 0)
                         <li class="mobile-nav-item">
                             <a href="#" class="mobile-nav-link">Categorías</a>
                             <ul class="mobile-nav-sublist">
                                 @foreach($categorias as $categoria)
                                 <li class="mobile-nav-subitem">
-                                    <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="mobile-nav-link">{{ $categoria->nombre }}</a>
+                                    <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="mobile-nav-link">{{ $categoria->nombre }}</a>
                                 </li>
                                 @endforeach
                             </ul>

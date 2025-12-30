@@ -325,14 +325,14 @@
         <div class="container py-3">
             <div class="row align-items-center">
                 <div class="col-6">
-                    <a href="{{ route('tienda.empresa') }}" class="d-flex align-items-center text-decoration-none">
+                    <a href="{{ route('home') }}" class="d-flex align-items-center text-decoration-none">
                         <div class="logo-container">
                             <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" class="img-fluid">
                         </div>
                     </a>
                 </div>
                 <div class="col-6 text-end">
-                    <a href="{{ route('tienda.empresa') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('home') }}" class="btn btn-outline-primary">
                         <i class="bi bi-arrow-left"></i> Seguir Comprando
                     </a>
                 </div>
@@ -450,7 +450,7 @@
                             <div class="empty-cart">
                                 <i class="bi bi-cart-x empty-cart-icon"></i>
                                 <p class="empty-cart-text">Tu carrito está vacío</p>
-                                <a href="{{ route('tienda.empresa') }}" class="btn btn-primary">
+                                <a href="{{ route('home') }}" class="btn btn-primary">
                                     <i class="bi bi-shop"></i> Ir a Comprar
                                 </a>
                             </div>
@@ -519,7 +519,7 @@
                             <span id="checkoutSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                         </button>
                         
-                        <a href="{{ route('tienda.empresa') }}" class="btn btn-continue-shopping">
+                        <a href="{{ route('home') }}" class="btn btn-continue-shopping">
                             Seguir Comprando
                         </a>
                     </div>

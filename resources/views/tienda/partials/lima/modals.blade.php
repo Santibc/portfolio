@@ -73,7 +73,7 @@
             <div class="modal-body">
                 <ul class="mobile-nav-list">
                     <li class="mobile-nav-item">
-                        <a href="{{ route('tienda.empresa') }}" class="mobile-nav-link">
+                        <a href="{{ route('home') }}" class="mobile-nav-link">
                             Inicio
                         </a>
                     </li>
@@ -82,7 +82,7 @@
                         @foreach($categorias as $categoria)
                         <li class="mobile-nav-item {{ $categoria->subcategorias && $categoria->subcategorias->count() > 0 ? 'has-submenu' : '' }}">
                             <div class="mobile-nav-link-container">
-                                <a href="{{ route('tienda.empresa', ['categoria' => $categoria->id]) }}" class="mobile-nav-link">
+                                <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="mobile-nav-link">
                                     {{ $categoria->nombre }}
                                 </a>
                                 @if($categoria->subcategorias && $categoria->subcategorias->count() > 0)
@@ -98,7 +98,7 @@
                             <ul class="mobile-nav-submenu" style="display: none;">
                                 @foreach($categoria->subcategorias as $subcategoria)
                                 <li class="mobile-nav-item">
-                                    <a href="{{ route('tienda.empresa', ['categoria' => $subcategoria->id]) }}" class="mobile-nav-link submenu-link">
+                                    <a href="{{ route('tienda.categorias', ['categoria' => $subcategoria->id]) }}" class="mobile-nav-link submenu-link">
                                         {{ $subcategoria->nombre }}
                                     </a>
                                 </li>
