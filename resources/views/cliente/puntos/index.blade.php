@@ -224,24 +224,25 @@
 
             <div class="row g-3">
                 @foreach($productosSugeridos as $producto)
+                @php
+                    $precio = $producto->precios()->where('activo', true)->first();
+                @endphp
                 <div class="col-6 col-md-3">
                     <a href="{{ route('tienda.producto', $producto) }}" class="text-decoration-none">
                         <div class="card h-100 border-0 shadow-sm">
-                            @if($producto->imagen_principal)
-                                <img src="{{ asset('storage/' . $producto->imagen_principal) }}"
-                                     class="card-img-top" alt="{{ $producto->nombre }}"
-                                     style="height: 150px; object-fit: cover;">
-                            @else
-                                <img src="{{ asset('images/placeholder-producto.jpg') }}"
-                                     class="card-img-top" alt="{{ $producto->nombre }}"
-                                     style="height: 150px; object-fit: cover;">
-                            @endif
+                            <img src="{{ $producto->url_imagen_principal }}"
+                                 class="card-img-top" alt="{{ $producto->nombre }}"
+                                 style="height: 150px; object-fit: cover;">
                             <div class="card-body p-2">
                                 <h6 class="card-title text-dark mb-1" style="font-size: 0.85rem;">
                                     {{ Str::limit($producto->nombre, 25) }}
                                 </h6>
                                 <p class="card-text text-primary fw-bold mb-0">
-                                    ${{ number_format($producto->precio_base, 0) }}
+                                    @if($precio)
+                                        ${{ number_format($precio->precio, 0, ',', '.') }}
+                                    @else
+                                        Consultar
+                                    @endif
                                 </p>
                             </div>
                         </div>
