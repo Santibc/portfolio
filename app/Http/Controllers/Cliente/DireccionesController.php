@@ -10,21 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class DireccionesController extends Controller
 {
-    protected function getEmpresaId()
-    {
-        // Para clientes, obtener la empresa de su última compra o la primera disponible
-        $ultimaCompra = \App\Models\Compra::where('email_cliente', Auth::user()->email)
-            ->latest()
-            ->first();
-
-        return $ultimaCompra ? $ultimaCompra->empresa_id : \App\Models\Empresa::first()->id;
-    }
-
     public function index()
     {
-        $empresaId = $this->getEmpresaId();
         $direcciones = DireccionCliente::porCliente(Auth::user()->email)
-            ->porEmpresa($empresaId)
             ->with('ciudad')
             ->orderBy('es_predeterminada', 'desc')
             ->get();
@@ -46,18 +34,14 @@ class DireccionesController extends Controller
             'es_predeterminada' => ['boolean'],
         ]);
 
-        $empresaId = $this->getEmpresaId();
-
         // Si es predeterminada, quitar de las demás
         if ($request->boolean('es_predeterminada')) {
             DireccionCliente::porCliente(Auth::user()->email)
-                ->porEmpresa($empresaId)
                 ->update(['es_predeterminada' => false]);
         }
 
         DireccionCliente::create([
             ...$validated,
-            'empresa_id' => $empresaId,
             'email_cliente' => Auth::user()->email,
         ]);
 
@@ -85,7 +69,6 @@ class DireccionesController extends Controller
         // Si es predeterminada, quitar de las demás
         if ($request->boolean('es_predeterminada')) {
             DireccionCliente::porCliente(Auth::user()->email)
-                ->porEmpresa($direccion->empresa_id)
                 ->where('id', '!=', $direccion->id)
                 ->update(['es_predeterminada' => false]);
         }
@@ -117,7 +100,6 @@ class DireccionesController extends Controller
         }
 
         DireccionCliente::porCliente(Auth::user()->email)
-            ->porEmpresa($direccion->empresa_id)
             ->update(['es_predeterminada' => false]);
 
         $direccion->update(['es_predeterminada' => true]);

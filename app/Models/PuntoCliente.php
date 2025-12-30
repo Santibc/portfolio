@@ -13,7 +13,6 @@ class PuntoCliente extends Model
 
     protected $fillable = [
         'user_id',
-        'empresa_id',
         'puntos',
         'tipo',
         'concepto',
@@ -28,11 +27,6 @@ class PuntoCliente extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
     }
 
     public function compra()
@@ -64,21 +58,20 @@ class PuntoCliente extends Model
         });
     }
 
-    public function scopePorUsuario($query, $userId, $empresaId)
+    public function scopePorUsuario($query, $userId)
     {
-        return $query->where('user_id', $userId)
-                     ->where('empresa_id', $empresaId);
+        return $query->where('user_id', $userId);
     }
 
     // Obtener balance de puntos del usuario
-    public static function getBalance($userId, $empresaId)
+    public static function getBalance($userId)
     {
-        $ganados = self::porUsuario($userId, $empresaId)
+        $ganados = self::porUsuario($userId)
             ->whereIn('tipo', ['ganados', 'referido'])
             ->noExpirados()
             ->sum('puntos');
 
-        $canjeados = self::porUsuario($userId, $empresaId)
+        $canjeados = self::porUsuario($userId)
             ->where('tipo', 'canjeados')
             ->sum('puntos');
 
@@ -86,14 +79,13 @@ class PuntoCliente extends Model
     }
 
     // Registrar puntos ganados por compra
-    public static function registrarPuntosCompra($userId, $empresaId, $compraId, $totalCompra, $porcentajePuntos = 1)
+    public static function registrarPuntosCompra($userId, $compraId, $totalCompra, $porcentajePuntos = 1)
     {
         $puntos = floor($totalCompra * $porcentajePuntos / 100);
 
         if ($puntos > 0) {
             return self::create([
                 'user_id' => $userId,
-                'empresa_id' => $empresaId,
                 'puntos' => $puntos,
                 'tipo' => 'ganados',
                 'concepto' => 'Puntos por compra #' . $compraId,
@@ -106,9 +98,9 @@ class PuntoCliente extends Model
     }
 
     // Canjear puntos
-    public static function canjearPuntos($userId, $empresaId, $puntos, $concepto = 'Canje de puntos')
+    public static function canjearPuntos($userId, $puntos, $concepto = 'Canje de puntos')
     {
-        $balance = self::getBalance($userId, $empresaId);
+        $balance = self::getBalance($userId);
 
         if ($balance < $puntos) {
             return false;
@@ -116,7 +108,6 @@ class PuntoCliente extends Model
 
         return self::create([
             'user_id' => $userId,
-            'empresa_id' => $empresaId,
             'puntos' => -abs($puntos),
             'tipo' => 'canjeados',
             'concepto' => $concepto,
@@ -124,11 +115,10 @@ class PuntoCliente extends Model
     }
 
     // Registrar puntos por referido
-    public static function registrarPuntosReferido($userId, $empresaId, $referidoNombre, $puntos = 500)
+    public static function registrarPuntosReferido($userId, $referidoNombre, $puntos = 500)
     {
         return self::create([
             'user_id' => $userId,
-            'empresa_id' => $empresaId,
             'puntos' => $puntos,
             'tipo' => 'referido',
             'concepto' => 'Puntos por referir a ' . $referidoNombre,
@@ -137,11 +127,10 @@ class PuntoCliente extends Model
     }
 
     // Registrar puntos de forma genérica
-    public static function registrarPuntos($userId, $empresaId, $puntos, $tipo = 'ganados', $concepto = '', $compraId = null)
+    public static function registrarPuntos($userId, $puntos, $tipo = 'ganados', $concepto = '', $compraId = null)
     {
         return self::create([
             'user_id' => $userId,
-            'empresa_id' => $empresaId,
             'puntos' => $puntos,
             'tipo' => $tipo,
             'concepto' => $concepto,

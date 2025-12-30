@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Mail\RecordatorioFechaEspecial;
 use App\Models\FechaEspecialCliente;
 use App\Models\Producto;
-use App\Models\Empresa;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -50,14 +49,13 @@ class EnviarRecordatoriosFechas extends Command
 
         $this->info("Se encontraron {$fechas->count()} recordatorios para enviar.");
 
-        $empresa = Empresa::first();
         $enviados = 0;
         $errores = 0;
 
         foreach ($fechas as $fecha) {
             try {
                 // Obtener productos recomendados
-                $productosRecomendados = $this->obtenerProductosRecomendados($empresa, $fecha->tipo);
+                $productosRecomendados = $this->obtenerProductosRecomendados($fecha->tipo);
 
                 if ($testMode) {
                     $this->line("  [TEST] Recordatorio para: {$fecha->user->email} - {$fecha->nombre}");
@@ -95,14 +93,9 @@ class EnviarRecordatoriosFechas extends Command
     /**
      * Obtener productos recomendados segun el tipo de ocasion
      */
-    private function obtenerProductosRecomendados($empresa, $tipo)
+    private function obtenerProductosRecomendados($tipo)
     {
-        if (!$empresa) {
-            return collect();
-        }
-
-        $query = Producto::where('empresa_id', $empresa->id)
-            ->where('activo', true)
+        $query = Producto::where('activo', true)
             ->where('eliminado', false);
 
         // Buscar por palabras clave segun el tipo
@@ -127,8 +120,7 @@ class EnviarRecordatoriosFechas extends Command
 
         // Si no hay productos especificos, mostrar productos destacados
         if ($productos->isEmpty()) {
-            $productos = Producto::where('empresa_id', $empresa->id)
-                ->where('activo', true)
+            $productos = Producto::where('activo', true)
                 ->where('eliminado', false)
                 ->inRandomOrder()
                 ->limit(4)

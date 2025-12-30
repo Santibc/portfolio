@@ -13,25 +13,15 @@ use Illuminate\Support\Str;
 
 class PuntosController extends Controller
 {
-    protected function getEmpresaId()
-    {
-        $ultimaCompra = \App\Models\Compra::where('email_cliente', Auth::user()->email)
-            ->latest()
-            ->first();
-
-        return $ultimaCompra ? $ultimaCompra->empresa_id : \App\Models\Empresa::first()->id;
-    }
-
     public function index()
     {
         $user = Auth::user();
-        $empresaId = $this->getEmpresaId();
 
         // Balance de puntos
-        $balance = PuntoCliente::getBalance($user->id, $empresaId);
+        $balance = PuntoCliente::getBalance($user->id);
 
         // Historial de puntos
-        $historial = PuntoCliente::porUsuario($user->id, $empresaId)
+        $historial = PuntoCliente::porUsuario($user->id)
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get();
@@ -53,22 +43,21 @@ class PuntosController extends Controller
             ->get();
 
         // Productos sugeridos basados en próximas fechas especiales
-        $productosSugeridos = $this->obtenerProductosSugeridos($empresaId, $fechasEspeciales);
+        $productosSugeridos = $this->obtenerProductosSugeridos($fechasEspeciales);
 
         return view('cliente.puntos.index', compact(
             'user', 'balance', 'historial', 'referidos', 'fechasEspeciales', 'productosSugeridos'
         ));
     }
 
-    protected function obtenerProductosSugeridos($empresaId, $fechasEspeciales)
+    protected function obtenerProductosSugeridos($fechasEspeciales)
     {
         // Si hay fechas próximas (en los próximos 30 días), buscar productos relacionados
         $proximaFecha = $fechasEspeciales->first(function ($fecha) {
             return $fecha->dias_restantes >= 0 && $fecha->dias_restantes <= 30;
         });
 
-        $query = Producto::where('empresa_id', $empresaId)
-            ->where('activo', true)
+        $query = Producto::where('activo', true)
             ->where('eliminado', false);
 
         if ($proximaFecha) {
@@ -95,8 +84,7 @@ class PuntosController extends Controller
 
         // Si no hay productos específicos, mostrar productos destacados
         if ($productos->isEmpty()) {
-            $productos = Producto::where('empresa_id', $empresaId)
-                ->where('activo', true)
+            $productos = Producto::where('activo', true)
                 ->where('eliminado', false)
                 ->inRandomOrder()
                 ->limit(4)
@@ -172,10 +160,9 @@ class PuntosController extends Controller
         ]);
 
         $user = Auth::user();
-        $empresaId = $this->getEmpresaId();
         $puntosACanjear = $request->puntos;
 
-        $balance = PuntoCliente::getBalance($user->id, $empresaId);
+        $balance = PuntoCliente::getBalance($user->id);
 
         if ($balance < $puntosACanjear) {
             return redirect()->route('cliente.puntos')
@@ -187,7 +174,6 @@ class PuntosController extends Controller
 
         $resultado = PuntoCliente::canjearPuntos(
             $user->id,
-            $empresaId,
             $puntosACanjear,
             "Canje por descuento de \${$descuento}"
         );

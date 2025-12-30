@@ -116,18 +116,19 @@ class DashboardAnaliticoController extends Controller
 
         $productosMasVendidos = ItemCompra::select(
                 'producto_id',
+                'nombre_producto',
                 DB::raw('SUM(cantidad) as total_vendido'),
-                DB::raw('SUM(precio_total) as ingresos_totales')
+                DB::raw('SUM(precio_total) as ingresos_totales'),
+                DB::raw('AVG(precio_unitario) as precio_promedio')
             )
             ->whereHas('compra', function($q) use ($empresa, $inicioMes) {
                 $q->where('empresa_id', $empresa->id)
                   ->whereIn('estado', ['pagada', 'enviada', 'entregada'])
                   ->where('created_at', '>=', $inicioMes);
             })
-            ->groupBy('producto_id')
+            ->groupBy('producto_id', 'nombre_producto')
             ->orderByDesc('total_vendido')
             ->limit(10)
-            ->with('producto:id,nombre,precio')
             ->get();
 
         // ============================================

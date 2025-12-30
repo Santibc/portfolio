@@ -12,7 +12,6 @@ class DireccionCliente extends Model
     protected $table = 'direcciones_cliente';
 
     protected $fillable = [
-        'empresa_id',
         'email_cliente',
         'alias',
         'nombre_destinatario',
@@ -27,19 +26,9 @@ class DireccionCliente extends Model
         'es_predeterminada' => 'boolean'
     ];
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
-
     public function ciudad()
     {
         return $this->belongsTo(Ciudad::class);
-    }
-
-    public function scopePorEmpresa($query, $empresaId)
-    {
-        return $query->where('empresa_id', $empresaId);
     }
 
     public function scopePorCliente($query, $email)
