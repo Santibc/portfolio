@@ -199,7 +199,7 @@
     <!-- Footer -->
     <footer>
         <div class="container text-center">
-            <p class="mb-0">&copy; {{ date('Y') }} Esnova. Todos los derechos reservados.</p>
+            <p class="mb-0">&copy; {{ date('Y') }} Flores y Algo Más. Todos los derechos reservados.</p>
         </div>
     </footer>
 

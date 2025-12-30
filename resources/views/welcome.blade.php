@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     @if($page->seo)
-        <title>{{ $page->seo->meta_title ?: 'Esnova' }}</title>
+        <title>{{ $page->seo->meta_title ?: 'Flores y Algo Más' }}</title>
         @if($page->seo->meta_description)
             <meta name="description" content="{{ $page->seo->meta_description }}">
         @endif
@@ -54,7 +54,7 @@
             <meta name="twitter:creator" content="{{ $page->seo->twitter_creator }}">
         @endif
     @else
-        <title>Esnova</title>
+        <title>Flores y Algo Más</title>
     @endif
 
     <link rel="icon" type="image/png" href="{{ asset($page->content['favicon'] ?? 'images/ico.png') }}">
@@ -454,7 +454,7 @@
         <div class="nav-container">
             <!-- Logo Section -->
             <div class="nav-logo">
-                <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Esnova" class="logo-nav">
+                <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Flores y Algo Más" class="logo-nav">
             </div>
 
             <!-- Navigation Links -->
@@ -505,7 +505,7 @@
         <div class="mobile-menu-overlay" id="mobileMenuOverlay">
             <div class="mobile-menu">
                 <div class="mobile-menu-header">
-                    <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Esnova" class="mobile-logo">
+                    <img src="{{ asset($page->content['logo_principal'] ?? 'images/logo1.png') }}" alt="Flores y Algo Más" class="mobile-logo">
                     <button class="close-mobile-menu" id="closeMobileMenu">
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -976,8 +976,8 @@
 
     <footer class="footer-personalizado">
         <hr class="linea-gris">
-        <p class="texto-gris">{{ $page->content['footer_rights'] ?? '© Esnova.COM.CO - TODOS LOS DERECHOS RESERVADOS' }}</p>
-        <p class="texto-negro">{{ $page->content['footer_slogan'] ?? 'TECNOLOGÍA ÚTIL, CERCANA Y SIN COMPLICACIONES.' }}</p>
+        <p class="texto-gris">{{ $page->content['footer_rights'] ?? '© Flores y Algo Más - TODOS LOS DERECHOS RESERVADOS' }}</p>
+        <p class="texto-negro">{{ $page->content['footer_slogan'] ?? 'ARREGLOS FLORALES CON AMOR Y DEDICACIÓN.' }}</p>
     </footer>
 
     <a href="{{ $page->content['whatsapp_url'] ?? 'https://wa.me/#' }}" class="whatsapp-button" target="_blank">

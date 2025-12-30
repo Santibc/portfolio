@@ -76,8 +76,8 @@ class WelcomeController extends Controller
                     'linkedin_url' => '#',
                     'whatsapp_url' => 'https://wa.me/#',
                     'whatsapp_text' => 'Contáctanos vía Whatsapp',
-                    'footer_rights' => '© Esnova.COM.CO - TODOS LOS DERECHOS RESERVADOS',
-                    'footer_slogan' => 'TECNOLOGÍA ÚTIL, CERCANA Y SIN COMPLICACIONES.'
+                    'footer_rights' => '© Flores y Algo Más - TODOS LOS DERECHOS RESERVADOS',
+                    'footer_slogan' => 'ARREGLOS FLORALES CON AMOR Y DEDICACIÓN.'
                 ],
                 'seo' => null
             ];

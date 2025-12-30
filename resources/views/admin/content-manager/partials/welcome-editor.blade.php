@@ -542,7 +542,7 @@
             <div class="col-md-6">
                 <label class="form-label">Texto de derechos</label>
                 <input type="text" class="form-control" name="content[footer_rights]"
-                       value="{{ old('content.footer_rights', $page->content['footer_rights'] ?? '© Esnova.COM.CO - TODOS LOS DERECHOS RESERVADOS') }}">
+                       value="{{ old('content.footer_rights', $page->content['footer_rights'] ?? '© Flores y Algo Más - TODOS LOS DERECHOS RESERVADOS') }}">
             </div>
             <div class="col-md-6">
                 <label class="form-label">Slogan</label>

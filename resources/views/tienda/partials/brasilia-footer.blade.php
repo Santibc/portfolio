@@ -73,7 +73,7 @@
             <div class="col-12 text-center">
                 <p class="footer-copyright mb-0">
                     Defensa de las y los consumidores. Para reclamos <a href="#" class="footer-copyright-link">ingresá acá</a> | <a href="#" class="footer-copyright-link">Botón de arrepentimiento</a><br>
-                    Copyright © Brasilia Theme - 2778777625 - 2025. Todos los derechos reservados.
+                    Copyright © Flores y Algo Más - {{ date('Y') }}. Todos los derechos reservados.
                 </p>
             </div>
         </div>

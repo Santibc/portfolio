@@ -129,16 +129,16 @@ class GestionClientesController extends Controller
             ->get();
 
         // Productos más comprados por este cliente
-        $productosFavoritos = DB::table('item_compras')
-            ->join('compras', 'item_compras.compra_id', '=', 'compras.id')
-            ->join('productos', 'item_compras.producto_id', '=', 'productos.id')
+        $productosFavoritos = DB::table('items_compra')
+            ->join('compras', 'items_compra.compra_id', '=', 'compras.id')
+            ->join('productos', 'items_compra.producto_id', '=', 'productos.id')
             ->where('compras.empresa_id', $empresa->id)
             ->where('compras.email_cliente', $email)
             ->select(
                 'productos.id',
                 'productos.nombre',
                 'productos.referencia',
-                DB::raw('SUM(item_compras.cantidad) as cantidad_total'),
+                DB::raw('SUM(items_compra.cantidad) as cantidad_total'),
                 DB::raw('COUNT(*) as veces_comprado')
             )
             ->groupBy('productos.id', 'productos.nombre', 'productos.referencia')
