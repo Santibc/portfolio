@@ -456,6 +456,73 @@
                             </div>
                         @endif
                     </div>
+
+                    {{-- Sección de Productos Adicionales (Upsells) --}}
+                    @if(isset($productosAdicionales) && $productosAdicionales->count() > 0)
+                    <div class="cart-container mt-4">
+                        <h2 class="cart-title">
+                            <i class="bi bi-gift"></i> Complementa tu pedido
+                            <small class="text-muted fs-6 d-block mt-1">Agrega un detalle especial a tu arreglo</small>
+                        </h2>
+
+                        <div class="row g-3">
+                            @foreach($productosAdicionales->take(8) as $adicional)
+                            @php
+                                $yaEnCarrito = isset($carrito->adicionales['adicional_' . $adicional->id]);
+                                $cantidadEnCarrito = $yaEnCarrito ? $carrito->adicionales['adicional_' . $adicional->id]['cantidad'] : 0;
+                            @endphp
+                            <div class="col-6 col-md-3">
+                                <div class="card h-100 adicional-card {{ $yaEnCarrito ? 'border-success' : '' }}"
+                                     data-adicional-id="{{ $adicional->id }}">
+                                    @if($adicional->imagen)
+                                        <img src="{{ asset('storage/' . $adicional->imagen) }}"
+                                             class="card-img-top" alt="{{ $adicional->nombre }}"
+                                             style="height: 120px; object-fit: cover;">
+                                    @else
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                             style="height: 120px;">
+                                            <i class="bi bi-{{ $adicional->categoria == 'chocolate' ? 'box-seam' : ($adicional->categoria == 'peluche' ? 'heart' : ($adicional->categoria == 'globo' ? 'balloon' : 'gift')) }} text-muted"
+                                               style="font-size: 2rem;"></i>
+                                        </div>
+                                    @endif
+                                    <div class="card-body p-2 text-center">
+                                        <h6 class="card-title mb-1" style="font-size: 0.85rem;">
+                                            {{ Str::limit($adicional->nombre, 25) }}
+                                        </h6>
+                                        <span class="badge bg-light text-dark mb-2">{{ ucfirst($adicional->categoria) }}</span>
+                                        <p class="card-text text-primary fw-bold mb-2">
+                                            ${{ number_format($adicional->precio, 0, ',', '.') }}
+                                        </p>
+
+                                        @if($yaEnCarrito)
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                        onclick="actualizarAdicional({{ $adicional->id }}, -1)">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <span class="fw-bold" id="qty-adicional-{{ $adicional->id }}">{{ $cantidadEnCarrito }}</span>
+                                                <button class="btn btn-sm btn-outline-secondary"
+                                                        onclick="actualizarAdicional({{ $adicional->id }}, 1)">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                            <button class="btn btn-link btn-sm text-danger p-0 mt-1"
+                                                    onclick="quitarAdicional({{ $adicional->id }})">
+                                                <i class="bi bi-x"></i> Quitar
+                                            </button>
+                                        @else
+                                            <button class="btn btn-sm btn-outline-primary w-100"
+                                                    onclick="agregarAdicional({{ $adicional->id }})">
+                                                <i class="bi bi-plus-circle"></i> Agregar
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Cart Summary -->
@@ -465,9 +532,26 @@
                         <h2 class="summary-title">Resumen del Pedido</h2>
                         
                         <div class="summary-row">
-                            <span>Subtotal</span>
+                            <span>Subtotal productos</span>
                             <span id="summarySubtotal">${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
                         </div>
+
+                        {{-- Adicionales en el resumen --}}
+                        @if($carrito->adicionales && count($carrito->adicionales) > 0)
+                        <div class="adicionales-resumen mt-2 mb-2 p-2 bg-light rounded">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-gift"></i> Adicionales:</small>
+                            @foreach($carrito->adicionales as $adicional)
+                            <div class="d-flex justify-content-between small">
+                                <span>{{ $adicional['nombre'] }} x{{ $adicional['cantidad'] }}</span>
+                                <span>${{ number_format($adicional['precio'] * $adicional['cantidad'], 0, ',', '.') }}</span>
+                            </div>
+                            @endforeach
+                            <div class="summary-row mt-1 pt-1 border-top">
+                                <span><strong>Total adicionales</strong></span>
+                                <span id="summaryAdicionales"><strong>${{ number_format($carrito->total_adicionales ?? 0, 0, ',', '.') }}</strong></span>
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- Sección de Descuentos -->
                         <div id="discountSection" class="mt-3 mb-3">
@@ -814,6 +898,99 @@
                 console.error('Error:', error);
                 alert('Error al remover el descuento');
             });
+        }
+
+        // ========== FUNCIONES DE PRODUCTOS ADICIONALES ==========
+
+        function agregarAdicional(adicionalId) {
+            $('#cartLoading').show();
+
+            $.ajax({
+                url: "{{ route('tienda.carrito.adicional.agregar') }}",
+                method: 'POST',
+                data: { adicional_id: adicionalId, cantidad: 1 },
+                success: function(response) {
+                    $('#cartLoading').hide();
+                    if (response.success) {
+                        showToast('success', response.message);
+                        location.reload(); // Recargar para mostrar cambios
+                    }
+                },
+                error: function(xhr) {
+                    $('#cartLoading').hide();
+                    const error = xhr.responseJSON?.error || 'Error al agregar el producto';
+                    showToast('error', error);
+                }
+            });
+        }
+
+        function quitarAdicional(adicionalId) {
+            $('#cartLoading').show();
+
+            $.ajax({
+                url: "{{ route('tienda.carrito.adicional.quitar') }}",
+                method: 'POST',
+                data: { adicional_id: adicionalId },
+                success: function(response) {
+                    $('#cartLoading').hide();
+                    if (response.success) {
+                        showToast('success', response.message);
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    $('#cartLoading').hide();
+                    showToast('error', 'Error al quitar el producto');
+                }
+            });
+        }
+
+        function actualizarAdicional(adicionalId, cambio) {
+            const qtyElement = document.getElementById('qty-adicional-' + adicionalId);
+            let nuevaCantidad = parseInt(qtyElement.textContent) + cambio;
+
+            if (nuevaCantidad < 1) {
+                quitarAdicional(adicionalId);
+                return;
+            }
+
+            $('#cartLoading').show();
+
+            $.ajax({
+                url: "{{ route('tienda.carrito.adicional.actualizar') }}",
+                method: 'POST',
+                data: { adicional_id: adicionalId, cantidad: nuevaCantidad },
+                success: function(response) {
+                    $('#cartLoading').hide();
+                    if (response.success) {
+                        qtyElement.textContent = nuevaCantidad;
+                        updateSummaryWithAdicionales(response);
+                        showToast('success', 'Cantidad actualizada');
+                    }
+                },
+                error: function(xhr) {
+                    $('#cartLoading').hide();
+                    const error = xhr.responseJSON?.error || 'Error al actualizar';
+                    showToast('error', error);
+                }
+            });
+        }
+
+        function updateSummaryWithAdicionales(data) {
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            };
+
+            $('#summarySubtotal').text(formatCurrency(data.subtotal));
+            if (data.total_adicionales > 0) {
+                $('#summaryAdicionales').text(formatCurrency(data.total_adicionales));
+            }
+            $('#summaryTotal').text(formatCurrency(data.total));
         }
     </script>
 </body>

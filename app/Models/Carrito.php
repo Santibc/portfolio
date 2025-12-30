@@ -11,16 +11,21 @@ class Carrito extends Model
         'session_id',
         'empresa_id',
         'items',
+        'adicionales',
         'subtotal',
+        'total_adicionales',
         'descuento_total',
         'descuentos_aplicados',
         'codigo_descuento',
+        'mensaje_tarjeta',
         'ultima_actividad'
     ];
 
     protected $casts = [
         'items' => 'array',
+        'adicionales' => 'array',
         'subtotal' => 'decimal:2',
+        'total_adicionales' => 'decimal:2',
         'descuento_total' => 'decimal:2',
         'descuentos_aplicados' => 'array',
         'ultima_actividad' => 'datetime'
@@ -106,7 +111,10 @@ class Carrito extends Model
     public function vaciar()
     {
         $this->items = [];
+        $this->adicionales = [];
         $this->subtotal = 0;
+        $this->total_adicionales = 0;
+        $this->mensaje_tarjeta = null;
         $this->save();
     }
 
@@ -120,6 +128,34 @@ class Carrito extends Model
 
         $this->subtotal = $subtotal;
         return $subtotal;
+    }
+
+    /**
+     * Calcular total de productos adicionales
+     */
+    public function calcularTotalAdicionales()
+    {
+        $total = 0;
+
+        foreach ($this->adicionales ?? [] as $adicional) {
+            $total += $adicional['cantidad'] * $adicional['precio'];
+        }
+
+        $this->total_adicionales = $total;
+        return $total;
+    }
+
+    /**
+     * Recalcular todos los totales del carrito
+     */
+    public function recalcularTotales()
+    {
+        $this->calcularSubtotal();
+        $this->calcularTotalAdicionales();
+        $this->save();
+
+        // Recalcular descuentos
+        $this->aplicarDescuento();
     }
 
     public function aplicarDescuento(string $codigo = null)
@@ -167,7 +203,16 @@ class Carrito extends Model
 
     public function getTotalAttribute()
     {
-        return max(0, $this->subtotal - $this->descuento_total);
+        $subtotalConAdicionales = $this->subtotal + ($this->total_adicionales ?? 0);
+        return max(0, $subtotalConAdicionales - $this->descuento_total);
+    }
+
+    /**
+     * Total de items adicionales
+     */
+    public function getTotalItemsAdicionalesAttribute()
+    {
+        return collect($this->adicionales ?? [])->sum('cantidad');
     }
 
     public function getTotalItemsAttribute()

@@ -281,7 +281,26 @@
     </section><!-- /Hero Section -->
 
     <!-- Hero Section with Carousel -->
- 
+
+    <!-- Banner Arma tu Ramo -->
+    <section class="py-4" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #f8b500 100%);">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-8 text-white">
+            <div class="d-flex align-items-center mb-2">
+              <i class="bi bi-flower1 me-2" style="font-size: 2rem;"></i>
+              <h3 class="mb-0 fw-bold">¡Crea tu ramo personalizado!</h3>
+            </div>
+            <p class="mb-0 opacity-75">Elige las flores, el tamaño y los adicionales. Diseña el regalo perfecto para esa persona especial.</p>
+          </div>
+          <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <a href="{{ route('arma-tu-ramo') }}" class="btn btn-light btn-lg px-4 shadow">
+              <i class="bi bi-palette me-2"></i>Armar mi Ramo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Promo Cards Section - Categorías -->
     <section id="categorias" class="promo-cards section">

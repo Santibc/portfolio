@@ -199,6 +199,7 @@
           <ul>
             <li><a href="{{ route('home') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
             <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-categorias', '')">Categorías</a></li>
+            <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')" style="color: #e91e63;"><i class="bi bi-flower1 me-1"></i>Arma tu Ramo</a></li>
 
             {{-- Opciones de cuenta para menú móvil --}}
             @guest

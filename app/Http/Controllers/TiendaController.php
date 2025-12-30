@@ -16,6 +16,7 @@ use App\Models\Departamento;
 use App\Models\ConfiguracionPasarela;
 use App\Models\CalificacionProducto;
 use App\Models\PuntoCliente;
+use App\Models\ProductoAdicional;
 use App\Services\WompiService;
 use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
@@ -415,7 +416,13 @@ class TiendaController extends Controller
         $carrito = $this->obtenerCarrito($empresa->id);
         $listaPrecio = ListaPrecio::activas()->first();
 
-        return view('tienda.carrito', compact('empresa', 'carrito', 'listaPrecio'));
+        // Obtener productos adicionales (upsells) para sugerir
+        $productosAdicionales = ProductoAdicional::disponibles()
+            ->paraCheckout()
+            ->orderBy('orden')
+            ->get();
+
+        return view('tienda.carrito', compact('empresa', 'carrito', 'listaPrecio', 'productosAdicionales'));
     }
 
     /**
@@ -587,11 +594,22 @@ class TiendaController extends Controller
         $departamentos = Departamento::with('ciudades')->get();
         $configuracionPasarela = ConfiguracionPasarela::obtenerConfiguracionActiva();
 
+        // Obtener productos adicionales (upsells) para sugerir en checkout
+        $productosAdicionales = ProductoAdicional::disponibles()
+            ->paraCheckout()
+            ->orderBy('orden')
+            ->get();
+
+        // Agrupar por categoría
+        $adicionalesPorCategoria = $productosAdicionales->groupBy('categoria');
+
         return view('tienda.checkout', compact(
             'empresa',
             'carrito',
             'departamentos',
-            'configuracionPasarela'
+            'configuracionPasarela',
+            'productosAdicionales',
+            'adicionalesPorCategoria'
         ));
     }
 
@@ -1222,6 +1240,132 @@ public function categorias(Request $request)
             'subtotal' => $carrito->subtotal,
             'descuento_total' => 0,
             'total' => $carrito->subtotal
+        ]);
+    }
+
+    /**
+     * Agregar producto adicional (upsell) al carrito
+     */
+    public function agregarAdicional(Request $request)
+    {
+        $empresa = $this->getEmpresa();
+
+        $request->validate([
+            'adicional_id' => 'required|exists:productos_adicionales,id',
+            'cantidad' => 'nullable|integer|min:1'
+        ]);
+
+        $adicional = ProductoAdicional::findOrFail($request->adicional_id);
+
+        // Verificar que esté disponible
+        if (!$adicional->disponible || !$adicional->mostrar_en_checkout) {
+            return response()->json(['error' => 'Producto no disponible'], 400);
+        }
+
+        // Verificar stock si aplica
+        if ($adicional->stock !== null && $adicional->stock < ($request->cantidad ?? 1)) {
+            return response()->json(['error' => 'Stock insuficiente'], 400);
+        }
+
+        $carrito = $this->obtenerCarrito($empresa->id);
+
+        // Agregar adicional al carrito
+        $adicionales = $carrito->adicionales ?? [];
+        $key = 'adicional_' . $adicional->id;
+
+        if (isset($adicionales[$key])) {
+            $adicionales[$key]['cantidad'] += ($request->cantidad ?? 1);
+        } else {
+            $adicionales[$key] = [
+                'id' => $adicional->id,
+                'nombre' => $adicional->nombre,
+                'precio' => $adicional->precio,
+                'cantidad' => $request->cantidad ?? 1,
+                'imagen' => $adicional->imagen,
+                'categoria' => $adicional->categoria
+            ];
+        }
+
+        $carrito->adicionales = $adicionales;
+        $carrito->recalcularTotales();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Producto adicional agregado',
+            'adicionales' => $carrito->adicionales,
+            'total_adicionales' => $carrito->total_adicionales ?? 0,
+            'subtotal' => $carrito->subtotal,
+            'total' => $carrito->total
+        ]);
+    }
+
+    /**
+     * Quitar producto adicional del carrito
+     */
+    public function quitarAdicional(Request $request)
+    {
+        $empresa = $this->getEmpresa();
+
+        $request->validate([
+            'adicional_id' => 'required|integer'
+        ]);
+
+        $carrito = $this->obtenerCarrito($empresa->id);
+        $adicionales = $carrito->adicionales ?? [];
+        $key = 'adicional_' . $request->adicional_id;
+
+        if (isset($adicionales[$key])) {
+            unset($adicionales[$key]);
+            $carrito->adicionales = $adicionales;
+            $carrito->recalcularTotales();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Producto adicional removido',
+            'adicionales' => $carrito->adicionales,
+            'total_adicionales' => $carrito->total_adicionales ?? 0,
+            'subtotal' => $carrito->subtotal,
+            'total' => $carrito->total
+        ]);
+    }
+
+    /**
+     * Actualizar cantidad de producto adicional
+     */
+    public function actualizarAdicional(Request $request)
+    {
+        $empresa = $this->getEmpresa();
+
+        $request->validate([
+            'adicional_id' => 'required|integer',
+            'cantidad' => 'required|integer|min:0'
+        ]);
+
+        $carrito = $this->obtenerCarrito($empresa->id);
+        $adicionales = $carrito->adicionales ?? [];
+        $key = 'adicional_' . $request->adicional_id;
+
+        if ($request->cantidad == 0) {
+            unset($adicionales[$key]);
+        } elseif (isset($adicionales[$key])) {
+            // Verificar stock
+            $adicional = ProductoAdicional::find($request->adicional_id);
+            if ($adicional && $adicional->stock !== null && $adicional->stock < $request->cantidad) {
+                return response()->json(['error' => 'Stock insuficiente'], 400);
+            }
+            $adicionales[$key]['cantidad'] = $request->cantidad;
+        }
+
+        $carrito->adicionales = $adicionales;
+        $carrito->recalcularTotales();
+
+        return response()->json([
+            'success' => true,
+            'adicionales' => $carrito->adicionales,
+            'total_adicionales' => $carrito->total_adicionales ?? 0,
+            'subtotal' => $carrito->subtotal,
+            'total' => $carrito->total
         ]);
     }
 }

@@ -329,6 +329,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // ========== RUTAS DE TIENDA PÚBLICA (SINGLE-TENANT - SIN SLUG) ==========
 
+// Arma tu Ramo - Módulo de personalización
+Route::get('/arma-tu-ramo', [App\Http\Controllers\ArmaTuRamoController::class, 'index'])
+    ->name('arma-tu-ramo');
+Route::post('/arma-tu-ramo/tamano', [App\Http\Controllers\ArmaTuRamoController::class, 'seleccionarTamano']);
+Route::post('/arma-tu-ramo/flor/agregar', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarFlor']);
+Route::post('/arma-tu-ramo/flor/actualizar', [App\Http\Controllers\ArmaTuRamoController::class, 'actualizarFlor']);
+Route::post('/arma-tu-ramo/flor/quitar', [App\Http\Controllers\ArmaTuRamoController::class, 'quitarFlor']);
+Route::post('/arma-tu-ramo/adicional/toggle', [App\Http\Controllers\ArmaTuRamoController::class, 'toggleAdicional']);
+Route::post('/arma-tu-ramo/mensaje', [App\Http\Controllers\ArmaTuRamoController::class, 'guardarMensaje']);
+Route::post('/arma-tu-ramo/agregar-carrito', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarAlCarrito']);
+Route::post('/arma-tu-ramo/reiniciar', [App\Http\Controllers\ArmaTuRamoController::class, 'reiniciar']);
+Route::get('/arma-tu-ramo/estado', [App\Http\Controllers\ArmaTuRamoController::class, 'getEstado']);
+
 // Catálogo de productos (con filtros por categoría, precio, etc.)
 Route::get('/catalogo', [App\Http\Controllers\TiendaController::class, 'categorias'])
     ->name('tienda.categorias');
@@ -362,6 +375,16 @@ Route::post('/stock/info', [App\Http\Controllers\TiendaController::class, 'obten
 
 Route::post('/carrito/validar-stock', [App\Http\Controllers\TiendaController::class, 'validarStockCarrito'])
     ->name('tienda.carrito.validar-stock');
+
+// Productos Adicionales (Upsells)
+Route::post('/carrito/adicional/agregar', [App\Http\Controllers\TiendaController::class, 'agregarAdicional'])
+    ->name('tienda.carrito.adicional.agregar');
+
+Route::post('/carrito/adicional/quitar', [App\Http\Controllers\TiendaController::class, 'quitarAdicional'])
+    ->name('tienda.carrito.adicional.quitar');
+
+Route::post('/carrito/adicional/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarAdicional'])
+    ->name('tienda.carrito.adicional.actualizar');
 
 // Checkout y pago
 Route::get('/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])

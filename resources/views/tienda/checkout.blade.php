@@ -570,13 +570,39 @@
                                     <label for="mensaje_tarjeta" class="form-label">
                                         <i class="bi bi-envelope-heart text-danger"></i> Mensaje para la tarjeta (opcional)
                                     </label>
-                                    <textarea class="form-control"
-                                              id="mensaje_tarjeta"
-                                              name="mensaje_tarjeta"
-                                              rows="3"
-                                              maxlength="250"
-                                              placeholder="Escribe un mensaje especial que incluiremos en una tarjeta con tu arreglo...">{{ old('mensaje_tarjeta') }}</textarea>
-                                    <small class="text-muted">Máximo 250 caracteres. <span id="mensaje_contador">0</span>/250</small>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <textarea class="form-control"
+                                                      id="mensaje_tarjeta"
+                                                      name="mensaje_tarjeta"
+                                                      rows="4"
+                                                      maxlength="250"
+                                                      placeholder="Escribe un mensaje especial que incluiremos en una tarjeta con tu arreglo...">{{ old('mensaje_tarjeta', $carrito->mensaje_tarjeta ?? '') }}</textarea>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-muted"><span id="mensaje_contador">0</span>/250 caracteres</small>
+                                                <button type="button" class="btn btn-link btn-sm p-0" onclick="togglePreviewTarjeta()">
+                                                    <i class="bi bi-eye"></i> Ver vista previa
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{-- Vista previa de la tarjeta --}}
+                                            <div id="preview_tarjeta" class="card border-2" style="background: linear-gradient(135deg, #fff5f5 0%, #fff 100%); min-height: 150px; display: none;">
+                                                <div class="card-body text-center p-3">
+                                                    <div class="mb-2">
+                                                        <i class="bi bi-flower1 text-danger" style="font-size: 1.5rem;"></i>
+                                                    </div>
+                                                    <p id="preview_mensaje" class="mb-2 fst-italic" style="font-family: 'Georgia', serif; font-size: 0.9rem; white-space: pre-wrap;">
+                                                        Tu mensaje aparecerá aquí...
+                                                    </p>
+                                                    <hr style="border-color: rgba(255,0,100,0.2);">
+                                                    <small class="text-muted" style="font-family: 'Georgia', serif;">
+                                                        Con cariño, de parte de <span id="preview_remitente">tu nombre</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="col-12">
@@ -639,12 +665,37 @@
                                 </div>
                             @endforeach
                             
+                            {{-- Productos Adicionales --}}
+                            @if($carrito->adicionales && count($carrito->adicionales) > 0)
+                                <div class="adicionales-checkout border-top pt-3 mt-2">
+                                    <small class="text-muted d-block mb-2"><i class="bi bi-gift"></i> Adicionales incluidos:</small>
+                                    @foreach($carrito->adicionales as $adicional)
+                                    <div class="summary-item py-2">
+                                        <div class="item-details">
+                                            <div class="item-name small">{{ $adicional['nombre'] }}</div>
+                                            <div class="item-quantity small text-muted">Cantidad: {{ $adicional['cantidad'] }}</div>
+                                        </div>
+                                        <div class="item-price small">
+                                            ${{ number_format($adicional['precio'] * $adicional['cantidad'], 0, ',', '.') }}
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <!-- Totals -->
                             <div class="summary-totals">
                                 <div class="summary-row">
-                                    <span>Subtotal</span>
+                                    <span>Subtotal productos</span>
                                     <span>${{ number_format($carrito->subtotal, 0, ',', '.') }}</span>
                                 </div>
+
+                                @if($carrito->adicionales && count($carrito->adicionales) > 0)
+                                <div class="summary-row">
+                                    <span>Adicionales</span>
+                                    <span>${{ number_format($carrito->total_adicionales ?? 0, 0, ',', '.') }}</span>
+                                </div>
+                                @endif
 
                                 @if($carrito->descuentos_aplicados && count($carrito->descuentos_aplicados) > 0)
                                     @foreach($carrito->descuentos_aplicados as $desc)
@@ -769,11 +820,41 @@
                 $(this).removeClass('is-invalid');
             });
 
-            // Contador de caracteres para mensaje de tarjeta
+            // Contador de caracteres para mensaje de tarjeta y actualización de vista previa
             $('#mensaje_tarjeta').on('input', function() {
-                const count = $(this).val().length;
+                const mensaje = $(this).val();
+                const count = mensaje.length;
                 $('#mensaje_contador').text(count);
+
+                // Actualizar vista previa
+                if (mensaje.trim()) {
+                    $('#preview_mensaje').text(mensaje);
+                } else {
+                    $('#preview_mensaje').text('Tu mensaje aparecerá aquí...');
+                }
             });
+
+            // Actualizar nombre del remitente en vista previa
+            $('#nombre').on('input', function() {
+                const nombre = $(this).val();
+                if (nombre.trim()) {
+                    $('#preview_remitente').text(nombre);
+                } else {
+                    $('#preview_remitente').text('tu nombre');
+                }
+            });
+
+            // Inicializar contador y vista previa al cargar
+            const mensajeInicial = $('#mensaje_tarjeta').val();
+            if (mensajeInicial) {
+                $('#mensaje_contador').text(mensajeInicial.length);
+                $('#preview_mensaje').text(mensajeInicial);
+            }
+
+            const nombreInicial = $('#nombre').val();
+            if (nombreInicial) {
+                $('#preview_remitente').text(nombreInicial);
+            }
         });
 
         // Toggle campos de destinatario
@@ -785,6 +866,25 @@
                 $('#telefono_destinatario').val('');
             } else {
                 $('#destinatario_fields').slideDown();
+            }
+        }
+
+        // Toggle vista previa de tarjeta
+        function togglePreviewTarjeta() {
+            const preview = $('#preview_tarjeta');
+            if (preview.is(':visible')) {
+                preview.slideUp();
+            } else {
+                preview.slideDown();
+                // Actualizar vista previa con valores actuales
+                const mensaje = $('#mensaje_tarjeta').val();
+                const nombre = $('#nombre').val();
+                if (mensaje.trim()) {
+                    $('#preview_mensaje').text(mensaje);
+                }
+                if (nombre.trim()) {
+                    $('#preview_remitente').text(nombre);
+                }
             }
         }
     </script>
