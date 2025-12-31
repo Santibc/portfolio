@@ -274,6 +274,84 @@
         </div>
       </div>
 
+      {{-- Marketing y Analytics --}}
+      <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Marketing y Analytics</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            Configura los códigos de seguimiento para medir el rendimiento de tu tienda y crear campañas de remarketing.
+          </p>
+
+          <div class="row">
+            {{-- Google Analytics 4 --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-google text-danger me-1"></i> Google Analytics 4 (GA4)
+              </label>
+              <input name="ga4_measurement_id" type="text"
+                     class="form-control @error('ga4_measurement_id') is-invalid @enderror"
+                     value="{{ old('ga4_measurement_id', $empresa->ga4_measurement_id) }}"
+                     placeholder="G-XXXXXXXXXX">
+              @error('ga4_measurement_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">ID de medición de Google Analytics 4 (ej: G-ABC123XYZ)</small>
+            </div>
+
+            {{-- Google Tag Manager --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-tag text-warning me-1"></i> Google Tag Manager
+              </label>
+              <input name="gtm_container_id" type="text"
+                     class="form-control @error('gtm_container_id') is-invalid @enderror"
+                     value="{{ old('gtm_container_id', $empresa->gtm_container_id) }}"
+                     placeholder="GTM-XXXXXXX">
+              @error('gtm_container_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">ID de contenedor de GTM (ej: GTM-ABC123)</small>
+            </div>
+
+            {{-- Facebook/Meta Pixel --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-facebook text-primary me-1"></i> Meta/Facebook Pixel
+              </label>
+              <input name="fb_pixel_id" type="text"
+                     class="form-control @error('fb_pixel_id') is-invalid @enderror"
+                     value="{{ old('fb_pixel_id', $empresa->fb_pixel_id) }}"
+                     placeholder="123456789012345">
+              @error('fb_pixel_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">ID del Pixel de Facebook/Meta (ej: 123456789012345)</small>
+            </div>
+
+            {{-- Scripts Personalizados --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-code-slash text-success me-1"></i> Scripts Adicionales (Head)
+              </label>
+              <textarea name="custom_scripts_head" rows="3"
+                        class="form-control @error('custom_scripts_head') is-invalid @enderror"
+                        placeholder="<!-- Otros scripts de tracking -->"
+              >{{ old('custom_scripts_head', $empresa->custom_scripts_head) }}</textarea>
+              @error('custom_scripts_head') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Scripts adicionales para el &lt;head&gt; (Google Ads, TikTok Pixel, etc.)</small>
+            </div>
+          </div>
+
+          {{-- Información adicional --}}
+          <div class="alert alert-info mt-3 mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Nota:</strong> Los scripts de tracking solo se cargarán en producción.
+            Para obtener tus códigos:
+            <ul class="mb-0 mt-2">
+              <li><a href="https://analytics.google.com/" target="_blank" rel="noopener">Google Analytics 4</a> - Administración → Flujos de datos → ID de medición</li>
+              <li><a href="https://tagmanager.google.com/" target="_blank" rel="noopener">Google Tag Manager</a> - ID del contenedor</li>
+              <li><a href="https://business.facebook.com/events_manager" target="_blank" rel="noopener">Meta Business Suite</a> - Administrador de eventos → Orígenes de datos</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {{-- Horario de Atención --}}
       <div class="card shadow mb-4">
         <div class="card-header">

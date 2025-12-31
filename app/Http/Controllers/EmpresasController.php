@@ -105,6 +105,12 @@ class EmpresasController extends Controller
             'carrusel.*.orden'       => ['nullable', 'integer'],
             'carrusel.*.fecha_inicio'=> ['nullable', 'date'],
             'carrusel.*.fecha_fin'   => ['nullable', 'date', 'after_or_equal:carrusel.*.fecha_inicio'],
+
+            // Marketing y Analytics
+            'ga4_measurement_id'     => ['nullable', 'string', 'max:50', 'regex:/^G-[A-Z0-9]+$/i'],
+            'gtm_container_id'       => ['nullable', 'string', 'max:50', 'regex:/^GTM-[A-Z0-9]+$/i'],
+            'fb_pixel_id'            => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
+            'custom_scripts_head'    => ['nullable', 'string', 'max:5000'],
         ];
 
         $messages = [

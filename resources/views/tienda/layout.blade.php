@@ -5,8 +5,31 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
-  <meta name="description" content="@yield('description', $empresa->descripcion)">
-  <meta name="keywords" content="@yield('keywords', '')">
+
+  {{-- SEO Meta Tags --}}
+  @hasSection('seo')
+    @yield('seo')
+  @else
+    @include('components.seo.meta-tags', [
+        'empresa' => $empresa,
+        'title' => View::yieldContent('title'),
+        'description' => View::yieldContent('description')
+    ])
+  @endif
+
+  {{-- Structured Data --}}
+  @include('components.seo.structured-data', [
+      'type' => 'LocalBusiness',
+      'empresa' => $empresa
+  ])
+  @include('components.seo.structured-data', [
+      'type' => 'WebSite',
+      'empresa' => $empresa
+  ])
+  @stack('structured-data')
+
+  {{-- Analytics Scripts (GA4, Facebook Pixel, GTM) --}}
+  @include('components.analytics.head-scripts')
 
   <!-- Favicons -->
   <link href="{{ $empresa->logo_url }}" rel="icon">
@@ -61,6 +84,8 @@
 </head>
 
 <body class="@yield('body-class', 'index-page')">
+  {{-- GTM noscript fallback --}}
+  @include('components.analytics.body-scripts')
 
   <header id="header" class="header sticky-top">
     <!-- Top Bar -->
@@ -412,6 +437,9 @@
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- WhatsApp Floating Button -->
+  @include('components.whatsapp-button', ['empresa' => $empresa])
 
   <!-- Preloader -->
   <div id="preloader"></div>

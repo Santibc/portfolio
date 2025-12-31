@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra - {{ $empresa->nombre }}</title>
-    
+
+    {{-- Analytics Scripts (GA4, Facebook Pixel, GTM) --}}
+    @include('components.analytics.head-scripts')
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -300,6 +303,30 @@
     </style>
 </head>
 <body>
+    {{-- GTM noscript fallback --}}
+    @include('components.analytics.body-scripts')
+
+    {{-- Tracking: begin_checkout --}}
+    @php
+        $checkoutItems = [];
+        foreach($carrito->items ?? [] as $item) {
+            $checkoutItems[] = [
+                'referencia' => $item['referencia'] ?? '',
+                'producto_id' => $item['producto_id'] ?? '',
+                'nombre' => $item['nombre'] ?? '',
+                'precio' => $item['precio'] ?? 0,
+                'cantidad' => $item['cantidad'] ?? 1,
+                'categoria' => 'Flores',
+            ];
+        }
+    @endphp
+    @include('components.analytics.ecommerce-events', [
+        'event' => 'begin_checkout',
+        'items' => $checkoutItems,
+        'value' => $carrito->total,
+        'coupon' => $carrito->codigo_descuento
+    ])
+
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">

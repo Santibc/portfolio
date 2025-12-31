@@ -1,2 +1,20 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /empresa/
+
+# Disallow cart and checkout (not useful for SEO)
+Disallow: /carrito
+Disallow: /checkout
+Disallow: /pago/
+
+# Disallow auth pages
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+
+# Sitemap
+Sitemap: /sitemap.xml

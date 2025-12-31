@@ -31,4 +31,20 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Business API
+    |--------------------------------------------------------------------------
+    |
+    | Configuración para integración con WhatsApp Business Cloud API
+    | Obtener credenciales desde: https://developers.facebook.com/
+    |
+    */
+    'whatsapp' => [
+        'token' => env('WHATSAPP_API_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'business_id' => env('WHATSAPP_BUSINESS_ID'),
+        'webhook_verify_token' => env('WHATSAPP_WEBHOOK_VERIFY_TOKEN'),
+    ],
+
 ];

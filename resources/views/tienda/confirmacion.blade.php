@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¡Compra Exitosa! - {{ $compra->empresa->nombre }}</title>
-    
+
+    {{-- Analytics Scripts (GA4, Facebook Pixel, GTM) --}}
+    @include('components.analytics.head-scripts')
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -178,6 +181,33 @@
     </style>
 </head>
 <body>
+    {{-- GTM noscript fallback --}}
+    @include('components.analytics.body-scripts')
+
+    {{-- Tracking: purchase --}}
+    @php
+        $purchaseItems = [];
+        foreach($compra->items ?? [] as $item) {
+            $purchaseItems[] = [
+                'referencia' => $item->producto->referencia ?? $item->producto_id,
+                'producto_id' => $item->producto_id,
+                'nombre' => $item->producto->nombre ?? 'Producto',
+                'precio' => $item->precio_unitario,
+                'cantidad' => $item->cantidad,
+                'categoria' => $item->producto->categoria->nombre ?? 'General',
+            ];
+        }
+    @endphp
+    @include('components.analytics.ecommerce-events', [
+        'event' => 'purchase',
+        'transactionId' => $compra->numero_compra,
+        'items' => $purchaseItems,
+        'value' => $compra->total,
+        'shipping' => $compra->costo_envio ?? 0,
+        'tax' => 0,
+        'coupon' => $compra->codigo_descuento ?? null
+    ])
+
     <div class="container">
         <div class="success-container">
             <!-- Success Icon -->

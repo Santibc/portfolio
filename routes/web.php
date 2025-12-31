@@ -386,6 +386,12 @@ Route::post('/carrito/adicional/quitar', [App\Http\Controllers\TiendaController:
 Route::post('/carrito/adicional/actualizar', [App\Http\Controllers\TiendaController::class, 'actualizarAdicional'])
     ->name('tienda.carrito.adicional.actualizar');
 
+// Recuperación de carrito abandonado
+Route::get('/carrito/recuperar/{token}', [App\Http\Controllers\CarritoRecuperacionController::class, 'recuperar'])
+    ->name('carrito.recuperar');
+Route::get('/carrito/track/{token}.gif', [App\Http\Controllers\CarritoRecuperacionController::class, 'trackApertura'])
+    ->name('carrito.track-apertura');
+
 // Checkout y pago
 Route::get('/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
     ->name('tienda.checkout');

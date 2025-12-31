@@ -34,7 +34,16 @@ class Empresa extends Model
         'hero_video_url',
         'hero_video_message',
         'hero_video_button_text',
-        'hero_video_button_link'
+        'hero_video_button_link',
+        // Analytics & Marketing
+        'ga4_measurement_id',
+        'fb_pixel_id',
+        'gtm_container_id',
+        'custom_scripts_head',
+        // WhatsApp Business API
+        'whatsapp_api_token',
+        'whatsapp_phone_id',
+        'whatsapp_business_id',
     ];
 
     protected $casts = [

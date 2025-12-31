@@ -18,7 +18,18 @@ class Carrito extends Model
         'descuentos_aplicados',
         'codigo_descuento',
         'mensaje_tarjeta',
-        'ultima_actividad'
+        'ultima_actividad',
+        // Campos para carrito abandonado
+        'email_cliente',
+        'nombre_cliente',
+        'telefono_cliente',
+        'recordatorio_1_enviado',
+        'recordatorio_2_enviado',
+        'recordatorio_3_enviado',
+        'recuperado',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
     ];
 
     protected $casts = [
@@ -28,7 +39,11 @@ class Carrito extends Model
         'total_adicionales' => 'decimal:2',
         'descuento_total' => 'decimal:2',
         'descuentos_aplicados' => 'array',
-        'ultima_actividad' => 'datetime'
+        'ultima_actividad' => 'datetime',
+        'recordatorio_1_enviado' => 'datetime',
+        'recordatorio_2_enviado' => 'datetime',
+        'recordatorio_3_enviado' => 'datetime',
+        'recuperado' => 'boolean',
     ];
 
     public function empresa()

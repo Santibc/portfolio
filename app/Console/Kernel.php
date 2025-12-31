@@ -17,6 +17,9 @@ class Kernel extends ConsoleKernel
     {
         // Enviar recordatorios de fechas especiales diariamente a las 8 AM
         $schedule->command('recordatorios:enviar')->dailyAt('08:00');
+
+        // Enviar recordatorios de carritos abandonados cada 15 minutos
+        $schedule->command('carritos:recordatorios')->everyFifteenMinutes();
     }
 
     /**

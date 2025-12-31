@@ -4,6 +4,25 @@
 @section('description', $producto->descripcion)
 @section('body-class', 'product-details-page')
 
+@push('structured-data')
+@include('components.seo.structured-data', [
+    'type' => 'Product',
+    'empresa' => $empresa,
+    'producto' => $producto,
+    'promedioCalificacion' => $promedioCalificacion ?? 0,
+    'totalCalificaciones' => $totalCalificaciones ?? 0
+])
+@include('components.seo.structured-data', [
+    'type' => 'BreadcrumbList',
+    'empresa' => $empresa,
+    'breadcrumbs' => [
+        ['name' => 'Inicio', 'url' => url('/')],
+        ['name' => $producto->categoria->nombre ?? 'Productos', 'url' => route('tienda.categorias', ['categoria' => $producto->categoria_id])],
+        ['name' => $producto->nombre, 'url' => route('tienda.producto', $producto->id)]
+    ]
+])
+@endpush
+
 @section('content')
 @php
     // Buscar descuentos activos para este producto
@@ -792,6 +811,12 @@
     </section><!-- /Product Details Section -->
 
   </main>
+
+  {{-- Tracking: view_item --}}
+  @include('components.analytics.ecommerce-events', [
+      'event' => 'view_item',
+      'product' => $producto
+  ])
 
 @endsection
 
