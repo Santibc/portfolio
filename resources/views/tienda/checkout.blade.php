@@ -740,17 +740,19 @@
                                     </div>
                                 @endif
 
-                                <div class="summary-row text-muted">
+                                <div class="summary-row" id="envio-row">
                                     <span>Envío</span>
-                                    <span>Por calcular</span>
+                                    <span id="envio-valor" class="text-muted">Selecciona ciudad</span>
                                 </div>
+                                <div id="envio-info" class="small text-success mb-2" style="display: none;"></div>
+                                <input type="hidden" name="costo_envio" id="costo_envio_input" value="0">
                                 <div class="summary-row text-muted">
                                     <span>Impuestos</span>
                                     <span>Incluidos</span>
                                 </div>
                                 <div class="summary-total">
                                     <span>Total a pagar</span>
-                                    <span>${{ number_format($carrito->total ?? $carrito->subtotal, 0, ',', '.') }}</span>
+                                    <span id="total-valor">${{ number_format($carrito->total ?? $carrito->subtotal, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                             
@@ -762,7 +764,7 @@
                             <!-- Secure Info -->
                             <div class="secure-info">
                                 <i class="bi bi-shield-lock-fill"></i>
-                                <span>Pago seguro con Wompi</span>
+                                <span>Pago seguro con WebPay</span>
                             </div>
                             
                             @if($configuracionPasarela && $configuracionPasarela->modo_prueba)
@@ -781,16 +783,24 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function() {
+            // Subtotal base del carrito (sin envío)
+            const subtotalBase = {{ $carrito->total ?? $carrito->subtotal }};
+            let costoEnvioActual = 0;
+
             // Load cities when department changes
             $('#departamento').on('change', function() {
                 const departamentoId = $(this).val();
                 const ciudadSelect = $('#ciudad_id');
-                
+
                 ciudadSelect.html('<option value="">Cargando ciudades...</option>');
-                
+
+                // Reset envío al cambiar departamento
+                resetEnvio();
+
                 if (departamentoId) {
                     $.ajax({
                         url: "{{ route('ajax.ciudades') }}",
@@ -811,6 +821,95 @@
                 }
             });
 
+            // Calcular envío cuando se selecciona ciudad
+            $('#ciudad_id').on('change', function() {
+                const ciudadId = $(this).val();
+
+                if (!ciudadId) {
+                    resetEnvio();
+                    return;
+                }
+
+                // Mostrar loading en envío
+                $('#envio-valor').html('<span class="spinner-border spinner-border-sm"></span> Calculando...');
+                $('#envio-info').hide();
+
+                $.ajax({
+                    url: "{{ route('tienda.calcular-envio') }}",
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        ciudad_id: ciudadId,
+                        subtotal: subtotalBase
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            costoEnvioActual = response.costo_envio;
+                            $('#costo_envio_input').val(costoEnvioActual);
+
+                            if (response.envio_gratis) {
+                                $('#envio-valor').html('<span class="text-success fw-bold">¡GRATIS!</span>');
+                                $('#envio-row').removeClass('text-muted');
+                            } else {
+                                $('#envio-valor').html('<span class="fw-bold">' + response.costo_envio_formateado + '</span>');
+                                $('#envio-row').removeClass('text-muted');
+                            }
+
+                            // Mostrar mensajes informativos
+                            if (response.mensajes && response.mensajes.length > 0) {
+                                let mensajesHtml = response.mensajes.map(m => '<div><i class="bi bi-info-circle"></i> ' + m + '</div>').join('');
+                                $('#envio-info').html(mensajesHtml).slideDown();
+                            } else {
+                                $('#envio-info').hide();
+                            }
+
+                            // Actualizar total
+                            actualizarTotal();
+                        } else {
+                            // Sin cobertura o sin tarifa
+                            $('#envio-valor').html('<span class="text-danger">' + response.error + '</span>');
+                            $('#envio-info').hide();
+                            costoEnvioActual = 0;
+                            $('#costo_envio_input').val(0);
+
+                            // Mostrar alerta
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Zona sin cobertura',
+                                text: response.error,
+                                confirmButtonColor: '#e91e63'
+                            });
+                        }
+                    },
+                    error: function() {
+                        $('#envio-valor').html('<span class="text-danger">Error al calcular</span>');
+                        $('#envio-info').hide();
+                        costoEnvioActual = 0;
+                    }
+                });
+            });
+
+            // Función para resetear envío
+            function resetEnvio() {
+                costoEnvioActual = 0;
+                $('#costo_envio_input').val(0);
+                $('#envio-valor').html('<span class="text-muted">Selecciona ciudad</span>');
+                $('#envio-row').addClass('text-muted');
+                $('#envio-info').hide();
+                actualizarTotal();
+            }
+
+            // Función para actualizar el total
+            function actualizarTotal() {
+                const nuevoTotal = subtotalBase + costoEnvioActual;
+                $('#total-valor').text('$' + formatNumber(nuevoTotal));
+            }
+
+            // Formatear número con separadores de miles
+            function formatNumber(num) {
+                return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
             // Form validation
             $('#checkoutForm').on('submit', function(e) {
                 e.preventDefault();
@@ -830,7 +929,12 @@
                 });
                 
                 if (!isValid) {
-                    alert('Por favor complete todos los campos obligatorios');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos incompletos',
+                        text: 'Por favor complete todos los campos obligatorios',
+                        confirmButtonColor: '#e91e63'
+                    });
                     return;
                 }
                 
@@ -914,6 +1018,34 @@
                 }
             }
         }
+
+        // Mostrar mensajes de sesión con SweetAlert
+        @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            html: '{!! session('error') !!}',
+            confirmButtonColor: '#e91e63'
+        });
+        @endif
+
+        @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#e91e63'
+        });
+        @endif
+
+        @if($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de validación',
+            html: '<ul class="text-start mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
+            confirmButtonColor: '#e91e63'
+        });
+        @endif
     </script>
 </body>
 </html>

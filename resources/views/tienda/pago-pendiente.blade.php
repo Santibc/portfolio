@@ -233,7 +233,7 @@
             }
         }, 5000);
 
-        // Redirigir automáticamente cuando Wompi confirme el pago
+        // Redirigir automáticamente cuando WebPay confirme el pago
         // Esto se haría mediante webhook o verificación periódica del estado
     </script>
 </body>

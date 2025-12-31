@@ -64,9 +64,10 @@ class ConfiguracionPasarela extends Model
         }
     }
 
-    public static function obtenerConfiguracionActiva($pasarela = 'wompi')
+    public static function obtenerConfiguracionActiva($pasarela = 'transbank')
     {
-        return static::where('activo', true)
+        return static::where('pasarela', $pasarela)
+                    ->where('activo', true)
                     ->first();
     }
 

@@ -352,6 +352,81 @@
         </div>
       </div>
 
+      {{-- Configuración de Pagos (Transbank/WebPay) --}}
+      <div class="card shadow mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-credit-card-2-front me-2"></i>Pasarela de Pagos (WebPay)</h5>
+        </div>
+        <div class="card-body">
+          @php
+            $configPasarela = \App\Models\ConfiguracionPasarela::obtenerConfiguracionActiva('transbank');
+          @endphp
+
+          <p class="text-muted mb-4">
+            Configura las credenciales de WebPay Plus para procesar pagos con tarjetas de crédito y débito.
+          </p>
+
+          <div class="row">
+            {{-- Modo de operación --}}
+            <div class="col-md-12 mb-3">
+              <div class="form-check form-switch">
+                <input type="hidden" name="transbank_modo_prueba" value="1">
+                <input type="checkbox"
+                       name="transbank_modo_prueba"
+                       id="transbankModoPrueba"
+                       class="form-check-input"
+                       value="0"
+                       {{ old('transbank_modo_prueba', $configPasarela->modo_prueba ?? true) ? '' : 'checked' }}>
+                <label class="form-check-label" for="transbankModoPrueba">
+                  <strong>Modo Producción</strong>
+                  <span class="text-muted ms-2">(Desactivado = Modo Integración/Pruebas)</span>
+                </label>
+              </div>
+              <small class="text-muted">
+                En modo Integración, se usan las credenciales de prueba de Transbank automáticamente.
+              </small>
+            </div>
+
+            {{-- Código de Comercio --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-shop me-1"></i> Código de Comercio
+              </label>
+              <input name="transbank_commerce_code" type="text"
+                     class="form-control @error('transbank_commerce_code') is-invalid @enderror"
+                     value="{{ old('transbank_commerce_code', $configPasarela->configuracion_adicional['commerce_code'] ?? '') }}"
+                     placeholder="597XXXXXXXXX">
+              @error('transbank_commerce_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Código de comercio asignado por Transbank (solo para producción)</small>
+            </div>
+
+            {{-- API Key (Private Key) --}}
+            <div class="col-md-6 mb-3">
+              <label class="form-label">
+                <i class="bi bi-key me-1"></i> API Key Secret
+              </label>
+              <input name="transbank_api_key" type="password"
+                     class="form-control @error('transbank_api_key') is-invalid @enderror"
+                     value=""
+                     placeholder="{{ $configPasarela && $configPasarela->private_key ? '••••••••••••••••' : 'API Key de Transbank' }}">
+              @error('transbank_api_key') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Deja vacío para mantener la clave actual (solo para producción)</small>
+            </div>
+          </div>
+
+          {{-- Información adicional --}}
+          <div class="alert alert-warning mt-3 mb-0">
+            <i class="bi bi-shield-lock me-2"></i>
+            <strong>Seguridad:</strong> Las credenciales de producción solo deben usarse cuando la tienda esté lista para vender.
+            <ul class="mb-0 mt-2">
+              <li><strong>Modo Integración:</strong> Usa tarjetas de prueba (4051 8856 0044 6623 / CVV: 123 / Exp: cualquier fecha futura)</li>
+              <li><strong>Modo Producción:</strong> Requiere contrato con Transbank y credenciales reales</li>
+              <li><a href="https://www.transbankdevelopers.cl/" target="_blank" rel="noopener">Documentación de Transbank Developers</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {{-- Horario de Atención --}}
       <div class="card shadow mb-4">
         <div class="card-header">

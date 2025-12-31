@@ -17,8 +17,10 @@ use App\Models\ConfiguracionPasarela;
 use App\Models\CalificacionProducto;
 use App\Models\PuntoCliente;
 use App\Models\ProductoAdicional;
-use App\Services\WompiService;
+use App\Services\TransbankService;
 use App\Services\Templates\TemplateResolver;
+use App\Models\ZonaCobertura;
+use App\Models\TarifaZona;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -643,6 +645,7 @@ public function procesarCompra(Request $request)
         'telefono' => 'required|string|max:255',
         'direccion' => 'required|string|max:255',
         'ciudad_id' => 'required|exists:ciudades,id',
+        'costo_envio' => 'nullable|numeric|min:0',
         'notas' => 'nullable|string',
         // Campos floristería
         'nombre_destinatario' => 'nullable|string|max:255',
@@ -664,6 +667,13 @@ public function procesarCompra(Request $request)
     DB::beginTransaction();
 
     try {
+        // Obtener costo de envío del formulario
+        $costoEnvio = (float) ($request->costo_envio ?? 0);
+
+        // Calcular total final (subtotal del carrito + envío)
+        $subtotalCarrito = $carrito->total ?? $carrito->subtotal;
+        $totalFinal = $subtotalCarrito + $costoEnvio;
+
         // Crear compra
         $compra = Compra::create([
             'empresa_id' => $empresa->id,
@@ -677,8 +687,8 @@ public function procesarCompra(Request $request)
             'descuento_total' => $carrito->descuento_total ?? 0,
             'descuentos_aplicados' => $carrito->descuentos_aplicados ?? [],
             'impuestos' => 0,
-            'costo_envio' => 0,
-            'total' => $carrito->total ?? $carrito->subtotal,
+            'costo_envio' => $costoEnvio,
+            'total' => $totalFinal,
             'estado' => 'pendiente',
             'notas' => $request->notas,
             // Campos floristería
@@ -728,23 +738,32 @@ public function procesarCompra(Request $request)
         // Crear transacción de pago
         $transaccion = TransaccionPago::create([
             'compra_id' => $compra->id,
-            'pasarela' => 'wompi',
+            'pasarela' => 'transbank',
             'monto' => $compra->total,
-            'moneda' => 'COP',
+            'moneda' => 'CLP',
             'estado' => 'pendiente'
         ]);
 
         // Vaciar carrito
         $carrito->vaciar();
 
-        // Generar datos para Wompi
-        $wompiService = new WompiService();
-        $datosCheckout = $wompiService->generarDatosCheckout($compra, $transaccion);
+        // Crear transacción en WebPay
+        $transbankService = new TransbankService();
+        $resultado = $transbankService->crearTransaccion($compra, $transaccion);
+
+        if (!$resultado['success']) {
+            DB::rollBack();
+            Log::error('Error creando transacción WebPay', ['error' => $resultado['error']]);
+            return back()->with('error', 'Error al conectar con WebPay. Por favor intente nuevamente.');
+        }
 
         DB::commit();
 
-        // Crear formulario HTML y enviarlo automáticamente
-        return view('tienda.redirect-wompi', compact('datosCheckout'));
+        // Redirigir a WebPay
+        return view('tienda.redirect-webpay', [
+            'url' => $resultado['url'],
+            'token' => $resultado['token']
+        ]);
 
     } catch (\Exception $e) {
         DB::rollBack();
@@ -753,116 +772,10 @@ public function procesarCompra(Request $request)
     }
 }
 
-    /**
-     * Confirmación de pago (webhook/callback)
-     */
-/**
- * Confirmación de pago (callback de Wompi)
- */
-public function confirmarPago(Request $request, $referencia)
-{
-    $empresa = $this->getEmpresa();
-    $transaccion = TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
-
-    // Verificar si ya fue procesada
-    if ($transaccion->estado !== 'pendiente') {
-        if ($transaccion->estado === 'aprobada') {
-            return view('tienda.confirmacion', [
-                'compra' => $transaccion->compra,
-                'transaccion' => $transaccion
-            ]);
-        } else {
-            return view('tienda.pago-rechazado', [
-                'compra' => $transaccion->compra,
-                'transaccion' => $transaccion
-            ]);
-        }
-    }
-    
-    // Obtener ID de transacción de Wompi desde query params
-    $transaccionWompiId = $request->get('id');
-    
-    if ($transaccionWompiId) {
-        // Consultar estado en Wompi
-        $wompiService = new WompiService();
-        $datosTransaccion = $wompiService->consultarTransaccion($transaccionWompiId);
-        
-        if ($datosTransaccion) {
-            $estado = $datosTransaccion['status'] ?? null;
-            
-            switch ($estado) {
-                case 'APPROVED':
-                    $transaccion->update([
-                        'estado' => 'aprobada',
-                        'id_transaccion_pasarela' => $transaccionWompiId,
-                        'metodo_pago' => $datosTransaccion['payment_method_type'] ?? null,
-                        'fecha_procesamiento' => now(),
-                        'respuesta_pasarela' => $datosTransaccion,
-                        'codigo_autorizacion' => $datosTransaccion['authorization_code'] ?? null
-                    ]);
-                    
-                    // Actualizar compra
-                    $transaccion->compra->update(['estado' => 'pagada']);
-
-                    // Generar comisión
-                    $transaccion->compra->generarComision();
-
-                    // Registrar puntos por compra (1 punto por cada $100)
-                    $this->registrarPuntosCompra($transaccion->compra);
-
-                    return view('tienda.confirmacion', [
-                        'compra' => $transaccion->compra,
-                        'transaccion' => $transaccion
-                    ]);
-                    
-                case 'DECLINED':
-                case 'VOIDED':
-                    $transaccion->update([
-                        'estado' => 'rechazada',
-                        'id_transaccion_pasarela' => $transaccionWompiId,
-                        'mensaje_error' => $datosTransaccion['status_message'] ?? 'Transacción rechazada',
-                        'respuesta_pasarela' => $datosTransaccion
-                    ]);
-                    
-                    // Liberar stock
-                    $this->liberarStockCompra($transaccion->compra);
-                    
-                    return view('tienda.pago-rechazado', [
-                        'compra' => $transaccion->compra,
-                        'transaccion' => $transaccion
-                    ]);
-                    
-                case 'PENDING':
-                    // Mostrar página de pendiente
-                    return view('tienda.pago-pendiente', [
-                        'empresa' => $transaccion->compra->empresa,
-                        'transaccion' => $transaccion
-                    ]);
-                    
-                default:
-                    $transaccion->update([
-                        'estado' => 'error',
-                        'mensaje_error' => 'Estado desconocido: ' . $estado,
-                        'respuesta_pasarela' => $datosTransaccion
-                    ]);
-                    
-                    return view('tienda.pago-error', [
-                        'compra' => $transaccion->compra,
-                        'transaccion' => $transaccion
-                    ]);
-            }
-        }
-    }
-    
-    // Si no hay ID o no se pudo consultar, mostrar pendiente
-    return view('tienda.pago-pendiente', [
-        'empresa' => $transaccion->compra->empresa,
-        'transaccion' => $transaccion
-    ]);
-}
-
 /**
  * Liberar stock de una compra cancelada/rechazada
+ * NOTA: Este método ahora es manejado por TransbankController
+ * Se mantiene aquí para compatibilidad con código legado
  */
 private function liberarStockCompra($compra)
 {
@@ -896,22 +809,6 @@ private function liberarStockCompra($compra)
         return Carrito::obtenerOCrear($sessionId, $empresaId);
     }
 
-    /**
-     * Redirigir a pasarela de pago Wompi
-     */
-    private function redirigirAPasarela($compra, $transaccion)
-    {
-        $wompiService = new WompiService();
-        $resultado = $wompiService->crearLinkPago($compra, $transaccion);
-
-        if ($resultado['success'] && $resultado['payment_url']) {
-            return redirect()->away($resultado['payment_url']);
-        } else {
-            // Si falla, mostrar página de error o volver al checkout
-            return redirect()->route('tienda.checkout')
-                ->with('error', 'Error al procesar el pago. Por favor intente nuevamente.');
-        }
-    }
 
     /**
      * Registrar puntos por compra
@@ -1366,6 +1263,94 @@ public function categorias(Request $request)
             'total_adicionales' => $carrito->total_adicionales ?? 0,
             'subtotal' => $carrito->subtotal,
             'total' => $carrito->total
+        ]);
+    }
+
+    /**
+     * Calcular costo de envío basado en la ciudad seleccionada
+     */
+    public function calcularEnvio(Request $request)
+    {
+        $request->validate([
+            'ciudad_id' => 'required|exists:ciudades,id',
+            'subtotal' => 'required|numeric|min:0'
+        ]);
+
+        $empresa = $this->getEmpresa();
+        $ciudadId = (int) $request->ciudad_id;
+        $subtotal = (float) $request->subtotal;
+
+        // Buscar zona de cobertura que incluya esta ciudad
+        $zonaCobertura = ZonaCobertura::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->get()
+            ->first(function ($zona) use ($ciudadId) {
+                return $zona->cubreCiudad($ciudadId);
+            });
+
+        if (!$zonaCobertura) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Lo sentimos, no realizamos envíos a esta ciudad.',
+                'sin_cobertura' => true
+            ]);
+        }
+
+        // Obtener tarifa activa para esta zona
+        $tarifa = TarifaZona::where('zona_cobertura_id', $zonaCobertura->id)
+            ->where('activo', true)
+            ->first();
+
+        if (!$tarifa) {
+            return response()->json([
+                'success' => false,
+                'error' => 'No hay tarifas configuradas para esta zona.',
+                'sin_tarifa' => true
+            ]);
+        }
+
+        // Calcular costo de envío
+        $costoEnvio = $tarifa->calcularCosto($subtotal);
+
+        // Preparar mensajes informativos
+        $mensajes = [];
+
+        // Si tiene envío gratis desde cierto monto
+        if ($tarifa->envio_gratis_desde && $tarifa->monto_envio_gratis > 0) {
+            if ($subtotal >= $tarifa->monto_envio_gratis) {
+                $mensajes[] = '¡Envío gratis aplicado!';
+            } else {
+                $faltante = $tarifa->monto_envio_gratis - $subtotal;
+                $mensajes[] = 'Agrega $' . number_format($faltante, 0, ',', '.') . ' más para obtener envío gratis';
+            }
+        }
+
+        // Tiempo de entrega estimado
+        if ($tarifa->tiempo_entrega_horas) {
+            $horas = $tarifa->tiempo_entrega_horas;
+            if ($horas < 24) {
+                $mensajes[] = "Entrega estimada: {$horas} horas";
+            } else {
+                $dias = ceil($horas / 24);
+                $mensajes[] = "Entrega estimada: {$dias} día(s)";
+            }
+        }
+
+        // Si no cumple mínimo de compra
+        if (!$tarifa->cumpleMinimo($subtotal) && $tarifa->minimo_compra > 0) {
+            $mensajes[] = 'Mínimo de compra: $' . number_format($tarifa->minimo_compra, 0, ',', '.');
+        }
+
+        return response()->json([
+            'success' => true,
+            'costo_envio' => $costoEnvio,
+            'costo_envio_formateado' => '$' . number_format($costoEnvio, 0, ',', '.'),
+            'zona' => $zonaCobertura->nombre,
+            'tarifa' => $tarifa->nombre,
+            'envio_gratis' => $costoEnvio == 0,
+            'mensajes' => $mensajes,
+            'monto_envio_gratis' => $tarifa->envio_gratis_desde ? $tarifa->monto_envio_gratis : null,
+            'tiempo_entrega_horas' => $tarifa->tiempo_entrega_horas
         ]);
     }
 }

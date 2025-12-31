@@ -282,10 +282,20 @@ Route::middleware(['auth', 'verificar.empresa'])->group(function () {
     Route::get('/dashboard-analitico/ventas-periodo', [App\Http\Controllers\DashboardAnaliticoController::class, 'ventasPorPeriodo'])->name('dashboard-analitico.ventas-periodo');
 });
 
-// Webhook de Wompi (sin CSRF)
-Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
-    ->name('webhooks.wompi')
+// Webhook de Wompi (sin CSRF) - Deshabilitado, ahora usamos Transbank
+// Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
+//     ->name('webhooks.wompi')
+//     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// ========== RUTAS DE TRANSBANK / WEBPAY ==========
+// Retorno desde WebPay (GET y POST por si acaso)
+Route::match(['get', 'post'], '/transbank/retorno/{referencia}', [App\Http\Controllers\TransbankController::class, 'retorno'])
+    ->name('transbank.retorno')
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// Consultar estado de transacción
+Route::get('/transbank/estado/{token}', [App\Http\Controllers\TransbankController::class, 'consultarEstado'])
+    ->name('transbank.estado');
 
 require __DIR__.'/auth.php';
 
@@ -396,12 +406,28 @@ Route::get('/carrito/track/{token}.gif', [App\Http\Controllers\CarritoRecuperaci
 Route::get('/checkout', [App\Http\Controllers\TiendaController::class, 'checkout'])
     ->name('tienda.checkout');
 
+Route::post('/calcular-envio', [App\Http\Controllers\TiendaController::class, 'calcularEnvio'])
+    ->name('tienda.calcular-envio');
+
 Route::post('/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
     ->name('tienda.procesar-compra');
 
-// Confirmación de pago (callback de Wompi)
-Route::get('/pago/confirmacion/{referencia}', [App\Http\Controllers\TiendaController::class, 'confirmarPago'])
-    ->name('tienda.pago.confirmacion');
+// ========== PÁGINAS DE RESULTADO DE PAGO ==========
+// Confirmación de pago exitoso
+Route::get('/pago/confirmacion/{referencia}', function($referencia) {
+    $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
+    $compra = $transaccion->compra;
+
+    return view('tienda.confirmacion', compact('compra', 'transaccion'));
+})->name('tienda.pago.confirmacion');
+
+// Pago rechazado/cancelado
+Route::get('/pago/rechazado/{referencia}', function($referencia) {
+    $transaccion = \App\Models\TransaccionPago::where('referencia_transaccion', $referencia)->firstOrFail();
+    $compra = $transaccion->compra;
+
+    return view('tienda.pago-rechazado', compact('compra', 'transaccion'));
+})->name('tienda.pago.rechazado');
 
 // Página de pago pendiente
 Route::get('/pago/pendiente/{referencia}', function($referencia) {

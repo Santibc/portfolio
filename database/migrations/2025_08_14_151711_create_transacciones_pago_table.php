@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('id_transaccion_pasarela')->nullable();
             $table->decimal('monto', 12, 2);
             $table->string('moneda', 3)->default('COP');
-            $table->enum('estado', ['pendiente', 'procesando', 'aprobada', 'rechazada', 'error', 'reembolsada'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'procesando', 'aprobada', 'rechazada', 'cancelada', 'expirada', 'error', 'reembolsada'])->default('pendiente');
             $table->string('metodo_pago')->nullable();
             $table->json('respuesta_pasarela')->nullable();
             $table->string('codigo_autorizacion')->nullable();

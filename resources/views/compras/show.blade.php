@@ -363,7 +363,7 @@
                         <div class="mb-3">
                             <div class="info-label">Metodo de pago</div>
                             <div class="info-value">
-                                {{ $compra->transaccionAprobada ? ucfirst($compra->transaccionAprobada->metodo_pago ?? 'Wompi') : 'Sin pago' }}
+                                {{ $compra->transaccionAprobada ? ucfirst($compra->transaccionAprobada->metodo_pago ?? 'WebPay') : 'Sin pago' }}
                             </div>
                         </div>
 

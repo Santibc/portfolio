@@ -121,8 +121,7 @@ class GestionClientesController extends Controller
             ->paginate(10);
 
         // Direcciones guardadas
-        $direcciones = DireccionCliente::where('empresa_id', $empresa->id)
-            ->where('email_cliente', $email)
+        $direcciones = DireccionCliente::where('email_cliente', $email)
             ->with('ciudad.departamento')
             ->orderBy('es_predeterminada', 'desc')
             ->orderBy('created_at', 'desc')
@@ -176,17 +175,13 @@ class GestionClientesController extends Controller
             'instrucciones' => 'nullable|string'
         ]);
 
-        $empresa = auth()->user()->empresa;
-
         // Si es predeterminada, quitar el flag de las demás
         if ($request->es_predeterminada) {
-            DireccionCliente::where('empresa_id', $empresa->id)
-                ->where('email_cliente', $request->email_cliente)
+            DireccionCliente::where('email_cliente', $request->email_cliente)
                 ->update(['es_predeterminada' => false]);
         }
 
         DireccionCliente::create([
-            'empresa_id' => $empresa->id,
             'email_cliente' => $request->email_cliente,
             'alias' => $request->alias,
             'nombre_destinatario' => $request->nombre_destinatario,
@@ -205,12 +200,6 @@ class GestionClientesController extends Controller
      */
     public function actualizarDireccion(Request $request, DireccionCliente $direccion)
     {
-        $empresa = auth()->user()->empresa;
-
-        if ($direccion->empresa_id !== $empresa->id) {
-            abort(403);
-        }
-
         $request->validate([
             'alias' => 'nullable|string|max:50',
             'nombre_destinatario' => 'required|string|max:255',
@@ -222,8 +211,7 @@ class GestionClientesController extends Controller
 
         // Si es predeterminada, quitar el flag de las demás
         if ($request->es_predeterminada) {
-            DireccionCliente::where('empresa_id', $empresa->id)
-                ->where('email_cliente', $direccion->email_cliente)
+            DireccionCliente::where('email_cliente', $direccion->email_cliente)
                 ->where('id', '!=', $direccion->id)
                 ->update(['es_predeterminada' => false]);
         }
@@ -246,12 +234,6 @@ class GestionClientesController extends Controller
      */
     public function eliminarDireccion(DireccionCliente $direccion)
     {
-        $empresa = auth()->user()->empresa;
-
-        if ($direccion->empresa_id !== $empresa->id) {
-            abort(403);
-        }
-
         $direccion->delete();
 
         return back()->with('success', 'Dirección eliminada correctamente');
@@ -262,10 +244,7 @@ class GestionClientesController extends Controller
      */
     public function obtenerDirecciones($email)
     {
-        $empresa = auth()->user()->empresa;
-
-        $direcciones = DireccionCliente::where('empresa_id', $empresa->id)
-            ->where('email_cliente', $email)
+        $direcciones = DireccionCliente::where('email_cliente', $email)
             ->with('ciudad.departamento')
             ->orderBy('es_predeterminada', 'desc')
             ->get();

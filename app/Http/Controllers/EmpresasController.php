@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Empresa;
 use App\Models\CarruselEmpresa;
+use App\Models\ConfiguracionPasarela;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -111,6 +112,11 @@ class EmpresasController extends Controller
             'gtm_container_id'       => ['nullable', 'string', 'max:50', 'regex:/^GTM-[A-Z0-9]+$/i'],
             'fb_pixel_id'            => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'custom_scripts_head'    => ['nullable', 'string', 'max:5000'],
+
+            // Configuración de Transbank
+            'transbank_modo_prueba'    => ['nullable'],
+            'transbank_commerce_code'  => ['nullable', 'string', 'max:20'],
+            'transbank_api_key'        => ['nullable', 'string', 'max:255'],
         ];
 
         $messages = [
@@ -313,6 +319,9 @@ class EmpresasController extends Controller
                 }
             }
 
+            // ---- CONFIGURACIÓN DE TRANSBANK ----
+            $this->guardarConfiguracionTransbank($request);
+
             DB::commit();
 
             $mensaje = $esNueva
@@ -364,5 +373,43 @@ class EmpresasController extends Controller
         return redirect()
             ->route('tienda.empresa')
             ->with('info', 'Esta es la vista previa de su tienda.');
+    }
+
+    /**
+     * Guardar configuración de Transbank/WebPay
+     */
+    private function guardarConfiguracionTransbank(Request $request): void
+    {
+        // Solo procesar si hay datos de Transbank en el request
+        if (!$request->has('transbank_modo_prueba')) {
+            return;
+        }
+
+        // Buscar o crear configuración de Transbank
+        $config = ConfiguracionPasarela::firstOrNew(['pasarela' => 'transbank']);
+
+        // Modo prueba: si el checkbox está marcado (value="0"), es producción
+        // Si no está marcado, el hidden envía "1" (modo prueba)
+        $modoPrueba = $request->input('transbank_modo_prueba') === '1' ||
+                      $request->input('transbank_modo_prueba') === 1;
+
+        $config->modo_prueba = $modoPrueba;
+        $config->activo = true;
+
+        // Solo actualizar credenciales si se proporcionan (para producción)
+        $commerceCode = $request->input('transbank_commerce_code');
+        $apiKey = $request->input('transbank_api_key');
+
+        if (!empty($commerceCode)) {
+            $configAdicional = $config->configuracion_adicional ?? [];
+            $configAdicional['commerce_code'] = $commerceCode;
+            $config->configuracion_adicional = $configAdicional;
+        }
+
+        if (!empty($apiKey)) {
+            $config->private_key = $apiKey;
+        }
+
+        $config->save();
     }
 }

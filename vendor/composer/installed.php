@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'b071c1e7e6ffc16f82a78d6609fda84c1fb016d4',
+        'reference' => 'c86eac186a83ec48f590e980f15ce46ee58a5cf3',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -448,7 +448,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b071c1e7e6ffc16f82a78d6609fda84c1fb016d4',
+            'reference' => 'c86eac186a83ec48f590e980f15ce46ee58a5cf3',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -877,8 +877,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0|2.0|3.0',
-                1 => '1.0.0 || 2.0.0 || 3.0.0',
+                0 => '1.0.0 || 2.0.0 || 3.0.0',
+                1 => '1.0|2.0|3.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1415,6 +1415,15 @@
             'reference' => '0d72ac1c00084279c1816675284073c5a337c20d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../tijsverkoyen/css-to-inline-styles',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'transbank/transbank-sdk' => array(
+            'pretty_version' => '5.1.0',
+            'version' => '5.1.0.0',
+            'reference' => '4e17ccb419c69311731028f9fb7f7d42575e9745',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../transbank/transbank-sdk',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

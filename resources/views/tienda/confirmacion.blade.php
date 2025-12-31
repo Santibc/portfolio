@@ -237,7 +237,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Método de pago:</span>
-                    <span class="detail-value">{{ ucfirst($transaccion->metodo_pago ?? 'Wompi') }}</span>
+                    <span class="detail-value">{{ ucfirst($transaccion->metodo_pago ?? 'WebPay') }}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Estado del pago:</span>

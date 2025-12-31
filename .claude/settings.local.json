@@ -25,7 +25,8 @@
       "Bash(find:*)",
       "Bash(/c/xampp/mysql/bin/mysql:*)",
       "Bash(taskkill:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []
