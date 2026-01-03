@@ -26,7 +26,9 @@
       "Bash(/c/xampp/mysql/bin/mysql:*)",
       "Bash(taskkill:*)",
       "Bash(mkdir:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

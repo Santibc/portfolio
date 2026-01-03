@@ -114,6 +114,26 @@ Route::prefix('descuentos')->middleware(['auth', 'verificar.empresa'])->group(fu
     Route::post('/{id}/toggle', [App\Http\Controllers\DescuentosController::class, 'toggleEstado'])->name('descuentos.toggle');
     Route::get('/{id}/estadisticas', [App\Http\Controllers\DescuentosController::class, 'estadisticas'])->name('descuentos.estadisticas');
 });
+
+// Rutas de Flores Disponibles (Arma tu Ramo)
+Route::prefix('flores')->middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\FloresDisponiblesController::class, 'index'])->name('flores.index');
+    Route::get('/form/{flor?}', [App\Http\Controllers\FloresDisponiblesController::class, 'form'])->name('flores.form');
+    Route::post('/guardar', [App\Http\Controllers\FloresDisponiblesController::class, 'guardar'])->name('flores.guardar');
+    Route::post('/eliminar', [App\Http\Controllers\FloresDisponiblesController::class, 'eliminar'])->name('flores.eliminar');
+    Route::post('/actualizar-stock', [App\Http\Controllers\FloresDisponiblesController::class, 'actualizarStock'])->name('flores.actualizar-stock');
+    Route::post('/toggle-disponible', [App\Http\Controllers\FloresDisponiblesController::class, 'toggleDisponible'])->name('flores.toggle-disponible');
+});
+
+// Rutas de Productos Adicionales (Complementos para ramos)
+Route::prefix('adicionales')->middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\ProductosAdicionalesController::class, 'index'])->name('adicionales.index');
+    Route::get('/form/{adicional?}', [App\Http\Controllers\ProductosAdicionalesController::class, 'form'])->name('adicionales.form');
+    Route::post('/guardar', [App\Http\Controllers\ProductosAdicionalesController::class, 'guardar'])->name('adicionales.guardar');
+    Route::post('/eliminar', [App\Http\Controllers\ProductosAdicionalesController::class, 'eliminar'])->name('adicionales.eliminar');
+    Route::post('/toggle-disponible', [App\Http\Controllers\ProductosAdicionalesController::class, 'toggleDisponible'])->name('adicionales.toggle-disponible');
+});
+
 Route::get('actualizaciones/{id}/descargar', 
     [ActualizacionPreciosController::class, 'descargarArchivoActualizacion']
 )->name('actualizaciones.descargar');

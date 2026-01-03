@@ -481,22 +481,22 @@
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <label for="departamento" class="form-label">Departamento *</label>
+                                    <label for="departamento" class="form-label">Región *</label>
                                     <select class="form-select" id="departamento" required>
-                                        <option value="">Seleccione departamento</option>
+                                        <option value="">Seleccione región</option>
                                         @foreach($departamentos as $departamento)
                                             <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-6">
-                                    <label for="ciudad_id" class="form-label">Ciudad *</label>
-                                    <select class="form-select @error('ciudad_id') is-invalid @enderror" 
-                                            id="ciudad_id" 
-                                            name="ciudad_id" 
+                                    <label for="ciudad_id" class="form-label">Comuna *</label>
+                                    <select class="form-select @error('ciudad_id') is-invalid @enderror"
+                                            id="ciudad_id"
+                                            name="ciudad_id"
                                             required>
-                                        <option value="">Primero seleccione departamento</option>
+                                        <option value="">Primero seleccione región</option>
                                     </select>
                                     @error('ciudad_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -742,7 +742,7 @@
 
                                 <div class="summary-row" id="envio-row">
                                     <span>Envío</span>
-                                    <span id="envio-valor" class="text-muted">Selecciona ciudad</span>
+                                    <span id="envio-valor" class="text-muted">Selecciona comuna</span>
                                 </div>
                                 <div id="envio-info" class="small text-success mb-2" style="display: none;"></div>
                                 <input type="hidden" name="costo_envio" id="costo_envio_input" value="0">
@@ -796,7 +796,7 @@
                 const departamentoId = $(this).val();
                 const ciudadSelect = $('#ciudad_id');
 
-                ciudadSelect.html('<option value="">Cargando ciudades...</option>');
+                ciudadSelect.html('<option value="">Cargando comunas...</option>');
 
                 // Reset envío al cambiar departamento
                 resetEnvio();
@@ -806,18 +806,18 @@
                         url: "{{ route('ajax.ciudades') }}",
                         data: { departamento_id: departamentoId },
                         success: function(ciudades) {
-                            let options = '<option value="">Seleccione ciudad</option>';
+                            let options = '<option value="">Seleccione comuna</option>';
                             ciudades.forEach(ciudad => {
                                 options += `<option value="${ciudad.id}">${ciudad.nombre}</option>`;
                             });
                             ciudadSelect.html(options);
                         },
                         error: function() {
-                            ciudadSelect.html('<option value="">Error al cargar ciudades</option>');
+                            ciudadSelect.html('<option value="">Error al cargar comunas</option>');
                         }
                     });
                 } else {
-                    ciudadSelect.html('<option value="">Primero seleccione departamento</option>');
+                    ciudadSelect.html('<option value="">Primero seleccione región</option>');
                 }
             });
 
@@ -893,7 +893,7 @@
             function resetEnvio() {
                 costoEnvioActual = 0;
                 $('#costo_envio_input').val(0);
-                $('#envio-valor').html('<span class="text-muted">Selecciona ciudad</span>');
+                $('#envio-valor').html('<span class="text-muted">Selecciona comuna</span>');
                 $('#envio-row').addClass('text-muted');
                 $('#envio-info').hide();
                 actualizarTotal();

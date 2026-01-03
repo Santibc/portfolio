@@ -44,6 +44,15 @@
                     <span>Pedidos</span>
                 </a>
 
+                <a href="{{ route('gestion-clientes.index') }}"
+                   class="sidebar-link {{ request()->routeIs('gestion-clientes.*') ? 'active' : '' }}"
+                   title="Clientes">
+                    <i class="bi bi-people"></i>
+                    <span>Clientes</span>
+                </a>
+
+                <hr class="my-3" style="border-color: rgba(255,255,255,0.5); opacity: 1;">
+
                 <a href="{{ route('productos') }}"
                    class="sidebar-link {{ request()->is('productos*') ? 'active' : '' }}"
                    title="Productos">
@@ -58,18 +67,25 @@
                     <span>Categorías</span>
                 </a>
 
-                <a href="{{ route('gestion-clientes.index') }}"
-                   class="sidebar-link {{ request()->routeIs('gestion-clientes.*') ? 'active' : '' }}"
-                   title="Clientes">
-                    <i class="bi bi-people"></i>
-                    <span>Clientes</span>
-                </a>
-
                 <a href="{{ route('stock.index') }}"
                    class="sidebar-link {{ request()->routeIs('stock.*') ? 'active' : '' }}"
                    title="Inventario">
                     <i class="bi bi-archive"></i>
                     <span>Inventario</span>
+                </a>
+
+                <a href="{{ route('flores.index') }}"
+                   class="sidebar-link {{ request()->routeIs('flores.*') ? 'active' : '' }}"
+                   title="Flores">
+                    <i class="bi bi-flower1"></i>
+                    <span>Flores</span>
+                </a>
+
+                <a href="{{ route('adicionales.index') }}"
+                   class="sidebar-link {{ request()->routeIs('adicionales.*') ? 'active' : '' }}"
+                   title="Adicionales">
+                    <i class="bi bi-gift"></i>
+                    <span>Adicionales</span>
                 </a>
 
                 <a href="{{ route('descuentos.index') }}"
@@ -115,7 +131,7 @@
                     </div>
                 </div>
 
-                <hr class="my-2 border-white border-opacity-25">
+                <hr class="my-3" style="border-color: rgba(255,255,255,0.5); opacity: 1;">
 
                 <a href="{{ route('empresa.index') }}"
                    class="sidebar-link {{ request()->is('empresa') ? 'active' : '' }}"

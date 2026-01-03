@@ -593,7 +593,14 @@ class TiendaController extends Controller
                 ->with('error', $errorMessage);
         }
 
-        $departamentos = Departamento::with('ciudades')->get();
+        // Obtener solo regiones de Chile (filtrar por país)
+        $chile = \App\Models\Pais::where('nombre', 'Chile')->first();
+        $departamentos = Departamento::with('ciudades')
+            ->when($chile, function($query) use ($chile) {
+                return $query->where('pais_id', $chile->id);
+            })
+            ->orderBy('nombre')
+            ->get();
         $configuracionPasarela = ConfiguracionPasarela::obtenerConfiguracionActiva();
 
         // Obtener productos adicionales (upsells) para sugerir en checkout
