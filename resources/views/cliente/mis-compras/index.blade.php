@@ -71,6 +71,18 @@
                                             @default
                                                 <span class="badge bg-secondary">{{ ucfirst($compra->estado) }}</span>
                                         @endswitch
+
+                                        {{-- Badge de metodo de pago --}}
+                                        @if($compra->esMetodoOtro())
+                                            <span class="badge bg-secondary ms-1" title="Pago manual">
+                                                <i class="bi bi-wallet2"></i> Otro
+                                            </span>
+                                            @if($compra->estado === 'pendiente')
+                                                <small class="d-block text-warning mt-1">
+                                                    <i class="bi bi-hourglass-split"></i> En revision
+                                                </small>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
                             </div>

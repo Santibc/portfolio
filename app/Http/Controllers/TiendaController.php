@@ -624,8 +624,13 @@ public function procesarCompra(Request $request)
         'telefono' => 'required|string|max:255',
         'direccion' => 'required|string|max:255',
         'ciudad_id' => 'required|exists:ciudades,id',
-        'notas' => 'nullable|string'
+        'notas' => 'nullable|string',
+        'metodo_pago' => 'required|in:wompi,otro',
+        'mensaje_pago' => 'required_if:metodo_pago,otro|nullable|string|max:1000',
+        'archivo_pago' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120'
     ]);
+
+    $metodoPago = $request->input('metodo_pago', 'wompi');
 
     $carrito = $this->obtenerCarrito($empresa->id);
 
@@ -640,7 +645,7 @@ public function procesarCompra(Request $request)
         // Crear compra
         $compra = Compra::create([
             'empresa_id' => $empresa->id,
-            'user_id' => Auth::check() ? Auth::id() : null, // Vincular a usuario autenticado
+            'user_id' => Auth::check() ? Auth::id() : null,
             'nombre_cliente' => $request->nombre,
             'email_cliente' => $request->email,
             'telefono_cliente' => $request->telefono,
@@ -649,12 +654,21 @@ public function procesarCompra(Request $request)
             'subtotal' => $carrito->subtotal,
             'descuento_total' => $carrito->descuento_total ?? 0,
             'descuentos_aplicados' => $carrito->descuentos_aplicados ?? [],
-            'impuestos' => 0, // Calcular según configuración
-            'costo_envio' => 0, // Calcular según ciudad
+            'impuestos' => 0,
+            'costo_envio' => 0,
             'total' => $carrito->total ?? $carrito->subtotal,
             'estado' => 'pendiente',
+            'metodo_pago' => $metodoPago,
+            'mensaje_pago' => $metodoPago === 'otro' ? $request->mensaje_pago : null,
             'notas' => $request->notas
         ]);
+
+        // Subir archivo de pago si existe
+        if ($metodoPago === 'otro' && $request->hasFile('archivo_pago')) {
+            $archivo = $request->file('archivo_pago');
+            $path = $archivo->store("pagos/{$empresa->id}/{$compra->id}", 'public');
+            $compra->update(['archivo_pago' => $path]);
+        }
 
         // Crear items de compra
         foreach ($carrito->items as $item) {
@@ -693,7 +707,7 @@ public function procesarCompra(Request $request)
         // Crear transacción de pago
         $transaccion = TransaccionPago::create([
             'compra_id' => $compra->id,
-            'pasarela' => 'wompi',
+            'pasarela' => $metodoPago,
             'monto' => $compra->total,
             'moneda' => 'COP',
             'estado' => 'pendiente'
@@ -702,14 +716,22 @@ public function procesarCompra(Request $request)
         // Vaciar carrito
         $carrito->vaciar();
 
-        // Generar datos para Wompi
-        $wompiService = new WompiService();
-        $datosCheckout = $wompiService->generarDatosCheckout($compra, $transaccion);
-
         DB::commit();
 
-        // Crear formulario HTML y enviarlo automáticamente
-        return view('tienda.redirect-wompi', compact('datosCheckout'));
+        // Bifurcar flujo según método de pago
+        if ($metodoPago === 'wompi') {
+            // Flujo de Wompi
+            $wompiService = new WompiService();
+            $datosCheckout = $wompiService->generarDatosCheckout($compra, $transaccion);
+            return view('tienda.redirect-wompi', compact('datosCheckout'));
+        } else {
+            // Flujo de pago "Otro" - mostrar confirmación
+            return view('tienda.pago-otro-enviado', [
+                'compra' => $compra,
+                'empresa' => $empresa,
+                'email' => $request->email
+            ]);
+        }
 
     } catch (\Exception $e) {
         DB::rollBack();

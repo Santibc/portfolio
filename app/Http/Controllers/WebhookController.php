@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CompraAprobada;
 use App\Models\TransaccionPago;
 use App\Models\ConfiguracionPasarela;
 use Illuminate\Http\Request;
@@ -216,6 +217,9 @@ class WebhookController extends Controller
 
                 // Generar comisión
                 $compra->generarComision();
+
+                // Notificar al vendedor sobre la nueva venta
+                event(new CompraAprobada($compra));
 
                 Log::info("Pago aprobado: {$transaccion->referencia_transaccion}");
                 break;

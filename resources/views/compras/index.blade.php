@@ -106,6 +106,22 @@
                         </div>
                     </div>
                 </div>
+
+                @if(($estadisticas['pendientes_revision'] ?? 0) > 0)
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="stats-card h-100" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-sm mb-1" style="color: #92400e;">Pagos por Revisar</p>
+                                <p class="h4 fw-bold mb-0" style="color: #92400e;">{{ $estadisticas['pendientes_revision'] }}</p>
+                            </div>
+                            <div style="color: #f59e0b;">
+                                <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
 
             {{-- Card principal --}}
@@ -127,17 +143,17 @@
                     </div>
 
                     {{-- Filtros colapsables --}}
-                    <div class="collapse {{ request()->hasAny(['buscar', 'estado', 'fecha_desde', 'fecha_hasta']) ? 'show' : '' }}" id="filtros">
+                    <div class="collapse {{ request()->hasAny(['buscar', 'estado', 'fecha_desde', 'fecha_hasta', 'metodo_pago']) ? 'show' : '' }}" id="filtros">
                         <form method="GET" action="{{ route('compras') }}" class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label small text-muted">Buscar</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       name="buscar" 
-                                       placeholder="Número, cliente, email..."
+                                <input type="text"
+                                       class="form-control"
+                                       name="buscar"
+                                       placeholder="Numero, cliente, email..."
                                        value="{{ request('buscar') }}">
                             </div>
-                            
+
                             <div class="col-md-2">
                                 <label class="form-label small text-muted">Estado</label>
                                 <select class="form-select" name="estado">
@@ -153,26 +169,35 @@
                             </div>
 
                             <div class="col-md-2">
+                                <label class="form-label small text-muted">Metodo Pago</label>
+                                <select class="form-select" name="metodo_pago">
+                                    <option value="">Todos</option>
+                                    <option value="wompi" {{ request('metodo_pago') == 'wompi' ? 'selected' : '' }}>Wompi</option>
+                                    <option value="otro" {{ request('metodo_pago') == 'otro' ? 'selected' : '' }}>Otro</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
                                 <label class="form-label small text-muted">Fecha desde</label>
-                                <input type="date" 
-                                       class="form-control" 
+                                <input type="date"
+                                       class="form-control"
                                        name="fecha_desde"
                                        value="{{ request('fecha_desde') }}">
                             </div>
 
                             <div class="col-md-2">
                                 <label class="form-label small text-muted">Fecha hasta</label>
-                                <input type="date" 
-                                       class="form-control" 
+                                <input type="date"
+                                       class="form-control"
                                        name="fecha_hasta"
                                        value="{{ request('fecha_hasta') }}">
                             </div>
 
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="bi bi-search"></i> Buscar
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-1" title="Buscar">
+                                    <i class="bi bi-search"></i>
                                 </button>
-                                <a href="{{ route('compras') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('compras') }}" class="btn btn-outline-secondary" title="Limpiar">
                                     <i class="bi bi-x"></i>
                                 </a>
                             </div>
@@ -217,10 +242,25 @@
                                         </span>
                                     </td>
                                     <td>
-                                        @if($compra->transaccionAprobada)
-                                            <i class="bi bi-check-circle text-success" title="Pagado"></i>
+                                        @if($compra->metodo_pago === 'otro')
+                                            <span class="badge bg-secondary" title="Pago manual">
+                                                <i class="bi bi-wallet2"></i> Otro
+                                            </span>
+                                            @if($compra->estado === 'pendiente')
+                                                <span class="badge bg-warning text-dark" title="Requiere revision">
+                                                    <i class="bi bi-exclamation-circle"></i>
+                                                </span>
+                                            @endif
                                         @else
-                                            <i class="bi bi-x-circle text-danger" title="Sin pago"></i>
+                                            @if($compra->transaccionAprobada)
+                                                <span class="badge bg-success" title="Pagado con Wompi">
+                                                    <i class="bi bi-credit-card"></i> Wompi
+                                                </span>
+                                            @else
+                                                <span class="badge bg-info" title="Wompi pendiente">
+                                                    <i class="bi bi-credit-card"></i> Wompi
+                                                </span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td>

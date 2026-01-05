@@ -4,6 +4,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 class Compra extends Model
 {
     use HasFactory;
@@ -24,6 +26,12 @@ class Compra extends Model
         'costo_envio',
         'total',
         'estado',
+        'metodo_pago',
+        'mensaje_pago',
+        'archivo_pago',
+        'motivo_rechazo',
+        'fecha_revision',
+        'revisado_por',
         'notas'
     ];
 
@@ -33,7 +41,8 @@ class Compra extends Model
         'descuentos_aplicados' => 'array',
         'impuestos' => 'decimal:2',
         'costo_envio' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
+        'fecha_revision' => 'datetime'
     ];
 
     public function empresa()
@@ -93,6 +102,41 @@ class Compra extends Model
     public function envio()
     {
         return $this->hasOne(Envio::class);
+    }
+
+    /**
+     * Relación con el usuario que revisó el pago
+     */
+    public function revisor()
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
+    }
+
+    /**
+     * Verifica si el método de pago es "otro"
+     */
+    public function esMetodoOtro(): bool
+    {
+        return $this->metodo_pago === 'otro';
+    }
+
+    /**
+     * Verifica si tiene archivo de pago adjunto
+     */
+    public function tieneArchivoPago(): bool
+    {
+        return !empty($this->archivo_pago);
+    }
+
+    /**
+     * Obtiene la URL del archivo de pago
+     */
+    public function urlArchivoPago(): ?string
+    {
+        if (!$this->archivo_pago) {
+            return null;
+        }
+        return Storage::url($this->archivo_pago);
     }
 
     public function movimientosStock()
@@ -202,5 +246,16 @@ public function generarComision() {
     public function scopeRecientes($query)
     {
         return $query->orderBy('created_at', 'desc');
+    }
+
+    public function scopePorMetodoPago($query, $metodo)
+    {
+        return $query->where('metodo_pago', $metodo);
+    }
+
+    public function scopePendientesRevision($query)
+    {
+        return $query->where('metodo_pago', 'otro')
+                     ->where('estado', 'pendiente');
     }
 }

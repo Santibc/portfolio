@@ -237,6 +237,8 @@ Route::middleware(['auth', 'verificar.empresa'])->prefix('compras')->name('compr
     Route::post('/{compra}/actualizar-envio', [App\Http\Controllers\ComprasController::class, 'actualizarEnvio'])->name('actualizar-envio');
     Route::get('/{compra}/timeline', [App\Http\Controllers\ComprasController::class, 'timeline'])->name('timeline');
     Route::get('/exportar/excel', [App\Http\Controllers\ComprasController::class, 'exportar'])->name('exportar');
+    Route::post('/{compra}/aprobar-pago', [App\Http\Controllers\ComprasController::class, 'aprobarPagoOtro'])->name('aprobar-pago');
+    Route::post('/{compra}/rechazar-pago', [App\Http\Controllers\ComprasController::class, 'rechazarPagoOtro'])->name('rechazar-pago');
 });
 
 // Alias para la ruta index de compras

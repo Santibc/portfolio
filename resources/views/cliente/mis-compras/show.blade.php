@@ -116,6 +116,61 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Información de pago manual -->
+            @if($compra->esMetodoOtro())
+                <div class="content-card" style="border-left: 4px solid {{ $compra->estado === 'pendiente' ? '#f59e0b' : ($compra->estado === 'pagada' ? '#10b981' : '#ef4444') }};">
+                    <h5 class="mb-4">
+                        <i class="bi bi-wallet2"></i> Información de Pago
+                        @if($compra->estado === 'pendiente')
+                            <span class="badge bg-warning text-dark ms-2">En revision</span>
+                        @elseif($compra->estado === 'pagada')
+                            <span class="badge bg-success ms-2">Aprobado</span>
+                        @elseif($compra->estado === 'cancelada')
+                            <span class="badge bg-danger ms-2">Rechazado</span>
+                        @endif
+                    </h5>
+
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Metodo de pago:</strong></p>
+                        <p class="text-muted mb-0">Pago manual (transferencia, efectivo, etc.)</p>
+                    </div>
+
+                    @if($compra->mensaje_pago)
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Mensaje enviado:</strong></p>
+                            <div class="p-3 rounded" style="background: #f3f4f6; white-space: pre-wrap;">{{ $compra->mensaje_pago }}</div>
+                        </div>
+                    @endif
+
+                    @if($compra->tieneArchivoPago())
+                        <div class="mb-3">
+                            <p class="mb-1"><strong>Archivo adjunto:</strong></p>
+                            <a href="{{ $compra->urlArchivoPago() }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-file-earmark-image me-1"></i> Ver comprobante
+                            </a>
+                        </div>
+                    @endif
+
+                    @if($compra->estado === 'pendiente')
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Tu pago esta siendo revisado. Te notificaremos por correo cuando sea aprobado.
+                        </div>
+                    @elseif($compra->estado === 'pagada' && $compra->fecha_revision)
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong>Pago aprobado</strong> el {{ $compra->fecha_revision->format('d/m/Y H:i') }}
+                        </div>
+                    @elseif($compra->estado === 'cancelada' && $compra->motivo_rechazo)
+                        <div class="alert alert-danger mb-0">
+                            <i class="bi bi-x-circle me-2"></i>
+                            <strong>Pago rechazado</strong>
+                            <p class="mb-0 mt-2">{{ $compra->motivo_rechazo }}</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
 
         <!-- Resumen -->

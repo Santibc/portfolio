@@ -557,45 +557,45 @@
     // Funciones para los modales
     window.entradaStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario PRIMERO
+        $('#formEntrada')[0].reset();
+
+        // Luego establecer los valores
         $('#entrada_stock_id').val(stockId);
         $('#entrada_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#entrada_stock_actual').text(data.stock.cantidad_disponible);
-        
-        // Limpiar formulario
-        $('#formEntrada')[0].reset();
-        $('#entrada_stock_id').val(stockId);
-        
+
         $('#modalEntrada').modal('show');
       });
     };
 
     window.salidaStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario PRIMERO
+        $('#formSalida')[0].reset();
+
+        // Luego establecer los valores
         $('#salida_stock_id').val(stockId);
         $('#salida_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#salida_stock_disponible').text(data.stock.stock_real);
-        
-        // Limpiar formulario
-        $('#formSalida')[0].reset();
-        $('#salida_stock_id').val(stockId);
-        
+
         // Establecer máximo en el input
         $('input[name="cantidad"]', '#formSalida').attr('max', data.stock.stock_real);
-        
+
         $('#modalSalida').modal('show');
       });
     };
 
     window.ajusteStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario PRIMERO
+        $('#formAjuste')[0].reset();
+
+        // Luego establecer los valores
         $('#ajuste_stock_id').val(stockId);
         $('#ajuste_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#ajuste_stock_actual').val(data.stock.cantidad_disponible);
-        
-        // Limpiar formulario
-        $('#formAjuste')[0].reset();
-        $('#ajuste_stock_id').val(stockId);
-        
+
         $('#modalAjuste').modal('show');
       });
     };
@@ -769,9 +769,38 @@
       });
     }
 
-    // Limpiar formularios cuando se cierran los modales
+    // Limpiar formularios y restaurar botones cuando se cierran los modales
     $('.modal').on('hidden.bs.modal', function() {
-      $(this).find('form')[0].reset();
+      const modal = $(this);
+      const form = modal.find('form');
+
+      // Resetear el formulario
+      if (form.length) {
+        form[0].reset();
+      }
+
+      // Restaurar botones de submit a su estado original
+      modal.find('button[type="submit"]').each(function() {
+        const btn = $(this);
+        btn.prop('disabled', false);
+
+        // Restaurar texto original del botón según el modal
+        const modalId = modal.attr('id');
+        switch(modalId) {
+          case 'modalEntrada':
+            btn.html('<i class="bi bi-check-circle"></i> Registrar Entrada');
+            break;
+          case 'modalSalida':
+            btn.html('<i class="bi bi-check-circle"></i> Registrar Salida');
+            break;
+          case 'modalAjuste':
+            btn.html('<i class="bi bi-check-circle"></i> Realizar Ajuste');
+            break;
+          case 'modalConfiguracion':
+            btn.html('<i class="bi bi-save"></i> Guardar Configuración');
+            break;
+        }
+      });
     });
 
     // Atajos de teclado

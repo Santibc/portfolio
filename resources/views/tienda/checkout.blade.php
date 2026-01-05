@@ -283,15 +283,97 @@
             color: var(--text-primary);
         }
 
+        /* Payment Options */
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .payment-option {
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .payment-option:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .payment-option:has(input:checked) {
+            border-color: var(--primary-color);
+            background: rgba(55, 48, 163, 0.05);
+        }
+
+        .payment-label {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            gap: 1rem;
+            margin: 0;
+        }
+
+        .payment-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-light);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-info strong {
+            color: var(--text-primary);
+        }
+
+        .payment-check {
+            font-size: 1.5rem;
+            color: var(--border-color);
+            transition: color 0.2s;
+        }
+
+        .payment-option:has(input:checked) .payment-check {
+            color: var(--success-color);
+        }
+
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+
+        .otro-payment-fields {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @media (max-width: 768px) {
             .checkout-steps {
                 overflow-x: auto;
             }
-            
+
             .step-title {
                 display: none;
             }
-            
+
             .order-summary {
                 position: static;
                 margin-top: 2rem;
@@ -361,7 +443,7 @@
     <!-- Main Content -->
     <main class="py-4">
         <div class="container">
-            <form action="{{ route('tienda.procesar-compra') }}" method="POST" id="checkoutForm">
+            <form action="{{ route('tienda.procesar-compra') }}" method="POST" id="checkoutForm" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <!-- Checkout Form -->
@@ -478,11 +560,98 @@
                                 
                                 <div class="col-12">
                                     <label for="notas" class="form-label">Notas adicionales (opcional)</label>
-                                    <textarea class="form-control" 
-                                              id="notas" 
-                                              name="notas" 
-                                              rows="3" 
+                                    <textarea class="form-control"
+                                              id="notas"
+                                              name="notas"
+                                              rows="3"
                                               placeholder="Instrucciones especiales para la entrega...">{{ old('notas') }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method Selection -->
+                        <div class="checkout-container">
+                            <h2 class="section-title">
+                                <i class="bi bi-credit-card-2-front"></i> Metodo de Pago
+                            </h2>
+
+                            <div class="payment-options">
+                                <!-- Wompi Option -->
+                                <div class="payment-option" data-method="wompi">
+                                    <input type="radio" name="metodo_pago" id="metodo_wompi" value="wompi" checked>
+                                    <label for="metodo_wompi" class="payment-label">
+                                        <div class="payment-icon">
+                                            <i class="bi bi-credit-card"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <strong>Wompi</strong>
+                                            <small class="text-muted d-block">Pago seguro con tarjeta o PSE</small>
+                                        </div>
+                                        <div class="payment-check">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Other Option -->
+                                <div class="payment-option" data-method="otro">
+                                    <input type="radio" name="metodo_pago" id="metodo_otro" value="otro">
+                                    <label for="metodo_otro" class="payment-label">
+                                        <div class="payment-icon">
+                                            <i class="bi bi-wallet2"></i>
+                                        </div>
+                                        <div class="payment-info">
+                                            <strong>Otro</strong>
+                                            <small class="text-muted d-block">Transferencia, efectivo, etc.</small>
+                                        </div>
+                                        <div class="payment-check">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Fields for "Otro" payment method (hidden by default) -->
+                            <div class="otro-payment-fields" id="otroPaymentFields" style="display: none;">
+                                <hr class="my-4">
+
+                                <div class="mb-3">
+                                    <label for="mensaje_pago" class="form-label">
+                                        Describe tu pago <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control @error('mensaje_pago') is-invalid @enderror"
+                                              id="mensaje_pago"
+                                              name="mensaje_pago"
+                                              rows="3"
+                                              placeholder="Ej: Transferi desde Bancolombia, numero de transaccion 123456789">{{ old('mensaje_pago') }}</textarea>
+                                    <small class="text-muted">Indica el banco, numero de transaccion u otra informacion relevante</small>
+                                    @error('mensaje_pago')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="archivo_pago" class="form-label">
+                                        Adjuntar comprobante (opcional)
+                                    </label>
+                                    <input type="file"
+                                           class="form-control @error('archivo_pago') is-invalid @enderror"
+                                           id="archivo_pago"
+                                           name="archivo_pago"
+                                           accept=".jpg,.jpeg,.png,.pdf">
+                                    <small class="text-muted">Formatos: JPG, PNG, PDF. Maximo 5MB</small>
+                                    @error('archivo_pago')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="alert alert-warning d-flex align-items-start">
+                                    <i class="bi bi-exclamation-triangle-fill me-2 mt-1" style="color: #d97706;"></i>
+                                    <div>
+                                        <strong>Importante:</strong> Para ver el estado de tu compra, registrate con el correo
+                                        <strong id="emailDisplay"></strong> y visita
+                                        <a href="{{ route('cliente.compras') }}" target="_blank">Mis Compras</a>.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -607,9 +776,9 @@
             $('#departamento').on('change', function() {
                 const departamentoId = $(this).val();
                 const ciudadSelect = $('#ciudad_id');
-                
+
                 ciudadSelect.html('<option value="">Cargando ciudades...</option>');
-                
+
                 if (departamentoId) {
                     $.ajax({
                         url: "{{ route('ajax.ciudades') }}",
@@ -630,14 +799,46 @@
                 }
             });
 
+            // Payment method toggle
+            $('input[name="metodo_pago"]').on('change', function() {
+                const metodo = $(this).val();
+                const otroFields = $('#otroPaymentFields');
+                const paymentBtn = $('#paymentBtn');
+                const secureInfo = $('.secure-info');
+
+                if (metodo === 'otro') {
+                    otroFields.slideDown(300);
+                    $('#mensaje_pago').prop('required', true);
+                    paymentBtn.html('<i class="bi bi-send-fill"></i> Enviar Solicitud');
+                    secureInfo.html('<i class="bi bi-clock-history"></i> <span>Tu solicitud sera revisada</span>');
+                    // Update email display
+                    updateEmailDisplay();
+                } else {
+                    otroFields.slideUp(300);
+                    $('#mensaje_pago').prop('required', false);
+                    paymentBtn.html('<i class="bi bi-lock-fill"></i> Proceder al Pago');
+                    secureInfo.html('<i class="bi bi-shield-lock-fill"></i> <span>Pago seguro con Wompi</span>');
+                }
+            });
+
+            // Update email display when email changes
+            $('#email').on('input', function() {
+                updateEmailDisplay();
+            });
+
+            function updateEmailDisplay() {
+                const email = $('#email').val() || '[tu correo]';
+                $('#emailDisplay').text(email);
+            }
+
             // Form validation
             $('#checkoutForm').on('submit', function(e) {
                 e.preventDefault();
-                
+
                 // Basic validation
                 const requiredFields = ['nombre', 'email', 'telefono', 'direccion', 'ciudad_id'];
                 let isValid = true;
-                
+
                 requiredFields.forEach(field => {
                     const input = $(`#${field}`);
                     if (!input.val()) {
@@ -647,16 +848,33 @@
                         input.removeClass('is-invalid');
                     }
                 });
-                
+
+                // Validate mensaje_pago if payment method is "otro"
+                const metodoPago = $('input[name="metodo_pago"]:checked').val();
+                if (metodoPago === 'otro') {
+                    const mensajePago = $('#mensaje_pago');
+                    if (!mensajePago.val().trim()) {
+                        mensajePago.addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        mensajePago.removeClass('is-invalid');
+                    }
+                }
+
                 if (!isValid) {
                     alert('Por favor complete todos los campos obligatorios');
                     return;
                 }
-                
+
                 // Show loading
                 $('#loadingOverlay').addClass('show');
+                if (metodoPago === 'otro') {
+                    $('.loading-text').text('Enviando solicitud...');
+                } else {
+                    $('.loading-text').text('Procesando tu pago...');
+                }
                 $('#paymentBtn').prop('disabled', true);
-                
+
                 // Submit form
                 this.submit();
             });
@@ -665,6 +883,9 @@
             $('.form-control, .form-select').on('input change', function() {
                 $(this).removeClass('is-invalid');
             });
+
+            // Initialize email display
+            updateEmailDisplay();
         });
     </script>
 </body>

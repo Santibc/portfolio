@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\StockBajoAlcanzado;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -144,13 +145,18 @@ class StockProducto extends Model
         }
 
         $stockAnterior = $this->cantidad_disponible;
+
+        // Calcular si estaba bajo ANTES de la operación
+        $stockRealAnterior = $stockAnterior - $this->cantidad_reservada;
+        $eraBajo = $this->alerta_stock_bajo && ($stockRealAnterior <= $this->stock_minimo);
+
         $this->cantidad_disponible -= $cantidad;
-        
+
         // Si había reserva, la reducimos
         if ($this->cantidad_reservada > 0) {
             $this->cantidad_reservada = max(0, $this->cantidad_reservada - $cantidad);
         }
-        
+
         $this->save();
 
         // Registrar movimiento
@@ -167,6 +173,13 @@ class StockProducto extends Model
             'usuario_id' => auth()->id() ?? 1
         ]);
 
+        // Verificar si el stock cruzo el umbral (no estaba bajo, ahora si)
+        $esBajoAhora = $this->stock_bajo;
+
+        if (!$eraBajo && $esBajoAhora) {
+            event(new StockBajoAlcanzado($this, $stockRealAnterior, $this->stock_real));
+        }
+
         return true;
     }
 
@@ -175,7 +188,11 @@ class StockProducto extends Model
     {
         $stockAnterior = $this->cantidad_disponible;
         $diferencia = $nuevaCantidad - $stockAnterior;
-        
+
+        // Calcular si estaba bajo ANTES de la operación
+        $stockRealAnterior = $stockAnterior - $this->cantidad_reservada;
+        $eraBajo = $this->alerta_stock_bajo && ($stockRealAnterior <= $this->stock_minimo);
+
         $this->cantidad_disponible = $nuevaCantidad;
         $this->save();
 
@@ -191,6 +208,13 @@ class StockProducto extends Model
             'motivo' => $motivo,
             'usuario_id' => auth()->id() ?? 1
         ]);
+
+        // Verificar si el stock cruzo el umbral (no estaba bajo, ahora si)
+        $esBajoAhora = $this->stock_bajo;
+
+        if (!$eraBajo && $esBajoAhora) {
+            event(new StockBajoAlcanzado($this, $stockRealAnterior, $this->stock_real));
+        }
 
         return true;
     }

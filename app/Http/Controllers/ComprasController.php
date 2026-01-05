@@ -7,9 +7,12 @@ use App\Models\TransaccionPago;
 use App\Models\Envio;
 use App\Services\WompiService;
 use App\Mail\EnvioActualizado;
+use App\Mail\PagoOtroAprobado;
+use App\Mail\PagoOtroRechazado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class ComprasController extends Controller
@@ -51,6 +54,11 @@ class ComprasController extends Controller
             $query->whereDate('created_at', '<=', $request->fecha_hasta);
         }
 
+        // Filtro por método de pago
+        if ($request->filled('metodo_pago')) {
+            $query->where('metodo_pago', $request->metodo_pago);
+        }
+
         // Ordenamiento
         $query->orderBy('created_at', 'desc');
 
@@ -66,6 +74,7 @@ class ComprasController extends Controller
                 ->whereYear('created_at', now()->year)
                 ->sum('total'),
             'compras_pendientes' => Compra::where('empresa_id', $empresa->id)->where('estado', 'pendiente')->count(),
+            'pendientes_revision' => Compra::where('empresa_id', $empresa->id)->pendientesRevision()->count(),
         ];
 
         return view('compras.index', compact('compras', 'estadisticas'));
@@ -87,7 +96,8 @@ class ComprasController extends Controller
             'ciudad.departamento',
             'transaccionesPago',
             'envio',
-            'comision'
+            'comision',
+            'revisor'
         ]);
 
         return view('compras.show', compact('compra'));
@@ -400,6 +410,134 @@ class ComprasController extends Controller
                 'estado' => 'entregado',
                 'fecha_entrega' => now()
             ]);
+        }
+    }
+
+    /**
+     * Aprobar pago con método "otro"
+     */
+    public function aprobarPagoOtro(Compra $compra)
+    {
+        // Verificar permisos
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
+
+        // Verificar que sea una compra con método "otro" y estado pendiente
+        if (!$compra->esMetodoOtro() || $compra->estado !== 'pendiente') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta compra no puede ser aprobada'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Actualizar compra
+            $compra->update([
+                'estado' => 'pagada',
+                'fecha_revision' => now(),
+                'revisado_por' => auth()->id()
+            ]);
+
+            // Actualizar transacción de pago
+            $compra->transaccionesPago()->update([
+                'estado' => 'aprobada',
+                'fecha_procesamiento' => now(),
+                'metodo_pago' => 'pago_manual'
+            ]);
+
+            // Generar comisión
+            $compra->generarComision();
+
+            // Enviar email al cliente
+            try {
+                Mail::to($compra->email_cliente)->send(new PagoOtroAprobado($compra));
+            } catch (\Exception $e) {
+                Log::warning('Error enviando email de aprobación: ' . $e->getMessage());
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pago aprobado correctamente. La compra ha sido marcada como pagada.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al aprobar pago: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al aprobar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Rechazar pago con método "otro"
+     */
+    public function rechazarPagoOtro(Request $request, Compra $compra)
+    {
+        $request->validate([
+            'motivo_rechazo' => 'required|string|max:500'
+        ]);
+
+        // Verificar permisos
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
+
+        // Verificar que sea una compra con método "otro" y estado pendiente
+        if (!$compra->esMetodoOtro() || $compra->estado !== 'pendiente') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta compra no puede ser rechazada'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Actualizar compra
+            $compra->update([
+                'estado' => 'cancelada',
+                'motivo_rechazo' => $request->motivo_rechazo,
+                'fecha_revision' => now(),
+                'revisado_por' => auth()->id()
+            ]);
+
+            // Actualizar transacción de pago
+            $compra->transaccionesPago()->update([
+                'estado' => 'rechazada',
+                'mensaje_error' => $request->motivo_rechazo
+            ]);
+
+            // Liberar stock
+            $this->cancelarCompra($compra);
+
+            // Enviar email al cliente
+            try {
+                Mail::to($compra->email_cliente)->send(new PagoOtroRechazado($compra));
+            } catch (\Exception $e) {
+                Log::warning('Error enviando email de rechazo: ' . $e->getMessage());
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pago rechazado. El stock ha sido liberado.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al rechazar pago: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al rechazar: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

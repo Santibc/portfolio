@@ -556,8 +556,8 @@
                     @endif
                 </ul>
                 <div class="buttons">
-                    <a href="#" class="btn pink">{{ $page->content['hero_btn_primary'] ?? 'Así lo hacemos posible' }}</a>
-                    <a href="{{ route('register') }}" class="btn outline">{{ $page->content['hero_btn_secondary'] ?? 'Regístrate ahora' }}</a>
+                    <a href="{{ url('/catalogo') }}" class="btn pink">{{ $page->content['hero_btn_primary'] ?? 'Así lo hacemos posible' }}</a>
+                    <a href="{{ url('/catalogo') }}" class="btn outline">{{ $page->content['hero_btn_secondary'] ?? 'Regístrate ahora' }}</a>
                 </div>
             </div>
         </div>

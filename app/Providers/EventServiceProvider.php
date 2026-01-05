@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\CompraAprobada;
+use App\Events\StockBajoAlcanzado;
+use App\Listeners\EnviarNotificacionCompraAprobada;
+use App\Listeners\EnviarNotificacionStockBajo;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +21,12 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        CompraAprobada::class => [
+            EnviarNotificacionCompraAprobada::class,
+        ],
+        StockBajoAlcanzado::class => [
+            EnviarNotificacionStockBajo::class,
         ],
     ];
 

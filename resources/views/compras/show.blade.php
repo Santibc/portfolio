@@ -239,21 +239,96 @@
                         
                         @if($compra->transaccionAprobada)
                             <div class="mb-3">
-                                <div class="info-label">ID Transacción</div>
+                                <div class="info-label">ID Transaccion</div>
                                 <div class="info-value text-truncate">
                                     {{ $compra->transaccionAprobada->referencia_transaccion }}
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <div class="info-label">Fecha de pago</div>
                                 <div class="info-value">
-                                    {{ $compra->transaccionAprobada->fecha_procesamiento->format('d/m/Y H:i') }}
+                                    {{ $compra->transaccionAprobada->fecha_procesamiento ? $compra->transaccionAprobada->fecha_procesamiento->format('d/m/Y H:i') : '-' }}
                                 </div>
                             </div>
                         @endif
                     </div>
                 </div>
+
+                {{-- Seccion de Pago Otro (si aplica) --}}
+                @if($compra->esMetodoOtro())
+                <div class="col-lg-12">
+                    <div class="info-card" style="border: 2px solid {{ $compra->estado === 'pendiente' ? '#f59e0b' : ($compra->estado === 'pagada' ? '#10b981' : '#ef4444') }};">
+                        <h5 class="mb-4">
+                            <i class="bi bi-wallet2 me-2"></i>Informacion del Pago Manual
+                            @if($compra->estado === 'pendiente')
+                                <span class="badge bg-warning text-dark ms-2">Pendiente de revision</span>
+                            @elseif($compra->estado === 'pagada')
+                                <span class="badge bg-success ms-2">Aprobado</span>
+                            @elseif($compra->estado === 'cancelada')
+                                <span class="badge bg-danger ms-2">Rechazado</span>
+                            @endif
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <div class="info-label">Mensaje del cliente</div>
+                                    <div class="info-value p-3 rounded" style="background: #f3f4f6; white-space: pre-wrap;">{{ $compra->mensaje_pago ?? 'Sin mensaje' }}</div>
+                                </div>
+
+                                @if($compra->tieneArchivoPago())
+                                <div class="mb-3">
+                                    <div class="info-label">Archivo adjunto</div>
+                                    <div class="info-value">
+                                        <a href="{{ $compra->urlArchivoPago() }}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="bi bi-file-earmark-image me-2"></i>Ver comprobante
+                                        </a>
+                                    </div>
+                                </div>
+                                @endif
+
+                                @if($compra->estado === 'cancelada' && $compra->motivo_rechazo)
+                                <div class="alert alert-danger mt-3">
+                                    <strong><i class="bi bi-x-circle me-2"></i>Motivo del rechazo:</strong>
+                                    <p class="mb-0 mt-2">{{ $compra->motivo_rechazo }}</p>
+                                </div>
+                                @endif
+
+                                @if($compra->estado === 'pagada' && $compra->fecha_revision)
+                                <div class="alert alert-success mt-3">
+                                    <strong><i class="bi bi-check-circle me-2"></i>Pago aprobado</strong>
+                                    <p class="mb-0 mt-2">
+                                        Aprobado el {{ $compra->fecha_revision->format('d/m/Y H:i') }}
+                                        @if($compra->revisor)
+                                            por {{ $compra->revisor->name }}
+                                        @endif
+                                    </p>
+                                </div>
+                                @endif
+                            </div>
+
+                            @if($compra->estado === 'pendiente')
+                            <div class="col-md-4">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-success btn-lg" onclick="aprobarPago({{ $compra->id }})">
+                                        <i class="bi bi-check-circle me-2"></i>Aprobar Pago
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="mostrarModalRechazo()">
+                                        <i class="bi bi-x-circle me-2"></i>Rechazar Pago
+                                    </button>
+                                </div>
+                                <div class="mt-3 text-muted small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Al aprobar, se marcara como pagada y se generara la comision.
+                                    Al rechazar, se liberara el stock y se cancelara la compra.
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
 
             {{-- Productos --}}
@@ -354,6 +429,41 @@
             </div>
         </div>
     </div>
+
+    {{-- Modal rechazar pago --}}
+    @if($compra->esMetodoOtro() && $compra->estado === 'pendiente')
+    <div class="modal fade" id="modalRechazo" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formRechazo" action="{{ route('compras.rechazar-pago', $compra) }}" method="POST">
+                    @csrf
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Rechazar Pago</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Atención:</strong> Al rechazar este pago, se liberará el stock reservado y se cancelará la compra. El cliente recibirá un correo con el motivo del rechazo.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Motivo del rechazo *</strong></label>
+                            <textarea class="form-control" name="motivo_rechazo" rows="4" required
+                                      placeholder="Explique al cliente por qué se rechaza el pago..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger" id="btnRechazar">
+                            <i class="bi bi-x-circle me-2"></i>Confirmar Rechazo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Modal actualizar envío --}}
     <div class="modal fade" id="modalEnvio" tabindex="-1">
@@ -525,6 +635,154 @@
                 }
             });
         });
+
+        // Aprobar pago manual
+        function aprobarPago(compraId) {
+            Swal.fire({
+                title: '¿Aprobar este pago?',
+                html: `
+                    <p>Al aprobar el pago:</p>
+                    <ul class="text-start">
+                        <li>La compra se marcará como <strong>pagada</strong></li>
+                        <li>Se generará la comisión correspondiente</li>
+                        <li>El cliente recibirá un correo de confirmación</li>
+                    </ul>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="bi bi-check-circle me-2"></i>Sí, aprobar pago',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Procesando...',
+                        text: 'Aprobando pago y enviando notificación',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: `/compras/${compraId}/aprobar-pago`,
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                title: '¡Pago Aprobado!',
+                                text: response.message || 'El pago ha sido aprobado exitosamente.',
+                                icon: 'success',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#10b981'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: xhr.responseJSON?.message || 'Error al aprobar el pago',
+                                icon: 'error',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Mostrar modal de rechazo
+        function mostrarModalRechazo() {
+            const modal = new bootstrap.Modal(document.getElementById('modalRechazo'));
+            modal.show();
+        }
+
+        // Submit rechazo con SweetAlert
+        @if($compra->esMetodoOtro() && $compra->estado === 'pendiente')
+        $('#formRechazo').on('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const motivo = $(form).find('textarea[name="motivo_rechazo"]').val();
+
+            if (!motivo.trim()) {
+                Swal.fire({
+                    title: 'Campo requerido',
+                    text: 'Debe ingresar el motivo del rechazo',
+                    icon: 'warning',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Confirmar rechazo?',
+                html: `
+                    <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
+                    <p>El cliente será notificado con el siguiente motivo:</p>
+                    <div class="alert alert-secondary text-start">${motivo}</div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="bi bi-x-circle me-2"></i>Sí, rechazar pago',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Cerrar modal
+                    $('#modalRechazo').modal('hide');
+
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Procesando...',
+                        text: 'Rechazando pago y liberando stock',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Enviar formulario via AJAX
+                    $.ajax({
+                        url: $(form).attr('action'),
+                        method: 'POST',
+                        data: $(form).serialize(),
+                        success: function(response) {
+                            Swal.fire({
+                                title: 'Pago Rechazado',
+                                text: response.message || 'El pago ha sido rechazado y el stock liberado.',
+                                icon: 'info',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#3b82f6'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                title: 'Error',
+                                text: xhr.responseJSON?.message || 'Error al rechazar el pago',
+                                icon: 'error',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+        @endif
     </script>
     @endpush
 </x-app-layout>
