@@ -13,34 +13,8 @@
               <h1 class="hero-title-minimal">
                 Flores frescas<br>
                 entregadas hoy en<br>
-                <span class="ciudad-nombre" id="ciudadTexto">Santiago</span>
+                <span class="ciudad-nombre" id="ciudadTexto">Chile</span>
               </h1>
-
-              <div class="hero-selectors">
-                <div class="selector-group">
-                  <label class="selector-label">Ciudad</label>
-                  <div class="selector-input">
-                    <select class="form-select" id="ciudadSelect">
-                      <option value="Santiago">Santiago</option>
-                      <option value="Providencia">Providencia</option>
-                      <option value="Las Condes">Las Condes</option>
-                      <option value="Ñuñoa">Ñuñoa</option>
-                      <option value="Valparaíso">Valparaíso</option>
-                      <option value="Viña del Mar">Viña del Mar</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="selector-group">
-                  <label class="selector-label">Fecha de entrega</label>
-                  <div class="selector-input">
-                    <select class="form-select" id="fechaEntrega">
-                      <option value="hoy">Hoy</option>
-                      <option value="otro">Otro día</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
 
               <a href="{{ route('tienda.categorias') }}" class="btn-flores btn-hero-search">
                 Ver ramos disponibles hoy

@@ -575,10 +575,8 @@
 
           <!-- Navigation Links -->
           <ul class="nav-links">
-            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Ocasiones</a></li>
-            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-tipo-flor', '')">Por tipo de flor</a></li>
+            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Catalogo</a></li>
             <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')">Arma tu ramo</a></li>
-            <li><a href="#" class="@yield('nav-ayuda', '')">Ayuda</a></li>
           </ul>
 
           <!-- Header Actions -->
@@ -659,10 +657,8 @@
     </button>
     <ul class="nav-links">
       <li><a href="{{ route('home') }}">Inicio</a></li>
-      <li><a href="{{ route('tienda.categorias') }}">Ocasiones</a></li>
-      <li><a href="{{ route('tienda.categorias') }}">Por tipo de flor</a></li>
+      <li><a href="{{ route('tienda.categorias') }}">Catalogo</a></li>
       <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
-      <li><a href="#">Ayuda</a></li>
       @guest
         <li><a href="{{ route('login') }}">Iniciar Sesión</a></li>
         <li><a href="{{ route('register.cliente') }}">Registrarse</a></li>
@@ -723,19 +719,6 @@
                 <li><a href="{{ route('tienda.categorias', ['ocasion' => 'cumpleanos']) }}">Cumpleaños</a></li>
                 <li><a href="{{ route('tienda.categorias', ['ocasion' => 'amor']) }}">Amor</a></li>
                 <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Ayuda -->
-          <div class="col-lg-2 col-md-6 col-6">
-            <div class="footer-links-minimal">
-              <h5>Ayuda</h5>
-              <ul>
-                <li><a href="#">Preguntas frecuentes</a></li>
-                <li><a href="#">Envíos y entregas</a></li>
-                <li><a href="#">Cambios y devoluciones</a></li>
-                <li><a href="#">Contacto</a></li>
               </ul>
             </div>
           </div>
