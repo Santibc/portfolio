@@ -145,12 +145,12 @@
                 @endif
               @endforeach
               
-              <div class="row g-3">
-                <div class="col-12 col-md-6 col-lg-4">
+              <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
                   <div class="filter-item search-form">
                     <label for="productSearch" class="form-label">Buscar Productos</label>
                     <div class="input-group">
-                      <input type="text" class="form-control" id="productSearch" 
+                      <input type="text" class="form-control" id="productSearch"
                              name="buscar" value="{{ request('buscar') }}"
                              placeholder="Buscar productos..." aria-label="Buscar productos">
                       <button class="btn search-btn" type="submit">
@@ -160,37 +160,37 @@
                   </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-2">
+                <div class="col-6 col-md-2">
                   <div class="filter-item">
-                    <label for="priceRange" class="form-label">Rango de Precio</label>
+                    <label for="priceRange" class="form-label">Precio</label>
                     <select class="form-select" id="priceRange" name="rango_precio" onchange="this.form.submit()">
-                      <option value="" {{ !request('rango_precio') ? 'selected' : '' }}>Todos los Precios</option>
-                      <option value="0-50000" {{ request('rango_precio') == '0-50000' ? 'selected' : '' }}>Menos de $50.000</option>
-                      <option value="50000-100000" {{ request('rango_precio') == '50000-100000' ? 'selected' : '' }}>$50.000 a $100.000</option>
-                      <option value="100000-200000" {{ request('rango_precio') == '100000-200000' ? 'selected' : '' }}>$100.000 a $200.000</option>
-                      <option value="200000-500000" {{ request('rango_precio') == '200000-500000' ? 'selected' : '' }}>$200.000 a $500.000</option>
-                      <option value="500000-0" {{ request('rango_precio') == '500000-0' ? 'selected' : '' }}>Más de $500.000</option>
+                      <option value="" {{ !request('rango_precio') ? 'selected' : '' }}>Todos</option>
+                      <option value="0-50000" {{ request('rango_precio') == '0-50000' ? 'selected' : '' }}>< $50.000</option>
+                      <option value="50000-100000" {{ request('rango_precio') == '50000-100000' ? 'selected' : '' }}>$50k-$100k</option>
+                      <option value="100000-200000" {{ request('rango_precio') == '100000-200000' ? 'selected' : '' }}>$100k-$200k</option>
+                      <option value="200000-500000" {{ request('rango_precio') == '200000-500000' ? 'selected' : '' }}>$200k-$500k</option>
+                      <option value="500000-0" {{ request('rango_precio') == '500000-0' ? 'selected' : '' }}>> $500.000</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-2">
+                <div class="col-6 col-md-2">
                   <div class="filter-item">
-                    <label for="sortBy" class="form-label">Ordenar Por</label>
+                    <label for="sortBy" class="form-label">Ordenar</label>
                     <select class="form-select" id="sortBy" name="orden" onchange="this.form.submit()">
-                      <option value="" {{ !request('orden') ? 'selected' : '' }}>Más Recientes</option>
-                      <option value="precio_asc" {{ request('orden') == 'precio_asc' ? 'selected' : '' }}>Precio: Menor a Mayor</option>
-                      <option value="precio_desc" {{ request('orden') == 'precio_desc' ? 'selected' : '' }}>Precio: Mayor a Menor</option>
+                      <option value="" {{ !request('orden') ? 'selected' : '' }}>Recientes</option>
+                      <option value="precio_asc" {{ request('orden') == 'precio_asc' ? 'selected' : '' }}>Menor precio</option>
+                      <option value="precio_desc" {{ request('orden') == 'precio_desc' ? 'selected' : '' }}>Mayor precio</option>
                       <option value="nombre" {{ request('orden') == 'nombre' ? 'selected' : '' }}>Nombre</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-md-4">
                   <div class="filter-item">
                     <label class="form-label">Vista</label>
-                    <div class="d-flex align-items-center">
-                      <div class="view-options me-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="view-options">
                         <button type="button" class="btn view-btn active" data-view="grid" aria-label="Vista cuadrícula">
                           <i class="bi bi-grid-3x3-gap-fill"></i>
                         </button>
@@ -198,11 +198,11 @@
                           <i class="bi bi-list-ul"></i>
                         </button>
                       </div>
-                      <div class="items-per-page">
+                      <div class="items-per-page flex-grow-1">
                         <select class="form-select" id="itemsPerPage" name="por_pagina" onchange="this.form.submit()">
-                          <option value="12" {{ request('por_pagina', 12) == 12 ? 'selected' : '' }}>12 por página</option>
-                          <option value="24" {{ request('por_pagina') == 24 ? 'selected' : '' }}>24 por página</option>
-                          <option value="48" {{ request('por_pagina') == 48 ? 'selected' : '' }}>48 por página</option>
+                          <option value="12" {{ request('por_pagina', 12) == 12 ? 'selected' : '' }}>12 por p.</option>
+                          <option value="24" {{ request('por_pagina') == 24 ? 'selected' : '' }}>24 por p.</option>
+                          <option value="48" {{ request('por_pagina') == 48 ? 'selected' : '' }}>48 por p.</option>
                         </select>
                       </div>
                     </div>
@@ -504,6 +504,47 @@
 
 @push('styles')
 <style>
+/* Filtros alineados */
+.filter-container .form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.filter-container .form-select,
+.filter-container .form-control {
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.filter-container .input-group .form-control {
+  border-right: none;
+}
+
+.filter-container .search-btn {
+  background: var(--flores-primary, #6B7456);
+  color: white;
+  border: 1px solid var(--flores-primary, #6B7456);
+  border-radius: 0 8px 8px 0;
+  padding: 0 16px;
+}
+
+.filter-container .search-btn:hover {
+  background: var(--flores-primary-hover, #5a6248);
+}
+
+.view-options {
+  display: flex;
+  gap: 4px;
+}
+
+.items-per-page .form-select {
+  min-width: 110px;
+}
+
 /* Estilos adicionales para los filtros */
 .filter-tag {
   display: inline-flex;

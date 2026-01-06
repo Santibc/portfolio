@@ -212,68 +212,6 @@
         </div>
       </div>
 
-      {{-- Carrusel de Imágenes --}}
-      <div class="card shadow mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Carrusel de Imágenes</h5>
-          <button type="button" class="btn btn-sm btn-outline-primary" id="addCarrusel">
-            <i class="bi bi-plus-circle"></i> Agregar Imagen
-          </button>
-        </div>
-        <div class="card-body">
-          {{-- Imágenes existentes del carrusel --}}
-          @if($empresa->exists && $empresa->carruselImagenes->count() > 0)
-            <div class="row mb-4">
-              <div class="col-12">
-                <h6>Imágenes Actuales del Carrusel:</h6>
-              </div>
-              @foreach($empresa->carruselImagenes as $imagen)
-                <div class="col-md-6 mb-3">
-                  <div class="card">
-                    <img src="{{ $imagen->imagen_url }}" 
-                         class="card-img-top" 
-                         style="height: 200px; object-fit: cover;">
-                    <div class="card-body">
-                      <input type="hidden" name="carrusel_existente[{{ $imagen->id }}][id]" value="{{ $imagen->id }}">
-                      
-                      <div class="mb-2">
-                        <label class="form-label">Título</label>
-                        <input type="text" name="carrusel_existente[{{ $imagen->id }}][titulo]" 
-                               class="form-control form-control-sm"
-                               value="{{ $imagen->titulo }}">
-                      </div>
-                      
-                      <div class="mb-2">
-                        <label class="form-label">Orden</label>
-                        <input type="number" name="carrusel_existente[{{ $imagen->id }}][orden]" 
-                               class="form-control form-control-sm"
-                               value="{{ $imagen->orden }}" min="0">
-                      </div>
-                      
-                      <div class="form-check">
-                        <input type="checkbox" name="carrusel_existente[{{ $imagen->id }}][eliminar]" 
-                               value="1" class="form-check-input" 
-                               id="eliminar_carrusel_{{ $imagen->id }}">
-                        <label class="form-check-label text-danger" 
-                               for="eliminar_carrusel_{{ $imagen->id }}">
-                          Eliminar esta imagen
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-            <hr class="my-4">
-          @endif
-          
-          {{-- Container para nuevas imágenes --}}
-          <div id="carruselContainer">
-            <h6>Agregar Nuevas Imágenes:</h6>
-          </div>
-        </div>
-      </div>
-
       {{-- Marketing y Analytics --}}
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
@@ -516,14 +454,6 @@
 
   @push('styles')
   <style>
-    .carrusel-row {
-      border: 1px solid #dee2e6;
-      border-radius: 0.375rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      background-color: #f8f9fa;
-    }
-
     .horario-input:disabled {
       background-color: #e9ecef;
       cursor: not-allowed;
@@ -534,81 +464,6 @@
   @push('scripts')
   <script>
     $(document).ready(function() {
-      // Contador para carrusel
-      let carruselIndex = 0;
-      
-      // Agregar nueva imagen al carrusel
-      $('#addCarrusel').click(function() {
-        const template = `
-          <div class="carrusel-row">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Imagen <span class="text-danger">*</span></label>
-                <input type="file" name="carrusel[${carruselIndex}][imagen]" 
-                       class="form-control" 
-                       accept="image/jpeg,image/jpg,image/png,image/webp"
-                       required>
-                <small class="text-muted">Máximo 4MB. Recomendado: 1920x600px</small>
-              </div>
-              
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Título</label>
-                <input type="text" name="carrusel[${carruselIndex}][titulo]" 
-                       class="form-control"
-                       placeholder="Título de la imagen">
-              </div>
-              
-              <div class="col-md-12 mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea name="carrusel[${carruselIndex}][descripcion]" 
-                          class="form-control" rows="2"
-                          placeholder="Descripción breve"></textarea>
-              </div>
-              
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Link (URL)</label>
-                <input type="url" name="carrusel[${carruselIndex}][link]" 
-                       class="form-control"
-                       placeholder="https://ejemplo.com">
-              </div>
-              
-              <div class="col-md-2 mb-3">
-                <label class="form-label">Orden</label>
-                <input type="number" name="carrusel[${carruselIndex}][orden]" 
-                       class="form-control"
-                       value="${carruselIndex}" min="0">
-              </div>
-              
-              <div class="col-md-3 mb-3">
-                <label class="form-label">Fecha Inicio</label>
-                <input type="date" name="carrusel[${carruselIndex}][fecha_inicio]" 
-                       class="form-control">
-              </div>
-              
-              <div class="col-md-3 mb-3">
-                <label class="form-label">Fecha Fin</label>
-                <input type="date" name="carrusel[${carruselIndex}][fecha_fin]" 
-                       class="form-control">
-              </div>
-              
-              <div class="col-12">
-                <button type="button" class="btn btn-danger btn-sm removeCarrusel">
-                  <i class="bi bi-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-        
-        $('#carruselContainer').append(template);
-        carruselIndex++;
-      });
-      
-      // Eliminar imagen del carrusel
-      $(document).on('click', '.removeCarrusel', function() {
-        $(this).closest('.carrusel-row').remove();
-      });
-      
       // Manejar horarios - deshabilitar inputs cuando está cerrado
       $('.cerrado-check').change(function() {
         const dia = $(this).data('dia');

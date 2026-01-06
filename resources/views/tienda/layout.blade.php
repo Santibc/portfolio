@@ -38,7 +38,7 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
   <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -51,32 +51,507 @@
   <!-- Main CSS File -->
   <link href="{{ asset('assets/css/main.css') }}" rel="stylesheet">
 
-  <!-- Mobile fixes -->
+  <!-- Flores Minimal Theme Styles -->
   <style>
-    /* Ocultar top-bar en móvil para evitar espacio */
-    @media (max-width: 991px) {
-      .header .top-bar {
-        display: none !important;
+    :root {
+      --flores-primary: #6B7456;
+      --flores-primary-hover: #5a6248;
+      --flores-beige: #F5EDD8;
+      --flores-text: #333333;
+      --flores-text-light: #666666;
+      --flores-bg: #FFFFFF;
+      --flores-border: #E5E5E5;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--flores-text);
+    }
+
+    /* ============ CONTENEDOR PERSONALIZADO ============ */
+    .container {
+      max-width: 1400px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    @media (min-width: 1200px) {
+      .container {
+        max-width: 1320px;
+        padding-left: 40px;
+        padding-right: 40px;
       }
     }
 
-    /* Hacer el icono hamburguesa más visible */
-    .mobile-nav-toggle {
-      color: #333 !important;
-      font-size: 28px !important;
-      background: rgba(0,0,0,0.05);
-      padding: 8px;
-      border-radius: 6px;
+    @media (min-width: 1400px) {
+      .container {
+        max-width: 1400px;
+        padding-left: 48px;
+        padding-right: 48px;
+      }
     }
 
-    .mobile-nav-toggle:hover {
-      background: rgba(0,0,0,0.1);
+    /* ============ NUEVO HEADER MINIMALISTA ============ */
+    .header {
+      background: var(--flores-bg);
+      box-shadow: none;
+      border-bottom: 1px solid var(--flores-border);
     }
 
-    /* Cuando el menú está activo, icono en blanco */
-    .mobile-nav-active .mobile-nav-toggle {
-      color: #fff !important;
+    .header .top-bar {
+      display: none !important;
+    }
+
+    .header .main-header {
+      padding: 0;
+    }
+
+    .header-minimal {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      gap: 24px;
+    }
+
+    /* Logo */
+    .header-minimal .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .header-minimal .logo-icon {
+      font-size: 20px;
+      color: var(--flores-primary);
+    }
+
+    .header-minimal .logo-text {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--flores-text);
+      margin: 0;
+    }
+
+    /* Navigation */
+    .header-minimal .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-minimal .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--flores-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .header-minimal .nav-links a:hover {
+      color: var(--flores-primary);
+    }
+
+    .header-minimal .nav-links a.active {
+      color: var(--flores-primary);
+    }
+
+    /* Header Actions */
+    .header-minimal .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    .header-minimal .header-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       background: transparent;
+      color: var(--flores-text);
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      border: none;
+      cursor: pointer;
+    }
+
+    .header-minimal .header-action-btn:hover {
+      background: var(--flores-beige);
+      color: var(--flores-primary);
+    }
+
+    .header-minimal .header-action-btn i {
+      font-size: 20px;
+    }
+
+    .header-minimal .header-action-btn .badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--flores-primary);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* Mobile Toggle */
+    .header-minimal .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--flores-text);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    /* Hide old header elements */
+    .header .header-nav,
+    .header .search-form.desktop-search-form,
+    .header .old-header-actions {
+      display: none !important;
+    }
+
+    /* Auth Buttons */
+    .btn-auth-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--flores-text);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-auth-link:hover {
+      color: var(--flores-primary);
+    }
+
+    .btn-auth-register {
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      background: var(--flores-primary);
+      text-decoration: none;
+      padding: 8px 20px;
+      border-radius: 30px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-auth-register:hover {
+      background: var(--flores-primary-hover);
+      color: white;
+    }
+
+    @media (max-width: 991px) {
+      .header-minimal .nav-links {
+        display: none;
+      }
+
+      .header-minimal .mobile-nav-toggle {
+        display: flex;
+      }
+
+      .header-minimal {
+        padding: 12px 0;
+      }
+    }
+
+    /* Mobile Navigation Overlay */
+    .mobile-nav-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+
+    .mobile-nav-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-nav-menu {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background: white;
+      z-index: 9999;
+      padding: 24px;
+      transition: right 0.3s;
+      overflow-y: auto;
+    }
+
+    .mobile-nav-menu.active {
+      right: 0;
+    }
+
+    .mobile-nav-menu .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--flores-text);
+    }
+
+    .mobile-nav-menu .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 48px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .mobile-nav-menu .nav-links li {
+      border-bottom: 1px solid var(--flores-border);
+    }
+
+    .mobile-nav-menu .nav-links a {
+      display: block;
+      padding: 16px 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--flores-text);
+      text-decoration: none;
+    }
+
+    .mobile-nav-menu .nav-links a:hover {
+      color: var(--flores-primary);
+    }
+
+    /* ============ BOTONES ============ */
+    .btn-flores {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--flores-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-flores:hover {
+      background: var(--flores-primary-hover);
+      color: white;
+    }
+
+    .btn-flores-outline {
+      background: transparent;
+      border: 1px solid var(--flores-primary);
+      color: var(--flores-primary);
+    }
+
+    .btn-flores-outline:hover {
+      background: var(--flores-primary);
+      color: white;
+    }
+
+    /* ============ TYPOGRAPHY ============ */
+    .text-serif {
+      font-family: var(--font-serif);
+    }
+
+    .section-title-minimal {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--flores-text);
+      margin-bottom: 8px;
+    }
+
+    .section-subtitle-minimal {
+      font-size: 14px;
+      color: var(--flores-text-light);
+    }
+
+    /* ============ FOOTER MINIMAL ============ */
+    .footer-minimal {
+      background: #fafafa;
+      border-top: 1px solid var(--flores-border);
+    }
+
+    .footer-main-minimal {
+      padding: 60px 0 40px;
+    }
+
+    .footer-brand .footer-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--flores-text);
+      text-decoration: none;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand .footer-logo i {
+      color: var(--flores-primary);
+    }
+
+    .footer-description {
+      font-size: 14px;
+      color: var(--flores-text-light);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 12px;
+    }
+
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border: 1px solid var(--flores-border);
+      border-radius: 50%;
+      color: var(--flores-text);
+      transition: all 0.2s;
+    }
+
+    .footer-social a:hover {
+      background: var(--flores-primary);
+      border-color: var(--flores-primary);
+      color: white;
+    }
+
+    .footer-links-minimal h5,
+    .footer-contact-minimal h5 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--flores-text);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .footer-links-minimal ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-links-minimal ul li {
+      margin-bottom: 12px;
+    }
+
+    .footer-links-minimal ul li a {
+      font-size: 14px;
+      color: var(--flores-text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links-minimal ul li a:hover {
+      color: var(--flores-primary);
+    }
+
+    .contact-item-minimal {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--flores-text-light);
+    }
+
+    .contact-item-minimal i {
+      color: var(--flores-primary);
+      margin-top: 2px;
+    }
+
+    .footer-bottom-minimal {
+      padding: 24px 0;
+      border-top: 1px solid var(--flores-border);
+    }
+
+    .footer-bottom-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .copyright-minimal {
+      font-size: 13px;
+      color: var(--flores-text-light);
+      margin: 0;
+    }
+
+    .footer-legal {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-legal a {
+      font-size: 13px;
+      color: var(--flores-text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-legal a:hover {
+      color: var(--flores-primary);
+    }
+
+    @media (max-width: 767px) {
+      .footer-main-minimal {
+        padding: 40px 0 24px;
+      }
+
+      .footer-bottom-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .footer-legal {
+        justify-content: center;
+      }
     }
   </style>
 
@@ -88,116 +563,51 @@
   @include('components.analytics.body-scripts')
 
   <header id="header" class="header sticky-top">
-    <!-- Top Bar -->
-    <div class="top-bar py-2">
-      <div class="container-fluid container-xl">
-        <div class="row align-items-center">
-          <div class="col-lg-4 d-none d-lg-flex">
-            <div class="top-bar-item">
-              <i class="bi bi-telephone-fill me-2"></i>
-              <span>¿Necesitas ayuda? Llámanos: </span>
-              <a href="tel:{{ $empresa->telefono }}">{{ $empresa->telefono ?? '+1 (234) 567-890' }}</a>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-12 text-center">
-              <div class="announcement-slider swiper init-swiper">
-                <script type="application/json" class="swiper-config">
-                  {
-                    "loop": true,
-                    "speed": 600,
-                    "autoplay": {
-                      "delay": 5000
-                    },
-                    "slidesPerView": 1,
-                    "direction": "vertical",
-                    "effect": "slide"
-                  }
-                </script>
-              </div>
-          </div>
-
-          <div class="col-lg-4 d-none d-lg-block">
-            <div class="d-flex justify-content-end">
-              <div class="top-bar-item dropdown me-3">
-                <a href="#" class="" data-bs-toggle="dropdown">
-                  <i class="bi bi-translate me-2"></i>ES
-                </a>
-              </div>
-              <div class="top-bar-item dropdown">
-                <a href="#" class="" data-bs-toggle="dropdown">
-                  <i class="bi bi-currency-dollar me-2"></i>COP
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Header -->
+    <!-- New Minimal Header -->
     <div class="main-header">
-      <div class="container-fluid container-xl">
-        <div class="d-flex py-3 align-items-center justify-content-between">
-
+      <div class="container">
+        <div class="header-minimal">
           <!-- Logo -->
-          <a href="{{ route('home') }}" class="logo d-flex align-items-center">
-            @if($empresa->logo_url)
-              <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="max-height: 50px;">
-            @else
-              <h1 class="sitename">{{ $empresa->nombre }}</h1>
-            @endif
+          <a href="{{ route('home') }}" class="logo">
+            <i class="bi bi-geo-alt-fill logo-icon"></i>
+            <span class="logo-text">{{ $empresa->nombre }}</span>
           </a>
 
-          <!-- Search -->
-          <form class="search-form desktop-search-form" action="{{ route('tienda.categorias') }}" method="GET">
-            <div class="input-group">
-              <input type="text" name="buscar" class="form-control" placeholder="Buscar productos por nombre o descripción">
-              <button class="btn" type="submit">
-                <i class="bi bi-search"></i>
-              </button>
-            </div>
-          </form>
+          <!-- Navigation Links -->
+          <ul class="nav-links">
+            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Ocasiones</a></li>
+            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-tipo-flor', '')">Por tipo de flor</a></li>
+            <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')">Arma tu ramo</a></li>
+            <li><a href="#" class="@yield('nav-ayuda', '')">Ayuda</a></li>
+          </ul>
 
-          <!-- Actions -->
-          <div class="header-actions d-flex align-items-center justify-content-end">
-
-            <!-- Mobile Search Toggle -->
-            <button class="header-action-btn mobile-search-toggle d-xl-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileSearch" aria-expanded="false" aria-controls="mobileSearch">
+          <!-- Header Actions -->
+          <div class="header-actions">
+            <!-- Search -->
+            <button type="button" class="header-action-btn" id="searchToggle" title="Buscar">
               <i class="bi bi-search"></i>
             </button>
 
-            <!-- Cart -->
-            <a href="{{ route('tienda.carrito') }}" class="header-action-btn">
-              <i class="bi bi-cart3"></i>
-              @if($carrito->total_items > 0)
-                <span class="badge">{{ $carrito->total_items }}</span>
-              @endif
-            </a>
-
-            <!-- User Account / Auth Buttons -->
+            <!-- Account -->
             @guest
-              <a href="{{ route('login') }}" class="header-action-btn d-none d-lg-flex" title="Iniciar Sesión">
-                <i class="bi bi-box-arrow-in-right"></i>
-              </a>
-              <a href="{{ route('register.cliente') }}" class="btn btn-sm btn-primary d-none d-lg-flex ms-2" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-                <i class="bi bi-person-plus me-1"></i> Registrarse
+              <a href="{{ route('login') }}" class="btn-auth-link d-none d-lg-inline-flex">Iniciar sesión</a>
+              <a href="{{ route('register.cliente') }}" class="btn-auth-register d-none d-lg-inline-flex">Registrarse</a>
+              <a href="{{ route('login') }}" class="header-action-btn d-lg-none" title="Mi cuenta">
+                <i class="bi bi-person"></i>
               </a>
             @else
-              @if(auth()->user()->hasRole('cliente'))
-                <a href="{{ route('cliente.compras') }}" class="header-action-btn d-none d-lg-flex" title="Mis Compras">
-                  <i class="bi bi-bag-check"></i>
-                </a>
-              @endif
-              <div class="dropdown d-none d-lg-flex ms-2">
+              <div class="dropdown">
                 <a href="#" class="header-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="{{ auth()->user()->name }}">
-                  <i class="bi bi-person-circle"></i>
+                  <i class="bi bi-person"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li><span class="dropdown-item-text text-muted small">{{ auth()->user()->name }}</span></li>
                   <li><hr class="dropdown-divider"></li>
                   @if(auth()->user()->hasRole('cliente'))
                     <li><a class="dropdown-item" href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
+                    <li><a class="dropdown-item" href="{{ route('cliente.perfil') }}"><i class="bi bi-person-gear me-2"></i>Mi Perfil</a></li>
+                  @else
+                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
                   @endif
                   <li>
                     <form method="POST" action="{{ route('logout') }}">
@@ -209,214 +619,162 @@
               </div>
             @endguest
 
-            <!-- Mobile Navigation Toggle -->
-            <i class="mobile-nav-toggle d-xl-none bi bi-list me-0"></i>
+            <!-- Cart -->
+            <a href="{{ route('tienda.carrito') }}" class="header-action-btn" title="Carrito">
+              <i class="bi bi-bag"></i>
+              @if($carrito->total_items > 0)
+                <span class="badge">{{ $carrito->total_items }}</span>
+              @endif
+            </a>
 
+            <!-- Mobile Toggle -->
+            <button type="button" class="mobile-nav-toggle" id="mobileNavToggle">
+              <i class="bi bi-list"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="header-nav">
-      <div class="container-fluid container-xl position-relative">
-        <nav id="navmenu" class="navmenu">
-          <ul>
-            <li><a href="{{ route('home') }}" class="@yield('nav-inicio', '')">Inicio</a></li>
-            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-categorias', '')">Categorías</a></li>
-            <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')" style="color: #e91e63;"><i class="bi bi-flower1 me-1"></i>Arma tu Ramo</a></li>
-
-            {{-- Opciones de cuenta para menú móvil --}}
-            @guest
-              <li class="d-xl-none"><a href="{{ route('login') }}"><i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión</a></li>
-              <li class="d-xl-none"><a href="{{ route('register.cliente') }}"><i class="bi bi-person-plus me-2"></i>Registrarse</a></li>
-            @else
-              @if(auth()->user()->hasRole('cliente'))
-                <li class="d-xl-none"><a href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
-              @else
-                <li class="d-xl-none"><a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
-              @endif
-              <li class="d-xl-none">
-                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                  @csrf
-                  <a href="#" onclick="event.preventDefault(); this.closest('form').submit();"><i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</a>
-                </form>
-              </li>
-            @endguest
-          </ul>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Mobile Search Form -->
-    <div class="collapse" id="mobileSearch">
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; padding: 16px 0; border-bottom: 1px solid var(--flores-border); z-index: 100;">
       <div class="container">
-        <form class="search-form" action="{{ route('tienda.categorias') }}" method="GET">
+        <form action="{{ route('tienda.categorias') }}" method="GET">
           <div class="input-group">
-            <input type="text" name="buscar" class="form-control" placeholder="Buscar productos">
-            <button class="btn" type="submit">
+            <input type="text" name="buscar" class="form-control" placeholder="Buscar productos..." style="border-radius: 8px 0 0 8px; border: 1px solid var(--flores-border);">
+            <button class="btn btn-flores" type="submit" style="border-radius: 0 8px 8px 0;">
               <i class="bi bi-search"></i>
             </button>
           </div>
         </form>
       </div>
     </div>
-
   </header>
+
+  <!-- Mobile Navigation Menu -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+  <div class="mobile-nav-menu" id="mobileNavMenu">
+    <button type="button" class="close-btn" id="mobileNavClose">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <ul class="nav-links">
+      <li><a href="{{ route('home') }}">Inicio</a></li>
+      <li><a href="{{ route('tienda.categorias') }}">Ocasiones</a></li>
+      <li><a href="{{ route('tienda.categorias') }}">Por tipo de flor</a></li>
+      <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
+      <li><a href="#">Ayuda</a></li>
+      @guest
+        <li><a href="{{ route('login') }}">Iniciar Sesión</a></li>
+        <li><a href="{{ route('register.cliente') }}">Registrarse</a></li>
+      @else
+        @if(auth()->user()->hasRole('cliente'))
+          <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
+        @else
+          <li><a href="{{ route('dashboard') }}">Panel Admin</a></li>
+        @endif
+        <li>
+          <form method="POST" action="{{ route('logout') }}" class="d-inline">
+            @csrf
+            <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Cerrar Sesión</a>
+          </form>
+        </li>
+      @endguest
+    </ul>
+  </div>
 
   <main class="main">
     @yield('content')
   </main>
 
-  <footer id="footer" class="footer dark-background">
-    <div class="footer-main">
+  <footer id="footer" class="footer-minimal">
+    <div class="footer-main-minimal">
       <div class="container">
         <div class="row gy-4">
+          <!-- Logo y Descripción -->
           <div class="col-lg-4 col-md-6">
-            <div class="footer-widget footer-about">
-              <a href="{{ route('home') }}" class="logo">
-                <span class="sitename">{{ $empresa->nombre }}</span>
+            <div class="footer-brand">
+              <a href="{{ route('home') }}" class="footer-logo">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>{{ $empresa->nombre }}</span>
               </a>
-
-              <div class="social-links mt-4">
-                <h5>Conéctate con Nosotros</h5>
-                <div class="social-icons">
-                  @if($empresa->facebook_url)
-                    <a href="{{ $empresa->facebook_url }}" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                  @endif
-                  @if($empresa->instagram_url)
-                    <a href="{{ $empresa->instagram_url }}" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                  @endif
-                  @if($empresa->tiktok_url)
-                    <a href="{{ $empresa->tiktok_url }}" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
-                  @endif
-                  @if($empresa->whatsapp)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $empresa->whatsapp) }}" target="_blank" aria-label="WhatsApp">
-                      <i class="bi bi-whatsapp"></i>
-                    </a>
-                  @endif
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-2 col-md-6 col-sm-6">
-            <div class="footer-widget">
-              <h4>Tienda</h4>
-              <ul class="footer-links">
-                <li><a href="{{ route('tienda.categorias') }}">Categorías</a></li>
-                <li><a href="{{ route('tienda.carrito') }}">Carrito</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-2 col-md-6 col-sm-6">
-            <div class="footer-widget">
-              <h4>Mi Cuenta</h4>
-              <ul class="footer-links">
-                @guest
-                  <li><a href="{{ route('login') }}">Iniciar Sesión</a></li>
-                  <li><a href="{{ route('register.cliente') }}">Crear Cuenta</a></li>
-                @else
-                  @if(auth()->user()->hasRole('cliente'))
-                    <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
-                  @endif
-                  <li>
-                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                      @csrf
-                      <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Cerrar Sesión</a>
-                    </form>
-                  </li>
-                @endguest
-              </ul>
-            </div>
-          </div>
-
-          <div class="col-lg-2 col-md-6 col-sm-6">
-            <div class="footer-widget">
-              <h4>Horario</h4>
-              <div class="footer-contact">
-                @if($empresa->horario_atencion)
-                <div class="contact-item">
-                  <i class="bi bi-clock"></i>
-                  <span>
-                    @php
-                      $dias = ['lunes' => 'Lun', 'martes' => 'Mar', 'miercoles' => 'Mié', 
-                               'jueves' => 'Jue', 'viernes' => 'Vie', 'sabado' => 'Sáb', 'domingo' => 'Dom'];
-                      $horarioTexto = [];
-                      foreach($dias as $key => $dia) {
-                        if(isset($empresa->horario_atencion[$key])) {
-                          if($empresa->horario_atencion[$key]['cerrado'] ?? false) {
-                            $horarioTexto[] = $dia . ': Cerrado';
-                          } else {
-                            $horarioTexto[] = $dia . ': ' . ($empresa->horario_atencion[$key]['apertura'] ?? '09:00') . ' - ' . 
-                                            ($empresa->horario_atencion[$key]['cierre'] ?? '18:00');
-                          }
-                        }
-                      }
-                      echo implode('<br>', $horarioTexto);
-                    @endphp
-                  </span>
-                </div>
+              <p class="footer-description">
+                Flores frescas entregadas el mismo día. Calidad garantizada en cada arreglo.
+              </p>
+              <div class="footer-social">
+                @if($empresa->instagram_url)
+                  <a href="{{ $empresa->instagram_url }}" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                @endif
+                @if($empresa->facebook_url)
+                  <a href="{{ $empresa->facebook_url }}" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                @endif
+                @if($empresa->whatsapp)
+                  <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $empresa->whatsapp) }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
                 @endif
               </div>
             </div>
           </div>
 
+          <!-- Tienda -->
+          <div class="col-lg-2 col-md-6 col-6">
+            <div class="footer-links-minimal">
+              <h5>Tienda</h5>
+              <ul>
+                <li><a href="{{ route('tienda.categorias') }}">Todos los productos</a></li>
+                <li><a href="{{ route('tienda.categorias', ['ocasion' => 'cumpleanos']) }}">Cumpleaños</a></li>
+                <li><a href="{{ route('tienda.categorias', ['ocasion' => 'amor']) }}">Amor</a></li>
+                <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Ayuda -->
+          <div class="col-lg-2 col-md-6 col-6">
+            <div class="footer-links-minimal">
+              <h5>Ayuda</h5>
+              <ul>
+                <li><a href="#">Preguntas frecuentes</a></li>
+                <li><a href="#">Envíos y entregas</a></li>
+                <li><a href="#">Cambios y devoluciones</a></li>
+                <li><a href="#">Contacto</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Contacto -->
           <div class="col-lg-4 col-md-6">
-            <div class="footer-widget">
-              <h4>Información de Contacto</h4>
-              <div class="footer-contact">
-                @if($empresa->direccion)
-                <div class="contact-item">
-                  <i class="bi bi-geo-alt"></i>
-                  <span>{{ $empresa->direccion }}</span>
-                </div>
-                @endif
-                @if($empresa->telefono)
-                <div class="contact-item">
+            <div class="footer-contact-minimal">
+              <h5>Contacto</h5>
+              @if($empresa->telefono)
+                <div class="contact-item-minimal">
                   <i class="bi bi-telephone"></i>
                   <span>{{ $empresa->telefono }}</span>
                 </div>
-                @endif
-                @if($empresa->email)
-                <div class="contact-item">
+              @endif
+              @if($empresa->email)
+                <div class="contact-item-minimal">
                   <i class="bi bi-envelope"></i>
                   <span>{{ $empresa->email }}</span>
                 </div>
-                @endif
-              </div>
+              @endif
+              @if($empresa->direccion)
+                <div class="contact-item-minimal">
+                  <i class="bi bi-geo-alt"></i>
+                  <span>{{ $empresa->direccion }}</span>
+                </div>
+              @endif
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="footer-bottom">
+    <div class="footer-bottom-minimal">
       <div class="container">
-        <div class="row gy-3 align-items-center">
-          <div class="col-lg-6 col-md-12">
-            <div class="copyright">
-              <p>© <span>Copyright</span> <strong class="sitename">{{ $empresa->nombre }}</strong>. Todos los derechos reservados.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-6 col-md-12">
-            <div class="d-flex flex-wrap justify-content-lg-end justify-content-center align-items-center gap-4">
-              <div class="payment-methods">
-                <div class="payment-icons">
-                  <i class="bi bi-credit-card" aria-label="Tarjeta de Crédito"></i>
-                  <i class="bi bi-paypal" aria-label="PayPal"></i>
-                  <i class="bi bi-cash" aria-label="Efectivo"></i>
-                </div>
-              </div>
-
-              <div class="legal-links">
-                <a href="#">Términos</a>
-                <a href="#">Privacidad</a>
-                <a href="#">Cookies</a>
-              </div>
-            </div>
+        <div class="footer-bottom-content">
+          <p class="copyright-minimal">© {{ date('Y') }} {{ $empresa->nombre }}. Todos los derechos reservados.</p>
+          <div class="footer-legal">
+            <a href="#">Términos y condiciones</a>
+            <a href="#">Política de privacidad</a>
           </div>
         </div>
       </div>
@@ -466,6 +824,25 @@
         headers: {
           'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
+      });
+
+      // Search Toggle
+      $('#searchToggle').on('click', function() {
+        $('#searchOverlay').slideToggle(200);
+        $('#searchOverlay input').focus();
+      });
+
+      // Mobile Navigation
+      $('#mobileNavToggle').on('click', function() {
+        $('#mobileNavOverlay').addClass('active');
+        $('#mobileNavMenu').addClass('active');
+        $('body').css('overflow', 'hidden');
+      });
+
+      $('#mobileNavClose, #mobileNavOverlay').on('click', function() {
+        $('#mobileNavOverlay').removeClass('active');
+        $('#mobileNavMenu').removeClass('active');
+        $('body').css('overflow', '');
       });
     });
   </script>

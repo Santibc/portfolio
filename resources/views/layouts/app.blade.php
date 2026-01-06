@@ -7,6 +7,11 @@
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}"/>
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+    {{-- Fonts --}}
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     {{-- CSS personalizado y Bootstrap --}}
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,31 +21,46 @@
     @yield('css')
 
     <style>
-        body {
-            background-color: #f7f8fc;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23e9eaf2' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M11 0l5 20H6l5-20zm42 31a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM0 72h40v4H0v-4zm0-8h31v4H0v-4zm20-16h20v4H20v-4zM0 56h40v4H0v-4zm0-8h20v4H0v-4zm0-8h11v4H0v-4zm0-8h40v4H0v-4zm0-8h20v4H0v-4zm0-8h31v4H0v-4zm0-8h40v4H0v-4zM40 0h40v4H40v-4zm0 8h31v4H40v-4zm0 8h20v4H40v-4zm0 8h11v4H40v-4zm0 8h40v4H40v-4zm0 8h20v4H40v-4zm0 8h31v4H40v-4zm0 8h40v4H40v-4zm0 8h11v4H40v-4zm0 8h20v4H40v-4zm0 8h31v4H40v-4zm0 8h40v4H40v-4z'/%3E%3C/g%3E%3C/svg%3E");
-            font-family: 'Poppins', sans-serif;
+        :root {
+            --admin-primary: #6B7456;
+            --admin-primary-hover: #5a6248;
+            --admin-beige: #F5EDD8;
+            --admin-text: #333333;
+            --admin-text-light: #666666;
+            --admin-bg: #FAFAFA;
+            --admin-white: #FFFFFF;
+            --admin-border: #E5E5E5;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        body {
+            background-color: var(--admin-bg);
+            font-family: var(--font-sans);
+            color: var(--admin-text);
+        }
 
+        /* ============ SIDEBAR MINIMALISTA ============ */
         .sidebar {
-            width: 220px;
+            width: 240px;
             transition: all 0.3s ease;
-            background: linear-gradient(to bottom, #FF00C1, #0B00F9) !important;
+            background: var(--admin-white);
+            border-right: 1px solid var(--admin-border);
             overflow-x: hidden !important;
             overflow-y: auto !important;
         }
 
         .sidebar.collapsed {
-            width: 60px;
+            width: 70px;
             overflow-x: hidden !important;
         }
 
+        /* Header minimalista */
         header {
             height: 64px;
-            background: linear-gradient(to right, #FF00C1, #0B00F9);
-            color: white;
+            background: var(--admin-white);
+            border-bottom: 1px solid var(--admin-border);
+            color: var(--admin-text);
             position: fixed;
             top: 0;
             right: 0;
@@ -49,19 +69,32 @@
         }
 
         header .text-muted {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: var(--admin-text-light) !important;
         }
 
         header .fw-semibold {
-            color: white !important;
+            color: var(--admin-text) !important;
         }
 
         #toggleSidebar {
-            color: white !important;
+            color: var(--admin-text) !important;
+            border: none !important;
+            background-color: transparent;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #toggleSidebar:hover {
-            background-color: rgba(255, 255, 255, 0.2) !important;
+            background-color: var(--admin-beige) !important;
+            color: var(--admin-primary) !important;
+        }
+
+        #toggleSidebar i {
+            font-size: 20px;
         }
 
         main {
@@ -69,37 +102,13 @@
             transition: margin-left 0.3s ease;
         }
 
-        #toggleSidebar {
-            border: none !important;
-            background-color: transparent;
-        }
-
-        #toggleSidebar:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-link {
-            border-radius: 0.375rem;
-            padding: 0.5rem 0.75rem;
-        }
-
-        .nav-link:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-link.active {
-            background-color: rgba(0, 0, 0, 0.08) !important;
-            color: #000 !important;
-            font-weight: 600;
-        }
-
-        /* Header: info de usuario alineada a la derecha y con elipsis */
+        /* Header user info */
         .header-user-info {
             flex-grow: 1;
             justify-content: flex-end;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .header-user-info .text-end {
@@ -109,41 +118,306 @@
             max-width: calc(100% - 50px);
         }
 
-        .header-user-info .text-end .fw-semibold,
-        .header-user-info .text-end .text-muted {
-            overflow: hidden;
+        .header-user-info .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--admin-beige);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--admin-primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* ============ NAVIGATION SIDEBAR ============ */
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .sidebar-logo-img {
+            max-width: 140px;
+            height: auto;
+            transition: all 0.3s;
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-logo-img {
+            display: none !important;
+        }
+
+        .sidebar.collapsed .sidebar-logo-icon {
+            display: block !important;
+        }
+
+        .sidebar-nav {
+            padding: 16px 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            color: var(--admin-text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background: var(--admin-beige);
+            color: var(--admin-primary);
+        }
+
+        .sidebar-link.active {
+            background: var(--admin-primary);
+            color: white;
+        }
+
+        .sidebar-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-link span {
             white-space: nowrap;
+            overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--admin-border);
+            margin: 16px 0;
+        }
+
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--admin-text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 14px 4px;
+            margin-top: 8px;
+        }
+
+        /* Submenu */
+        .sidebar-submenu-container .sidebar-link .sidebar-chevron {
+            margin-left: auto;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-submenu-container .sidebar-link[aria-expanded="true"] .sidebar-chevron {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-submenu {
+            padding-left: 20px;
+            border-left: 2px solid var(--admin-border);
+            margin-left: 26px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-sublink {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--admin-text-light);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-sublink:hover {
+            background: var(--admin-beige);
+            color: var(--admin-primary);
+        }
+
+        .sidebar-sublink.active {
+            background: rgba(107, 116, 86, 0.1);
+            color: var(--admin-primary);
+            font-weight: 500;
+        }
+
+        .sidebar-sublink i {
+            width: 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--admin-border);
+        }
+
+        .sidebar-footer .sidebar-link {
+            color: #dc3545;
+        }
+
+        .sidebar-footer .sidebar-link:hover {
+            background: #fee2e2;
+            color: #dc3545;
+        }
+
+        /* Collapsed state */
+        .sidebar.collapsed .sidebar-link span,
+        .sidebar.collapsed .sidebar-sublink span,
+        .sidebar.collapsed .sidebar-chevron,
+        .sidebar.collapsed .sidebar-section-title {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-link {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .sidebar-submenu {
+            padding-left: 0;
+            border-left: none;
+            margin-left: 0;
+            background: var(--admin-beige);
+            border-radius: 6px;
+            padding: 6px;
+        }
+
+        .sidebar.collapsed .sidebar-sublink {
+            justify-content: center;
+            padding: 10px;
+        }
+
+        /* Scrollbar */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--admin-border);
+            border-radius: 2px;
         }
 
         @media (max-width: 768px) {
             .header-user-info .text-end {
-                max-width: calc(100% - 50px);
+                display: none;
             }
+        }
+
+        /* ============ CONTENT CARDS ============ */
+        .bg-white {
+            background: var(--admin-white) !important;
+        }
+
+        .card, .content-card {
+            background: var(--admin-white);
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        .card-header {
+            background: var(--admin-bg);
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--admin-primary);
+            border-color: var(--admin-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
+        }
+
+        .btn-outline-primary {
+            color: var(--admin-primary);
+            border-color: var(--admin-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--admin-primary);
+            border-color: var(--admin-primary);
+            color: white;
+        }
+
+        /* Links */
+        a {
+            color: var(--admin-primary);
+        }
+
+        a:hover {
+            color: var(--admin-primary-hover);
+        }
+
+        /* Tables */
+        .table thead th {
+            background: var(--admin-bg);
+            border-bottom: 2px solid var(--admin-border);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--admin-text-light);
+        }
+
+        .table-dark thead th {
+            background: var(--admin-primary) !important;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     {{-- Sidebar fijo --}}
-    <div class="sidebar position-fixed top-0 start-0 bg-white border-end vh-100 d-flex flex-column" style="z-index: 1030;">
+    <div class="sidebar position-fixed top-0 start-0 vh-100 d-flex flex-column" style="z-index: 1030;">
         @include('layouts.navigation-vertical')
     </div>
 
     {{-- Contenedor principal --}}
     <div>
         {{-- Header fijo --}}
-        <header id="appHeader" class="position-fixed top-0 border-bottom d-flex justify-content-between align-items-center px-3" style="z-index: 1020;">
+        <header id="appHeader" class="position-fixed top-0 d-flex justify-content-between align-items-center px-3" style="z-index: 1020;">
             <button id="toggleSidebar" class="btn btn-sm" title="Menú">
                 <i class="bi bi-list"></i>
             </button>
             <div class="d-flex align-items-center gap-2 header-user-info">
                 <div class="text-end">
-                    <div class="fw-semibold">{{ Auth::user()->name }}</div>
-                    <div class="text-muted small">{{ Auth::user()->email }}</div>
+                    <div class="fw-semibold" style="font-size: 14px;">{{ Auth::user()->name }}</div>
+                    <div class="text-muted" style="font-size: 12px;">{{ Auth::user()->email }}</div>
                 </div>
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff"
-                     class="rounded-circle flex-shrink-0" width="40" height="40" alt="Avatar">
+                <div class="user-avatar">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                </div>
             </div>
         </header>
 
@@ -162,7 +436,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- Lógica unificada del sidebar (sin variables duplicadas) --}}
+    {{-- Lógica unificada del sidebar --}}
     <script>
     (() => {
       const sidebar       = document.querySelector('.sidebar');
@@ -170,14 +444,13 @@
       const appMainContent= document.getElementById('appMainContent');
       const toggleBtn     = document.getElementById('toggleSidebar');
 
-      // Si por alguna razón no existen (otra plantilla), salimos sin romper nada
       if (!sidebar || !appHeader || !appMainContent || !toggleBtn) return;
 
       let isManuallyToggled = false;
       const TRANSITION_MS = 300;
 
       const updateLayout = () => {
-        const sidebarWidth = sidebar.offsetWidth; // 70px o 250px
+        const sidebarWidth = sidebar.offsetWidth;
         appHeader.style.left = `${sidebarWidth}px`;
         appHeader.style.right = '0';
         appMainContent.style.marginLeft = `${sidebarWidth}px`;
@@ -212,12 +485,10 @@
       document.addEventListener('DOMContentLoaded', () => {
         restoreSidebarState();
 
-        // Inicializar tooltips del sidebar (si los hay)
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
       });
 
-      // Toggle manual
       toggleBtn.addEventListener('click', () => {
         isManuallyToggled = true;
         sidebar.classList.toggle('collapsed');
@@ -225,7 +496,6 @@
         setTimeout(updateLayout, TRANSITION_MS);
       });
 
-      // Redimensionamiento (debounce)
       let resizeTimer;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
@@ -235,7 +505,6 @@
         }, 250);
       });
 
-      // Manejar submenús cuando el sidebar esté colapsado - mantener distribución vertical
       document.addEventListener('click', (e) => {
         if (!sidebar.classList.contains('collapsed')) return;
         const trigger = e.target.closest('[data-bs-toggle="collapse"]');
@@ -244,7 +513,6 @@
         e.preventDefault();
         e.stopPropagation();
 
-        // No expandir el sidebar, solo abrir el submenú en su lugar
         const targetSel = trigger.getAttribute('href') || trigger.dataset.bsTarget;
         if (targetSel) {
           const targetEl = document.querySelector(targetSel);
@@ -256,7 +524,6 @@
     })();
     </script>
 
-    {{-- Evitar scroll horizontal indeseado --}}
     <script>
       document.documentElement.style.overflowX = 'hidden';
       document.body.style.overflowX = 'hidden';

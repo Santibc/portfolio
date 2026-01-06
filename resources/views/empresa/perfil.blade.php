@@ -74,17 +74,6 @@
     }
     .chip.gray { background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
 
-    /* Imágenes del carrusel (se usan más abajo en la vista también) */
-    .carousel-card img { width: 100%; height: 11rem; object-fit: cover; object-position: center; border-radius: .5rem; }
-    @media (min-width: 768px) { .carousel-card img { height: 12rem; } }
-    @media (min-width: 1024px) { .carousel-card img { height: 13rem; } }
-
-    /* Tabla detalles carrusel responsive */
-    .table-wrap { overflow-x: auto; }
-    .badge-soft {
-      display:inline-block; font-size:.75rem; padding:.2rem .5rem; border-radius:.5rem;
-      background:#eef2ff; color:#3730a3;
-    }
   </style>
 
   <div class="py-6">
@@ -323,103 +312,8 @@
   </div>
 </div>
 
-{{-- ======= Carrusel + Horario (col-12 en small, col-lg-6 en large) ======= --}}
+{{-- ======= Horario de Atención ======= --}}
 <div class="row g-4 mb-6">
-
-  @if($empresa->carruselImagenesActivas->count() > 0)
-    <div class="col-12 col-lg-6">
-      <div class="bg-white rounded-4 shadow-sm p-6 h-100">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <h3 class="h5 fw-semibold mb-0">Carrusel de Imágenes (Activas)</h3>
-          <span class="badge-soft">{{ $empresa->carruselImagenesActivas->count() }} imágenes</span>
-        </div>
-        <p class="soft mb-4">Las imágenes se limitan en altura para mantener la estética.</p>
-
-        {{-- Grid visual --}}
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          @foreach($empresa->carruselImagenesActivas as $imagen)
-            <div class="carousel-card position-relative group">
-              <img
-                src="{{ $imagen->imagen_url }}"
-                alt="{{ $imagen->titulo ?: ('Imagen ' . $loop->iteration) }}"
-                loading="lazy"
-                style="width:100%;height:12rem;object-fit:cover;border-radius:.5rem;"
-              >
-              <div class="position-absolute top-0 start-0 w-100 h-100 rounded"
-                   style="background:rgba(0,0,0,.45);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;"
-                   onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
-                <div class="text-white text-center px-2">
-                  @if($imagen->titulo)
-                    <p class="fw-semibold mb-1">{{ $imagen->titulo }}</p>
-                  @endif
-                  <p class="mb-0 small">Orden: {{ $imagen->orden }}</p>
-                </div>
-              </div>
-            </div>
-          @endforeach
-        </div>
-
-        {{-- Tabla detalle --}}
-        <div class="table-responsive mt-4">
-          <table class="table table-sm align-middle">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Preview</th>
-                <th>Título</th>
-                <th>Descripción</th>
-                <th>Link</th>
-                <th>Orden</th>
-                <th>Activo</th>
-                <th>Vigencia</th>
-                <th>Archivo</th>
-                <th>Creado</th>
-                <th>Actualizado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($empresa->carruselImagenesActivas as $imagen)
-                <tr>
-                  <td>{{ $imagen->id }}</td>
-                  <td><img src="{{ $imagen->imagen_url }}" alt="img {{ $imagen->id }}" style="width:70px;height:45px;object-fit:cover;border-radius:.35rem;"></td>
-                  <td>{{ $imagen->titulo ?: '—' }}</td>
-                  <td class="soft" style="max-width:260px;"><div class="truncate-2">{{ $imagen->descripcion ?: '—' }}</div></td>
-                  <td>
-                    @if(!empty($imagen->link))
-                      <a href="{{ $imagen->link }}" target="_blank" class="text-decoration-none">
-                        {{ \Illuminate\Support\Str::limit($imagen->link, 28) }}
-                      </a>
-                    @else
-                      —
-                    @endif
-                  </td>
-                  <td>{{ $imagen->orden }}</td>
-                  <td>
-                    @if(isset($imagen->activo))
-                      <span class="badge text-bg-{{ $imagen->activo ? 'success' : 'secondary' }}">{{ $imagen->activo ? 'Sí' : 'No' }}</span>
-                    @else
-                      —
-                    @endif
-                  </td>
-                  <td class="soft">
-                    @php
-                      $ini = !empty($imagen->fecha_inicio) ? \Illuminate\Support\Carbon::parse($imagen->fecha_inicio)->format('Y-m-d') : null;
-                      $fin = !empty($imagen->fecha_fin) ? \Illuminate\Support\Carbon::parse($imagen->fecha_fin)->format('Y-m-d') : null;
-                    @endphp
-                    {{ $ini ? $ini : '—' }} @if($ini || $fin) – @endif {{ $fin ? $fin : '—' }}
-                  </td>
-                  <td class="soft">{{ $imagen->imagen ?? '—' }}</td>
-                  <td class="soft">{{ !empty($imagen->created_at) ? $imagen->created_at->format('Y-m-d') : '—' }}</td>
-                  <td class="soft">{{ !empty($imagen->updated_at) ? $imagen->updated_at->format('Y-m-d') : '—' }}</td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </div>
-  @endif
 
   @if($empresa->horario_atencion)
     <div class="col-12 col-lg-6">

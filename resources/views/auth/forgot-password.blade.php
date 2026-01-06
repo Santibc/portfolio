@@ -6,279 +6,344 @@
     <title>Recuperar Contraseña - Flores y Algo Mas</title>
     <link rel="icon" type="image/png" href="{{ asset('images/ico.png') }}">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Three.js para el fondo 3D -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
+        :root {
+            --flores-primary: #6B7456;
+            --flores-primary-hover: #5a6248;
+            --flores-beige: #F5EDD8;
+            --flores-text: #333333;
+            --flores-text-light: #666666;
+            --flores-bg: #FFFFFF;
+            --flores-border: #E5E5E5;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #1a1a2e;
-            overflow-x: hidden;
-        }
-
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .content-container {
-            position: relative;
-            z-index: 1;
+            font-family: var(--font-sans);
+            background-color: #fafafa;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 1rem;
         }
 
-        .login-card {
-            background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
+        /* Header minimalista */
+        .auth-header {
+            padding: 24px 0;
+            background: white;
+            border-bottom: 1px solid var(--flores-border);
+        }
+
+        .auth-header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--flores-text);
+        }
+
+        .auth-logo i {
+            font-size: 20px;
+            color: var(--flores-primary);
+        }
+
+        .auth-logo span {
+            font-family: var(--font-serif);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .auth-header-link {
+            font-size: 14px;
+            color: var(--flores-text-light);
+            text-decoration: none;
+        }
+
+        .auth-header-link:hover {
+            color: var(--flores-primary);
+        }
+
+        /* Contenido principal */
+        .auth-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+        }
+
+        .auth-container {
             width: 100%;
             max-width: 420px;
         }
 
-        .form-input {
-            border: 1px solid #D1D5DB;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            width: 100%;
-            font-size: 1rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
         }
+
+        .auth-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--flores-beige);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .auth-icon i {
+            font-size: 28px;
+            color: var(--flores-primary);
+        }
+
+        .auth-title {
+            font-family: var(--font-serif);
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--flores-text);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--flores-text-light);
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        /* Formulario */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--flores-text);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            font-size: 15px;
+            color: var(--flores-text);
+            background: #fafafa;
+            border: 1px solid var(--flores-border);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
         .form-input:focus {
             outline: none;
-            border-color: #FF00C1;
-            box-shadow: 0 0 0 3px rgba(255, 0, 193, 0.2);
+            background: white;
+            border-color: var(--flores-primary);
+            box-shadow: 0 0 0 3px rgba(107, 116, 86, 0.1);
         }
 
-        .cta-button {
-            background-color: #FF00C1;
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .form-error {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #dc3545;
+        }
+
+        /* Botón principal */
+        .btn-primary {
+            width: 100%;
+            height: 50px;
+            background: var(--flores-primary);
             color: white;
-            font-weight: 700;
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            width: 100%;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: background-color 0.3s, transform 0.2s;
+            font-size: 15px;
+            font-weight: 500;
             border: none;
+            border-radius: 30px;
             cursor: pointer;
-        }
-        .cta-button:hover {
-            background-color: #E600AE;
-            transform: translateY(-2px);
+            transition: all 0.2s ease;
         }
 
-        .back-link {
-            color: black;
-            text-decoration: underline;
-            font-size: 0.875rem;
+        .btn-primary:hover {
+            background: var(--flores-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Links */
+        .auth-links {
+            margin-top: 24px;
             text-align: center;
-            display: block;
-            margin-top: 1rem;
-        }
-        .back-link:hover {
-            opacity: 0.8;
         }
 
-        .brand-logo-img {
-            max-width: 350px;
-            width: 100%;
-            height: auto;
-            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.25));
+        .auth-link {
+            font-size: 14px;
+            color: var(--flores-text-light);
+            text-decoration: none;
+            transition: color 0.2s;
         }
 
-        .description-text {
+        .auth-link:hover {
+            color: var(--flores-primary);
+        }
+
+        .auth-link i {
+            margin-right: 6px;
+        }
+
+        /* Alert de estado */
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
             text-align: center;
-            color: #4B5563;
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
+        }
+
+        /* Footer */
+        .auth-footer {
+            padding: 24px;
+            text-align: center;
+            color: var(--flores-text-light);
+            font-size: 13px;
+        }
+
+        .auth-footer a {
+            color: var(--flores-text-light);
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            color: var(--flores-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 32px 24px;
+            }
+
+            .auth-title {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Canvas para el fondo 3D -->
-    <canvas id="bg-canvas"></canvas>
-
-    <!-- Contenedor principal -->
-    <div class="content-container">
-
-        <img src="{{ asset('images/logo.png') }}" alt="Logo Flores y Algo Mas" class="brand-logo-img mb-4">
-
-        <div class="login-card">
-            <div class="description-text">
-                {{ __('¿Olvidaste tu contraseña? No hay problema. Simplemente indícanos tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.') }}
-            </div>
-
-            <!-- Session Status -->
-            @if (session('status'))
-                <div class="mb-4 font-medium text-sm text-green-600">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('password.email') }}">
-                @csrf
-
-                <!-- Email Address -->
-                <div class="mb-6">
-                    <label for="email" class="block mb-2 text-sm font-medium text-gray-700">{{ __('Correo Electrónico') }}</label>
-                    <input id="email" class="form-input" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="tu@correo.com">
-                    @if ($errors->has('email'))
-                        <div class="mt-2 text-sm text-red-600">
-                            @foreach ($errors->get('email') as $error)
-                                <div>{{ $error }}</div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-
-                <button type="submit" class="cta-button mb-4">
-                    {{ __('Enviar Enlace de Recuperación') }}
-                </button>
-
-                <a class="back-link" href="{{ route('login') }}">
-                    {{ __('Volver al inicio de sesión') }}
-                </a>
-            </form>
+    <!-- Header -->
+    <header class="auth-header">
+        <div class="container">
+            <a href="{{ route('home') }}" class="auth-logo">
+                <i class="bi bi-flower1"></i>
+                <span>Flores y Algo Mas</span>
+            </a>
+            <a href="{{ route('login') }}" class="auth-header-link">
+                <i class="bi bi-arrow-left me-1"></i> Volver al login
+            </a>
         </div>
+    </header>
 
-    </div>
+    <!-- Main Content -->
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-icon">
+                    <i class="bi bi-envelope-paper"></i>
+                </div>
 
-    <script>
-        // Configuración básica Three.js
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({
-            canvas: document.querySelector('#bg-canvas'),
-            alpha: true
-        });
+                <h1 class="auth-title">Recuperar contraseña</h1>
+                <p class="auth-subtitle">
+                    Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
 
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.position.setZ(30);
+                <!-- Session Status -->
+                @if (session('status'))
+                    <div class="alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        {{ session('status') }}
+                    </div>
+                @endif
 
-        // Creación de las partículas de fondo
-        const particleCount = 5000;
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+                <form method="POST" action="{{ route('password.email') }}">
+                    @csrf
 
-        const colorMagenta = new THREE.Color(0xff00c1);
-        const colorBlue = new THREE.Color(0x0b00f9);
+                    <!-- Email Address -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">Correo electrónico</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            class="form-input"
+                            placeholder="tu@correo.com"
+                            required
+                            autofocus
+                            autocomplete="username"
+                        >
+                        @if ($errors->has('email'))
+                            <div class="form-error">
+                                @foreach ($errors->get('email') as $error)
+                                    <div>{{ $error }}</div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
 
-        for (let i = 0; i < particleCount; i++) {
-            const x = (Math.random() - 0.5) * 100;
-            const y = (Math.random() - 0.5) * 100;
-            const z = (Math.random() - 0.5) * 100;
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
+                    <button type="submit" class="btn-primary">
+                        Enviar enlace de recuperación
+                    </button>
 
-            const mixedColor = colorMagenta.clone().lerp(colorBlue, Math.random());
-            colors[i * 3] = mixedColor.r;
-            colors[i * 3 + 1] = mixedColor.g;
-            colors[i * 3 + 2] = mixedColor.b;
-        }
+                    <div class="auth-links">
+                        <a href="{{ route('login') }}" class="auth-link">
+                            <i class="bi bi-arrow-left"></i> Volver al inicio de sesión
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
 
-        const particlesGeometry = new THREE.BufferGeometry();
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.1,
-            vertexColors: true,
-            blending: THREE.AdditiveBlending
-        });
-
-        const particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particleSystem);
-
-        // Creación de Emojis Flotantes
-        const emojiGroup = new THREE.Group();
-        const emojis = ['🚀', '💲', '🎪', '✈️', '📦', '🛵'];
-
-        function createEmojiTexture(emoji) {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 128;
-            canvas.height = 128;
-            context.font = '96px Arial';
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(emoji, 64, 64);
-            return new THREE.CanvasTexture(canvas);
-        }
-
-        emojis.forEach(emoji => {
-            const texture = createEmojiTexture(emoji);
-            for (let i = 0; i < 4; i++) {
-                const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-                const sprite = new THREE.Sprite(material);
-
-                sprite.position.x = (Math.random() - 0.5) * 60;
-                sprite.position.y = (Math.random() - 0.5) * 60;
-                sprite.position.z = (Math.random() - 0.5) * 60;
-
-                const scale = Math.random() * 2 + 1;
-                sprite.scale.set(scale, scale, scale);
-
-                emojiGroup.add(sprite);
-            }
-        });
-        scene.add(emojiGroup);
-
-        // Interacción con el ratón
-        const mouse = new THREE.Vector2();
-        window.addEventListener('mousemove', (event) => {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        });
-
-        // Bucle de animación
-        function animate() {
-            requestAnimationFrame(animate);
-
-            particleSystem.rotation.y += 0.0005;
-            emojiGroup.rotation.y += 0.0008;
-            emojiGroup.rotation.x += 0.0002;
-
-            camera.position.x += (mouse.x * 5 - camera.position.x) * 0.05;
-            camera.position.y += (mouse.y * 5 - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-
-            renderer.render(scene, camera);
-        }
-
-        // Manejo del redimensionamiento
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Iniciar animación
-        window.onload = function() {
-            animate();
-        }
-    </script>
+    <!-- Footer -->
+    <footer class="auth-footer">
+        <p>&copy; {{ date('Y') }} Flores y Algo Mas. Todos los derechos reservados.</p>
+    </footer>
 </body>
 </html>

@@ -68,7 +68,7 @@ Route::get('/sport', function () {
     return view('tienda.sport_index');
 })->name('tienda.sport');
 Route::get('/ajax/ciudades', [App\Http\Controllers\ClientesController::class, 'ciudadesAjax'])->name('ajax.ciudades');
-Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
+Route::get('/inicio',[HomeController::class, 'index'] )->middleware(['auth', 'verified', 'verificar.membresia'])->name('dashboard');
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
 Route::middleware('auth')->group(function () {
@@ -294,6 +294,18 @@ Route::middleware(['auth', 'verificar.empresa'])->prefix('gestion-clientes')->na
     Route::put('/direcciones/{direccion}', [App\Http\Controllers\GestionClientesController::class, 'actualizarDireccion'])->name('direcciones.update');
     Route::delete('/direcciones/{direccion}', [App\Http\Controllers\GestionClientesController::class, 'eliminarDireccion'])->name('direcciones.destroy');
     Route::get('/api/direcciones/{email}', [App\Http\Controllers\GestionClientesController::class, 'obtenerDirecciones'])->name('api.direcciones');
+});
+
+// ========== RUTAS DE CARRUSEL DE IMÁGENES ==========
+Route::middleware(['auth', 'verificar.empresa'])->prefix('carrusel')->name('carrusel.')->group(function () {
+    Route::get('/', [App\Http\Controllers\CarruselController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\CarruselController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\CarruselController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [App\Http\Controllers\CarruselController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\CarruselController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\CarruselController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/toggle', [App\Http\Controllers\CarruselController::class, 'toggleActivo'])->name('toggle');
+    Route::post('/orden', [App\Http\Controllers\CarruselController::class, 'updateOrden'])->name('updateOrden');
 });
 
 // ========== DASHBOARD ANALÍTICO ==========

@@ -24,7 +24,10 @@ class User extends Authenticatable
         'password',
         'telefono',
         'activo',
-        'ultimo_login'
+        'ultimo_login',
+        'fecha_nacimiento',
+        'codigo_referido',
+        'referido_por',
     ];
 
     /**
@@ -45,8 +48,9 @@ class User extends Authenticatable
     protected $casts = [
         'last_synced_at' => 'datetime',
         'email_verified_at' => 'datetime',
-               'activo' => 'boolean',
+        'activo' => 'boolean',
         'ultimo_login' => 'datetime',
+        'fecha_nacimiento' => 'date',
     ];
 public function empresa()
 {
