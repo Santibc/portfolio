@@ -129,14 +129,14 @@ class Compra extends Model
     }
 
     /**
-     * Obtiene la URL del archivo de pago
+     * Obtiene la URL del archivo de pago (guardado en public/)
      */
     public function urlArchivoPago(): ?string
     {
         if (!$this->archivo_pago) {
             return null;
         }
-        return Storage::url($this->archivo_pago);
+        return asset($this->archivo_pago);
     }
 
     public function movimientosStock()

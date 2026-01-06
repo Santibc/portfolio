@@ -443,6 +443,37 @@
     <!-- Main Content -->
     <main class="py-4">
         <div class="container">
+            {{-- Mostrar errores de sesion --}}
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            {{-- Mostrar errores de validacion generales --}}
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Por favor corrige los siguientes errores:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <form action="{{ route('tienda.procesar-compra') }}" method="POST" id="checkoutForm" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
@@ -886,6 +917,12 @@
 
             // Initialize email display
             updateEmailDisplay();
+
+            // Ocultar overlay si hay errores (cuando la pagina recarga con errores)
+            @if(session('error') || $errors->any())
+                $('#loadingOverlay').removeClass('show');
+                $('#paymentBtn').prop('disabled', false);
+            @endif
         });
     </script>
 </body>

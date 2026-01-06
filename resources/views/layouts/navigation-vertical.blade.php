@@ -161,6 +161,15 @@
                     <i class="bi bi-tag-fill"></i>
                     <span>Descuentos</span>
                 </a>
+
+                <a href="{{ route('calificaciones.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('calificaciones*') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"
+                   title="Calificaciones"
+                   onmouseover="this.style.transform='translateX(5px)'; this.style.backgroundColor='rgba(255,255,255,0.2)'"
+                   onmouseout="this.style.transform='translateX(0)'; this.style.backgroundColor='{{ request()->routeIs('calificaciones*') ? '' : 'transparent' }}'">
+                    <i class="bi bi-star-fill"></i>
+                    <span>Calificaciones</span>
+                </a>
             @else
                 <a href="{{ route('stock.index') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 text-white {{ request()->routeIs('stock.index') ? 'bg-pink-500' : '' }}" style="transition: transform 0.2s ease, background-color 0.2s ease; padding: 0.5rem 0.75rem; border-radius: 0.375rem;"

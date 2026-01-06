@@ -114,10 +114,10 @@
             </button>
 
             <!-- Cart -->
-            <a href="{{ route('tienda.carrito') }}" class="header-action-btn">
+            <a href="{{ route('tienda.carrito') }}" class="header-action-btn" id="cart-header-btn">
               <i class="bi bi-cart3"></i>
               @if($carrito->total_items > 0)
-                <span class="badge">{{ $carrito->total_items }}</span>
+                <span class="badge cart-badge">{{ $carrito->total_items }}</span>
               @endif
             </a>
 
@@ -385,6 +385,9 @@
 
   <!-- jQuery for AJAX -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     $(document).ready(function() {

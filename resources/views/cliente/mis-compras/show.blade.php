@@ -73,20 +73,6 @@
                                 </span>
                                 <strong>${{ number_format($item->precio_total, 0, ',', '.') }}</strong>
                             </div>
-
-                            @if($compra->puedeSerCalificada())
-                                <div class="mt-2">
-                                    @if(in_array($item->id, $calificacionesExistentes))
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-check"></i> Ya calificado
-                                        </span>
-                                    @else
-                                        <a href="{{ route('cliente.calificar', $item->id) }}" class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-star"></i> Calificar producto
-                                        </a>
-                                    @endif
-                                </div>
-                            @endif
                         </div>
                     </div>
                 @endforeach

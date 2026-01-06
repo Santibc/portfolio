@@ -4,6 +4,74 @@
 @section('description', $producto->descripcion)
 @section('body-class', 'product-details-page')
 
+@push('styles')
+<style>
+  /* Estilos para botones de reaccion */
+  .reaction-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.15), -2px -2px 6px rgba(255,255,255,0.9) !important;
+  }
+  .reaction-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .reaction-btn.active {
+    background: linear-gradient(145deg, #667eea, #764ba2) !important;
+    color: white;
+  }
+  .reaction-btn.active .reaction-count {
+    color: white !important;
+  }
+
+  /* Boton responder */
+  .action-btn-reply:hover {
+    background: #667eea !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Botones de compartir en resenas */
+  .share-buttons button:hover {
+    transform: translateY(-3px) scale(1.1);
+  }
+  .share-buttons button:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  /* Botones de compartir producto */
+  .product-share button:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+  }
+  .product-share button:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  /* Animacion suave para todos los botones */
+  .reaction-btn,
+  .action-btn-reply,
+  .share-buttons button,
+  .product-share button {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  }
+
+  /* Formulario de respuesta */
+  .respuesta-form {
+    animation: slideDown 0.3s ease-out;
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+@endpush
+
 @section('content')
 @php
     // Buscar descuentos activos para este producto
@@ -155,6 +223,27 @@
                 <div class="price-display">
                   <span class="text-muted">Precio no disponible</span>
                 </div>
+                @endif
+              </div>
+
+              {{-- Calificación con estrellas --}}
+              <div class="product-rating-display" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;">
+                <div class="stars">
+                  @for($i = 1; $i <= 5; $i++)
+                    @if($i <= round($promedioCalificacion))
+                      <i class="bi bi-star-fill" style="color: #ffc107; font-size: 1.1rem;"></i>
+                    @elseif($i - 0.5 <= $promedioCalificacion)
+                      <i class="bi bi-star-half" style="color: #ffc107; font-size: 1.1rem;"></i>
+                    @else
+                      <i class="bi bi-star" style="color: #ffc107; font-size: 1.1rem;"></i>
+                    @endif
+                  @endfor
+                </div>
+                @if($totalCalificaciones > 0)
+                  <span style="font-weight: 600; color: #212529;">{{ number_format($promedioCalificacion, 1) }}</span>
+                  <a href="#resenas" class="text-muted text-decoration-none" style="font-size: 0.9rem;">({{ $totalCalificaciones }} {{ $totalCalificaciones == 1 ? 'reseña' : 'reseñas' }})</a>
+                @else
+                  <span class="text-muted" style="font-size: 0.9rem;">Sin reseñas aún</span>
                 @endif
               </div>
 
@@ -497,7 +586,7 @@
         </div>
 
         {{-- Sección de Reseñas - SIEMPRE VISIBLE --}}
-        <div class="row mt-5" data-aos="fade-up" data-aos-delay="350">
+        <div class="row mt-5" data-aos="fade-up" data-aos-delay="350" id="resenas">
           <div class="col-12">
             <div class="reviews-section" style="background: #f8f9fa; border-radius: 12px; padding: 2rem;">
               <h3 class="mb-4" style="font-weight: 600;">
@@ -548,46 +637,69 @@
 
                   {{-- Botón Escribir Reseña --}}
                   <div class="write-review-cta mt-3" style="background: white; border-radius: 10px; padding: 1.5rem; text-align: center;">
-                    @auth
-                      @if($puedeCalificar ?? false)
-                        <h5 class="mb-2">¡Comparte tu experiencia!</h5>
-                        <p class="text-muted small mb-3">Tu opinión ayuda a otros compradores</p>
-                        <a href="{{ route('cliente.calificar', $itemCompraParaCalificar) }}" class="btn btn-primary">
-                          <i class="bi bi-pencil-square me-1"></i> Escribir Reseña
-                        </a>
-                      @else
-                        <p class="text-muted small mb-0">
-                          <i class="bi bi-info-circle me-1"></i>
-                          Solo puedes calificar productos que hayas comprado
-                        </p>
-                      @endif
-                    @else
-                      <h5 class="mb-2">¿Ya compraste este producto?</h5>
-                      <p class="text-muted small mb-3">Inicia sesión para dejar tu reseña</p>
-                      <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">
-                        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
-                      </a>
-                      <a href="{{ route('register.cliente') }}" class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1"></i> Registrarse
-                      </a>
-                    @endauth
+                    <h5 class="mb-2">¡Comparte tu experiencia!</h5>
+                    <p class="text-muted small mb-3">Tu opinión ayuda a otros compradores</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalResena">
+                      <i class="bi bi-pencil-square me-1"></i> Escribir Reseña
+                    </button>
                   </div>
                 </div>
 
                 {{-- Lista de Reseñas --}}
                 <div class="col-lg-8">
+                  {{-- Botones compartir producto --}}
+                  <div class="product-share mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                      <div class="d-flex align-items-center gap-2">
+                        <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                          <i class="bi bi-share-fill" style="color: white; font-size: 1.1rem;"></i>
+                        </div>
+                        <div>
+                          <span style="color: white; font-weight: 600; font-size: 1rem;">Comparte este producto</span>
+                          <small style="color: rgba(255,255,255,0.8); display: block; font-size: 0.8rem;">Recomienda a tus amigos</small>
+                        </div>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <button type="button"
+                                onclick="compartirWhatsApp()"
+                                style="width: 44px; height: 44px; border-radius: 12px; border: none; background: white; color: #25D366; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                                title="Compartir en WhatsApp">
+                          <i class="bi bi-whatsapp" style="font-size: 1.3rem;"></i>
+                        </button>
+                        <button type="button"
+                                onclick="compartirFacebook()"
+                                style="width: 44px; height: 44px; border-radius: 12px; border: none; background: white; color: #1877F2; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                                title="Compartir en Facebook">
+                          <i class="bi bi-facebook" style="font-size: 1.3rem;"></i>
+                        </button>
+                        <button type="button"
+                                onclick="copiarEnlace()"
+                                style="width: 44px; height: 44px; border-radius: 12px; border: none; background: white; color: #E1306C; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                                title="Copiar para Instagram">
+                          <i class="bi bi-instagram" style="font-size: 1.3rem;"></i>
+                        </button>
+                        <button type="button"
+                                onclick="copiarEnlace()"
+                                style="width: 44px; height: 44px; border-radius: 12px; border: none; background: white; color: #000000; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                                title="Copiar para TikTok">
+                          <i class="bi bi-tiktok" style="font-size: 1.3rem;"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   @if(($calificaciones ?? collect())->count() > 0)
                     <div class="reviews-list">
                       @foreach($calificaciones as $calificacion)
-                        <div class="review-item" style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <div class="review-item" id="resena-{{ $calificacion->id }}" style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem;">
                           <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="reviewer-info">
                               <div class="d-flex align-items-center gap-2">
                                 <div class="avatar-circle" style="width: 40px; height: 40px; background: linear-gradient(135deg, #FF00C1, #0B00F9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
-                                  {{ strtoupper(substr($calificacion->user->name ?? 'U', 0, 1)) }}
+                                  {{ strtoupper(substr($calificacion->nombre_autor, 0, 1)) }}
                                 </div>
                                 <div>
-                                  <div style="font-weight: 600;">{{ $calificacion->user->name ?? 'Usuario' }}</div>
+                                  <div style="font-weight: 600;">{{ $calificacion->nombre_autor }}</div>
                                   <div class="d-flex align-items-center gap-2">
                                     <div class="stars-small">
                                       @for($i = 1; $i <= 5; $i++)
@@ -598,11 +710,6 @@
                                         @endif
                                       @endfor
                                     </div>
-                                    @if($calificacion->verificada)
-                                      <span class="badge bg-success" style="font-size: 0.7rem;">
-                                        <i class="bi bi-patch-check-fill me-1"></i>Compra verificada
-                                      </span>
-                                    @endif
                                   </div>
                                 </div>
                               </div>
@@ -615,7 +722,111 @@
                           @endif
 
                           @if($calificacion->comentario)
-                            <p class="mb-0" style="color: #495057;">{{ $calificacion->comentario }}</p>
+                            <p class="mb-2" style="color: #495057;">{{ $calificacion->comentario }}</p>
+                          @endif
+
+                          {{-- Imagen de la reseña --}}
+                          @if($calificacion->imagen)
+                            <div class="review-image mb-3">
+                              <img src="{{ asset($calificacion->imagen) }}"
+                                   alt="Imagen de reseña"
+                                   class="img-fluid rounded"
+                                   style="max-height: 200px; cursor: pointer;"
+                                   onclick="ampliarImagen('{{ asset($calificacion->imagen) }}')">
+                            </div>
+                          @endif
+
+                          {{-- Reacciones --}}
+                          <div class="review-reactions d-flex align-items-center gap-2 mb-3" style="flex-wrap: wrap;">
+                            @php
+                              $conteoReacciones = $calificacion->conteo_reacciones;
+                              $emojis = ['hearts' => '😍', 'wink' => '😉', 'kiss' => '😘', 'thumbsup' => '👍'];
+                            @endphp
+                            @foreach($emojis as $key => $emoji)
+                              <button type="button"
+                                      class="reaction-btn"
+                                      data-calificacion="{{ $calificacion->id }}"
+                                      data-emoji="{{ $key }}"
+                                      style="background: linear-gradient(145deg, #f8f9fa, #e9ecef); border: none; border-radius: 25px; padding: 0.4rem 1rem; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 2px 2px 5px rgba(0,0,0,0.1), -1px -1px 3px rgba(255,255,255,0.8);">
+                                {{ $emoji }} <span class="reaction-count" style="font-size: 0.85rem; font-weight: 600; color: #495057;">{{ $conteoReacciones[$key] ?? 0 }}</span>
+                              </button>
+                            @endforeach
+                          </div>
+
+                          {{-- Acciones: Responder y Compartir --}}
+                          <div class="review-actions d-flex align-items-center gap-2 pt-2" style="flex-wrap: wrap; border-top: 1px solid #eee;">
+                            <button type="button"
+                                    class="action-btn-reply"
+                                    onclick="mostrarFormRespuesta({{ $calificacion->id }})"
+                                    style="background: transparent; border: 2px solid #667eea; color: #667eea; border-radius: 25px; padding: 0.5rem 1.25rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+                              <i class="bi bi-reply-fill"></i> Responder
+                            </button>
+
+                            {{-- Botones de compartir directos --}}
+                            <div class="share-buttons d-flex align-items-center gap-1">
+                              <button type="button"
+                                      onclick="compartirResenaWhatsApp({{ $calificacion->id }})"
+                                      style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #25D366; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                                      title="WhatsApp">
+                                <i class="bi bi-whatsapp" style="font-size: 0.75rem;"></i>
+                              </button>
+                              <button type="button"
+                                      onclick="compartirResenaFacebook({{ $calificacion->id }})"
+                                      style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #1877F2; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                                      title="Facebook">
+                                <i class="bi bi-facebook" style="font-size: 0.75rem;"></i>
+                              </button>
+                              <button type="button"
+                                      onclick="copiarEnlaceResena({{ $calificacion->id }})"
+                                      style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #E1306C; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                                      title="Instagram">
+                                <i class="bi bi-instagram" style="font-size: 0.75rem;"></i>
+                              </button>
+                              <button type="button"
+                                      onclick="copiarEnlaceResena({{ $calificacion->id }})"
+                                      style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #000000; color: white; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                                      title="TikTok">
+                                <i class="bi bi-tiktok" style="font-size: 0.75rem;"></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          {{-- Formulario de respuesta (oculto) --}}
+                          <div id="form-respuesta-{{ $calificacion->id }}" class="respuesta-form" style="display: none; background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <form onsubmit="enviarRespuesta(event, {{ $calificacion->id }})">
+                              <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" name="nombre" placeholder="Tu nombre *" required maxlength="100">
+                              </div>
+                              <div class="mb-2">
+                                <textarea class="form-control form-control-sm" name="comentario" rows="2" placeholder="Tu respuesta *" required maxlength="500"></textarea>
+                              </div>
+                              <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                  <i class="bi bi-send"></i> Enviar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="ocultarFormRespuesta({{ $calificacion->id }})">
+                                  Cancelar
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+
+                          {{-- Respuestas aprobadas --}}
+                          @if($calificacion->respuestasAprobadas && $calificacion->respuestasAprobadas->count() > 0)
+                            <div class="respuestas-list" style="border-left: 3px solid #dee2e6; padding-left: 1rem; margin-top: 1rem;">
+                              @foreach($calificacion->respuestasAprobadas as $respuesta)
+                                <div class="respuesta-item mb-2" style="background: #f8f9fa; border-radius: 8px; padding: 0.75rem;">
+                                  <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 600;">
+                                      {{ strtoupper(substr($respuesta->nombre_autor, 0, 1)) }}
+                                    </div>
+                                    <strong class="small">{{ $respuesta->nombre_autor }}</strong>
+                                    <small class="text-muted">{{ $respuesta->created_at->diffForHumans() }}</small>
+                                  </div>
+                                  <p class="mb-0 small" style="color: #495057;">{{ $respuesta->comentario }}</p>
+                                </div>
+                              @endforeach
+                            </div>
                           @endif
                         </div>
                       @endforeach
@@ -769,6 +980,86 @@
     </section><!-- /Product Details Section -->
 
   </main>
+
+  {{-- Modal para ampliar imagen de reseña --}}
+  <div class="modal fade" id="modalImagenResena" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" style="background: transparent; border: none;">
+        <div class="modal-body text-center p-0">
+          <img id="imagenAmpliada" src="" alt="Imagen ampliada" class="img-fluid rounded" style="max-height: 80vh;">
+        </div>
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+      </div>
+    </div>
+  </div>
+
+  {{-- Modal para escribir reseña --}}
+  <div class="modal fade" id="modalResena" tabindex="-1" aria-labelledby="modalResenaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalResenaLabel">
+            <i class="bi bi-star-fill text-warning me-2"></i>Escribe tu Reseña
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formResena">
+          <div class="modal-body">
+            {{-- Nombre --}}
+            <div class="mb-3">
+              <label for="resena_nombre" class="form-label fw-bold">Tu nombre *</label>
+              <input type="text" class="form-control" id="resena_nombre" name="nombre" required maxlength="100" placeholder="Escribe tu nombre">
+            </div>
+
+            {{-- Estrellas --}}
+            <div class="mb-3">
+              <label class="form-label fw-bold">¿Cómo calificarías este producto? *</label>
+              <div class="star-rating-input" id="starRatingInput">
+                @for($i = 1; $i <= 5; $i++)
+                  <i class="bi bi-star fs-2" data-rating="{{ $i }}" style="cursor: pointer; color: #e5e7eb; transition: color 0.2s;"></i>
+                @endfor
+              </div>
+              <input type="hidden" name="estrellas" id="resena_estrellas" required>
+              <div class="invalid-feedback" id="estrellas-error">Por favor selecciona una calificación</div>
+            </div>
+
+            {{-- Título --}}
+            <div class="mb-3">
+              <label for="resena_titulo" class="form-label fw-bold">Título de tu reseña (opcional)</label>
+              <input type="text" class="form-control" id="resena_titulo" name="titulo" maxlength="255" placeholder="Ej: Excelente producto, muy recomendado">
+            </div>
+
+            {{-- Comentario --}}
+            <div class="mb-3">
+              <label for="resena_comentario" class="form-label fw-bold">Tu opinión (opcional)</label>
+              <textarea class="form-control" id="resena_comentario" name="comentario" rows="3" maxlength="1000" placeholder="Cuéntanos qué te pareció el producto..."></textarea>
+              <div class="form-text">Máximo 1000 caracteres</div>
+            </div>
+
+            {{-- Imagen --}}
+            <div class="mb-3">
+              <label for="resena_imagen" class="form-label fw-bold">Agregar imagen (opcional)</label>
+              <input type="file" class="form-control" id="resena_imagen" name="imagen" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+              <div class="form-text">Máximo 5MB. Formatos: JPG, PNG, GIF, WEBP</div>
+              <div id="preview-imagen" class="mt-2 d-none">
+                <img id="preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 150px; border-radius: 8px;">
+                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="quitarImagenPreview()">
+                  <i class="bi bi-x"></i> Quitar
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnEnviarResena" disabled>
+              <span class="btn-text"><i class="bi bi-send me-1"></i> Enviar Reseña</span>
+              <span class="btn-loading d-none"><span class="spinner-border spinner-border-sm me-1"></span> Enviando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
 @endsection
 
@@ -1100,15 +1391,365 @@
 
   // Actualiza el badge del carrito
   function updateCartBadge(count) {
+    const cartBtn = $('#cart-header-btn');
     if (count > 0) {
-      if ($('.header-action-btn .badge').length) {
-        $('.header-action-btn .badge').text(count);
+      if (cartBtn.find('.cart-badge').length) {
+        cartBtn.find('.cart-badge').text(count);
       } else {
-        $('.header-action-btn').append('<span class="badge">' + count + '</span>');
+        cartBtn.append('<span class="badge cart-badge">' + count + '</span>');
       }
     } else {
-      $('.header-action-btn .badge').remove();
+      cartBtn.find('.cart-badge').remove();
     }
+  }
+
+  // ========== Sistema de Reseñas ==========
+  $(document).ready(function() {
+    const starRatingInput = $('#starRatingInput');
+    const stars = starRatingInput.find('.bi');
+    const inputEstrellas = $('#resena_estrellas');
+    const btnEnviar = $('#btnEnviarResena');
+
+    // Hover effect en estrellas
+    stars.on('mouseenter', function() {
+      const rating = $(this).data('rating');
+      highlightStarsModal(rating);
+    });
+
+    stars.on('mouseleave', function() {
+      const currentRating = inputEstrellas.val();
+      if (currentRating) {
+        highlightStarsModal(parseInt(currentRating));
+      } else {
+        clearStarsModal();
+      }
+    });
+
+    // Click para seleccionar estrellas
+    stars.on('click', function() {
+      const rating = $(this).data('rating');
+      inputEstrellas.val(rating);
+      highlightStarsModal(rating);
+      btnEnviar.prop('disabled', false);
+      $('#estrellas-error').hide();
+    });
+
+    function highlightStarsModal(rating) {
+      stars.each(function(index) {
+        if (index < rating) {
+          $(this).removeClass('bi-star').addClass('bi-star-fill').css('color', '#ffc107');
+        } else {
+          $(this).removeClass('bi-star-fill').addClass('bi-star').css('color', '#e5e7eb');
+        }
+      });
+    }
+
+    function clearStarsModal() {
+      stars.removeClass('bi-star-fill').addClass('bi-star').css('color', '#e5e7eb');
+    }
+
+    // Envío del formulario de reseña
+    $('#formResena').on('submit', function(e) {
+      e.preventDefault();
+
+      // Validar estrellas
+      if (!inputEstrellas.val()) {
+        $('#estrellas-error').show();
+        return;
+      }
+
+      const btn = btnEnviar;
+      btn.prop('disabled', true);
+      btn.find('.btn-text').addClass('d-none');
+      btn.find('.btn-loading').removeClass('d-none');
+
+      // Usar FormData para poder enviar imagen
+      const formData = new FormData();
+      formData.append('_token', '{{ csrf_token() }}');
+      formData.append('nombre', $('#resena_nombre').val());
+      formData.append('estrellas', inputEstrellas.val());
+      formData.append('titulo', $('#resena_titulo').val());
+      formData.append('comentario', $('#resena_comentario').val());
+
+      // Agregar imagen si existe
+      const imagenInput = $('#resena_imagen')[0];
+      if (imagenInput.files.length > 0) {
+        formData.append('imagen', imagenInput.files[0]);
+      }
+
+      $.ajax({
+        url: "{{ route('tienda.producto.resena', $producto->id) }}",
+        method: 'POST',
+        dataType: 'json',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+          // Resetear botón primero
+          btn.find('.btn-loading').addClass('d-none');
+          btn.find('.btn-text').removeClass('d-none');
+
+          // Cerrar modal
+          $('#modalResena').modal('hide');
+
+          // Limpiar formulario
+          $('#formResena')[0].reset();
+          clearStarsModal();
+          inputEstrellas.val('');
+          btn.prop('disabled', true);
+
+          // Mostrar mensaje de éxito después de cerrar el modal
+          setTimeout(function() {
+            Swal.fire({
+              title: response.aprobada ? '¡Reseña Publicada!' : '¡Gracias por tu reseña!',
+              text: response.message || 'Tu reseña será revisada antes de ser publicada',
+              icon: 'success',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#FF00C1'
+            }).then(() => {
+              if (response.aprobada) {
+                location.reload();
+              }
+            });
+          }, 300);
+        },
+        error: function(xhr, status, error) {
+          // Resetear botón
+          btn.find('.btn-loading').addClass('d-none');
+          btn.find('.btn-text').removeClass('d-none');
+          btn.prop('disabled', false);
+
+          let errorMsg = 'Error al enviar la reseña. Por favor intenta nuevamente.';
+
+          if (xhr.responseJSON) {
+            if (xhr.responseJSON.errors) {
+              errorMsg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+            } else if (xhr.responseJSON.message) {
+              errorMsg = xhr.responseJSON.message;
+            }
+          } else if (status === 'timeout') {
+            errorMsg = 'La solicitud tardó demasiado. Por favor intenta nuevamente.';
+          } else if (status === 'error' && !xhr.status) {
+            errorMsg = 'Error de conexión. Verifica tu internet e intenta nuevamente.';
+          }
+
+          console.error('Error enviando reseña:', status, error, xhr.responseText);
+
+          Swal.fire({
+            title: 'Error',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc3545'
+          });
+        }
+      });
+    });
+
+    // Resetear formulario cuando se cierra el modal
+    $('#modalResena').on('hidden.bs.modal', function() {
+      $('#formResena')[0].reset();
+      clearStarsModal();
+      inputEstrellas.val('');
+      // Resetear estado del botón completamente
+      btnEnviar.find('.btn-loading').addClass('d-none');
+      btnEnviar.find('.btn-text').removeClass('d-none');
+      btnEnviar.prop('disabled', true);
+      $('#estrellas-error').hide();
+      // Limpiar preview de imagen
+      quitarImagenPreview();
+    });
+
+    // Preview de imagen al seleccionar
+    $('#resena_imagen').on('change', function() {
+      const file = this.files[0];
+      if (file) {
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Imagen muy grande',
+            text: 'La imagen no puede superar los 5MB'
+          });
+          this.value = '';
+          return;
+        }
+
+        // Validar tipo
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Formato no válido',
+            text: 'Solo se permiten imágenes JPG, PNG, GIF o WEBP'
+          });
+          this.value = '';
+          return;
+        }
+
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          $('#preview-img').attr('src', e.target.result);
+          $('#preview-imagen').removeClass('d-none');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Click en botones de reacción
+    $('.reaction-btn').on('click', function() {
+      const btn = $(this);
+      const calificacionId = btn.data('calificacion');
+      const emoji = btn.data('emoji');
+
+      // Efecto visual inmediato
+      btn.css('transform', 'scale(0.9)');
+      setTimeout(() => btn.css('transform', ''), 150);
+
+      $.ajax({
+        url: `/resenas/${calificacionId}/reaccion`,
+        method: 'POST',
+        data: {
+          _token: '{{ csrf_token() }}',
+          emoji: emoji
+        },
+        success: function(response) {
+          // Actualizar conteos
+          btn.find('.reaction-count').text(response.conteos[emoji] || 0);
+
+          // Toggle clase active con animación
+          if (response.accion === 'agregada') {
+            btn.addClass('active');
+            // Efecto de "pop"
+            btn.css('transform', 'scale(1.2)');
+            setTimeout(() => btn.css('transform', ''), 200);
+          } else {
+            btn.removeClass('active');
+          }
+        },
+        error: function(xhr) {
+          console.error('Error al reaccionar:', xhr);
+        }
+      });
+    });
+  });
+
+  // Quitar preview de imagen
+  function quitarImagenPreview() {
+    $('#resena_imagen').val('');
+    $('#preview-imagen').addClass('d-none');
+    $('#preview-img').attr('src', '');
+  }
+
+  // Ampliar imagen de reseña
+  function ampliarImagen(url) {
+    $('#imagenAmpliada').attr('src', url);
+    new bootstrap.Modal(document.getElementById('modalImagenResena')).show();
+  }
+
+  // ========== Respuestas ==========
+  function mostrarFormRespuesta(id) {
+    $('#form-respuesta-' + id).slideDown();
+  }
+
+  function ocultarFormRespuesta(id) {
+    $('#form-respuesta-' + id).slideUp();
+  }
+
+  function enviarRespuesta(event, calificacionId) {
+    event.preventDefault();
+    const form = event.target;
+    const btn = $(form).find('button[type="submit"]');
+    const originalText = btn.html();
+
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+    $.ajax({
+      url: `/resenas/${calificacionId}/respuesta`,
+      method: 'POST',
+      data: {
+        _token: '{{ csrf_token() }}',
+        nombre: $(form).find('input[name="nombre"]').val(),
+        comentario: $(form).find('textarea[name="comentario"]').val()
+      },
+      success: function(response) {
+        ocultarFormRespuesta(calificacionId);
+        form.reset();
+
+        Swal.fire({
+          icon: 'success',
+          title: response.aprobada ? '¡Respuesta publicada!' : '¡Gracias!',
+          text: response.message,
+          confirmButtonColor: '#FF00C1'
+        }).then(() => {
+          if (response.aprobada) {
+            location.reload();
+          }
+        });
+      },
+      error: function(xhr) {
+        btn.prop('disabled', false).html(originalText);
+        let msg = 'Error al enviar la respuesta';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          msg = xhr.responseJSON.message;
+        }
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: msg
+        });
+      }
+    });
+  }
+
+  // ========== Compartir ==========
+  const productoNombre = @json($producto->nombre);
+  const productoUrl = window.location.href.split('#')[0];
+
+  function compartirWhatsApp() {
+    const texto = `¡Mira este producto! ${productoNombre}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto + ' ' + productoUrl)}`, '_blank');
+  }
+
+  function compartirFacebook() {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productoUrl)}`, '_blank');
+  }
+
+  function copiarEnlace() {
+    navigator.clipboard.writeText(productoUrl).then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Enlace copiado',
+        text: 'Pégalo en Instagram o TikTok',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function compartirResenaWhatsApp(resenaId) {
+    const url = productoUrl + '#resena-' + resenaId;
+    const texto = `¡Mira esta reseña de ${productoNombre}!`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto + ' ' + url)}`, '_blank');
+  }
+
+  function compartirResenaFacebook(resenaId) {
+    const url = productoUrl + '#resena-' + resenaId;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+  }
+
+  function copiarEnlaceResena(resenaId) {
+    const url = productoUrl + '#resena-' + resenaId;
+    navigator.clipboard.writeText(url).then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Enlace copiado',
+        text: 'Pégalo en Instagram o TikTok',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    });
   }
 </script>
 @endpush

@@ -23,7 +23,11 @@
       "Bash(Select-Object -First 1)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(ls -lh \"e:\\\\xampp8.20\\\\htdocs\\\\esnova\\\\database\\\\migrations\"\" | grep -i \"2025 \")"
+      "Bash(ls -lh \"e:\\\\xampp8.20\\\\htdocs\\\\esnova\\\\database\\\\migrations\"\" | grep -i \"2025 \")",
+      "Bash(php artisan migrate:*)",
+      "Bash(php artisan tinker --execute=\"DB::select\\(\"\"SHOW CREATE TABLE calificaciones_productos\"\"\\);\")",
+      "Bash(powershell -Command \"$input | Select-Object -Last 100\")",
+      "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\esnova\\\\public\\\\imagenes\\\\resenas\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\esnova\\\\public\\\\imagenes\\\\resenas\")"
     ],
     "deny": [],
     "ask": []

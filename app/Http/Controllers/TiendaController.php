@@ -15,12 +15,14 @@ use App\Models\Ciudad;
 use App\Models\Departamento;
 use App\Models\ConfiguracionPasarela;
 use App\Models\CalificacionProducto;
+use App\Models\ReaccionCalificacion;
 use App\Services\WompiService;
 use App\Services\Templates\TemplateResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
@@ -337,10 +339,18 @@ class TiendaController extends Controller
             ->disponibles()
             ->get();
 
-        // Cargar calificaciones del producto
+        // Cargar calificaciones del producto (solo principales, con respuestas y reacciones)
         $calificaciones = CalificacionProducto::where('producto_id', $producto->id)
+            ->whereNull('parent_id') // Solo principales
             ->aprobadas()
-            ->with('user')
+            ->with([
+                'user',
+                'respuestasAprobadas' => function($q) {
+                    $q->with('user')->orderBy('created_at', 'asc');
+                },
+                'reacciones'
+            ])
+            ->withCount('respuestasAprobadas')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -663,11 +673,16 @@ public function procesarCompra(Request $request)
             'notas' => $request->notas
         ]);
 
-        // Subir archivo de pago si existe
+        // Subir archivo de pago si existe (guardado en public/pagos/)
         if ($metodoPago === 'otro' && $request->hasFile('archivo_pago')) {
             $archivo = $request->file('archivo_pago');
-            $path = $archivo->store("pagos/{$empresa->id}/{$compra->id}", 'public');
-            $compra->update(['archivo_pago' => $path]);
+            $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+            $rutaDestino = "pagos/{$empresa->id}/{$compra->id}";
+
+            // Mover a public/pagos/
+            $archivo->move(public_path($rutaDestino), $nombreArchivo);
+
+            $compra->update(['archivo_pago' => $rutaDestino . '/' . $nombreArchivo]);
         }
 
         // Crear items de compra
@@ -735,8 +750,19 @@ public function procesarCompra(Request $request)
 
     } catch (\Exception $e) {
         DB::rollBack();
-        Log::error('Error procesando compra: ' . $e->getMessage());
-        return back()->with('error', 'Error al procesar la compra. Por favor intente nuevamente.');
+        Log::error('Error procesando compra: ' . $e->getMessage(), [
+            'exception' => $e,
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        // En desarrollo mostrar el error real
+        $errorMessage = config('app.debug')
+            ? 'Error: ' . $e->getMessage()
+            : 'Error al procesar la compra. Por favor intente nuevamente.';
+
+        return back()->withInput()->with('error', $errorMessage);
     }
 }
 
@@ -1196,6 +1222,189 @@ public function categorias(Request $request)
             'subtotal' => $carrito->subtotal,
             'descuento_total' => 0,
             'total' => $carrito->subtotal
+        ]);
+    }
+
+    /**
+     * Guardar reseña de un producto (público)
+     * Cualquier visitante puede dejar una reseña, pero requiere aprobación del admin
+     * Excepción: si el usuario está logueado como admin, se aprueba automáticamente
+     */
+    public function guardarResena(Request $request, $productoId)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'estrellas' => 'required|integer|min:1|max:5',
+            'titulo' => 'nullable|string|max:255',
+            'comentario' => 'nullable|string|max:1000',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ], [
+            'nombre.required' => 'Por favor ingresa tu nombre',
+            'nombre.max' => 'El nombre no puede exceder 100 caracteres',
+            'estrellas.required' => 'Por favor selecciona una calificación',
+            'estrellas.min' => 'La calificación mínima es 1 estrella',
+            'estrellas.max' => 'La calificación máxima es 5 estrellas',
+            'titulo.max' => 'El título no puede exceder 255 caracteres',
+            'comentario.max' => 'El comentario no puede exceder 1000 caracteres',
+            'imagen.image' => 'El archivo debe ser una imagen',
+            'imagen.mimes' => 'La imagen debe ser JPG, PNG, GIF o WebP',
+            'imagen.max' => 'La imagen no puede exceder 5MB',
+        ]);
+
+        // Verificar que el producto existe
+        $producto = Producto::findOrFail($productoId);
+
+        // Procesar imagen si existe
+        $rutaImagen = null;
+        if ($request->hasFile('imagen')) {
+            $imagen = $request->file('imagen');
+            $nombreArchivo = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
+            $directorio = 'imagenes/resenas/' . $producto->id;
+
+            if (!File::exists(public_path($directorio))) {
+                File::makeDirectory(public_path($directorio), 0755, true);
+            }
+
+            $imagen->move(public_path($directorio), $nombreArchivo);
+            $rutaImagen = $directorio . '/' . $nombreArchivo;
+        }
+
+        // Determinar si la reseña se aprueba automáticamente
+        $aprobadaAutomaticamente = false;
+        $userId = null;
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $userId = $user->id;
+            if ($user->empresa) {
+                $aprobadaAutomaticamente = true;
+            }
+        }
+
+        // Crear la calificación
+        CalificacionProducto::create([
+            'producto_id' => $producto->id,
+            'user_id' => $userId,
+            'nombre_visitante' => $request->nombre,
+            'estrellas' => $request->estrellas,
+            'titulo' => $request->titulo,
+            'comentario' => $request->comentario,
+            'imagen' => $rutaImagen,
+            'verificada' => false,
+            'aprobada' => $aprobadaAutomaticamente,
+        ]);
+
+        // Respuesta según si es AJAX o no
+        if ($request->ajax() || $request->wantsJson()) {
+            $mensaje = $aprobadaAutomaticamente
+                ? 'Tu reseña ha sido publicada'
+                : 'Gracias por tu reseña. Será publicada después de ser revisada';
+
+            return response()->json([
+                'success' => true,
+                'message' => $mensaje,
+                'aprobada' => $aprobadaAutomaticamente
+            ]);
+        }
+
+        $mensaje = $aprobadaAutomaticamente
+            ? 'Tu reseña ha sido publicada'
+            : 'Gracias por tu reseña. Será publicada después de ser revisada';
+
+        return back()->with('success', $mensaje);
+    }
+
+    /**
+     * Guardar respuesta a una reseña
+     */
+    public function guardarRespuesta(Request $request, $calificacionId)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+            'comentario' => 'required|string|max:500',
+        ], [
+            'nombre.required' => 'Por favor ingresa tu nombre',
+            'comentario.required' => 'Por favor escribe tu respuesta',
+            'comentario.max' => 'La respuesta no puede exceder 500 caracteres',
+        ]);
+
+        $calificacionPadre = CalificacionProducto::findOrFail($calificacionId);
+
+        // No permitir responder a respuestas (solo 1 nivel)
+        if ($calificacionPadre->parent_id !== null) {
+            return response()->json([
+                'error' => 'No se puede responder a una respuesta'
+            ], 400);
+        }
+
+        $userId = Auth::check() ? Auth::id() : null;
+        $aprobadaAutomaticamente = false;
+
+        if (Auth::check() && Auth::user()->empresa) {
+            $aprobadaAutomaticamente = true;
+        }
+
+        CalificacionProducto::create([
+            'producto_id' => $calificacionPadre->producto_id,
+            'parent_id' => $calificacionId,
+            'user_id' => $userId,
+            'nombre_visitante' => $request->nombre,
+            'estrellas' => 0, // Las respuestas no tienen estrellas
+            'comentario' => $request->comentario,
+            'verificada' => false,
+            'aprobada' => $aprobadaAutomaticamente,
+        ]);
+
+        $mensaje = $aprobadaAutomaticamente
+            ? 'Tu respuesta ha sido publicada'
+            : 'Gracias por tu respuesta. Será publicada después de ser revisada';
+
+        return response()->json([
+            'success' => true,
+            'message' => $mensaje,
+            'aprobada' => $aprobadaAutomaticamente
+        ]);
+    }
+
+    /**
+     * Toggle reacción en una reseña
+     */
+    public function toggleReaccion(Request $request, $calificacionId)
+    {
+        $request->validate([
+            'emoji' => 'required|in:hearts,wink,kiss,thumbsup'
+        ]);
+
+        $calificacion = CalificacionProducto::findOrFail($calificacionId);
+        $visitorId = ReaccionCalificacion::generarVisitorId();
+
+        // Buscar reacción existente
+        $reaccionExistente = ReaccionCalificacion::where('calificacion_id', $calificacionId)
+            ->where('visitor_id', $visitorId)
+            ->where('emoji', $request->emoji)
+            ->first();
+
+        if ($reaccionExistente) {
+            // Quitar reacción
+            $reaccionExistente->delete();
+            $accion = 'removed';
+        } else {
+            // Agregar reacción
+            ReaccionCalificacion::create([
+                'calificacion_id' => $calificacionId,
+                'visitor_id' => $visitorId,
+                'emoji' => $request->emoji,
+            ]);
+            $accion = 'added';
+        }
+
+        // Retornar conteos actualizados
+        $conteos = $calificacion->fresh()->conteo_reacciones;
+
+        return response()->json([
+            'success' => true,
+            'action' => $accion,
+            'conteos' => $conteos
         ]);
     }
 }

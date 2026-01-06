@@ -246,6 +246,25 @@ Route::get('/compras', [App\Http\Controllers\ComprasController::class, 'index'])
     ->middleware(['auth', 'verificar.empresa'])
     ->name('compras');
 
+// ========== RUTAS DE GESTIÓN DE CALIFICACIONES (ADMIN) ==========
+Route::middleware(['auth', 'verificar.empresa'])->prefix('calificaciones')->name('calificaciones.')->group(function () {
+    Route::get('/', [App\Http\Controllers\CalificacionesAdminController::class, 'index'])->name('index');
+    Route::get('/aprobadas', [App\Http\Controllers\CalificacionesAdminController::class, 'aprobadas'])->name('aprobadas');
+    Route::get('/respuestas', [App\Http\Controllers\CalificacionesAdminController::class, 'respuestas'])->name('respuestas');
+    Route::post('/{id}/aprobar', [App\Http\Controllers\CalificacionesAdminController::class, 'aprobar'])->name('aprobar');
+    Route::delete('/{id}/rechazar', [App\Http\Controllers\CalificacionesAdminController::class, 'rechazar'])->name('rechazar');
+});
+
+// Ruta pública para guardar reseñas de productos
+Route::post('/producto/{producto}/resena', [App\Http\Controllers\TiendaController::class, 'guardarResena'])
+    ->name('tienda.producto.resena');
+
+// Rutas públicas para respuestas y reacciones
+Route::prefix('resenas')->name('resenas.')->group(function () {
+    Route::post('/{calificacion}/respuesta', [App\Http\Controllers\TiendaController::class, 'guardarRespuesta'])->name('respuesta');
+    Route::post('/{calificacion}/reaccion', [App\Http\Controllers\TiendaController::class, 'toggleReaccion'])->name('reaccion');
+});
+
 
 // Webhook de Wompi (sin CSRF)
 Route::post('/webhooks/wompi', [App\Http\Controllers\WebhookController::class, 'wompi'])
@@ -348,15 +367,11 @@ Route::get('/pago/pendiente/{referencia}', function($referencia) {
 })->name('tienda.pago.pendiente');
 
 // ============================================
-// PANEL DE CLIENTE - Mis Compras y Calificaciones
+// PANEL DE CLIENTE - Mis Compras
 // ============================================
 Route::middleware(['auth'])->prefix('cliente')->group(function () {
     Route::get('/mis-compras', [App\Http\Controllers\Cliente\MisComprasController::class, 'index'])
         ->name('cliente.compras');
     Route::get('/mis-compras/{id}', [App\Http\Controllers\Cliente\MisComprasController::class, 'show'])
         ->name('cliente.compras.show');
-    Route::get('/calificar/{itemCompraId}', [App\Http\Controllers\Cliente\MisComprasController::class, 'calificar'])
-        ->name('cliente.calificar');
-    Route::post('/calificar', [App\Http\Controllers\Cliente\MisComprasController::class, 'guardarCalificacion'])
-        ->name('cliente.calificar.guardar');
 });
