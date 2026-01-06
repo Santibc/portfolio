@@ -28,7 +28,8 @@
       "Bash(mkdir:*)",
       "Bash(composer require:*)",
       "Bash(git config:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []

@@ -449,7 +449,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualizarResumen(data);
                         actualizarVistaRamo(data.flores);
                     } else {
-                        alert(data.message);
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Atención',
+                            text: data.message,
+                            confirmButtonColor: '#8d6c4f'
+                        });
                     }
                 } catch (e) {
                     console.error(e);
@@ -558,10 +563,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Agregar al carrito
     document.getElementById('btn-agregar-carrito').addEventListener('click', async function() {
+        console.log('Botón agregar al carrito clickeado');
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Agregando...';
 
         try {
+            console.log('Enviando request a /arma-tu-ramo/agregar-carrito');
             const res = await fetch('/arma-tu-ramo/agregar-carrito', {
                 method: 'POST',
                 headers: {
@@ -570,21 +577,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            console.log('Response status:', res.status);
             const data = await res.json();
+            console.log('Response data:', data);
+
             if (data.success) {
                 // Actualizar contador del carrito
                 const carritoCount = document.querySelector('.carrito-count');
                 if (carritoCount) carritoCount.textContent = data.carrito_count;
 
-                alert('¡Ramo agregado al carrito!');
-                window.location.href = '/carrito';
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '¡Ramo agregado al carrito!',
+                    confirmButtonColor: '#8d6c4f',
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    window.location.href = '/carrito';
+                });
             } else {
-                alert(data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message,
+                    confirmButtonColor: '#8d6c4f'
+                });
                 this.disabled = false;
                 this.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
             }
         } catch (e) {
-            console.error(e);
+            console.error('Error al agregar al carrito:', e);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al agregar el ramo al carrito. Por favor intenta de nuevo.',
+                confirmButtonColor: '#8d6c4f'
+            });
             this.disabled = false;
             this.innerHTML = '<i class="bi bi-cart-plus"></i> Agregar al Carrito';
         }

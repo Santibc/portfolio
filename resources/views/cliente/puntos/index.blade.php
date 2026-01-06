@@ -317,13 +317,29 @@
 <script>
 function copiarCodigo() {
     navigator.clipboard.writeText('{{ $user->codigo_referido }}');
-    alert('¡Código copiado!');
+    Swal.fire({
+        icon: 'success',
+        title: '¡Copiado!',
+        text: 'Código copiado al portapapeles',
+        confirmButtonColor: '#8d6c4f',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+    });
 }
 
 function copiarEnlace() {
     const url = '{{ route('register.cliente') }}?ref={{ $user->codigo_referido }}';
     navigator.clipboard.writeText(url);
-    alert('¡Enlace copiado!');
+    Swal.fire({
+        icon: 'success',
+        title: '¡Copiado!',
+        text: 'Enlace copiado al portapapeles',
+        confirmButtonColor: '#8d6c4f',
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+    });
 }
 </script>
 @endpush

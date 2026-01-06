@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Carrito de Compras - {{ $empresa->nombre }}</title>
 
     {{-- Analytics Scripts (GA4, Facebook Pixel, GTM) --}}
@@ -879,9 +880,15 @@
                             errorMessage += `• ${error.producto}${varianteInfo}: Stock ${error.stock_disponible}, solicitaste ${error.cantidad_solicitada}\\n`;
                         });
                         errorMessage += '\\nPor favor ajusta las cantidades antes de continuar.';
-                        
-                        alert(errorMessage);
-                        
+
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stock Insuficiente',
+                            html: errorMessage.replace(/\\n/g, '<br>'),
+                            confirmButtonColor: '#8d6c4f',
+                            confirmButtonText: 'Entendido'
+                        });
+
                         // Actualizar vista con advertencias
                         validateCartStock();
                         
@@ -953,7 +960,12 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al remover el descuento');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al remover el descuento',
+                    confirmButtonColor: '#8d6c4f'
+                });
             });
         }
 

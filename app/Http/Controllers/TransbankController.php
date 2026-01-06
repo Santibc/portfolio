@@ -262,7 +262,6 @@ class TransbankController extends Controller
         if ($puntos > 0) {
             PuntoCliente::registrarPuntos(
                 $compra->user_id,
-                $compra->empresa_id,
                 $puntos,
                 'ganados',
                 "Compra #{$compra->numero_compra}",

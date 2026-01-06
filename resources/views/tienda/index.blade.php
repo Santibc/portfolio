@@ -93,27 +93,11 @@
     <section class="ocasiones-section">
       <div class="container">
         <div class="ocasiones-pills">
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'cumpleanos']) }}" class="ocasion-pill active">
-            Cumpleaños
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'amor']) }}" class="ocasion-pill">
-            Amor
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'aniversarios']) }}" class="ocasion-pill">
-            Aniversarios
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'condolencias']) }}" class="ocasion-pill">
-            Condolencias
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'gracias']) }}" class="ocasion-pill">
-            Gracias
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'felicidades']) }}" class="ocasion-pill">
-            Felicidades
-          </a>
-          <a href="{{ route('tienda.categorias', ['ocasion' => 'mejorate']) }}" class="ocasion-pill">
-            Mejórate pronto
-          </a>
+          @foreach($categoriasMenu ?? [] as $index => $categoria)
+            <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="ocasion-pill {{ $index === 0 ? 'active' : '' }}">
+              {{ $categoria->nombre }}
+            </a>
+          @endforeach
         </div>
       </div>
     </section>

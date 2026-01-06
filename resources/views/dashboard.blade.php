@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 ">
                     @if (Auth::user()->hasRole('admin'))
-                        {{ __("Rol admin") }}
+                        {{ __("Rol de Administrador") }}
                     @elseif (Auth::user()->hasRole('empresa'))
                         <div class="mb-4">
                             <h3 class="text-lg font-semibold mb-2">Estado de Membresía</h3>
@@ -40,7 +40,7 @@
                         </div>
                         <p>Bienvenido a tu panel de control.</p>
                     @else
-                        <p>Closer.</p>
+                        <p>¡Bienvenido!</p>
                     @endif
                     
                 </div>

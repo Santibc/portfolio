@@ -112,27 +112,27 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 0;
-      gap: 24px;
+      padding: 20px 0;
+      gap: 32px;
     }
 
     /* Logo */
     .header-minimal .logo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       text-decoration: none;
       flex-shrink: 0;
     }
 
     .header-minimal .logo-icon {
-      font-size: 20px;
+      font-size: 28px;
       color: var(--flores-primary);
     }
 
     .header-minimal .logo-text {
       font-family: var(--font-serif);
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 600;
       color: var(--flores-text);
       margin: 0;
@@ -142,14 +142,16 @@
     .header-minimal .nav-links {
       display: flex;
       align-items: center;
-      gap: 32px;
+      gap: 40px;
       list-style: none;
       margin: 0;
       padding: 0;
+      flex: 1;
+      justify-content: center;
     }
 
     .header-minimal .nav-links a {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
       color: var(--flores-text);
       text-decoration: none;
@@ -169,7 +171,7 @@
     .header-minimal .header-actions {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       flex-shrink: 0;
     }
 
@@ -177,8 +179,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: transparent;
       color: var(--flores-text);
@@ -195,20 +197,20 @@
     }
 
     .header-minimal .header-action-btn i {
-      font-size: 20px;
+      font-size: 22px;
     }
 
     .header-minimal .header-action-btn .badge {
       position: absolute;
-      top: -2px;
-      right: -2px;
+      top: 0px;
+      right: 0px;
       background: var(--flores-primary);
       color: white;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 2px 6px;
-      border-radius: 10px;
-      min-width: 18px;
+      padding: 3px 7px;
+      border-radius: 12px;
+      min-width: 20px;
       text-align: center;
     }
 
@@ -232,35 +234,40 @@
 
     /* Auth Buttons */
     .btn-auth-link {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
       color: var(--flores-text);
       text-decoration: none;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 30px;
       transition: all 0.2s;
       white-space: nowrap;
+      border: 1px solid transparent;
     }
 
     .btn-auth-link:hover {
       color: var(--flores-primary);
+      background: var(--flores-beige);
     }
 
     .btn-auth-register {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
       color: white;
       background: var(--flores-primary);
       text-decoration: none;
-      padding: 8px 20px;
+      padding: 10px 24px;
       border-radius: 30px;
       transition: all 0.2s;
       white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(141, 108, 79, 0.2);
     }
 
     .btn-auth-register:hover {
       background: var(--flores-primary-hover);
       color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(141, 108, 79, 0.3);
     }
 
     @media (max-width: 991px) {
@@ -409,30 +416,32 @@
     }
 
     .footer-main-minimal {
-      padding: 60px 0 40px;
+      padding: 70px 0 50px;
     }
 
     .footer-brand .footer-logo {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       font-family: var(--font-serif);
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 600;
       color: var(--flores-text);
       text-decoration: none;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .footer-brand .footer-logo i {
       color: var(--flores-primary);
+      font-size: 24px;
     }
 
     .footer-description {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--flores-text-light);
-      line-height: 1.6;
-      margin-bottom: 20px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 350px;
     }
 
     .footer-social {
@@ -441,8 +450,8 @@
     }
 
     .footer-social a {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -450,6 +459,7 @@
       border: 1px solid var(--flores-border);
       border-radius: 50%;
       color: var(--flores-text);
+      font-size: 18px;
       transition: all 0.2s;
     }
 
@@ -457,14 +467,15 @@
       background: var(--flores-primary);
       border-color: var(--flores-primary);
       color: white;
+      transform: translateY(-2px);
     }
 
     .footer-links-minimal h5,
     .footer-contact-minimal h5 {
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--flores-text);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -476,36 +487,39 @@
     }
 
     .footer-links-minimal ul li {
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .footer-links-minimal ul li a {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--flores-text-light);
       text-decoration: none;
       transition: color 0.2s;
+      display: inline-block;
     }
 
     .footer-links-minimal ul li a:hover {
       color: var(--flores-primary);
+      transform: translateX(3px);
     }
 
     .contact-item-minimal {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 16px;
-      font-size: 14px;
+      gap: 14px;
+      margin-bottom: 18px;
+      font-size: 15px;
       color: var(--flores-text-light);
     }
 
     .contact-item-minimal i {
       color: var(--flores-primary);
-      margin-top: 2px;
+      margin-top: 3px;
+      font-size: 18px;
     }
 
     .footer-bottom-minimal {
-      padding: 24px 0;
+      padding: 28px 0;
       border-top: 1px solid var(--flores-border);
     }
 
@@ -514,25 +528,26 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 20px;
     }
 
     .copyright-minimal {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--flores-text-light);
       margin: 0;
     }
 
     .footer-legal {
       display: flex;
-      gap: 24px;
+      gap: 28px;
     }
 
     .footer-legal a {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--flores-text-light);
       text-decoration: none;
       transition: color 0.2s;
+      font-weight: 500;
     }
 
     .footer-legal a:hover {
@@ -569,7 +584,7 @@
         <div class="header-minimal">
           <!-- Logo -->
           <a href="{{ route('home') }}" class="logo">
-            <i class="bi bi-geo-alt-fill logo-icon"></i>
+            <i class="bi bi-flower1 logo-icon"></i>
             <span class="logo-text">{{ $empresa->nombre }}</span>
           </a>
 
@@ -685,12 +700,12 @@
   <footer id="footer" class="footer-minimal">
     <div class="footer-main-minimal">
       <div class="container">
-        <div class="row gy-4">
+        <div class="row gy-5">
           <!-- Logo y Descripción -->
-          <div class="col-lg-4 col-md-6">
+          <div class="col-lg-3 col-md-6">
             <div class="footer-brand">
               <a href="{{ route('home') }}" class="footer-logo">
-                <i class="bi bi-geo-alt-fill"></i>
+                <i class="bi bi-flower1"></i>
                 <span>{{ $empresa->nombre }}</span>
               </a>
               <p class="footer-description">
@@ -711,20 +726,40 @@
           </div>
 
           <!-- Tienda -->
-          <div class="col-lg-2 col-md-6 col-6">
+          <div class="col-lg-3 col-md-6">
             <div class="footer-links-minimal">
               <h5>Tienda</h5>
               <ul>
                 <li><a href="{{ route('tienda.categorias') }}">Todos los productos</a></li>
-                <li><a href="{{ route('tienda.categorias', ['ocasion' => 'cumpleanos']) }}">Cumpleaños</a></li>
-                <li><a href="{{ route('tienda.categorias', ['ocasion' => 'amor']) }}">Amor</a></li>
-                <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
+                @foreach($categoriasMenu ?? [] as $categoria)
+                  <li><a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}">{{ $categoria->nombre }}</a></li>
+                @endforeach
+              </ul>
+            </div>
+          </div>
+
+          <!-- Enlaces Útiles -->
+          <div class="col-lg-3 col-md-6">
+            <div class="footer-links-minimal">
+              <h5>Enlaces</h5>
+              <ul>
+                @guest
+                  <li><a href="{{ route('login') }}">Iniciar sesión</a></li>
+                  <li><a href="{{ route('register.cliente') }}">Registrarse</a></li>
+                @else
+                  @if(auth()->user()->hasRole('cliente'))
+                    <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
+                    <li><a href="{{ route('cliente.puntos') }}">Mis Puntos</a></li>
+                  @endif
+                @endguest
+                <li><a href="#">Términos y condiciones</a></li>
+                <li><a href="#">Política de privacidad</a></li>
               </ul>
             </div>
           </div>
 
           <!-- Contacto -->
-          <div class="col-lg-4 col-md-6">
+          <div class="col-lg-3 col-md-6">
             <div class="footer-contact-minimal">
               <h5>Contacto</h5>
               @if($empresa->telefono)
@@ -799,6 +834,9 @@
 
   <!-- jQuery for AJAX -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     $(document).ready(function() {

@@ -655,10 +655,12 @@
                             @foreach($carrito->items as $item)
                                 @php
                                     $producto = \App\Models\Producto::find($item['producto_id']);
+                                    // Para ramos personalizados u items sin producto, usar imagen por defecto
+                                    $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/ramo-personalizado.png');
                                 @endphp
                                 <div class="summary-item">
-                                    <img src="{{ $producto->url_imagen_principal }}" 
-                                         alt="{{ $item['nombre'] }}" 
+                                    <img src="{{ $imagenUrl }}"
+                                         alt="{{ $item['nombre'] }}"
                                          class="item-image">
                                     <div class="item-details">
                                         <div class="item-name">{{ $item['nombre'] }}</div>

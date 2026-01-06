@@ -35,6 +35,16 @@ class TiendaController extends Controller
     public function __construct(TemplateResolver $templateResolver)
     {
         $this->templateResolver = $templateResolver;
+
+        // Compartir categorías activas con todas las vistas
+        view()->composer('tienda.*', function ($view) {
+            $categoriasMenu = Categoria::where('activo', true)
+                ->orderBy('orden')
+                ->orderBy('nombre')
+                ->limit(8)
+                ->get();
+            $view->with('categoriasMenu', $categoriasMenu);
+        });
     }
 
     /**

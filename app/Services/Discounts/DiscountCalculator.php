@@ -41,25 +41,47 @@ class DiscountCalculator
 
         // Si se proporcionó un código de descuento, intentar aplicarlo
         if ($codigoDescuento) {
-            $descuento = Descuento::porCodigo($codigoDescuento)
-                ->porEmpresa($empresaId)
-                ->activos()
-                ->vigentes()
-                ->disponibles()
-                ->first();
+            // Primero verificar si es un código de descuento por puntos en sesión
+            $descuentoPuntos = session('descuento_puntos');
 
-            if ($descuento && $this->canApplyDiscount($descuento, $subtotal, $items, $emailCliente)) {
-                $montoDescuento = $this->calculateDiscountAmount($descuento, $subtotal, $items);
+            if ($descuentoPuntos && $descuentoPuntos['codigo'] === $codigoDescuento) {
+                // Aplicar descuento por puntos
+                $montoDescuento = min($descuentoPuntos['valor'], $subtotal);
 
                 if ($montoDescuento > 0) {
                     $descuentosAplicados[] = [
-                        'descuento' => $descuento,
+                        'descuento' => null, // No es un descuento de BD
                         'monto' => $montoDescuento,
-                        'codigo' => $descuento->codigo,
-                        'descripcion' => $descuento->getDescripcionCompletaAttribute(),
+                        'codigo' => $codigoDescuento,
+                        'descripcion' => "Descuento por {$descuentoPuntos['puntos']} puntos",
+                        'tipo' => 'puntos',
+                        'puntos' => $descuentoPuntos['puntos'],
                     ];
 
                     $totalDescuento += $montoDescuento;
+                }
+            } else {
+                // Buscar en la tabla de descuentos normales
+                $descuento = Descuento::porCodigo($codigoDescuento)
+                    ->porEmpresa($empresaId)
+                    ->activos()
+                    ->vigentes()
+                    ->disponibles()
+                    ->first();
+
+                if ($descuento && $this->canApplyDiscount($descuento, $subtotal, $items, $emailCliente)) {
+                    $montoDescuento = $this->calculateDiscountAmount($descuento, $subtotal, $items);
+
+                    if ($montoDescuento > 0) {
+                        $descuentosAplicados[] = [
+                            'descuento' => $descuento,
+                            'monto' => $montoDescuento,
+                            'codigo' => $descuento->codigo,
+                            'descripcion' => $descuento->getDescripcionCompletaAttribute(),
+                        ];
+
+                        $totalDescuento += $montoDescuento;
+                    }
                 }
             }
         }
@@ -298,8 +320,12 @@ class DiscountCalculator
         foreach ($descuentosAplicados as $descuentoData) {
             $descuento = $descuentoData['descuento'];
 
+            // Si es un descuento por puntos (no tiene objeto descuento de BD), distribuir proporcionalmente
+            if ($descuento === null || (isset($descuentoData['tipo']) && $descuentoData['tipo'] === 'puntos')) {
+                $this->distributeOrderDiscount($items, $descuentoData, $descuentosPorItem);
+            }
             // Si el descuento aplica a toda la orden, dividir proporcionalmente
-            if ($descuento->aplica_a === 'orden' || $descuento->aplica_a === 'carrito') {
+            elseif ($descuento->aplica_a === 'orden' || $descuento->aplica_a === 'carrito') {
                 $this->distributeOrderDiscount($items, $descuentoData, $descuentosPorItem);
             }
             // Si aplica a productos o categorías específicas
@@ -338,12 +364,22 @@ class DiscountCalculator
                 $descuentosPorItem[$key] = [];
             }
 
-            $descuentosPorItem[$key][] = [
-                'descuento_id' => $descuento->id,
-                'nombre' => $descuento->nombre,
-                'monto' => round($descuentoItem, 2),
-                'porcentaje' => $descuento->tipo === 'porcentaje' ? $descuento->valor : null,
-            ];
+            // Manejar descuentos por puntos (que no tienen objeto descuento de BD)
+            if ($descuento === null || (isset($descuentoData['tipo']) && $descuentoData['tipo'] === 'puntos')) {
+                $descuentosPorItem[$key][] = [
+                    'descuento_id' => null,
+                    'nombre' => $descuentoData['descripcion'] ?? 'Descuento por puntos',
+                    'monto' => round($descuentoItem, 2),
+                    'porcentaje' => null,
+                ];
+            } else {
+                $descuentosPorItem[$key][] = [
+                    'descuento_id' => $descuento->id,
+                    'nombre' => $descuento->nombre,
+                    'monto' => round($descuentoItem, 2),
+                    'porcentaje' => $descuento->tipo === 'porcentaje' ? $descuento->valor : null,
+                ];
+            }
         }
     }
 
