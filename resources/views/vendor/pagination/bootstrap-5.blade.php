@@ -1,4 +1,29 @@
 @if ($paginator->hasPages())
+    <style>
+        .pagination .page-link {
+            color: #1a1a1a;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+
+        .pagination .page-link:hover {
+            color: #ffffff;
+            background-color: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        .pagination .page-item.active .page-link {
+            color: #ffffff;
+            background-color: #1a1a1a;
+            border-color: #1a1a1a;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #999999;
+            background-color: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+    </style>
     <nav class="d-flex justify-content-center">
         <div class="d-flex justify-content-between flex-fill d-sm-none">
             <ul class="pagination">

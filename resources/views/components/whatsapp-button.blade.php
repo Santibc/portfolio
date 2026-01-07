@@ -80,39 +80,39 @@
 .whatsapp-float-btn {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     text-decoration: none;
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 4px 15px rgba(26, 26, 26, 0.4);
     transition: all 0.3s ease;
     animation: whatsapp-pulse 2s infinite;
 }
 
 .whatsapp-float-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+    box-shadow: 0 6px 20px rgba(26, 26, 26, 0.6);
     color: white;
 }
 
 @keyframes whatsapp-pulse {
     0% {
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        box-shadow: 0 4px 15px rgba(26, 26, 26, 0.4);
     }
     50% {
-        box-shadow: 0 4px 25px rgba(37, 211, 102, 0.6);
+        box-shadow: 0 4px 25px rgba(26, 26, 26, 0.6);
     }
     100% {
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        box-shadow: 0 4px 15px rgba(26, 26, 26, 0.4);
     }
 }
 
 /* Tooltip Bubble - Ahora a la derecha del botón */
 .whatsapp-tooltip {
-    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
     color: white;
     padding: 15px 40px 15px 15px;
     border-radius: 12px;
@@ -148,7 +148,7 @@
     left: 25px;
     border-width: 10px 10px 0;
     border-style: solid;
-    border-color: #f57c00 transparent transparent transparent;
+    border-color: #1a1a1a transparent transparent transparent;
 }
 
 .whatsapp-tooltip-close {

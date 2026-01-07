@@ -29,7 +29,8 @@
       "Bash(composer require:*)",
       "Bash(git config:*)",
       "Bash(git add:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(Select-Object -First 20)"
     ],
     "deny": [],
     "ask": []

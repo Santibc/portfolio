@@ -16,9 +16,9 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #3730a3;
-            --secondary-color: #6366f1;
-            --accent-color: #fbbf24;
+            --primary-color: #1a1a1a;
+            --secondary-color: #333333;
+            --accent-color: #666666;
             --text-primary: #111827;
             --text-secondary: #6b7280;
             --bg-light: #f9fafb;
@@ -113,8 +113,8 @@
             display: inline-flex;
             align-items: center;
             gap: 0.375rem;
-            background: #dcfce7;
-            color: #166534;
+            background: #f5f5f5;
+            color: #1a1a1a;
             padding: 0.25rem 0.625rem;
             border-radius: 0.375rem;
             font-size: 0.75rem;
@@ -131,12 +131,12 @@
         }
 
         .discount-value {
-            color: #15803d;
+            color: #1a1a1a;
             font-weight: 600;
         }
 
         .discount-amount {
-            color: #15803d;
+            color: #1a1a1a;
             font-weight: 700;
         }
 
@@ -251,9 +251,9 @@
         .stock-warning {
             margin-top: 0.5rem;
             padding: 0.25rem 0.5rem;
-            background: #fef2f2;
+            background: #f5f5f5;
             border-radius: 0.25rem;
-            border: 1px solid #fecaca;
+            border: 1px solid #e0e0e0;
         }
 
         .btn-continue-shopping {
@@ -271,6 +271,37 @@
         .btn-continue-shopping:hover {
             background: var(--primary-color);
             color: white;
+        }
+
+        /* Override Bootstrap buttons */
+        .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color) !important;
+            border-color: var(--secondary-color) !important;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        /* Override Bootstrap text colors */
+        .text-success {
+            color: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
         }
 
         /* Empty Cart */
@@ -371,8 +402,8 @@
                                                 @if($esRamoPersonalizado)
                                                     {{-- Imagen especial para ramo personalizado --}}
                                                     <div class="item-image d-flex align-items-center justify-content-center"
-                                                         style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); border-radius: 12px;">
-                                                        <i class="bi bi-flower1" style="font-size: 2.5rem; color: #e91e63;"></i>
+                                                         style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); border-radius: 12px;">
+                                                        <i class="bi bi-flower1" style="font-size: 2.5rem; color: #1a1a1a;"></i>
                                                     </div>
                                                 @else
                                                     <img src="{{ $producto ? $producto->url_imagen_principal : asset('images/flores/default.png') }}"
@@ -396,7 +427,7 @@
                                                                 <div class="mt-1">
                                                                     <small><strong>Flores:</strong></small>
                                                                     @foreach($item['detalle_ramo']['flores'] as $flor)
-                                                                        <span class="badge bg-pink-light text-dark me-1" style="background-color: #fce4ec;">
+                                                                        <span class="badge bg-light text-dark me-1" style="background-color: #f5f5f5;">
                                                                             {{ $flor['cantidad'] }}x {{ $flor['nombre'] }}
                                                                         </span>
                                                                     @endforeach
@@ -406,7 +437,7 @@
                                                                 <div class="mt-1">
                                                                     <small><strong>Adicionales:</strong></small>
                                                                     @foreach($item['detalle_ramo']['adicionales'] as $adicional)
-                                                                        <span class="badge bg-success-light text-dark me-1" style="background-color: #e8f5e9;">
+                                                                        <span class="badge bg-light text-dark me-1" style="background-color: #e0e0e0;">
                                                                             {{ $adicional['nombre'] }}
                                                                         </span>
                                                                     @endforeach
@@ -748,7 +779,7 @@
                 title: '¿Estás seguro?',
                 text: '¿Deseas eliminar este producto del carrito?',
                 showCancelButton: true,
-                confirmButtonColor: '#8d6c4f',
+                confirmButtonColor: '#1a1a1a',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
@@ -779,7 +810,7 @@
                             icon: 'success',
                             title: '¡Eliminado!',
                             text: 'Producto eliminado del carrito',
-                            confirmButtonColor: '#8d6c4f',
+                            confirmButtonColor: '#1a1a1a',
                             timer: 2000,
                             timerProgressBar: true
                         });
@@ -909,7 +940,7 @@
                             icon: 'warning',
                             title: 'Stock Insuficiente',
                             html: errorMessage.replace(/\\n/g, '<br>'),
-                            confirmButtonColor: '#8d6c4f',
+                            confirmButtonColor: '#1a1a1a',
                             confirmButtonText: 'Entendido'
                         });
 

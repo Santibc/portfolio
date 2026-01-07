@@ -15,14 +15,14 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #3730a3;
-            --secondary-color: #6366f1;
-            --accent-color: #fbbf24;
+            --primary-color: #1a1a1a;
+            --secondary-color: #333333;
+            --accent-color: #666666;
             --text-primary: #111827;
             --text-secondary: #6b7280;
             --bg-light: #f9fafb;
             --border-color: #e5e7eb;
-            --success-color: #10b981;
+            --success-color: #1a1a1a;
             --error-color: #ef4444;
         }
 
@@ -290,14 +290,25 @@
             .checkout-steps {
                 overflow-x: auto;
             }
-            
+
             .step-title {
                 display: none;
             }
-            
+
             .order-summary {
                 position: static;
                 margin-top: 2rem;
+            }
+
+            /* Botones de crear cuenta en mobile */
+            .alert .d-flex.gap-2 {
+                flex-direction: column !important;
+            }
+
+            .alert .btn,
+            .alert .btn-invitado {
+                width: 100%;
+                margin: 0 !important;
             }
         }
     </style>
@@ -400,19 +411,24 @@
                             </h2>
 
                             @guest
-                            <div class="alert alert-info d-flex align-items-start mb-4" role="alert" style="background: linear-gradient(135deg, rgba(255,0,193,0.1), rgba(11,0,249,0.1)); border: 1px solid rgba(255,0,193,0.3); border-radius: 0.75rem;">
-                                <i class="bi bi-gift-fill me-3" style="font-size: 1.5rem; color: #FF00C1;"></i>
-                                <div>
-                                    <strong style="color: #FF00C1;">¿Quieres ver tu historial de compras?</strong>
-                                    <p class="mb-2 small text-secondary">
-                                        Regístrate para acceder a tus compras anteriores y poder calificar los productos que compres.
+                            <div class="alert alert-info d-flex align-items-start mb-4" role="alert" style="background: linear-gradient(135deg, rgba(26,26,26,0.05), rgba(51,51,51,0.05)); border: 1px solid rgba(26,26,26,0.2); border-radius: 0.75rem;">
+                                <i class="bi bi-gift-fill me-3" style="font-size: 1.5rem; color: #1a1a1a;"></i>
+                                <div class="w-100">
+                                    <strong style="color: #1a1a1a;">¿Quieres ver tu historial de compras?</strong>
+                                    <p class="mb-3 small text-secondary">
+                                        Regístrate para acceder a tus compras anteriores y poder calificar los productos que compres, o continúa como invitado.
                                     </p>
-                                    <a href="{{ route('register.cliente') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #FF00C1, #0B00F9); color: white; border: none;">
-                                        <i class="bi bi-person-plus me-1"></i> Crear Cuenta
-                                    </a>
-                                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-secondary ms-2">
-                                        <i class="bi bi-box-arrow-in-right me-1"></i> Ya tengo cuenta
-                                    </a>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-sm btn-invitado" id="btnInvitado" style="background: #666666; color: white; border: none;">
+                                            <i class="bi bi-person me-1"></i> Continuar como invitado
+                                        </button>
+                                        <a href="{{ route('register.cliente') }}" class="btn btn-sm" style="background: #1a1a1a; color: white; border: none;">
+                                            <i class="bi bi-person-plus me-1"></i> Crear Cuenta
+                                        </a>
+                                        <a href="{{ route('login') }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-box-arrow-in-right me-1"></i> Ya tengo cuenta
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             @endguest
@@ -789,6 +805,13 @@
 
     <script>
         $(document).ready(function() {
+            // Botón continuar como invitado
+            $('#btnInvitado').on('click', function() {
+                $(this).closest('.alert').fadeOut(300, function() {
+                    $(this).remove();
+                });
+            });
+
             // Subtotal base del carrito (sin envío)
             const subtotalBase = {{ $carrito->total ?? $carrito->subtotal }};
             let costoEnvioActual = 0;
