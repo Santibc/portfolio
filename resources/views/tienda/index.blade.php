@@ -883,6 +883,140 @@
     font-size: 14px;
   }
 }
+
+@media (max-width: 576px) {
+  .hero-swiper .swiper-slide img {
+    height: 220px;
+  }
+
+  .hero-minimal {
+    padding: 24px 0;
+  }
+
+  .hero-title-minimal {
+    font-size: 22px;
+    line-height: 1.3;
+    margin-bottom: 20px;
+  }
+
+  .hero-benefits {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .hero-benefit-item .benefit-title {
+    font-size: 13px;
+  }
+
+  .hero-benefit-item .benefit-desc {
+    font-size: 12px;
+  }
+
+  .btn-hero-search {
+    height: 48px;
+    font-size: 14px;
+    padding: 0 24px;
+  }
+
+  .ocasiones-section {
+    padding: 32px 0;
+  }
+
+  .ocasiones-pills {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    padding-bottom: 12px;
+  }
+
+  .ocasion-pill {
+    padding: 10px 20px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .productos-minimal {
+    padding: 40px 0;
+  }
+
+  .section-header-minimal {
+    margin-bottom: 28px;
+  }
+
+  .section-title-minimal {
+    font-size: 20px;
+  }
+
+  .ver-todos-link {
+    font-size: 14px;
+  }
+
+  .product-name-minimal {
+    font-size: 13px;
+  }
+
+  .product-price-minimal {
+    font-size: 16px;
+  }
+
+  .btn-agregar-minimal,
+  .btn-agotado {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .badge-entrega-hoy {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .beneficios-section {
+    padding: 36px 0;
+  }
+
+  .beneficio-item {
+    gap: 12px;
+  }
+
+  .beneficio-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .beneficio-icon i {
+    font-size: 20px;
+  }
+
+  .beneficio-content h4 {
+    font-size: 13px;
+  }
+
+  .beneficio-content p {
+    font-size: 12px;
+  }
+
+  .cta-arma-ramo {
+    padding: 48px 0;
+  }
+
+  .cta-content {
+    padding: 0 16px;
+  }
+
+  .cta-title {
+    font-size: 20px;
+  }
+
+  .cta-description {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .btn-cta-ramo {
+    padding: 12px 28px;
+    font-size: 13px;
+  }
+}
 </style>
 @endpush
 

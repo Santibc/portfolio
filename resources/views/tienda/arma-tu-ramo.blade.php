@@ -621,7 +621,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reiniciar
     document.getElementById('btn-reiniciar').addEventListener('click', async function() {
-        if (!confirm('¿Estás seguro de empezar de nuevo?')) return;
+        const result = await Swal.fire({
+            icon: 'question',
+            title: '¿Estás seguro?',
+            text: '¿Deseas empezar de nuevo? Se perderán todos los cambios.',
+            showCancelButton: true,
+            confirmButtonColor: '#8d6c4f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, empezar de nuevo',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const res = await fetch('/arma-tu-ramo/reiniciar', {
@@ -634,10 +645,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await res.json();
             if (data.success) {
-                location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Listo!',
+                    text: 'Comenzando de nuevo...',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
             }
         } catch (e) {
             console.error(e);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo reiniciar. Intenta de nuevo.',
+                confirmButtonColor: '#8d6c4f'
+            });
         }
     });
 

@@ -375,7 +375,7 @@
                                                         <i class="bi bi-flower1" style="font-size: 2.5rem; color: #e91e63;"></i>
                                                     </div>
                                                 @else
-                                                    <img src="{{ $producto ? $producto->url_imagen_principal : asset('images/productos/default.png') }}"
+                                                    <img src="{{ $producto ? $producto->url_imagen_principal : asset('images/flores/default.png') }}"
                                                          alt="{{ $item['nombre'] }}"
                                                          class="item-image">
                                                 @endif
@@ -686,7 +686,8 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         $(document).ready(function() {
             // CSRF Token
@@ -742,35 +743,58 @@
 
         // Remove item from cart
         function removeFromCart(key) {
-            if (!confirm('¿Estás seguro de eliminar este producto del carrito?')) return;
-            
-            $('#cartLoading').show();
-            
-            $.ajax({
-                url: "{{ route('tienda.carrito.quitar') }}",
-                method: 'POST',
-                data: {
-                    key: key
-                },
-                success: function(response) {
-                    // Remove item from DOM
-                    $(`.cart-item[data-key="${key}"]`).fadeOut(300, function() {
-                        $(this).remove();
-                        
-                        // Check if cart is empty
-                        if (response.total_items === 0) {
-                            location.reload();
-                        }
-                    });
-                    
-                    updateSummary(response);
-                    showToast('success', 'Producto eliminado del carrito');
-                    $('#cartLoading').hide();
-                },
-                error: function(xhr) {
-                    $('#cartLoading').hide();
-                    showToast('error', 'Error al eliminar el producto');
-                }
+            Swal.fire({
+                icon: 'question',
+                title: '¿Estás seguro?',
+                text: '¿Deseas eliminar este producto del carrito?',
+                showCancelButton: true,
+                confirmButtonColor: '#8d6c4f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $('#cartLoading').show();
+
+                $.ajax({
+                    url: "{{ route('tienda.carrito.quitar') }}",
+                    method: 'POST',
+                    data: {
+                        key: key
+                    },
+                    success: function(response) {
+                        // Remove item from DOM
+                        $(`.cart-item[data-key="${key}"]`).fadeOut(300, function() {
+                            $(this).remove();
+
+                            // Check if cart is empty
+                            if (response.total_items === 0) {
+                                location.reload();
+                            }
+                        });
+
+                        updateSummary(response);
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Eliminado!',
+                            text: 'Producto eliminado del carrito',
+                            confirmButtonColor: '#8d6c4f',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        $('#cartLoading').hide();
+                    },
+                    error: function(xhr) {
+                        $('#cartLoading').hide();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al eliminar el producto',
+                            confirmButtonColor: '#8d6c4f'
+                        });
+                    }
+                });
             });
         }
 

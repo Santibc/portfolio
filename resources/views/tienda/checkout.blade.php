@@ -656,7 +656,7 @@
                                 @php
                                     $producto = \App\Models\Producto::find($item['producto_id']);
                                     // Para ramos personalizados u items sin producto, usar imagen por defecto
-                                    $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/ramo-personalizado.png');
+                                    $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/flores/default.png');
                                 @endphp
                                 <div class="summary-item">
                                     <img src="{{ $imagenUrl }}"

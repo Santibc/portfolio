@@ -25,7 +25,7 @@ Rastrear mi pedido
 
 ### Productos incluidos:
 @foreach($compra->items as $item)
-- {{ $item->producto->nombre }}@if($item->variante) - {{ $item->variante->nombre }}@endif ({{ $item->cantidad }} unidad{{ $item->cantidad > 1 ? 'es' : '' }})
+- {{ $item->producto ? $item->producto->nombre : $item->nombre_producto }}@if($item->variante) - {{ $item->variante->nombre }}@endif ({{ $item->cantidad }} unidad{{ $item->cantidad > 1 ? 'es' : '' }})
 @endforeach
 
 <x-mail::panel>

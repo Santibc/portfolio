@@ -446,9 +446,17 @@
 
                 @foreach($compra->items as $item)
                     <div class="product-item">
-                        <img src="{{ $item->producto->url_imagen_principal }}"
-                             alt="{{ $item->nombre_producto }}"
-                             class="product-image">
+                        @if($item->producto)
+                            <img src="{{ $item->producto->url_imagen_principal }}"
+                                 alt="{{ $item->nombre_producto }}"
+                                 class="product-image">
+                        @else
+                            {{-- Imagen para ramos personalizados --}}
+                            <div class="product-image d-flex align-items-center justify-content-center"
+                                 style="background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); border-radius: 8px;">
+                                <i class="bi bi-flower1" style="font-size: 2rem; color: #e91e63;"></i>
+                            </div>
+                        @endif
 
                         <div class="flex-grow-1">
                             <div class="fw-medium">{{ $item->nombre_producto }}</div>

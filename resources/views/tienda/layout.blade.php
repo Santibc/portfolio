@@ -68,13 +68,42 @@
     body {
       font-family: var(--font-sans);
       color: var(--flores-text);
+      overflow-x: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     /* ============ CONTENEDOR PERSONALIZADO ============ */
     .container {
-      max-width: 1400px;
-      padding-left: 24px;
-      padding-right: 24px;
+      max-width: 100%;
+      padding-left: 16px;
+      padding-right: 16px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (min-width: 576px) {
+      .container {
+        max-width: 540px;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 720px;
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .container {
+        max-width: 960px;
+      }
     }
 
     @media (min-width: 1200px) {
@@ -281,6 +310,68 @@
 
       .header-minimal {
         padding: 12px 0;
+        gap: 12px;
+      }
+
+      .header-minimal .logo-text {
+        font-size: 18px;
+      }
+
+      .header-minimal .logo-icon {
+        font-size: 22px;
+      }
+
+      .btn-auth-link,
+      .btn-auth-register {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+
+      .header-minimal .header-action-btn {
+        width: 40px;
+        height: 40px;
+      }
+
+      .header-minimal .header-action-btn i {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .header-minimal {
+        padding: 10px 0;
+        gap: 8px;
+      }
+
+      .header-minimal .logo-text {
+        font-size: 16px;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .header-minimal .logo-icon {
+        font-size: 20px;
+      }
+
+      .header-minimal .header-actions {
+        gap: 8px;
+      }
+
+      .header-minimal .header-action-btn {
+        width: 36px;
+        height: 36px;
+      }
+
+      .header-minimal .header-action-btn i {
+        font-size: 18px;
+      }
+
+      .header-minimal .header-action-btn .badge {
+        font-size: 10px;
+        padding: 2px 5px;
+        min-width: 18px;
       }
     }
 
@@ -559,13 +650,53 @@
         padding: 40px 0 24px;
       }
 
+      .footer-brand .footer-logo {
+        font-size: 20px;
+      }
+
+      .footer-brand .footer-logo i {
+        font-size: 22px;
+      }
+
+      .footer-description {
+        font-size: 14px;
+        max-width: 100%;
+      }
+
+      .footer-links-minimal h5,
+      .footer-contact-minimal h5 {
+        font-size: 15px;
+        margin-bottom: 16px;
+      }
+
+      .footer-links-minimal ul li {
+        margin-bottom: 10px;
+      }
+
+      .footer-links-minimal ul li a {
+        font-size: 14px;
+      }
+
+      .contact-item-minimal {
+        font-size: 14px;
+        margin-bottom: 14px;
+      }
+
       .footer-bottom-content {
         flex-direction: column;
         text-align: center;
+        gap: 12px;
       }
 
       .footer-legal {
         justify-content: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .copyright-minimal,
+      .footer-legal a {
+        font-size: 13px;
       }
     }
   </style>

@@ -722,7 +722,7 @@ public function procesarCompra(Request $request)
         foreach ($carrito->items as $item) {
             ItemCompra::create([
                 'compra_id' => $compra->id,
-                'producto_id' => $item['producto_id'],
+                'producto_id' => $item['producto_id'] ?? null,
                 'variante_producto_id' => $item['variante_id'] ?? null,
                 'cantidad' => $item['cantidad'],
                 'precio_unitario' => $item['precio'],
@@ -730,19 +730,21 @@ public function procesarCompra(Request $request)
                 'precio_total' => $item['cantidad'] * $item['precio'],
                 'referencia_producto' => $item['referencia'],
                 'nombre_producto' => $item['nombre'],
-                'info_variante' => isset($item['info_variante']) ? 
+                'info_variante' => isset($item['info_variante']) ?
                     "Talla: {$item['info_variante']['talla']}, Color: {$item['info_variante']['color']}" : null
             ]);
 
-            // Descontar stock
-            $producto = Producto::find($item['producto_id']);
-            if ($producto->controlar_stock) {
-                $stock = $producto->tiene_variantes && isset($item['variante_id']) ?
-                    $producto->stock()->where('variante_producto_id', $item['variante_id'])->first() :
-                    $producto->stockPrincipal;
-                
-                if ($stock) {
-                    $stock->salida($item['cantidad'], 'venta', $compra->numero_compra);
+            // Descontar stock (solo para productos regulares, no ramos personalizados)
+            if (isset($item['producto_id']) && $item['producto_id'] !== null) {
+                $producto = Producto::find($item['producto_id']);
+                if ($producto && $producto->controlar_stock) {
+                    $stock = $producto->tiene_variantes && isset($item['variante_id']) ?
+                        $producto->stock()->where('variante_producto_id', $item['variante_id'])->first() :
+                        $producto->stockPrincipal;
+
+                    if ($stock) {
+                        $stock->salida($item['cantidad'], 'venta', $compra->numero_compra);
+                    }
                 }
             }
         }
