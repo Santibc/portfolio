@@ -520,6 +520,10 @@
   font-size: 14px;
 }
 
+.filter-container .form-select {
+  padding-right: 32px;
+}
+
 .filter-container .input-group .form-control {
   border-right: none;
 }
@@ -543,6 +547,7 @@
 
 .items-per-page .form-select {
   min-width: 110px;
+  padding-right: 32px;
 }
 
 /* Estilos adicionales para los filtros */
@@ -595,6 +600,26 @@
 .category-link.active {
   color: var(--accent-color);
   font-weight: 600;
+}
+
+/* Espaciado entre precio y rating */
+.product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666;
+}
+
+.product-rating i {
+  color: #ffc107;
+  font-size: 14px;
 }
 
 /* Range slider personalizado */
@@ -679,6 +704,23 @@
 
 .view-btn i {
   font-size: 16px;
+}
+
+/* Estilos para rating en vista de lista */
+.stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.stars i {
+  color: #ffc107;
+  font-size: 14px;
+}
+
+.rating-count {
+  margin-left: 4px;
+  color: #666;
+  font-size: 13px;
 }
 </style>
 @endpush

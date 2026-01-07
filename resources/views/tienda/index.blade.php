@@ -717,6 +717,11 @@
   font-weight: 600;
   color: var(--flores-text);
   margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.5;
 }
 
 .btn-agregar-minimal {
@@ -930,6 +935,21 @@
     gap: 24px;
   }
 
+  .beneficio-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .beneficio-content {
+    text-align: center;
+  }
+
+  .beneficio-content h4,
+  .beneficio-content p {
+    text-align: center;
+  }
+
   .cta-arma-ramo {
     padding: 60px 0;
   }
@@ -957,30 +977,50 @@
     padding: 24px 0;
   }
 
+  .hero-content-minimal {
+    text-align: center;
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
   .hero-title-minimal {
-    font-size: 22px;
-    line-height: 1.3;
-    margin-bottom: 20px;
+    font-size: 26px;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .btn-hero-search {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    height: 48px;
+    font-size: 14px;
+    padding: 0 24px;
   }
 
   .hero-benefits {
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 28px;
+    align-items: flex-start;
+  }
+
+  .hero-benefit-item {
+    text-align: center;
+    align-items: center;
+    flex: 0 1 auto;
   }
 
   .hero-benefit-item .benefit-title {
-    font-size: 13px;
+    font-size: 14px;
+    text-align: center;
   }
 
   .hero-benefit-item .benefit-desc {
     font-size: 12px;
-  }
-
-  .btn-hero-search {
-    height: 48px;
-    font-size: 14px;
-    padding: 0 24px;
+    text-align: center;
   }
 
   .ocasiones-section {

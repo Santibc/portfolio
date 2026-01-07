@@ -3,7 +3,7 @@
     <div class="sidebar-header">
         <a href="{{ url('/') }}" class="sidebar-logo">
             <img src="{{ asset('images/logo.png') }}" class="sidebar-logo-img" alt="Logo">
-            <img src="{{ asset('images/ico.png') }}" class="sidebar-logo-icon" alt="Logo">
+            <i class="bi bi-flower1 sidebar-logo-icon" style="font-size: 28px; color: #4a7c59;"></i>
         </a>
     </div>
 

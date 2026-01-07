@@ -167,6 +167,11 @@
       margin: 0;
     }
 
+    .header-minimal .logo-container img {
+      height: 55px;
+      width: auto;
+    }
+
     /* Navigation */
     .header-minimal .nav-links {
       display: flex;
@@ -243,8 +248,13 @@
       text-align: center;
     }
 
+    /* Ocultar caret del dropdown en los botones de acción */
+    .header-minimal .header-action-btn.dropdown-toggle::after {
+      display: none;
+    }
+
     /* Mobile Toggle */
-    .header-minimal .mobile-nav-toggle {
+    .header-minimal .mobile-menu-toggle {
       display: none;
       background: none;
       border: none;
@@ -304,7 +314,7 @@
         display: none;
       }
 
-      .header-minimal .mobile-nav-toggle {
+      .header-minimal .mobile-menu-toggle {
         display: flex;
       }
 
@@ -319,6 +329,11 @@
 
       .header-minimal .logo-icon {
         font-size: 22px;
+      }
+
+      .header-minimal .logo-image {
+        height: 60px;
+        max-width: 180px;
       }
 
       .btn-auth-link,
@@ -353,6 +368,11 @@
 
       .header-minimal .logo-icon {
         font-size: 20px;
+      }
+
+      .header-minimal .logo-image {
+        height: 50px;
+        max-width: 150px;
       }
 
       .header-minimal .header-actions {
@@ -397,18 +417,21 @@
     .mobile-nav-menu {
       position: fixed;
       top: 0;
-      right: -300px;
+      right: 0;
       width: 300px;
       height: 100%;
       background: white;
       z-index: 9999;
       padding: 24px;
-      transition: right 0.3s;
       overflow-y: auto;
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: transform 0.3s ease, visibility 0.3s;
     }
 
     .mobile-nav-menu.active {
-      right: 0;
+      transform: translateX(0);
+      visibility: visible;
     }
 
     .mobile-nav-menu .close-btn {
@@ -420,6 +443,13 @@
       font-size: 24px;
       cursor: pointer;
       color: var(--flores-text);
+      z-index: 10;
+      padding: 8px;
+      line-height: 1;
+    }
+
+    .mobile-nav-menu .close-btn:hover {
+      color: var(--flores-primary);
     }
 
     .mobile-nav-menu .nav-links {
@@ -446,6 +476,22 @@
 
     .mobile-nav-menu .nav-links a:hover {
       color: var(--flores-primary);
+    }
+
+    /* Mobile Menu - Centrado */
+    @media (max-width: 991px) {
+      .mobile-nav-menu {
+        text-align: center;
+      }
+
+      .mobile-nav-menu .nav-links {
+        text-align: center;
+      }
+
+      .mobile-nav-menu .nav-links a {
+        text-align: center;
+        display: block;
+      }
     }
 
     /* ============ BOTONES ============ */
@@ -650,8 +696,14 @@
         padding: 40px 0 24px;
       }
 
+      /* Centrar todo el contenido del footer en mobile */
+      .footer-brand {
+        text-align: center;
+      }
+
       .footer-brand .footer-logo {
         font-size: 20px;
+        justify-content: center;
       }
 
       .footer-brand .footer-logo i {
@@ -661,12 +713,28 @@
       .footer-description {
         font-size: 14px;
         max-width: 100%;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .footer-social {
+        justify-content: center;
+      }
+
+      .footer-links-minimal {
+        text-align: center;
       }
 
       .footer-links-minimal h5,
       .footer-contact-minimal h5 {
         font-size: 15px;
         margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .footer-links-minimal ul {
+        text-align: center;
       }
 
       .footer-links-minimal ul li {
@@ -677,9 +745,15 @@
         font-size: 14px;
       }
 
+      .footer-contact-minimal {
+        text-align: center;
+      }
+
       .contact-item-minimal {
         font-size: 14px;
         margin-bottom: 14px;
+        justify-content: center;
+        text-align: center;
       }
 
       .footer-bottom-content {
@@ -699,6 +773,14 @@
         font-size: 13px;
       }
     }
+
+    /* ============ FIX PARA SELECT DROPDOWN ============ */
+    /* Evitar que la flecha del select se superponga con el texto */
+    .form-select,
+    select.form-select {
+      padding-right: 2.5rem !important;
+      background-position: right 0.75rem center !important;
+    }
   </style>
 
   @stack('styles')
@@ -715,13 +797,17 @@
         <div class="header-minimal">
           <!-- Logo -->
           <a href="{{ route('home') }}" class="logo">
-            <i class="bi bi-flower1 logo-icon"></i>
-            <span class="logo-text">{{ $empresa->nombre }}</span>
+            @if($empresa->logo_url)
+              <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="height: 50px !important; width: auto !important; max-height: none !important;">
+            @else
+              <i class="bi bi-flower1 logo-icon"></i>
+              <span class="logo-text">{{ $empresa->nombre }}</span>
+            @endif
           </a>
 
           <!-- Navigation Links -->
           <ul class="nav-links">
-            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Catalogo</a></li>
+            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Catálogo</a></li>
             <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')">Arma tu ramo</a></li>
           </ul>
 
@@ -772,7 +858,7 @@
             </a>
 
             <!-- Mobile Toggle -->
-            <button type="button" class="mobile-nav-toggle" id="mobileNavToggle">
+            <button type="button" class="mobile-menu-toggle" id="mobileNavToggle">
               <i class="bi bi-list"></i>
             </button>
           </div>
@@ -803,7 +889,7 @@
     </button>
     <ul class="nav-links">
       <li><a href="{{ route('home') }}">Inicio</a></li>
-      <li><a href="{{ route('tienda.categorias') }}">Catalogo</a></li>
+      <li><a href="{{ route('tienda.categorias') }}">Catálogo</a></li>
       <li><a href="{{ route('arma-tu-ramo') }}">Arma tu ramo</a></li>
       @guest
         <li><a href="{{ route('login') }}">Iniciar Sesión</a></li>
@@ -985,16 +1071,44 @@
       });
 
       // Mobile Navigation
-      $('#mobileNavToggle').on('click', function() {
+      function openMobileNav() {
         $('#mobileNavOverlay').addClass('active');
         $('#mobileNavMenu').addClass('active');
         $('body').css('overflow', 'hidden');
-      });
+      }
 
-      $('#mobileNavClose, #mobileNavOverlay').on('click', function() {
+      function closeMobileNav() {
         $('#mobileNavOverlay').removeClass('active');
         $('#mobileNavMenu').removeClass('active');
         $('body').css('overflow', '');
+      }
+
+      $('#mobileNavToggle').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openMobileNav();
+      });
+
+      $('#mobileNavClose').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMobileNav();
+      });
+
+      $('#mobileNavOverlay').on('click', function() {
+        closeMobileNav();
+      });
+
+      // Cerrar menú al hacer click en un enlace
+      $('#mobileNavMenu .nav-links a').on('click', function() {
+        closeMobileNav();
+      });
+
+      // Cerrar con tecla Escape
+      $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMobileNav();
+        }
       });
     });
   </script>

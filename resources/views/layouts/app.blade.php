@@ -394,6 +394,15 @@
             background: var(--admin-primary) !important;
             color: white;
         }
+
+        /* ============ FIX PARA SELECT DROPDOWN ============ */
+        /* Evitar que la flecha del select se superponga con el texto */
+        .form-select,
+        select.form-select,
+        select {
+            padding-right: 2.5rem !important;
+            background-position: right 0.75rem center !important;
+        }
     </style>
 </head>
 <body>

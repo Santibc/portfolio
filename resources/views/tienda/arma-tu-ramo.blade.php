@@ -3,7 +3,7 @@
 @section('title', 'Arma tu Ramo - Flores y Algo Más')
 
 @section('content')
-<div class="container py-4">
+<div class="container arma-ramo-container">
     {{-- Header --}}
     <div class="text-center mb-5">
         <h1 class="display-5 fw-bold" style="color: #e91e63;">
@@ -57,14 +57,16 @@
 
             {{-- Paso 2: Seleccionar Flores --}}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <span class="badge bg-primary rounded-pill me-2">2</span>
-                        Selecciona tus flores
-                    </h5>
-                    <span class="badge bg-secondary" id="contador-flores">
-                        <span id="total-flores">{{ $ramoEnProgreso->total_flores }}</span> flores seleccionadas
-                    </span>
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                        <h5 class="mb-0">
+                            <span class="badge bg-primary rounded-pill me-2">2</span>
+                            Selecciona tus flores
+                        </h5>
+                        <span class="badge bg-secondary" id="contador-flores">
+                            <span id="total-flores">{{ $ramoEnProgreso->total_flores }}</span> flores seleccionadas
+                        </span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3" id="flores-container">
@@ -280,6 +282,30 @@
 @push('styles')
 <style>
     .cursor-pointer { cursor: pointer; }
+
+    /* Contenedor principal con espacio superior en mobile */
+    .arma-ramo-container {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    @media (max-width: 767px) {
+        .arma-ramo-container {
+            padding-top: 2rem;
+        }
+
+        .arma-ramo-container .text-center.mb-5 {
+            margin-bottom: 2rem !important;
+        }
+
+        .arma-ramo-container .display-5 {
+            font-size: 1.5rem;
+        }
+
+        .arma-ramo-container .lead {
+            font-size: 0.95rem;
+        }
+    }
 
     /* Panel sticky mejorado */
     .resumen-ramo-sticky {
