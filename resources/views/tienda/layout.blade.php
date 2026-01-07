@@ -54,13 +54,13 @@
   <!-- Flores Minimal Theme Styles -->
   <style>
     :root {
-      --flores-primary: #6B7456;
-      --flores-primary-hover: #5a6248;
-      --flores-beige: #F5EDD8;
-      --flores-text: #333333;
+      --flores-primary: #1a1a1a;
+      --flores-primary-hover: #333333;
+      --flores-beige: #f5f5f5;
+      --flores-text: #1a1a1a;
       --flores-text-light: #666666;
       --flores-bg: #FFFFFF;
-      --flores-border: #E5E5E5;
+      --flores-border: #e0e0e0;
       --font-serif: 'Playfair Display', Georgia, serif;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }

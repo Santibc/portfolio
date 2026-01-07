@@ -22,9 +22,9 @@
 
     <style>
         :root {
-            --admin-primary: #6B7456;
-            --admin-primary-hover: #5a6248;
-            --admin-beige: #F5EDD8;
+            --admin-primary: #1a1a1a;
+            --admin-primary-hover: #333333;
+            --admin-beige: #f5f5f5;
             --admin-text: #333333;
             --admin-text-light: #666666;
             --admin-bg: #FAFAFA;
@@ -262,7 +262,7 @@
         }
 
         .sidebar-sublink.active {
-            background: rgba(107, 116, 86, 0.1);
+            background: rgba(26, 26, 26, 0.1);
             color: var(--admin-primary);
             font-weight: 500;
         }

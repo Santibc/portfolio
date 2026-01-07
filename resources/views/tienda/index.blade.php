@@ -360,7 +360,7 @@
 .selector-input .form-select:focus,
 .selector-input .form-control:focus {
   border-color: var(--flores-primary);
-  box-shadow: 0 0 0 3px rgba(107, 116, 86, 0.1);
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
 }
 
 .btn-hero-search {
@@ -859,10 +859,10 @@
 }
 
 .btn-cta-ramo:hover {
-  background: var(--flores-primary-dark, #5a6349);
+  background: var(--flores-primary-dark, #333333);
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(107, 116, 86, 0.3);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.3);
 }
 
 /* ============ RESPONSIVE ============ */

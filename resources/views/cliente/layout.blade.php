@@ -18,9 +18,9 @@
 
     <style>
         :root {
-            --cliente-primary: #6B7456;
-            --cliente-primary-hover: #5a6248;
-            --cliente-beige: #F5EDD8;
+            --cliente-primary: #1a1a1a;
+            --cliente-primary-hover: #333333;
+            --cliente-beige: #f5f5f5;
             --cliente-text: #333333;
             --cliente-text-light: #666666;
             --cliente-bg: #FAFAFA;

@@ -16,9 +16,9 @@
 
     <style>
         :root {
-            --flores-primary: #6B7456;
-            --flores-primary-hover: #5a6248;
-            --flores-beige: #F5EDD8;
+            --flores-primary: #1a1a1a;
+            --flores-primary-hover: #333333;
+            --flores-beige: #f5f5f5;
             --flores-text: #333333;
             --flores-text-light: #666666;
             --flores-bg: #FFFFFF;
@@ -152,7 +152,7 @@
             outline: none;
             background: white;
             border-color: var(--flores-primary);
-            box-shadow: 0 0 0 3px rgba(107, 116, 86, 0.1);
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
         }
 
         .form-input::placeholder {

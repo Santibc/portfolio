@@ -529,15 +529,15 @@
 }
 
 .filter-container .search-btn {
-  background: var(--flores-primary, #6B7456);
+  background: var(--flores-primary, #1a1a1a);
   color: white;
-  border: 1px solid var(--flores-primary, #6B7456);
+  border: 1px solid var(--flores-primary, #1a1a1a);
   border-radius: 0 8px 8px 0;
   padding: 0 16px;
 }
 
 .filter-container .search-btn:hover {
-  background: var(--flores-primary-hover, #5a6248);
+  background: var(--flores-primary-hover, #333333);
 }
 
 .view-options {
