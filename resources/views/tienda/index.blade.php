@@ -22,14 +22,39 @@
 
               <!-- Hero Benefits -->
               <div class="hero-benefits">
+                @php
+                  // Beneficios hero basados en info de envío gratis (desde tarifa)
+                  $heroBenefits = [];
+
+                  // Priorizar info de envío gratis desde la tarifa de logística
+                  if ($infoEnvioGratis && $infoEnvioGratis['activo']) {
+                    $heroBenefits[] = [
+                      'title' => $infoEnvioGratis['nombre'],
+                      'desc' => $infoEnvioGratis['descripcion']
+                    ];
+                  }
+
+                  // Beneficio por defecto de frescura siempre se muestra
+                  $heroBenefits[] = [
+                    'title' => 'Flores frescas',
+                    'desc' => 'Garantía de 7 días'
+                  ];
+
+                  // Si no hay envío gratis configurado, mostrar beneficio genérico
+                  if (count($heroBenefits) === 1) {
+                    array_unshift($heroBenefits, [
+                      'title' => 'Entrega rápida',
+                      'desc' => 'Servicio eficiente'
+                    ]);
+                  }
+                @endphp
+
+                @foreach(array_slice($heroBenefits, 0, 2) as $benefit)
                 <div class="hero-benefit-item">
-                  <span class="benefit-title">Entrega gratis</span>
-                  <span class="benefit-desc">En pedidos sobre $50.000</span>
+                  <span class="benefit-title">{{ $benefit['title'] }}</span>
+                  <span class="benefit-desc">{{ $benefit['desc'] }}</span>
                 </div>
-                <div class="hero-benefit-item">
-                  <span class="benefit-title">Flores frescas</span>
-                  <span class="benefit-desc">Garantía de 7 días</span>
-                </div>
+                @endforeach
               </div>
             </div>
           </div>
@@ -168,45 +193,84 @@
     <section class="beneficios-section">
       <div class="container">
         <div class="beneficios-grid">
-          <div class="beneficio-item">
-            <div class="beneficio-icon">
-              <i class="bi bi-truck"></i>
-            </div>
-            <div class="beneficio-content">
-              <h4>Envío gratis</h4>
-              <p>En pedidos sobre $50.000</p>
-            </div>
-          </div>
+          @php
+            // Beneficios dinámicos basados en descuentos activos y envío gratis
+            $beneficios = [];
 
-          <div class="beneficio-item">
-            <div class="beneficio-icon">
-              <i class="bi bi-clock"></i>
-            </div>
-            <div class="beneficio-content">
-              <h4>Entrega el mismo día</h4>
-              <p>Pedidos antes de las 2pm</p>
-            </div>
-          </div>
+            // Primero agregar envío gratis si está configurado en la tarifa
+            if ($infoEnvioGratis && $infoEnvioGratis['activo']) {
+              $beneficios[] = [
+                'icon' => 'bi-truck',
+                'titulo' => $infoEnvioGratis['nombre'],
+                'descripcion' => $infoEnvioGratis['descripcion']
+              ];
+            }
 
-          <div class="beneficio-item">
-            <div class="beneficio-icon">
-              <i class="bi bi-shield-check"></i>
-            </div>
-            <div class="beneficio-content">
-              <h4>Garantía de frescura</h4>
-              <p>Flores 100% frescas</p>
-            </div>
-          </div>
+            // Luego agregar descuentos activos (excluyendo descuentos de envío que ya no se usan)
+            foreach($descuentosActivos as $descuento) {
+              $codigo = strtoupper($descuento->codigo);
 
+              // Saltar descuentos de envío porque ahora se manejan desde la tarifa
+              if (str_contains($codigo, 'ENVIO') || str_contains($codigo, 'SHIPPING')) {
+                continue;
+              }
+
+              $icon = 'bi-percent'; // Icono por defecto
+              $titulo = $descuento->nombre;
+              $descripcion = $descuento->descripcion ?? '';
+
+              // Asignar iconos inteligentemente
+              if (str_contains($codigo, 'NAVIDAD') || str_contains($codigo, 'CHRISTMAS')) {
+                $icon = 'bi-gift';
+                if (!$descripcion) $descripcion = 'Oferta especial de temporada';
+              } elseif ($descuento->tipo === 'porcentaje') {
+                $icon = 'bi-percent';
+                if (!$descripcion) $descripcion = $descuento->valor . '% de descuento';
+              } elseif ($descuento->tipo === 'monto_fijo') {
+                $icon = 'bi-tag';
+                if (!$descripcion) $descripcion = '$' . number_format($descuento->valor, 0, ',', '.') . ' de descuento';
+              }
+
+              // Agregar requisito de monto mínimo si aplica
+              if ($descuento->monto_minimo_compra && !$descripcion) {
+                $descripcion = 'En compras sobre $' . number_format($descuento->monto_minimo_compra, 0, ',', '.');
+              }
+
+              $beneficios[] = [
+                'icon' => $icon,
+                'titulo' => $titulo,
+                'descripcion' => $descripcion
+              ];
+            }
+
+            // Beneficios por defecto si no hay suficientes descuentos
+            $beneficiosPorDefecto = [
+              ['icon' => 'bi-shield-check', 'titulo' => 'Garantía de frescura', 'descripcion' => 'Flores 100% frescas'],
+              ['icon' => 'bi-headset', 'titulo' => 'Atención personalizada', 'descripcion' => 'Soporte por WhatsApp'],
+              ['icon' => 'bi-clock', 'titulo' => 'Entrega rápida', 'descripcion' => 'Servicio eficiente'],
+              ['icon' => 'bi-heart', 'titulo' => 'Con amor', 'descripcion' => 'Arreglos únicos y especiales']
+            ];
+
+            // Combinar descuentos activos con beneficios por defecto (máximo 4)
+            while (count($beneficios) < 4 && count($beneficiosPorDefecto) > 0) {
+              $beneficios[] = array_shift($beneficiosPorDefecto);
+            }
+
+            // Limitar a 4 beneficios
+            $beneficios = array_slice($beneficios, 0, 4);
+          @endphp
+
+          @foreach($beneficios as $beneficio)
           <div class="beneficio-item">
             <div class="beneficio-icon">
-              <i class="bi bi-headset"></i>
+              <i class="bi {{ $beneficio['icon'] }}"></i>
             </div>
             <div class="beneficio-content">
-              <h4>Atención personalizada</h4>
-              <p>Soporte por WhatsApp</p>
+              <h4>{{ $beneficio['titulo'] }}</h4>
+              <p>{{ $beneficio['descripcion'] }}</p>
             </div>
           </div>
+          @endforeach
         </div>
       </div>
     </section>

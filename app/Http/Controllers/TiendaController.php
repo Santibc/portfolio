@@ -217,6 +217,26 @@ class TiendaController extends Controller
             ->disponibles()
             ->get();
 
+        // Obtener información de envío gratis desde la tarifa de logística
+        $infoEnvioGratis = null;
+        $tarifaConEnvioGratis = \App\Models\TarifaZona::whereHas('zona', function($q) use ($empresa) {
+                $q->where('empresa_id', $empresa->id);
+            })
+            ->where('activo', true)
+            ->where('envio_gratis_desde', true)
+            ->whereNotNull('monto_envio_gratis')
+            ->where('monto_envio_gratis', '>', 0)
+            ->first();
+
+        if ($tarifaConEnvioGratis) {
+            $infoEnvioGratis = [
+                'activo' => true,
+                'monto_minimo' => $tarifaConEnvioGratis->monto_envio_gratis,
+                'nombre' => 'Envío Gratis',
+                'descripcion' => 'En pedidos sobre $' . number_format($tarifaConEnvioGratis->monto_envio_gratis, 0, ',', '.')
+            ];
+        }
+
         // Productos con descuentos (para la sección de ofertas)
         $productosConDescuento = collect();
 
@@ -274,7 +294,8 @@ class TiendaController extends Controller
             'productosNuevos',
             'productoAleatorio',
             'productosConDescuento',
-            'descuentosActivos'
+            'descuentosActivos',
+            'infoEnvioGratis'
         ));
 
         // Renderizar vista del template
