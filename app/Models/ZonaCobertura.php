@@ -62,9 +62,33 @@ class ZonaCobertura extends Model
         return $query->where('empresa_id', $empresaId);
     }
 
+    /**
+     * Relación con productos disponibles en esta zona
+     */
+    public function productos()
+    {
+        return $this->belongsToMany(
+            Producto::class,
+            'productos_zonas_cobertura',
+            'zona_cobertura_id',
+            'producto_id'
+        )
+        ->withPivot('stock_local', 'activo')
+        ->withTimestamps()
+        ->wherePivot('activo', true);
+    }
+
     // Métodos de verificación
     public function cubreCiudad($ciudadId)
     {
         return in_array($ciudadId, $this->ciudades_ids ?? []);
+    }
+
+    /**
+     * Obtener total de productos disponibles en esta zona
+     */
+    public function getTotalProductosAttribute()
+    {
+        return $this->productos()->count();
     }
 }

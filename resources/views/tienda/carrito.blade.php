@@ -464,6 +464,42 @@
 
                                                     <div class="item-reference">Ref: {{ $item['referencia'] }}</div>
 
+                                                    {{-- Indicador de disponibilidad geográfica --}}
+                                                    @php
+                                                        $ubicacionSeleccionada = session('ubicacion_seleccionada');
+                                                        $zonaSeleccionada = null;
+                                                        $disponibleEnZona = true;
+
+                                                        if ($ubicacionSeleccionada && isset($ubicacionSeleccionada['zona_id']) && $producto) {
+                                                            $zonaSeleccionada = \App\Models\ZonaCobertura::find($ubicacionSeleccionada['zona_id']);
+                                                            $disponibleEnZona = $producto->estaDisponibleEnZona($ubicacionSeleccionada['zona_id']);
+                                                        }
+                                                    @endphp
+
+                                                    @if($zonaSeleccionada && !$esRamoPersonalizado)
+                                                        @if($disponibleEnZona)
+                                                            <div class="mt-2">
+                                                                <small class="text-success">
+                                                                    <i class="bi bi-check-circle-fill"></i>
+                                                                    Disponible en {{ $zonaSeleccionada->nombre }}
+                                                                </small>
+                                                            </div>
+                                                        @else
+                                                            <div class="mt-2">
+                                                                <small class="text-danger fw-bold">
+                                                                    <i class="bi bi-x-circle-fill"></i>
+                                                                    No disponible en {{ $zonaSeleccionada->nombre }}
+                                                                </small>
+                                                                <div class="mt-1">
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                            onclick="eliminarItem('{{ $key }}')">
+                                                                        <i class="bi bi-trash"></i> Eliminar
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endif
+
                                                     {{-- Descuentos aplicados al item --}}
                                                     @if(isset($item['descuentos']) && !empty($item['descuentos']))
                                                         <div class="item-discounts mt-2">

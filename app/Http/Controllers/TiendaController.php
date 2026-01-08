@@ -115,6 +115,12 @@ class TiendaController extends Controller
             $query->buscar($request->buscar);
         }
 
+        // Filtro por zona de cobertura seleccionada en sesión
+        $ubicacionSeleccionada = session('ubicacion_seleccionada');
+        if ($ubicacionSeleccionada && isset($ubicacionSeleccionada['zona_id'])) {
+            $query->disponibleEnZona($ubicacionSeleccionada['zona_id']);
+        }
+
         if ($request->filled('orden')) {
             switch ($request->orden) {
                 case 'precio_asc':
@@ -162,11 +168,17 @@ class TiendaController extends Controller
 
         // Productos destacados (más vendidos o aleatorios)
         // TODO: Implementar lógica de más vendidos cuando se configure la relación itemsCompra
-        $productosDestacados = Producto::where('empresa_id', $empresa->id)
+        $queryDestacados = Producto::where('empresa_id', $empresa->id)
             ->where('activo', true)
             ->noEliminados()
-            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal'])
-            ->inRandomOrder()
+            ->with(['imagenPrincipal', 'categoria', 'stockPrincipal']);
+
+        // Aplicar filtro de zona a productos destacados también
+        if ($ubicacionSeleccionada && isset($ubicacionSeleccionada['zona_id'])) {
+            $queryDestacados->disponibleEnZona($ubicacionSeleccionada['zona_id']);
+        }
+
+        $productosDestacados = $queryDestacados->inRandomOrder()
             ->take(6)
             ->get();
 
@@ -702,6 +714,46 @@ public function procesarCompra(Request $request)
             ->with('error', 'El carrito está vacío');
     }
 
+    // Validar disponibilidad geográfica de los productos
+    $ciudadId = $request->ciudad_id;
+    $ciudad = Ciudad::find($ciudadId);
+
+    if ($ciudad) {
+        // Buscar zona de cobertura que incluya esta ciudad
+        $zonaCobertura = ZonaCobertura::where('empresa_id', $empresa->id)
+            ->activo()
+            ->get()
+            ->first(function ($zona) use ($ciudadId) {
+                return in_array($ciudadId, $zona->ciudades_ids ?? []);
+            });
+
+        if ($zonaCobertura) {
+            // Verificar que todos los productos del carrito estén disponibles en esta zona
+            $productosNoDisponibles = [];
+
+            foreach ($carrito->items as $item) {
+                // Saltar ramos personalizados
+                if (isset($item['es_ramo_personalizado']) && $item['es_ramo_personalizado']) {
+                    continue;
+                }
+
+                if (isset($item['producto_id'])) {
+                    $producto = Producto::find($item['producto_id']);
+
+                    if ($producto && !$producto->estaDisponibleEnZona($zonaCobertura->id)) {
+                        $productosNoDisponibles[] = $producto->nombre;
+                    }
+                }
+            }
+
+            if (!empty($productosNoDisponibles)) {
+                return redirect()->route('tienda.carrito')
+                    ->with('error', 'Los siguientes productos no están disponibles en ' . $ciudad->nombre . ': ' .
+                        implode(', ', $productosNoDisponibles) . '. Por favor elimínalos del carrito para continuar.');
+            }
+        }
+    }
+
     DB::beginTransaction();
 
     try {
@@ -935,6 +987,12 @@ public function categorias(Request $request)
     // Filtro por búsqueda
     if ($request->filled('buscar')) {
         $query->buscar($request->buscar);
+    }
+
+    // Filtro por zona de cobertura seleccionada en sesión
+    $ubicacionSeleccionada = session('ubicacion_seleccionada');
+    if ($ubicacionSeleccionada && isset($ubicacionSeleccionada['zona_id'])) {
+        $query->disponibleEnZona($ubicacionSeleccionada['zona_id']);
     }
 
     // Obtener rango de precios antes de aplicar filtros de precio
@@ -1392,5 +1450,80 @@ public function categorias(Request $request)
             'monto_envio_gratis' => $tarifa->envio_gratis_desde ? $tarifa->monto_envio_gratis : null,
             'tiempo_entrega_horas' => $tarifa->tiempo_entrega_horas
         ]);
+    }
+
+    /**
+     * Establecer ubicación seleccionada en sesión
+     */
+    public function establecerUbicacion(Request $request)
+    {
+        $request->validate([
+            'zona_id' => 'required|exists:zonas_cobertura,id',
+            'ciudad_id' => 'required|exists:ciudades,id',
+        ]);
+
+        session([
+            'ubicacion_seleccionada' => [
+                'zona_id' => $request->zona_id,
+                'ciudad_id' => $request->ciudad_id,
+                'timestamp' => now()->timestamp,
+            ]
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ubicación establecida correctamente'
+        ]);
+    }
+
+    /**
+     * Limpiar ubicación seleccionada de la sesión
+     */
+    public function limpiarUbicacion(Request $request)
+    {
+        session()->forget('ubicacion_seleccionada');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Filtro de ubicación removido'
+        ]);
+    }
+
+    /**
+     * Obtener TODAS las zonas de cobertura (API) - Proyecto mono-empresa
+     */
+    public function obtenerTodasZonasCobertura()
+    {
+        $zonas = ZonaCobertura::activo()
+                    ->orderBy('orden')
+                    ->get(['id', 'nombre', 'descripcion', 'ciudades_ids']);
+
+        return response()->json($zonas);
+    }
+
+    /**
+     * Obtener zonas de cobertura de una empresa (API) - Multi-empresa (legacy)
+     */
+    public function obtenerZonasCobertura($empresaId)
+    {
+        $zonas = ZonaCobertura::where('empresa_id', $empresaId)
+                    ->activo()
+                    ->orderBy('orden')
+                    ->get(['id', 'nombre', 'descripcion', 'ciudades_ids']);
+
+        return response()->json($zonas);
+    }
+
+    /**
+     * Obtener comunas por región (API) - Solo de Chile
+     */
+    public function obtenerComunasPorRegion($regionId)
+    {
+        $comunas = \Illuminate\Support\Facades\DB::table('ciudades')
+                    ->where('departamento_id', $regionId)
+                    ->orderBy('nombre')
+                    ->get(['id', 'nombre']);
+
+        return response()->json($comunas);
     }
 }

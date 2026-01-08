@@ -310,4 +310,78 @@ public function getUrlImagenPrincipalAttribute()
               ->whereRaw('(cantidad_disponible - cantidad_reservada) <= stock_minimo');
         });
     }
+
+    /**
+     * Relación con zonas de cobertura donde está disponible el producto
+     */
+    public function zonasCobertura()
+    {
+        return $this->belongsToMany(
+            ZonaCobertura::class,
+            'productos_zonas_cobertura',
+            'producto_id',
+            'zona_cobertura_id'
+        )
+        ->withPivot('stock_local', 'activo')
+        ->withTimestamps()
+        ->wherePivot('activo', true);
+    }
+
+    /**
+     * Relación con ProductoZonaCobertura (tabla pivot)
+     */
+    public function productosZonasCobertura()
+    {
+        return $this->hasMany(ProductoZonaCobertura::class);
+    }
+
+    /**
+     * Scope para filtrar productos disponibles en una zona específica
+     */
+    public function scopeDisponibleEnZona($query, $zonaId)
+    {
+        return $query->whereHas('zonasCobertura', function($q) use ($zonaId) {
+            $q->where('zonas_cobertura.id', $zonaId);
+        });
+    }
+
+    /**
+     * Scope para filtrar productos disponibles en cualquiera de las zonas proporcionadas
+     */
+    public function scopeDisponibleEnZonas($query, array $zonasIds)
+    {
+        return $query->whereHas('zonasCobertura', function($q) use ($zonasIds) {
+            $q->whereIn('zonas_cobertura.id', $zonasIds);
+        });
+    }
+
+    /**
+     * Verificar si el producto está disponible en una zona específica
+     */
+    public function estaDisponibleEnZona($zonaId)
+    {
+        return $this->zonasCobertura()->where('zonas_cobertura.id', $zonaId)->exists();
+    }
+
+    /**
+     * Obtener nombres de zonas donde está disponible
+     */
+    public function getNombresZonasDisponiblesAttribute()
+    {
+        return $this->zonasCobertura()->pluck('nombre')->toArray();
+    }
+
+    /**
+     * Obtener ciudades donde está disponible (a través de zonas)
+     */
+    public function getCiudadesDisponiblesAttribute()
+    {
+        return $this->zonasCobertura()
+            ->with('ciudad')
+            ->get()
+            ->pluck('ciudad.nombre')
+            ->unique()
+            ->values()
+            ->toArray();
+    }
 }

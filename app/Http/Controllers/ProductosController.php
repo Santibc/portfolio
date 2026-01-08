@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use App\Models\Empresa;
+use App\Models\ZonaCobertura;
 
 class ProductosController extends Controller
 {
@@ -189,8 +190,20 @@ class ProductosController extends Controller
                 }
             }
         }
-        
-        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks'));
+
+        // Cargar zonas de cobertura de la empresa
+        $zonasCobertura = ZonaCobertura::where('empresa_id', $empresa->id)
+                         ->activo()
+                         ->orderBy('orden')
+                         ->get();
+
+        // Cargar zonas ya asignadas al producto (si existe)
+        $zonasAsignadas = [];
+        if ($producto->exists) {
+            $zonasAsignadas = $producto->zonasCobertura()->pluck('zonas_cobertura.id')->toArray();
+        }
+
+        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks', 'zonasCobertura', 'zonasAsignadas'));
     }
 
     public function guardar(Request $request)
@@ -436,7 +449,18 @@ class ProductosController extends Controller
                     }
                 }
             }
-            
+
+            // Guardar zonas de cobertura asignadas
+            if ($request->has('zonas_cobertura')) {
+                $zonasIds = $request->input('zonas_cobertura', []);
+
+                // Sync sincroniza automáticamente: agrega nuevas, elimina las que ya no están
+                $producto->zonasCobertura()->sync($zonasIds);
+            } else {
+                // Si no se envió el array, significa que no hay zonas seleccionadas
+                $producto->zonasCobertura()->sync([]);
+            }
+
             DB::commit();
             
             return redirect()->route('productos')

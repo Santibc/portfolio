@@ -470,9 +470,73 @@
           
           <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Opcional:</strong> Complete solo los beneficios que apliquen para este producto. 
+            <strong>Opcional:</strong> Complete solo los beneficios que apliquen para este producto.
             Si no completa ningún campo, esta sección no se mostrará en la tienda.
           </div>
+        </div>
+      </div>
+
+      {{-- Zonas de Cobertura --}}
+      <div class="card mb-3">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">
+            <i class="bi bi-geo-alt"></i> Disponibilidad Geográfica
+          </h5>
+        </div>
+        <div class="card-body">
+          @if($zonasCobertura->count() > 0)
+            <p class="text-muted mb-3">
+              <i class="bi bi-info-circle me-2"></i>
+              Selecciona las zonas donde este producto estará disponible para venta.
+              <strong>Si no seleccionas ninguna zona, el producto estará disponible en todas las zonas.</strong>
+            </p>
+
+            <div class="row">
+              @foreach($zonasCobertura as $zona)
+                <div class="col-md-6 col-lg-4 mb-3">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="zonas_cobertura[]"
+                      value="{{ $zona->id }}"
+                      id="zona_{{ $zona->id }}"
+                      {{ in_array($zona->id, $zonasAsignadas) ? 'checked' : '' }}
+                    >
+                    <label class="form-check-label" for="zona_{{ $zona->id }}">
+                      <strong>{{ $zona->nombre }}</strong>
+                      @if($zona->descripcion)
+                        <br>
+                        <small class="text-muted">{{ $zona->descripcion }}</small>
+                      @endif
+                      @if(is_array($zona->ciudades_ids) && count($zona->ciudades_ids) > 0)
+                        <br>
+                        <small class="badge bg-info text-dark mt-1">
+                          {{ count($zona->ciudades_ids) }} ciudad(es)
+                        </small>
+                      @endif
+                    </label>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+
+            <div class="mt-3">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="seleccionarTodasZonas">
+                <i class="bi bi-check-square"></i> Seleccionar todas
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="deseleccionarTodasZonas">
+                <i class="bi bi-square"></i> Deseleccionar todas
+              </button>
+            </div>
+          @else
+            <div class="alert alert-warning mb-0">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <strong>No tienes zonas de cobertura configuradas.</strong><br>
+              Para restringir la disponibilidad de productos por ubicación, primero debes
+              <a href="{{ route('logistica.zonas.index') }}" class="alert-link">crear zonas de cobertura</a>.
+            </div>
+          @endif
         </div>
       </div>
 
@@ -765,6 +829,15 @@
         }
         
         return isValid;
+      });
+
+      // Botones seleccionar/deseleccionar todas las zonas
+      $('#seleccionarTodasZonas').click(function() {
+        $('input[name="zonas_cobertura[]"]').prop('checked', true);
+      });
+
+      $('#deseleccionarTodasZonas').click(function() {
+        $('input[name="zonas_cobertura[]"]').prop('checked', false);
       });
     });
   </script>

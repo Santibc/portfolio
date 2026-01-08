@@ -441,6 +441,23 @@ Route::get('/checkout', [App\Http\Controllers\TiendaController::class, 'checkout
 Route::post('/calcular-envio', [App\Http\Controllers\TiendaController::class, 'calcularEnvio'])
     ->name('tienda.calcular-envio');
 
+// Rutas de selector de ubicación
+Route::post('/tienda/establecer-ubicacion', [App\Http\Controllers\TiendaController::class, 'establecerUbicacion'])
+    ->name('tienda.establecer-ubicacion');
+
+Route::post('/tienda/limpiar-ubicacion', [App\Http\Controllers\TiendaController::class, 'limpiarUbicacion'])
+    ->name('tienda.limpiar-ubicacion');
+
+// API para obtener zonas de cobertura y comunas de Chile
+Route::get('/api/zonas-cobertura', [App\Http\Controllers\TiendaController::class, 'obtenerTodasZonasCobertura'])
+    ->name('api.zonas-cobertura.todas');
+
+Route::get('/api/zonas-cobertura/{empresaId}', [App\Http\Controllers\TiendaController::class, 'obtenerZonasCobertura'])
+    ->name('api.zonas-cobertura');
+
+Route::get('/api/comunas/por-region/{regionId}', [App\Http\Controllers\TiendaController::class, 'obtenerComunasPorRegion'])
+    ->name('api.comunas.por-region');
+
 Route::post('/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
     ->name('tienda.procesar-compra');
 

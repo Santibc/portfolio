@@ -114,10 +114,17 @@
       </div>
     </section>
 
-    <!-- Filtros por Ocasión -->
-    <section class="ocasiones-section">
+    <!-- Selector de Ubicación -->
+    <section class="ubicacion-section py-5 mt-4" style="background-color: #f8f9fa;">
       <div class="container">
-        <div class="ocasiones-pills">
+        @include('components.selector-ubicacion')
+      </div>
+    </section>
+
+    <!-- Filtros por Ocasión -->
+    <section class="ocasiones-section py-4" style="background-color: #ffffff;">
+      <div class="container">
+        <div class="ocasiones-pills d-flex justify-content-center flex-wrap gap-2">
           @foreach($categoriasMenu ?? [] as $index => $categoria)
             <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="ocasion-pill {{ $index === 0 ? 'active' : '' }}">
               {{ $categoria->nombre }}
@@ -149,6 +156,21 @@
                 <span class="badge-entrega-hoy">
                   <i class="bi bi-lightning-fill"></i> Entrega hoy
                 </span>
+
+                {{-- Badge de disponibilidad geográfica --}}
+                @php
+                    $ubicacionSel = session('ubicacion_seleccionada');
+                    $zonaSel = null;
+                    if ($ubicacionSel && isset($ubicacionSel['zona_id'])) {
+                        $zonaSel = \App\Models\ZonaCobertura::find($ubicacionSel['zona_id']);
+                    }
+                @endphp
+                @if($zonaSel)
+                  <span class="badge-disponibilidad-zona bg-success">
+                    <i class="bi bi-check-circle-fill"></i> {{ $zonaSel->nombre }}
+                  </span>
+                @endif
+
                 <img src="{{ $producto->url_imagen_principal }}" alt="{{ $producto->nombre }}" loading="lazy">
                 <button class="btn-favorito" type="button" title="Agregar a favoritos">
                   <i class="bi bi-heart"></i>
@@ -294,8 +316,9 @@
 <style>
 /* ============ HERO MINIMAL ============ */
 .hero-minimal {
-  padding: 60px 0 40px;
+  padding: 60px 0 0;
   background: var(--flores-bg);
+  margin-bottom: 0;
 }
 
 .min-vh-75 {
@@ -540,14 +563,15 @@
 
 /* ============ OCASIONES PILLS ============ */
 .ocasiones-section {
-  padding: 48px 0;
+  margin-top: 0;
+  overflow: visible;
 }
 
 .ocasiones-pills {
   display: flex;
   gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
+  overflow: visible;
+  padding: 8px 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
   justify-content: center;
@@ -562,27 +586,33 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 28px;
+  padding: 10px 24px;
   background: white;
-  border: 1px solid var(--flores-border);
+  border: 2px solid #e9ecef;
   border-radius: 30px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--flores-text);
+  color: #495057;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .ocasion-pill:hover {
-  border-color: var(--flores-primary);
-  color: var(--flores-primary);
+  border-color: #1a1a1a;
+  color: #1a1a1a;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  z-index: 2;
 }
 
 .ocasion-pill.active {
-  background: var(--flores-primary);
-  border-color: var(--flores-primary);
+  background: #1a1a1a;
+  border-color: #1a1a1a;
   color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* ============ PRODUCTOS MINIMAL ============ */
@@ -664,6 +694,26 @@
 
 .badge-entrega-hoy i {
   font-size: 10px;
+}
+
+.badge-disponibilidad-zona {
+  position: absolute;
+  top: 42px;
+  left: 12px;
+  background: #1a1a1a !important;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+.badge-disponibilidad-zona i {
+  font-size: 9px;
 }
 
 .btn-favorito {
