@@ -172,9 +172,11 @@
                 @endif
 
                 <img src="{{ $producto->url_imagen_principal }}" alt="{{ $producto->nombre }}" loading="lazy">
+                {{-- Botón de favoritos deshabilitado temporalmente
                 <button class="btn-favorito" type="button" title="Agregar a favoritos">
                   <i class="bi bi-heart"></i>
                 </button>
+                --}}
               </div>
               <div class="product-info-minimal">
                 <h3 class="product-name-minimal">{{ $producto->nombre }}</h3>
