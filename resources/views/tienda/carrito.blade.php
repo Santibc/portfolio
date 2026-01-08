@@ -489,13 +489,7 @@
                                                                 <small class="text-danger fw-bold">
                                                                     <i class="bi bi-x-circle-fill"></i>
                                                                     No disponible en {{ $zonaSeleccionada->nombre }}
-                                                                </small>
-                                                                <div class="mt-1">
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                                                            onclick="eliminarItem('{{ $key }}')">
-                                                                        <i class="bi bi-trash"></i> Eliminar
-                                                                    </button>
-                                                                </div>
+                                                                </small>                                                               
                                                             </div>
                                                         @endif
                                                     @endif
