@@ -40,8 +40,14 @@ class TamanoRamo extends Model
     public function getImagenUrlAttribute()
     {
         if ($this->imagen) {
-            return asset($this->imagen);
+            return asset('storage/' . $this->imagen);
         }
         return asset('images/ramos/default.png');
+    }
+
+    // Relaciones
+    public function ramosPersonalizados()
+    {
+        return $this->hasMany(RamoPersonalizado::class, 'tamano_ramo_id');
     }
 }

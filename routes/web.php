@@ -352,6 +352,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
     //     Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
     // });
 
+    // MÓDULO DE TAMAÑOS DE RAMO - "Arma tu Ramo"
+    Route::prefix('tamanos-ramo')->name('tamanos-ramo.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\TamanosRamoController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Admin\TamanosRamoController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Admin\TamanosRamoController::class, 'store'])->name('store');
+        Route::get('/{tamano_ramo}/edit', [App\Http\Controllers\Admin\TamanosRamoController::class, 'edit'])->name('edit');
+        Route::put('/{tamano_ramo}', [App\Http\Controllers\Admin\TamanosRamoController::class, 'update'])->name('update');
+        Route::delete('/{tamano_ramo}', [App\Http\Controllers\Admin\TamanosRamoController::class, 'destroy'])->name('destroy');
+        Route::post('/{tamano_ramo}/toggle-activo', [App\Http\Controllers\Admin\TamanosRamoController::class, 'toggleActivo'])->name('toggle-activo');
+    });
+
 });
 
 // MÓDULO DE MEMBRESÍAS DESHABILITADO - Single-tenant

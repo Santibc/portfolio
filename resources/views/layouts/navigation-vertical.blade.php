@@ -92,6 +92,13 @@
                     <span>Adicionales</span>
                 </a>
 
+                <a href="{{ route('admin.tamanos-ramo.index') }}"
+                   class="sidebar-link {{ request()->routeIs('admin.tamanos-ramo.*') ? 'active' : '' }}"
+                   title="Tamaños de Ramo">
+                    <i class="bi bi-flower2"></i>
+                    <span>Tamaños de Ramo</span>
+                </a>
+
                 <a href="{{ route('descuentos.index') }}"
                    class="sidebar-link {{ request()->routeIs('descuentos*') ? 'active' : '' }}"
                    title="Descuentos">
