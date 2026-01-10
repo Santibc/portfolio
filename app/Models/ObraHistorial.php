@@ -19,6 +19,10 @@ class ObraHistorial extends Model
         'cambiado_por',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function obra(): BelongsTo
     {
         return $this->belongsTo(Obra::class);

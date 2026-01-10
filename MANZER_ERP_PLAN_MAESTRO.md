@@ -1444,10 +1444,10 @@ CREATE TABLE auditoria (
 
 | # | Módulo | Estado | Prioridad |
 |---|--------|--------|-----------|
-| 1 | Base, Usuarios, Roles y Permisos | ✅ Existente | - |
-| 2 | Trabajadores | ⬜ Pendiente | Alta |
-| 3 | Cuadrillas | ⬜ Pendiente | Alta |
-| 4 | Clientes y CRM | ⬜ Pendiente | Alta |
+| 1 | Base, Usuarios, Roles y Permisos | ✅ Completado | - |
+| 2 | Trabajadores | ✅ Completado | Alta |
+| 3 | Cuadrillas | ✅ Completado | Alta |
+| 4 | Clientes y CRM | ✅ Completado | Alta |
 | 5 | Obras/Proyectos | ⬜ Pendiente | Alta |
 | 6 | Fichajes/Control Horario | ⬜ Pendiente | Alta |
 | 7 | Partes Diarios | ⬜ Pendiente | Alta |

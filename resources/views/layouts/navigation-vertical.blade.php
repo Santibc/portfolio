@@ -12,10 +12,51 @@
         $isAdmin = $user->hasRole('Administrador');
         $canVerTrabajadores = $user->can('ver_trabajadores');
         $canVerCuadrillas = $user->can('ver_cuadrillas');
+        $canVerClientes = $user->can('ver_clientes');
+        $canVerObras = $user->can('ver_obras');
+        $canVerFichajes = $user->can('ver_fichajes');
+        $canVerPartesDiarios = $user->can('ver_partes');
     @endphp
 
+    {{-- SECCIÓN COMERCIAL - Solo si tiene permiso de clientes --}}
+    @if($canVerClientes)
+        <div class="nav-section-title">Comercial</div>
+
+        @can('ver_clientes')
+        <div class="nav-item {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
+            <a href="{{ route('clientes.index') }}" class="nav-link">
+                <i class="bi bi-building"></i>
+                <span>Clientes</span>
+            </a>
+        </div>
+        @endcan
+    @endif
+
+    {{-- SECCIÓN OPERACIONES - Solo si tiene permiso de obras o partes --}}
+    @if($canVerObras || $canVerPartesDiarios)
+        <div class="nav-section-title">Operaciones</div>
+
+        @can('ver_obras')
+        <div class="nav-item {{ request()->routeIs('obras.*') ? 'active' : '' }}">
+            <a href="{{ route('obras.index') }}" class="nav-link">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Obras</span>
+            </a>
+        </div>
+        @endcan
+
+        @can('ver_partes')
+        <div class="nav-item {{ request()->routeIs('partes-diarios.*') ? 'active' : '' }}">
+            <a href="{{ route('partes-diarios.index') }}" class="nav-link">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Partes Diarios</span>
+            </a>
+        </div>
+        @endcan
+    @endif
+
     {{-- SECCIÓN RECURSOS HUMANOS - Solo si tiene algún permiso --}}
-    @if($canVerTrabajadores || $canVerCuadrillas)
+    @if($canVerTrabajadores || $canVerCuadrillas || $canVerFichajes)
         <div class="nav-section-title">Recursos Humanos</div>
 
         @can('ver_trabajadores')
@@ -32,6 +73,15 @@
             <a href="{{ route('cuadrillas.index') }}" class="nav-link">
                 <i class="bi bi-diagram-3"></i>
                 <span>Cuadrillas</span>
+            </a>
+        </div>
+        @endcan
+
+        @can('ver_fichajes')
+        <div class="nav-item {{ request()->routeIs('fichajes.*') ? 'active' : '' }}">
+            <a href="{{ route('fichajes.index') }}" class="nav-link">
+                <i class="bi bi-clock-history"></i>
+                <span>Fichajes</span>
             </a>
         </div>
         @endcan
