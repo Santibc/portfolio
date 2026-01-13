@@ -202,7 +202,7 @@
                     <div class="card-body p-3">
                         {{-- Vista previa visual del ramo --}}
                         <div class="ramo-preview mb-3 p-3 rounded-3 text-center position-relative" style="background: linear-gradient(180deg, #fce4ec 0%, #fff 100%); min-height: 120px; border: 2px dashed #f8bbd9;">
-                            <div id="ramo-visual" class="d-flex flex-wrap justify-content-center align-items-center gap-1" style="min-height: 80px;">
+                            <div id="ramo-visual" class="d-flex flex-wrap justify-content-center align-items-center gap-2" style="min-height: 80px; line-height: 1; padding: 4px;">
                                 <div class="text-muted">
                                     <i class="bi bi-flower1" style="font-size: 2rem; color: #e91e63; opacity: 0.5;"></i>
                                     <p class="small mb-0 mt-1">Selecciona flores</p>
@@ -347,6 +347,8 @@
         font-size: 12px;
         animation: aparecer 0.3s ease;
         margin: 2px;
+        flex-shrink: 0;
+        vertical-align: middle;
     }
 
     @keyframes aparecer {
@@ -740,10 +742,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Botón agregar carrito
         const btnAgregar = document.getElementById('btn-agregar-carrito');
-        btnAgregar.disabled = (data.total_flores || 0) === 0;
+        const tamanoCard = document.querySelector('.tamano-card.selected');
+
+        if (!tamanoCard || totalFlores === 0) {
+            btnAgregar.disabled = true;
+        } else {
+            const min = parseInt(tamanoCard.dataset.min);
+            const max = parseInt(tamanoCard.dataset.max);
+            btnAgregar.disabled = totalFlores < min || totalFlores > max;
+        }
 
         // Barra de progreso
-        actualizarProgreso(data.total_flores || 0);
+        actualizarProgreso(totalFlores);
     }
 
     function actualizarVistaRamo(flores) {

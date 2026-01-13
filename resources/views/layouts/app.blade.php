@@ -156,7 +156,10 @@
 
         .sidebar-logo-icon {
             width: 36px;
+            height: 36px;
             display: none;
+            align-items: center;
+            justify-content: center;
         }
 
         .sidebar.collapsed .sidebar-logo-img {
@@ -164,7 +167,12 @@
         }
 
         .sidebar.collapsed .sidebar-logo-icon {
-            display: block !important;
+            display: flex !important;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+            width: 100%;
         }
 
         .sidebar-nav {
