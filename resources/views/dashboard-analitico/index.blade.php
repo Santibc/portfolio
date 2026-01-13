@@ -146,6 +146,11 @@
     }
     .alert-card.warning .alert-icon { background: #f59e0b; color: white; }
     .alert-card.danger .alert-icon { background: #ef4444; color: white; }
+    .alert-card.info {
+        background: #dbeafe;
+        border-left: 4px solid #3b82f6;
+    }
+    .alert-card.info .alert-icon { background: #3b82f6; color: white; }
 
     .hora-bar {
         height: 8px;
@@ -186,11 +191,25 @@
         </div>
     </div>
 
-    {{-- Alertas de Entregas --}}
-    @if($entregasPendientesHoy > 0 || $entregasAtrasadas > 0)
+    {{-- Alertas de Entregas y Pedidos --}}
+    @if($entregasPendientesHoy > 0 || $entregasAtrasadas > 0 || $pagadasSinProcesar > 0)
     <div class="row mb-4">
+        @if($pagadasSinProcesar > 0)
+        <div class="col-md-4 mb-3 mb-md-0">
+            <div class="alert-card info">
+                <div class="alert-icon">
+                    <i class="bi bi-credit-card-fill"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">{{ $pagadasSinProcesar }} pagadas sin procesar</h6>
+                    <small class="text-muted">Pedidos pagados pendientes de envio</small>
+                </div>
+                <a href="{{ route('compras') }}?estado=pagada" class="btn btn-sm btn-info ms-auto">Ver pedidos</a>
+            </div>
+        </div>
+        @endif
         @if($entregasAtrasadas > 0)
-        <div class="col-md-6 mb-3 mb-md-0">
+        <div class="col-md-4 mb-3 mb-md-0">
             <div class="alert-card danger">
                 <div class="alert-icon">
                     <i class="bi bi-exclamation-triangle-fill"></i>
@@ -199,12 +218,12 @@
                     <h6 class="mb-0 fw-bold">{{ $entregasAtrasadas }} entregas atrasadas</h6>
                     <small class="text-muted">Pedidos con fecha de entrega vencida</small>
                 </div>
-                <a href="{{ route('compras') }}?estado=enviada" class="btn btn-sm btn-danger ms-auto">Ver pedidos</a>
+                <a href="{{ route('compras') }}?atrasadas=1" class="btn btn-sm btn-danger ms-auto">Ver pedidos</a>
             </div>
         </div>
         @endif
         @if($entregasPendientesHoy > 0)
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="alert-card warning">
                 <div class="alert-icon">
                     <i class="bi bi-truck"></i>

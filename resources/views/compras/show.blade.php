@@ -19,7 +19,6 @@
         }
 
         .status-pendiente { background: #fef3c7; color: #92400e; }
-        .status-procesando { background: #dbeafe; color: #1e40af; }
         .status-pagada { background: #d1fae5; color: #065f46; }
         .status-enviada { background: #e0e7ff; color: #3730a3; }
         .status-entregada { background: #d1fae5; color: #065f46; }
@@ -157,23 +156,30 @@
                             </span>
                         </div>
                     </div>
-                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                        @if(in_array($compra->estado, ['pagada', 'enviada']))
-                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalRepartidor">
-                                <i class="bi bi-person-badge"></i> Asignar Repartidor
+                    <div class="col-md-6 mt-3 mt-md-0">
+                        <div class="d-flex flex-wrap justify-content-md-end gap-2">
+                            @if($compra->estado === 'enviada')
+                                <button class="btn btn-success" onclick="marcarEntregada({{ $compra->id }})">
+                                    <i class="bi bi-check-circle"></i> Marcar Entregada
+                                </button>
+                            @endif
+                            @if(in_array($compra->estado, ['pagada', 'enviada']))
+                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalRepartidor">
+                                    <i class="bi bi-person-badge"></i> Repartidor
+                                </button>
+                            @endif
+                            @if(in_array($compra->estado, ['pendiente', 'procesando', 'pagada', 'enviada']))
+                                <button class="btn btn-outline-success btn-sm" onclick="actualizarEnvio({{ $compra->id }})">
+                                    <i class="bi bi-truck"></i> Envio
+                                </button>
+                            @endif
+                            <button class="btn btn-outline-secondary btn-sm" onclick="verTimeline()">
+                                <i class="bi bi-clock-history"></i> Timeline
                             </button>
-                        @endif
-                        @if(in_array($compra->estado, ['pendiente', 'procesando', 'pagada', 'enviada']))
-                            <button class="btn btn-outline-success" onclick="actualizarEnvio({{ $compra->id }})">
-                                <i class="bi bi-truck"></i> Actualizar Envio
-                            </button>
-                        @endif
-                        <button class="btn btn-outline-primary" onclick="verTimeline()">
-                            <i class="bi bi-clock-history"></i> Timeline
-                        </button>
-                        <a href="{{ route('compras.imprimir', $compra) }}" target="_blank" class="btn btn-outline-secondary">
-                            <i class="bi bi-printer"></i> Imprimir
-                        </a>
+                            <a href="{{ route('compras.imprimir', $compra) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-printer"></i> Imprimir
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -689,6 +695,50 @@
             $('#compraIdEnvio').val(compraId);
             const modal = new bootstrap.Modal(document.getElementById('modalEnvio'));
             modal.show();
+        }
+
+        function marcarEntregada(compraId) {
+            Swal.fire({
+                title: '¿Marcar como entregada?',
+                text: '¿Confirmas que este pedido ha sido entregado al cliente?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, marcar entregada',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/compras/${compraId}/cambiar-estado`,
+                        method: 'POST',
+                        data: {
+                            estado: 'entregada',
+                            notas: 'Pedido marcado como entregado manualmente'
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Entregado!',
+                                    text: 'El pedido ha sido marcado como entregado',
+                                    icon: 'success',
+                                    confirmButtonText: 'Entendido'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', response.message || 'No se pudo actualizar el estado', 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error', 'Ocurrió un error al actualizar el estado', 'error');
+                        }
+                    });
+                }
+            });
         }
 
         function asignarRepartidor(repartidorId) {

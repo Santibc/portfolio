@@ -12,7 +12,6 @@
         }
         
         .status-pendiente { background: #fef3c7; color: #92400e; }
-        .status-procesando { background: #dbeafe; color: #1e40af; }
         .status-pagada { background: #d1fae5; color: #065f46; }
         .status-enviada { background: #e0e7ff; color: #3730a3; }
         .status-entregada { background: #d1fae5; color: #065f46; }
@@ -112,9 +111,21 @@
             <div class="bg-white shadow-sm rounded-4 overflow-hidden">
                 {{-- Header con filtros --}}
                 <div class="p-6 border-bottom">
+                    @if(request('atrasadas') == 1)
+                    <div class="alert alert-danger mb-4 d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <div class="flex-grow-1">
+                            <strong>Mostrando entregas atrasadas</strong> - Pedidos con fecha de entrega vencida
+                        </div>
+                        <a href="{{ route('compras') }}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x"></i> Quitar filtro
+                        </a>
+                    </div>
+                    @endif
+
                     <div class="row align-items-center mb-4">
                         <div class="col">
-                            <h3 class="mb-0 fw-bold">Listado de Compras</h3>
+                            <h3 class="mb-0 fw-bold">{{ request('atrasadas') == 1 ? 'Entregas Atrasadas' : 'Listado de Compras' }}</h3>
                         </div>
                         <div class="col-auto">
                             <button type="button" class="btn btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#filtros">
@@ -143,7 +154,6 @@
                                 <select class="form-select" name="estado">
                                     <option value="">Todos</option>
                                     <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                    <option value="procesando" {{ request('estado') == 'procesando' ? 'selected' : '' }}>Procesando</option>
                                     <option value="pagada" {{ request('estado') == 'pagada' ? 'selected' : '' }}>Pagada</option>
                                     <option value="enviada" {{ request('estado') == 'enviada' ? 'selected' : '' }}>Enviada</option>
                                     <option value="entregada" {{ request('estado') == 'entregada' ? 'selected' : '' }}>Entregada</option>
@@ -249,19 +259,29 @@
                                                 </li>
                                                 @if(in_array($compra->estado, ['pendiente', 'procesando', 'pagada', 'enviada']))
                                                 <li>
-                                                    <a class="dropdown-item" href="#" 
+                                                    <a class="dropdown-item" href="#"
                                                        onclick="actualizarEnvio({{ $compra->id }})">
                                                         <i class="bi bi-truck me-2"></i> Actualizar envío
                                                     </a>
                                                 </li>
                                                 @endif
-     {{--                                            <li><hr class="dropdown-divider"></li>
+                                                @if($compra->estado === 'enviada')
                                                 <li>
-                                                    <a class="dropdown-item" href="#" 
-                                                       onclick="cambiarEstado({{ $compra->id }}, '{{ $compra->estado }}')">
-                                                        <i class="bi bi-arrow-repeat me-2"></i> Cambiar estado
+                                                    <a class="dropdown-item text-success" href="#"
+                                                       onclick="marcarEntregada({{ $compra->id }})">
+                                                        <i class="bi bi-check-circle me-2"></i> Marcar entregada
                                                     </a>
-                                                </li> --}}
+                                                </li>
+                                                @endif
+                                                @if(in_array($compra->estado, ['pendiente', 'cancelada']) || !$compra->transaccionAprobada)
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#"
+                                                       onclick="eliminarPedido({{ $compra->id }}, '{{ $compra->numero_compra }}')">
+                                                        <i class="bi bi-trash me-2"></i> Eliminar pedido
+                                                    </a>
+                                                </li>
+                                                @endif
                                             </ul>
                                         </div>
                                     </td>
@@ -312,7 +332,6 @@
                             <select class="form-select" id="nuevoEstado" name="estado" required>
                                 <option value="">Seleccione...</option>
                                 <option value="pendiente">Pendiente</option>
-                                <option value="procesando">Procesando</option>
                                 <option value="pagada">Pagada</option>
                                 <option value="enviada">Enviada</option>
                                 <option value="entregada">Entregada</option>
@@ -455,9 +474,54 @@
         function actualizarEnvio(compraId) {
             $('#compraIdEnvio').val(compraId);
             $('#formEnvio')[0].reset();
-            
+
             const modal = new bootstrap.Modal(document.getElementById('modalEnvio'));
             modal.show();
+        }
+
+        // Marcar como entregada
+        function marcarEntregada(compraId) {
+            Swal.fire({
+                title: '¿Marcar como entregada?',
+                text: '¿Confirmas que este pedido ha sido entregado al cliente?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, marcar entregada',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/compras/${compraId}/cambiar-estado`,
+                        method: 'POST',
+                        data: {
+                            estado: 'entregada',
+                            notas: 'Pedido marcado como entregado manualmente'
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Entregado!',
+                                    text: 'El pedido ha sido marcado como entregado',
+                                    icon: 'success',
+                                    confirmButtonText: 'Entendido'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', response.message || 'No se pudo actualizar el estado', 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error', 'Ocurrió un error al actualizar el estado', 'error');
+                        }
+                    });
+                }
+            });
         }
 
         // Submit envío
@@ -515,7 +579,7 @@
                     submitBtn.find('.btn-loading').addClass('d-none');
                     submitBtn.find('.btn-text').removeClass('d-none');
                     submitBtn.prop('disabled', false);
-                    
+
                     Swal.fire({
                         title: 'Error',
                         text: xhr.responseJSON?.message || 'Error al actualizar el envío',
@@ -526,6 +590,47 @@
                 }
             });
         });
+
+        // Eliminar pedido
+        function eliminarPedido(compraId, numeroCompra) {
+            Swal.fire({
+                title: '¿Eliminar pedido?',
+                html: `¿Estás seguro de eliminar el pedido <strong>${numeroCompra}</strong>?<br><small class="text-muted">Esta acción no se puede deshacer</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/compras/${compraId}`,
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '¡Eliminado!',
+                                    text: 'El pedido ha sido eliminado',
+                                    icon: 'success',
+                                    confirmButtonText: 'Entendido'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', response.message || 'No se pudo eliminar el pedido', 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error', xhr.responseJSON?.message || 'Ocurrió un error al eliminar el pedido', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
     @endpush
 </x-app-layout>

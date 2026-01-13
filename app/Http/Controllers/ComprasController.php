@@ -52,6 +52,12 @@ class ComprasController extends Controller
             $query->whereDate('created_at', '<=', $request->fecha_hasta);
         }
 
+        // Filtro especial para entregas atrasadas
+        if ($request->filled('atrasadas') && $request->atrasadas == 1) {
+            $query->whereIn('estado', ['pagada', 'enviada'])
+                  ->whereDate('fecha_entrega_deseada', '<', now()->toDateString());
+        }
+
         // Ordenamiento
         $query->orderBy('created_at', 'desc');
 
@@ -150,7 +156,7 @@ class ComprasController extends Controller
         }
 
         $request->validate([
-            'estado' => 'required|in:pendiente,procesando,pagada,enviada,entregada,cancelada,reembolsada',
+            'estado' => 'required|in:pendiente,pagada,enviada,entregada,cancelada,reembolsada',
             'notas' => 'nullable|string'
         ]);
 
@@ -467,6 +473,59 @@ class ComprasController extends Controller
                 'estado' => 'entregado',
                 'fecha_entrega' => now()
             ]);
+        }
+    }
+
+    /**
+     * Eliminar pedido (pendientes, cancelados o sin pago)
+     */
+    public function destroy(Compra $compra)
+    {
+        // Verificar que la compra pertenece a la empresa del usuario
+        if (!auth()->user()->hasRole('admin') && $compra->empresa_id !== auth()->user()->empresa->id) {
+            abort(403);
+        }
+
+        // Verificar si tiene pago aprobado
+        $tienePagoAprobado = $compra->transaccionAprobada !== null;
+
+        // Permitir eliminar si: está pendiente/cancelada O no tiene pago aprobado
+        $puedeEliminar = in_array($compra->estado, ['pendiente', 'cancelada']) || !$tienePagoAprobado;
+
+        if (!$puedeEliminar) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar un pedido con pago aprobado'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Eliminar registros relacionados
+            $compra->items()->delete();
+            $compra->transaccionesPago()->delete();
+
+            if ($compra->envio) {
+                $compra->envio->delete();
+            }
+
+            // Eliminar la compra
+            $compra->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pedido eliminado correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el pedido: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

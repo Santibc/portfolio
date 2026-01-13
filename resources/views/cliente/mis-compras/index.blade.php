@@ -43,11 +43,6 @@
                                                     <i class="bi bi-clock"></i> Pendiente
                                                 </span>
                                                 @break
-                                            @case('procesando')
-                                                <span class="badge badge-estado badge-pendiente">
-                                                    <i class="bi bi-hourglass-split"></i> Procesando
-                                                </span>
-                                                @break
                                             @case('pagada')
                                                 <span class="badge badge-estado badge-pagada">
                                                     <i class="bi bi-check-circle"></i> Pagada

@@ -214,6 +214,12 @@ class DashboardAnaliticoController extends Controller
             ->whereDate('fecha_entrega_deseada', '<', $hoy)
             ->count();
 
+        // Pedidos pagados sin procesar (sin envío asignado)
+        $pagadasSinProcesar = Compra::where('empresa_id', $empresa->id)
+            ->where('estado', 'pagada')
+            ->whereDoesntHave('envio')
+            ->count();
+
         // ============================================
         // CLIENTES
         // ============================================
@@ -312,7 +318,7 @@ class DashboardAnaliticoController extends Controller
             'productosMasVendidos',
             'diasGrafico', 'mesesGrafico',
             'pedidosPorEstado',
-            'entregasPendientesHoy', 'entregasAtrasadas',
+            'entregasPendientesHoy', 'entregasAtrasadas', 'pagadasSinProcesar',
             'clientesUnicos', 'clientesNuevosMes',
             'horasCompletas',
             // Stock

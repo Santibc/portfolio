@@ -268,6 +268,7 @@ Route::middleware(['auth', 'verificar.empresa'])->prefix('compras')->name('compr
     Route::get('/{compra}/timeline', [App\Http\Controllers\ComprasController::class, 'timeline'])->name('timeline');
     Route::get('/{compra}/imprimir', [App\Http\Controllers\ComprasController::class, 'imprimir'])->name('imprimir');
     Route::get('/exportar/excel', [App\Http\Controllers\ComprasController::class, 'exportar'])->name('exportar');
+    Route::delete('/{compra}', [App\Http\Controllers\ComprasController::class, 'destroy'])->name('destroy');
 });
 
 // ========== RUTAS DE REPARTIDORES ==========
