@@ -14,7 +14,7 @@
                 <p class="hero-white-subtitle">
                     Entrega el mismo día según disponibilidad
                 </p>
-                <a href="{{ route('tienda.categorias') }}" class="btn-comprar-ahora">
+                <a href="#ubicacion-section" class="btn-comprar-ahora">
                     Comprar ahora
                 </a>
             </div>
@@ -22,7 +22,7 @@
     </section>
 
     <!-- Selector de Ubicación -->
-    <section class="ubicacion-section">
+    <section id="ubicacion-section" class="ubicacion-section">
         <div class="container">
             <div class="ubicacion-box">
                 <h3 class="ubicacion-title">¿Dónde deseas enviar?</h3>

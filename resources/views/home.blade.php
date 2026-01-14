@@ -132,11 +132,10 @@
     <!-- Categorías -->
     <section class="py-5">
         <div class="container text-center">
-            @foreach($categoriasMenu ?? [] as $categoria)
-                <a href="{{ route('tienda.categorias', ['categoria' => $categoria->id]) }}" class="btn btn-outline-secondary category-btn">
-                    {{ $categoria->nombre }}
-                </a>
-            @endforeach
+            <button class="btn btn-outline-secondary category-btn">Cumpleaños</button>
+            <button class="btn btn-outline-secondary category-btn">Amor</button>
+            <button class="btn btn-outline-secondary category-btn">Aniversarios</button>
+            <button class="btn btn-outline-secondary category-btn">Condolencias</button>
         </div>
     </section>
 
