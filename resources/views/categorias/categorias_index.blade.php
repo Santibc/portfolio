@@ -108,6 +108,13 @@
   @push('scripts')
   <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // Configurar CSRF token para AJAX
+    $.ajaxSetup({
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      }
+    });
+
     const table = $('#categorias-table').DataTable({
       processing: true,
       serverSide: true,
@@ -175,23 +182,30 @@
     $.ajax({
       url: `/categorias/${categoriaId}/cambiar-estado`,
       method: 'POST',
-      data: {
-        _token: '{{ csrf_token() }}'
-      },
       success: function(response) {
         if (response.success) {
-          // Recargar tabla
-          $('#categorias-table').DataTable().ajax.reload();
-          
           // Mostrar notificación
-          toastr.success(response.mensaje);
-          
-          // Actualizar estadísticas
-          location.reload();
+          Swal.fire({
+            icon: 'success',
+            title: '¡Actualizado!',
+            text: response.mensaje,
+            timer: 1500,
+            showConfirmButton: false
+          });
+
+          // Recargar tabla y estadísticas
+          setTimeout(() => {
+            $('#categorias-table').DataTable().ajax.reload();
+            location.reload();
+          }, 1000);
         }
       },
       error: function() {
-        toastr.error('Error al cambiar el estado de la categoría');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al cambiar el estado de la categoría'
+        });
       }
     });
   }
@@ -212,24 +226,31 @@
         $.ajax({
           url: `/categorias/${categoriaId}`,
           method: 'DELETE',
-          data: {
-            _token: '{{ csrf_token() }}'
-          },
           success: function(response) {
             if (response.success) {
-              // Recargar tabla
-              $('#categorias-table').DataTable().ajax.reload();
-              
-              // Mostrar notificación
-              toastr.success(response.mensaje);
-              
-              // Actualizar estadísticas
-              location.reload();
+              // Mostrar notificación de éxito
+              Swal.fire({
+                icon: 'success',
+                title: '¡Eliminado!',
+                text: response.mensaje,
+                timer: 2000,
+                showConfirmButton: false
+              });
+
+              // Recargar tabla después de 1 segundo
+              setTimeout(() => {
+                $('#categorias-table').DataTable().ajax.reload();
+                location.reload();
+              }, 1000);
             }
           },
           error: function(xhr) {
             const response = xhr.responseJSON;
-            toastr.error(response.error || 'Error al eliminar la categoría');
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: response.error || 'Error al eliminar la categoría'
+            });
           }
         });
       }

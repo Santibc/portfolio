@@ -22,14 +22,15 @@ class CategoriasController extends Controller
         }
 
         if ($request->ajax()) {
-            // Filtrar categorías por empresa
+            // Filtrar categorías por empresa y cargar conteo de productos
             $query = Categoria::where('empresa_id', $empresa->id)
+                            ->withCount('productos')
                             ->select('categorias.*');
 
             return DataTables::of($query)
                 ->addColumn('productos_count', function($c) {
-                    // Contar productos de esta categoría
-                    return $c->productos()->count();
+                    // Usar el withCount cargado
+                    return $c->productos_count;
                 })
                 ->addColumn('imagen_preview', function($c) {
                     if ($c->imagen) {
@@ -53,7 +54,7 @@ class CategoriasController extends Controller
                     $buttons .= '</button>';
                     
                     // Botón eliminar (solo si no tiene productos)
-                    if ($c->productos()->count() == 0) {
+                    if ($c->productos_count == 0) {
                         $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="eliminarCategoria('.$c->id.')">';
                         $buttons .= '<i class="bi bi-trash"></i>';
                         $buttons .= '</button>';

@@ -332,6 +332,7 @@
     justify-content: center;
     margin-bottom: 12px;
     transition: border-color 0.2s ease;
+    overflow: hidden;
 }
 
 .ocasion-card-simple:hover .ocasion-card-image {
@@ -384,7 +385,7 @@
 
 .formato-card-image {
     width: 100%;
-    aspect-ratio: 4/3;
+    aspect-ratio: 3/4;
     background: #f5f5f5;
     border: 1px solid #e8e8e8;
     border-radius: 8px;
@@ -393,6 +394,7 @@
     justify-content: center;
     margin-bottom: 12px;
     transition: border-color 0.2s ease;
+    overflow: hidden;
 }
 
 .formato-card-simple:hover .formato-card-image {
