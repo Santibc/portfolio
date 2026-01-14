@@ -30,7 +30,7 @@
 
                     <div class="alert alert-info mb-4">
                         <i class="bi bi-info-circle"></i>
-                        Estos productos se ofrecen como complementos en "Arma tu Ramo" y en el checkout (chocolates, peluches, globos, etc.).
+                        Estos productos se ofrecen como complementos en el checkout (chocolates, peluches, globos, etc.).
                     </div>
 
                     <table id="adicionales-table" class="table table-striped table-hover w-100">
