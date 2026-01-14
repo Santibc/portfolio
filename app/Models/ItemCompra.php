@@ -20,15 +20,25 @@ class ItemCompra extends Model
         'precio_total',
         'referencia_producto',
         'nombre_producto',
-        'info_variante'
+        'info_variante',
+        'detalle_ramo'
     ];
 
     protected $casts = [
         'cantidad' => 'integer',
         'precio_unitario' => 'decimal:2',
         'descuento' => 'decimal:2',
-        'precio_total' => 'decimal:2'
+        'precio_total' => 'decimal:2',
+        'detalle_ramo' => 'array'
     ];
+
+    /**
+     * Verifica si este item es un ramo personalizado
+     */
+    public function esRamoPersonalizado(): bool
+    {
+        return !empty($this->detalle_ramo);
+    }
 
     public function compra()
     {

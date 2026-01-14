@@ -68,7 +68,7 @@
     body {
       font-family: var(--font-sans);
       color: var(--flores-text);
-      overflow-x: hidden;
+      /* overflow-x: hidden; */ /* Comentado para permitir secciones full-width */
     }
 
     * {
@@ -122,11 +122,11 @@
       }
     }
 
-    /* ============ NUEVO HEADER MINIMALISTA ============ */
+    /* ============ HEADER MINIMALISTA ============ */
     .header {
-      background: var(--flores-bg);
+      background: #ffffff;
       box-shadow: none;
-      border-bottom: 1px solid var(--flores-border);
+      border-bottom: 1px solid #f0f0f0;
     }
 
     .header .top-bar {
@@ -141,115 +141,98 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 0;
-      gap: 32px;
+      padding: 16px 0;
     }
 
     /* Logo */
     .header-minimal .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
       text-decoration: none;
-      flex-shrink: 0;
     }
 
-    .header-minimal .logo-icon {
-      font-size: 28px;
-      color: var(--flores-primary);
+    .header-minimal .logo-img {
+      height: 70px !important;
+      max-height: 70px !important;
+      width: auto !important;
+    }
+
+    /* Override main.css .header .main-header .logo img */
+    .header .main-header .header-minimal .logo .logo-img {
+      height: 70px !important;
+      max-height: 70px !important;
+      width: auto !important;
     }
 
     .header-minimal .logo-text {
       font-family: var(--font-serif);
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--flores-text);
-      margin: 0;
-    }
-
-    .header-minimal .logo-container img {
-      height: 55px;
-      width: auto;
-    }
-
-    /* Navigation */
-    .header-minimal .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 40px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      flex: 1;
-      justify-content: center;
-    }
-
-    .header-minimal .nav-links a {
-      font-size: 16px;
+      font-size: 20px;
       font-weight: 500;
-      color: var(--flores-text);
-      text-decoration: none;
-      transition: color 0.2s;
-      white-space: nowrap;
-    }
-
-    .header-minimal .nav-links a:hover {
-      color: var(--flores-primary);
-    }
-
-    .header-minimal .nav-links a.active {
-      color: var(--flores-primary);
+      color: #000000;
+      margin: 0;
     }
 
     /* Header Actions */
     .header-minimal .header-actions {
       display: flex;
       align-items: center;
-      gap: 16px;
-      flex-shrink: 0;
+      gap: 8px;
     }
 
     .header-minimal .header-action-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      border-radius: 0;
       background: transparent;
-      color: var(--flores-text);
+      color: #000000;
       text-decoration: none;
-      transition: all 0.2s;
+      transition: color 0.2s;
       position: relative;
       border: none;
       cursor: pointer;
     }
 
     .header-minimal .header-action-btn:hover {
-      background: var(--flores-beige);
-      color: var(--flores-primary);
+      color: #666666;
     }
 
     .header-minimal .header-action-btn i {
-      font-size: 22px;
+      font-size: 20px;
     }
 
     .header-minimal .header-action-btn .badge {
       position: absolute;
-      top: 0px;
-      right: 0px;
-      background: var(--flores-primary);
+      top: 2px;
+      right: 2px;
+      background: #000000;
       color: white;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      padding: 3px 7px;
-      border-radius: 12px;
-      min-width: 20px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
       text-align: center;
     }
 
-    /* Ocultar caret del dropdown en los botones de acción */
-    .header-minimal .header-action-btn.dropdown-toggle::after {
+    /* Auth Link */
+    .header-auth-link {
+      font-size: 14px;
+      font-weight: 400;
+      color: #000000;
+      text-decoration: none;
+      padding: 8px 0 8px 16px;
+      white-space: nowrap;
+      transition: color 0.2s;
+    }
+
+    .header-auth-link:hover {
+      color: #666666;
+    }
+
+    .header-auth-link.dropdown-toggle::after {
       display: none;
     }
 
@@ -259,7 +242,7 @@
       background: none;
       border: none;
       font-size: 24px;
-      color: var(--flores-text);
+      color: #000000;
       cursor: pointer;
       padding: 8px;
     }
@@ -271,112 +254,26 @@
       display: none !important;
     }
 
-    /* Auth Buttons */
-    .btn-auth-link {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--flores-text);
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 30px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      border: 1px solid transparent;
-    }
-
-    .btn-auth-link:hover {
-      color: var(--flores-primary);
-      background: var(--flores-beige);
-    }
-
-    .btn-auth-register {
-      font-size: 15px;
-      font-weight: 500;
-      color: white;
-      background: var(--flores-primary);
-      text-decoration: none;
-      padding: 10px 24px;
-      border-radius: 30px;
-      transition: all 0.2s;
-      white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(141, 108, 79, 0.2);
-    }
-
-    .btn-auth-register:hover {
-      background: var(--flores-primary-hover);
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(141, 108, 79, 0.3);
-    }
-
-    @media (max-width: 991px) {
-      .header-minimal .nav-links {
-        display: none;
-      }
-
+    @media (max-width: 767px) {
       .header-minimal .mobile-menu-toggle {
         display: flex;
       }
 
       .header-minimal {
         padding: 12px 0;
-        gap: 12px;
       }
 
-      .header-minimal .logo-text {
-        font-size: 18px;
-      }
-
-      .header-minimal .logo-icon {
-        font-size: 22px;
-      }
-
-      .header-minimal .logo-image {
-        height: 60px;
-        max-width: 180px;
-      }
-
-      .btn-auth-link,
-      .btn-auth-register {
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-
-      .header-minimal .header-action-btn {
-        width: 40px;
-        height: 40px;
-      }
-
-      .header-minimal .header-action-btn i {
-        font-size: 20px;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .header-minimal {
-        padding: 10px 0;
-        gap: 8px;
+      .header-minimal .logo-img {
+        height: 45px !important;
+        max-height: 45px !important;
       }
 
       .header-minimal .logo-text {
         font-size: 16px;
-        max-width: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
-      .header-minimal .logo-icon {
-        font-size: 20px;
-      }
-
-      .header-minimal .logo-image {
-        height: 50px;
-        max-width: 150px;
-      }
-
-      .header-minimal .header-actions {
-        gap: 8px;
+      .header-auth-link {
+        display: none;
       }
 
       .header-minimal .header-action-btn {
@@ -388,10 +285,8 @@
         font-size: 18px;
       }
 
-      .header-minimal .header-action-btn .badge {
-        font-size: 10px;
-        padding: 2px 5px;
-        min-width: 18px;
+      .header-minimal .header-actions {
+        gap: 4px;
       }
     }
 
@@ -791,25 +686,18 @@
   @include('components.analytics.body-scripts')
 
   <header id="header" class="header sticky-top">
-    <!-- New Minimal Header -->
+    <!-- Minimal Header -->
     <div class="main-header">
       <div class="container">
         <div class="header-minimal">
           <!-- Logo -->
           <a href="{{ route('home') }}" class="logo">
             @if($empresa->logo_url)
-              <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" style="height: 50px !important; width: auto !important; max-height: none !important;">
+              <img src="{{ $empresa->logo_url }}" alt="{{ $empresa->nombre }}" class="logo-img">
             @else
-              <i class="bi bi-flower1 logo-icon"></i>
               <span class="logo-text">{{ $empresa->nombre }}</span>
             @endif
           </a>
-
-          <!-- Navigation Links -->
-          <ul class="nav-links">
-            <li><a href="{{ route('tienda.categorias') }}" class="@yield('nav-ocasiones', '')">Catálogo</a></li>
-            <li><a href="{{ route('arma-tu-ramo') }}" class="@yield('nav-arma-tu-ramo', '')">Arma tu ramo</a></li>
-          </ul>
 
           <!-- Header Actions -->
           <div class="header-actions">
@@ -818,27 +706,30 @@
               <i class="bi bi-search"></i>
             </button>
 
+            <!-- Cart -->
+            <a href="{{ route('tienda.carrito') }}" class="header-action-btn" title="Carrito">
+              <i class="bi bi-bag"></i>
+              @if($carrito->total_items > 0)
+                <span class="badge">{{ $carrito->total_items }}</span>
+              @endif
+            </a>
+
             <!-- Account -->
             @guest
-              <a href="{{ route('login') }}" class="btn-auth-link d-none d-lg-inline-flex">Iniciar sesión</a>
-              <a href="{{ route('register.cliente') }}" class="btn-auth-register d-none d-lg-inline-flex">Registrarse</a>
-              <a href="{{ route('login') }}" class="header-action-btn d-lg-none" title="Mi cuenta">
-                <i class="bi bi-person"></i>
-              </a>
+              <a href="{{ route('login') }}" class="header-auth-link">Iniciar sesión</a>
             @else
               <div class="dropdown">
-                <a href="#" class="header-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="{{ auth()->user()->name }}">
-                  <i class="bi bi-person"></i>
+                <a href="#" class="header-auth-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ auth()->user()->name }}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                  <li><span class="dropdown-item-text text-muted small">{{ auth()->user()->name }}</span></li>
-                  <li><hr class="dropdown-divider"></li>
                   @if(auth()->user()->hasRole('cliente'))
                     <li><a class="dropdown-item" href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
                     <li><a class="dropdown-item" href="{{ route('cliente.perfil') }}"><i class="bi bi-person-gear me-2"></i>Mi Perfil</a></li>
                   @else
                     <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
                   @endif
+                  <li><hr class="dropdown-divider"></li>
                   <li>
                     <form method="POST" action="{{ route('logout') }}">
                       @csrf
@@ -848,14 +739,6 @@
                 </ul>
               </div>
             @endguest
-
-            <!-- Cart -->
-            <a href="{{ route('tienda.carrito') }}" class="header-action-btn" title="Carrito">
-              <i class="bi bi-bag"></i>
-              @if($carrito->total_items > 0)
-                <span class="badge">{{ $carrito->total_items }}</span>
-              @endif
-            </a>
 
             <!-- Mobile Toggle -->
             <button type="button" class="mobile-menu-toggle" id="mobileNavToggle">

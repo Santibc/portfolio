@@ -20,43 +20,57 @@
 
       {{-- Tarjetas de estadísticas --}}
       <div class="row mb-4">
-        <div class="col-md-4">
-          <div class="card bg-primary text-white">
+        <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+          <div class="card bg-primary text-white h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 class="text-white-50">Total Categorías</h6>
+                  <h6 class="text-white-50 small">Total</h6>
                   <h3 class="mb-0">{{ $estadisticas['total_categorias'] }}</h3>
                 </div>
-                <i class="bi bi-tags fs-1 opacity-50"></i>
+                <i class="bi bi-tags fs-2 opacity-50"></i>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="col-md-4">
-          <div class="card bg-success text-white">
+
+        <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+          <div class="card bg-info text-white h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 class="text-white-50">Categorías Activas</h6>
-                  <h3 class="mb-0">{{ $estadisticas['categorias_activas'] }}</h3>
+                  <h6 class="text-white-50 small">Ocasiones</h6>
+                  <h3 class="mb-0">{{ $estadisticas['categorias_ocasiones'] }}</h3>
                 </div>
-                <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                <i class="bi bi-calendar-heart fs-2 opacity-50"></i>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="col-md-4">
-          <div class="card bg-info text-white">
+
+        <div class="col-6 col-lg-3">
+          <div class="card bg-warning h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 class="text-white-50">Con Productos</h6>
+                  <h6 class="text-dark opacity-75 small">Formatos</h6>
+                  <h3 class="mb-0">{{ $estadisticas['categorias_formatos'] }}</h3>
+                </div>
+                <i class="bi bi-box fs-2 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card bg-success text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="text-white-50 small">Con Productos</h6>
                   <h3 class="mb-0">{{ $estadisticas['categorias_con_productos'] }}</h3>
                 </div>
-                <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                <i class="bi bi-box-seam fs-2 opacity-50"></i>
               </div>
             </div>
           </div>
@@ -77,9 +91,8 @@
               <tr>
                 <th>Acciones</th>
                 <th>Imagen</th>
+                <th>Tipo</th>
                 <th>Nombre</th>
-                <th>Slug</th>
-                <th>Descripción</th>
                 <th>Productos</th>
                 <th>Orden</th>
                 <th>Activo</th>
@@ -104,29 +117,32 @@
       columns: [
         { data:'action',    orderable:false, searchable:false },
         { data:'imagen_preview', orderable:false, searchable:false },
-        { data:'nombre',    name:'nombre' },
-        { data:'slug',      name:'slug' },
-        { 
-          data:'descripcion', 
-          name:'descripcion',
-          render: data => data ? (data.length > 50 ? data.substr(0,50)+'…' : data) : ''
+        {
+          data:'tipo',
+          name:'tipo',
+          render: data => {
+            if (data === 'ocasion') return '<span class="badge bg-info"><i class="bi bi-calendar-heart me-1"></i>Ocasión</span>';
+            if (data === 'formato') return '<span class="badge bg-warning text-dark"><i class="bi bi-box me-1"></i>Formato</span>';
+            return '<span class="badge bg-secondary">Sin tipo</span>';
+          }
         },
-        { 
-          data:'productos_count', 
+        { data:'nombre',    name:'nombre' },
+        {
+          data:'productos_count',
           name:'productos_count',
           searchable: false,
           render: data => `<span class="badge bg-primary">${data}</span>`
         },
         { data:'orden',     name:'orden' },
-        { 
-          data:'activo',    
+        {
+          data:'activo',
           name:'activo',
-          render: data => data === 'Sí' 
-            ? '<span class="badge bg-success">Activo</span>' 
+          render: data => data === 'Sí'
+            ? '<span class="badge bg-success">Activo</span>'
             : '<span class="badge bg-secondary">Inactivo</span>'
         },
       ],
-      order: [[6, 'asc']], // Ordenar por columna "orden"
+      order: [[2, 'asc'], [5, 'asc']], // Ordenar por tipo y luego por orden
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
         { extend:'pageLength', className:'btn btn-outline-dark', text:'Filas ' },

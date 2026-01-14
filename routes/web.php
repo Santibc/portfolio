@@ -125,6 +125,24 @@ Route::prefix('flores')->middleware(['auth', 'verificar.empresa'])->group(functi
     Route::post('/toggle-disponible', [App\Http\Controllers\FloresDisponiblesController::class, 'toggleDisponible'])->name('flores.toggle-disponible');
 });
 
+// Rutas de Estilos de Ramo (Arma tu Ramo - Paso 1)
+Route::prefix('estilos-ramo')->middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\EstilosRamoController::class, 'index'])->name('estilos-ramo.index');
+    Route::get('/form/{estilo?}', [App\Http\Controllers\EstilosRamoController::class, 'form'])->name('estilos-ramo.form');
+    Route::post('/guardar', [App\Http\Controllers\EstilosRamoController::class, 'guardar'])->name('estilos-ramo.guardar');
+    Route::post('/eliminar', [App\Http\Controllers\EstilosRamoController::class, 'eliminar'])->name('estilos-ramo.eliminar');
+    Route::post('/toggle-activo', [App\Http\Controllers\EstilosRamoController::class, 'toggleActivo'])->name('estilos-ramo.toggle-activo');
+});
+
+// Rutas de Envolturas de Ramo (Arma tu Ramo - Paso 3)
+Route::prefix('envolturas-ramo')->middleware(['auth', 'verificar.empresa'])->group(function () {
+    Route::get('/', [App\Http\Controllers\EnvolturasRamoController::class, 'index'])->name('envolturas-ramo.index');
+    Route::get('/form/{envoltura?}', [App\Http\Controllers\EnvolturasRamoController::class, 'form'])->name('envolturas-ramo.form');
+    Route::post('/guardar', [App\Http\Controllers\EnvolturasRamoController::class, 'guardar'])->name('envolturas-ramo.guardar');
+    Route::post('/eliminar', [App\Http\Controllers\EnvolturasRamoController::class, 'eliminar'])->name('envolturas-ramo.eliminar');
+    Route::post('/toggle-activo', [App\Http\Controllers\EnvolturasRamoController::class, 'toggleActivo'])->name('envolturas-ramo.toggle-activo');
+});
+
 // Rutas de Productos Adicionales (Complementos para ramos)
 Route::prefix('adicionales')->middleware(['auth', 'verificar.empresa'])->group(function () {
     Route::get('/', [App\Http\Controllers\ProductosAdicionalesController::class, 'index'])->name('adicionales.index');
@@ -297,18 +315,6 @@ Route::middleware(['auth', 'verificar.empresa'])->prefix('gestion-clientes')->na
     Route::get('/api/direcciones/{email}', [App\Http\Controllers\GestionClientesController::class, 'obtenerDirecciones'])->name('api.direcciones');
 });
 
-// ========== RUTAS DE CARRUSEL DE IMÁGENES ==========
-Route::middleware(['auth', 'verificar.empresa'])->prefix('carrusel')->name('carrusel.')->group(function () {
-    Route::get('/', [App\Http\Controllers\CarruselController::class, 'index'])->name('index');
-    Route::get('/create', [App\Http\Controllers\CarruselController::class, 'create'])->name('create');
-    Route::post('/', [App\Http\Controllers\CarruselController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [App\Http\Controllers\CarruselController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [App\Http\Controllers\CarruselController::class, 'update'])->name('update');
-    Route::delete('/{id}', [App\Http\Controllers\CarruselController::class, 'destroy'])->name('destroy');
-    Route::post('/{id}/toggle', [App\Http\Controllers\CarruselController::class, 'toggleActivo'])->name('toggle');
-    Route::post('/orden', [App\Http\Controllers\CarruselController::class, 'updateOrden'])->name('updateOrden');
-});
-
 // ========== DASHBOARD ANALÍTICO ==========
 Route::middleware(['auth', 'verificar.empresa'])->group(function () {
     Route::get('/dashboard-analitico', [App\Http\Controllers\DashboardAnaliticoController::class, 'index'])->name('dashboard-analitico');
@@ -353,17 +359,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     //     Route::delete('/{plan}', [App\Http\Controllers\PlanMembresiaController::class, 'eliminar'])->name('eliminar');
     // });
 
-    // MÓDULO DE TAMAÑOS DE RAMO - "Arma tu Ramo"
-    Route::prefix('tamanos-ramo')->name('tamanos-ramo.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Admin\TamanosRamoController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\Admin\TamanosRamoController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\Admin\TamanosRamoController::class, 'store'])->name('store');
-        Route::get('/{tamano_ramo}/edit', [App\Http\Controllers\Admin\TamanosRamoController::class, 'edit'])->name('edit');
-        Route::put('/{tamano_ramo}', [App\Http\Controllers\Admin\TamanosRamoController::class, 'update'])->name('update');
-        Route::delete('/{tamano_ramo}', [App\Http\Controllers\Admin\TamanosRamoController::class, 'destroy'])->name('destroy');
-        Route::post('/{tamano_ramo}/toggle-activo', [App\Http\Controllers\Admin\TamanosRamoController::class, 'toggleActivo'])->name('toggle-activo');
-    });
-
 });
 
 // MÓDULO DE MEMBRESÍAS DESHABILITADO - Single-tenant
@@ -383,18 +378,44 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // ========== RUTAS DE TIENDA PÚBLICA (SINGLE-TENANT - SIN SLUG) ==========
 
-// Arma tu Ramo - Módulo de personalización
+// Arma tu Ramo - Módulo de personalización (Wizard de 4 pasos)
 Route::get('/arma-tu-ramo', [App\Http\Controllers\ArmaTuRamoController::class, 'index'])
     ->name('arma-tu-ramo');
-Route::post('/arma-tu-ramo/tamano', [App\Http\Controllers\ArmaTuRamoController::class, 'seleccionarTamano']);
-Route::post('/arma-tu-ramo/flor/agregar', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarFlor']);
-Route::post('/arma-tu-ramo/flor/actualizar', [App\Http\Controllers\ArmaTuRamoController::class, 'actualizarFlor']);
-Route::post('/arma-tu-ramo/flor/quitar', [App\Http\Controllers\ArmaTuRamoController::class, 'quitarFlor']);
-Route::post('/arma-tu-ramo/adicional/toggle', [App\Http\Controllers\ArmaTuRamoController::class, 'toggleAdicional']);
-Route::post('/arma-tu-ramo/mensaje', [App\Http\Controllers\ArmaTuRamoController::class, 'guardarMensaje']);
-Route::post('/arma-tu-ramo/agregar-carrito', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarAlCarrito']);
-Route::post('/arma-tu-ramo/reiniciar', [App\Http\Controllers\ArmaTuRamoController::class, 'reiniciar']);
-Route::get('/arma-tu-ramo/estado', [App\Http\Controllers\ArmaTuRamoController::class, 'getEstado']);
+Route::get('/arma-tu-ramo/paso/{paso}', [App\Http\Controllers\ArmaTuRamoController::class, 'mostrarPaso'])
+    ->name('arma-tu-ramo.paso')
+    ->where('paso', '[1-4]');
+
+// Paso 1: Seleccionar estilo
+Route::post('/arma-tu-ramo/estilo', [App\Http\Controllers\ArmaTuRamoController::class, 'seleccionarEstilo'])
+    ->name('arma-tu-ramo.estilo');
+
+// Paso 2: Seleccionar flores
+Route::post('/arma-tu-ramo/flor/agregar', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarFlor'])
+    ->name('arma-tu-ramo.flor.agregar');
+Route::post('/arma-tu-ramo/flor/actualizar', [App\Http\Controllers\ArmaTuRamoController::class, 'actualizarFlor'])
+    ->name('arma-tu-ramo.flor.actualizar');
+Route::post('/arma-tu-ramo/flores/confirmar', [App\Http\Controllers\ArmaTuRamoController::class, 'confirmarFlores'])
+    ->name('arma-tu-ramo.flores.confirmar');
+
+// Paso 3: Seleccionar envoltura
+Route::post('/arma-tu-ramo/envoltura', [App\Http\Controllers\ArmaTuRamoController::class, 'seleccionarEnvoltura'])
+    ->name('arma-tu-ramo.envoltura');
+
+// Paso 4: Resumen y adicionales
+Route::post('/arma-tu-ramo/adicional/toggle', [App\Http\Controllers\ArmaTuRamoController::class, 'toggleAdicional'])
+    ->name('arma-tu-ramo.adicional.toggle');
+Route::post('/arma-tu-ramo/mensaje', [App\Http\Controllers\ArmaTuRamoController::class, 'guardarMensaje'])
+    ->name('arma-tu-ramo.mensaje');
+
+// Acciones generales
+Route::post('/arma-tu-ramo/agregar-carrito', [App\Http\Controllers\ArmaTuRamoController::class, 'agregarAlCarrito'])
+    ->name('arma-tu-ramo.agregar-carrito');
+Route::post('/arma-tu-ramo/reiniciar', [App\Http\Controllers\ArmaTuRamoController::class, 'reiniciar'])
+    ->name('arma-tu-ramo.reiniciar');
+Route::post('/arma-tu-ramo/ir-a-paso', [App\Http\Controllers\ArmaTuRamoController::class, 'irAPaso'])
+    ->name('arma-tu-ramo.ir-a-paso');
+Route::get('/arma-tu-ramo/estado', [App\Http\Controllers\ArmaTuRamoController::class, 'getEstado'])
+    ->name('arma-tu-ramo.estado');
 
 // Catálogo de productos (con filtros por categoría, precio, etc.)
 Route::get('/catalogo', [App\Http\Controllers\TiendaController::class, 'categorias'])

@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\FlorDisponible;
-use App\Models\TamanoRamo;
+use App\Models\EstiloRamo;
+use App\Models\EnvolturaRamo;
 use App\Models\ProductoAdicional;
 use App\Models\RamoPersonalizado;
 use App\Models\Carrito;
@@ -18,45 +19,107 @@ class ArmaTuRamoController extends Controller
         return Empresa::first();
     }
 
+    /**
+     * Página principal - redirige al paso actual del ramo en progreso
+     */
     public function index()
     {
         $empresa = $this->getEmpresa();
         $carrito = Carrito::obtenerOCrear(Session::getId(), $empresa->id);
-        $flores = FlorDisponible::disponibles()->ordenado()->get();
-        $tamanos = TamanoRamo::activos()->ordenado()->get();
-        $adicionales = ProductoAdicional::disponibles()->ordenado()->get()
-            ->groupBy('categoria');
+        $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
 
-        // Obtener o crear ramo en progreso
-        $ramoEnProgreso = RamoPersonalizado::obtenerOCrear(Session::getId());
-
-        return view('tienda.arma-tu-ramo', compact('empresa', 'carrito', 'flores', 'tamanos', 'adicionales', 'ramoEnProgreso'));
+        // Redirigir al paso actual
+        return redirect()->route('arma-tu-ramo.paso', ['paso' => $ramo->paso_actual]);
     }
 
-    public function seleccionarTamano(Request $request)
+    /**
+     * Mostrar paso específico del wizard
+     */
+    public function mostrarPaso($paso)
+    {
+        $empresa = $this->getEmpresa();
+        $carrito = Carrito::obtenerOCrear(Session::getId(), $empresa->id);
+        $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
+
+        // Validar paso (maximo 3 pasos)
+        $paso = max(1, min(3, intval($paso)));
+
+        // Datos comunes
+        $data = [
+            'empresa' => $empresa,
+            'carrito' => $carrito,
+            'ramo' => $ramo,
+            'pasoActual' => $paso,
+        ];
+
+        switch ($paso) {
+            case 1:
+                $data['estilos'] = EstiloRamo::activos()->ordenado()->get();
+                return view('tienda.arma-tu-ramo.paso1', $data);
+
+            case 2:
+                // Verificar que tenga estilo seleccionado
+                if (!$ramo->estilo_ramo_id) {
+                    return redirect()->route('arma-tu-ramo.paso', ['paso' => 1])
+                        ->with('error', 'Primero debes seleccionar un estilo');
+                }
+                $data['flores'] = FlorDisponible::disponibles()->ordenado()->get();
+                $data['estilo'] = $ramo->estilo;
+                return view('tienda.arma-tu-ramo.paso2', $data);
+
+            case 3:
+                // Verificar que tenga flores seleccionadas
+                if (!$ramo->cumpleRequisitoFlores()) {
+                    return redirect()->route('arma-tu-ramo.paso', ['paso' => 2])
+                        ->with('error', 'Debes seleccionar la cantidad de flores requerida');
+                }
+                $data['envolturas'] = EnvolturaRamo::activos()->ordenado()->get();
+                return view('tienda.arma-tu-ramo.paso3', $data);
+
+            default:
+                return redirect()->route('arma-tu-ramo.paso', ['paso' => 1]);
+        }
+    }
+
+    /**
+     * Paso 1: Seleccionar estilo
+     */
+    public function seleccionarEstilo(Request $request)
     {
         $request->validate([
-            'tamano_id' => 'required|exists:tamanos_ramo,id',
+            'estilo_id' => 'required|exists:estilos_ramo,id',
         ]);
 
         $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
-        $tamano = TamanoRamo::findOrFail($request->tamano_id);
+        $estilo = EstiloRamo::findOrFail($request->estilo_id);
+
+        // Si cambia de estilo, reiniciar flores
+        if ($ramo->estilo_ramo_id !== $estilo->id) {
+            $ramo->flores_seleccionadas = [];
+        }
 
         $ramo->update([
-            'tamano_ramo_id' => $tamano->id,
-            'precio_base' => $tamano->precio_base,
+            'estilo_ramo_id' => $estilo->id,
+            'paso_actual' => 2,
         ]);
 
         $ramo->calcularTotales()->save();
 
-        return response()->json([
-            'success' => true,
-            'tamano' => $tamano,
-            'ramo' => $ramo,
-            'total' => $ramo->total,
-        ]);
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'estilo' => $estilo,
+                'ramo' => $ramo,
+                'redirect' => route('arma-tu-ramo.paso', ['paso' => 2]),
+            ]);
+        }
+
+        return redirect()->route('arma-tu-ramo.paso', ['paso' => 2]);
     }
 
+    /**
+     * Paso 2: Agregar flor
+     */
     public function agregarFlor(Request $request)
     {
         $request->validate([
@@ -75,14 +138,14 @@ class ArmaTuRamoController extends Controller
             ], 422);
         }
 
-        // Verificar límites del tamaño
-        $tamano = $ramo->tamano;
-        if ($tamano) {
+        // Verificar límites del estilo
+        $estilo = $ramo->estilo;
+        if ($estilo) {
             $totalActual = $ramo->total_flores;
-            if (($totalActual + $request->cantidad) > $tamano->cantidad_flores_max) {
+            if (($totalActual + $request->cantidad) > $estilo->flores_maximo) {
                 return response()->json([
                     'success' => false,
-                    'message' => "El tamaño {$tamano->nombre} permite máximo {$tamano->cantidad_flores_max} flores",
+                    'message' => "El estilo {$estilo->nombre} permite maximo {$estilo->flores_maximo} flores",
                 ], 422);
             }
         }
@@ -116,9 +179,13 @@ class ArmaTuRamoController extends Controller
             'flores' => $ramo->resumen_flores,
             'total_flores' => $ramo->total_flores,
             'total' => $ramo->total,
+            'cumple_requisito' => $ramo->cumpleRequisitoFlores(),
         ]);
     }
 
+    /**
+     * Paso 2: Actualizar cantidad de flor
+     */
     public function actualizarFlor(Request $request)
     {
         $request->validate([
@@ -143,12 +210,37 @@ class ArmaTuRamoController extends Controller
                 ], 422);
             }
 
-            // Actualizar cantidad
+            // Verificar límite máximo
+            $estilo = $ramo->estilo;
+            if ($estilo) {
+                $totalSinEstaFlor = collect($flores)
+                    ->where('flor_id', '!=', $flor->id)
+                    ->sum('cantidad');
+
+                if (($totalSinEstaFlor + $request->cantidad) > $estilo->flores_maximo) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "El estilo permite maximo {$estilo->flores_maximo} flores",
+                    ], 422);
+                }
+            }
+
+            // Actualizar o agregar
+            $encontrada = false;
             foreach ($flores as &$f) {
                 if ($f['flor_id'] == $flor->id) {
                     $f['cantidad'] = $request->cantidad;
+                    $encontrada = true;
                     break;
                 }
+            }
+
+            if (!$encontrada) {
+                $flores[] = [
+                    'flor_id' => $flor->id,
+                    'cantidad' => $request->cantidad,
+                    'precio_unitario' => $flor->precio_unidad,
+                ];
             }
         }
 
@@ -161,34 +253,67 @@ class ArmaTuRamoController extends Controller
             'flores' => $ramo->resumen_flores,
             'total_flores' => $ramo->total_flores,
             'total' => $ramo->total,
+            'cumple_requisito' => $ramo->cumpleRequisitoFlores(),
         ]);
     }
 
-    public function quitarFlor(Request $request)
+    /**
+     * Paso 2: Confirmar selección de flores y avanzar
+     */
+    public function confirmarFlores(Request $request)
     {
-        $request->validate([
-            'flor_id' => 'required|exists:flores_disponibles,id',
-        ]);
-
         $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
 
-        $flores = array_filter(
-            $ramo->flores_seleccionadas ?? [],
-            fn($f) => $f['flor_id'] != $request->flor_id
-        );
+        if (!$ramo->cumpleRequisitoFlores()) {
+            $estilo = $ramo->estilo;
+            return response()->json([
+                'success' => false,
+                'message' => "Debes seleccionar entre {$estilo->flores_minimo} y {$estilo->flores_maximo} flores",
+            ], 422);
+        }
 
-        $ramo->flores_seleccionadas = array_values($flores);
-        $ramo->calcularTotales()->save();
+        $ramo->update(['paso_actual' => 3]);
 
         return response()->json([
             'success' => true,
-            'ramo' => $ramo,
-            'flores' => $ramo->resumen_flores,
-            'total_flores' => $ramo->total_flores,
-            'total' => $ramo->total,
+            'redirect' => route('arma-tu-ramo.paso', ['paso' => 3]),
         ]);
     }
 
+    /**
+     * Paso 3: Seleccionar envoltura
+     */
+    public function seleccionarEnvoltura(Request $request)
+    {
+        $request->validate([
+            'envoltura_id' => 'required|exists:envolturas_ramo,id',
+        ]);
+
+        $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
+        $envoltura = EnvolturaRamo::findOrFail($request->envoltura_id);
+
+        $ramo->update([
+            'envoltura_ramo_id' => $envoltura->id,
+            'paso_actual' => 3, // Se queda en paso 3 (wizard de 3 pasos)
+        ]);
+
+        $ramo->calcularTotales()->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'envoltura' => $envoltura,
+                'ramo' => $ramo,
+                'total' => $ramo->total,
+            ]);
+        }
+
+        return redirect()->route('arma-tu-ramo.paso', ['paso' => 3]);
+    }
+
+    /**
+     * Paso 4: Toggle adicional
+     */
     public function toggleAdicional(Request $request)
     {
         $request->validate([
@@ -203,7 +328,6 @@ class ArmaTuRamoController extends Controller
 
         foreach ($adicionales as $key => $a) {
             if ($a['adicional_id'] == $adicional->id) {
-                // Quitar si ya existe
                 unset($adicionales[$key]);
                 $encontrado = true;
                 break;
@@ -211,7 +335,6 @@ class ArmaTuRamoController extends Controller
         }
 
         if (!$encontrado) {
-            // Agregar
             $adicionales[] = [
                 'adicional_id' => $adicional->id,
                 'cantidad' => 1,
@@ -233,6 +356,9 @@ class ArmaTuRamoController extends Controller
         ]);
     }
 
+    /**
+     * Paso 4: Guardar mensaje en tarjeta
+     */
     public function guardarMensaje(Request $request)
     {
         $request->validate([
@@ -249,40 +375,44 @@ class ArmaTuRamoController extends Controller
         ]);
     }
 
+    /**
+     * Agregar ramo al carrito
+     */
     public function agregarAlCarrito(Request $request)
     {
         $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
 
-        // Validar que tiene flores
-        if (empty($ramo->flores_seleccionadas) || $ramo->total_flores == 0) {
+        // Validaciones
+        if (!$ramo->estilo_ramo_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Debes seleccionar al menos una flor',
+                'message' => 'Debes seleccionar un estilo',
             ], 422);
         }
 
-        // Validar mínimo del tamaño
-        $tamano = $ramo->tamano;
-        if ($tamano && $ramo->total_flores < $tamano->cantidad_flores_min) {
+        if (!$ramo->cumpleRequisitoFlores()) {
             return response()->json([
                 'success' => false,
-                'message' => "El tamaño {$tamano->nombre} requiere mínimo {$tamano->cantidad_flores_min} flores",
+                'message' => 'Debes seleccionar la cantidad de flores requerida',
+            ], 422);
+        }
+
+        if (!$ramo->envoltura_ramo_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debes seleccionar una envoltura',
             ], 422);
         }
 
         $empresa = $this->getEmpresa();
         $carrito = Carrito::obtenerOCrear(Session::getId(), $empresa->id);
 
-        // Crear nombre descriptivo del ramo
-        $nombreRamo = "Ramo Personalizado";
-        if ($tamano) {
-            $nombreRamo .= " - " . $tamano->nombre;
-        }
+        // Crear nombre descriptivo
+        $nombreRamo = "Ramo Personalizado - " . $ramo->estilo->nombre;
         $nombreRamo .= " ({$ramo->total_flores} flores)";
 
-        // Agregar al carrito como item especial
+        // Agregar al carrito
         $items = $carrito->items ?? [];
-
         $key = 'ramo-personalizado-' . $ramo->id;
 
         $items[$key] = [
@@ -296,23 +426,15 @@ class ArmaTuRamoController extends Controller
             'precio_total' => $ramo->total,
             'nombre' => $nombreRamo,
             'referencia' => 'RAMO-' . str_pad($ramo->id, 6, '0', STR_PAD_LEFT),
-            'info_variante' => null,
-            'detalle_ramo' => [
-                'tamano' => $tamano ? $tamano->nombre : null,
-                'flores' => $ramo->resumen_flores,
-                'adicionales' => $ramo->adicionales,
-                'mensaje_tarjeta' => $ramo->mensaje_tarjeta,
-                'subtotal_flores' => $ramo->subtotal_flores,
-                'subtotal_adicionales' => $ramo->subtotal_adicionales,
-                'precio_base' => $ramo->precio_base,
-            ],
+            'info_variante' => $ramo->envoltura->nombre,
+            'detalle_ramo' => $ramo->resumen_completo,
         ];
 
         $carrito->items = $items;
         $carrito->calcularSubtotal();
         $carrito->save();
 
-        // Limpiar ramo personalizado para poder crear otro
+        // Limpiar ramo para poder crear otro
         $ramo->delete();
 
         return response()->json([
@@ -323,20 +445,62 @@ class ArmaTuRamoController extends Controller
         ]);
     }
 
+    /**
+     * Reiniciar el configurador
+     */
     public function reiniciar()
     {
         $ramo = RamoPersonalizado::where('session_id', Session::getId())->first();
 
         if ($ramo) {
-            $ramo->delete();
+            $ramo->reiniciar();
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Configurador reiniciado',
+            'redirect' => route('arma-tu-ramo.paso', ['paso' => 1]),
         ]);
     }
 
+    /**
+     * Ir a un paso específico (navegación)
+     */
+    public function irAPaso(Request $request)
+    {
+        $request->validate([
+            'paso' => 'required|integer|min:1|max:3',
+        ]);
+
+        $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
+        $pasoSolicitado = $request->paso;
+
+        // Validar si puede ir a ese paso
+        if ($pasoSolicitado > 1 && !$ramo->estilo_ramo_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Primero selecciona un estilo',
+            ], 422);
+        }
+
+        if ($pasoSolicitado > 2 && !$ramo->cumpleRequisitoFlores()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Primero selecciona las flores',
+            ], 422);
+        }
+
+        $ramo->update(['paso_actual' => $pasoSolicitado]);
+
+        return response()->json([
+            'success' => true,
+            'redirect' => route('arma-tu-ramo.paso', ['paso' => $pasoSolicitado]),
+        ]);
+    }
+
+    /**
+     * Obtener estado actual del ramo (AJAX)
+     */
     public function getEstado()
     {
         $ramo = RamoPersonalizado::obtenerOCrear(Session::getId());
@@ -344,15 +508,19 @@ class ArmaTuRamoController extends Controller
         return response()->json([
             'success' => true,
             'ramo' => $ramo,
-            'tamano' => $ramo->tamano,
+            'estilo' => $ramo->estilo,
+            'envoltura' => $ramo->envoltura,
             'flores' => $ramo->resumen_flores,
             'adicionales' => $ramo->adicionales,
             'total_flores' => $ramo->total_flores,
             'subtotal_flores' => $ramo->subtotal_flores,
             'subtotal_adicionales' => $ramo->subtotal_adicionales,
             'precio_base' => $ramo->precio_base,
+            'precio_envoltura' => $ramo->precio_envoltura,
             'total' => $ramo->total,
             'mensaje_tarjeta' => $ramo->mensaje_tarjeta,
+            'paso_actual' => $ramo->paso_actual,
+            'cumple_requisito_flores' => $ramo->cumpleRequisitoFlores(),
         ]);
     }
 }

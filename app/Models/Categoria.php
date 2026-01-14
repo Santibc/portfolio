@@ -16,12 +16,22 @@ class Categoria extends Model
 
     protected $fillable = [
         'empresa_id',
+        'tipo',
         'nombre',
         'slug',
         'descripcion',
         'imagen',
         'activo',
         'orden'
+    ];
+
+    // Constantes para tipos de categoría
+    const TIPO_OCASION = 'ocasion';
+    const TIPO_FORMATO = 'formato';
+
+    const TIPOS = [
+        self::TIPO_OCASION => 'Ocasión',
+        self::TIPO_FORMATO => 'Formato',
     ];
 
     protected $casts = [
@@ -104,5 +114,37 @@ class Categoria extends Model
     public function scopePorEmpresa($query, $empresaId)
     {
         return $query->where('empresa_id', $empresaId);
+    }
+
+    /**
+     * Scope para filtrar por tipo
+     */
+    public function scopePorTipo($query, $tipo)
+    {
+        return $query->where('tipo', $tipo);
+    }
+
+    /**
+     * Scope para categorías tipo Ocasión
+     */
+    public function scopeOcasiones($query)
+    {
+        return $query->where('tipo', self::TIPO_OCASION);
+    }
+
+    /**
+     * Scope para categorías tipo Formato
+     */
+    public function scopeFormatos($query)
+    {
+        return $query->where('tipo', self::TIPO_FORMATO);
+    }
+
+    /**
+     * Obtener el nombre del tipo formateado
+     */
+    public function getTipoNombreAttribute()
+    {
+        return self::TIPOS[$this->tipo] ?? 'Sin tipo';
     }
 }

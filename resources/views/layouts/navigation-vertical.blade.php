@@ -78,26 +78,38 @@
                     <span>Inventario</span>
                 </a>
 
-                <a href="{{ route('flores.index') }}"
-                   class="sidebar-link {{ request()->routeIs('flores.*') ? 'active' : '' }}"
-                   title="Flores">
-                    <i class="bi bi-flower1"></i>
-                    <span>Flores</span>
-                </a>
-
-                <a href="{{ route('adicionales.index') }}"
-                   class="sidebar-link {{ request()->routeIs('adicionales.*') ? 'active' : '' }}"
-                   title="Adicionales">
-                    <i class="bi bi-gift"></i>
-                    <span>Adicionales</span>
-                </a>
-
-                <a href="{{ route('admin.tamanos-ramo.index') }}"
-                   class="sidebar-link {{ request()->routeIs('admin.tamanos-ramo.*') ? 'active' : '' }}"
-                   title="Tamaños de Ramo">
-                    <i class="bi bi-flower2"></i>
-                    <span>Tamaños de Ramo</span>
-                </a>
+                {{-- Arma tu Ramo con submenú --}}
+                <div class="sidebar-submenu-container">
+                    <a href="#armaTuRamoMenu"
+                       class="sidebar-link {{ request()->routeIs('flores.*') || request()->routeIs('adicionales.*') || request()->routeIs('estilos-ramo.*') || request()->routeIs('envolturas-ramo.*') ? 'active' : '' }}"
+                       data-bs-toggle="collapse"
+                       aria-expanded="{{ request()->routeIs('flores.*') || request()->routeIs('adicionales.*') || request()->routeIs('estilos-ramo.*') || request()->routeIs('envolturas-ramo.*') ? 'true' : 'false' }}"
+                       title="Arma tu Ramo">
+                        <i class="bi bi-flower2"></i>
+                        <span>Arma tu Ramo</span>
+                        <i class="bi bi-chevron-down sidebar-chevron"></i>
+                    </a>
+                    <div class="collapse {{ request()->routeIs('flores.*') || request()->routeIs('adicionales.*') || request()->routeIs('estilos-ramo.*') || request()->routeIs('envolturas-ramo.*') ? 'show' : '' }}" id="armaTuRamoMenu">
+                        <div class="sidebar-submenu">
+                            <a href="{{ route('estilos-ramo.index') }}" class="sidebar-sublink {{ request()->routeIs('estilos-ramo.*') ? 'active' : '' }}" title="Estilos">
+                                <i class="bi bi-palette"></i>
+                                <span>Estilos</span>
+                            </a>
+                            <a href="{{ route('flores.index') }}" class="sidebar-sublink {{ request()->routeIs('flores.*') ? 'active' : '' }}" title="Flores">
+                                <i class="bi bi-flower1"></i>
+                                <span>Flores</span>
+                            </a>
+                            <a href="{{ route('envolturas-ramo.index') }}" class="sidebar-sublink {{ request()->routeIs('envolturas-ramo.*') ? 'active' : '' }}" title="Envolturas">
+                                <i class="bi bi-box"></i>
+                                <span>Envolturas</span>
+                            </a>
+                            <a href="{{ route('adicionales.index') }}" class="sidebar-sublink {{ request()->routeIs('adicionales.*') ? 'active' : '' }}" title="Adicionales">
+                                <i class="bi bi-gift"></i>
+                                <span>Adicionales</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
                 <a href="{{ route('descuentos.index') }}"
                    class="sidebar-link {{ request()->routeIs('descuentos*') ? 'active' : '' }}"
@@ -148,13 +160,6 @@
 
                 <div class="sidebar-divider"></div>
                 <div class="sidebar-section-title">Tienda</div>
-
-                <a href="{{ route('carrusel.index') }}"
-                   class="sidebar-link {{ request()->routeIs('carrusel.*') ? 'active' : '' }}"
-                   title="Carrusel">
-                    <i class="bi bi-images"></i>
-                    <span>Carrusel</span>
-                </a>
 
                 <a href="{{ route('empresa.index') }}"
                    class="sidebar-link {{ request()->is('empresa') ? 'active' : '' }}"

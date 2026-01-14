@@ -70,7 +70,6 @@ class TiendaController extends Controller
         }
 
         $empresa = $this->getEmpresa();
-        $empresa->load(['carruselImagenesActivas']);
 
         // Obtener primera lista de precios activa
         $listaPrecio = ListaPrecio::activas()->first();
@@ -91,6 +90,19 @@ class TiendaController extends Controller
                     ->where('empresa_id', $empresa->id); // quítalo si Producto no tiene empresa_id
                 }
             ])
+            ->orderBy('orden')
+            ->get();
+
+        // Categorías por tipo para la navegación de la tienda
+        $categoriasOcasiones = Categoria::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->where('tipo', 'ocasion')
+            ->orderBy('orden')
+            ->get();
+
+        $categoriasFormatos = Categoria::where('empresa_id', $empresa->id)
+            ->where('activo', true)
+            ->where('tipo', 'formato')
             ->orderBy('orden')
             ->get();
 
@@ -300,6 +312,8 @@ class TiendaController extends Controller
             'empresa',
             'productos',
             'categorias',
+            'categoriasOcasiones',
+            'categoriasFormatos',
             'listaPrecio',
             'carrito',
             'productosDestacados',
@@ -804,7 +818,8 @@ public function procesarCompra(Request $request)
                 'referencia_producto' => $item['referencia'],
                 'nombre_producto' => $item['nombre'],
                 'info_variante' => isset($item['info_variante']) ?
-                    "Talla: {$item['info_variante']['talla']}, Color: {$item['info_variante']['color']}" : null
+                    "Talla: {$item['info_variante']['talla']}, Color: {$item['info_variante']['color']}" : null,
+                'detalle_ramo' => $item['detalle_ramo'] ?? null
             ]);
 
             // Descontar stock (solo para productos regulares, no ramos personalizados)

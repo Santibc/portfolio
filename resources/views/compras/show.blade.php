@@ -25,6 +25,11 @@
         .status-cancelada { background: #fee2e2; color: #991b1b; }
         .status-reembolsada { background: #f3f4f6; color: #374151; }
 
+        /* Estilos para ramos personalizados */
+        .text-pink { color: #e91e63; }
+        .bg-pink { background-color: #e91e63; color: white; }
+        .border-pink { border-color: #e91e63 !important; }
+
         .timeline {
             position: relative;
             padding: 0;
@@ -487,6 +492,88 @@
                             <div class="fw-bold">${{ number_format($item->precio_total, 0, ',', '.') }}</div>
                         </div>
                     </div>
+
+                    {{-- Detalle del Ramo Personalizado --}}
+                    @if($item->esRamoPersonalizado() && $item->detalle_ramo)
+                        <div class="ms-4 mb-4 p-3 border-start border-3 border-pink" style="background: #fdf2f8; border-radius: 0 8px 8px 0;">
+                            <h6 class="mb-3 text-pink">
+                                <i class="bi bi-flower2 me-2"></i>Detalle del Ramo - INSTRUCCIONES PARA ARMADO
+                            </h6>
+
+                            {{-- Flores --}}
+                            @if(!empty($item->detalle_ramo['flores']))
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2"><i class="bi bi-flower1 me-1"></i> Flores:</strong>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered mb-0" style="background: white;">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Flor</th>
+                                                    <th>Color</th>
+                                                    <th class="text-center">Cantidad</th>
+                                                    <th class="text-end">Precio Unit.</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($item->detalle_ramo['flores'] as $flor)
+                                                    <tr>
+                                                        <td><strong>{{ $flor['nombre'] ?? 'Flor' }}</strong></td>
+                                                        <td>{{ $flor['color'] ?? '-' }}</td>
+                                                        <td class="text-center"><span class="badge bg-pink">{{ $flor['cantidad'] }}</span></td>
+                                                        <td class="text-end">${{ number_format($flor['precio_unitario'] ?? 0, 0, ',', '.') }}</td>
+                                                        <td class="text-end">${{ number_format($flor['subtotal'] ?? 0, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot class="table-light">
+                                                <tr>
+                                                    <th colspan="4" class="text-end">Subtotal Flores:</th>
+                                                    <th class="text-end">${{ number_format($item->detalle_ramo['subtotal_flores'] ?? 0, 0, ',', '.') }}</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Adicionales --}}
+                            @if(!empty($item->detalle_ramo['adicionales']))
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2"><i class="bi bi-gift me-1"></i> Adicionales:</strong>
+                                    <ul class="list-group list-group-flush" style="background: white; border-radius: 4px;">
+                                        @foreach($item->detalle_ramo['adicionales'] as $adicional)
+                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                <span>{{ $adicional['nombre'] ?? 'Adicional' }} x{{ $adicional['cantidad'] ?? 1 }}</span>
+                                                <span class="badge bg-secondary">${{ number_format(($adicional['precio'] ?? 0) * ($adicional['cantidad'] ?? 1), 0, ',', '.') }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    <div class="text-end mt-2">
+                                        <small class="text-muted">Subtotal Adicionales: <strong>${{ number_format($item->detalle_ramo['subtotal_adicionales'] ?? 0, 0, ',', '.') }}</strong></small>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Mensaje de tarjeta del ramo --}}
+                            @if(!empty($item->detalle_ramo['mensaje_tarjeta']))
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2"><i class="bi bi-card-text me-1"></i> Mensaje en Tarjeta:</strong>
+                                    <div class="p-2 bg-white border rounded fst-italic">
+                                        "{{ $item->detalle_ramo['mensaje_tarjeta'] }}"
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Resumen de precios --}}
+                            <div class="border-top pt-2 mt-2">
+                                <div class="row text-end small">
+                                    <div class="col-8">Precio base (envoltura):</div>
+                                    <div class="col-4">${{ number_format($item->detalle_ramo['precio_base'] ?? 0, 0, ',', '.') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @endforeach
 
                 {{-- Totales --}}

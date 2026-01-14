@@ -670,9 +670,14 @@
                             <!-- Items -->
                             @foreach($carrito->items as $item)
                                 @php
-                                    $producto = \App\Models\Producto::find($item['producto_id']);
-                                    // Para ramos personalizados u items sin producto, usar imagen por defecto
-                                    $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/flores/default.png');
+                                    $esRamoPersonalizado = isset($item['es_ramo_personalizado']) && $item['es_ramo_personalizado'];
+                                    $producto = null;
+                                    $imagenUrl = asset('images/flores/default.png');
+
+                                    if (!$esRamoPersonalizado && isset($item['producto_id'])) {
+                                        $producto = \App\Models\Producto::find($item['producto_id']);
+                                        $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/flores/default.png');
+                                    }
                                 @endphp
                                 <div class="summary-item">
                                     <img src="{{ $imagenUrl }}"
@@ -680,10 +685,12 @@
                                          class="item-image">
                                     <div class="item-details">
                                         <div class="item-name">{{ $item['nombre'] }}</div>
-                                        @if(isset($item['info_variante']))
+                                        @if($esRamoPersonalizado && isset($item['info_variante']))
+                                            <div class="item-variant">{{ $item['info_variante'] }}</div>
+                                        @elseif(isset($item['info_variante']) && is_array($item['info_variante']))
                                             <div class="item-variant">
                                                 {{ $item['info_variante']['talla'] ?? '' }}
-                                                {{ $item['info_variante']['color'] ? '- ' . $item['info_variante']['color'] : '' }}
+                                                {{ isset($item['info_variante']['color']) && $item['info_variante']['color'] ? '- ' . $item['info_variante']['color'] : '' }}
                                             </div>
                                         @endif
                                         <div class="item-quantity">Cantidad: {{ $item['cantidad'] }}</div>

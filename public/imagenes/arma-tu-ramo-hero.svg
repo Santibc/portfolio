@@ -1,0 +1,102 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8E7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE4B5;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Filters for shadows -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bgGrad)"/>
+  
+  <!-- Vase -->
+  <ellipse cx="400" cy="520" rx="80" ry="20" fill="#D2B48C" opacity="0.3"/>
+  <path d="M 360 520 Q 350 450 360 400 L 440 400 Q 450 450 440 520 Z" fill="#8B7355" filter="url(#shadow)"/>
+  <path d="M 360 400 L 440 400 L 435 380 L 365 380 Z" fill="#A0826D"/>
+  
+  <!-- Sunflower 1 (center-left) -->
+  <circle cx="340" cy="280" r="45" fill="#FFD700" filter="url(#shadow)"/>
+  <circle cx="340" cy="280" r="20" fill="#8B4513"/>
+  <!-- Petals -->
+  <ellipse cx="340" cy="235" rx="15" ry="25" fill="#FFA500" transform="rotate(0 340 280)"/>
+  <ellipse cx="385" cy="280" rx="25" ry="15" fill="#FFA500" transform="rotate(0 340 280)"/>
+  <ellipse cx="340" cy="325" rx="15" ry="25" fill="#FFA500" transform="rotate(0 340 280)"/>
+  <ellipse cx="295" cy="280" rx="25" ry="15" fill="#FFA500" transform="rotate(0 340 280)"/>
+  <ellipse cx="365" cy="255" rx="18" ry="22" fill="#FFB347" transform="rotate(45 340 280)"/>
+  <ellipse cx="365" cy="305" rx="18" ry="22" fill="#FFB347" transform="rotate(-45 340 280)"/>
+  <ellipse cx="315" cy="305" rx="18" ry="22" fill="#FFB347" transform="rotate(45 340 280)"/>
+  <ellipse cx="315" cy="255" rx="18" ry="22" fill="#FFB347" transform="rotate(-45 340 280)"/>
+  
+  <!-- Sunflower 2 (center-right) -->
+  <circle cx="460" cy="260" r="50" fill="#FFD700" filter="url(#shadow)"/>
+  <circle cx="460" cy="260" r="22" fill="#8B4513"/>
+  <!-- Petals -->
+  <ellipse cx="460" cy="210" rx="16" ry="28" fill="#FFA500"/>
+  <ellipse cx="510" cy="260" rx="28" ry="16" fill="#FFA500"/>
+  <ellipse cx="460" cy="310" rx="16" ry="28" fill="#FFA500"/>
+  <ellipse cx="410" cy="260" rx="28" ry="16" fill="#FFA500"/>
+  <ellipse cx="488" cy="230" rx="20" ry="25" fill="#FFB347" transform="rotate(45 460 260)"/>
+  <ellipse cx="488" cy="290" rx="20" ry="25" fill="#FFB347" transform="rotate(-45 460 260)"/>
+  <ellipse cx="432" cy="290" rx="20" ry="25" fill="#FFB347" transform="rotate(45 460 260)"/>
+  <ellipse cx="432" cy="230" rx="20" ry="25" fill="#FFB347" transform="rotate(-45 460 260)"/>
+  
+  <!-- Red Rose 1 -->
+  <circle cx="380" cy="320" r="30" fill="#DC143C" filter="url(#shadow)"/>
+  <circle cx="380" cy="320" r="15" fill="#8B0000"/>
+  <ellipse cx="380" cy="295" rx="12" ry="18" fill="#FF1493"/>
+  <ellipse cx="402" cy="320" rx="18" ry="12" fill="#FF1493"/>
+  <ellipse cx="358" cy="320" rx="18" ry="12" fill="#FF1493"/>
+  <ellipse cx="380" cy="345" rx="12" ry="18" fill="#FF1493"/>
+  
+  <!-- Red Rose 2 -->
+  <circle cx="420" cy="340" r="28" fill="#C71585" filter="url(#shadow)"/>
+  <circle cx="420" cy="340" r="14" fill="#8B008B"/>
+  <ellipse cx="420" cy="318" rx="11" ry="16" fill="#FF1493"/>
+  <ellipse cx="440" cy="340" rx="16" ry="11" fill="#FF1493"/>
+  <ellipse cx="400" cy="340" rx="16" ry="11" fill="#FF1493"/>
+  
+  <!-- Orange Rose -->
+  <circle cx="350" cy="360" r="26" fill="#FF8C00" filter="url(#shadow)"/>
+  <circle cx="350" cy="360" r="13" fill="#FF4500"/>
+  <ellipse cx="350" cy="340" rx="10" ry="15" fill="#FFA500"/>
+  <ellipse cx="368" cy="360" rx="15" ry="10" fill="#FFA500"/>
+  <ellipse cx="332" cy="360" rx="15" ry="10" fill="#FFA500"/>
+  
+  <!-- Purple flowers (smaller, filler) -->
+  <circle cx="320" cy="340" r="18" fill="#9370DB" filter="url(#shadow)"/>
+  <circle cx="320" cy="340" r="8" fill="#4B0082"/>
+  
+  <circle cx="480" cy="320" r="20" fill="#8B4789" filter="url(#shadow)"/>
+  <circle cx="480" cy="320" r="9" fill="#4B0082"/>
+  
+  <circle cx="440" cy="300" r="16" fill="#9370DB" filter="url(#shadow)"/>
+  <circle cx="440" cy="300" r="7" fill="#483D8B"/>
+  
+  <!-- Green leaves -->
+  <ellipse cx="310" cy="360" rx="15" ry="30" fill="#228B22" opacity="0.7" transform="rotate(-30 310 360)"/>
+  <ellipse cx="290" cy="320" rx="12" ry="25" fill="#2E8B57" opacity="0.7" transform="rotate(-45 290 320)"/>
+  <ellipse cx="490" cy="350" rx="15" ry="28" fill="#228B22" opacity="0.7" transform="rotate(30 490 350)"/>
+  <ellipse cx="510" cy="310" rx="13" ry="26" fill="#2E8B57" opacity="0.7" transform="rotate(45 510 310)"/>
+  <ellipse cx="330" cy="300" rx="10" ry="20" fill="#3CB371" opacity="0.7" transform="rotate(-20 330 300)"/>
+  <ellipse cx="470" cy="280" rx="11" ry="22" fill="#3CB371" opacity="0.7" transform="rotate(20 470 280)"/>
+  
+  <!-- Stems -->
+  <line x1="340" y1="325" x2="370" y2="450" stroke="#2F4F2F" stroke-width="4" opacity="0.6"/>
+  <line x1="460" y1="310" x2="430" y2="450" stroke="#2F4F2F" stroke-width="5" opacity="0.6"/>
+  <line x1="380" y1="350" x2="385" y2="450" stroke="#2F4F2F" stroke-width="3" opacity="0.6"/>
+  <line x1="420" y1="368" x2="415" y2="450" stroke="#2F4F2F" stroke-width="3" opacity="0.6"/>
+  <line x1="350" y1="386" x2="395" y2="450" stroke="#2F4F2F" stroke-width="3" opacity="0.6"/>
+</svg>

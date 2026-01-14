@@ -47,13 +47,41 @@
           <input type="hidden" name="id" value="{{ old('id',$categoria->id) }}">
           
           <div class="row">
+            {{-- Tipo de Categoría --}}
+            <div class="col-md-12 mb-4">
+              <label class="form-label">Tipo de Categoría <span class="text-danger">*</span></label>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check form-check-inline border rounded p-3 w-100 {{ old('tipo', $categoria->tipo) === 'ocasion' ? 'border-primary bg-primary bg-opacity-10' : '' }}" style="cursor: pointer;" onclick="document.getElementById('tipo_ocasion').click()">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipo_ocasion" value="ocasion"
+                           {{ old('tipo', $categoria->tipo) === 'ocasion' ? 'checked' : '' }} required>
+                    <label class="form-check-label w-100" for="tipo_ocasion" style="cursor: pointer;">
+                      <strong><i class="bi bi-calendar-heart me-2"></i>Ocasión</strong>
+                      <p class="mb-0 text-muted small mt-1">Para filtrar por evento: Cumpleaños, Aniversarios, Día de la Madre, etc.</p>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check form-check-inline border rounded p-3 w-100 {{ old('tipo', $categoria->tipo) === 'formato' ? 'border-primary bg-primary bg-opacity-10' : '' }}" style="cursor: pointer;" onclick="document.getElementById('tipo_formato').click()">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipo_formato" value="formato"
+                           {{ old('tipo', $categoria->tipo) === 'formato' ? 'checked' : '' }} required>
+                    <label class="form-check-label w-100" for="tipo_formato" style="cursor: pointer;">
+                      <strong><i class="bi bi-box me-2"></i>Formato</strong>
+                      <p class="mb-0 text-muted small mt-1">Para filtrar por tipo de producto: Ramos, Arreglos, Cajas, Plantas, etc.</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              @error('tipo') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+            </div>
+
             {{-- Nombre --}}
             <div class="col-md-6 mb-3">
               <label class="form-label">Nombre <span class="text-danger">*</span></label>
               <input name="nombre" type="text"
                      class="form-control @error('nombre') is-invalid @enderror"
                      value="{{ old('nombre',$categoria->nombre) }}"
-                     placeholder="Ej: Ropa, Calzado, Accesorios"
+                     placeholder="Ej: Cumpleaños, Ramos, Arreglos"
                      required>
               @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
               <small class="text-muted">Este nombre será visible en su tienda</small>

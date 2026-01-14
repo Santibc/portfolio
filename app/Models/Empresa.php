@@ -61,26 +61,6 @@ class Empresa extends Model
         return $this->hasMany(Producto::class);
     }
 
-    public function carruselImagenes()
-    {
-        return $this->hasMany(CarruselEmpresa::class);
-    }
-
-    public function carruselImagenesActivas()
-    {
-        return $this->hasMany(CarruselEmpresa::class)
-            ->where('activo', true)
-            ->where(function($q) {
-                $q->whereNull('fecha_inicio')
-                  ->orWhere('fecha_inicio', '<=', now());
-            })
-            ->where(function($q) {
-                $q->whereNull('fecha_fin')
-                  ->orWhere('fecha_fin', '>=', now());
-            })
-            ->orderBy('orden');
-    }
-
     public function compras()
     {
         return $this->hasMany(Compra::class);

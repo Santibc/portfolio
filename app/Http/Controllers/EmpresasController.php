@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
-use App\Models\CarruselEmpresa;
 use App\Models\ConfiguracionPasarela;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,9 +23,6 @@ class EmpresasController extends Controller
             return redirect()->route('empresa.crear')
                 ->with('info', 'Primero debe crear su empresa para continuar.');
         }
-
-        // Cargar imágenes del carrusel
-        $empresa->load('carruselImagenesActivas');
 
         // Estadísticas básicas
         $estadisticas = [
@@ -56,9 +52,7 @@ class EmpresasController extends Controller
         $empresa = auth()->user()->empresa;
 
         // Si ya tiene empresa, es edición
-        if ($empresa) {
-            $empresa->load('carruselImagenes');
-        } else {
+        if (!$empresa) {
             $empresa = new Empresa();
         }
 
@@ -202,10 +196,9 @@ class EmpresasController extends Controller
             $baseDir = public_path('imagenes/empresas/' . $empresa->id);
             $logoDir = $baseDir . '/logo';
             $portadaDir = $baseDir . '/portada';
-            $carruselDir = $baseDir . '/carrusel';
 
             // Crear directorios si no existen
-            foreach ([$baseDir, $logoDir, $portadaDir, $carruselDir] as $dir) {
+            foreach ([$baseDir, $logoDir, $portadaDir] as $dir) {
                 if (!File::exists($dir)) {
                     File::makeDirectory($dir, 0755, true);
                 }
@@ -255,68 +248,6 @@ class EmpresasController extends Controller
 
                 $empresa->imagen_portada = 'imagenes/empresas/' . $empresa->id . '/portada/' . $portadaFilename;
                 $empresa->save();
-            }
-
-            // ---- IMÁGENES NUEVAS DEL CARRUSEL (mover a /public/imagenes/empresas/{id}/carrusel) ----
-            if ($request->has('carrusel')) {
-                foreach ($request->carrusel as $index => $carruselData) {
-                    if (isset($carruselData['imagen']) && $carruselData['imagen']) {
-                        $imagen = $carruselData['imagen'];
-
-                        $filename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $imagen->getClientOriginalName());
-                        $imagen->move($carruselDir, $filename);
-
-                        $path = 'imagenes/empresas/' . $empresa->id . '/carrusel/' . $filename;
-
-                        CarruselEmpresa::create([
-                            'empresa_id'   => $empresa->id,
-                            'imagen'       => $path,
-                            'titulo'       => $carruselData['titulo'] ?? null,
-                            'descripcion'  => $carruselData['descripcion'] ?? null,
-                            'link'         => $carruselData['link'] ?? null,
-                            'orden'        => $carruselData['orden'] ?? $index,
-                            'fecha_inicio' => $carruselData['fecha_inicio'] ?? null,
-                            'fecha_fin'    => $carruselData['fecha_fin'] ?? null,
-                            'activo'       => true,
-                        ]);
-                    }
-                }
-            }
-
-            // ---- ACTUALIZAR/ELIMINAR IMÁGENES EXISTENTES DEL CARRUSEL ----
-            if ($request->has('carrusel_existente')) {
-                foreach ($request->carrusel_existente as $id => $carruselData) {
-                    $carruselImagen = CarruselEmpresa::find($id);
-
-                    if ($carruselImagen && $carruselImagen->empresa_id == $empresa->id) {
-                        if (isset($carruselData['eliminar']) && $carruselData['eliminar']) {
-                            // Eliminar archivo físico
-                            $posiblesRutas = [
-                                public_path($carruselImagen->imagen),
-                                storage_path('app/public/' . ltrim($carruselImagen->imagen, '/')),
-                            ];
-                            foreach ($posiblesRutas as $ruta) {
-                                if (File::exists($ruta)) {
-                                    File::delete($ruta);
-                                }
-                            }
-
-                            $carruselImagen->delete();
-                        } else {
-                            // Nota: Si quisieras permitir reemplazar imagen aquí, podrías
-                            // chequear $carruselData['imagen'] como UploadedFile y moverla.
-                            $carruselImagen->update([
-                                'titulo'       => $carruselData['titulo'] ?? $carruselImagen->titulo,
-                                'descripcion'  => $carruselData['descripcion'] ?? $carruselImagen->descripcion,
-                                'link'         => $carruselData['link'] ?? $carruselImagen->link,
-                                'orden'        => $carruselData['orden'] ?? $carruselImagen->orden,
-                                'fecha_inicio' => $carruselData['fecha_inicio'] ?? $carruselImagen->fecha_inicio,
-                                'fecha_fin'    => $carruselData['fecha_fin'] ?? $carruselImagen->fecha_fin,
-                                'activo'       => array_key_exists('activo', $carruselData) ? (bool)$carruselData['activo'] : $carruselImagen->activo,
-                            ]);
-                        }
-                    }
-                }
             }
 
             // ---- CONFIGURACIÓN DE TRANSBANK ----

@@ -71,6 +71,8 @@ class CategoriasController extends Controller
         $estadisticas = [
             'total_categorias' => $empresa->categorias()->count(),
             'categorias_activas' => $empresa->categorias()->where('activo', true)->count(),
+            'categorias_ocasiones' => $empresa->categorias()->where('tipo', 'ocasion')->count(),
+            'categorias_formatos' => $empresa->categorias()->where('tipo', 'formato')->count(),
             'categorias_con_productos' => $empresa->categorias()
                 ->whereHas('productos')
                 ->count()
@@ -126,6 +128,7 @@ class CategoriasController extends Controller
         }
 
         $rules = [
+            'tipo' => ['required', 'in:ocasion,formato'],
             'nombre' => [
                 'required',
                 'string',
@@ -148,6 +151,8 @@ class CategoriasController extends Controller
         ];
 
         $messages = [
+            'tipo.required' => 'Debe seleccionar un tipo de categoría.',
+            'tipo.in' => 'El tipo de categoría no es válido.',
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.unique' => 'Ya existe una categoría con este nombre en su empresa.',
             'slug.unique' => 'Ya existe una categoría con este slug en su empresa.',
