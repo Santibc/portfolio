@@ -592,7 +592,7 @@
                     </div>
 
                     {{-- Sección de Productos Adicionales (Upsells) --}}
-                    @if(isset($productosAdicionales) && $productosAdicionales->count() > 0)
+                    @if(isset($productosAdicionales) && $productosAdicionales->count() > 0 && $carrito->total_items > 0)
                     <div class="cart-container mt-4">
                         <h2 class="cart-title">
                             <i class="bi bi-gift"></i> Complementa tu pedido
