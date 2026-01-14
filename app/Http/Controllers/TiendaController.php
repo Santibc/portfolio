@@ -687,6 +687,9 @@ class TiendaController extends Controller
  */
 public function procesarCompra(Request $request)
 {
+    \Log::info('=== INICIO PROCESAR COMPRA ===');
+    \Log::info('Request data:', $request->all());
+
     $empresa = $this->getEmpresa();
 
     // LÍMITE DE TRANSACCIONES DESHABILITADO - Single-tenant
@@ -722,8 +725,10 @@ public function procesarCompra(Request $request)
     ]);
 
     $carrito = $this->obtenerCarrito($empresa->id);
+    \Log::info('Carrito obtenido:', ['items_count' => count($carrito->items ?? []), 'total' => $carrito->total ?? 0]);
 
     if (empty($carrito->items)) {
+        \Log::warning('REDIRIGIENDO: Carrito vacío');
         return redirect()->route('tienda.carrito')
             ->with('error', 'El carrito está vacío');
     }
@@ -761,6 +766,7 @@ public function procesarCompra(Request $request)
             }
 
             if (!empty($productosNoDisponibles)) {
+                \Log::warning('REDIRIGIENDO: Productos no disponibles', ['productos' => $productosNoDisponibles, 'ciudad' => $ciudad->nombre]);
                 return redirect()->route('tienda.carrito')
                     ->with('error', 'Los siguientes productos no están disponibles en ' . $ciudad->nombre . ': ' .
                         implode(', ', $productosNoDisponibles) . '. Por favor elimínalos del carrito para continuar.');
@@ -882,11 +888,13 @@ public function procesarCompra(Request $request)
 
         if (!$resultado['success']) {
             DB::rollBack();
-            Log::error('Error creando transacción WebPay', ['error' => $resultado['error']]);
+            \Log::error('Error creando transacción WebPay', ['error' => $resultado['error']]);
+            \Log::warning('REDIRIGIENDO: Error WebPay');
             return back()->with('error', 'Error al conectar con WebPay. Por favor intente nuevamente.');
         }
 
         DB::commit();
+        \Log::info('=== COMPRA PROCESADA EXITOSAMENTE ===', ['compra_id' => $compra->id]);
 
         // Redirigir a WebPay
         return view('tienda.redirect-webpay', [
@@ -896,7 +904,8 @@ public function procesarCompra(Request $request)
 
     } catch (\Exception $e) {
         DB::rollBack();
-        Log::error('Error procesando compra: ' . $e->getMessage());
+        \Log::error('Error procesando compra: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        \Log::warning('REDIRIGIENDO: Excepción capturada');
         return back()->with('error', 'Error al procesar la compra. Por favor intente nuevamente.');
     }
 }
