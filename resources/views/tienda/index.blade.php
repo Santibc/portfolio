@@ -563,98 +563,79 @@
 
 @media (max-width: 767px) {
     .hero-white {
-        padding: 60px 0 50px;
-        min-height: 45vh;
+        padding: 50px 0 40px;
+        min-height: auto;
     }
 
     .hero-white-title {
-        font-size: 42px;
-        line-height: 1.15;
+        font-size: 36px;
+        line-height: 1.2;
+        margin-bottom: 16px;
     }
 
     .hero-white-subtitle {
-        font-size: 16px;
-        margin-bottom: 28px;
+        font-size: 15px;
+        margin-bottom: 24px;
     }
 
     .btn-comprar-ahora {
-        padding: 14px 32px;
+        padding: 12px 28px;
         font-size: 14px;
     }
 
     .ubicacion-section {
-        padding: 32px 0;
+        padding: 24px 0;
+        margin-bottom: 16px;
+    }
+
+    .ubicacion-box {
+        padding: 20px;
     }
 
     .ubicacion-title {
-        font-size: 16px;
+        font-size: 15px;
+        margin-bottom: 16px;
     }
 
     .ubicacion-selector-row {
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
     }
 
     .ubicacion-input-wrapper {
         width: 100%;
+        padding: 12px 16px;
     }
 
     .btn-ver-opciones {
         width: 100%;
+        padding: 12px;
+    }
+
+    .ubicacion-help {
+        font-size: 12px;
+        margin-top: 12px;
     }
 
     .ocasiones-section,
     .formatos-section,
     .arma-ramo-section {
-        padding: 40px 0;
+        padding: 32px 0;
+    }
+
+    /* Reducir espacio entre secciones en móvil */
+    .ocasiones-section {
+        padding-top: 24px;
+    }
+
+    .formatos-section {
+        padding-top: 24px;
+        padding-bottom: 40px;
     }
 
     .section-title-center {
-        font-size: 22px;
-        margin-bottom: 28px;
-    }
-
-    .ocasiones-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-
-    .ocasion-card-name,
-    .formato-card-name {
-        font-size: 13px;
-    }
-
-    .ocasion-card-image i,
-    .formato-card-image i {
-        font-size: 24px;
-    }
-
-    .arma-ramo-title {
-        font-size: 24px;
-    }
-
-    .arma-ramo-desc {
-        font-size: 14px;
-    }
-
-    .btn-crear-ramo {
-        padding: 12px 24px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-white {
-        padding: 50px 0 40px;
-        min-height: 40vh;
-    }
-
-    .hero-white-title {
-        font-size: 34px;
-    }
-
-    .hero-white-subtitle {
-        font-size: 14px;
+        font-size: 20px;
+        margin-bottom: 20px;
     }
 
     .ocasiones-grid {
@@ -667,9 +648,125 @@
         gap: 10px;
     }
 
+    .ocasion-card-simple,
+    .formato-card-simple {
+        padding: 12px;
+    }
+
+    .ocasion-card-name,
+    .formato-card-name {
+        font-size: 12px;
+        padding: 8px;
+    }
+
     .ocasion-card-image,
     .formato-card-image {
+        height: 120px;
+    }
+
+    .ocasion-card-image i,
+    .formato-card-image i {
+        font-size: 24px;
+    }
+
+    .arma-ramo-title {
+        font-size: 22px;
+    }
+
+    .arma-ramo-desc {
+        font-size: 14px;
+    }
+
+    .btn-crear-ramo {
+        padding: 12px 24px;
+        font-size: 13px;
+    }
+
+    /* Reducir padding del container en móvil */
+    .container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-white {
+        padding: 40px 0 32px;
+        min-height: auto;
+    }
+
+    .hero-white-title {
+        font-size: 30px;
+        margin-bottom: 12px;
+    }
+
+    .hero-white-subtitle {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .btn-comprar-ahora {
+        padding: 10px 24px;
+        font-size: 13px;
+    }
+
+    .ubicacion-section {
+        padding: 20px 0;
+    }
+
+    .ubicacion-box {
+        padding: 16px;
+    }
+
+    .section-title-center {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .ocasiones-section,
+    .formatos-section {
+        padding: 24px 0;
+    }
+
+    .ocasiones-section {
+        padding-top: 20px;
+    }
+
+    .formatos-section {
+        padding-top: 20px;
+        padding-bottom: 32px;
+    }
+
+    .ocasiones-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .formatos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .ocasion-card-simple,
+    .formato-card-simple {
+        padding: 8px;
+    }
+
+    .ocasion-card-image,
+    .formato-card-image {
+        height: 100px;
         border-radius: 6px;
+    }
+
+    .ocasion-card-name,
+    .formato-card-name {
+        font-size: 11px;
+        padding: 6px;
+    }
+
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
     }
 
     .arma-ramo-image {
