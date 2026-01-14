@@ -160,7 +160,8 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    window.location.reload();
+                    // Redirigir al catálogo de productos
+                    window.location.href = '{{ route("tienda.categorias") }}';
                 }
             },
             error: function() {

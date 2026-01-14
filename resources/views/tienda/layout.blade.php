@@ -852,8 +852,7 @@
                     <li><a href="{{ route('cliente.puntos') }}">Mis Puntos</a></li>
                   @endif
                 @endguest
-                <li><a href="#">Términos y condiciones</a></li>
-                <li><a href="#">Política de privacidad</a></li>
+                <li><a href="{{ route('paginas.terminos') }}">Términos y condiciones</a></li>
               </ul>
             </div>
           </div>
@@ -891,8 +890,7 @@
         <div class="footer-bottom-content">
           <p class="copyright-minimal">© {{ date('Y') }} {{ $empresa->nombre }}. Todos los derechos reservados.</p>
           <div class="footer-legal">
-            <a href="#">Términos y condiciones</a>
-            <a href="#">Política de privacidad</a>
+            <a href="{{ route('paginas.terminos') }}">Términos y condiciones</a>
           </div>
         </div>
       </div>

@@ -494,6 +494,13 @@ Route::get('/api/comunas/por-region/{regionId}', [App\Http\Controllers\TiendaCon
 Route::post('/procesar-compra', [App\Http\Controllers\TiendaController::class, 'procesarCompra'])
     ->name('tienda.procesar-compra');
 
+// ========== PÁGINAS ESTÁTICAS ==========
+Route::get('/terminos-y-condiciones', [App\Http\Controllers\PaginasController::class, 'terminos'])
+    ->name('paginas.terminos');
+
+Route::get('/politicas-de-privacidad', [App\Http\Controllers\PaginasController::class, 'privacidad'])
+    ->name('paginas.privacidad');
+
 // ========== PÁGINAS DE RESULTADO DE PAGO ==========
 // Confirmación de pago exitoso
 Route::get('/pago/confirmacion/{referencia}', function($referencia) {
