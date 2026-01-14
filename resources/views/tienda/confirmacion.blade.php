@@ -15,8 +15,8 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #3730a3;
-            --secondary-color: #6366f1;
+            --primary-color: #1a1a1a;
+            --secondary-color: #333333;
             --success-color: #10b981;
             --text-primary: #111827;
             --text-secondary: #6b7280;
@@ -98,9 +98,15 @@
         }
 
         .order-number {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary-color);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            background: #f3f4f6;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: 2px dashed var(--border-color);
         }
 
         .next-steps {
@@ -138,26 +144,35 @@
             border-radius: 0.5rem;
             font-weight: 600;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-primary-custom:hover {
             background: var(--secondary-color);
+            color: white;
             transform: translateY(-1px);
         }
 
         .btn-secondary-custom {
-            background: white;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
+            background: #f3f4f6;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
             padding: 0.75rem 2rem;
             border-radius: 0.5rem;
             font-weight: 600;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-secondary-custom:hover {
-            background: var(--primary-color);
-            color: white;
+            background: #e5e7eb;
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
         }
 
         @media (max-width: 768px) {
@@ -223,8 +238,8 @@
 
             <!-- Order Details -->
             <div class="order-details">
-                <div class="detail-row">
-                    <span class="detail-label">Número de orden:</span>
+                <div class="detail-row" style="flex-direction: column; align-items: center; text-align: center;">
+                    <span class="detail-label mb-2">Número de orden:</span>
                     <span class="order-number">{{ $compra->numero_compra }}</span>
                 </div>
                 <div class="detail-row">
