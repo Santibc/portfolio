@@ -674,7 +674,16 @@
                                     $producto = null;
                                     $imagenUrl = asset('images/flores/default.png');
 
-                                    if (!$esRamoPersonalizado && isset($item['producto_id'])) {
+                                    if ($esRamoPersonalizado) {
+                                        $imagenRamo = $item['imagen'] ?? null;
+                                        // Fallback: buscar en detalle_ramo si no hay imagen directa
+                                        if (!$imagenRamo && isset($item['detalle_ramo']['estilo']['imagen'])) {
+                                            $imagenRamo = $item['detalle_ramo']['estilo']['imagen'];
+                                        }
+                                        if ($imagenRamo) {
+                                            $imagenUrl = asset($imagenRamo);
+                                        }
+                                    } elseif (isset($item['producto_id'])) {
                                         $producto = \App\Models\Producto::find($item['producto_id']);
                                         $imagenUrl = $producto ? $producto->url_imagen_principal : asset('images/flores/default.png');
                                     }

@@ -415,6 +415,17 @@ class ArmaTuRamoController extends Controller
         $items = $carrito->items ?? [];
         $key = 'ramo-personalizado-' . $ramo->id;
 
+        // Obtener imagen del estilo o primera flor seleccionada
+        $imagenRamo = null;
+        if ($ramo->estilo && $ramo->estilo->imagen) {
+            $imagenRamo = $ramo->estilo->imagen;
+        } elseif (!empty($ramo->flores_seleccionadas)) {
+            $primeraFlor = FlorDisponible::find($ramo->flores_seleccionadas[0]['flor_id']);
+            if ($primeraFlor && $primeraFlor->imagen) {
+                $imagenRamo = $primeraFlor->imagen;
+            }
+        }
+
         $items[$key] = [
             'key' => $key,
             'producto_id' => null,
@@ -428,6 +439,7 @@ class ArmaTuRamoController extends Controller
             'referencia' => 'RAMO-' . str_pad($ramo->id, 6, '0', STR_PAD_LEFT),
             'info_variante' => $ramo->envoltura->nombre,
             'detalle_ramo' => $ramo->resumen_completo,
+            'imagen' => $imagenRamo,
         ];
 
         $carrito->items = $items;

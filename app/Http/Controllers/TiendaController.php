@@ -818,7 +818,10 @@ public function procesarCompra(Request $request)
                 'referencia_producto' => $item['referencia'],
                 'nombre_producto' => $item['nombre'],
                 'info_variante' => isset($item['info_variante']) ?
-                    "Talla: {$item['info_variante']['talla']}, Color: {$item['info_variante']['color']}" : null,
+                    (is_array($item['info_variante'])
+                        ? "Talla: {$item['info_variante']['talla']}, Color: {$item['info_variante']['color']}"
+                        : $item['info_variante'])
+                    : null,
                 'detalle_ramo' => $item['detalle_ramo'] ?? null
             ]);
 
@@ -834,6 +837,25 @@ public function procesarCompra(Request $request)
                         $stock->salida($item['cantidad'], 'venta', $compra->numero_compra);
                     }
                 }
+            }
+        }
+
+        // Crear items de compra para los adicionales
+        if (!empty($carrito->adicionales)) {
+            foreach ($carrito->adicionales as $key => $adicional) {
+                ItemCompra::create([
+                    'compra_id' => $compra->id,
+                    'producto_id' => null,
+                    'variante_producto_id' => null,
+                    'cantidad' => $adicional['cantidad'],
+                    'precio_unitario' => $adicional['precio'],
+                    'descuento' => 0,
+                    'precio_total' => $adicional['cantidad'] * $adicional['precio'],
+                    'referencia_producto' => 'ADIC-' . ($adicional['id'] ?? '0'),
+                    'nombre_producto' => $adicional['nombre'] . ' (Adicional)',
+                    'info_variante' => $adicional['categoria'] ?? null,
+                    'detalle_ramo' => null
+                ]);
             }
         }
 

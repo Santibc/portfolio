@@ -204,6 +204,7 @@ class RamoPersonalizado extends Model
             'estilo' => $this->estilo ? [
                 'nombre' => $this->estilo->nombre,
                 'precio_base' => $this->estilo->precio_base,
+                'imagen' => $this->estilo->imagen,
             ] : null,
             'envoltura' => $this->envoltura ? [
                 'nombre' => $this->envoltura->nombre,

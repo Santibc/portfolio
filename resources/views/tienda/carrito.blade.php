@@ -400,11 +400,24 @@
                                         <div class="row align-items-center">
                                             <div class="col-auto">
                                                 @if($esRamoPersonalizado)
-                                                    {{-- Imagen especial para ramo personalizado --}}
-                                                    <div class="item-image d-flex align-items-center justify-content-center"
-                                                         style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); border-radius: 12px;">
-                                                        <i class="bi bi-flower1" style="font-size: 2.5rem; color: #1a1a1a;"></i>
-                                                    </div>
+                                                    {{-- Imagen del ramo personalizado --}}
+                                                    @php
+                                                        $imagenRamo = $item['imagen'] ?? null;
+                                                        // Fallback: buscar en detalle_ramo si no hay imagen directa
+                                                        if (!$imagenRamo && isset($item['detalle_ramo']['estilo']['imagen'])) {
+                                                            $imagenRamo = $item['detalle_ramo']['estilo']['imagen'];
+                                                        }
+                                                    @endphp
+                                                    @if($imagenRamo)
+                                                        <img src="{{ asset($imagenRamo) }}"
+                                                             alt="{{ $item['nombre'] }}"
+                                                             class="item-image">
+                                                    @else
+                                                        <div class="item-image d-flex align-items-center justify-content-center"
+                                                             style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); border-radius: 12px;">
+                                                            <i class="bi bi-flower1" style="font-size: 2.5rem; color: #1a1a1a;"></i>
+                                                        </div>
+                                                    @endif
                                                 @else
                                                     <img src="{{ $producto ? $producto->url_imagen_principal : asset('images/flores/default.png') }}"
                                                          alt="{{ $item['nombre'] }}"
@@ -542,10 +555,12 @@
                                                 @endif
                                             </div>
                                             <div class="col-auto text-end">
-                                                <div class="item-price mb-2">
-                                                    ${{ number_format($item['precio'], 0, ',', '.') }}
-                                                </div>
-                                                <div class="fw-bold">
+                                                @if($item['cantidad'] > 1)
+                                                    <div class="item-price mb-1">
+                                                        <small class="text-muted">${{ number_format($item['precio'], 0, ',', '.') }} c/u</small>
+                                                    </div>
+                                                @endif
+                                                <div class="fw-bold fs-5">
                                                     ${{ number_format($item['precio'] * $item['cantidad'], 0, ',', '.') }}
                                                 </div>
                                             </div>
@@ -594,7 +609,7 @@
                                 <div class="card h-100 adicional-card {{ $yaEnCarrito ? 'border-success' : '' }}"
                                      data-adicional-id="{{ $adicional->id }}">
                                     @if($adicional->imagen)
-                                        <img src="{{ asset('storage/' . $adicional->imagen) }}"
+                                        <img src="{{ $adicional->imagen_url }}"
                                              class="card-img-top" alt="{{ $adicional->nombre }}"
                                              style="height: 120px; object-fit: cover;">
                                     @else
