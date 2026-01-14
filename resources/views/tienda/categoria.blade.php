@@ -875,14 +875,15 @@ $(document).ready(function() {
 
   // Update cart badge
   function updateCartBadge(count) {
+    const $cartBtn = $('.header-action-btn[href*="carrito"]');
     if (count > 0) {
-      if ($('.header-action-btn .badge').length) {
-        $('.header-action-btn .badge').text(count);
+      if ($cartBtn.find('.badge').length) {
+        $cartBtn.find('.badge').text(count);
       } else {
-        $('.header-action-btn').append('<span class="badge">' + count + '</span>');
+        $cartBtn.append('<span class="badge">' + count + '</span>');
       }
     } else {
-      $('.header-action-btn .badge').remove();
+      $cartBtn.find('.badge').remove();
     }
   }
 
