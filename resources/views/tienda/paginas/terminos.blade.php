@@ -192,7 +192,7 @@
                     Si tienes alguna pregunta sobre nuestros términos y condiciones,
                     por favor <a href="mailto:{{ config('mail.from.address') }}" class="text-decoration-none">contáctanos</a>.
                 </p>
-                <a href="{{ route('home') }}" class="btn btn-outline-primary mt-3">
+                <a href="{{ route('home') }}" class="btn btn-dark mt-3">
                     <i class="bi bi-arrow-left me-2"></i>
                     Volver a la Tienda
                 </a>
