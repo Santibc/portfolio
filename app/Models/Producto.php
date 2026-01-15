@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Empresa;
-use Illuminate\Support\Str; // si quieres la misma validación opcional
+use App\Models\ProductoAdicional;
+use Illuminate\Support\Str;
 class Producto extends Model
 {
     use HasFactory;
@@ -101,6 +102,26 @@ class Producto extends Model
     public function calificaciones()
     {
         return $this->hasMany(CalificacionProducto::class, 'producto_id');
+    }
+
+    /**
+     * Complementarios específicos sugeridos para este producto
+     * Ejemplo: Un ramo de flores puede tener asignado "Florero" y "Preservante"
+     */
+    public function complementariosSugeridos()
+    {
+        return $this->belongsToMany(
+            ProductoAdicional::class,
+            'productos_complementarios_sugeridos',
+            'producto_id',
+            'producto_adicional_id'
+        )
+        ->where('tipo_complementario', ProductoAdicional::TIPO_ESPECIFICO)
+        ->where('disponible', true)
+        ->withPivot('orden', 'activo')
+        ->wherePivot('activo', true)
+        ->orderBy('orden')
+        ->withTimestamps();
     }
 
     /**

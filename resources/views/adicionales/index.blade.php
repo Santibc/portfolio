@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">Productos Adicionales</x-slot>
+    <x-slot name="header">Productos Complementarios</x-slot>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -21,16 +21,17 @@
                 <div class="p-6">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="text-2xl font-semibold mb-0">
-                            <i class="bi bi-gift text-primary"></i> Productos Adicionales
+                            <i class="bi bi-box-seam text-primary"></i> Productos Complementarios
                         </h4>
                         <a href="{{ route('adicionales.form') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-lg"></i> Nuevo Adicional
+                            <i class="bi bi-plus-lg"></i> Nuevo Complementario
                         </a>
                     </div>
 
                     <div class="alert alert-info mb-4">
                         <i class="bi bi-info-circle"></i>
-                        Estos productos se ofrecen como complementos en el checkout (chocolates, peluches, globos, etc.).
+                        <strong>Cross-selling:</strong> Productos generales (bombones, peluches, globos) que se muestran a todos los clientes.<br>
+                        <strong>Específicos:</strong> Productos asignados a ciertos productos (ej: florero para ramos).
                     </div>
 
                     <table id="adicionales-table" class="table table-striped table-hover w-100">
@@ -39,7 +40,8 @@
                                 <th width="80">Acciones</th>
                                 <th width="80">Imagen</th>
                                 <th>Nombre</th>
-                                <th width="100">Categoría</th>
+                                <th width="120">Categoría</th>
+                                <th width="140">Tipo</th>
                                 <th width="100">Precio</th>
                                 <th width="80">Stock</th>
                                 <th width="60">Orden</th>
@@ -67,13 +69,14 @@
                 { data: 'imagen_preview', orderable: false, searchable: false },
                 { data: 'nombre', name: 'nombre' },
                 { data: 'categoria_badge', orderable: false, searchable: false },
+                { data: 'tipo_badge', orderable: false, searchable: false },
                 { data: 'precio_formateado', orderable: false, searchable: false },
                 { data: 'stock', name: 'stock' },
                 { data: 'orden', name: 'orden' },
                 { data: 'checkout', orderable: false, searchable: false },
                 { data: 'estado', orderable: false, searchable: false },
             ],
-            order: [[6, 'asc'], [2, 'asc']],
+            order: [[7, 'asc'], [2, 'asc']],
             language: {
                 "sProcessing": "Procesando...",
                 "sLengthMenu": "Mostrar _MENU_ registros",

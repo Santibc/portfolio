@@ -475,13 +475,39 @@ class TiendaController extends Controller
         $carrito = $this->obtenerCarrito($empresa->id);
         $listaPrecio = ListaPrecio::activas()->first();
 
-        // Obtener productos adicionales (upsells) para sugerir
-        $productosAdicionales = ProductoAdicional::disponibles()
+        // Obtener SOLO productos de cross-selling (generales) para mostrar en el carrito
+        $productosCrossSelling = ProductoAdicional::disponibles()
             ->paraCheckout()
+            ->crossSelling()
             ->orderBy('orden')
             ->get();
 
-        return view('tienda.carrito', compact('empresa', 'carrito', 'listaPrecio', 'productosAdicionales'));
+        // Agrupar cross-selling por categoría para mejor presentación
+        $crossSellingPorCategoria = $productosCrossSelling->groupBy('categoria');
+
+        // Obtener complementarios específicos según los productos en el carrito
+        $complementariosEspecificos = collect();
+        if (!empty($carrito->items)) {
+            foreach ($carrito->items as $item) {
+                if (isset($item['producto_id'])) {
+                    $producto = Producto::with('complementariosSugeridos')->find($item['producto_id']);
+                    if ($producto && $producto->complementariosSugeridos->isNotEmpty()) {
+                        $complementariosEspecificos = $complementariosEspecificos->merge($producto->complementariosSugeridos);
+                    }
+                }
+            }
+            // Eliminar duplicados
+            $complementariosEspecificos = $complementariosEspecificos->unique('id');
+        }
+
+        return view('tienda.carrito', compact(
+            'empresa',
+            'carrito',
+            'listaPrecio',
+            'productosCrossSelling',
+            'crossSellingPorCategoria',
+            'complementariosEspecificos'
+        ));
     }
 
     /**
@@ -660,22 +686,39 @@ class TiendaController extends Controller
             ->get();
         $configuracionPasarela = ConfiguracionPasarela::obtenerConfiguracionActiva();
 
-        // Obtener productos adicionales (upsells) para sugerir en checkout
-        $productosAdicionales = ProductoAdicional::disponibles()
+        // Obtener SOLO productos de cross-selling (generales) para el checkout
+        $productosCrossSelling = ProductoAdicional::disponibles()
             ->paraCheckout()
+            ->crossSelling()
             ->orderBy('orden')
             ->get();
 
-        // Agrupar por categoría
-        $adicionalesPorCategoria = $productosAdicionales->groupBy('categoria');
+        // Agrupar cross-selling por categoría
+        $crossSellingPorCategoria = $productosCrossSelling->groupBy('categoria');
+
+        // Obtener complementarios específicos para los productos en el carrito
+        $complementariosEspecificos = collect();
+        if (!empty($carrito->items)) {
+            foreach ($carrito->items as $item) {
+                if (isset($item['producto_id'])) {
+                    $producto = Producto::with('complementariosSugeridos')->find($item['producto_id']);
+                    if ($producto && $producto->complementariosSugeridos->isNotEmpty()) {
+                        $complementariosEspecificos = $complementariosEspecificos->merge($producto->complementariosSugeridos);
+                    }
+                }
+            }
+            // Eliminar duplicados
+            $complementariosEspecificos = $complementariosEspecificos->unique('id');
+        }
 
         return view('tienda.checkout', compact(
             'empresa',
             'carrito',
             'departamentos',
             'configuracionPasarela',
-            'productosAdicionales',
-            'adicionalesPorCategoria'
+            'productosCrossSelling',
+            'crossSellingPorCategoria',
+            'complementariosEspecificos'
         ));
     }
 

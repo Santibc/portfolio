@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Producto;
 
 class ProductoAdicional extends Model
 {
@@ -14,6 +15,7 @@ class ProductoAdicional extends Model
     protected $fillable = [
         'nombre',
         'categoria',
+        'tipo_complementario',
         'precio',
         'imagen',
         'descripcion',
@@ -29,13 +31,38 @@ class ProductoAdicional extends Model
         'mostrar_en_checkout' => 'boolean',
     ];
 
+    // Categorías de cross-selling (productos complementarios generales)
     const CATEGORIAS = [
-        'chocolate' => 'Chocolates',
+        'bombones' => 'Bombones y Chocolates',
         'peluche' => 'Peluches',
         'globo' => 'Globos',
-        'vino' => 'Vinos',
+        'vino' => 'Vinos y Espumantes',
+        'licor' => 'Licores',
+        'florero' => 'Floreros', // Para complementarios específicos de ramos
+        'preservante' => 'Preservantes', // Para complementarios específicos de ramos
         'otro' => 'Otros',
     ];
+
+    // Tipos de complementarios
+    const TIPO_CROSS_SELLING = 'cross_selling'; // Se muestra a todos los productos
+    const TIPO_ESPECIFICO = 'especifico'; // Solo se muestra si está asignado al producto
+
+    // === RELACIONES ===
+
+    /**
+     * Productos que tienen este complementario asignado
+     */
+    public function productos()
+    {
+        return $this->belongsToMany(
+            Producto::class,
+            'productos_complementarios_sugeridos',
+            'producto_adicional_id',
+            'producto_id'
+        )->withPivot('orden', 'activo')->withTimestamps();
+    }
+
+    // === SCOPES ===
 
     public function scopeDisponibles($query)
     {
@@ -50,6 +77,16 @@ class ProductoAdicional extends Model
     public function scopePorCategoria($query, $categoria)
     {
         return $query->where('categoria', $categoria);
+    }
+
+    public function scopeCrossSelling($query)
+    {
+        return $query->where('tipo_complementario', self::TIPO_CROSS_SELLING);
+    }
+
+    public function scopeEspecificos($query)
+    {
+        return $query->where('tipo_complementario', self::TIPO_ESPECIFICO);
     }
 
     public function scopeOrdenado($query)

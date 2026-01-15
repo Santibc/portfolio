@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        {{ $adicional->exists ? 'Editar Adicional' : 'Nuevo Adicional' }}
+        {{ $adicional->exists ? 'Editar Complementario' : 'Nuevo Complementario' }}
     </x-slot>
 
     <div class="py-6">
@@ -19,8 +19,8 @@
                 <div class="p-6">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="text-xl font-semibold mb-0">
-                            <i class="bi bi-gift text-primary"></i>
-                            {{ $adicional->exists ? 'Editar: ' . $adicional->nombre : 'Agregar Producto Adicional' }}
+                            <i class="bi bi-box-seam text-primary"></i>
+                            {{ $adicional->exists ? 'Editar: ' . $adicional->nombre : 'Agregar Producto Complementario' }}
                         </h4>
                         <a href="{{ route('adicionales.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Volver
@@ -41,7 +41,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-8 mb-3">
+                                            <div class="col-md-12 mb-3">
                                                 <label for="nombre" class="form-label">Nombre *</label>
                                                 <input type="text"
                                                        class="form-control @error('nombre') is-invalid @enderror"
@@ -54,8 +54,32 @@
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
+                                        </div>
 
-                                            <div class="col-md-4 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="tipo_complementario" class="form-label">Tipo de Complementario *</label>
+                                                <select class="form-select @error('tipo_complementario') is-invalid @enderror"
+                                                        id="tipo_complementario"
+                                                        name="tipo_complementario"
+                                                        required>
+                                                    <option value="">Seleccione...</option>
+                                                    <option value="cross_selling" {{ old('tipo_complementario', $adicional->tipo_complementario ?? 'cross_selling') == 'cross_selling' ? 'selected' : '' }}>
+                                                        <i class="bi bi-shop"></i> Cross-selling (General)
+                                                    </option>
+                                                    <option value="especifico" {{ old('tipo_complementario', $adicional->tipo_complementario) == 'especifico' ? 'selected' : '' }}>
+                                                        <i class="bi bi-tag"></i> Específico (Asignado a productos)
+                                                    </option>
+                                                </select>
+                                                <small class="text-muted">
+                                                    <strong>Cross-selling:</strong> Se muestra a todos | <strong>Específico:</strong> Solo si está asignado
+                                                </small>
+                                                @error('tipo_complementario')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
                                                 <label for="categoria" class="form-label">Categoría *</label>
                                                 <select class="form-select @error('categoria') is-invalid @enderror"
                                                         id="categoria"

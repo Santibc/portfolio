@@ -26,14 +26,23 @@ class ProductosAdicionalesController extends Controller
                 })
                 ->addColumn('categoria_badge', function ($adicional) {
                     $colores = [
-                        'chocolate' => 'bg-warning text-dark',
+                        'bombones' => 'bg-warning text-dark',
                         'peluche' => 'bg-info',
                         'globo' => 'bg-primary',
                         'vino' => 'bg-danger',
+                        'licor' => 'bg-dark',
+                        'florero' => 'bg-success',
+                        'preservante' => 'bg-success',
                         'otro' => 'bg-secondary',
                     ];
                     $color = $colores[$adicional->categoria] ?? 'bg-secondary';
                     return '<span class="badge ' . $color . '">' . $adicional->categoria_nombre . '</span>';
+                })
+                ->addColumn('tipo_badge', function ($adicional) {
+                    if ($adicional->tipo_complementario === ProductoAdicional::TIPO_CROSS_SELLING) {
+                        return '<span class="badge bg-primary"><i class="bi bi-shop"></i> Cross-selling</span>';
+                    }
+                    return '<span class="badge bg-info"><i class="bi bi-tag"></i> Específico</span>';
                 })
                 ->addColumn('precio_formateado', function ($adicional) {
                     return '$' . number_format($adicional->precio, 0, ',', '.');
@@ -67,7 +76,7 @@ class ProductosAdicionalesController extends Controller
                         </div>
                     ';
                 })
-                ->rawColumns(['imagen_preview', 'categoria_badge', 'estado', 'checkout', 'action'])
+                ->rawColumns(['imagen_preview', 'categoria_badge', 'tipo_badge', 'estado', 'checkout', 'action'])
                 ->make(true);
         }
 
@@ -101,6 +110,7 @@ class ProductosAdicionalesController extends Controller
         $rules = [
             'nombre' => 'required|string|max:255',
             'categoria' => 'required|string|in:' . implode(',', array_keys(ProductoAdicional::CATEGORIAS)),
+            'tipo_complementario' => 'required|in:cross_selling,especifico',
             'precio' => 'required|numeric|min:0',
             'descripcion' => 'nullable|string|max:500',
             'stock' => 'required|integer|min:0',
@@ -145,6 +155,7 @@ class ProductosAdicionalesController extends Controller
 
         $adicional->nombre = $request->nombre;
         $adicional->categoria = $request->categoria;
+        $adicional->tipo_complementario = $request->tipo_complementario;
         $adicional->precio = $request->precio;
         $adicional->descripcion = $request->descripcion;
         $adicional->stock = $request->stock;

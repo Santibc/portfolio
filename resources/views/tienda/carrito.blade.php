@@ -307,19 +307,44 @@
         /* Empty Cart */
         .empty-cart {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 6rem 2rem;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .empty-cart-icon {
-            font-size: 4rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
+            font-size: 6rem;
+            color: #d1d5db;
+            margin-bottom: 1.5rem;
+            animation: emptyCartPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes emptyCartPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
         }
 
         .empty-cart-text {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             color: var(--text-secondary);
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .empty-cart-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 400px;
+        }
+
+        .empty-cart .btn {
+            padding: 0.875rem 2.5rem;
+            font-size: 1.125rem;
+            border-radius: 0.5rem;
         }
 
         /* Loading State */
@@ -341,15 +366,32 @@
             .cart-item {
                 padding: 1rem 0;
             }
-            
+
             .item-image {
                 width: 80px;
                 height: 80px;
             }
-            
+
             .cart-summary {
                 position: static;
                 margin-top: 2rem;
+            }
+
+            .empty-cart {
+                padding: 4rem 1.5rem;
+                min-height: 400px;
+            }
+
+            .empty-cart-icon {
+                font-size: 4.5rem;
+            }
+
+            .empty-cart-text {
+                font-size: 1.25rem;
+            }
+
+            .empty-cart-subtitle {
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -378,15 +420,14 @@
     <!-- Main Content -->
     <main class="py-4">
         <div class="container">
+            @if($carrito->items && count($carrito->items) > 0)
             <div class="row">
                 <!-- Cart Items -->
                 <div class="col-lg-8">
                     <div class="cart-container position-relative">
                         <h1 class="cart-title">
                             <i class="bi bi-cart3"></i> Carrito de Compras
-                            @if($carrito->total_items > 0)
-                                <span class="text-muted fs-6">({{ $carrito->total_items }} {{ $carrito->total_items == 1 ? 'producto' : 'productos' }})</span>
-                            @endif
+                            <span class="text-muted fs-6">({{ $carrito->total_items }} {{ $carrito->total_items == 1 ? 'producto' : 'productos' }})</span>
                         </h1>
 
                         {{-- Mensajes de error y éxito --}}
@@ -406,8 +447,7 @@
                             </div>
                         @endif
 
-                        @if($carrito->items && count($carrito->items) > 0)
-                            <div id="cartItems">
+                        <div id="cartItems">
                                 @foreach($carrito->items as $key => $item)
                                     @php
                                         $esRamoPersonalizado = isset($item['es_ramo_personalizado']) && $item['es_ramo_personalizado'];
@@ -590,79 +630,76 @@
                                     </div>
                                 @endforeach
                             </div>
-                            
-                            <!-- Loading overlay -->
-                            <div class="loading-overlay" id="cartLoading" style="display: none;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Actualizando...</span>
-                                </div>
+
+                        <!-- Loading overlay -->
+                        <div class="loading-overlay" id="cartLoading" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Actualizando...</span>
                             </div>
-                        @else
-                            <div class="empty-cart">
-                                <i class="bi bi-cart-x empty-cart-icon"></i>
-                                <p class="empty-cart-text">Tu carrito está vacío</p>
-                                <a href="{{ route('home') }}" class="btn btn-primary">
-                                    <i class="bi bi-shop"></i> Ir a Comprar
-                                </a>
-                            </div>
-                        @endif
+                        </div>
                     </div>
 
-                    {{-- Sección de Productos Adicionales (Upsells) --}}
-                    @if(isset($productosAdicionales) && $productosAdicionales->count() > 0 && $carrito->total_items > 0)
+                    {{-- ========================================
+                         SECCIÓN 2: COMPLEMENTARIOS ESPECÍFICOS
+                         ======================================== --}}
+                    @if(isset($complementariosEspecificos) && $complementariosEspecificos->count() > 0 && $carrito->total_items > 0)
                     <div class="cart-container mt-4">
                         <h2 class="cart-title">
-                            <i class="bi bi-gift"></i> Complementa tu pedido
-                            <small class="text-muted fs-6 d-block mt-1">Agrega un detalle especial a tu arreglo</small>
+                            <i class="bi bi-tag-fill text-success"></i> Complementarios Sugeridos para tus Productos
+                            <small class="text-muted fs-6 d-block mt-1">Productos especiales que complementan tu compra</small>
                         </h2>
 
                         <div class="row g-3">
-                            @foreach($productosAdicionales->take(8) as $adicional)
+                            @foreach($complementariosEspecificos as $adicional)
                             @php
                                 $yaEnCarrito = isset($carrito->adicionales['adicional_' . $adicional->id]);
                                 $cantidadEnCarrito = $yaEnCarrito ? $carrito->adicionales['adicional_' . $adicional->id]['cantidad'] : 0;
                             @endphp
                             <div class="col-6 col-md-3">
-                                <div class="card h-100 adicional-card {{ $yaEnCarrito ? 'border-success' : '' }}"
-                                     data-adicional-id="{{ $adicional->id }}">
+                                <div class="card h-100 adicional-card {{ $yaEnCarrito ? 'border-success' : 'border-success' }} shadow-sm"
+                                     data-adicional-id="{{ $adicional->id }}"
+                                     style="border-width: 2px !important;">
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-success"><i class="bi bi-star-fill"></i> Sugerido</span>
+                                    </div>
                                     @if($adicional->imagen)
                                         <img src="{{ $adicional->imagen_url }}"
                                              class="card-img-top" alt="{{ $adicional->nombre }}"
-                                             style="height: 120px; object-fit: cover;">
+                                             style="height: 140px; object-fit: cover;">
                                     @else
                                         <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                                             style="height: 120px;">
-                                            <i class="bi bi-{{ $adicional->categoria == 'chocolate' ? 'box-seam' : ($adicional->categoria == 'peluche' ? 'heart' : ($adicional->categoria == 'globo' ? 'balloon' : 'gift')) }} text-muted"
-                                               style="font-size: 2rem;"></i>
+                                             style="height: 140px;">
+                                            <i class="bi bi-box-seam text-success"
+                                               style="font-size: 2.5rem;"></i>
                                         </div>
                                     @endif
-                                    <div class="card-body p-2 text-center">
-                                        <h6 class="card-title mb-1" style="font-size: 0.85rem;">
-                                            {{ Str::limit($adicional->nombre, 25) }}
+                                    <div class="card-body p-3 text-center">
+                                        <h6 class="card-title mb-2" style="font-size: 0.9rem;">
+                                            {{ Str::limit($adicional->nombre, 30) }}
                                         </h6>
-                                        <span class="badge bg-light text-dark mb-2">{{ ucfirst($adicional->categoria) }}</span>
-                                        <p class="card-text text-primary fw-bold mb-2">
+                                        <span class="badge bg-success-subtle text-success mb-2">{{ $adicional->categoria_nombre }}</span>
+                                        <p class="card-text text-success fw-bold mb-3" style="font-size: 1.1rem;">
                                             ${{ number_format($adicional->precio, 0, ',', '.') }}
                                         </p>
 
                                         @if($yaEnCarrito)
-                                            <div class="d-flex align-items-center justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-outline-secondary"
+                                            <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                                                <button class="btn btn-sm btn-outline-success"
                                                         onclick="actualizarAdicional({{ $adicional->id }}, -1)">
                                                     <i class="bi bi-dash"></i>
                                                 </button>
                                                 <span class="fw-bold" id="qty-adicional-{{ $adicional->id }}">{{ $cantidadEnCarrito }}</span>
-                                                <button class="btn btn-sm btn-outline-secondary"
+                                                <button class="btn btn-sm btn-outline-success"
                                                         onclick="actualizarAdicional({{ $adicional->id }}, 1)">
                                                     <i class="bi bi-plus"></i>
                                                 </button>
                                             </div>
-                                            <button class="btn btn-link btn-sm text-danger p-0 mt-1"
+                                            <button class="btn btn-link btn-sm text-danger p-0"
                                                     onclick="quitarAdicional({{ $adicional->id }})">
                                                 <i class="bi bi-x"></i> Quitar
                                             </button>
                                         @else
-                                            <button class="btn btn-sm btn-outline-primary w-100"
+                                            <button class="btn btn-sm btn-success w-100"
                                                     onclick="agregarAdicional({{ $adicional->id }})">
                                                 <i class="bi bi-plus-circle"></i> Agregar
                                             </button>
@@ -672,6 +709,93 @@
                             </div>
                             @endforeach
                         </div>
+                    </div>
+                    @endif
+
+                    {{-- ========================================
+                         SECCIÓN 3: CROSS-SELLING AGRUPADO
+                         ======================================== --}}
+                    @if(isset($crossSellingPorCategoria) && $crossSellingPorCategoria->count() > 0 && $carrito->total_items > 0)
+                    <div class="cart-container mt-4">
+                        <h2 class="cart-title">
+                            <i class="bi bi-shop"></i> ¿Quieres agregar algo más a tu pedido?
+                            <small class="text-muted fs-6 d-block mt-1">Complementa tu compra con estos productos</small>
+                        </h2>
+
+                        @foreach($crossSellingPorCategoria as $categoria => $productos)
+                            <div class="mb-4">
+                                <h5 class="text-dark mb-3 d-flex align-items-center">
+                                    @php
+                                        $iconos = [
+                                            'bombones' => 'box-seam',
+                                            'peluche' => 'heart-fill',
+                                            'globo' => 'balloon',
+                                            'vino' => 'cup-straw',
+                                            'licor' => 'cup',
+                                        ];
+                                        $icono = $iconos[$categoria] ?? 'gift';
+                                    @endphp
+                                    <i class="bi bi-{{ $icono }} me-2"></i>
+                                    {{ \App\Models\ProductoAdicional::CATEGORIAS[$categoria] }}
+                                </h5>
+
+                                <div class="row g-3">
+                                    @foreach($productos->take(4) as $adicional)
+                                    @php
+                                        $yaEnCarrito = isset($carrito->adicionales['adicional_' . $adicional->id]);
+                                        $cantidadEnCarrito = $yaEnCarrito ? $carrito->adicionales['adicional_' . $adicional->id]['cantidad'] : 0;
+                                    @endphp
+                                    <div class="col-6 col-md-3">
+                                        <div class="card h-100 adicional-card {{ $yaEnCarrito ? 'border-primary' : '' }}"
+                                             data-adicional-id="{{ $adicional->id }}">
+                                            @if($adicional->imagen)
+                                                <img src="{{ $adicional->imagen_url }}"
+                                                     class="card-img-top" alt="{{ $adicional->nombre }}"
+                                                     style="height: 120px; object-fit: cover;">
+                                            @else
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                                     style="height: 120px;">
+                                                    <i class="bi bi-{{ $icono }} text-muted"
+                                                       style="font-size: 2rem;"></i>
+                                                </div>
+                                            @endif
+                                            <div class="card-body p-2 text-center">
+                                                <h6 class="card-title mb-1" style="font-size: 0.85rem;">
+                                                    {{ Str::limit($adicional->nombre, 25) }}
+                                                </h6>
+                                                <p class="card-text text-primary fw-bold mb-2">
+                                                    ${{ number_format($adicional->precio, 0, ',', '.') }}
+                                                </p>
+
+                                                @if($yaEnCarrito)
+                                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                                onclick="actualizarAdicional({{ $adicional->id }}, -1)">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <span class="fw-bold" id="qty-adicional-{{ $adicional->id }}">{{ $cantidadEnCarrito }}</span>
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                                onclick="actualizarAdicional({{ $adicional->id }}, 1)">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                    <button class="btn btn-link btn-sm text-danger p-0 mt-1"
+                                                            onclick="quitarAdicional({{ $adicional->id }})">
+                                                        <i class="bi bi-x"></i> Quitar
+                                                    </button>
+                                                @else
+                                                    <button class="btn btn-sm btn-outline-primary w-100"
+                                                            onclick="agregarAdicional({{ $adicional->id }})">
+                                                        <i class="bi bi-plus-circle"></i> Agregar
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                     @endif
                 </div>
@@ -761,6 +885,25 @@
                 </div>
                 @endif
             </div>
+            @else
+            {{-- Carrito Vacío - Ocupa todo el ancho --}}
+            <div class="row">
+                <div class="col-12">
+                    <div class="cart-container position-relative">
+                        <div class="empty-cart">
+                            <i class="bi bi-cart-x empty-cart-icon"></i>
+                            <p class="empty-cart-text">Tu carrito está vacío</p>
+                            <p class="empty-cart-subtitle">
+                                Explora nuestro catálogo y encuentra los productos perfectos para ti
+                            </p>
+                            <a href="{{ route('home') }}" class="btn btn-primary btn-lg">
+                                <i class="bi bi-shop me-2"></i> Explorar Productos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </main>
 

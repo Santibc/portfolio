@@ -71,11 +71,11 @@
       <span>Categorías</span>
     </a>
 
-    <a href="{{ route('adicionales.index') }}" 
+    <a href="{{ route('adicionales.index') }}"
     class="sidebar-link {{ request()->routeIs('adicionales.*') ? 'active' : '' }}"
-      title="Adicionales">
-      <i class="bi bi-gift"></i>
-      <span>Adicionales</span>
+      title="Productos Complementarios">
+      <i class="bi bi-gift-fill"></i>
+      <span>Complementarios</span>
     </a>
 
     <div class="sidebar-divider"></div>
