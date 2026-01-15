@@ -93,6 +93,30 @@ public function puedeCrearEmpresa()
         return $this->hasMany(ActualizacionPrecio::class, 'usuario_id');
     }
 
+    // Relación: Usuarios referidos por este usuario
+    public function referidos()
+    {
+        return $this->hasMany(User::class, 'referido_por');
+    }
+
+    // Relación: Usuario que refirió a este usuario
+    public function referente()
+    {
+        return $this->belongsTo(User::class, 'referido_por');
+    }
+
+    // Relación: Movimientos de puntos
+    public function puntos()
+    {
+        return $this->hasMany(PuntoCliente::class);
+    }
+
+    // Relación: Cliente asociado (si es cliente)
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class);
+    }
+
     public function esAdmin()
     {
         return $this->tipo_usuario === 'admin';

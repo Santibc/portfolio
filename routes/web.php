@@ -340,6 +340,22 @@ require __DIR__.'/auth.php';
 
 // ========== RUTAS DE TIENDA (DEBEN IR AL FINAL) ==========
 Route::prefix('admin')->name('admin.')->group(function () {
+    // PUNTOS Y REFERIDOS
+    Route::prefix('puntos')->name('puntos.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Admin\PuntosAdminController::class, 'dashboard'])
+            ->name('dashboard');
+        Route::get('/movimientos', [App\Http\Controllers\Admin\PuntosAdminController::class, 'movimientos'])
+            ->name('movimientos');
+        Route::get('/referidos', [App\Http\Controllers\Admin\PuntosAdminController::class, 'referidos'])
+            ->name('referidos');
+        Route::get('/configuracion', [App\Http\Controllers\Admin\PuntosAdminController::class, 'configuracion'])
+            ->name('configuracion');
+        Route::put('/configuracion', [App\Http\Controllers\Admin\PuntosAdminController::class, 'guardarConfiguracion'])
+            ->name('configuracion.guardar');
+        Route::post('/ajustar', [App\Http\Controllers\Admin\PuntosAdminController::class, 'ajustarPuntos'])
+            ->name('ajustar');
+    });
+
     // MÓDULO DE COMISIONES DESHABILITADO - Single-tenant
     // Route::get('/dashboard', [App\Http\Controllers\DashboardAdminController::class, 'index'])->name('dashboard');
     // Route::get('/dashboard/empresa/{id}', [App\Http\Controllers\DashboardAdminController::class, 'detalleEmpresa'])->name('dashboard.empresa');

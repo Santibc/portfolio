@@ -25,6 +25,13 @@
       <i class="bi bi-bag-check"></i>
       <span>Mis Compras</span>
     </a>
+
+    <a href="{{ route('home') }}" target="_blank"
+      class="sidebar-link"
+      title="Ver Tienda">
+      <i class="bi bi-shop"></i>
+      <span>Ver Tienda</span>
+    </a>
     @endif
 
     {{-- Opciones para vendedores/admin --}}
@@ -160,6 +167,13 @@
         </div>
       </div>
     </div>
+
+    <a href="{{ route('admin.puntos.dashboard') }}"
+      class="sidebar-link {{ request()->routeIs('admin.puntos.*') ? 'active' : '' }}"
+      title="Puntos y Referidos">
+      <i class="bi bi-star-fill"></i>
+      <span>Puntos y Referidos</span>
+    </a>
 
     <div class="sidebar-divider"></div>
     <div class="sidebar-section-title">Tienda</div>

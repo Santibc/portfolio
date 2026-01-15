@@ -345,6 +345,15 @@
                 <h1 class="auth-title">Crea tu cuenta</h1>
                 <p class="auth-subtitle">Únete y disfruta de beneficios exclusivos</p>
 
+                {{-- Mensaje de referido --}}
+                @if(isset($referente) && $referente)
+                    <div class="alert-success" style="background: #e3f2fd; color: #1565c0; border-left: 4px solid #1976d2;">
+                        <i class="bi bi-person-check" style="color: #1976d2;"></i>
+                        <strong>¡Registro con código de referido!</strong><br>
+                        <small>Fuiste invitado por <strong>{{ $referente->name }}</strong>. Ambos recibirán puntos especiales al completar tu registro.</small>
+                    </div>
+                @endif
+
                 <!-- Session Status -->
                 @if (session('status'))
                     <div class="alert-success">
@@ -354,6 +363,11 @@
 
                 <form method="POST" action="{{ route('register.cliente.store') }}">
                     @csrf
+
+                    {{-- Campo oculto con código de referido --}}
+                    @if(isset($codigoReferido) && $codigoReferido)
+                        <input type="hidden" name="codigo_referido" value="{{ $codigoReferido }}">
+                    @endif
 
                     <!-- Name -->
                     <div class="form-group">

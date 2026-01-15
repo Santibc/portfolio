@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cliente;
 use App\Http\Controllers\Controller;
 use App\Models\PuntoCliente;
 use App\Models\FechaEspecialCliente;
+use App\Models\ConfiguracionPuntos;
 use App\Models\User;
 use App\Models\Producto;
 use Illuminate\Http\Request;
@@ -16,6 +17,12 @@ class PuntosController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        // Obtener empresa del contexto
+        $empresaId = session('empresa_id') ?? \App\Models\Empresa::where('activo', true)->first()?->id ?? 1;
+
+        // Obtener configuración de puntos
+        $config = ConfiguracionPuntos::getConfiguracion($empresaId);
 
         // Balance de puntos
         $balance = PuntoCliente::getBalance($user->id);
@@ -46,7 +53,7 @@ class PuntosController extends Controller
         $productosSugeridos = $this->obtenerProductosSugeridos($fechasEspeciales);
 
         return view('cliente.puntos.index', compact(
-            'user', 'balance', 'historial', 'referidos', 'fechasEspeciales', 'productosSugeridos'
+            'user', 'balance', 'historial', 'referidos', 'fechasEspeciales', 'productosSugeridos', 'config'
         ));
     }
 
@@ -98,21 +105,29 @@ class PuntosController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
+            'receptor' => ['nullable', 'string', 'max:255'],
             'tipo' => ['required', 'in:cumpleanos,aniversario,dia_madre,dia_padre,navidad,otro'],
             'fecha' => ['required', 'date'],
             'notas' => ['nullable', 'string', 'max:500'],
-            'dias_anticipacion' => ['nullable', 'integer', 'min:1', 'max:30'],
+            'dias_anticipacion' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'descuento_especial' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
         FechaEspecialCliente::create([
             ...$validated,
             'user_id' => Auth::id(),
             'recordar_dias_antes' => true,
-            'dias_anticipacion' => $validated['dias_anticipacion'] ?? 3,
+            'dias_anticipacion' => $validated['dias_anticipacion'] ?? 5,
+            'descuento_especial' => $validated['descuento_especial'] ?? 0,
         ]);
 
+        $mensaje = 'Fecha especial agregada. Te recordaremos cuando se acerque.';
+        if (isset($validated['descuento_especial']) && $validated['descuento_especial'] > 0) {
+            $mensaje .= " Recibirás un cupón del {$validated['descuento_especial']}% de descuento.";
+        }
+
         return redirect()->route('cliente.puntos')
-            ->with('success', 'Fecha especial agregada. Te recordaremos cuando se acerque.');
+            ->with('success', $mensaje);
     }
 
     public function destroyFechaEspecial(FechaEspecialCliente $fechaEspecial)
@@ -155,12 +170,28 @@ class PuntosController extends Controller
 
     public function canjear(Request $request)
     {
+        $user = Auth::user();
+
+        // Obtener configuración
+        $empresaId = session('empresa_id') ?? \App\Models\Empresa::where('activo', true)->first()?->id ?? 1;
+        $config = ConfiguracionPuntos::getConfiguracion($empresaId);
+
+        if (!$config || !$config->sistema_activo) {
+            return redirect()->route('cliente.puntos')
+                ->with('error', 'El sistema de puntos no está activo.');
+        }
+
         $request->validate([
-            'puntos' => ['required', 'integer', 'min:100'],
+            'puntos' => ['required', 'integer', 'min:' . $config->canje_minimo],
         ]);
 
-        $user = Auth::user();
         $puntosACanjear = $request->puntos;
+
+        // Validar máximo si está configurado
+        if ($config->canje_maximo && $puntosACanjear > $config->canje_maximo) {
+            return redirect()->route('cliente.puntos')
+                ->with('error', "No puedes canjear más de {$config->canje_maximo} puntos por vez.");
+        }
 
         $balance = PuntoCliente::getBalance($user->id);
 
@@ -169,8 +200,8 @@ class PuntosController extends Controller
                 ->with('error', 'No tienes suficientes puntos para canjear.');
         }
 
-        // Canjear puntos (100 puntos = $1 de descuento)
-        $descuento = $puntosACanjear / 100;
+        // Calcular descuento usando la configuración
+        $descuento = $config->calcularDescuentoPorPuntos($puntosACanjear);
 
         $resultado = PuntoCliente::canjearPuntos(
             $user->id,

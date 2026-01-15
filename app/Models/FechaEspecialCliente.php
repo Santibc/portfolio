@@ -14,11 +14,14 @@ class FechaEspecialCliente extends Model
     protected $fillable = [
         'user_id',
         'nombre',
+        'receptor',
         'tipo',
         'fecha',
         'notas',
         'recordar_dias_antes',
         'dias_anticipacion',
+        'descuento_especial',
+        'cupon_descuento',
         'activo',
         'ultimo_recordatorio',
     ];
@@ -39,9 +42,15 @@ class FechaEspecialCliente extends Model
         'otro' => 'Otro',
     ];
 
+    // Relaciones
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function recordatorios()
+    {
+        return $this->hasMany(RecordatorioEnviado::class, 'fecha_especial_id');
     }
 
     public function getTipoNombreAttribute()
@@ -95,5 +104,29 @@ class FechaEspecialCliente extends Model
     public function scopePorUsuario($query, $userId)
     {
         return $query->where('user_id', $userId);
+    }
+
+    // Métodos de utilidad
+    public function generarCuponDescuento()
+    {
+        if ($this->descuento_especial > 0 && !$this->cupon_descuento) {
+            $cupon = 'FECHA-' . strtoupper(substr($this->nombre, 0, 3)) . '-' . now()->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(4));
+            $this->update(['cupon_descuento' => $cupon]);
+            return $cupon;
+        }
+        return $this->cupon_descuento;
+    }
+
+    public function tieneDescuento()
+    {
+        return $this->descuento_especial > 0;
+    }
+
+    public function getDescuentoTexto()
+    {
+        if ($this->descuento_especial > 0) {
+            return "{$this->descuento_especial}% de descuento";
+        }
+        return null;
     }
 }

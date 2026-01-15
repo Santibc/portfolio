@@ -420,8 +420,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url('/') }}">
-                            <i class="bi bi-shop me-1"></i> Tienda
+                        <a class="nav-link" href="{{ route('home') }}" target="_blank">
+                            <i class="bi bi-shop me-1"></i> Ver Tienda
                         </a>
                     </li>
                 </ul>

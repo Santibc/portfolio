@@ -724,8 +724,10 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                   @if(auth()->user()->hasRole('cliente'))
+                    <li><a class="dropdown-item" href="{{ route('cliente.compras') }}"><i class="bi bi-house me-2"></i>Inicio</a></li>
                     <li><a class="dropdown-item" href="{{ route('cliente.compras') }}"><i class="bi bi-bag-check me-2"></i>Mis Compras</a></li>
                     <li><a class="dropdown-item" href="{{ route('cliente.perfil') }}"><i class="bi bi-person-gear me-2"></i>Mi Perfil</a></li>
+                    <li><a class="dropdown-item" href="{{ route('home') }}"><i class="bi bi-shop me-2"></i>Ver Tienda</a></li>
                   @else
                     <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
                   @endif
@@ -779,7 +781,9 @@
         <li><a href="{{ route('register.cliente') }}">Registrarse</a></li>
       @else
         @if(auth()->user()->hasRole('cliente'))
+          <li><a href="{{ route('cliente.compras') }}">Inicio</a></li>
           <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
+          <li><a href="{{ route('home') }}">Ver Tienda</a></li>
         @else
           <li><a href="{{ route('dashboard') }}">Panel Admin</a></li>
         @endif
@@ -848,8 +852,10 @@
                   <li><a href="{{ route('register.cliente') }}">Registrarse</a></li>
                 @else
                   @if(auth()->user()->hasRole('cliente'))
+                    <li><a href="{{ route('cliente.compras') }}">Inicio</a></li>
                     <li><a href="{{ route('cliente.compras') }}">Mis Compras</a></li>
                     <li><a href="{{ route('cliente.puntos') }}">Mis Puntos</a></li>
+                    <li><a href="{{ route('home') }}">Ver Tienda</a></li>
                   @endif
                 @endguest
                 <li><a href="{{ route('paginas.terminos') }}">Términos y condiciones</a></li>

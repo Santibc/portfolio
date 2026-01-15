@@ -20,52 +20,69 @@
         <div class="content-card">
             <h6 class="text-muted mb-3">¿Cómo funcionan los puntos?</h6>
             <ul class="list-unstyled small">
-                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gana 1 punto por cada $100 en compras</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gana 500 puntos por cada amigo referido</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Canjea puntos por descuentos</li>
-                <li><i class="bi bi-info-circle text-primary"></i> Los puntos expiran después de 1 año</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gana 1 punto por cada ${{ number_format($config->puntos_por_monto) }} en compras</li>
+                @if($config->referidos_activo && $config->puntos_referir > 0)
+                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Gana {{ number_format($config->puntos_referir) }} puntos por cada amigo referido</li>
+                @endif
+                @if($config->puntos_registro > 0)
+                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> {{ number_format($config->puntos_registro) }} puntos de bienvenida al registrarte</li>
+                @endif
+                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Canjea {{ number_format($config->puntos_por_peso) }} puntos = $1 de descuento</li>
+                <li><i class="bi bi-info-circle text-primary"></i> Los puntos expiran después de {{ $config->meses_expiracion }} {{ $config->meses_expiracion == 1 ? 'mes' : 'meses' }}</li>
             </ul>
         </div>
 
         {{-- Canjear Puntos --}}
-        @if($balance >= 100)
+        @if($config->sistema_activo && $balance >= $config->canje_minimo)
         <div class="content-card">
             <h6><i class="bi bi-gift text-primary"></i> Canjear Puntos</h6>
-            <p class="text-muted small mb-3">100 puntos = $1 de descuento</p>
+            <p class="text-muted small mb-3">{{ number_format($config->puntos_por_peso) }} puntos = $1 de descuento</p>
             <form action="{{ route('cliente.puntos.canjear') }}" method="POST">
                 @csrf
                 <div class="mb-3">
                     <label class="form-label">Puntos a canjear</label>
-                    <select name="puntos" class="form-select">
-                        @if($balance >= 100)
-                            <option value="100">100 puntos = $1</option>
-                        @endif
-                        @if($balance >= 500)
-                            <option value="500">500 puntos = $5</option>
-                        @endif
-                        @if($balance >= 1000)
-                            <option value="1000">1000 puntos = $10</option>
-                        @endif
-                        @if($balance >= 2000)
-                            <option value="2000">2000 puntos = $20</option>
-                        @endif
+                    <select name="puntos" class="form-select" required>
+                        @php
+                            $opciones = [$config->canje_minimo, 500, 1000, 2000, 5000];
+                            if ($config->canje_maximo) {
+                                $opciones = array_filter($opciones, fn($v) => $v <= $config->canje_maximo);
+                            }
+                        @endphp
+                        @foreach($opciones as $cantidad)
+                            @if($balance >= $cantidad)
+                                @php $descuento = floor($cantidad / $config->puntos_por_peso); @endphp
+                                <option value="{{ $cantidad }}">{{ number_format($cantidad) }} puntos = ${{ number_format($descuento) }}</option>
+                            @endif
+                        @endforeach
                     </select>
+                    @if($config->canje_maximo)
+                        <small class="text-muted">Máximo {{ number_format($config->canje_maximo) }} puntos por canje</small>
+                    @endif
                 </div>
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="bi bi-arrow-repeat"></i> Canjear
                 </button>
             </form>
         </div>
+        @elseif($balance < $config->canje_minimo && $balance > 0)
+        <div class="content-card">
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle"></i>
+                <strong>¡Sigue acumulando!</strong>
+                <p class="mb-0 small">Necesitas al menos {{ number_format($config->canje_minimo) }} puntos para canjear.</p>
+            </div>
+        </div>
         @endif
     </div>
 
     {{-- Código de Referido --}}
     <div class="col-lg-8">
+        @if($config->referidos_activo)
         <div class="content-card">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
                     <h5><i class="bi bi-people text-primary"></i> Programa de Referidos</h5>
-                    <p class="text-muted mb-0">Invita amigos y gana 500 puntos por cada uno</p>
+                    <p class="text-muted mb-0">Invita amigos y gana {{ number_format($config->puntos_referir) }} puntos por cada uno</p>
                 </div>
             </div>
 
@@ -105,6 +122,7 @@
             </div>
             @endif
         </div>
+        @endif
 
         {{-- Historial de Puntos --}}
         <div class="content-card">
@@ -267,19 +285,28 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nombre de la persona *</label>
+                        <label class="form-label">Nombre de la fecha *</label>
                         <input type="text" name="nombre" class="form-control" required
-                               placeholder="Ej: Mamá, María, Aniversario de bodas...">
+                               placeholder="Ej: Cumpleaños de mamá, Aniversario de bodas...">
+                        <small class="text-muted">Un nombre descriptivo para identificar esta fecha</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Receptor (opcional)</label>
+                        <input type="text" name="receptor" class="form-control"
+                               placeholder="Ej: María, Juan y Ana, Mis padres...">
+                        <small class="text-muted">¿Para quién es esta fecha especial?</small>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Tipo de ocasión *</label>
                         <select name="tipo" class="form-select" required>
-                            <option value="cumpleanos">Cumpleaños</option>
-                            <option value="aniversario">Aniversario</option>
-                            <option value="dia_madre">Día de la Madre</option>
-                            <option value="dia_padre">Día del Padre</option>
-                            <option value="otro">Otro</option>
+                            <option value="cumpleanos">🎂 Cumpleaños</option>
+                            <option value="aniversario">💝 Aniversario</option>
+                            <option value="dia_madre">🌸 Día de la Madre</option>
+                            <option value="dia_padre">👔 Día del Padre</option>
+                            <option value="navidad">🎄 Navidad</option>
+                            <option value="otro">🎉 Otro</option>
                         </select>
                     </div>
 
@@ -292,16 +319,30 @@
                         <label class="form-label">Recordarme</label>
                         <select name="dias_anticipacion" class="form-select">
                             <option value="3">3 días antes</option>
-                            <option value="5">5 días antes</option>
+                            <option value="5" selected>5 días antes</option>
                             <option value="7">1 semana antes</option>
                             <option value="14">2 semanas antes</option>
+                            <option value="30">1 mes antes</option>
                         </select>
+                        <small class="text-muted">Te enviaremos un recordatorio por email</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descuento especial (%)</label>
+                        <select name="descuento_especial" class="form-select">
+                            <option value="0">Sin descuento</option>
+                            <option value="5">5% de descuento</option>
+                            <option value="10" selected>10% de descuento</option>
+                            <option value="15">15% de descuento</option>
+                            <option value="20">20% de descuento</option>
+                        </select>
+                        <small class="text-muted">Recibirás un cupón especial en el recordatorio</small>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Notas (opcional)</label>
                         <textarea name="notas" class="form-control" rows="2"
-                                  placeholder="Ideas de regalo, preferencias..."></textarea>
+                                  placeholder="Ideas de regalo, preferencias, colores favoritos..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
