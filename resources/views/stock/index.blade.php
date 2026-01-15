@@ -497,12 +497,23 @@
         { extend: 'colvis', className: 'btn btn-outline-dark', text: 'Columnas' },
         { extend: 'excelHtml5', className: 'btn btn-outline-success', text: 'Excel' },
         {
-          text: '<i class="bi bi-arrow-repeat"></i> Inicializar Stock', 
+          text: '<i class="bi bi-arrow-repeat"></i> Inicializar Stock',
           className: 'btn btn-outline-warning',
           action: () => {
-            if (confirm('¿Desea inicializar el stock para todos los productos de su empresa?')) {
-              inicializarStock();
-            }
+            Swal.fire({
+              icon: 'question',
+              title: '¿Desea inicializar el stock?',
+              text: '¿Desea inicializar el stock para todos los productos de su empresa?',
+              showCancelButton: true,
+              confirmButtonColor: '#1a1a1a',
+              cancelButtonColor: '#6b7280',
+              confirmButtonText: 'Sí, inicializar',
+              cancelButtonText: 'Cancelar'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                inicializarStock();
+              }
+            });
           }
         }
       ],
@@ -557,45 +568,45 @@
     // Funciones para los modales
     window.entradaStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario primero
+        $('#formEntrada')[0].reset();
+
+        // Luego asignar valores
         $('#entrada_stock_id').val(stockId);
         $('#entrada_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#entrada_stock_actual').text(data.stock.cantidad_disponible);
-        
-        // Limpiar formulario
-        $('#formEntrada')[0].reset();
-        $('#entrada_stock_id').val(stockId);
-        
+
         $('#modalEntrada').modal('show');
       });
     };
 
     window.salidaStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario primero
+        $('#formSalida')[0].reset();
+
+        // Luego asignar valores
         $('#salida_stock_id').val(stockId);
         $('#salida_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#salida_stock_disponible').text(data.stock.stock_real);
-        
-        // Limpiar formulario
-        $('#formSalida')[0].reset();
-        $('#salida_stock_id').val(stockId);
-        
+
         // Establecer máximo en el input
         $('input[name="cantidad"]', '#formSalida').attr('max', data.stock.stock_real);
-        
+
         $('#modalSalida').modal('show');
       });
     };
 
     window.ajusteStock = function(stockId) {
       $.get(`/stock/${stockId}/obtener`, function(data) {
+        // Limpiar formulario primero
+        $('#formAjuste')[0].reset();
+
+        // Luego asignar valores
         $('#ajuste_stock_id').val(stockId);
         $('#ajuste_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#ajuste_stock_actual').val(data.stock.cantidad_disponible);
-        
-        // Limpiar formulario
-        $('#formAjuste')[0].reset();
-        $('#ajuste_stock_id').val(stockId);
-        
+
         $('#modalAjuste').modal('show');
       });
     };
@@ -624,20 +635,44 @@
       });
     };
 
+    // Guardar el HTML original de los botones al cargar la página
+    const originalBtnEntrada = $('#formEntrada button[type="submit"]').html();
+    const originalBtnSalida = $('#formSalida button[type="submit"]').html();
+    const originalBtnAjuste = $('#formAjuste button[type="submit"]').html();
+
+    // Resetear botones cuando se abren los modales
+    $('#modalEntrada').on('show.bs.modal', function() {
+      const btn = $('#formEntrada button[type="submit"]');
+      btn.prop('disabled', false).html(originalBtnEntrada);
+    });
+
+    $('#modalSalida').on('show.bs.modal', function() {
+      const btn = $('#formSalida button[type="submit"]');
+      btn.prop('disabled', false).html(originalBtnSalida);
+    });
+
+    $('#modalAjuste').on('show.bs.modal', function() {
+      const btn = $('#formAjuste button[type="submit"]');
+      btn.prop('disabled', false).html(originalBtnAjuste);
+    });
+
     // Formulario de entrada
     $('#formEntrada').on('submit', function(e) {
       e.preventDefault();
-      
-      const btn = $(this).find('button[type="submit"]');
+
+      const form = $(this);
+      const btn = form.find('button[type="submit"]');
+
       btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
-      
+
       $.ajax({
         url: "{{ route('stock.entrada') }}",
         method: 'POST',
-        data: $(this).serialize(),
+        data: form.serialize(),
         success: function(response) {
           if (response.success) {
             $('#modalEntrada').modal('hide');
+            form[0].reset();
             table.ajax.reload();
             toastr.success(response.message);
           }
@@ -647,7 +682,7 @@
           toastr.error(message);
         },
         complete: function() {
-          btn.prop('disabled', false).html('<i class="bi bi-check-circle"></i> Registrar Entrada');
+          btn.prop('disabled', false).html(originalBtnEntrada);
         }
       });
     });
@@ -655,17 +690,20 @@
     // Formulario de salida
     $('#formSalida').on('submit', function(e) {
       e.preventDefault();
-      
-      const btn = $(this).find('button[type="submit"]');
+
+      const form = $(this);
+      const btn = form.find('button[type="submit"]');
+
       btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
-      
+
       $.ajax({
         url: "{{ route('stock.salida') }}",
         method: 'POST',
-        data: $(this).serialize(),
+        data: form.serialize(),
         success: function(response) {
           if (response.success) {
             $('#modalSalida').modal('hide');
+            form[0].reset();
             table.ajax.reload();
             toastr.success(response.message);
           }
@@ -675,7 +713,7 @@
           toastr.error(message);
         },
         complete: function() {
-          btn.prop('disabled', false).html('<i class="bi bi-check-circle"></i> Registrar Salida');
+          btn.prop('disabled', false).html(originalBtnSalida);
         }
       });
     });
@@ -683,31 +721,43 @@
     // Formulario de ajuste
     $('#formAjuste').on('submit', function(e) {
       e.preventDefault();
-      
-      if (!confirm('¿Está seguro de realizar este ajuste de inventario?')) {
-        return;
-      }
-      
-      const btn = $(this).find('button[type="submit"]');
-      btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
-      
-      $.ajax({
-        url: "{{ route('stock.ajuste') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalAjuste').modal('hide');
-            table.ajax.reload();
-            toastr.success(response.message);
-          }
-        },
-        error: function(xhr) {
-          const message = xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido';
-          toastr.error(message);
-        },
-        complete: function() {
-          btn.prop('disabled', false).html('<i class="bi bi-check-circle"></i> Realizar Ajuste');
+
+      const form = $(this);
+      const btn = form.find('button[type="submit"]');
+
+      Swal.fire({
+        icon: 'warning',
+        title: '¿Está seguro?',
+        text: '¿Está seguro de realizar este ajuste de inventario?',
+        showCancelButton: true,
+        confirmButtonColor: '#1a1a1a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, ajustar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
+
+          $.ajax({
+            url: "{{ route('stock.ajuste') }}",
+            method: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+              if (response.success) {
+                $('#modalAjuste').modal('hide');
+                form[0].reset();
+                table.ajax.reload();
+                toastr.success(response.message);
+              }
+            },
+            error: function(xhr) {
+              const message = xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido';
+              toastr.error(message);
+            },
+            complete: function() {
+              btn.prop('disabled', false).html(originalBtnAjuste);
+            }
+          });
         }
       });
     });
