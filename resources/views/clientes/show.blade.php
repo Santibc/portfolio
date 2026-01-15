@@ -214,15 +214,15 @@
 
         <!-- Columna Derecha - Tabs con contenido -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <ul class="nav nav-tabs card-header-tabs" id="clienteTabs" role="tablist">
+            <div class="card border-0 shadow-sm content-tabs-card">
+                <div class="card-header bg-transparent tabs-header">
+                    <ul class="nav nav-pills" id="clienteTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="obras-tab" data-bs-toggle="tab" data-bs-target="#obras"
                                     type="button" role="tab">
                                 <i class="bi bi-building me-1"></i>Obras
                                 @if($cliente->obras->count() > 0)
-                                    <span class="badge bg-primary ms-1">{{ $cliente->obras->count() }}</span>
+                                    <span class="tab-badge">{{ $cliente->obras->count() }}</span>
                                 @endif
                             </button>
                         </li>
@@ -231,7 +231,7 @@
                                     type="button" role="tab">
                                 <i class="bi bi-receipt me-1"></i>Facturas
                                 @if($cliente->facturas->count() > 0)
-                                    <span class="badge bg-info ms-1">{{ $cliente->facturas->count() }}</span>
+                                    <span class="tab-badge">{{ $cliente->facturas->count() }}</span>
                                 @endif
                             </button>
                         </li>
@@ -243,7 +243,7 @@
                         </li>
                     </ul>
                 </div>
-                <div class="card-body">
+                <div class="card-body tabs-content">
                     <div class="tab-content" id="clienteTabsContent">
                         <!-- Tab Obras -->
                         <div class="tab-pane fade show active" id="obras" role="tabpanel">
@@ -452,4 +452,107 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+/* Content Tabs - Fix for CSS conflicts */
+.content-tabs-card .tab-content,
+#clienteTabsContent.tab-content {
+    display: block !important;
+}
+
+#clienteTabsContent .tab-pane {
+    display: none !important;
+}
+
+#clienteTabsContent .tab-pane.active {
+    display: block !important;
+}
+
+.tabs-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(74, 124, 89, 0.05) 0%, rgba(74, 124, 89, 0.1) 100%);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs-header .nav-pills {
+    gap: 0.5rem;
+}
+
+.tabs-header .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    color: #6b7280;
+    font-weight: 500;
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.tabs-header .nav-link:hover {
+    background: rgba(74, 124, 89, 0.1);
+    color: #4A7C59;
+}
+
+.tabs-header .nav-link.active {
+    background: #4A7C59;
+    color: white;
+}
+
+.tab-badge {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.nav-link.active .tab-badge {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tabs-content {
+    padding: 1.5rem;
+    min-height: 300px;
+    background: #fff;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+// Inicializar tabs manualmente
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('#clienteTabs .nav-link');
+    const tabPanes = document.querySelectorAll('#clienteTabsContent .tab-pane');
+
+    tabButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remover active de todos los botones
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // Agregar active al botón clickeado
+            this.classList.add('active');
+
+            // Obtener el target
+            const targetId = this.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(targetId);
+
+            // Ocultar todos los panes
+            tabPanes.forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+
+            // Mostrar el pane objetivo
+            if (targetPane) {
+                targetPane.classList.add('show', 'active');
+            }
+        });
+    });
+});
+</script>
+@endpush
 @endsection

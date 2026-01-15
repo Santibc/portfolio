@@ -723,8 +723,13 @@ CREATE TABLE fichajes (
 
 #### 8. MÓDULO DE PARTES DIARIOS
 
+> **⚠️ ACTUALIZACIÓN EN CURSO (Enero 2026)**
+> Este módulo está siendo actualizado para soportar **conceptos de producción configurables por obra**.
+> Los campos fijos (`desbroce_p5_m2`, `desbroce_p6_m2`, etc.) serán reemplazados por un sistema dinámico.
+> Ver sección "8b. CONCEPTOS DE PRODUCCIÓN POR OBRA" más abajo.
+
 ```sql
--- Partes diarios de obra
+-- Partes diarios de obra (VERSIÓN ACTUAL - SERÁ ACTUALIZADA)
 CREATE TABLE partes_diarios (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     obra_id BIGINT UNSIGNED NOT NULL,
@@ -830,6 +835,189 @@ CREATE TABLE parte_diario_herbicidas (
     FOREIGN KEY (parte_diario_id) REFERENCES partes_diarios(id) ON DELETE CASCADE
 );
 ```
+
+#### 8b. CONCEPTOS DE PRODUCCIÓN POR OBRA (NUEVO)
+
+> **🆕 Sistema Flexible de Producción**
+> Reemplaza los campos fijos (P5, P6, P8, P4) por conceptos configurables por obra.
+> Cada obra puede definir sus propios códigos, nombres y tarifas de producción.
+
+```sql
+-- Conceptos de producción configurables por obra
+CREATE TABLE obra_conceptos_produccion (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    obra_id BIGINT UNSIGNED NOT NULL,
+    codigo VARCHAR(20) NOT NULL,                    -- P5, P6, BOSQUE1, ZONA_A, etc.
+    nombre VARCHAR(150) NOT NULL,                   -- Desbroce herbáceo, Limpieza, etc.
+    descripcion TEXT NULL,
+    categoria ENUM('desbroce', 'limpieza', 'herbicida', 'tala', 'poda', 'otro') NOT NULL,
+    unidad ENUM('m2', 'unidades', 'hectareas', 'jornal') NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL,         -- €/m², €/unidad, etc.
+    activo BOOLEAN DEFAULT TRUE,
+    orden INT DEFAULT 0,                             -- Para ordenar en formularios
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_obra_codigo (obra_id, codigo),
+    INDEX idx_obra_activo (obra_id, activo)
+);
+
+-- Producciones registradas en partes diarios (reemplaza campos fijos)
+CREATE TABLE parte_diario_producciones (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    parte_diario_id BIGINT UNSIGNED NOT NULL,
+    concepto_produccion_id BIGINT UNSIGNED NOT NULL,  -- FK a obra_conceptos_produccion
+    cantidad DECIMAL(12,2) NOT NULL,                   -- Cantidad producida
+    precio_unitario DECIMAL(10,2) NOT NULL,            -- Precio al momento (snapshot)
+    importe_calculado DECIMAL(14,2) NOT NULL,          -- cantidad × precio_unitario
+    observaciones TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (parte_diario_id) REFERENCES partes_diarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (concepto_produccion_id) REFERENCES obra_conceptos_produccion(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_parte_concepto (parte_diario_id, concepto_produccion_id),
+    INDEX idx_parte_importe (parte_diario_id, importe_calculado)
+);
+```
+
+**Ejemplo de uso:**
+```sql
+-- Para obra ADIF:
+INSERT INTO obra_conceptos_produccion (obra_id, codigo, nombre, categoria, unidad, precio_unitario, orden) VALUES
+(1, 'P5', 'Desbroce herbáceo', 'desbroce', 'm2', 0.08, 1),
+(1, 'P6', 'Desbroce arbustivo', 'desbroce', 'm2', 0.14, 2),
+(1, 'P8', 'Limpieza con recogida', 'limpieza', 'm2', 0.14, 3),
+(1, 'P10', 'Talas <25cm', 'tala', 'unidades', 27.00, 4),
+(1, 'P11', 'Talas 25-100cm', 'tala', 'unidades', 40.00, 5);
+
+-- Para obra forestal privada:
+INSERT INTO obra_conceptos_produccion (obra_id, codigo, nombre, categoria, unidad, precio_unitario, orden) VALUES
+(2, 'BOSQUE1', 'Limpieza forestal', 'limpieza', 'hectareas', 150.00, 1),
+(2, 'DESBROCE_A', 'Desbroce zona A', 'desbroce', 'm2', 0.12, 2);
+```
+
+#### 8c. DISCREPANCIAS DE VALORACIÓN (NUEVO)
+
+> **🆕 Control de Diferencias con Clientes**
+> Registra discrepancias cuando el cliente (ej: ADIF) no acepta el total producido por Manzer.
+> Permite tracking de importes pendientes por obra y período.
+
+```sql
+-- Discrepancias mensuales entre producido y aceptado por cliente
+CREATE TABLE obra_discrepancias_valoracion (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    obra_id BIGINT UNSIGNED NOT NULL,
+    periodo_mes VARCHAR(7) NOT NULL,                   -- Formato: 2025-01, 2025-02
+
+    -- Valores Manzer
+    importe_producido_manzer DECIMAL(14,2) NOT NULL,   -- Total que Manzer dice producir
+    importe_validado_cuadrilla DECIMAL(14,2) NULL,     -- Confirmación del encargado/cuadrilla
+
+    -- Valores Cliente
+    importe_aceptado_cliente DECIMAL(14,2) NULL,       -- Lo que el cliente acepta pagar
+    fecha_respuesta_cliente DATE NULL,
+
+    -- Discrepancia
+    importe_pendiente DECIMAL(14,2) NOT NULL,          -- Diferencia por aclarar
+    estado ENUM('pendiente', 'parcial', 'resuelto') DEFAULT 'pendiente',
+
+    -- Metadatos
+    notas TEXT NULL,
+    documento_valoracion_path VARCHAR(500) NULL,       -- PDF valoración del cliente
+    registrado_por BIGINT UNSIGNED NOT NULL,
+    fecha_resolucion DATE NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE CASCADE,
+    FOREIGN KEY (registrado_por) REFERENCES users(id),
+    UNIQUE KEY unique_obra_periodo (obra_id, periodo_mes),
+    INDEX idx_obra_estado (obra_id, estado)
+);
+```
+
+**Flujo de uso:**
+1. Fin de mes: Sistema calcula `importe_producido_manzer` = Σ(partes diarios valorados)
+2. Encargado puede confirmar con `importe_validado_cuadrilla`
+3. Admin registra `importe_aceptado_cliente` cuando cliente responde
+4. Sistema calcula automáticamente: `importe_pendiente` = producido - aceptado
+5. Se marca como `resuelto` cuando se aclara/cobra
+
+#### 8d. BONOS Y PRIMAS MANUALES (NUEVO)
+
+> **🆕 Gestión Manual de Bonos**
+> Admin/Contabilidad registra primas, bonos y plus manualmente.
+> Reemplaza el sistema automático de primas por producción.
+
+```sql
+-- Bonos y primas registrados manualmente
+CREATE TABLE trabajador_bonos (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    trabajador_id BIGINT UNSIGNED NOT NULL,
+    obra_id BIGINT UNSIGNED NULL,                      -- Opcional: asociado a obra específica
+    tipo ENUM('prima_produccion', 'bono_especial', 'plus_nocturnidad', 'otro') NOT NULL,
+    concepto VARCHAR(255) NOT NULL,                    -- Descripción del bono
+    fecha DATE NOT NULL,                                -- Fecha del bono
+    importe DECIMAL(10,2) NOT NULL,
+    pagado BOOLEAN DEFAULT FALSE,
+    fecha_pago DATE NULL,
+    notas TEXT NULL,
+    registrado_por BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (trabajador_id) REFERENCES trabajadores(id) ON DELETE CASCADE,
+    FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE SET NULL,
+    FOREIGN KEY (registrado_por) REFERENCES users(id),
+    INDEX idx_trabajador_pagado (trabajador_id, pagado),
+    INDEX idx_fecha (fecha)
+);
+```
+
+**Ejemplo de uso:**
+```sql
+-- Registrar prima por superar producción
+INSERT INTO trabajador_bonos (trabajador_id, obra_id, tipo, concepto, fecha, importe, registrado_por) VALUES
+(15, 3, 'prima_produccion', 'Prima por superar 15,000m² en semana 12', '2025-03-25', 85.00, 1);
+
+-- Registrar plus de nocturnidad
+INSERT INTO trabajador_bonos (trabajador_id, tipo, concepto, fecha, importe, registrado_por) VALUES
+(22, 'plus_nocturnidad', 'Plus trabajo nocturno 15-19 marzo', '2025-03-19', 120.00, 1);
+```
+
+#### 8e. ACTUALIZACIÓN DE TABLA PARTES_DIARIOS
+
+> **Cambios a aplicar:**
+> - ELIMINAR: `desbroce_total_m2`, `desbroce_p5_m2`, `desbroce_p6_m2`, `limpieza_p8_m2`, `herbicida_p4_m2`, `talas_unidades`, `podas_unidades`
+> - AGREGAR: `importe_total_calculado` DECIMAL(14,2) DEFAULT 0
+
+```sql
+-- Migración a ejecutar
+ALTER TABLE partes_diarios
+DROP COLUMN desbroce_total_m2,
+DROP COLUMN desbroce_p5_m2,
+DROP COLUMN desbroce_p6_m2,
+DROP COLUMN limpieza_p8_m2,
+DROP COLUMN herbicida_p4_m2,
+DROP COLUMN talas_unidades,
+DROP COLUMN podas_unidades,
+ADD COLUMN importe_total_calculado DECIMAL(14,2) DEFAULT 0 AFTER incidencias;
+```
+
+#### 8f. ACTUALIZACIÓN DE TABLA OBRAS
+
+> **Campos adicionales para totales acumulados**
+
+```sql
+-- Agregar campos de tracking económico
+ALTER TABLE obras
+ADD COLUMN importe_producido_acumulado DECIMAL(14,2) DEFAULT 0 AFTER margen_previsto,
+ADD COLUMN importe_pendiente_acumulado DECIMAL(14,2) DEFAULT 0 AFTER importe_producido_acumulado;
+```
+
+---
 
 #### 9. MÓDULO DE MAQUINARIA
 
@@ -1448,9 +1636,11 @@ CREATE TABLE auditoria (
 | 2 | Trabajadores | ✅ Completado | Alta |
 | 3 | Cuadrillas | ✅ Completado | Alta |
 | 4 | Clientes y CRM | ✅ Completado | Alta |
-| 5 | Obras/Proyectos | ⬜ Pendiente | Alta |
-| 6 | Fichajes/Control Horario | ⬜ Pendiente | Alta |
-| 7 | Partes Diarios | ⬜ Pendiente | Alta |
+| 5 | Obras/Proyectos | ✅ Completado | Alta |
+| 6 | Fichajes/Control Horario | ✅ Completado | Alta |
+| 7 | Partes Diarios (Base) | ✅ Completado | Alta |
+| 7b | Conceptos de Producción por Obra | 🔄 En desarrollo | Alta |
+| 7c | Discrepancias de Valoración | 🔄 En desarrollo | Alta |
 | 8 | Maquinaria | ⬜ Pendiente | Media |
 | 9 | Vehículos | ⬜ Pendiente | Media |
 | 10 | Subcontratas | ⬜ Pendiente | Media |
@@ -1459,7 +1649,7 @@ CREATE TABLE auditoria (
 | 13 | Facturación | ⬜ Pendiente | Alta |
 | 14 | EPIs | ⬜ Pendiente | Media |
 | 15 | Formaciones | ⬜ Pendiente | Media |
-| 16 | Primas por Producción | ⬜ Pendiente | Media |
+| 16 | Bonos/Primas Manuales | 🔄 En desarrollo | Media |
 | 17 | Alertas y Caducidades | ⬜ Pendiente | Alta |
 | 18 | Dashboard Admin | ⬜ Pendiente | Alta |
 | 19 | Dashboard Encargado | ⬜ Pendiente | Alta |
@@ -1862,5 +2052,14 @@ Antes de empezar cada módulo:
 
 ---
 
-**Última actualización:** [FECHA]
-**Versión del documento:** 1.0
+**Última actualización:** 2026-01-10
+**Versión del documento:** 1.1
+
+### Cambios en esta versión:
+- ✅ Marcado módulo 5 (Obras/Proyectos) como completado
+- ✅ Marcado módulo 7 (Partes Diarios - Base) como completado
+- 🆕 Agregado módulo 7b: Conceptos de Producción por Obra (en desarrollo)
+- 🆕 Agregado módulo 7c: Discrepancias de Valoración (en desarrollo)
+- 🔄 Modificado módulo 16: Bonos/Primas ahora son manuales (en desarrollo)
+- 📝 Documentadas 4 nuevas tablas: `obra_conceptos_produccion`, `parte_diario_producciones`, `obra_discrepancias_valoracion`, `trabajador_bonos`
+- 📝 Documentadas modificaciones a tablas `partes_diarios` y `obras`

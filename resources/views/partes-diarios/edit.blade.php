@@ -89,66 +89,88 @@
                     </div>
                 </div>
 
-                <!-- Producción -->
+                <!-- Producción Dinámica -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0">Producción del Día</h5>
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Producción del Día
+                        </h5>
+                        <span class="badge bg-success" id="totalImporteLabel">{{ $partes_diario->importe_total_formateado }}</span>
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <small class="text-muted fw-semibold">DESBROCE</small>
-                            </div>
+                        @php
+                            $conceptos = $partes_diario->obra->conceptosProduccion->where('activo', true);
+                            $produccionesExistentes = $partes_diario->producciones->keyBy('concepto_produccion_id');
+                        @endphp
 
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce Total (m²)</label>
-                                <input type="number" name="desbroce_total_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_total_m2', $partes_diario->desbroce_total_m2) }}">
+                        @if($conceptos->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 80px">Código</th>
+                                            <th>Concepto</th>
+                                            <th style="width: 100px">Unidad</th>
+                                            <th style="width: 120px" class="text-end">Precio Unit.</th>
+                                            <th style="width: 120px">Cantidad</th>
+                                            <th style="width: 120px" class="text-end">Importe</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($conceptos as $index => $concepto)
+                                            @php
+                                                $produccionExistente = $produccionesExistentes->get($concepto->id);
+                                                $cantidadActual = $produccionExistente ? $produccionExistente->cantidad : 0;
+                                                $importeActual = $produccionExistente ? $produccionExistente->importe_calculado : 0;
+                                            @endphp
+                                            <tr>
+                                                <td><code class="fw-bold">{{ $concepto->codigo }}</code></td>
+                                                <td>
+                                                    {{ $concepto->nombre }}
+                                                    <input type="hidden" name="producciones[{{ $index }}][concepto_id]" value="{{ $concepto->id }}">
+                                                </td>
+                                                <td><span class="badge bg-secondary-subtle text-secondary">{{ $concepto->unidad }}</span></td>
+                                                <td class="text-end">{{ number_format($concepto->precio_unitario, 2, ',', '.') }} €</td>
+                                                <td>
+                                                    <input type="number"
+                                                           name="producciones[{{ $index }}][cantidad]"
+                                                           class="form-control form-control-sm cantidad-input"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ old('producciones.'.$index.'.cantidad', $cantidadActual) }}"
+                                                           data-precio="{{ $concepto->precio_unitario }}"
+                                                           data-row="{{ $index }}">
+                                                </td>
+                                                <td class="text-end fw-semibold importe-cell" id="importe-{{ $index }}">{{ number_format($importeActual, 2, ',', '.') }} €</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="5" class="text-end">Total:</th>
+                                            <th class="text-end" id="totalImporte">{{ $partes_diario->importe_total_formateado }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce P5 (m²)</label>
-                                <input type="number" name="desbroce_p5_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_p5_m2', $partes_diario->desbroce_p5_m2) }}">
+                        @else
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-exclamation-circle fs-1 d-block mb-2"></i>
+                                <p class="mb-0">Esta obra no tiene conceptos de producción configurados</p>
+                                <small>Configura los conceptos en la sección de Obras</small>
                             </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce P6 (m²)</label>
-                                <input type="number" name="desbroce_p6_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_p6_m2', $partes_diario->desbroce_p6_m2) }}">
-                            </div>
-
-                            <div class="col-12">
-                                <hr class="my-2">
-                                <small class="text-muted fw-semibold">OTROS TRABAJOS</small>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Limpieza P8 (m²)</label>
-                                <input type="number" name="limpieza_p8_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('limpieza_p8_m2', $partes_diario->limpieza_p8_m2) }}">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Herbicida P4 (m²)</label>
-                                <input type="number" name="herbicida_p4_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('herbicida_p4_m2', $partes_diario->herbicida_p4_m2) }}">
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Talas (uds)</label>
-                                <input type="number" name="talas_unidades" class="form-control"
-                                       min="0" value="{{ old('talas_unidades', $partes_diario->talas_unidades) }}">
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Podas (uds)</label>
-                                <input type="number" name="podas_unidades" class="form-control"
-                                       min="0" value="{{ old('podas_unidades', $partes_diario->podas_unidades) }}">
-                            </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
+
+                <!-- Campos legacy ocultos (para compatibilidad temporal) -->
+                <input type="hidden" name="desbroce_total_m2" value="{{ $partes_diario->desbroce_total_m2 }}">
+                <input type="hidden" name="desbroce_p5_m2" value="{{ $partes_diario->desbroce_p5_m2 }}">
+                <input type="hidden" name="desbroce_p6_m2" value="{{ $partes_diario->desbroce_p6_m2 }}">
+                <input type="hidden" name="limpieza_p8_m2" value="{{ $partes_diario->limpieza_p8_m2 }}">
+                <input type="hidden" name="herbicida_p4_m2" value="{{ $partes_diario->herbicida_p4_m2 }}">
+                <input type="hidden" name="talas_unidades" value="{{ $partes_diario->talas_unidades }}">
+                <input type="hidden" name="podas_unidades" value="{{ $partes_diario->podas_unidades }}">
 
                 <!-- Observaciones -->
                 <div class="card border-0 shadow-sm mb-4">
@@ -236,4 +258,45 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+    // Calcular importes en tiempo real
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.addEventListener('input', function() {
+            updateRowImporte(this);
+            updateTotals();
+        });
+    });
+
+    function updateRowImporte(input) {
+        const cantidad = parseFloat(input.value) || 0;
+        const precio = parseFloat(input.dataset.precio) || 0;
+        const row = input.dataset.row;
+        const importe = cantidad * precio;
+
+        document.getElementById(`importe-${row}`).textContent = formatCurrency(importe);
+    }
+
+    function updateTotals() {
+        let total = 0;
+        document.querySelectorAll('.cantidad-input').forEach(input => {
+            const cantidad = parseFloat(input.value) || 0;
+            const precio = parseFloat(input.dataset.precio) || 0;
+            total += cantidad * precio;
+        });
+
+        const formattedTotal = formatCurrency(total);
+        document.getElementById('totalImporte').textContent = formattedTotal;
+        document.getElementById('totalImporteLabel').textContent = formattedTotal;
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(value);
+    }
+</script>
+@endpush
 @endsection

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ParteDiario;
 use App\Models\ParteDiarioTrabajador;
+use App\Models\ParteDiarioProduccion;
+use App\Models\ObraConceptoProduccion;
 use App\Models\Obra;
 use App\Models\Trabajador;
 use Illuminate\Http\Request;
@@ -71,7 +73,9 @@ class ParteDiarioController extends Controller
     public function create(Request $request)
     {
         $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
-                     ->with('cliente')
+                     ->with(['cliente', 'conceptosProduccion' => function($q) {
+                         $q->where('activo', true)->orderBy('orden');
+                     }])
                      ->orderBy('nombre')
                      ->get();
 
@@ -82,7 +86,9 @@ class ParteDiarioController extends Controller
         // Pre-seleccionar obra si viene en el request
         $obraSeleccionada = null;
         if ($request->filled('obra_id')) {
-            $obraSeleccionada = Obra::find($request->obra_id);
+            $obraSeleccionada = Obra::with(['conceptosProduccion' => function($q) {
+                $q->where('activo', true)->orderBy('orden');
+            }])->find($request->obra_id);
         }
 
         return view('partes-diarios.create', compact('obras', 'trabajadores', 'obraSeleccionada'));
@@ -113,6 +119,9 @@ class ParteDiarioController extends Controller
             'incidencias' => 'nullable|string',
             'trabajadores' => 'nullable|array',
             'trabajadores.*' => 'exists:trabajadores,id',
+            'producciones' => 'nullable|array',
+            'producciones.*.concepto_id' => 'required|exists:obra_conceptos_produccion,id',
+            'producciones.*.cantidad' => 'required|numeric|min:0',
         ]);
 
         // Verificar que no exista un parte para la misma obra y fecha
@@ -159,6 +168,26 @@ class ParteDiarioController extends Controller
                 }
             }
 
+            // Agregar producciones dinámicas
+            if (!empty($validated['producciones'])) {
+                foreach ($validated['producciones'] as $produccion) {
+                    if ($produccion['cantidad'] > 0) {
+                        $concepto = ObraConceptoProduccion::find($produccion['concepto_id']);
+
+                        ParteDiarioProduccion::create([
+                            'parte_diario_id' => $parte->id,
+                            'concepto_produccion_id' => $concepto->id,
+                            'cantidad' => $produccion['cantidad'],
+                            'precio_unitario' => $concepto->precio_unitario, // snapshot
+                            'importe_calculado' => $produccion['cantidad'] * $concepto->precio_unitario,
+                        ]);
+                    }
+                }
+            }
+
+            // Actualizar importe total del parte
+            $parte->calcularYActualizarImporte();
+
             DB::commit();
 
             return redirect()->route('partes-diarios.show', $parte)
@@ -181,6 +210,7 @@ class ParteDiarioController extends Controller
             'trabajadores.trabajador',
             'lineas',
             'herbicidas',
+            'producciones.concepto',
         ]);
 
         return view('partes-diarios.show', compact('partes_diario'));
@@ -196,6 +226,9 @@ class ParteDiarioController extends Controller
         }
 
         $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
+                     ->with(['conceptosProduccion' => function($q) {
+                         $q->where('activo', true)->orderBy('orden');
+                     }])
                      ->orderBy('nombre')
                      ->get();
 
@@ -203,7 +236,7 @@ class ParteDiarioController extends Controller
                                    ->orderBy('nombre')
                                    ->get();
 
-        $partes_diario->load('trabajadores');
+        $partes_diario->load(['trabajadores', 'producciones.concepto', 'obra.conceptosProduccion']);
 
         return view('partes-diarios.edit', compact('partes_diario', 'obras', 'trabajadores'));
     }
@@ -235,6 +268,9 @@ class ParteDiarioController extends Controller
             'incidencias' => 'nullable|string',
             'trabajadores' => 'nullable|array',
             'trabajadores.*' => 'exists:trabajadores,id',
+            'producciones' => 'nullable|array',
+            'producciones.*.concepto_id' => 'required|exists:obra_conceptos_produccion,id',
+            'producciones.*.cantidad' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -267,6 +303,27 @@ class ParteDiarioController extends Controller
                     ]);
                 }
             }
+
+            // Actualizar producciones dinámicas
+            $partes_diario->producciones()->delete();
+            if (!empty($validated['producciones'])) {
+                foreach ($validated['producciones'] as $produccion) {
+                    if ($produccion['cantidad'] > 0) {
+                        $concepto = ObraConceptoProduccion::find($produccion['concepto_id']);
+
+                        ParteDiarioProduccion::create([
+                            'parte_diario_id' => $partes_diario->id,
+                            'concepto_produccion_id' => $concepto->id,
+                            'cantidad' => $produccion['cantidad'],
+                            'precio_unitario' => $concepto->precio_unitario, // snapshot
+                            'importe_calculado' => $produccion['cantidad'] * $concepto->precio_unitario,
+                        ]);
+                    }
+                }
+            }
+
+            // Actualizar importe total del parte
+            $partes_diario->calcularYActualizarImporte();
 
             DB::commit();
 

@@ -8,7 +8,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Nuevo Fichaje</h1>
-            <p class="text-muted mb-0">Registrar entrada/salida manualmente</p>
+            <p class="text-muted mb-0">
+                @if($esTrabajador ?? false)
+                    Registrar tu entrada/salida del día
+                @else
+                    Registrar entrada/salida manualmente
+                @endif
+            </p>
         </div>
         <a href="{{ route('fichajes.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>Volver
@@ -19,20 +25,31 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('fichajes.store') }}" method="POST">
+                    <form action="{{ route('fichajes.store') }}" method="POST" id="fichajeForm">
                         @csrf
+
+                        {{-- Campos ocultos para GPS --}}
+                        <input type="hidden" name="latitud_entrada" id="latitud_entrada">
+                        <input type="hidden" name="longitud_entrada" id="longitud_entrada">
+
                         <div class="row g-3">
                             <!-- Trabajador -->
                             <div class="col-md-6">
                                 <label class="form-label">Trabajador <span class="text-danger">*</span></label>
-                                <select name="trabajador_id" class="form-select @error('trabajador_id') is-invalid @enderror" required>
-                                    <option value="">Seleccionar trabajador...</option>
-                                    @foreach($trabajadores as $trabajador)
-                                        <option value="{{ $trabajador->id }}" {{ old('trabajador_id') == $trabajador->id ? 'selected' : '' }}>
-                                            {{ $trabajador->nombre }} {{ $trabajador->apellidos }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @if($esTrabajador ?? false)
+                                    {{-- Si es trabajador, mostrar solo su nombre y campo oculto --}}
+                                    <input type="hidden" name="trabajador_id" value="{{ $trabajadorActual->id }}">
+                                    <input type="text" class="form-control" value="{{ $trabajadorActual->nombre }} {{ $trabajadorActual->apellidos }}" readonly>
+                                @else
+                                    <select name="trabajador_id" class="form-select @error('trabajador_id') is-invalid @enderror" required>
+                                        <option value="">Seleccionar trabajador...</option>
+                                        @foreach($trabajadores as $trabajador)
+                                            <option value="{{ $trabajador->id }}" {{ old('trabajador_id') == $trabajador->id ? 'selected' : '' }}>
+                                                {{ $trabajador->nombre }} {{ $trabajador->apellidos }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @endif
                                 @error('trabajador_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -57,8 +74,13 @@
                             <!-- Fecha -->
                             <div class="col-md-4">
                                 <label class="form-label">Fecha <span class="text-danger">*</span></label>
-                                <input type="date" name="fecha" class="form-control @error('fecha') is-invalid @enderror"
-                                       value="{{ old('fecha', date('Y-m-d')) }}" required>
+                                @if($esTrabajador ?? false)
+                                    {{-- Trabajador solo puede fichar hoy --}}
+                                    <input type="date" name="fecha" class="form-control" value="{{ date('Y-m-d') }}" readonly>
+                                @else
+                                    <input type="date" name="fecha" class="form-control @error('fecha') is-invalid @enderror"
+                                           value="{{ old('fecha', date('Y-m-d')) }}" required>
+                                @endif
                                 @error('fecha')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -67,8 +89,13 @@
                             <!-- Hora Entrada -->
                             <div class="col-md-4">
                                 <label class="form-label">Hora Entrada</label>
-                                <input type="time" name="hora_entrada" class="form-control @error('hora_entrada') is-invalid @enderror"
-                                       value="{{ old('hora_entrada') }}">
+                                @if($esTrabajador ?? false)
+                                    <input type="time" name="hora_entrada" id="hora_entrada" class="form-control @error('hora_entrada') is-invalid @enderror"
+                                           value="{{ old('hora_entrada', date('H:i')) }}" readonly>
+                                @else
+                                    <input type="time" name="hora_entrada" class="form-control @error('hora_entrada') is-invalid @enderror"
+                                           value="{{ old('hora_entrada') }}">
+                                @endif
                                 @error('hora_entrada')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -77,12 +104,27 @@
                             <!-- Hora Salida -->
                             <div class="col-md-4">
                                 <label class="form-label">Hora Salida</label>
-                                <input type="time" name="hora_salida" class="form-control @error('hora_salida') is-invalid @enderror"
-                                       value="{{ old('hora_salida') }}">
+                                @if($esTrabajador ?? false)
+                                    <input type="time" name="hora_salida" class="form-control" value="" placeholder="Se registra al salir" disabled>
+                                    <small class="text-muted">La salida se registra después</small>
+                                @else
+                                    <input type="time" name="hora_salida" class="form-control @error('hora_salida') is-invalid @enderror"
+                                           value="{{ old('hora_salida') }}">
+                                @endif
                                 @error('hora_salida')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            @if($esTrabajador ?? false)
+                            <!-- Ubicación GPS (solo para trabajadores) -->
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0" id="gpsStatus">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    <span id="gpsMessage">Obteniendo ubicación...</span>
+                                </div>
+                            </div>
+                            @endif
 
                             <!-- Notas -->
                             <div class="col-12">
@@ -95,8 +137,12 @@
                                 <hr class="my-3">
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('fichajes.index') }}" class="btn btn-secondary">Cancelar</a>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-check-lg me-2"></i>Registrar Fichaje
+                                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                        @if($esTrabajador ?? false)
+                                            <i class="bi bi-box-arrow-in-right me-2"></i>Fichar Entrada
+                                        @else
+                                            <i class="bi bi-check-lg me-2"></i>Registrar Fichaje
+                                        @endif
                                     </button>
                                 </div>
                             </div>
@@ -112,20 +158,100 @@
                     <h6 class="card-title">
                         <i class="bi bi-info-circle me-2"></i>Información
                     </h6>
-                    <p class="card-text small text-muted">
-                        Este formulario es para registrar fichajes manualmente. Las horas se calculan automáticamente
-                        cuando se indican tanto la hora de entrada como la de salida.
-                    </p>
-                    <hr>
-                    <h6 class="text-muted small">Cálculo de horas:</h6>
-                    <ul class="small text-muted mb-0">
-                        <li>Las primeras 8 horas son horas normales</li>
-                        <li>Las horas adicionales se marcan como extras</li>
-                        <li>Solo puede haber un fichaje por trabajador/día</li>
-                    </ul>
+                    @if($esTrabajador ?? false)
+                        <p class="card-text small text-muted">
+                            Al fichar entrada se registrará automáticamente:
+                        </p>
+                        <ul class="small text-muted mb-0">
+                            <li>La hora actual del sistema</li>
+                            <li>Tu ubicación GPS (si está disponible)</li>
+                            <li>La obra seleccionada</li>
+                        </ul>
+                        <hr>
+                        <p class="card-text small text-muted mb-0">
+                            <strong>Para fichar salida:</strong> Ve al listado de fichajes y usa el botón "Fichar Salida" en tu registro de hoy.
+                        </p>
+                    @else
+                        <p class="card-text small text-muted">
+                            Este formulario es para registrar fichajes manualmente. Las horas se calculan automáticamente
+                            cuando se indican tanto la hora de entrada como la de salida.
+                        </p>
+                        <hr>
+                        <h6 class="text-muted small">Cálculo de horas:</h6>
+                        <ul class="small text-muted mb-0">
+                            <li>Las primeras 8 horas son horas normales</li>
+                            <li>Las horas adicionales se marcan como extras</li>
+                            <li>Solo puede haber un fichaje por trabajador/día</li>
+                        </ul>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@if($esTrabajador ?? false)
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const latInput = document.getElementById('latitud_entrada');
+    const lngInput = document.getElementById('longitud_entrada');
+    const gpsStatus = document.getElementById('gpsStatus');
+    const gpsMessage = document.getElementById('gpsMessage');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    // Actualizar hora actual
+    document.getElementById('hora_entrada').value = new Date().toTimeString().slice(0, 5);
+
+    // Obtener ubicación GPS
+    if (navigator.geolocation) {
+        btnSubmit.disabled = true;
+        gpsMessage.textContent = 'Obteniendo ubicación GPS...';
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                latInput.value = position.coords.latitude;
+                lngInput.value = position.coords.longitude;
+                gpsStatus.classList.remove('alert-info');
+                gpsStatus.classList.add('alert-success');
+                gpsMessage.innerHTML = '<i class="bi bi-check-circle me-1"></i> Ubicación obtenida: ' +
+                    position.coords.latitude.toFixed(6) + ', ' + position.coords.longitude.toFixed(6);
+                btnSubmit.disabled = false;
+            },
+            function(error) {
+                gpsStatus.classList.remove('alert-info');
+                gpsStatus.classList.add('alert-warning');
+                let mensaje = 'No se pudo obtener la ubicación: ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        mensaje += 'Permiso denegado. Activa la ubicación en tu navegador.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        mensaje += 'Ubicación no disponible.';
+                        break;
+                    case error.TIMEOUT:
+                        mensaje += 'Tiempo de espera agotado.';
+                        break;
+                    default:
+                        mensaje += 'Error desconocido.';
+                }
+                gpsMessage.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> ' + mensaje;
+                // Permitir fichar aunque no haya GPS
+                btnSubmit.disabled = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        gpsStatus.classList.remove('alert-info');
+        gpsStatus.classList.add('alert-warning');
+        gpsMessage.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Tu navegador no soporta geolocalización.';
+    }
+});
+</script>
+@endpush
+@endif

@@ -87,7 +87,12 @@ class ObraController extends Controller
         }
         $codigoSugerido = sprintf("OBR-%s-%04d", $año, $numero);
 
-        return view('obras.create', compact('tipos', 'clientes', 'encargados', 'codigoSugerido'));
+        // Obras con conceptos de producción para copiar
+        $obrasConConceptos = Obra::whereHas('conceptosProduccion')
+            ->orderBy('nombre')
+            ->get();
+
+        return view('obras.create', compact('tipos', 'clientes', 'encargados', 'codigoSugerido', 'obrasConConceptos'));
     }
 
     public function store(Request $request)
@@ -150,19 +155,47 @@ class ObraController extends Controller
             $validated['margen_previsto'] = $validated['presupuesto'] - $validated['coste_estimado'];
         }
 
-        $obra = Obra::create($validated);
+        DB::beginTransaction();
+        try {
+            $obra = Obra::create($validated);
 
-        // Registrar en historial
-        ObraHistorial::create([
-            'obra_id' => $obra->id,
-            'estado_anterior' => null,
-            'estado_nuevo' => 'presentada',
-            'comentario' => 'Obra creada',
-            'cambiado_por' => auth()->id(),
-        ]);
+            // Registrar en historial
+            ObraHistorial::create([
+                'obra_id' => $obra->id,
+                'estado_anterior' => null,
+                'estado_nuevo' => 'presentada',
+                'comentario' => 'Obra creada',
+                'cambiado_por' => auth()->id(),
+            ]);
 
-        return redirect()->route('obras.show', $obra)
-            ->with('success', 'Obra creada exitosamente.');
+            // Crear conceptos de producción si se proporcionaron
+            if ($request->has('conceptos') && is_array($request->conceptos)) {
+                foreach ($request->conceptos as $concepto) {
+                    if (!empty($concepto['codigo']) && !empty($concepto['nombre'])) {
+                        $obra->conceptosProduccion()->create([
+                            'codigo' => $concepto['codigo'],
+                            'nombre' => $concepto['nombre'],
+                            'descripcion' => $concepto['descripcion'] ?? null,
+                            'categoria' => $concepto['categoria'] ?? 'otro',
+                            'unidad' => $concepto['unidad'] ?? 'm2',
+                            'precio_unitario' => $concepto['precio_unitario'] ?? 0,
+                            'activo' => true,
+                            'orden' => $concepto['orden'] ?? 0,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('obras.show', $obra)
+                ->with('success', 'Obra creada exitosamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                ->withErrors(['error' => 'Error al crear la obra: ' . $e->getMessage()]);
+        }
     }
 
     public function show(Obra $obra)
@@ -181,6 +214,12 @@ class ObraController extends Controller
             'partesDiarios' => function ($q) {
                 $q->orderByDesc('fecha')->limit(10);
             },
+            'conceptosProduccion' => function ($q) {
+                $q->orderBy('orden')->orderBy('codigo');
+            },
+            'discrepancias' => function ($q) {
+                $q->orderByDesc('periodo_mes')->limit(12);
+            },
         ]);
 
         // Estadísticas de la obra
@@ -190,6 +229,10 @@ class ObraController extends Controller
             'total_ingresos' => $obra->ingresos()->sum('importe_total'),
             'total_gastos' => $obra->gastos()->sum('importe_total'),
             'progreso' => $this->calcularProgreso($obra),
+            'total_producido' => $obra->importe_producido_acumulado,
+            'total_pendiente' => $obra->importe_pendiente_acumulado,
+            'total_conceptos' => $obra->conceptosProduccion->count(),
+            'conceptos_activos' => $obra->conceptosProduccion->where('activo', true)->count(),
         ];
 
         // Trabajadores y cuadrillas disponibles para asignar
@@ -249,7 +292,16 @@ class ObraController extends Controller
         $clientes = Cliente::where('activo', true)->orderBy('nombre_comercial')->get();
         $encargados = User::role('Encargado')->orderBy('name')->get();
 
-        return view('obras.edit', compact('obra', 'tipos', 'clientes', 'encargados'));
+        // Cargar conceptos de producción
+        $obra->load('conceptosProduccion');
+
+        // Obras con conceptos de producción para copiar
+        $obrasConConceptos = Obra::where('id', '!=', $obra->id)
+            ->whereHas('conceptosProduccion')
+            ->orderBy('nombre')
+            ->get();
+
+        return view('obras.edit', compact('obra', 'tipos', 'clientes', 'encargados', 'obrasConConceptos'));
     }
 
     public function update(Request $request, Obra $obra)
@@ -458,7 +510,7 @@ class ObraController extends Controller
             'tipo' => $validated['tipo'],
             'nombre' => $validated['nombre'],
             'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
-            'descripcion' => $validated['descripcion'],
+            'descripcion' => $validated['descripcion'] ?? null,
             'fecha_documento' => $validated['fecha_documento'] ?? now(),
             'subido_por' => auth()->id(),
         ]);

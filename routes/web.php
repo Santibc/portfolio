@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrabajadorController;
+use App\Http\Controllers\TrabajadorBonoController;
 use App\Http\Controllers\CuadrillaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ObraController;
+use App\Http\Controllers\ObraConceptoProduccionController;
+use App\Http\Controllers\ObraDiscrepanciaController;
 use App\Http\Controllers\FichajeController;
 use App\Http\Controllers\ParteDiarioController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -36,17 +39,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ==========================================
+// RUTAS DE BONOS DE TRABAJADORES (antes de rutas con parámetro {trabajador})
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->group(function () {
+    Route::get('trabajadores/bonos', [TrabajadorBonoController::class, 'index'])->name('trabajadores.bonos.index');
+    Route::get('trabajadores/bonos/create', [TrabajadorBonoController::class, 'create'])->name('trabajadores.bonos.create');
+    Route::post('trabajadores/bonos', [TrabajadorBonoController::class, 'store'])->name('trabajadores.bonos.store');
+    Route::get('trabajadores/bonos/{bono}/edit', [TrabajadorBonoController::class, 'edit'])->name('trabajadores.bonos.edit');
+    Route::put('trabajadores/bonos/{bono}', [TrabajadorBonoController::class, 'update'])->name('trabajadores.bonos.update');
+    Route::delete('trabajadores/bonos/{bono}', [TrabajadorBonoController::class, 'destroy'])->name('trabajadores.bonos.destroy');
+    Route::post('trabajadores/bonos/{bono}/pagar', [TrabajadorBonoController::class, 'marcarPagado'])->name('trabajadores.bonos.pagar');
+    Route::post('trabajadores/bonos/{bono}/pendiente', [TrabajadorBonoController::class, 'marcarPendiente'])->name('trabajadores.bonos.pendiente');
+});
+
+// ==========================================
 // RUTAS DE TRABAJADORES
 // ==========================================
+Route::middleware(['auth', 'verified', 'permission:crear_trabajadores'])->group(function () {
+    Route::get('trabajadores/create', [TrabajadorController::class, 'create'])->name('trabajadores.create');
+    Route::post('trabajadores', [TrabajadorController::class, 'store'])->name('trabajadores.store');
+});
+
 Route::middleware(['auth', 'verified', 'permission:ver_trabajadores'])->group(function () {
     // Ver trabajadores
     Route::get('trabajadores', [TrabajadorController::class, 'index'])->name('trabajadores.index');
     Route::get('trabajadores/{trabajador}', [TrabajadorController::class, 'show'])->name('trabajadores.show');
-});
-
-Route::middleware(['auth', 'verified', 'permission:crear_trabajadores'])->group(function () {
-    Route::get('trabajadores/create', [TrabajadorController::class, 'create'])->name('trabajadores.create');
-    Route::post('trabajadores', [TrabajadorController::class, 'store'])->name('trabajadores.store');
 });
 
 Route::middleware(['auth', 'verified', 'permission:editar_trabajadores'])->group(function () {
@@ -77,6 +94,11 @@ Route::middleware(['auth', 'verified', 'permission:editar_trabajadores'])->group
 
 Route::middleware(['auth', 'verified', 'permission:eliminar_trabajadores'])->group(function () {
     Route::delete('trabajadores/{trabajador}', [TrabajadorController::class, 'destroy'])->name('trabajadores.destroy');
+});
+
+// AJAX para obtener bonos de un trabajador (después de la ruta {trabajador})
+Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->group(function () {
+    Route::get('trabajadores/{trabajador}/bonos', [TrabajadorBonoController::class, 'porTrabajador'])->name('trabajadores.bonos.por-trabajador');
 });
 
 // ==========================================
@@ -186,6 +208,30 @@ Route::middleware(['auth', 'verified', 'permission:editar_obras'])->group(functi
 
 Route::middleware(['auth', 'verified', 'permission:eliminar_obras'])->group(function () {
     Route::delete('obras/{obra}', [ObraController::class, 'destroy'])->name('obras.destroy');
+});
+
+// ==========================================
+// RUTAS DE CONCEPTOS DE PRODUCCIÓN (sub-recurso de obras)
+// ==========================================
+Route::middleware(['auth', 'verified', 'permission:editar_obras'])->prefix('obras/{obra}/conceptos')->name('obras.conceptos.')->group(function () {
+    Route::get('/', [ObraConceptoProduccionController::class, 'index'])->name('index');
+    Route::post('/', [ObraConceptoProduccionController::class, 'store'])->name('store');
+    Route::put('/{concepto}', [ObraConceptoProduccionController::class, 'update'])->name('update');
+    Route::delete('/{concepto}', [ObraConceptoProduccionController::class, 'destroy'])->name('destroy');
+    Route::post('/duplicate/{obraOrigen}', [ObraConceptoProduccionController::class, 'duplicate'])->name('duplicate');
+});
+
+// ==========================================
+// RUTAS DE DISCREPANCIAS DE VALORACIÓN (sub-recurso de obras)
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->prefix('obras/{obra}/discrepancias')->name('obras.discrepancias.')->group(function () {
+    Route::get('/', [ObraDiscrepanciaController::class, 'index'])->name('index');
+    Route::get('/create', [ObraDiscrepanciaController::class, 'create'])->name('create');
+    Route::post('/', [ObraDiscrepanciaController::class, 'store'])->name('store');
+    Route::get('/{discrepancia}', [ObraDiscrepanciaController::class, 'show'])->name('show');
+    Route::get('/{discrepancia}/edit', [ObraDiscrepanciaController::class, 'edit'])->name('edit');
+    Route::put('/{discrepancia}', [ObraDiscrepanciaController::class, 'update'])->name('update');
+    Route::post('/{discrepancia}/resolver', [ObraDiscrepanciaController::class, 'marcarResuelto'])->name('resolver');
 });
 
 // ==========================================

@@ -16,9 +16,31 @@ class FichajeController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
+        $esTrabajador = $user->hasRole('Trabajador');
+        $trabajadorActual = null;
+        $fichajeHoy = null;
+
         $query = Fichaje::with(['trabajador', 'obra', 'validadoPor']);
 
-        // Filtros
+        // Si es trabajador, solo ver sus propios fichajes
+        if ($esTrabajador) {
+            $trabajadorActual = Trabajador::where('user_id', $user->id)->first();
+
+            if (!$trabajadorActual) {
+                return redirect()->route('dashboard')
+                    ->with('error', 'Tu cuenta no está vinculada a un trabajador. Contacta con administración.');
+            }
+
+            $query->where('trabajador_id', $trabajadorActual->id);
+
+            // Verificar si tiene fichaje hoy (para mostrar botón de salida)
+            $fichajeHoy = Fichaje::where('trabajador_id', $trabajadorActual->id)
+                                 ->where('fecha', now()->toDateString())
+                                 ->first();
+        }
+
+        // Filtros (solo para no-trabajadores o filtros básicos)
         if ($request->filled('fecha_desde')) {
             $query->where('fecha', '>=', $request->fecha_desde);
         }
@@ -27,7 +49,8 @@ class FichajeController extends Controller
             $query->where('fecha', '<=', $request->fecha_hasta);
         }
 
-        if ($request->filled('trabajador_id')) {
+        // Solo admin/encargados pueden filtrar por trabajador
+        if (!$esTrabajador && $request->filled('trabajador_id')) {
             $query->where('trabajador_id', $request->trabajador_id);
         }
 
@@ -49,16 +72,27 @@ class FichajeController extends Controller
                           ->orderBy('hora_entrada', 'desc')
                           ->paginate(50);
 
-        // Estadísticas del período
-        $stats = [
-            'total_fichajes' => $query->count(),
-            'pendientes_validar' => Fichaje::pendientesValidar()->count(),
-            'horas_totales' => Fichaje::whereNotNull('horas_trabajadas')
-                                      ->where('fecha', '>=', now()->startOfMonth())
-                                      ->sum('horas_trabajadas'),
-            'horas_extra' => Fichaje::where('fecha', '>=', now()->startOfMonth())
-                                    ->sum('horas_extra'),
-        ];
+        // Estadísticas del período (filtradas para trabajador)
+        if ($esTrabajador && $trabajadorActual) {
+            $statsQuery = Fichaje::where('trabajador_id', $trabajadorActual->id)
+                                 ->where('fecha', '>=', now()->startOfMonth());
+            $stats = [
+                'total_fichajes' => $statsQuery->count(),
+                'pendientes_validar' => (clone $statsQuery)->where('validado', false)->count(),
+                'horas_totales' => (clone $statsQuery)->sum('horas_trabajadas'),
+                'horas_extra' => (clone $statsQuery)->sum('horas_extra'),
+            ];
+        } else {
+            $stats = [
+                'total_fichajes' => Fichaje::where('fecha', '>=', now()->startOfMonth())->count(),
+                'pendientes_validar' => Fichaje::pendientesValidar()->count(),
+                'horas_totales' => Fichaje::whereNotNull('horas_trabajadas')
+                                          ->where('fecha', '>=', now()->startOfMonth())
+                                          ->sum('horas_trabajadas'),
+                'horas_extra' => Fichaje::where('fecha', '>=', now()->startOfMonth())
+                                        ->sum('horas_extra'),
+            ];
+        }
 
         $trabajadores = Trabajador::where('activo', true)
                                    ->orderBy('nombre')
@@ -68,7 +102,10 @@ class FichajeController extends Controller
                      ->orderBy('nombre')
                      ->get();
 
-        return view('fichajes.index', compact('fichajes', 'trabajadores', 'obras', 'stats'));
+        return view('fichajes.index', compact(
+            'fichajes', 'trabajadores', 'obras', 'stats',
+            'esTrabajador', 'trabajadorActual', 'fichajeHoy'
+        ));
     }
 
     /**
@@ -76,15 +113,31 @@ class FichajeController extends Controller
      */
     public function create()
     {
-        $trabajadores = Trabajador::where('activo', true)
-                                   ->orderBy('nombre')
-                                   ->get();
+        $user = Auth::user();
+        $esTrabajador = $user->hasRole('Trabajador');
+        $trabajadorActual = null;
+
+        // Si es trabajador, solo puede fichar para sí mismo
+        if ($esTrabajador) {
+            $trabajadorActual = Trabajador::where('user_id', $user->id)->first();
+
+            if (!$trabajadorActual) {
+                return redirect()->route('fichajes.index')
+                    ->with('error', 'Tu cuenta de usuario no está vinculada a un trabajador. Contacta con administración.');
+            }
+
+            $trabajadores = collect([$trabajadorActual]);
+        } else {
+            $trabajadores = Trabajador::where('activo', true)
+                                       ->orderBy('nombre')
+                                       ->get();
+        }
 
         $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
                      ->orderBy('nombre')
                      ->get();
 
-        return view('fichajes.create', compact('trabajadores', 'obras'));
+        return view('fichajes.create', compact('trabajadores', 'obras', 'esTrabajador', 'trabajadorActual'));
     }
 
     /**
@@ -98,6 +151,8 @@ class FichajeController extends Controller
             'fecha' => 'required|date',
             'hora_entrada' => 'nullable|date_format:H:i',
             'hora_salida' => 'nullable|date_format:H:i|after:hora_entrada',
+            'latitud_entrada' => 'nullable|numeric',
+            'longitud_entrada' => 'nullable|numeric',
             'notas' => 'nullable|string|max:1000',
         ]);
 
@@ -133,6 +188,8 @@ class FichajeController extends Controller
             'fecha' => $validated['fecha'],
             'hora_entrada' => $validated['hora_entrada'] ?? null,
             'hora_salida' => $validated['hora_salida'] ?? null,
+            'latitud_entrada' => $validated['latitud_entrada'] ?? null,
+            'longitud_entrada' => $validated['longitud_entrada'] ?? null,
             'horas_trabajadas' => $horasTrabajadas,
             'horas_extra' => $horasExtra,
             'notas' => $validated['notas'] ?? null,

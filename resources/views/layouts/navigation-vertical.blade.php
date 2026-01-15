@@ -85,18 +85,29 @@
             </a>
         </div>
         @endcan
+
+        @role('Administrador|Contabilidad')
+        <div class="nav-item {{ request()->routeIs('trabajadores.bonos.*') ? 'active' : '' }}">
+            <a href="{{ route('trabajadores.bonos.index') }}" class="nav-link">
+                <i class="bi bi-gift"></i>
+                <span>Bonos y Primas</span>
+            </a>
+        </div>
+        @endrole
     @endif
 
     @if($isAdmin)
         {{-- SECCIÓN ADMIN --}}
         <div class="nav-section-title">Administración</div>
 
+        {{-- Temporalmente oculto hasta crear la vista
         <div class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <a href="{{ route('admin.dashboard') }}" class="nav-link">
                 <i class="bi bi-speedometer2"></i>
                 <span>Panel Admin</span>
             </a>
         </div>
+        --}}
 
         <div class="nav-item {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
             <a href="{{ route('admin.usuarios.index') }}" class="nav-link">

@@ -47,6 +47,8 @@ class Obra extends Model
         'centro_coste',
         'encargado_id',
         'notas',
+        'importe_producido_acumulado',
+        'importe_pendiente_acumulado',
     ];
 
     protected $casts = [
@@ -61,6 +63,8 @@ class Obra extends Model
         'coordenadas_lat' => 'decimal:8',
         'coordenadas_lng' => 'decimal:8',
         'tiene_penalizaciones' => 'boolean',
+        'importe_producido_acumulado' => 'decimal:2',
+        'importe_pendiente_acumulado' => 'decimal:2',
     ];
 
     // Relaciones
@@ -160,10 +164,57 @@ class Obra extends Model
         return $this->hasMany(PrimaTrabajador::class);
     }
 
+    public function conceptosProduccion(): HasMany
+    {
+        return $this->hasMany(ObraConceptoProduccion::class)->orderBy('orden');
+    }
+
+    public function discrepancias(): HasMany
+    {
+        return $this->hasMany(ObraDiscrepanciaValoracion::class)->orderByDesc('periodo_mes');
+    }
+
+    public function bonos(): HasMany
+    {
+        return $this->hasMany(TrabajadorBono::class);
+    }
+
     // Accessors
     public function getCodigoNombreAttribute(): string
     {
         return "{$this->codigo} - {$this->nombre}";
+    }
+
+    public function getImporteProducidoFormateadoAttribute(): string
+    {
+        return number_format($this->importe_producido_acumulado, 2, ',', '.') . ' €';
+    }
+
+    public function getImportePendienteFormateadoAttribute(): string
+    {
+        return number_format($this->importe_pendiente_acumulado, 2, ',', '.') . ' €';
+    }
+
+    // Métodos helper
+    public function calcularTotalProducido(): float
+    {
+        return $this->partesDiarios()
+            ->whereIn('estado', ['completado', 'validado'])
+            ->sum('importe_total_calculado');
+    }
+
+    public function calcularPendienteTotal(): float
+    {
+        return $this->discrepancias()
+            ->whereIn('estado', ['pendiente', 'parcial'])
+            ->sum('importe_pendiente');
+    }
+
+    public function actualizarImportesAcumulados(): void
+    {
+        $this->importe_producido_acumulado = $this->calcularTotalProducido();
+        $this->importe_pendiente_acumulado = $this->calcularPendienteTotal();
+        $this->save();
     }
 
     // Scopes

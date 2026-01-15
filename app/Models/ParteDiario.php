@@ -34,6 +34,7 @@ class ParteDiario extends Model
         'cliente_nombre',
         'estado',
         'creado_por',
+        'importe_total_calculado',
     ];
 
     protected $casts = [
@@ -43,6 +44,7 @@ class ParteDiario extends Model
         'desbroce_p6_m2' => 'decimal:2',
         'limpieza_p8_m2' => 'decimal:2',
         'herbicida_p4_m2' => 'decimal:2',
+        'importe_total_calculado' => 'decimal:2',
     ];
 
     public function obra(): BelongsTo
@@ -73,6 +75,30 @@ class ParteDiario extends Model
     public function primas(): HasMany
     {
         return $this->hasMany(PrimaTrabajador::class);
+    }
+
+    public function producciones(): HasMany
+    {
+        return $this->hasMany(ParteDiarioProduccion::class)->with('concepto');
+    }
+
+    // Accessors
+    public function getImporteTotalAttribute()
+    {
+        return $this->producciones->sum('importe_calculado');
+    }
+
+    public function getImporteTotalFormateadoAttribute(): string
+    {
+        return number_format($this->importe_total_calculado, 2, ',', '.') . ' €';
+    }
+
+    // Métodos helper
+    public function calcularYActualizarImporte(): float
+    {
+        $total = $this->producciones()->sum('importe_calculado');
+        $this->update(['importe_total_calculado' => $total]);
+        return $total;
     }
 
     // Scopes

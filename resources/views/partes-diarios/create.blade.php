@@ -34,6 +34,7 @@
                                         <option value="{{ $obra->id }}"
                                                 data-linea="{{ $obra->linea }}"
                                                 data-trayecto="{{ $obra->trayecto }}"
+                                                data-conceptos="{{ $obra->conceptosProduccion->toJson() }}"
                                                 {{ (old('obra_id', $obraSeleccionada?->id) == $obra->id) ? 'selected' : '' }}>
                                             {{ $obra->nombre }}
                                         </option>
@@ -96,66 +97,63 @@
                     </div>
                 </div>
 
-                <!-- Producción -->
+                <!-- Producción Dinámica (según conceptos de la obra) -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0">Producción del Día</h5>
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Producción del Día
+                        </h5>
+                        <span class="badge bg-primary" id="totalImporteLabel">0.00 €</span>
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <small class="text-muted fw-semibold">DESBROCE</small>
+                        <div id="produccionContainer">
+                            <!-- Se carga dinámicamente según la obra seleccionada -->
+                            <div class="text-center py-4 text-muted" id="noObraSelected">
+                                <i class="bi bi-arrow-up-circle fs-1 d-block mb-2"></i>
+                                <p class="mb-0">Selecciona una obra para ver sus conceptos de producción</p>
                             </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce Total (m²)</label>
-                                <input type="number" name="desbroce_total_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_total_m2', 0) }}">
+                            <div class="text-center py-4 text-muted d-none" id="noConceptos">
+                                <i class="bi bi-exclamation-circle fs-1 d-block mb-2"></i>
+                                <p class="mb-0">Esta obra no tiene conceptos de producción configurados</p>
+                                <small>Configura los conceptos en la sección de Obras</small>
                             </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce P5 (m²)</label>
-                                <input type="number" name="desbroce_p5_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_p5_m2', 0) }}">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Desbroce P6 (m²)</label>
-                                <input type="number" name="desbroce_p6_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('desbroce_p6_m2', 0) }}">
-                            </div>
-
-                            <div class="col-12">
-                                <hr class="my-2">
-                                <small class="text-muted fw-semibold">OTROS TRABAJOS</small>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Limpieza P8 (m²)</label>
-                                <input type="number" name="limpieza_p8_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('limpieza_p8_m2', 0) }}">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label class="form-label">Herbicida P4 (m²)</label>
-                                <input type="number" name="herbicida_p4_m2" class="form-control"
-                                       step="0.01" min="0" value="{{ old('herbicida_p4_m2', 0) }}">
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Talas (uds)</label>
-                                <input type="number" name="talas_unidades" class="form-control"
-                                       min="0" value="{{ old('talas_unidades', 0) }}">
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Podas (uds)</label>
-                                <input type="number" name="podas_unidades" class="form-control"
-                                       min="0" value="{{ old('podas_unidades', 0) }}">
+                            <div class="d-none" id="conceptosTableWrapper">
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0" id="conceptosTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 80px">Código</th>
+                                                <th>Concepto</th>
+                                                <th style="width: 100px">Unidad</th>
+                                                <th style="width: 120px" class="text-end">Precio Unit.</th>
+                                                <th style="width: 120px">Cantidad</th>
+                                                <th style="width: 120px" class="text-end">Importe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="conceptosTableBody">
+                                            <!-- Se llena dinámicamente -->
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="5" class="text-end">Total:</th>
+                                                <th class="text-end" id="totalImporte">0.00 €</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Campos legacy ocultos (para compatibilidad temporal) -->
+                <input type="hidden" name="desbroce_total_m2" value="0">
+                <input type="hidden" name="desbroce_p5_m2" value="0">
+                <input type="hidden" name="desbroce_p6_m2" value="0">
+                <input type="hidden" name="limpieza_p8_m2" value="0">
+                <input type="hidden" name="herbicida_p4_m2" value="0">
+                <input type="hidden" name="talas_unidades" value="0">
+                <input type="hidden" name="podas_unidades" value="0">
 
                 <!-- Observaciones -->
                 <div class="card border-0 shadow-sm mb-4">
@@ -236,11 +234,134 @@
 
 @push('scripts')
 <script>
-    // Auto-rellenar datos ADIF al seleccionar obra
-    document.getElementById('obraSelect').addEventListener('change', function() {
+    const obraSelect = document.getElementById('obraSelect');
+    const noObraSelected = document.getElementById('noObraSelected');
+    const noConceptos = document.getElementById('noConceptos');
+    const conceptosTableWrapper = document.getElementById('conceptosTableWrapper');
+    const conceptosTableBody = document.getElementById('conceptosTableBody');
+    const totalImporte = document.getElementById('totalImporte');
+    const totalImporteLabel = document.getElementById('totalImporteLabel');
+
+    // Auto-rellenar datos ADIF y cargar conceptos al seleccionar obra
+    obraSelect.addEventListener('change', function() {
         const option = this.options[this.selectedIndex];
         document.getElementById('lineaInput').value = option.dataset.linea || '';
         document.getElementById('trayectoInput').value = option.dataset.trayecto || '';
+
+        loadConceptos(option);
+    });
+
+    function loadConceptos(option) {
+        const obraId = option.value;
+
+        // Reset
+        conceptosTableBody.innerHTML = '';
+        noObraSelected.classList.add('d-none');
+        noConceptos.classList.add('d-none');
+        conceptosTableWrapper.classList.add('d-none');
+
+        if (!obraId) {
+            noObraSelected.classList.remove('d-none');
+            updateTotals();
+            return;
+        }
+
+        try {
+            const conceptos = JSON.parse(option.dataset.conceptos || '[]');
+
+            if (conceptos.length === 0) {
+                noConceptos.classList.remove('d-none');
+                updateTotals();
+                return;
+            }
+
+            // Build table rows
+            conceptos.forEach((concepto, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><code class="fw-bold">${concepto.codigo}</code></td>
+                    <td>
+                        ${concepto.nombre}
+                        <input type="hidden" name="producciones[${index}][concepto_id]" value="${concepto.id}">
+                    </td>
+                    <td><span class="badge bg-secondary-subtle text-secondary">${concepto.unidad}</span></td>
+                    <td class="text-end">${formatCurrency(concepto.precio_unitario)}</td>
+                    <td>
+                        <input type="number"
+                               name="producciones[${index}][cantidad]"
+                               class="form-control form-control-sm cantidad-input"
+                               step="0.01"
+                               min="0"
+                               value="0"
+                               data-precio="${concepto.precio_unitario}"
+                               data-row="${index}">
+                    </td>
+                    <td class="text-end fw-semibold importe-cell" id="importe-${index}">0.00 €</td>
+                `;
+                conceptosTableBody.appendChild(row);
+            });
+
+            // Add event listeners to cantidad inputs
+            document.querySelectorAll('.cantidad-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    updateRowImporte(this);
+                    updateTotals();
+                });
+            });
+
+            conceptosTableWrapper.classList.remove('d-none');
+            updateTotals();
+
+        } catch (e) {
+            console.error('Error parsing conceptos:', e);
+            noConceptos.classList.remove('d-none');
+        }
+    }
+
+    function updateRowImporte(input) {
+        const cantidad = parseFloat(input.value) || 0;
+        const precio = parseFloat(input.dataset.precio) || 0;
+        const row = input.dataset.row;
+        const importe = cantidad * precio;
+
+        document.getElementById(`importe-${row}`).textContent = formatCurrency(importe);
+    }
+
+    function updateTotals() {
+        let total = 0;
+        document.querySelectorAll('.cantidad-input').forEach(input => {
+            const cantidad = parseFloat(input.value) || 0;
+            const precio = parseFloat(input.dataset.precio) || 0;
+            total += cantidad * precio;
+        });
+
+        const formattedTotal = formatCurrency(total);
+        totalImporte.textContent = formattedTotal;
+        totalImporteLabel.textContent = formattedTotal;
+
+        // Color coding
+        if (total > 0) {
+            totalImporteLabel.classList.remove('bg-primary');
+            totalImporteLabel.classList.add('bg-success');
+        } else {
+            totalImporteLabel.classList.remove('bg-success');
+            totalImporteLabel.classList.add('bg-primary');
+        }
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(value);
+    }
+
+    // Initialize on page load if obra is pre-selected
+    document.addEventListener('DOMContentLoaded', function() {
+        if (obraSelect.value) {
+            const option = obraSelect.options[obraSelect.selectedIndex];
+            loadConceptos(option);
+        }
     });
 </script>
 @endpush

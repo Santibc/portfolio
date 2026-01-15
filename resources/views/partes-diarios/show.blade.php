@@ -128,69 +128,119 @@
                 </div>
             </div>
 
-            <!-- Producción -->
+            <!-- Producción Valorada -->
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Producción del Día</h5>
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>Producción Valorada
+                    </h5>
+                    <span class="badge bg-success fs-6">{{ $partes_diario->importe_total_formateado }}</span>
                 </div>
                 <div class="card-body">
-                    <div class="row g-4">
-                        <!-- Desbroce -->
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">Desbroce</h6>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h2 class="mb-1 text-primary">{{ number_format($partes_diario->desbroce_total_m2, 0, ',', '.') }}</h2>
-                                        <small class="text-muted">Total m²</small>
+                    @if($partes_diario->producciones->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Concepto</th>
+                                        <th class="text-center">Unidad</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio Unit.</th>
+                                        <th class="text-end">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($partes_diario->producciones as $produccion)
+                                    <tr>
+                                        <td><code class="fw-bold">{{ $produccion->concepto->codigo }}</code></td>
+                                        <td>{{ $produccion->concepto->nombre }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary-subtle text-secondary">{{ $produccion->concepto->unidad }}</span>
+                                        </td>
+                                        <td class="text-end fw-semibold">{{ number_format($produccion->cantidad, 2, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($produccion->precio_unitario, 2, ',', '.') }} €</td>
+                                        <td class="text-end fw-bold text-success">{{ number_format($produccion->importe_calculado, 2, ',', '.') }} €</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="5" class="text-end">Total del Día:</th>
+                                        <th class="text-end text-success fs-5">{{ $partes_diario->importe_total_formateado }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    @else
+                        <!-- Datos legacy (para partes sin producción valorada) -->
+                        <div class="row g-4">
+                            @if($partes_diario->desbroce_total_m2 > 0 || $partes_diario->desbroce_p5_m2 > 0 || $partes_diario->desbroce_p6_m2 > 0)
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Desbroce</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h2 class="mb-1 text-primary">{{ number_format($partes_diario->desbroce_total_m2, 0, ',', '.') }}</h2>
+                                            <small class="text-muted">Total m²</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p5_m2, 0, ',', '.') }}</h3>
-                                        <small class="text-muted">P5 m²</small>
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p5_m2, 0, ',', '.') }}</h3>
+                                            <small class="text-muted">P5 m²</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p6_m2, 0, ',', '.') }}</h3>
-                                        <small class="text-muted">P6 m²</small>
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p6_m2, 0, ',', '.') }}</h3>
+                                            <small class="text-muted">P6 m²</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            @endif
 
-                        <!-- Otros trabajos -->
-                        <div class="col-12">
-                            <h6 class="text-muted mb-3">Otros Trabajos</h6>
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ number_format($partes_diario->limpieza_p8_m2, 0, ',', '.') }}</h3>
-                                        <small class="text-muted">Limpieza P8 m²</small>
+                            @if($partes_diario->limpieza_p8_m2 > 0 || $partes_diario->herbicida_p4_m2 > 0 || $partes_diario->talas_unidades > 0 || $partes_diario->podas_unidades > 0)
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3">Otros Trabajos</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ number_format($partes_diario->limpieza_p8_m2, 0, ',', '.') }}</h3>
+                                            <small class="text-muted">Limpieza P8 m²</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ number_format($partes_diario->herbicida_p4_m2, 0, ',', '.') }}</h3>
-                                        <small class="text-muted">Herbicida P4 m²</small>
+                                    <div class="col-md-3">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ number_format($partes_diario->herbicida_p4_m2, 0, ',', '.') }}</h3>
+                                            <small class="text-muted">Herbicida P4 m²</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ $partes_diario->talas_unidades }}</h3>
-                                        <small class="text-muted">Talas (uds)</small>
+                                    <div class="col-md-3">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ $partes_diario->talas_unidades }}</h3>
+                                            <small class="text-muted">Talas (uds)</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="bg-light rounded p-3 text-center">
-                                        <h3 class="mb-1">{{ $partes_diario->podas_unidades }}</h3>
-                                        <small class="text-muted">Podas (uds)</small>
+                                    <div class="col-md-3">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <h3 class="mb-1">{{ $partes_diario->podas_unidades }}</h3>
+                                            <small class="text-muted">Podas (uds)</small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            @endif
+
+                            @if($partes_diario->desbroce_total_m2 == 0 && $partes_diario->desbroce_p5_m2 == 0 && $partes_diario->limpieza_p8_m2 == 0)
+                            <div class="col-12 text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                <p class="mb-0">No hay producción registrada</p>
+                            </div>
+                            @endif
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
 

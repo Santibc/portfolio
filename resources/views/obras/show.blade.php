@@ -52,7 +52,7 @@
 
     <!-- Estadísticas -->
     <div class="row g-3 mb-4">
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h3 class="mb-0 text-primary">{{ $stats['total_trabajadores'] }}</h3>
@@ -60,31 +60,31 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h3 class="mb-0 text-info">{{ $stats['total_partes'] }}</h3>
-                    <small class="text-muted">Partes Diarios</small>
+                    <small class="text-muted">Partes</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h3 class="mb-0 text-success">{{ number_format($stats['total_ingresos'], 0, ',', '.') }}€</h3>
-                    <small class="text-muted">Ingresos</small>
+                    <h3 class="mb-0 text-success">{{ number_format($stats['total_producido'], 0, ',', '.') }}€</h3>
+                    <small class="text-muted">Producido</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h3 class="mb-0 text-danger">{{ number_format($stats['total_gastos'], 0, ',', '.') }}€</h3>
-                    <small class="text-muted">Gastos</small>
+                    <h3 class="mb-0 text-warning">{{ number_format($stats['total_pendiente'], 0, ',', '.') }}€</h3>
+                    <small class="text-muted">Pendiente</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     @php $margen = $stats['total_ingresos'] - $stats['total_gastos']; @endphp
@@ -93,7 +93,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h3 class="mb-0 text-primary">{{ $stats['progreso'] }}%</h3>
@@ -247,9 +247,9 @@
 
         <!-- Columna Derecha - Tabs -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent">
-                    <ul class="nav nav-tabs card-header-tabs" id="obraTabs" role="tablist">
+            <div class="card border-0 shadow-sm content-tabs-card">
+                <div class="card-header bg-transparent tabs-header">
+                    <ul class="nav nav-pills" id="obraTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="equipo-tab" data-bs-toggle="tab" data-bs-target="#equipo" type="button">
                                 <i class="bi bi-people me-1"></i>Equipo
@@ -270,9 +270,25 @@
                                 <i class="bi bi-clock-history me-1"></i>Historial
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="conceptos-tab" data-bs-toggle="tab" data-bs-target="#conceptos" type="button">
+                                <i class="bi bi-list-columns me-1"></i>Conceptos
+                                <span class="badge bg-secondary ms-1">{{ $stats['conceptos_activos'] }}</span>
+                            </button>
+                        </li>
+                        @role('Administrador|Contabilidad')
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="discrepancias-tab" data-bs-toggle="tab" data-bs-target="#discrepancias" type="button">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Discrepancias
+                                @if($obra->discrepancias->where('estado', '!=', 'resuelto')->count() > 0)
+                                <span class="badge bg-warning ms-1">{{ $obra->discrepancias->where('estado', '!=', 'resuelto')->count() }}</span>
+                                @endif
+                            </button>
+                        </li>
+                        @endrole
                     </ul>
                 </div>
-                <div class="card-body">
+                <div class="card-body tabs-content">
                     <div class="tab-content" id="obraTabsContent">
                         <!-- Tab Equipo -->
                         <div class="tab-pane fade show active" id="equipo" role="tabpanel">
@@ -285,7 +301,7 @@
                                         <div class="d-flex align-items-center justify-content-between p-2 bg-light rounded">
                                             <div>
                                                 <strong>{{ $cuadrilla->nombre }}</strong>
-                                                <small class="text-muted d-block">Desde {{ $cuadrilla->pivot->fecha_inicio->format('d/m/Y') }}</small>
+                                                <small class="text-muted d-block">Desde {{ $cuadrilla->pivot->fecha_inicio ? \Carbon\Carbon::parse($cuadrilla->pivot->fecha_inicio)->format('d/m/Y') : '-' }}</small>
                                             </div>
                                             @can('editar_obras')
                                             <form action="{{ route('obras.cuadrillas.remove', [$obra, $cuadrilla]) }}" method="POST" class="d-inline remove-cuadrilla-form">
@@ -341,7 +357,7 @@
                                             <tr>
                                                 <td>{{ $trabajador->nombre_completo }}</td>
                                                 <td><span class="badge bg-secondary-subtle text-secondary">{{ $trabajador->pivot->rol ?? 'Operario' }}</span></td>
-                                                <td>{{ $trabajador->pivot->fecha_inicio->format('d/m/Y') }}</td>
+                                                <td>{{ $trabajador->pivot->fecha_inicio ? \Carbon\Carbon::parse($trabajador->pivot->fecha_inicio)->format('d/m/Y') : '-' }}</td>
                                                 <td class="text-end">
                                                     @can('editar_obras')
                                                     <form action="{{ route('obras.trabajadores.remove', [$obra, $trabajador]) }}" method="POST" class="d-inline remove-trabajador-form">
@@ -579,12 +595,236 @@
                                 <p class="text-muted">No hay historial de cambios</p>
                             @endif
                         </div>
+
+                        <!-- Tab Conceptos de Producción -->
+                        <div class="tab-pane fade" id="conceptos" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Conceptos de Producción</h6>
+                                @can('editar_obras')
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addConceptoModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Añadir Concepto
+                                </button>
+                                @endcan
+                            </div>
+
+                            @if($obra->conceptosProduccion->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Nombre</th>
+                                                <th>Categoría</th>
+                                                <th>Unidad</th>
+                                                <th class="text-end">Precio Unit.</th>
+                                                <th>Estado</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="conceptosTableBody">
+                                            @foreach($obra->conceptosProduccion as $concepto)
+                                            <tr class="{{ !$concepto->activo ? 'table-secondary' : '' }}">
+                                                <td><code class="fw-bold">{{ $concepto->codigo }}</code></td>
+                                                <td>{{ $concepto->nombre }}</td>
+                                                <td>
+                                                    @php
+                                                        $catColors = [
+                                                            'desbroce' => 'success',
+                                                            'limpieza' => 'info',
+                                                            'herbicida' => 'warning',
+                                                            'tala' => 'danger',
+                                                            'poda' => 'primary',
+                                                            'otro' => 'secondary'
+                                                        ];
+                                                    @endphp
+                                                    <span class="badge bg-{{ $catColors[$concepto->categoria] ?? 'secondary' }}-subtle text-{{ $catColors[$concepto->categoria] ?? 'secondary' }}">
+                                                        {{ ucfirst($concepto->categoria) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $concepto->unidad }}</td>
+                                                <td class="text-end fw-semibold">{{ $concepto->precio_formateado }}</td>
+                                                <td>
+                                                    @if($concepto->activo)
+                                                        <span class="badge bg-success-subtle text-success">Activo</span>
+                                                    @else
+                                                        <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end">
+                                                    @can('editar_obras')
+                                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-concepto"
+                                                            data-concepto="{{ json_encode($concepto) }}"
+                                                            title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-concepto"
+                                                            data-id="{{ $concepto->id }}"
+                                                            data-nombre="{{ $concepto->nombre }}"
+                                                            title="Eliminar">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    @endcan
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-list-columns fs-1 d-block mb-2"></i>
+                                    <p class="mb-0">No hay conceptos de producción definidos</p>
+                                    <small>Añade conceptos para poder valorar los partes diarios</small>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Tab Discrepancias -->
+                        @role('Administrador|Contabilidad')
+                        <div class="tab-pane fade" id="discrepancias" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Discrepancias de Valoración</h6>
+                                <a href="{{ route('obras.discrepancias.create', $obra) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-lg me-1"></i>Registrar Discrepancia
+                                </a>
+                            </div>
+
+                            @if($obra->discrepancias->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Período</th>
+                                                <th class="text-end">Producido</th>
+                                                <th class="text-end">Aceptado</th>
+                                                <th class="text-end">Pendiente</th>
+                                                <th>Estado</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($obra->discrepancias as $discrepancia)
+                                            <tr>
+                                                <td><strong>{{ $discrepancia->periodo_formateado }}</strong></td>
+                                                <td class="text-end">{{ number_format($discrepancia->importe_producido_manzer, 2, ',', '.') }} €</td>
+                                                <td class="text-end">{{ $discrepancia->importe_aceptado_cliente ? number_format($discrepancia->importe_aceptado_cliente, 2, ',', '.') . ' €' : '-' }}</td>
+                                                <td class="text-end fw-semibold text-{{ $discrepancia->importe_pendiente > 0 ? 'danger' : 'success' }}">
+                                                    {{ number_format($discrepancia->importe_pendiente, 2, ',', '.') }} €
+                                                </td>
+                                                <td>
+                                                    @php
+                                                        $estadoColors = ['pendiente' => 'warning', 'parcial' => 'info', 'resuelto' => 'success'];
+                                                    @endphp
+                                                    <span class="badge bg-{{ $estadoColors[$discrepancia->estado] }}-subtle text-{{ $estadoColors[$discrepancia->estado] }}">
+                                                        {{ ucfirst($discrepancia->estado) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{{ route('obras.discrepancias.edit', [$obra, $discrepancia]) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th>Total</th>
+                                                <th class="text-end">{{ number_format($obra->discrepancias->sum('importe_producido_manzer'), 2, ',', '.') }} €</th>
+                                                <th class="text-end">{{ number_format($obra->discrepancias->sum('importe_aceptado_cliente'), 2, ',', '.') }} €</th>
+                                                <th class="text-end text-danger">{{ number_format($obra->discrepancias->sum('importe_pendiente'), 2, ',', '.') }} €</th>
+                                                <th colspan="2"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-check-circle fs-1 d-block mb-2 text-success"></i>
+                                    <p class="mb-0">No hay discrepancias registradas</p>
+                                </div>
+                            @endif
+                        </div>
+                        @endrole
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal Añadir/Editar Concepto -->
+@can('editar_obras')
+<div class="modal fade" id="addConceptoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="conceptoForm" method="POST">
+                @csrf
+                <input type="hidden" name="_method" id="conceptoMethod" value="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="conceptoModalTitle">Añadir Concepto de Producción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Código <span class="text-danger">*</span></label>
+                            <input type="text" name="codigo" id="conceptoCodigo" class="form-control" maxlength="20" required placeholder="Ej: P5, BOSQUE1">
+                        </div>
+                        <div class="col-md-9">
+                            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" id="conceptoNombre" class="form-control" maxlength="150" required placeholder="Nombre descriptivo del concepto">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Categoría <span class="text-danger">*</span></label>
+                            <select name="categoria" id="conceptoCategoria" class="form-select" required>
+                                <option value="desbroce">Desbroce</option>
+                                <option value="limpieza">Limpieza</option>
+                                <option value="herbicida">Herbicida</option>
+                                <option value="tala">Tala</option>
+                                <option value="poda">Poda</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
+                            <select name="unidad" id="conceptoUnidad" class="form-select" required>
+                                <option value="m2">m² (metros cuadrados)</option>
+                                <option value="unidades">Unidades</option>
+                                <option value="hectareas">Hectáreas</option>
+                                <option value="jornal">Jornal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Precio Unitario (€) <span class="text-danger">*</span></label>
+                            <input type="number" name="precio_unitario" id="conceptoPrecio" class="form-control" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="descripcion" id="conceptoDescripcion" class="form-control" rows="2" placeholder="Descripción opcional"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Orden</label>
+                            <input type="number" name="orden" id="conceptoOrden" class="form-control" min="0" value="0" placeholder="Orden de visualización">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="activo" id="conceptoActivo" value="1" checked>
+                                <label class="form-check-label" for="conceptoActivo">Concepto activo</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="conceptoSubmitBtn">Guardar Concepto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endcan
 
 <!-- Modal Cambiar Estado -->
 <div class="modal fade" id="cambiarEstadoModal" tabindex="-1">
@@ -621,8 +861,95 @@
     </div>
 </div>
 
+@push('styles')
+<style>
+/* Content Tabs - Fix for CSS conflicts */
+.content-tabs-card .tab-content,
+#obraTabsContent.tab-content {
+    display: block !important;
+}
+
+#obraTabsContent .tab-pane {
+    display: none !important;
+}
+
+#obraTabsContent .tab-pane.active {
+    display: block !important;
+}
+
+.tabs-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(74, 124, 89, 0.05) 0%, rgba(74, 124, 89, 0.1) 100%);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs-header .nav-pills {
+    gap: 0.5rem;
+}
+
+.tabs-header .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    color: #6b7280;
+    font-weight: 500;
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.tabs-header .nav-link:hover {
+    background: rgba(74, 124, 89, 0.1);
+    color: #4A7C59;
+}
+
+.tabs-header .nav-link.active {
+    background: #4A7C59;
+    color: white;
+}
+
+.tabs-content {
+    padding: 1.5rem;
+    min-height: 300px;
+    background: #fff;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
+    // Inicializar tabs manualmente
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('#obraTabs .nav-link');
+        const tabPanes = document.querySelectorAll('#obraTabsContent .tab-pane');
+
+        tabButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Remover active de todos los botones
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                // Agregar active al botón clickeado
+                this.classList.add('active');
+
+                // Obtener el target
+                const targetId = this.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(targetId);
+
+                // Ocultar todos los panes
+                tabPanes.forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+
+                // Mostrar el pane objetivo
+                if (targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
+            });
+        });
+    });
+
     // Desasignar cuadrilla
     document.querySelectorAll('.btn-remove-cuadrilla').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -706,6 +1033,150 @@
             });
         });
     });
+
+    // ============================
+    // Conceptos de Producción
+    // ============================
+    const obraId = {{ $obra->id }};
+    const conceptoForm = document.getElementById('conceptoForm');
+    const conceptoModal = document.getElementById('addConceptoModal');
+    let editingConceptoId = null;
+    let isEditingConcepto = false; // Flag para controlar si se está editando
+
+    // Reset form when modal opens for new concept (only if not editing)
+    if (conceptoModal) {
+        conceptoModal.addEventListener('show.bs.modal', function(e) {
+            // Solo resetear si NO estamos en modo edición
+            if (!isEditingConcepto) {
+                resetConceptoForm();
+            }
+            // Resetear la bandera después de abrir el modal
+            isEditingConcepto = false;
+        });
+    }
+
+    function resetConceptoForm() {
+        editingConceptoId = null;
+        document.getElementById('conceptoModalTitle').textContent = 'Añadir Concepto de Producción';
+        document.getElementById('conceptoMethod').value = 'POST';
+        conceptoForm.action = '{{ route("obras.conceptos.store", $obra) }}';
+        conceptoForm.reset();
+        document.getElementById('conceptoActivo').checked = true;
+    }
+
+    // Edit concept
+    document.querySelectorAll('.btn-edit-concepto').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const concepto = JSON.parse(this.dataset.concepto);
+            editingConceptoId = concepto.id;
+
+            // Marcar que estamos editando ANTES de abrir el modal
+            isEditingConcepto = true;
+
+            document.getElementById('conceptoModalTitle').textContent = 'Editar Concepto: ' + concepto.codigo;
+            document.getElementById('conceptoMethod').value = 'PUT';
+            conceptoForm.action = `/obras/${obraId}/conceptos/${concepto.id}`;
+
+            document.getElementById('conceptoCodigo').value = concepto.codigo;
+            document.getElementById('conceptoNombre').value = concepto.nombre;
+            document.getElementById('conceptoCategoria').value = concepto.categoria;
+            document.getElementById('conceptoUnidad').value = concepto.unidad;
+            document.getElementById('conceptoPrecio').value = concepto.precio_unitario;
+            document.getElementById('conceptoDescripcion').value = concepto.descripcion || '';
+            document.getElementById('conceptoOrden').value = concepto.orden || 0;
+            document.getElementById('conceptoActivo').checked = concepto.activo;
+
+            const modal = new bootstrap.Modal(conceptoModal);
+            modal.show();
+        });
+    });
+
+    // Delete concept
+    document.querySelectorAll('.btn-delete-concepto').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const conceptoId = this.dataset.id;
+            const conceptoNombre = this.dataset.nombre;
+
+            Swal.fire({
+                title: '¿Eliminar concepto?',
+                html: `Se eliminará el concepto <strong>${conceptoNombre}</strong>.<br><small class="text-muted">Si tiene producciones asociadas, se marcará como inactivo.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/obras/${obraId}/conceptos/${conceptoId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: data.message,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Error al eliminar el concepto', 'error');
+                    });
+                }
+            });
+        });
+    });
+
+    // Submit form via AJAX
+    if (conceptoForm) {
+        conceptoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const method = document.getElementById('conceptoMethod').value;
+
+            // Handle checkbox
+            formData.set('activo', document.getElementById('conceptoActivo').checked ? '1' : '0');
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Guardado',
+                        text: data.message,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Error al guardar el concepto', 'error');
+            });
+        });
+    }
 </script>
 @endpush
 @endsection

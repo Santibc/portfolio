@@ -27,7 +27,14 @@
       "Bash(php -l:*)",
       "Bash(composer show:*)",
       "Bash(composer require:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npx @upstash/context7-mcp:*)",
+      "Bash(claude mcp remove:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click"
     ],
     "deny": [],
     "ask": []
