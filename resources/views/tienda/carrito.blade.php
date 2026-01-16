@@ -363,13 +363,60 @@
         }
 
         @media (max-width: 768px) {
+            .cart-container {
+                padding: 1rem;
+            }
+
             .cart-item {
                 padding: 1rem 0;
             }
 
             .item-image {
-                width: 80px;
-                height: 80px;
+                width: 60px;
+                height: 60px;
+            }
+
+            .item-details h5 {
+                font-size: 0.9rem;
+            }
+
+            .item-variant {
+                font-size: 0.75rem;
+            }
+
+            .item-reference {
+                font-size: 0.7rem;
+            }
+
+            /* Quantity controls responsive */
+            .quantity-controls {
+                width: 100%;
+                max-width: 120px;
+            }
+
+            .quantity-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.875rem;
+            }
+
+            .quantity-value {
+                padding: 0.4rem 0.5rem;
+                min-width: 40px;
+                font-size: 0.875rem;
+            }
+
+            /* Price section on mobile */
+            .col-auto.text-end {
+                min-width: 80px;
+            }
+
+            .item-price {
+                font-size: 1rem;
+            }
+
+            /* Cart item layout adjustments */
+            .cart-item .row {
+                row-gap: 0.5rem;
             }
 
             .cart-summary {
@@ -392,6 +439,58 @@
 
             .empty-cart-subtitle {
                 font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-container {
+                padding: 0.75rem;
+            }
+
+            .cart-title {
+                font-size: 1.25rem;
+            }
+
+            .item-image {
+                width: 50px;
+                height: 50px;
+            }
+
+            .item-details h5 {
+                font-size: 0.85rem;
+            }
+
+            /* Stack quantity and price vertically on very small screens */
+            .cart-item > .row > .col-auto {
+                flex: 0 0 auto;
+                width: auto;
+            }
+
+            /* Ensure quantity controls don't overflow */
+            .quantity-controls {
+                max-width: 100px;
+                font-size: 0.8rem;
+            }
+
+            .quantity-btn {
+                padding: 0.3rem 0.5rem;
+            }
+
+            .quantity-value {
+                min-width: 35px;
+                padding: 0.3rem 0.4rem;
+            }
+
+            /* Adjust price column */
+            .col-auto.text-end {
+                min-width: 70px;
+                font-size: 0.9rem;
+            }
+
+            /* Remove button */
+            .btn-remove {
+                padding: 0.25rem;
+                font-size: 0.875rem;
             }
         }
     </style>
