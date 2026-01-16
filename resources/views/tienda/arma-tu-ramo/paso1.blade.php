@@ -44,9 +44,10 @@
                                 <span class="estilo-flores">
                                     <i class="bi bi-flower1"></i> {{ $estilo->flores_minimo }} - {{ $estilo->flores_maximo }} flores
                                 </span>
-                                <span class="estilo-precio">
+                                <!--Se comenta por que el cliente no quiere reflejar precios... -->
+                                <!-- <span class="estilo-precio">
                                     Desde ${{ number_format($estilo->precio_base, 0, ',', '.') }}
-                                </span>
+                                </span> -->
                             </div>
                         </div>
 
@@ -71,7 +72,8 @@
     </div>
 </div>
 
-@include('tienda.arma-tu-ramo.partials.resumen-flotante')
+<!-- Resumen flotante en la parte inferior comentado por que el cliente no quiere reflejar precios -->
+<!-- @include('tienda.arma-tu-ramo.partials.resumen-flotante') -->
 
 @push('styles')
 @include('tienda.arma-tu-ramo.partials.wizard-styles')

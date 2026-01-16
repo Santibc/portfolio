@@ -71,7 +71,8 @@
 
                     <div class="flor-info">
                         <h4 class="flor-nombre">{{ $flor->nombre }}</h4>
-                        <p class="flor-precio">${{ number_format($flor->precio_unidad, 0, ',', '.') }}/u</p>
+                        <!-- Se comento el precio para que no se muestre en el paso 2 -->
+                        <!-- <p class="flor-precio">${{ number_format($flor->precio_unidad, 0, ',', '.') }}/u</p> -->
                     </div>
 
                     <div class="flor-cantidad-control">
@@ -113,7 +114,8 @@
     </div>
 </div>
 
-@include('tienda.arma-tu-ramo.partials.resumen-flotante')
+<!-- Resumen flotante en la parte inferior comentado por que el cliente no quiere reflejar precios -->
+<!-- @include('tienda.arma-tu-ramo.partials.resumen-flotante') -->
 
 @push('styles')
 @include('tienda.arma-tu-ramo.partials.wizard-styles')

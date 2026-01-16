@@ -37,13 +37,15 @@
                     @endif
                     <div class="envoltura-info">
                         <h3 class="envoltura-nombre">{{ $envoltura->nombre }}</h3>
-                        <p class="envoltura-precio">${{ number_format($envoltura->precio_adicional, 0, ',', '.') }}</p>
+                        <!-- Se comenta la línea de abajo para ocultar el precio de la envoltura -->
+                        <!-- <p class="envoltura-precio">${{ number_format($envoltura->precio_adicional, 0, ',', '.') }}</p> -->
                     </div>
                 </div>
                 @endforeach
             </div>
 
-            {{-- Resumen del ramo --}}
+            <!-- Se comenta el código de abajo para ocultar el resumen del ramo -->
+            <!-- {{-- Resumen del ramo --}}
             <div class="resumen-ramo">
                 <h3 class="resumen-titulo">Resumen de tu ramo</h3>
                 <div class="resumen-content">
@@ -66,7 +68,7 @@
                         <span class="total-valor" id="resumen-total">${{ number_format($ramo->total, 0, ',', '.') }}</span>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             {{-- Botones de accion --}}
             <div class="wizard-actions mt-4">
