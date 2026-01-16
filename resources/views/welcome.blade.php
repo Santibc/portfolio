@@ -3,7 +3,7 @@
 @section('body-id', 'welcome-body')
 
 @section('content')
-    <header>
+    <header style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ asset($pagina->contenido['imagen_hero_background'] ?? 'images/background1.png') }}') center/cover no-repeat; background-color: black;">
         <div class="hero">
             <div class="hero-text">
                 <h1>{!! $pagina->contenido['hero_title'] ?? '¡Hola Colombia!<br>Tu Negocio, <span>Nuestra causa.</span>' !!}</h1>

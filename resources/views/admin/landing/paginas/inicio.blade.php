@@ -33,6 +33,22 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12 mb-3">
+                            <label class="form-label">Imagen de Fondo del Hero</label>
+                            @if(isset($pagina->contenido['imagen_hero_background']))
+                                <div class="mb-2">
+                                    <img src="{{ asset($pagina->contenido['imagen_hero_background']) }}" style="max-height: 150px; border-radius: 8px;">
+                                    <small class="d-block text-muted mt-1">Imagen actual del fondo del hero</small>
+                                </div>
+                            @else
+                                <div class="mb-2">
+                                    <img src="{{ asset('images/background1.png') }}" style="max-height: 150px; border-radius: 8px; opacity: 0.7;">
+                                    <small class="d-block text-muted mt-1">Imagen por defecto (background1.png)</small>
+                                </div>
+                            @endif
+                            <input type="file" name="imagen_hero_background" class="form-control" accept="image/*">
+                            <small class="text-muted">Recomendado: imagen de al menos 1920x1080px para mejor calidad</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
                             <label class="form-label">Título Principal (HTML permitido)</label>
                             <textarea name="contenido[hero_title]" class="form-control" rows="2">{{ $pagina->contenido['hero_title'] ?? '' }}</textarea>
                         </div>

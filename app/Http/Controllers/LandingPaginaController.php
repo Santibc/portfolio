@@ -33,6 +33,7 @@ class LandingPaginaController extends Controller
 
         // Lista de campos de imagen que pueden venir
         $imageFields = [
+            'imagen_hero_background',
             'imagen_seccion_principal',
             'imagen_better_together',
             'imagen_beneficios',
