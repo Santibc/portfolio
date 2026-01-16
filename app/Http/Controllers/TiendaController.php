@@ -534,10 +534,16 @@ class TiendaController extends Controller
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
             'cantidad' => 'required|integer|min:1',
-            'variante_id' => 'nullable|exists:variantes_productos,id'
+            'variante_id' => 'nullable|exists:variantes_productos,id',
+            'shipping_details' => 'nullable|array',
+            'shipping_details.es_pedido_para_mi' => 'nullable|boolean',
+            'shipping_details.fecha_entrega' => 'nullable|date',
+            'shipping_details.horario_preferido' => 'nullable|string',
+            'shipping_details.es_una_sorpresa' => 'nullable|boolean',
+            'shipping_details.mensaje_tarjeta' => 'nullable|string|max:200'
         ]);
         $producto = Producto::findOrFail($request->producto_id);
-        
+
         // Verificar que el producto pertenece a la empresa
         if ($producto->empresa_id != $empresa->id) {
             return response()->json(['error' => 'Producto no válido'], 400);
@@ -561,7 +567,8 @@ class TiendaController extends Controller
             $request->producto_id,
             $request->cantidad,
             $request->variante_id,
-            $precio
+            $precio,
+            $request->shipping_details
         );
 
         return response()->json([

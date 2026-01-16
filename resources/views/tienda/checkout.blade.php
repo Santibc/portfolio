@@ -1027,6 +1027,51 @@
             if (nombreInicial) {
                 $('#preview_remitente').text(nombreInicial);
             }
+
+            // Pre-llenar campos del checkout con datos del carrito
+            @if($carrito && $carrito->items)
+                const cartItems = @json($carrito->items);
+                if (cartItems && Object.keys(cartItems).length > 0) {
+                    // Obtener datos de envío del primer item que los tenga
+                    let shippingDetails = null;
+                    for (const key in cartItems) {
+                        if (cartItems[key].shipping_details) {
+                            shippingDetails = cartItems[key].shipping_details;
+                            break;
+                        }
+                    }
+
+                    if (shippingDetails) {
+                        // Pre-llenar checkbox "es para mí"
+                        if (shippingDetails.es_pedido_para_mi !== undefined) {
+                            $('#mismo_destinatario').prop('checked', shippingDetails.es_pedido_para_mi);
+                            toggleDestinatario();
+                        }
+
+                        // Pre-llenar fecha de entrega
+                        if (shippingDetails.fecha_entrega) {
+                            $('#fecha_entrega_deseada').val(shippingDetails.fecha_entrega);
+                        }
+
+                        // Pre-llenar horario preferido
+                        if (shippingDetails.horario_preferido) {
+                            $('#horario_entrega').val(shippingDetails.horario_preferido);
+                        }
+
+                        // Pre-llenar checkbox "es una sorpresa"
+                        if (shippingDetails.es_una_sorpresa) {
+                            $('#es_sorpresa').prop('checked', shippingDetails.es_una_sorpresa);
+                        }
+
+                        // Pre-llenar mensaje de tarjeta
+                        if (shippingDetails.mensaje_tarjeta && !$('#mensaje_tarjeta').val()) {
+                            $('#mensaje_tarjeta').val(shippingDetails.mensaje_tarjeta);
+                            $('#mensaje_contador').text(shippingDetails.mensaje_tarjeta.length);
+                            $('#preview_mensaje').text(shippingDetails.mensaje_tarjeta);
+                        }
+                    }
+                }
+            @endif
         });
 
         // Toggle campos de destinatario

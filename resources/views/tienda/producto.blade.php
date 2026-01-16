@@ -246,6 +246,76 @@
                 </div>
               @endif
 
+              <!-- Detalles del Envío Floral -->
+              <div class="shipping-details-section mb-4" style="background: #f8f9fa; border-radius: 12px; padding: 1.5rem; border: 1px solid #e9ecef;">
+                <h5 class="mb-3" style="font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                  <i class="bi bi-flower1" style="color: #e91e63;"></i>
+                  Detalles del Envío Floral
+                </h5>
+
+                <div class="row g-3">
+                  <!-- Checkbox: Es para mí o para alguien más -->
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="esPedidoParaMi" checked>
+                      <label class="form-check-label" for="esPedidoParaMi" style="font-weight: 500;">
+                        El pedido es para mí (usar mis datos como destinatario)
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Fecha de entrega -->
+                  <div class="col-md-6">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                      <i class="bi bi-calendar-event me-2" style="color: #6c757d;"></i>
+                      <label for="fechaEntrega" class="form-label mb-0" style="font-weight: 500;">Fecha de entrega deseada</label>
+                    </div>
+                    <input type="date" class="form-control" id="fechaEntrega"
+                           min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                           value="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                    <small class="text-muted d-block mt-1">Pedidos antes de las 2pm pueden entregarse el mismo día</small>
+                  </div>
+
+                  <!-- Horario preferido -->
+                  <div class="col-md-6">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                      <i class="bi bi-clock me-2" style="color: #6c757d;"></i>
+                      <label for="horarioPreferido" class="form-label mb-0" style="font-weight: 500;">Horario preferido</label>
+                    </div>
+                    <select class="form-select" id="horarioPreferido">
+                      <option value="">Cualquier hora del día</option>
+                      <option value="manana">Mañana (9:00 - 13:00)</option>
+                      <option value="tarde">Tarde (14:00 - 18:00)</option>
+                      <option value="noche">Noche (18:00 - 21:00)</option>
+                    </select>
+                  </div>
+
+                  <!-- Checkbox: Es una sorpresa -->
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="esUnaSorpresa">
+                      <label class="form-check-label" for="esUnaSorpresa" style="font-weight: 500;">
+                        <i class="bi bi-gift me-1"></i>Es una sorpresa (no llamar al destinatario antes de entregar)
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Mensaje para la tarjeta -->
+                  <div class="col-12">
+                    <label for="mensajeTarjeta" class="form-label" style="font-weight: 500;">
+                      <i class="bi bi-card-text me-1"></i>Mensaje para la tarjeta
+                      <span class="text-muted" style="font-weight: 400;">(opcional)</span>
+                    </label>
+                    <textarea class="form-control" id="mensajeTarjeta" rows="3"
+                              maxlength="200" placeholder="Escribe un mensaje especial que incluiremos en una tarjeta con tu pedido"></textarea>
+                    <div class="d-flex justify-content-between mt-1">
+                      <small class="text-muted">Máximo 200 caracteres</small>
+                      <small class="text-muted"><span id="contadorCaracteres">0</span>/200</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Purchase Options -->
               <div class="purchase-section">
                 <div class="quantity-control">
@@ -273,9 +343,6 @@
                   <button class="btn secondary-action" onclick="comprarAhora()">
                     <i class="bi bi-lightning"></i>
                     Comprar Ahora
-                  </button>
-                  <button class="btn icon-action" title="Agregar a favoritos">
-                    <i class="bi bi-heart"></i>
                   </button>
                 </div>
               </div>
@@ -843,6 +910,12 @@
       });
     }
 
+    // Contador de caracteres para mensaje de tarjeta
+    $('#mensajeTarjeta').on('input', function() {
+      const length = $(this).val().length;
+      $('#contadorCaracteres').text(length);
+    });
+
     // Selección de variantes
     $('.variant-option:not(:disabled)').on('click', function() {
       const type = $(this).data('type');
@@ -900,9 +973,15 @@
       btn.prop('disabled', true);
       btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Agregando...');
 
+      // Recopilar datos de envío floral usando notación de corchetes para PHP
       const data = {
         producto_id: {{ $producto->id }},
-        cantidad: quantity
+        cantidad: quantity,
+        'shipping_details[es_pedido_para_mi]': $('#esPedidoParaMi').is(':checked') ? 1 : 0,
+        'shipping_details[fecha_entrega]': $('#fechaEntrega').val(),
+        'shipping_details[horario_preferido]': $('#horarioPreferido').val(),
+        'shipping_details[es_una_sorpresa]': $('#esUnaSorpresa').is(':checked') ? 1 : 0,
+        'shipping_details[mensaje_tarjeta]': $('#mensajeTarjeta').val()
       };
       if (selectedVariant) data.variante_id = selectedVariant.id;
 
@@ -1108,9 +1187,15 @@
       return;
     }
 
+    // Recopilar datos de envío floral usando notación de corchetes para PHP
     const data = {
       producto_id: {{ $producto->id }},
-      cantidad: quantity
+      cantidad: quantity,
+      'shipping_details[es_pedido_para_mi]': $('#esPedidoParaMi').is(':checked') ? 1 : 0,
+      'shipping_details[fecha_entrega]': $('#fechaEntrega').val(),
+      'shipping_details[horario_preferido]': $('#horarioPreferido').val(),
+      'shipping_details[es_una_sorpresa]': $('#esUnaSorpresa').is(':checked') ? 1 : 0,
+      'shipping_details[mensaje_tarjeta]': $('#mensajeTarjeta').val()
     };
     if (selectedVariant) data.variante_id = selectedVariant.id;
 

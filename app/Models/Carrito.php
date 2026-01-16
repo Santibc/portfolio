@@ -51,7 +51,7 @@ class Carrito extends Model
         return $this->belongsTo(Empresa::class);
     }
 
-    public function agregarItem($productoId, $cantidad, $varianteId = null, $precio = null)
+    public function agregarItem($productoId, $cantidad, $varianteId = null, $precio = null, $shippingDetails = null)
     {
         $items = $this->items ?? [];
         $key = $varianteId ? "{$productoId}-{$varianteId}" : $productoId;
@@ -59,6 +59,11 @@ class Carrito extends Model
         if (isset($items[$key])) {
             $items[$key]['cantidad'] += $cantidad;
             $items[$key]['precio_total'] = $items[$key]['cantidad'] * $items[$key]['precio'];
+
+            // Actualizar datos de envío si se proporcionan
+            if ($shippingDetails) {
+                $items[$key]['shipping_details'] = $shippingDetails;
+            }
         } else {
             $producto = Producto::find($productoId);
             $precioUnitario = $precio ?? $producto->precio;
@@ -72,6 +77,11 @@ class Carrito extends Model
                 'nombre' => $producto->nombre,
                 'referencia' => $producto->referencia
             ];
+
+            // Agregar datos de envío si se proporcionan
+            if ($shippingDetails) {
+                $items[$key]['shipping_details'] = $shippingDetails;
+            }
 
             if ($varianteId) {
                 $variante = VarianteProducto::find($varianteId);
