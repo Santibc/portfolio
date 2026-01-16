@@ -76,17 +76,17 @@
                     </div>
 
                     <div class="flor-cantidad-control">
-                        <button type="button" class="btn-cantidad btn-minus" {{ ($ramo->flores_seleccionadas && collect($ramo->flores_seleccionadas)->firstWhere('flor_id', $flor->id)['cantidad'] ?? 0) == 0 ? 'disabled' : '' }}>
+                        @php
+                            $cantidadActual = 0;
+                            if ($ramo->flores_seleccionadas) {
+                                $florEnRamo = collect($ramo->flores_seleccionadas)->firstWhere('flor_id', $flor->id);
+                                $cantidadActual = $florEnRamo['cantidad'] ?? 0;
+                            }
+                        @endphp
+                        <button type="button" class="btn-cantidad btn-minus" {{ $cantidadActual == 0 ? 'disabled' : '' }}>
                             <i class="bi bi-dash"></i>
                         </button>
                         <span class="cantidad-display">
-                            @php
-                                $cantidadActual = 0;
-                                if ($ramo->flores_seleccionadas) {
-                                    $florEnRamo = collect($ramo->flores_seleccionadas)->firstWhere('flor_id', $flor->id);
-                                    $cantidadActual = $florEnRamo['cantidad'] ?? 0;
-                                }
-                            @endphp
                             {{ $cantidadActual }}
                         </span>
                         <button type="button" class="btn-cantidad btn-plus">
