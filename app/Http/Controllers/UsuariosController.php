@@ -33,6 +33,12 @@ class UsuariosController extends Controller
                                 ->map(fn($r) => ucfirst($r))
                                 ->join(', ');
                     })
+                    ->addColumn('estado', function($u) {
+                        if ($u->activo) {
+                            return '<span class="badge bg-success">Activo</span>';
+                        }
+                        return '<span class="badge bg-secondary">Inactivo</span>';
+                    })
                 ->addColumn('action', function ($user) {
                     $editUrl = route('usuarios.form', $user->id);
 
@@ -44,7 +50,7 @@ class UsuariosController extends Controller
 
                     return $buttons;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'estado'])
                 ->make(true);
         }
 
@@ -88,10 +94,15 @@ class UsuariosController extends Controller
         // 1) Crear o actualizar usuario
         if ($user) {
             $this->userService->update($user, $data);
+            // Actualizar estado activo solo en edición
+            $user->activo = $request->has('activo') ? 1 : 0;
+            $user->save();
         } else {
             $user = $this->userService->create($data);
+            $user->activo = 1; // Nuevo usuario siempre activo
+            $user->save();
         }
-   $user->syncRoles($data['role']);
+        $user->syncRoles($data['role']);
         return redirect()->route('usuarios')->with('success', 'Usuario guardado correctamente.');
     }
 }

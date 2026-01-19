@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SolicitudCotizacion;
 use App\Models\Cliente;
+use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use Yajra\DataTables\Facades\DataTables;
@@ -12,23 +13,40 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SolicitudAplicada;
+use App\Mail\AlertaCotizacionAceptada;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SolicitudesExport;
 use Illuminate\Support\Facades\Log;
+use App\Services\CotizacionService;
+use App\Services\ReservaStockService;
+use App\Services\FacturacionService;
+use App\Http\Requests\ActualizarSolicitudRequest;
+use App\Http\Requests\CambiarEstadoSolicitudRequest;
 
 class SolicitudController extends Controller
 {
-    public function __construct()
-    {
+    protected CotizacionService $cotizacionService;
+    protected ReservaStockService $reservaService;
+    protected FacturacionService $facturacionService;
+
+    public function __construct(
+        CotizacionService $cotizacionService,
+        ReservaStockService $reservaService,
+        FacturacionService $facturacionService
+    ) {
         $this->middleware('auth');
+        $this->cotizacionService = $cotizacionService;
+        $this->reservaService = $reservaService;
+        $this->facturacionService = $facturacionService;
     }
     
     public function index(Request $request)
     {
-        // Verificar que el usuario sea admin o vendedor
+        // Verificar que el usuario sea admin, vendedor o facturación
         $user = Auth::user();
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasRole(['admin', 'vendedor', 'facturacion'])) {
             abort(403, 'No tienes permisos para acceder a este módulo.');
         }
 
@@ -91,6 +109,42 @@ class SolicitudController extends Controller
                     }
                     return '<span class="badge bg-'.$class.'">'.$text.'</span>';
                 })
+                ->addColumn('reserva_badge', function($s) {
+                    return $s->badge_reserva;
+                })
+                ->addColumn('estado_pago_badge', function($s) {
+                    if ($s->estado !== 'aplicada') {
+                        return '-';
+                    }
+                    return '<span class="badge bg-' . $s->color_estado_pago . '">' . $s->etiqueta_estado_pago . '</span>';
+                })
+                ->addColumn('estado_envio_badge', function($s) {
+                    if ($s->estado !== 'aplicada') {
+                        return '-';
+                    }
+                    $badge = '<span class="badge bg-' . $s->color_estado_envio . '">'
+                           . '<i class="bi ' . $s->icono_estado_envio . ' me-1"></i>'
+                           . $s->etiqueta_estado_envio . '</span>';
+
+                    // Agregar botón de gestión de envío si el usuario tiene permisos
+                    if (auth()->user()->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+                        $badge .= ' <button type="button" class="btn btn-sm btn-link p-0"
+                                           title="Gestionar Envío" onclick="gestionarEnvio(' . $s->id . ', \'' . $s->estado_envio . '\', \'' . ($s->numero_guia ?? '') . '\', \'' . ($s->transportadora ?? '') . '\')">
+                                      <i class="bi bi-pencil-square text-info"></i>
+                                   </button>';
+                    }
+
+                    return $badge;
+                })
+                ->addColumn('factura', function($s) {
+                    if ($s->tieneFactura()) {
+                        return '<a href="'.route('solicitudes.factura-pdf', $s->id).'"
+                                   class="text-decoration-none" target="_blank" title="Descargar">
+                                   <i class="bi bi-file-earmark-check text-success"></i> '.$s->numero_factura.'
+                                </a>';
+                    }
+                    return '-';
+                })
                 ->addColumn('action', function($s) {
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
 
@@ -100,11 +154,57 @@ class SolicitudController extends Controller
                                    <i class="bi bi-eye"></i>
                                 </button>';
 
+                    // Botón editar (solo si está pendiente)
+                    if ($s->esEditable()) {
+                        $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
+                                        title="Editar Cotización">
+                                       <i class="bi bi-pencil"></i>
+                                    </a>';
+                    }
+
+                    // Botón clonar
+                    $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm"
+                                        title="Clonar Cotización" onclick="clonarSolicitud('.$s->id.')">
+                                   <i class="bi bi-copy"></i>
+                                </button>';
+
                     // Botón descargar PDF
                     $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm"
                                     title="Descargar PDF" target="_blank">
                                    <i class="bi bi-file-earmark-pdf"></i>
                                 </a>';
+
+                    // Botón registrar pago (solo si puede registrar pago)
+                    if ($s->puedeRegistrarPago()) {
+                        $buttons .= '<a href="'.route('pagos.create', $s->id).'" class="btn btn-outline-success btn-sm"
+                                        title="Registrar Pago">
+                                       <i class="bi bi-cash-coin"></i>
+                                    </a>';
+                    }
+
+                    // Botón generar factura (solo si puede generar factura)
+                    if ($s->puedeGenerarFactura()) {
+                        $buttons .= '<button type="button" class="btn btn-outline-purple btn-sm"
+                                            title="Generar Factura" onclick="generarFactura('.$s->id.')">
+                                       <i class="bi bi-receipt"></i>
+                                    </button>';
+                    }
+
+                    // Botón descargar factura (si ya tiene factura)
+                    if ($s->tieneFactura()) {
+                        $buttons .= '<a href="'.route('solicitudes.factura-pdf', $s->id).'" class="btn btn-outline-dark btn-sm"
+                                        title="Descargar Factura" target="_blank">
+                                       <i class="bi bi-file-earmark-text"></i>
+                                    </a>';
+                    }
+
+                    // Botón eliminar (solo si está pendiente)
+                    if ($s->esEliminable()) {
+                        $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm"
+                                            title="Eliminar Cotización" onclick="eliminarSolicitud('.$s->id.')">
+                                       <i class="bi bi-trash"></i>
+                                    </button>';
+                    }
 
                     $buttons .= '</div>';
 
@@ -137,7 +237,7 @@ class SolicitudController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['estado_badge', 'action'])
+                ->rawColumns(['estado_badge', 'reserva_badge', 'estado_pago_badge', 'estado_envio_badge', 'factura', 'action'])
                 ->make(true);
         }
 
@@ -477,19 +577,22 @@ class SolicitudController extends Controller
             $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
             $pdf->setPaper('letter', 'portrait');
             
-            // Envío de email deshabilitado (solo se envía al crear la solicitud)
-            // try {
-            //     Mail::to($solicitud->cliente->email)
-            //         ->send(new SolicitudAplicada($solicitud, $pdf));
-            //
-            //     $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
-            // } catch (\Exception $e) {
-            //     // Log del error pero no fallar la aplicación
-            //     Log::error('Error al enviar email de solicitud aplicada: ' . $e->getMessage());
-            //     $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
-            // }
+            // Envío de email al cliente cuando se aprueba la cotización
             $mensajeEmail = '';
-            
+            try {
+                Mail::to($solicitud->cliente->email)
+                    ->send(new SolicitudAplicada($solicitud, $pdf));
+
+                $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
+            } catch (\Exception $e) {
+                // Log del error pero no fallar la aplicación
+                Log::error('Error al enviar email de solicitud aplicada: ' . $e->getMessage());
+                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            }
+
+            // Enviar alertas a vendedor y administradores
+            $this->enviarAlertasCotizacionAceptada($solicitud);
+
             DB::commit();
             
             $mensaje = 'Solicitud marcada como aplicada exitosamente.';
@@ -566,22 +669,22 @@ class SolicitudController extends Controller
                 'rechazadaPor'
             ]);
 
-            // Envío de email deshabilitado (solo se envía al crear la solicitud)
-            // try {
-            //     // Generar PDF
-            //     $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
-            //     $pdf->setPaper('letter', 'portrait');
-            //
-            //     Mail::to($solicitud->cliente->email)
-            //         ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
-            //
-            //     $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
-            // } catch (\Exception $e) {
-            //     // Log del error pero no fallar el rechazo
-            //     Log::error('Error al enviar email de solicitud rechazada: ' . $e->getMessage());
-            //     $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
-            // }
+            // Envío de email al cliente cuando se rechaza la cotización
             $mensajeEmail = '';
+            try {
+                // Generar PDF
+                $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+                $pdf->setPaper('letter', 'portrait');
+
+                Mail::to($solicitud->cliente->email)
+                    ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
+
+                $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';
+            } catch (\Exception $e) {
+                // Log del error pero no fallar el rechazo
+                Log::error('Error al enviar email de solicitud rechazada: ' . $e->getMessage());
+                $mensajeEmail = ' (No se pudo enviar el correo: ' . $e->getMessage() . ')';
+            }
 
             DB::commit();
 
@@ -767,10 +870,586 @@ class SolicitudController extends Controller
         }
         
         $solicitudes = $query->orderBy('created_at', 'desc')->get();
-        
+
         return Excel::download(
-            new SolicitudesExport($solicitudes), 
+            new SolicitudesExport($solicitudes),
             'solicitudes-cotizacion-' . now()->format('Y-m-d-His') . '.xlsx'
         );
+    }
+
+    // ==========================================
+    // NUEVOS MÉTODOS CRUD - FASE 5
+    // ==========================================
+
+    /**
+     * Mostrar formulario de edición de cotización
+     */
+    public function edit(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            abort(403, 'No tiene permisos para editar cotizaciones');
+        }
+
+        // Verificar si es vendedor que sea su cliente
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                abort(403, 'No tiene permisos para editar esta cotización');
+            }
+        }
+
+        // Verificar que sea editable
+        if (!$solicitud->esEditable()) {
+            return redirect()->route('solicitudes')
+                           ->with('error', 'Esta cotización no puede ser editada');
+        }
+
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'reservas']);
+
+        // Obtener productos para el selector
+        $productos = Producto::activos()
+                            ->with(['variantes', 'imagenPrincipal'])
+                            ->orderBy('nombre')
+                            ->get();
+
+        return view('solicitudes.edit', compact('solicitud', 'productos'));
+    }
+
+    /**
+     * Actualizar cotización
+     */
+    public function update(ActualizarSolicitudRequest $request, SolicitudCotizacion $solicitud)
+    {
+        $resultado = $this->cotizacionService->actualizar(
+            $solicitud,
+            $request->validated(),
+            Auth::id()
+        );
+
+        if (!$resultado['exito']) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => implode(', ', $resultado['errores'])
+            ], 400);
+        }
+
+        $mensaje = 'Cotización actualizada exitosamente';
+        if (!empty($resultado['advertencias'])) {
+            $mensaje .= '. Advertencias: ' . implode(', ', $resultado['advertencias']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => $mensaje,
+            'solicitud' => $resultado['solicitud']
+        ]);
+    }
+
+    /**
+     * Eliminar cotización
+     */
+    public function destroy(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para eliminar cotizaciones'
+            ], 403);
+        }
+
+        // Verificar si es vendedor que sea su cliente
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'No tiene permisos para eliminar esta cotización'
+                ], 403);
+            }
+        }
+
+        $resultado = $this->cotizacionService->eliminar($solicitud, Auth::id());
+
+        if (!$resultado['exito']) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => implode(', ', $resultado['errores'])
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => 'Cotización eliminada exitosamente'
+        ]);
+    }
+
+    /**
+     * Clonar cotización
+     */
+    public function clonar(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para clonar cotizaciones'
+            ], 403);
+        }
+
+        // Verificar si es vendedor que sea su cliente
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'No tiene permisos para clonar esta cotización'
+                ], 403);
+            }
+        }
+
+        $resultado = $this->cotizacionService->clonar($solicitud, Auth::id());
+
+        if (!$resultado['exito']) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => implode(', ', $resultado['errores'])
+            ], 400);
+        }
+
+        $mensaje = 'Cotización clonada exitosamente';
+        if (!empty($resultado['advertencias'])) {
+            $mensaje .= '. Advertencias: ' . implode(', ', $resultado['advertencias']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => $mensaje,
+            'solicitud' => $resultado['solicitud'],
+            'redirect_url' => route('solicitudes.edit', $resultado['solicitud']->id)
+        ]);
+    }
+
+    /**
+     * Cambiar estado de cotización (aprobar/rechazar unificado)
+     */
+    public function cambiarEstado(CambiarEstadoSolicitudRequest $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para cambiar el estado de cotizaciones'
+            ], 403);
+        }
+
+        // Verificar si es vendedor que sea su cliente
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            if ($solicitud->cliente->vendedor_id != $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'No tiene permisos para cambiar el estado de esta cotización'
+                ], 403);
+            }
+        }
+
+        $resultado = $this->cotizacionService->cambiarEstado(
+            $solicitud,
+            $request->nuevo_estado,
+            $request->validated(),
+            Auth::id()
+        );
+
+        if (!$resultado['exito']) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => implode(', ', $resultado['errores'])
+            ], 400);
+        }
+
+        $accion = $request->nuevo_estado === 'aplicada' ? 'aprobada' : 'rechazada';
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => "Cotización {$accion} exitosamente",
+            'solicitud' => $resultado['solicitud']
+        ]);
+    }
+
+    /**
+     * Renovar reserva de stock
+     */
+    public function renovarReserva(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos'
+            ], 403);
+        }
+
+        if ($solicitud->estado !== SolicitudCotizacion::ESTADO_PENDIENTE) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Solo se pueden renovar reservas de cotizaciones pendientes'
+            ], 400);
+        }
+
+        $exito = $this->reservaService->renovarReservas($solicitud, 24);
+
+        if (!$exito) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No se pudo renovar la reserva'
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => 'Reserva renovada por 24 horas',
+            'nueva_expiracion' => $solicitud->fresh()->reserva_expira_en->format('d/m/Y H:i')
+        ]);
+    }
+
+    /**
+     * Liberar reserva de stock manualmente
+     */
+    public function liberarReserva(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos'
+            ], 403);
+        }
+
+        if (!$solicitud->tiene_reserva_stock) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Esta cotización no tiene reserva de stock activa'
+            ], 400);
+        }
+
+        $liberadas = $this->reservaService->liberarReservasCotizacion(
+            $solicitud,
+            'Liberación manual por usuario',
+            Auth::id()
+        );
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => "Se liberaron {$liberadas} reservas de stock"
+        ]);
+    }
+
+    /**
+     * Obtener productos para el selector de edición
+     */
+    public function getProductos(Request $request)
+    {
+        $query = Producto::activos()
+                        ->with(['variantes', 'imagenPrincipal', 'precios']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('referencia', 'like', "%{$search}%");
+            });
+        }
+
+        $productos = $query->limit(50)->get();
+
+        return response()->json($productos);
+    }
+
+    /**
+     * Obtener variantes de un producto
+     */
+    public function getVariantes(Producto $producto)
+    {
+        $variantes = $producto->variantes()
+                             ->with(['precios', 'stock'])
+                             ->get();
+
+        return response()->json($variantes);
+    }
+
+    /**
+     * Obtener precio de producto/variante para un cliente
+     */
+    public function getPrecio(Request $request)
+    {
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id',
+            'variante_id' => 'nullable|exists:variantes_producto,id',
+            'cliente_id' => 'required|exists:clientes,id',
+        ]);
+
+        $producto = Producto::with(['precios', 'variantes.precios'])->find($request->producto_id);
+        $cliente = Cliente::find($request->cliente_id);
+        $listaPrecioId = $cliente->lista_precio_id;
+
+        $precio = 0;
+
+        if ($request->filled('variante_id')) {
+            $variante = $producto->variantes->find($request->variante_id);
+            if ($variante) {
+                $precioVariante = $variante->precios->where('lista_precio_id', $listaPrecioId)->first();
+                $precio = $precioVariante?->precio ?? 0;
+            }
+        }
+
+        if ($precio == 0) {
+            $precioProducto = $producto->precios->where('lista_precio_id', $listaPrecioId)->first();
+            $precio = $precioProducto?->precio ?? 0;
+        }
+
+        return response()->json([
+            'precio' => $precio,
+            'lista_precio' => $cliente->listaPrecio?->nombre
+        ]);
+    }
+
+    // ==========================================
+    // FACTURACIÓN
+    // ==========================================
+
+    /**
+     * Generar factura para una cotización
+     */
+    public function generarFactura(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para generar facturas'
+            ], 403);
+        }
+
+        // Validar datos
+        $validated = $request->validate([
+            'porcentaje_iva' => 'nullable|numeric|min:0|max:100',
+            'forma_pago' => 'nullable|string|max:50',
+            'dias_vencimiento' => 'nullable|integer|min:0|max:365',
+        ]);
+
+        $resultado = $this->facturacionService->generarFactura(
+            $solicitud,
+            $user->id,
+            $validated['porcentaje_iva'] ?? null,
+            $validated['forma_pago'] ?? 'Contado',
+            $validated['dias_vencimiento'] ?? 0
+        );
+
+        if (!$resultado['exito']) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => implode(', ', $resultado['errores'])
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => "Factura {$resultado['solicitud']->numero_factura} generada exitosamente",
+            'numero_factura' => $resultado['solicitud']->numero_factura
+        ]);
+    }
+
+    /**
+     * Descargar PDF de factura
+     */
+    public function descargarFactura(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasAnyRole(['admin', 'facturacion', 'vendedor', 'cliente'])) {
+            abort(403, 'No tiene permisos para descargar facturas');
+        }
+
+        if (!$solicitud->tieneFactura()) {
+            abort(404, 'Esta cotización no tiene factura generada');
+        }
+
+        try {
+            $pdf = $this->facturacionService->generarPdfFactura($solicitud);
+            $nombreArchivo = $this->facturacionService->getNombreArchivoFactura($solicitud);
+
+            return $pdf->download($nombreArchivo);
+
+        } catch (\Exception $e) {
+            Log::error("Error al generar PDF de factura: " . $e->getMessage());
+            abort(500, 'Error al generar el PDF de factura');
+        }
+    }
+
+    // ==========================================
+    // GESTIÓN DE ENVÍOS - FASE 7
+    // ==========================================
+
+    /**
+     * Actualizar estado de envío de una cotización
+     */
+    public function actualizarEnvio(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos (admin, facturación, inventarios)
+        if (!$user->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para gestionar envíos'
+            ], 403);
+        }
+
+        // Validar que la cotización esté aplicada
+        if ($solicitud->estado !== SolicitudCotizacion::ESTADO_APLICADA) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Solo se puede actualizar el envío de cotizaciones aplicadas'
+            ], 400);
+        }
+
+        // Validar datos
+        $validated = $request->validate([
+            'estado_envio' => 'required|in:pendiente,preparando,despachado,en_transito,entregado',
+            'numero_guia' => 'nullable|string|max:100',
+            'transportadora' => 'nullable|string|max:100',
+            'archivo_guia' => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
+        ]);
+
+        try {
+            // Procesar archivo de guía si se envía
+            $archivoGuia = null;
+            if ($request->hasFile('archivo_guia')) {
+                $archivo = $request->file('archivo_guia');
+                $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
+                $ruta = $archivo->storeAs('guias', $nombreArchivo, 'public');
+                $archivoGuia = 'storage/' . $ruta;
+            }
+
+            $solicitud->actualizarEstadoEnvio(
+                $validated['estado_envio'],
+                $validated['numero_guia'] ?? null,
+                $validated['transportadora'] ?? null,
+                $archivoGuia,
+                $user->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Estado de envío actualizado a: ' . SolicitudCotizacion::estadosEnvio()[$validated['estado_envio']],
+                'estado_envio' => $validated['estado_envio']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error al actualizar envío: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al actualizar el estado de envío'
+            ], 500);
+        }
+    }
+
+    /**
+     * Subir guía de envío
+     */
+    public function subirGuia(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        // Verificar permisos
+        if (!$user->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para subir guías de envío'
+            ], 403);
+        }
+
+        // Validar archivo
+        $request->validate([
+            'archivo_guia' => 'required|file|mimes:pdf|max:5120', // Max 5MB
+        ]);
+
+        try {
+            // Guardar archivo
+            $archivo = $request->file('archivo_guia');
+            $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
+            $ruta = $archivo->storeAs('guias', $nombreArchivo, 'public');
+
+            // Actualizar solicitud
+            $solicitud->update([
+                'archivo_guia' => 'storage/' . $ruta,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Guía de envío subida exitosamente',
+                'archivo_guia' => $solicitud->archivo_guia
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error al subir guía: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al subir la guía de envío'
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar alertas de cotización aceptada a vendedor y administradores
+     */
+    private function enviarAlertasCotizacionAceptada(SolicitudCotizacion $solicitud): void
+    {
+        try {
+            $solicitud->load(['cliente', 'cliente.vendedor', 'items']);
+
+            // 1. Enviar al vendedor asignado al cliente
+            $vendedor = $solicitud->cliente->vendedor;
+            if ($vendedor && $vendedor->email) {
+                Mail::to($vendedor->email)->queue(
+                    new AlertaCotizacionAceptada($solicitud, 'vendedor')
+                );
+                Log::info("Alerta de cotización enviada al vendedor: {$vendedor->email}");
+            }
+
+            // 2. Enviar a todos los administradores (excepto el vendedor si también es admin)
+            $admins = User::role('admin')
+                ->where('activo', true)
+                ->when($vendedor, function($query) use ($vendedor) {
+                    return $query->where('id', '!=', $vendedor->id);
+                })
+                ->get();
+
+            foreach ($admins as $admin) {
+                if ($admin->email) {
+                    Mail::to($admin->email)->queue(
+                        new AlertaCotizacionAceptada($solicitud, 'admin')
+                    );
+                    Log::info("Alerta de cotización enviada al admin: {$admin->email}");
+                }
+            }
+
+        } catch (\Exception $e) {
+            // No interrumpir el flujo si falla el envío de alertas
+            Log::error("Error al enviar alertas de cotización aceptada: " . $e->getMessage());
+        }
     }
 }

@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class SolicitudCotizacion extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'solicitudes_cotizacion';
 
@@ -19,20 +20,120 @@ class SolicitudCotizacion extends Model
         'created_by',
         'estado',
         'monto_total',
+        'valor_flete',
+        'descuento_total',
         'notas_cliente',
         'observaciones_admin',
+        'observaciones_vendedor',
         'motivo_rechazo',
         'aplicada_en',
         'aplicada_por',
         'rechazada_en',
-        'rechazada_por'
+        'rechazada_por',
+        'tiene_reserva_stock',
+        'reserva_expira_en',
+        'reserva_liberada_en',
+        'editada_en',
+        'editada_por',
+        // Campos de pago
+        'estado_pago',
+        'metodo_pago',
+        'comprobante_pago',
+        'monto_pagado',
+        'pagado_en',
+        'verificado_por',
+        'verificado_en',
+        'notas_pago',
+        // Campos de facturación
+        'numero_factura',
+        'facturada_en',
+        'facturada_por',
+        'archivo_factura',
+        'porcentaje_iva',
+        'valor_iva',
+        'forma_pago_factura',
+        'fecha_vencimiento',
+        // Campos de envío
+        'estado_envio',
+        'numero_guia',
+        'transportadora',
+        'archivo_guia',
+        'despachado_en',
+        'despachado_por',
+        'entregado_en',
     ];
 
     protected $casts = [
         'monto_total' => 'decimal:2',
+        'valor_flete' => 'decimal:2',
+        'descuento_total' => 'decimal:2',
         'aplicada_en' => 'datetime',
         'rechazada_en' => 'datetime',
+        'reserva_expira_en' => 'datetime',
+        'reserva_liberada_en' => 'datetime',
+        'editada_en' => 'datetime',
+        'tiene_reserva_stock' => 'boolean',
+        // Pago
+        'monto_pagado' => 'decimal:2',
+        'pagado_en' => 'datetime',
+        'verificado_en' => 'datetime',
+        // Factura
+        'facturada_en' => 'datetime',
+        'porcentaje_iva' => 'decimal:2',
+        'valor_iva' => 'decimal:2',
+        'fecha_vencimiento' => 'date',
+        // Envío
+        'despachado_en' => 'datetime',
+        'entregado_en' => 'datetime',
     ];
+
+    /**
+     * Estados de la cotización
+     */
+    const ESTADO_PENDIENTE = 'pendiente';
+    const ESTADO_APLICADA = 'aplicada';
+    const ESTADO_RECHAZADA = 'rechazada';
+
+    /**
+     * Estados de pago
+     */
+    const PAGO_PENDIENTE = 'pendiente';
+    const PAGO_PARCIAL = 'parcial';
+    const PAGO_PAGADO = 'pagado';
+
+    /**
+     * Métodos de pago disponibles
+     */
+    const METODOS_PAGO = [
+        'transferencia' => 'Transferencia bancaria',
+        'efectivo' => 'Efectivo',
+        'tarjeta' => 'Tarjeta',
+        'cheque' => 'Cheque',
+        'otro' => 'Otro',
+    ];
+
+    /**
+     * Estados de envío
+     */
+    const ENVIO_PENDIENTE = 'pendiente';
+    const ENVIO_PREPARANDO = 'preparando';
+    const ENVIO_DESPACHADO = 'despachado';
+    const ENVIO_EN_TRANSITO = 'en_transito';
+    const ENVIO_ENTREGADO = 'entregado';
+
+    /**
+     * Obtener los estados de envío con sus etiquetas
+     */
+    public static function estadosEnvio(): array
+    {
+        return [
+            self::ENVIO_PENDIENTE => 'Pendiente',
+            self::ENVIO_PREPARANDO => 'Preparando',
+            self::ENVIO_DESPACHADO => 'Despachado',
+            self::ENVIO_EN_TRANSITO => 'En Tránsito',
+            self::ENVIO_ENTREGADO => 'Entregado',
+        ];
+    }
 
     public function cliente()
     {
@@ -62,6 +163,54 @@ class SolicitudCotizacion extends Model
     public function rechazadaPor()
     {
         return $this->belongsTo(User::class, 'rechazada_por');
+    }
+
+    /**
+     * Usuario que editó la cotización
+     */
+    public function editadaPor()
+    {
+        return $this->belongsTo(User::class, 'editada_por');
+    }
+
+    /**
+     * Usuario que verificó el pago
+     */
+    public function verificadoPor()
+    {
+        return $this->belongsTo(User::class, 'verificado_por');
+    }
+
+    /**
+     * Usuario que generó la factura
+     */
+    public function facturadaPor()
+    {
+        return $this->belongsTo(User::class, 'facturada_por');
+    }
+
+    /**
+     * Usuario que despachó el pedido
+     */
+    public function despachadoPor()
+    {
+        return $this->belongsTo(User::class, 'despachado_por');
+    }
+
+    /**
+     * Reservas de stock asociadas a esta cotización
+     */
+    public function reservas()
+    {
+        return $this->hasMany(ReservaStock::class, 'solicitud_cotizacion_id');
+    }
+
+    /**
+     * Reservas activas de stock
+     */
+    public function reservasActivas()
+    {
+        return $this->reservas()->activas();
     }
 
     public function getTotalItemsAttribute()
@@ -125,5 +274,517 @@ class SolicitudCotizacion extends Model
     public function scopePorCliente($query, $clienteId)
     {
         return $query->where('cliente_id', $clienteId);
+    }
+
+    /**
+     * Cotizaciones con reserva activa
+     */
+    public function scopeConReservaActiva($query)
+    {
+        return $query->where('tiene_reserva_stock', true)
+                     ->where('reserva_expira_en', '>', now());
+    }
+
+    /**
+     * Cotizaciones con reserva expirada
+     */
+    public function scopeConReservaExpirada($query)
+    {
+        return $query->where('tiene_reserva_stock', true)
+                     ->where('reserva_expira_en', '<=', now())
+                     ->whereNull('reserva_liberada_en');
+    }
+
+    // ==========================================
+    // MÉTODOS DE RESERVA
+    // ==========================================
+
+    /**
+     * Verifica si la cotización tiene reserva activa
+     */
+    public function tieneReservaActiva(): bool
+    {
+        return $this->tiene_reserva_stock
+            && $this->reserva_expira_en
+            && $this->reserva_expira_en > now()
+            && is_null($this->reserva_liberada_en);
+    }
+
+    /**
+     * Verifica si la reserva ha expirado
+     */
+    public function reservaExpirada(): bool
+    {
+        return $this->tiene_reserva_stock
+            && $this->reserva_expira_en
+            && $this->reserva_expira_en <= now()
+            && is_null($this->reserva_liberada_en);
+    }
+
+    /**
+     * Obtener tiempo restante de reserva
+     */
+    public function getTiempoRestanteReservaAttribute(): ?string
+    {
+        if (!$this->tieneReservaActiva()) {
+            return null;
+        }
+
+        return $this->reserva_expira_en->diffForHumans(now(), [
+            'syntax' => \Carbon\CarbonInterface::DIFF_RELATIVE_TO_NOW,
+        ]);
+    }
+
+    /**
+     * Renovar la reserva de stock
+     */
+    public function renovarReserva(int $horas = 24): bool
+    {
+        if (!$this->tiene_reserva_stock || $this->estado !== self::ESTADO_PENDIENTE) {
+            return false;
+        }
+
+        $this->update([
+            'reserva_expira_en' => now()->addHours($horas),
+            'reserva_liberada_en' => null,
+        ]);
+
+        // Renovar también las reservas individuales
+        $this->reservasActivas->each(function ($reserva) use ($horas) {
+            $reserva->renovar($horas);
+        });
+
+        return true;
+    }
+
+    /**
+     * Liberar todas las reservas de la cotización
+     */
+    public function liberarReservas(string $motivo, ?int $usuarioId = null): int
+    {
+        $liberadas = 0;
+
+        $this->reservasActivas->each(function ($reserva) use ($motivo, $usuarioId, &$liberadas) {
+            if ($reserva->liberar($motivo, $usuarioId)) {
+                $liberadas++;
+            }
+        });
+
+        if ($liberadas > 0) {
+            $this->update([
+                'tiene_reserva_stock' => false,
+                'reserva_liberada_en' => now(),
+            ]);
+        }
+
+        return $liberadas;
+    }
+
+    // ==========================================
+    // MÉTODOS DE ESTADO Y EDICIÓN
+    // ==========================================
+
+    /**
+     * Verifica si la cotización puede ser editada
+     */
+    public function esEditable(): bool
+    {
+        return $this->estado === self::ESTADO_PENDIENTE;
+    }
+
+    /**
+     * Verifica si la cotización puede ser eliminada
+     */
+    public function esEliminable(): bool
+    {
+        return $this->estado === self::ESTADO_PENDIENTE;
+    }
+
+    /**
+     * Marcar como editada
+     */
+    public function marcarComoEditada(int $usuarioId): void
+    {
+        $this->update([
+            'editada_en' => now(),
+            'editada_por' => $usuarioId,
+        ]);
+    }
+
+    /**
+     * Calcular monto total con flete y descuento
+     */
+    public function calcularMontoTotalConExtras(): float
+    {
+        $subtotal = $this->items->sum('precio_total');
+        $flete = $this->valor_flete ?? 0;
+        $descuento = $this->descuento_total ?? 0;
+
+        return $subtotal + $flete - $descuento;
+    }
+
+    /**
+     * Obtener el subtotal sin flete ni descuento
+     */
+    public function getSubtotalAttribute(): float
+    {
+        return $this->items->sum('precio_total');
+    }
+
+    /**
+     * Obtener el monto total formateado
+     */
+    public function getMontoTotalFormateadoAttribute(): string
+    {
+        return '$' . number_format($this->monto_total, 0, ',', '.');
+    }
+
+    /**
+     * Obtener color para badge según estado
+     */
+    public function getColorEstadoAttribute(): string
+    {
+        return match($this->estado) {
+            self::ESTADO_PENDIENTE => $this->reservaExpirada() ? 'warning' : 'primary',
+            self::ESTADO_APLICADA => 'success',
+            self::ESTADO_RECHAZADA => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Obtener icono según estado
+     */
+    public function getIconoEstadoAttribute(): string
+    {
+        return match($this->estado) {
+            self::ESTADO_PENDIENTE => 'bi-clock',
+            self::ESTADO_APLICADA => 'bi-check-circle',
+            self::ESTADO_RECHAZADA => 'bi-x-circle',
+            default => 'bi-question-circle',
+        };
+    }
+
+    /**
+     * Obtener badge HTML del estado de reserva
+     */
+    public function getBadgeReservaAttribute(): string
+    {
+        if (!$this->tiene_reserva_stock) {
+            return '<span class="badge bg-secondary">Sin reserva</span>';
+        }
+
+        if ($this->reserva_liberada_en) {
+            return '<span class="badge bg-info">Liberada</span>';
+        }
+
+        if ($this->reservaExpirada()) {
+            return '<span class="badge bg-warning text-dark">Expirada</span>';
+        }
+
+        if ($this->tieneReservaActiva()) {
+            return '<span class="badge bg-success">Activa</span>';
+        }
+
+        return '<span class="badge bg-secondary">-</span>';
+    }
+
+    // ==========================================
+    // MÉTODOS DE PAGO Y FACTURACIÓN
+    // ==========================================
+
+    /**
+     * Verificar si la cotización está pagada
+     */
+    public function estaPagada(): bool
+    {
+        return $this->estado_pago === self::PAGO_PAGADO;
+    }
+
+    /**
+     * Verificar si tiene pago parcial
+     */
+    public function tienePagoParcial(): bool
+    {
+        return $this->estado_pago === self::PAGO_PARCIAL;
+    }
+
+    /**
+     * Verificar si puede registrar pago
+     */
+    public function puedeRegistrarPago(): bool
+    {
+        return $this->estado === self::ESTADO_APLICADA
+            && $this->estado_pago !== self::PAGO_PAGADO;
+    }
+
+    /**
+     * Verificar si puede generar factura
+     */
+    public function puedeGenerarFactura(): bool
+    {
+        return $this->estado === self::ESTADO_APLICADA
+            && $this->estado_pago === self::PAGO_PAGADO
+            && is_null($this->numero_factura);
+    }
+
+    /**
+     * Verificar si tiene factura generada
+     */
+    public function tieneFactura(): bool
+    {
+        return !is_null($this->numero_factura);
+    }
+
+    /**
+     * Registrar pago
+     */
+    public function registrarPago(
+        float $monto,
+        string $metodoPago,
+        ?string $comprobante = null,
+        ?string $notas = null,
+        ?int $verificadoPor = null
+    ): void {
+        $nuevoMontoPagado = $this->monto_pagado + $monto;
+        $montoTotal = $this->monto_total;
+
+        // Determinar estado de pago
+        $estadoPago = self::PAGO_PENDIENTE;
+        if ($nuevoMontoPagado >= $montoTotal) {
+            $estadoPago = self::PAGO_PAGADO;
+            $nuevoMontoPagado = $montoTotal; // No permitir sobrepago
+        } elseif ($nuevoMontoPagado > 0) {
+            $estadoPago = self::PAGO_PARCIAL;
+        }
+
+        $this->update([
+            'estado_pago' => $estadoPago,
+            'metodo_pago' => $metodoPago,
+            'comprobante_pago' => $comprobante,
+            'monto_pagado' => $nuevoMontoPagado,
+            'pagado_en' => $estadoPago === self::PAGO_PAGADO ? now() : $this->pagado_en,
+            'verificado_por' => $verificadoPor,
+            'verificado_en' => $verificadoPor ? now() : null,
+            'notas_pago' => $notas,
+        ]);
+    }
+
+    /**
+     * Obtener color para badge de estado de pago
+     */
+    public function getColorEstadoPagoAttribute(): string
+    {
+        return match($this->estado_pago) {
+            self::PAGO_PENDIENTE => 'warning',
+            self::PAGO_PARCIAL => 'info',
+            self::PAGO_PAGADO => 'success',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Obtener etiqueta de estado de pago
+     */
+    public function getEtiquetaEstadoPagoAttribute(): string
+    {
+        return match($this->estado_pago) {
+            self::PAGO_PENDIENTE => 'Pendiente',
+            self::PAGO_PARCIAL => 'Parcial',
+            self::PAGO_PAGADO => 'Pagado',
+            default => '-',
+        };
+    }
+
+    /**
+     * Obtener saldo pendiente
+     */
+    public function getSaldoPendienteAttribute(): float
+    {
+        return max(0, $this->monto_total - $this->monto_pagado);
+    }
+
+    /**
+     * Scopes para filtros de pago
+     */
+    public function scopePagoPendiente($query)
+    {
+        return $query->where('estado_pago', self::PAGO_PENDIENTE);
+    }
+
+    public function scopePagoParcial($query)
+    {
+        return $query->where('estado_pago', self::PAGO_PARCIAL);
+    }
+
+    public function scopePagado($query)
+    {
+        return $query->where('estado_pago', self::PAGO_PAGADO);
+    }
+
+    public function scopeConFactura($query)
+    {
+        return $query->whereNotNull('numero_factura');
+    }
+
+    public function scopeSinFactura($query)
+    {
+        return $query->whereNull('numero_factura');
+    }
+
+    // ==========================================
+    // MÉTODOS DE ENVÍO
+    // ==========================================
+
+    /**
+     * Verificar si se puede descargar la guía de envío
+     */
+    public function puedeDescargarGuia(): bool
+    {
+        return in_array($this->estado_envio, [
+            self::ENVIO_DESPACHADO,
+            self::ENVIO_EN_TRANSITO,
+            self::ENVIO_ENTREGADO
+        ]) && !empty($this->archivo_guia);
+    }
+
+    /**
+     * Verificar si se puede descargar la factura
+     */
+    public function puedeDescargarFactura(): bool
+    {
+        return $this->tieneFactura() && !empty($this->archivo_factura);
+    }
+
+    /**
+     * Obtener color para badge de estado de envío
+     */
+    public function getColorEstadoEnvioAttribute(): string
+    {
+        return match($this->estado_envio) {
+            self::ENVIO_PENDIENTE => 'secondary',
+            self::ENVIO_PREPARANDO => 'info',
+            self::ENVIO_DESPACHADO => 'primary',
+            self::ENVIO_EN_TRANSITO => 'warning',
+            self::ENVIO_ENTREGADO => 'success',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Obtener etiqueta de estado de envío
+     */
+    public function getEtiquetaEstadoEnvioAttribute(): string
+    {
+        return self::estadosEnvio()[$this->estado_envio] ?? '-';
+    }
+
+    /**
+     * Obtener icono según estado de envío
+     */
+    public function getIconoEstadoEnvioAttribute(): string
+    {
+        return match($this->estado_envio) {
+            self::ENVIO_PENDIENTE => 'bi-clock',
+            self::ENVIO_PREPARANDO => 'bi-box-seam',
+            self::ENVIO_DESPACHADO => 'bi-truck',
+            self::ENVIO_EN_TRANSITO => 'bi-geo-alt',
+            self::ENVIO_ENTREGADO => 'bi-check-circle',
+            default => 'bi-question-circle',
+        };
+    }
+
+    /**
+     * Actualizar estado de envío
+     */
+    public function actualizarEstadoEnvio(
+        string $nuevoEstado,
+        ?string $numeroGuia = null,
+        ?string $transportadora = null,
+        ?string $archivoGuia = null,
+        ?int $despachadoPor = null
+    ): void {
+        $datos = ['estado_envio' => $nuevoEstado];
+
+        if ($numeroGuia !== null) {
+            $datos['numero_guia'] = $numeroGuia;
+        }
+
+        if ($transportadora !== null) {
+            $datos['transportadora'] = $transportadora;
+        }
+
+        if ($archivoGuia !== null) {
+            $datos['archivo_guia'] = $archivoGuia;
+        }
+
+        // Registrar timestamps según estado
+        if ($nuevoEstado === self::ENVIO_DESPACHADO) {
+            $datos['despachado_en'] = now();
+            $datos['despachado_por'] = $despachadoPor;
+        } elseif ($nuevoEstado === self::ENVIO_ENTREGADO) {
+            $datos['entregado_en'] = now();
+        }
+
+        $this->update($datos);
+    }
+
+    /**
+     * Verificar si el pedido está despachado o en camino
+     */
+    public function estaDespachado(): bool
+    {
+        return in_array($this->estado_envio, [
+            self::ENVIO_DESPACHADO,
+            self::ENVIO_EN_TRANSITO,
+            self::ENVIO_ENTREGADO
+        ]);
+    }
+
+    /**
+     * Verificar si el pedido fue entregado
+     */
+    public function estaEntregado(): bool
+    {
+        return $this->estado_envio === self::ENVIO_ENTREGADO;
+    }
+
+    /**
+     * Scopes para filtros de envío
+     */
+    public function scopeEnvioPendiente($query)
+    {
+        return $query->where('estado_envio', self::ENVIO_PENDIENTE);
+    }
+
+    public function scopeEnvioPreparando($query)
+    {
+        return $query->where('estado_envio', self::ENVIO_PREPARANDO);
+    }
+
+    public function scopeDespachados($query)
+    {
+        return $query->whereIn('estado_envio', [
+            self::ENVIO_DESPACHADO,
+            self::ENVIO_EN_TRANSITO
+        ]);
+    }
+
+    public function scopeEntregados($query)
+    {
+        return $query->where('estado_envio', self::ENVIO_ENTREGADO);
+    }
+
+    // ==========================================
+    // SCOPE PARA PORTAL CLIENTE
+    // ==========================================
+
+    /**
+     * Filtrar solicitudes del cliente autenticado
+     */
+    public function scopeDelClienteAutenticado($query)
+    {
+        $cliente = Cliente::where('user_id', auth()->id())->first();
+        return $query->where('cliente_id', $cliente?->id);
     }
 }

@@ -56,7 +56,8 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                                                <div class="col-12 col-md-6 mb-3">
+                        {{-- Rol --}}
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="form-label">
                                 Rol <span class="text-danger">*</span>
                             </label>
@@ -73,6 +74,22 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
+
+                        {{-- Estado Activo (solo en edición) --}}
+                        @if($user->exists)
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Estado</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="activo" value="1"
+                                       id="activoSwitch"
+                                       {{ old('activo', $user->activo) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="activoSwitch">
+                                    Usuario activo
+                                </label>
+                            </div>
+                            <small class="text-muted">Los usuarios inactivos no pueden iniciar sesión</small>
+                        </div>
+                        @endif
                     </div>
 
                     {{-- Botones --}}

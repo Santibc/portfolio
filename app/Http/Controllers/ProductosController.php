@@ -142,7 +142,7 @@ class ProductosController extends Controller
             'controlar_stock' => ['boolean'],  // NUEVO
             'permitir_venta_sin_stock' => ['boolean'],  // NUEVO
             'imagenes.*' => ['nullable','image','mimes:jpeg,png,jpg,webp','max:2048'],
-            'variantes.*.talla' => ['nullable','string','max:50'],
+            'variantes.*.referencia_variante' => ['nullable','string','max:50'],
             'variantes.*.color' => ['nullable','string','max:50'],
             'variantes.*.sku' => ['nullable','string','max:255'],
             'variantes.*.stock_inicial' => ['nullable','integer','min:0'],  // NUEVO
@@ -197,25 +197,25 @@ class ProductosController extends Controller
                 }
                 
                 foreach ($request->variantes as $index => $varianteData) {
-                    if (!empty($varianteData['talla']) || !empty($varianteData['color']) || !empty($varianteData['sku'])) {
+                    if (!empty($varianteData['referencia_variante']) || !empty($varianteData['color']) || !empty($varianteData['sku'])) {
                         // Generar SKU si no se proporciona
                         $sku = $varianteData['sku'];
                         if (empty($sku)) {
                             $sku = $producto->referencia;
-                            if (!empty($varianteData['talla'])) {
-                                $sku .= '-' . strtoupper(str_replace(' ', '', $varianteData['talla']));
+                            if (!empty($varianteData['referencia_variante'])) {
+                                $sku .= '-' . strtoupper(str_replace(' ', '', $varianteData['referencia_variante']));
                             }
                             if (!empty($varianteData['color'])) {
                                 $sku .= '-' . strtoupper(str_replace(' ', '', $varianteData['color']));
                             }
-                            if (empty($varianteData['talla']) && empty($varianteData['color'])) {
+                            if (empty($varianteData['referencia_variante']) && empty($varianteData['color'])) {
                                 $count = $producto->variantes()->count() + 1;
                                 $sku .= '-VAR' . $count;
                             }
                         }
-                        
+
                         $variante = $producto->variantes()->create([
-                            'talla' => $varianteData['talla'],
+                            'referencia_variante' => $varianteData['referencia_variante'],
                             'color' => $varianteData['color'],
                             'sku' => $sku,
                             'activo' => true
@@ -461,13 +461,13 @@ public function actualizarPreciosExcel(Request $request)
             $html .= '<p class="text-center text-muted">Este producto no tiene variantes configuradas.</p>';
         } else {
             $html .= '<table class="table table-striped">';
-            $html .= '<thead><tr><th>SKU</th><th>Talla</th><th>Color</th><th>Estado</th></tr></thead>';
+            $html .= '<thead><tr><th>SKU</th><th>Referencia</th><th>Color</th><th>Estado</th></tr></thead>';
             $html .= '<tbody>';
             
             foreach ($variantes as $variante) {
                 $html .= '<tr>';
                 $html .= '<td><code>' . $variante->sku . '</code></td>';
-                $html .= '<td>' . ($variante->talla ?: '-') . '</td>';
+                $html .= '<td>' . ($variante->referencia_variante ?: '-') . '</td>';
                 $html .= '<td>' . ($variante->color ?: '-') . '</td>';
                 $html .= '<td>' . ($variante->activo ? '<span class="badge bg-success">Activa</span>' : '<span class="badge bg-secondary">Inactiva</span>') . '</td>';
                 $html .= '</tr>';
@@ -598,5 +598,21 @@ public function actualizarPreciosExcel(Request $request)
                 'message' => 'Error al eliminar el producto: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Exportar productos con imágenes a Excel
+     */
+    public function exportarConImagenes(Request $request)
+    {
+        $categoriaId = $request->get('categoria_id');
+        $incluirImagenes = $request->get('incluir_imagenes', true);
+
+        $nombreArchivo = 'productos_catalogo_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new \App\Exports\ProductosConImagenesExport($categoriaId, $incluirImagenes),
+            $nombreArchivo
+        );
     }
 }

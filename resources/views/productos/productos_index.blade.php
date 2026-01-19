@@ -73,6 +73,11 @@
         { extend:'colvis',     className:'btn btn-outline-dark', text:'Columnas', columns:':not(.noVis)' },
         { extend:'excelHtml5', className:'btn btn-outline-success', text:'Excel' },
         {
+          text:'<i class="bi bi-image"></i> Excel + Imágenes',
+          className:'btn btn-outline-info',
+          action: () => window.location.href = "{{ route('productos.exportar-con-imagenes') }}"
+        },
+        {
           text:'Nuevo', className:'btn btn-outline-primary',
           action: () => window.location.href = "{{ route('productos.form') }}"
         },

@@ -14,12 +14,14 @@ class MovimientoStock extends Model
     protected $fillable = [
         'producto_id',
         'variante_producto_id',
+        'ubicacion_id',
         'tipo_movimiento',
         'cantidad',
         'stock_anterior',
         'stock_nuevo',
         'referencia_documento',
         'origen',
+        'tipo_operacion',
         'motivo',
         'usuario_id',
         'solicitud_cotizacion_id'
@@ -33,6 +35,11 @@ class MovimientoStock extends Model
     public function variante()
     {
         return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
+    }
+
+    public function ubicacion()
+    {
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
 
     public function usuario()
@@ -90,7 +97,19 @@ class MovimientoStock extends Model
             'devolucion' => 'Devolución',
             'ajuste_inventario' => 'Ajuste de Inventario',
             'cotizacion' => 'Cotización',
+            'traslado' => 'Traslado',
             default => 'Otro'
+        };
+    }
+
+    // Obtener descripción del tipo de operación
+    public function getDescripcionTipoOperacionAttribute()
+    {
+        return match($this->tipo_operacion) {
+            'contado' => 'Contado',
+            'credito' => 'Crédito',
+            'general' => 'General',
+            default => 'General'
         };
     }
 
@@ -122,5 +141,15 @@ class MovimientoStock extends Model
     public function scopePorVariante($query, $varianteId)
     {
         return $query->where('variante_producto_id', $varianteId);
+    }
+
+    public function scopeEnUbicacion($query, $ubicacionId)
+    {
+        return $query->where('ubicacion_id', $ubicacionId);
+    }
+
+    public function scopePorTipoOperacion($query, $tipo)
+    {
+        return $query->where('tipo_operacion', $tipo);
     }
 }

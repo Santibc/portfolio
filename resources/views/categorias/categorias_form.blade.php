@@ -16,8 +16,19 @@
           <input type="hidden" name="id"   value="{{ old('id',$categoria->id) }}">
           
           <div class="row">
+            {{-- Referencia --}}
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Referencia <span class="text-danger">*</span></label>
+              <input name="referencia" type="text"
+                     class="form-control"
+                     value="{{ old('referencia',$categoria->referencia) }}"
+                     placeholder="Ej: CAT001">
+              <small class="text-muted">Código único de la categoría</small>
+              @error('referencia') <small class="text-danger d-block">{{ $message }}</small> @enderror
+            </div>
+
             {{-- Nombre --}}
-            <div class="col-md-6 mb-3">
+            <div class="col-md-5 mb-3">
               <label class="form-label">Nombre <span class="text-danger">*</span></label>
               <input name="nombre" type="text"
                      class="form-control"
@@ -26,7 +37,7 @@
             </div>
 
             {{-- Slug --}}
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
               <label class="form-label">Slug</label>
               <input name="slug" type="text"
                      class="form-control"

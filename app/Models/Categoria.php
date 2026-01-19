@@ -13,6 +13,7 @@ class Categoria extends Model
     protected $table = 'categorias';
 
     protected $fillable = [
+        'referencia',
         'nombre',
         'slug',
         'descripcion',

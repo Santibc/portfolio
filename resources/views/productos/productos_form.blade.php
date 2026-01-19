@@ -137,7 +137,7 @@
                        value="1"
                        {{ old('tiene_variantes',$producto->tiene_variantes) ? 'checked' : '' }}>
                 <label class="form-check-label" for="tiene_variantes">
-                  Este producto tiene variantes (tallas/colores)
+                  Este producto tiene variantes (referencias/colores)
                 </label>
                 <small class="text-muted d-block">
                   Si marca esta opción, podrá configurar las variantes del producto a continuación.
@@ -280,14 +280,14 @@
                     <div class="variante-row mb-3">
                       <div class="row align-items-end">
                         <div class="col-md-3">
-                          <label class="form-label">Talla</label>
-                          <input type="text" name="variantes[{{ $index }}][talla]" 
-                                 class="form-control" value="{{ $variante->talla }}"
-                                 placeholder="Ej: S, M, L, XL">
+                          <label class="form-label">Referencia Variante</label>
+                          <input type="text" name="variantes[{{ $index }}][referencia_variante]"
+                                 class="form-control" value="{{ $variante->referencia_variante }}"
+                                 placeholder="Ej: REF001, VAR-A">
                         </div>
                         <div class="col-md-3">
                           <label class="form-label">Color</label>
-                          <input type="text" name="variantes[{{ $index }}][color]" 
+                          <input type="text" name="variantes[{{ $index }}][color]"
                                  class="form-control" value="{{ $variante->color }}"
                                  placeholder="Ej: Rojo, Azul">
                         </div>
@@ -514,18 +514,18 @@
           <div class="variante-row mb-3">
             <div class="row align-items-end">
               <div class="col-md-3">
-                <label class="form-label">Talla</label>
-                <input type="text" name="variantes[${varianteIndex}][talla]" 
-                       class="form-control" placeholder="Ej: S, M, L, XL">
+                <label class="form-label">Referencia Variante</label>
+                <input type="text" name="variantes[${varianteIndex}][referencia_variante]"
+                       class="form-control" placeholder="Ej: REF001, VAR-A">
               </div>
               <div class="col-md-3">
                 <label class="form-label">Color</label>
-                <input type="text" name="variantes[${varianteIndex}][color]" 
+                <input type="text" name="variantes[${varianteIndex}][color]"
                        class="form-control" placeholder="Ej: Rojo, Azul">
               </div>
               <div class="col-md-4">
                 <label class="form-label">SKU</label>
-                <input type="text" name="variantes[${varianteIndex}][sku]" 
+                <input type="text" name="variantes[${varianteIndex}][sku]"
                        class="form-control" placeholder="Se genera automáticamente">
               </div>
               <div class="col-md-2">

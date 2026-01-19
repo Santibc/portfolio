@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\SolicitudCreada;
+use App\Events\CotizacionCreada;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class CatalogoController extends Controller
@@ -519,6 +520,9 @@ class CatalogoController extends Controller
             $solicitud->update(['monto_total' => $montoTotal]);
 
             DB::commit();
+
+            // Disparar evento para crear cuenta de cliente automáticamente
+            event(new CotizacionCreada($solicitud));
 
             // Enviar correo de confirmación al cliente
             try {

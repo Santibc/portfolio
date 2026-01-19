@@ -15,7 +15,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Liberar reservas de stock expiradas cada hora
+        $schedule->command('reservas:liberar-expiradas')
+                 ->hourly()
+                 ->appendOutputTo(storage_path('logs/reservas.log'))
+                 ->description('Liberar reservas de stock expiradas');
     }
 
     /**

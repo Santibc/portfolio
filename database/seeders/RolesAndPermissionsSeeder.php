@@ -2,35 +2,216 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Ejecuta el seeder de roles y permisos.
      *
      * @return void
      */
     public function run()
     {
-                // Reset cached roles and permissions
-                app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        // Limpiar caché de permisos
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-                // Crea permisos (opcional, si los necesitas ya)
-               /*   Permission::create(['name' => 'Mensaje inicio']); */
+        // ============================================
+        // DEFINICIÓN DE PERMISOS
+        // ============================================
 
-        
-                // Crea roles
-             /*    $adminRole = Role::create(['name' => 'admin']); */
-/*                 $editorRole = Role::create(['name' => 'editor']);
-                $userRole = Role::create(['name' => 'user']); // Rol por defecto para usuarios registrados */
-        
-                // Asigna permisos a los roles (ejemplo)
-                $adminRole = Role::where('id', 1)->first();
-                $adminRole->givePermissionTo(['Mensaje inicio']);
-                // $editorRole->givePermissionTo(['edit articles', 'publish articles']);
+        $permisos = [
+            // Módulo Dashboard
+            'dashboard.ver',
+            'dashboard.metricas',
+
+            // Módulo Usuarios
+            'usuarios.ver',
+            'usuarios.crear',
+            'usuarios.editar',
+            'usuarios.eliminar',
+
+            // Módulo Clientes
+            'clientes.ver',
+            'clientes.crear',
+            'clientes.editar',
+            'clientes.eliminar',
+            'clientes.documentos',
+
+            // Módulo Categorías
+            'categorias.ver',
+            'categorias.crear',
+            'categorias.editar',
+            'categorias.eliminar',
+
+            // Módulo Productos
+            'productos.ver',
+            'productos.crear',
+            'productos.editar',
+            'productos.eliminar',
+            'productos.importar',
+            'productos.exportar',
+
+            // Módulo Listas de Precios
+            'precios.ver',
+            'precios.crear',
+            'precios.editar',
+            'precios.eliminar',
+            'precios.importar',
+
+            // Módulo Cotizaciones
+            'cotizaciones.ver',
+            'cotizaciones.crear',
+            'cotizaciones.editar',
+            'cotizaciones.aprobar',
+            'cotizaciones.rechazar',
+            'cotizaciones.eliminar',
+            'cotizaciones.exportar',
+
+            // Módulo Catálogo
+            'catalogo.ver',
+            'catalogo.crear_enlace',
+
+            // Módulo Stock/Inventario
+            'stock.ver',
+            'stock.entrada',
+            'stock.salida',
+            'stock.ajuste',
+            'stock.traslado',
+            'stock.importar',
+            'stock.exportar',
+            'stock.novedades',
+
+            // Módulo Punto de Venta
+            'pdv.ver',
+            'pdv.vender',
+            'pdv.anular',
+            'pdv.reportes',
+
+            // Módulo Facturación
+            'facturacion.ver',
+            'facturacion.crear',
+            'facturacion.anular',
+
+            // Módulo Pagos
+            'pagos.ver',
+            'pagos.confirmar',
+            'pagos.rechazar',
+
+            // Portal Cliente
+            'portal.ver',
+            'portal.historial',
+            'portal.seguimiento',
+            'portal.descargar_guia',
+            'portal.descargar_factura',
+
+            // Reportes
+            'reportes.ver',
+            'reportes.exportar',
+
+            // Configuración
+            'configuracion.ver',
+            'configuracion.editar',
+        ];
+
+        // Crear todos los permisos
+        foreach ($permisos as $permiso) {
+            Permission::firstOrCreate(['name' => $permiso, 'guard_name' => 'web']);
+        }
+
+        // ============================================
+        // DEFINICIÓN DE ROLES Y SUS PERMISOS
+        // ============================================
+
+        $roles = [
+            // Administrador - Acceso total
+            'admin' => $permisos,
+
+            // Vendedor - Gestión de cotizaciones y clientes (solo ver)
+            'vendedor' => [
+                'dashboard.ver',
+                'clientes.ver',
+                'productos.ver',
+                'precios.ver',
+                'cotizaciones.ver',
+                'cotizaciones.crear',
+                'cotizaciones.editar',
+                'cotizaciones.exportar',
+                'catalogo.ver',
+                'catalogo.crear_enlace',
+                'stock.ver',
+            ],
+
+            // Inventarios - Gestión de stock
+            'inventarios' => [
+                'dashboard.ver',
+                'productos.ver',
+                'stock.ver',
+                'stock.entrada',
+                'stock.salida',
+                'stock.ajuste',
+                'stock.traslado',
+                'stock.importar',
+                'stock.exportar',
+                'stock.novedades',
+                'reportes.ver',
+                'reportes.exportar',
+            ],
+
+            // Facturación - Gestión de pagos y facturas
+            'facturacion' => [
+                'dashboard.ver',
+                'cotizaciones.ver',
+                'cotizaciones.aprobar',
+                'pagos.ver',
+                'pagos.confirmar',
+                'pagos.rechazar',
+                'facturacion.ver',
+                'facturacion.crear',
+                'facturacion.anular',
+                'reportes.ver',
+                'reportes.exportar',
+            ],
+
+            // Punto de Venta
+            'punto_venta' => [
+                'dashboard.ver',
+                'productos.ver',
+                'stock.ver',
+                'pdv.ver',
+                'pdv.vender',
+                'pdv.anular',
+                'pdv.reportes',
+            ],
+
+            // Cliente - Acceso limitado al portal
+            'cliente' => [
+                'portal.ver',
+                'portal.historial',
+                'portal.seguimiento',
+                'portal.descargar_guia',
+                'portal.descargar_factura',
+            ],
+
+            // Técnico - Para módulo de servicio técnico (si se reactiva)
+            'tecnico' => [
+                'dashboard.ver',
+            ],
+        ];
+
+        // Crear roles y asignar permisos
+        foreach ($roles as $roleName => $rolePermisos) {
+            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $role->syncPermissions($rolePermisos);
+        }
+
+        $this->command->info('Roles y permisos creados correctamente.');
+        $this->command->table(
+            ['Rol', 'Permisos'],
+            collect($roles)->map(fn($perms, $role) => [$role, count($perms)])->toArray()
+        );
     }
 }

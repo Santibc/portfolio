@@ -11,6 +11,7 @@
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
                 <th>Acciones</th>
+                <th>Referencia</th>
                 <th>Nombre</th>
                 <th>Slug</th>
                 <th>Descripción</th>
@@ -35,16 +36,17 @@
       scrollX: true,
       ajax: "{{ route('categorias') }}",
       columns: [
-        { data:'action',    orderable:false, searchable:false },
-        { data:'nombre',    name:'nombre' },
-        { data:'slug',      name:'slug' },
-        { 
-          data:'descripcion', 
+        { data:'action',      orderable:false, searchable:false },
+        { data:'referencia',  name:'referencia' },
+        { data:'nombre',      name:'nombre' },
+        { data:'slug',        name:'slug' },
+        {
+          data:'descripcion',
           name:'descripcion',
           render: data => data ? data.substr(0,50)+'…' : ''
         },
-        { data:'orden',     name:'orden' },
-        { data:'activo',    name:'activo' },
+        { data:'orden',       name:'orden' },
+        { data:'activo',      name:'activo' },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [

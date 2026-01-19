@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\CotizacionCreada;
+use App\Listeners\CrearCuentaCliente;
+use App\Models\SolicitudCotizacion;
+use App\Observers\SolicitudCotizacionObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -18,6 +22,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        CotizacionCreada::class => [
+            CrearCuentaCliente::class,
+        ],
     ];
 
     /**
@@ -27,7 +34,8 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Registrar Observer para notificaciones de cambio de estado
+        SolicitudCotizacion::observe(SolicitudCotizacionObserver::class);
     }
 
     /**

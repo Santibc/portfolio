@@ -66,6 +66,10 @@
                 <th>Items</th>
                 <th>Monto</th>
                 <th>Estado</th>
+                <th>Pago</th>
+                <th>Envío</th>
+                <th>Factura</th>
+                <th>Reserva</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -118,7 +122,11 @@
         { data:'fecha', name:'created_at' },
         { data:'total_items', name:'total_items', searchable:false },
         { data:'monto_formateado', name:'monto_total' },
-        { data:'estado_badge', name:'estado' }
+        { data:'estado_badge', name:'estado' },
+        { data:'estado_pago_badge', name:'estado_pago', orderable:false, searchable:false },
+        { data:'estado_envio_badge', name:'estado_envio', orderable:false, searchable:false },
+        { data:'factura', name:'numero_factura', orderable:false, searchable:false },
+        { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -298,6 +306,263 @@
     const form = $('#formExportarExcel');
     form.submit();
     $('#modalExportarExcel').modal('hide');
+  }
+
+  // Función para clonar cotización
+  function clonarSolicitud(solicitudId) {
+    Swal.fire({
+      title: '¿Clonar cotización?',
+      text: 'Se creará una copia de esta cotización con precios y stock actualizados',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, clonar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Clonando...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.post(`/solicitudes/${solicitudId}/clonar`, {
+          _token: '{{ csrf_token() }}'
+        }, function(response) {
+          if (response.success) {
+            Swal.fire({
+              title: '¡Clonada!',
+              text: response.mensaje,
+              icon: 'success',
+              confirmButtonText: 'Ir a editar',
+              showCancelButton: true,
+              cancelButtonText: 'Cerrar'
+            }).then((result) => {
+              if (result.isConfirmed && response.redirect_url) {
+                window.location.href = response.redirect_url;
+              } else {
+                $('#solicitudes-table').DataTable().ajax.reload();
+              }
+            });
+          }
+        }).fail(function(xhr) {
+          Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al clonar la cotización', 'error');
+        });
+      }
+    });
+  }
+
+  // Función para eliminar cotización
+  function eliminarSolicitud(solicitudId) {
+    Swal.fire({
+      title: '¿Eliminar cotización?',
+      text: 'Esta acción no se puede deshacer. Si hay reservas de stock, serán liberadas.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Eliminando...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.ajax({
+          url: `/solicitudes/${solicitudId}`,
+          type: 'DELETE',
+          data: { _token: '{{ csrf_token() }}' },
+          success: function(response) {
+            if (response.success) {
+              Swal.fire('Eliminada', response.mensaje, 'success');
+              $('#solicitudes-table').DataTable().ajax.reload();
+            }
+          },
+          error: function(xhr) {
+            Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al eliminar la cotización', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // Función para gestionar envío
+  function gestionarEnvio(solicitudId, estadoActual, numeroGuia, transportadora) {
+    const estadosEnvio = {
+      'pendiente': 'Pendiente',
+      'preparando': 'Preparando',
+      'despachado': 'Despachado',
+      'en_transito': 'En Tránsito',
+      'entregado': 'Entregado'
+    };
+
+    let estadoOptions = '';
+    for (const [value, label] of Object.entries(estadosEnvio)) {
+      const selected = value === estadoActual ? 'selected' : '';
+      estadoOptions += `<option value="${value}" ${selected}>${label}</option>`;
+    }
+
+    Swal.fire({
+      title: 'Gestionar Envío',
+      html: `
+        <div class="text-start">
+          <div class="mb-3">
+            <label class="form-label">Estado de Envío</label>
+            <select id="swal-estado-envio" class="form-select">
+              ${estadoOptions}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Transportadora</label>
+            <input type="text" id="swal-transportadora" class="form-control"
+                   value="${transportadora || ''}" placeholder="Ej: Servientrega, Coordinadora...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Número de Guía</label>
+            <input type="text" id="swal-numero-guia" class="form-control"
+                   value="${numeroGuia || ''}" placeholder="Número de seguimiento">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Archivo de Guía (PDF)</label>
+            <input type="file" id="swal-archivo-guia" class="form-control" accept=".pdf">
+            <small class="text-muted">Opcional: Subir archivo PDF de la guía</small>
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: '<i class="bi bi-check"></i> Actualizar Envío',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        return {
+          estado_envio: document.getElementById('swal-estado-envio').value,
+          transportadora: document.getElementById('swal-transportadora').value,
+          numero_guia: document.getElementById('swal-numero-guia').value,
+          archivo_guia: document.getElementById('swal-archivo-guia').files[0] || null
+        };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Actualizando envío...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        // Crear FormData para enviar archivo
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('estado_envio', result.value.estado_envio);
+        formData.append('transportadora', result.value.transportadora);
+        formData.append('numero_guia', result.value.numero_guia);
+        if (result.value.archivo_guia) {
+          formData.append('archivo_guia', result.value.archivo_guia);
+        }
+
+        $.ajax({
+          url: `/solicitudes/${solicitudId}/envio`,
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            if (response.success) {
+              Swal.fire({
+                title: '¡Actualizado!',
+                text: response.mensaje,
+                icon: 'success'
+              });
+              $('#solicitudes-table').DataTable().ajax.reload();
+            }
+          },
+          error: function(xhr) {
+            Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al actualizar el envío', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  // Función para generar factura
+  function generarFactura(solicitudId) {
+    Swal.fire({
+      title: 'Generar Factura',
+      html: `
+        <div class="text-start">
+          <div class="mb-3">
+            <label class="form-label">IVA (%)</label>
+            <select id="swal-iva" class="form-select">
+              <option value="">Sin IVA</option>
+              <option value="19">19%</option>
+              <option value="5">5%</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Forma de Pago</label>
+            <select id="swal-forma-pago" class="form-select">
+              <option value="Contado">Contado</option>
+              <option value="Crédito 30 días">Crédito 30 días</option>
+              <option value="Crédito 60 días">Crédito 60 días</option>
+              <option value="Crédito 90 días">Crédito 90 días</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Días de vencimiento</label>
+            <input type="number" id="swal-dias-vencimiento" class="form-control" value="0" min="0">
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#BCA9F5',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Generar Factura',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        return {
+          porcentaje_iva: document.getElementById('swal-iva').value || null,
+          forma_pago: document.getElementById('swal-forma-pago').value,
+          dias_vencimiento: document.getElementById('swal-dias-vencimiento').value || 0
+        };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Generando factura...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.post(`/solicitudes/${solicitudId}/factura`, {
+          _token: '{{ csrf_token() }}',
+          porcentaje_iva: result.value.porcentaje_iva,
+          forma_pago: result.value.forma_pago,
+          dias_vencimiento: result.value.dias_vencimiento
+        }, function(response) {
+          if (response.success) {
+            Swal.fire({
+              title: '¡Factura Generada!',
+              text: response.mensaje,
+              icon: 'success',
+              showCancelButton: true,
+              confirmButtonText: 'Descargar PDF',
+              cancelButtonText: 'Cerrar'
+            }).then((downloadResult) => {
+              if (downloadResult.isConfirmed) {
+                window.open(`/solicitudes/${solicitudId}/factura/pdf`, '_blank');
+              }
+              $('#solicitudes-table').DataTable().ajax.reload();
+            });
+          }
+        }).fail(function(xhr) {
+          Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al generar la factura', 'error');
+        });
+      }
+    });
   }
   </script>
   @endpush

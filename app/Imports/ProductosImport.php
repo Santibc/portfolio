@@ -23,14 +23,86 @@ class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSett
     {
         $this->importacion = $importacion;
 
-        // Mapeo de columnas del Excel a IDs de listas de precios
-        $this->mapeoListasPrecios = [
+        // Construir mapeo dinámico desde las listas de precios activas en la BD
+        $this->mapeoListasPrecios = $this->construirMapeoListas();
+    }
+
+    /**
+     * Construye el mapeo de columnas a IDs de listas de precios
+     * basándose en las listas activas en la base de datos
+     */
+    protected function construirMapeoListas(): array
+    {
+        $mapeo = [];
+
+        // Obtener todas las listas de precios activas
+        $listas = \App\Models\ListaPrecio::activas()->get();
+
+        foreach ($listas as $lista) {
+            // Normalizar el nombre de la lista para usarlo como key
+            $keyNormalizada = $this->normalizarKey($lista->nombre);
+            $mapeo[$keyNormalizada] = $lista->id;
+
+            // También agregar por código
+            if ($lista->codigo) {
+                $mapeo[$this->normalizarKey($lista->codigo)] = $lista->id;
+            }
+        }
+
+        // Agregar mapeos de compatibilidad adicionales
+        $mapeosCompatibilidad = [
             'costo' => 1,
             'precioventaoro' => 2,
             'precioventainstaladorespecial' => 3,
             'precioventainstalador' => 4,
             'precioventafinal' => 5,
+            'export1' => 1,
+            'export2' => 2,
+            'local1' => 3,
+            'local2' => 4,
+            'local3' => 5,
+            'local4' => 6,
         ];
+
+        return array_merge($mapeosCompatibilidad, $mapeo);
+    }
+
+    /**
+     * Normaliza una key removiendo espacios, guiones, caracteres especiales y acentos
+     */
+    protected function normalizarKey(string $key): string
+    {
+        // Remover BOM y caracteres invisibles
+        $key = preg_replace('/[\x00-\x1F\x7F\xEF\xBB\xBF]/', '', $key);
+
+        // Convertir a minúsculas
+        $key = mb_strtolower(trim($key), 'UTF-8');
+
+        // Remover acentos y caracteres especiales
+        $key = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $key);
+
+        // Remover espacios, guiones, guiones bajos y puntos
+        $key = str_replace([' ', '-', '_', '.'], '', $key);
+
+        return $key;
+    }
+
+    /**
+     * Limpia un valor de texto de caracteres no deseados
+     */
+    protected function limpiarValor($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        // Convertir a string
+        $value = (string) $value;
+
+        // Remover BOM y caracteres invisibles
+        $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value);
+
+        return trim($value);
     }
 
     // Configuración personalizada para CSV
@@ -81,16 +153,17 @@ class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSett
                     $rowNormalized = [];
 
                     foreach ($rowArray as $key => $value) {
-                        // Limpiar y normalizar las keys (sin espacios, sin guiones, sin guiones bajos, lowercase)
-                        $cleanKey = strtolower(trim(str_replace([' ', '-', '_'], '', $key)));
-                        $rowNormalized[$cleanKey] = $value;
+                        // Usar el método de normalización consistente para keys
+                        $cleanKey = $this->normalizarKey((string) $key);
+                        // Limpiar valores de caracteres no deseados
+                        $rowNormalized[$cleanKey] = $this->limpiarValor($value);
                     }
 
-                    // Obtener los campos del Excel
-                    $item = trim($rowNormalized['item'] ?? $rowNormalized['nombre'] ?? '');
-                    $descripcion = trim($rowNormalized['descripcion'] ?? '');
-                    $categoriaSlug = trim($rowNormalized['categoria'] ?? '');
-                    $marca = trim($rowNormalized['marca'] ?? '');
+                    // Obtener los campos del Excel (soportar múltiples nombres de columna)
+                    $item = $rowNormalized['item'] ?? $rowNormalized['nombre'] ?? $rowNormalized['producto'] ?? '';
+                    $descripcion = $rowNormalized['descripcion'] ?? $rowNormalized['desc'] ?? '';
+                    $categoriaSlug = $rowNormalized['categoria'] ?? $rowNormalized['cat'] ?? '';
+                    $marca = $rowNormalized['marca'] ?? $rowNormalized['brand'] ?? '';
 
                     // Validar que el item no esté vacío
                     if (empty($item)) {
@@ -111,13 +184,23 @@ class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSett
                         continue;
                     }
 
-                    // Buscar categoría por slug
-                    $categoria = Categoria::where('slug', $categoriaSlug)
-                                         ->where('activo', true)
-                                         ->first();
+                    // Buscar categoría por slug o por nombre
+                    $categoria = Categoria::where(function($query) use ($categoriaSlug) {
+                        $query->where('slug', $categoriaSlug)
+                              ->orWhere('nombre', $categoriaSlug)
+                              ->orWhere('nombre', 'LIKE', $categoriaSlug);
+                    })
+                    ->where('activo', true)
+                    ->first();
 
                     if (!$categoria) {
-                        $this->importacion->agregarError($filaActual, $item, "Categoría con slug '{$categoriaSlug}' no encontrada");
+                        // Listar categorías disponibles para ayudar al usuario
+                        $categoriasDisponibles = Categoria::activas()->pluck('slug')->take(5)->implode(', ');
+                        $this->importacion->agregarError(
+                            $filaActual,
+                            $item,
+                            "Categoría '{$categoriaSlug}' no encontrada. Categorías disponibles: {$categoriasDisponibles}"
+                        );
                         $fallidos++;
                         $filaActual++;
                         continue;

@@ -15,6 +15,7 @@
           <th>Referencia</th>
           <th>Motivo</th>
           <th>Usuario</th>
+          <th>Nota</th>
         </tr>
       </thead>
       <tbody>
@@ -64,6 +65,14 @@
               @endif
             </td>
             <td>{{ $movimiento->usuario->name }}</td>
+            <td>
+              <a href="{{ route('stock.movimiento-pdf', $movimiento->id) }}"
+                 class="btn btn-sm btn-outline-primary"
+                 title="Descargar nota PDF"
+                 target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i>
+              </a>
+            </td>
           </tr>
         @endforeach
       </tbody>

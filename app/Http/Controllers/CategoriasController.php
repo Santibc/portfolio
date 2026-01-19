@@ -46,6 +46,10 @@ HTML;
                    : new Categoria();
 
         $rules = [
+            'referencia'  => [
+                'required','string','max:50',
+                Rule::unique('categorias')->ignore($categoria->id)
+            ],
             'nombre'      => ['required','string','max:255'],
             'slug'        => [
                 'nullable','string','max:255',

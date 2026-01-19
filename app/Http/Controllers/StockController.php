@@ -10,6 +10,7 @@ use App\Models\VarianteProducto;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class StockController extends Controller
 {
@@ -450,5 +451,65 @@ class StockController extends Controller
         return response()->json([
             'results' => $productos
         ]);
+    }
+
+    // Generar PDF de nota de movimiento
+    public function generarNotaPdf($id)
+    {
+        $movimiento = MovimientoStock::with(['producto', 'variante', 'usuario', 'ubicacion'])
+            ->findOrFail($id);
+
+        // Generar número de nota único
+        $prefijo = match($movimiento->tipo_movimiento) {
+            'entrada' => 'NE',
+            'salida' => 'NS',
+            'ajuste' => 'NA',
+            default => 'NM'
+        };
+        $numero = $prefijo . '-' . str_pad($movimiento->id, 6, '0', STR_PAD_LEFT);
+        $fecha = $movimiento->created_at->format('d/m/Y H:i');
+
+        // Seleccionar vista según tipo de movimiento
+        $vista = match($movimiento->tipo_movimiento) {
+            'entrada' => 'pdf.nota-entrada',
+            'salida' => 'pdf.nota-salida',
+            'ajuste' => 'pdf.nota-ajuste',
+            default => 'pdf.nota-entrada'
+        };
+
+        $pdf = Pdf::loadView($vista, compact('movimiento', 'numero', 'fecha'));
+
+        $nombreArchivo = $prefijo . '_' . $movimiento->id . '_' . $movimiento->created_at->format('Ymd') . '.pdf';
+
+        return $pdf->download($nombreArchivo);
+    }
+
+    // Ver nota de movimiento en pantalla (stream)
+    public function verNotaPdf($id)
+    {
+        $movimiento = MovimientoStock::with(['producto', 'variante', 'usuario', 'ubicacion'])
+            ->findOrFail($id);
+
+        // Generar número de nota único
+        $prefijo = match($movimiento->tipo_movimiento) {
+            'entrada' => 'NE',
+            'salida' => 'NS',
+            'ajuste' => 'NA',
+            default => 'NM'
+        };
+        $numero = $prefijo . '-' . str_pad($movimiento->id, 6, '0', STR_PAD_LEFT);
+        $fecha = $movimiento->created_at->format('d/m/Y H:i');
+
+        // Seleccionar vista según tipo de movimiento
+        $vista = match($movimiento->tipo_movimiento) {
+            'entrada' => 'pdf.nota-entrada',
+            'salida' => 'pdf.nota-salida',
+            'ajuste' => 'pdf.nota-ajuste',
+            default => 'pdf.nota-entrada'
+        };
+
+        $pdf = Pdf::loadView($vista, compact('movimiento', 'numero', 'fecha'));
+
+        return $pdf->stream();
     }
 }

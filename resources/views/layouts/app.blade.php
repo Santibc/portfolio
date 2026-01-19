@@ -243,13 +243,146 @@
             .header-user-info .text-end {
                 max-width: calc(100% - 50px); /* Keep a max-width for smaller screens if necessary */
             }
+
+            /* Sidebar responsive en móvil */
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1050 !important;
+            }
+
+            .sidebar.show-mobile {
+                transform: translateX(0);
+            }
+
+            /* Overlay para cerrar sidebar en móvil */
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                display: none;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            /* Header y main ocupan todo el ancho en móvil */
+            header#appHeader {
+                left: 0 !important;
+            }
+
+            main#appMainContent {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Botón de salir - estilos mejorados para todas las resoluciones */
+        .btn-logout {
+            background-color: var(--miracle-pink-light);
+            color: var(--miracle-pink);
+            border: 1px solid var(--miracle-pink);
+            transition: all 0.2s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            min-height: 42px;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--miracle-pink);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 132, 213, 0.3);
+        }
+
+        .btn-logout:active {
+            transform: translateY(0);
+        }
+
+        .btn-logout i {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .btn-logout .logout-label {
+            transition: opacity 0.2s ease, max-width 0.2s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* Sidebar colapsado - solo mostrar icono */
+        .sidebar.collapsed .btn-logout {
+            justify-content: center;
+            padding: 0.625rem;
+        }
+
+        .sidebar.collapsed .btn-logout .logout-label {
+            opacity: 0;
+            max-width: 0;
+            display: none;
+        }
+
+        /* Responsive móvil */
+        @media (max-width: 768px) {
+            .btn-logout {
+                padding: 0.75rem 1rem;
+                font-size: 1rem;
+            }
+
+            /* Asegurar que el sidebar en móvil tenga scroll */
+            .sidebar {
+                max-height: 100vh;
+                overflow: hidden;
+            }
+
+            .sidebar > div {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar nav {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* El botón de salir siempre visible al fondo */
+            .sidebar .mt-auto {
+                flex-shrink: 0;
+                background: white;
+                position: sticky;
+                bottom: 0;
+            }
+        }
+
+        /* Responsive tablet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .btn-logout {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
 <body>
 
+    {{-- Overlay para móvil --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     {{-- Sidebar fijo --}}
-    <div class="sidebar position-fixed top-0 start-0 vh-100 d-flex flex-column" style="z-index: 1030;">
+    <div class="sidebar position-fixed top-0 start-0 vh-100 d-flex flex-column" id="mainSidebar" style="z-index: 1030;">
         @include('layouts.navigation-vertical')
     </div>
 
@@ -281,55 +414,104 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const sidebar = document.querySelector('.sidebar');
+        const sidebar = document.getElementById('mainSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         const appHeader = document.getElementById('appHeader');
         const appMainContent = document.getElementById('appMainContent');
 
-        function updateLayout() {
-            const sidebarWidth = sidebar.offsetWidth; // Obtiene el ancho actual (70px o 250px)
-            appHeader.style.left = `${sidebarWidth}px`;
-            appHeader.style.right = `0`;
-            appMainContent.style.marginLeft = `${sidebarWidth}px`;
+        // Función para detectar si es móvil
+        function isMobile() {
+            return window.innerWidth <= 768;
         }
 
-        // Función para guardar el estado del sidebar en localStorage
-        function saveSidebarState() {
-            if (sidebar.classList.contains('collapsed')) {
-                localStorage.setItem('sidebarCollapsed', 'true');
+        function updateLayout() {
+            if (isMobile()) {
+                // En móvil, header y main ocupan todo el ancho
+                appHeader.style.left = '0';
+                appHeader.style.right = '0';
+                appMainContent.style.marginLeft = '0';
             } else {
+                // En desktop, ajustar según el ancho del sidebar
+                const sidebarWidth = sidebar.offsetWidth;
+                appHeader.style.left = `${sidebarWidth}px`;
+                appHeader.style.right = '0';
+                appMainContent.style.marginLeft = `${sidebarWidth}px`;
+            }
+        }
+
+        // Función para guardar el estado del sidebar en localStorage (solo desktop)
+        function saveSidebarState() {
+            if (!isMobile() && sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else if (!isMobile()) {
                 localStorage.setItem('sidebarCollapsed', 'false');
             }
         }
 
         // Función para restaurar el estado del sidebar desde localStorage
         function restoreSidebarState() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed');
-            if (isCollapsed === 'true') {
-                sidebar.classList.add('collapsed');
-                // IMPORTANTE: Esperar a que la transición CSS termine antes de actualizar el layout
-                // 300ms debe coincidir con la duración de la transición en el CSS para .sidebar
-                setTimeout(updateLayout, 300);
-            } else {
+            if (isMobile()) {
+                // En móvil, asegurarse de que el sidebar está oculto
+                sidebar.classList.remove('show-mobile');
                 sidebar.classList.remove('collapsed');
-                // Si no está colapsado, puedes actualizar el layout inmediatamente o con un pequeño delay si también tiene transición de apertura
+                sidebarOverlay.classList.remove('show');
                 updateLayout();
+            } else {
+                // En desktop, restaurar el estado guardado
+                const isCollapsed = localStorage.getItem('sidebarCollapsed');
+                if (isCollapsed === 'true') {
+                    sidebar.classList.add('collapsed');
+                    setTimeout(updateLayout, 300);
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    updateLayout();
+                }
             }
+        }
+
+        // Función para cerrar sidebar en móvil
+        function closeMobileSidebar() {
+            sidebar.classList.remove('show-mobile');
+            sidebarOverlay.classList.remove('show');
+        }
+
+        // Función para abrir sidebar en móvil
+        function openMobileSidebar() {
+            sidebar.classList.add('show-mobile');
+            sidebarOverlay.classList.add('show');
         }
 
         // Restaurar el estado del sidebar al cargar la página
         document.addEventListener('DOMContentLoaded', restoreSidebarState);
 
-        // Modificar el click del botón para guardar el estado
+        // Click en el botón toggle
         document.getElementById('toggleSidebar').addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            saveSidebarState(); // Guardar el nuevo estado
-
-            // Esperar a que la transición termine para actualizar el layout
-            setTimeout(updateLayout, 300);
+            if (isMobile()) {
+                // En móvil, mostrar/ocultar con overlay
+                if (sidebar.classList.contains('show-mobile')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            } else {
+                // En desktop, colapsar/expandir
+                sidebar.classList.toggle('collapsed');
+                saveSidebarState();
+                setTimeout(updateLayout, 300);
+            }
         });
 
-        // También actualizar en el redimensionamiento de la ventana
-        window.addEventListener('resize', updateLayout);
+        // Click en overlay cierra el sidebar en móvil
+        sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+        // Actualizar en el redimensionamiento de la ventana
+        window.addEventListener('resize', () => {
+            // Cerrar sidebar móvil si cambiamos a desktop
+            if (!isMobile() && sidebar.classList.contains('show-mobile')) {
+                closeMobileSidebar();
+            }
+            restoreSidebarState();
+        });
     </script>
 
     @stack('scripts')

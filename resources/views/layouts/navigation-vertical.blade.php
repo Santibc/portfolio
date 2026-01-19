@@ -7,8 +7,8 @@
         </a>
     </div>
 
-    {{-- Navegación --}}
-    <nav class="nav flex-column px-2 py-3">
+    {{-- Navegación con scroll vertical --}}
+    <nav class="nav flex-column flex-nowrap px-2 py-3 flex-grow-1" style="min-height: 0; overflow-y: auto; overflow-x: hidden;">
         <a href="/dashboard"
            class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}">
             <i class="bi bi-house"></i>
@@ -84,10 +84,20 @@
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
+            <a href="/listas-precios"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('listas-precios*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-currency-dollar"></i>
+                <span>Listas de Precios</span>
+            </a>
+            <a href="/ubicaciones"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('ubicaciones*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-geo-alt"></i>
+                <span>Ubicaciones</span>
+            </a>
         @endif
 
-        {{-- Cotizaciones (para vendedor y admin) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin']))
+        {{-- Cotizaciones (para vendedor, admin y facturación) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'facturacion']))
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>
@@ -95,8 +105,8 @@
             </a>
         @endif
 
-        {{-- Clientes (para vendedor y admin) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin']))
+        {{-- Clientes (para vendedor, admin y facturación) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'facturacion']))
             <a href="/clientes"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-person-badge"></i>
@@ -122,17 +132,76 @@
                 <span>Gestión de Stock</span>
             </a>
         @endif
+
+        {{-- Traslados (para admin e inventarios) --}}
+        @if(auth()->user()->hasRole(['admin', 'inventarios']))
+            <a href="{{ route('traslados') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Traslados</span>
+            </a>
+            <a href="{{ route('novedades-stock') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('novedades-stock*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>Novedades</span>
+            </a>
+        @endif
+
+        {{-- Punto de Venta (para admin, inventarios, punto_venta) --}}
+        @if(auth()->user()->hasRole(['admin', 'inventarios', 'punto_venta']))
+            <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
+            <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
+                <i class="bi bi-shop me-1"></i>
+                <span>Punto de Venta</span>
+            </p>
+            <a href="{{ route('punto-venta.dashboard') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.dashboard') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard PdV</span>
+            </a>
+            <a href="{{ route('punto-venta.nueva-venta') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.nueva-venta') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-cart-plus"></i>
+                <span>Nueva Venta</span>
+            </a>
+            <a href="{{ route('punto-venta.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.index') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-list-ul"></i>
+                <span>Historial Ventas</span>
+            </a>
+            <a href="{{ route('punto-venta.reporte') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.reporte') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-bar-chart"></i>
+                <span>Reportes PdV</span>
+            </a>
+        @endif
+
+        {{-- Portal Cliente (solo para rol cliente) --}}
+        @if(auth()->user()->hasRole('cliente'))
+            <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
+            <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
+                <i class="bi bi-person-circle me-1"></i>
+                <span>Mi Portal</span>
+            </p>
+            <a href="{{ route('portal.dashboard') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('portal.dashboard') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ route('portal.historial') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('portal.historial') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-clock-history"></i>
+                <span>Mis Pedidos</span>
+            </a>
+        @endif
     </nav>
 
     {{-- Botón Salir --}}
     <div class="mt-auto p-3 border-top" style="border-color: var(--miracle-lilac) !important;">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="btn w-100 d-flex align-items-center justify-content-start gap-2"
-                    style="background-color: var(--miracle-pink-light); color: var(--miracle-pink); border: 1px solid var(--miracle-pink); transition: all 0.2s ease;"
-                    onmouseover="this.style.backgroundColor='var(--miracle-pink)'; this.style.color='white';"
-                    onmouseout="this.style.backgroundColor='var(--miracle-pink-light)'; this.style.color='var(--miracle-pink)';">
-                <i class="fas fa-sign-out-alt"></i>
+            <button type="submit" class="btn btn-logout" title="Cerrar sesión">
+                <i class="bi bi-box-arrow-right"></i>
                 <span class="logout-label">Salir</span>
             </button>
         </form>

@@ -518,7 +518,7 @@
           variante_id: variante?.id||null,
           referencia: producto.referencia,
           nombre: producto.nombre,
-          variante: variante? `${variante.talla||''} ${variante.color||''}`.trim():null,
+          variante: variante? `${variante.referencia_variante||''} ${variante.color||''}`.trim():null,
           precio: precioUnit,
           precio_original: precioOriginal,
           editado: precioEditado !== null,

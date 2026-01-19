@@ -55,10 +55,12 @@
           { extend:'pageLength', className:'btn btn-outline-dark', text:'Filas ' },
           { extend:'colvis',     className:'btn btn-outline-dark', text:'Columnas', columns:':not(.noVis)' },
           { extend:'excelHtml5', className:'btn btn-outline-success', text:'Excel' },
+          @if(auth()->user()->hasRole(['admin', 'inventarios']))
           {
             text:'Nuevo', className:'btn btn-outline-primary',
             action: () => window.location.href = "{{ route('clientes.form') }}"
           }
+          @endif
         ],
         language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
         lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]

@@ -4,23 +4,31 @@
   <div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-      {{-- Filtros de Fecha --}}
+      {{-- Filtros de Fecha y Exportación --}}
       <div class="bg-white shadow-sm rounded-lg p-4 mb-4">
         <form method="GET" action="{{ route('dashboard.metricas') }}" class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label for="fecha_desde" class="form-label">Fecha Desde</label>
             <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ $fechaDesde }}">
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
             <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ $fechaHasta }}">
           </div>
-          <div class="col-md-4 d-flex align-items-end gap-2">
+          <div class="col-md-3 d-flex align-items-end gap-2">
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-funnel"></i> Filtrar
             </button>
             <a href="{{ route('dashboard.metricas') }}" class="btn btn-secondary">
               <i class="bi bi-x-circle"></i> Limpiar
+            </a>
+          </div>
+          <div class="col-md-3 d-flex align-items-end justify-content-end gap-2">
+            <a href="{{ route('reportes.ventas.excel', ['fecha_desde' => $fechaDesde, 'fecha_hasta' => $fechaHasta]) }}" class="btn btn-success">
+              <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{{ route('reportes.metricas.pdf', ['fecha_desde' => $fechaDesde, 'fecha_hasta' => $fechaHasta]) }}" class="btn btn-danger">
+              <i class="bi bi-file-earmark-pdf"></i> PDF
             </a>
           </div>
         </form>

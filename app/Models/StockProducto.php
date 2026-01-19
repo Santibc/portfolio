@@ -14,6 +14,7 @@ class StockProducto extends Model
     protected $fillable = [
         'producto_id',
         'variante_producto_id',
+        'ubicacion_id',
         'cantidad_disponible',
         'cantidad_reservada',
         'stock_minimo',
@@ -35,6 +36,11 @@ class StockProducto extends Model
     public function variante()
     {
         return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
+    }
+
+    public function ubicacion()
+    {
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
 
     public function movimientos()
@@ -219,5 +225,16 @@ class StockProducto extends Model
                      ->whereHas('producto', function($q) {
                          $q->where('eliminado', false);
                      });
+    }
+
+    public function scopeEnUbicacion($query, $ubicacionId)
+    {
+        return $query->where('ubicacion_id', $ubicacionId);
+    }
+
+    // Obtener nombre de ubicación
+    public function getNombreUbicacionAttribute()
+    {
+        return $this->ubicacion ? $this->ubicacion->nombre : ($this->attributes['ubicacion'] ?? 'Sin ubicación');
     }
 }
