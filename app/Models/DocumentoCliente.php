@@ -58,7 +58,7 @@ class DocumentoCliente extends Model
     // =========================================
     public function getUrlAttribute(): string
     {
-        return Storage::url($this->archivo);
+        return asset($this->archivo);
     }
 
     public function getTamanoFormateadoAttribute(): string
@@ -77,13 +77,43 @@ class DocumentoCliente extends Model
         return self::tiposDocumento()[$this->tipo] ?? $this->tipo ?? 'Sin tipo';
     }
 
+    public function getIconoAttribute(): string
+    {
+        $extension = strtolower(pathinfo($this->archivo, PATHINFO_EXTENSION));
+
+        $iconos = [
+            'pdf' => 'bi-file-earmark-pdf text-danger',
+            'doc' => 'bi-file-earmark-word text-primary',
+            'docx' => 'bi-file-earmark-word text-primary',
+            'xls' => 'bi-file-earmark-excel text-success',
+            'xlsx' => 'bi-file-earmark-excel text-success',
+            'ppt' => 'bi-file-earmark-ppt text-warning',
+            'pptx' => 'bi-file-earmark-ppt text-warning',
+            'jpg' => 'bi-file-earmark-image text-info',
+            'jpeg' => 'bi-file-earmark-image text-info',
+            'png' => 'bi-file-earmark-image text-info',
+            'gif' => 'bi-file-earmark-image text-info',
+            'zip' => 'bi-file-earmark-zip text-secondary',
+            'rar' => 'bi-file-earmark-zip text-secondary',
+            'txt' => 'bi-file-earmark-text text-dark',
+        ];
+
+        return $iconos[$extension] ?? 'bi-file-earmark text-secondary';
+    }
+
+    public function getNombreArchivoAttribute(): string
+    {
+        return basename($this->archivo);
+    }
+
     // =========================================
     // Métodos
     // =========================================
     public function eliminarArchivo(): bool
     {
-        if ($this->archivo && Storage::exists($this->archivo)) {
-            return Storage::delete($this->archivo);
+        $rutaCompleta = public_path($this->archivo);
+        if ($this->archivo && file_exists($rutaCompleta)) {
+            return unlink($rutaCompleta);
         }
         return false;
     }

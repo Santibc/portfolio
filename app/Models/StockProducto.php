@@ -38,7 +38,7 @@ class StockProducto extends Model
         return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
     }
 
-    public function ubicacion()
+    public function ubicacionRelacion()
     {
         return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
@@ -235,6 +235,6 @@ class StockProducto extends Model
     // Obtener nombre de ubicación
     public function getNombreUbicacionAttribute()
     {
-        return $this->ubicacion ? $this->ubicacion->nombre : ($this->attributes['ubicacion'] ?? 'Sin ubicación');
+        return $this->ubicacionRelacion ? $this->ubicacionRelacion->nombre : ($this->attributes['ubicacion'] ?? 'Sin ubicación');
     }
 }

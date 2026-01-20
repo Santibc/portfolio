@@ -51,7 +51,7 @@
 
     <div class="container py-4">
         {{-- Formulario Principal --}}
-        <form method="POST" action="{{ route('clientes.guardar') }}" id="formCliente">
+        <form method="POST" action="{{ route('clientes.guardar') }}" id="formCliente" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="id" value="{{ old('id', $cliente->id) }}">
             <input type="hidden" name="pais_id" value="{{ $pais_id }}">
@@ -251,6 +251,118 @@
                 </div>
             </div>
 
+            {{-- Card: Sucursales --}}
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Sucursales</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="abrirModalSucursal()">
+                        <i class="bi bi-plus-lg me-1"></i>Agregar Sucursal
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="listaSucursales">
+                        @if($cliente->exists)
+                            @forelse($sucursales as $sucursal)
+                            <div class="sucursal-item" id="sucursal-{{ $sucursal->id }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {{ $sucursal->nombre }}
+                                            @if($sucursal->es_principal)
+                                            <span class="badge bg-success badge-principal ms-2">Principal</span>
+                                            @endif
+                                        </h6>
+                                        <p class="mb-1 text-muted small">
+                                            <i class="bi bi-geo-alt me-1"></i>{{ $sucursal->direccion }}
+                                            @if($sucursal->ciudad)
+                                            - {{ $sucursal->ciudad->nombre }}
+                                            @endif
+                                        </p>
+                                        @if($sucursal->telefono || $sucursal->email)
+                                        <p class="mb-0 text-muted small">
+                                            @if($sucursal->telefono)
+                                            <i class="bi bi-telephone me-1"></i>{{ $sucursal->telefono }}
+                                            @endif
+                                            @if($sucursal->email)
+                                            <i class="bi bi-envelope ms-2 me-1"></i>{{ $sucursal->email }}
+                                            @endif
+                                        </p>
+                                        @endif
+                                        @if($sucursal->contacto)
+                                        <p class="mb-0 text-muted small">
+                                            <i class="bi bi-person me-1"></i>Contacto: {{ $sucursal->contacto }}
+                                        </p>
+                                        @endif
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarSucursal({{ $sucursal->id }}, {{ json_encode($sucursal) }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarSucursal({{ $sucursal->id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <p class="text-muted text-center" id="sinSucursales">No hay sucursales registradas.</p>
+                            @endforelse
+                        @else
+                            <p class="text-muted text-center" id="sinSucursales">No hay sucursales registradas.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="sucursales" id="sucursalesData" value="">
+
+            {{-- Card: Documentos --}}
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Documentos</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="abrirModalDocumento()">
+                        <i class="bi bi-upload me-1"></i>Subir Documento
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="listaDocumentos">
+                        @if($cliente->exists)
+                            @forelse($documentos as $documento)
+                            <div class="documento-item" id="documento-{{ $documento->id }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi {{ $documento->icono }} fs-3 me-3"></i>
+                                        <div>
+                                            <h6 class="mb-0">{{ $documento->nombre }}</h6>
+                                            <small class="text-muted">
+                                                {{ $documento->tipo_nombre }} |
+                                                {{ $documento->tamano_formateado }} |
+                                                Subido por {{ $documento->subidoPor?->name ?? 'Sistema' }}
+                                                el {{ $documento->created_at->format('d/m/Y H:i') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a href="{{ route('clientes.documentos.descargar', $documento) }}" class="btn btn-sm btn-outline-success" title="Descargar">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDocumento({{ $documento->id }})" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                            <p class="text-muted text-center" id="sinDocumentos">No hay documentos cargados.</p>
+                            @endforelse
+                        @else
+                            <p class="text-muted text-center" id="sinDocumentos">No hay documentos cargados.</p>
+                        @endif
+                    </div>
+                    {{-- Contenedor para archivos en modo creacion --}}
+                    <div id="documentosNuevosContainer"></div>
+                </div>
+            </div>
+
             {{-- Botones de accion --}}
             <div class="d-flex justify-content-between mb-4">
                 <button type="submit" class="btn btn-primary btn-lg">
@@ -261,112 +373,6 @@
                 </a>
             </div>
         </form>
-
-        {{-- SECCIONES SOLO PARA EDICION --}}
-        @if($cliente->exists)
-
-        {{-- Card: Sucursales --}}
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-shop me-2"></i>Sucursales</h5>
-                <button type="button" class="btn btn-sm btn-primary" onclick="abrirModalSucursal()">
-                    <i class="bi bi-plus-lg me-1"></i>Agregar Sucursal
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="listaSucursales">
-                    @forelse($sucursales as $sucursal)
-                    <div class="sucursal-item" id="sucursal-{{ $sucursal->id }}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">
-                                    {{ $sucursal->nombre }}
-                                    @if($sucursal->es_principal)
-                                    <span class="badge bg-success badge-principal ms-2">Principal</span>
-                                    @endif
-                                </h6>
-                                <p class="mb-1 text-muted small">
-                                    <i class="bi bi-geo-alt me-1"></i>{{ $sucursal->direccion }}
-                                    @if($sucursal->ciudad)
-                                    - {{ $sucursal->ciudad->nombre }}
-                                    @endif
-                                </p>
-                                @if($sucursal->telefono || $sucursal->email)
-                                <p class="mb-0 text-muted small">
-                                    @if($sucursal->telefono)
-                                    <i class="bi bi-telephone me-1"></i>{{ $sucursal->telefono }}
-                                    @endif
-                                    @if($sucursal->email)
-                                    <i class="bi bi-envelope ms-2 me-1"></i>{{ $sucursal->email }}
-                                    @endif
-                                </p>
-                                @endif
-                                @if($sucursal->contacto)
-                                <p class="mb-0 text-muted small">
-                                    <i class="bi bi-person me-1"></i>Contacto: {{ $sucursal->contacto }}
-                                </p>
-                                @endif
-                            </div>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarSucursal({{ $sucursal->id }}, {{ json_encode($sucursal) }})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarSucursal({{ $sucursal->id }})">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    @empty
-                    <p class="text-muted text-center" id="sinSucursales">No hay sucursales registradas.</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        {{-- Card: Documentos --}}
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Documentos</h5>
-                <button type="button" class="btn btn-sm btn-primary" onclick="abrirModalDocumento()">
-                    <i class="bi bi-upload me-1"></i>Subir Documento
-                </button>
-            </div>
-            <div class="card-body">
-                <div id="listaDocumentos">
-                    @forelse($documentos as $documento)
-                    <div class="documento-item" id="documento-{{ $documento->id }}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
-                                <div>
-                                    <h6 class="mb-0">{{ $documento->nombre }}</h6>
-                                    <small class="text-muted">
-                                        {{ $documento->tipo_nombre }} |
-                                        {{ $documento->tamano_formateado }} |
-                                        Subido por {{ $documento->subidoPor?->name ?? 'Sistema' }}
-                                        el {{ $documento->created_at->format('d/m/Y H:i') }}
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="btn-group">
-                                <a href="{{ route('clientes.documentos.descargar', $documento) }}" class="btn btn-sm btn-outline-success" title="Descargar">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDocumento({{ $documento->id }})" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    @empty
-                    <p class="text-muted text-center" id="sinDocumentos">No hay documentos cargados.</p>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        @endif
     </div>
 
     {{-- Modal Sucursal --}}
@@ -451,10 +457,9 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Archivo <span class="text-danger">*</span></label>
-                            <input type="file" name="documento" id="documento_archivo" class="form-control"
-                                   accept=".pdf,.jpg,.jpeg,.png" required>
-                            <small class="text-muted">Formatos: PDF, JPG, PNG. Maximo 10MB.</small>
+                            <label class="form-label">Archivo(s) <span class="text-danger">*</span></label>
+                            <input type="file" name="documento" id="documento_archivo" class="form-control" multiple required>
+                            <small class="text-muted">Cualquier tipo de archivo. Maximo 50MB por archivo.</small>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -470,6 +475,13 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
     const clienteId = {{ $cliente->id ?? 'null' }};
+    const esEdicion = clienteId !== null;
+
+    // Arrays para almacenar datos temporales en modo creacion
+    let sucursalesTemp = [];
+    let documentosTemp = [];
+    let contadorSucursales = 0;
+    let contadorDocumentos = 0;
 
     $(document).ready(function(){
         // Inicializamos Select2
@@ -519,7 +531,9 @@
         }
     }
 
+    // =========================================
     // Funciones Sucursales
+    // =========================================
     function abrirModalSucursal() {
         $('#modalSucursalTitle').text('Nueva Sucursal');
         $('#formSucursal')[0].reset();
@@ -550,20 +564,41 @@
             email: $('#sucursal_email').val(),
             contacto: $('#sucursal_contacto').val(),
             es_principal: $('#sucursal_principal').is(':checked') ? 1 : 0,
-            _token: '{{ csrf_token() }}'
         };
 
-        $.post(`/clientes/${clienteId}/sucursales`, formData)
-            .done(function(response) {
-                if (response.success) {
-                    Swal.fire('Exito', response.message, 'success');
-                    bootstrap.Modal.getInstance('#modalSucursal').hide();
-                    location.reload();
-                }
-            })
-            .fail(function(xhr) {
-                Swal.fire('Error', xhr.responseJSON?.message || 'Error al guardar', 'error');
+        if (esEdicion) {
+            // Modo edicion: guardar via AJAX
+            formData._token = '{{ csrf_token() }}';
+            $.post(`/clientes/${clienteId}/sucursales`, formData)
+                .done(function(response) {
+                    if (response.success) {
+                        Swal.fire('Exito', response.message, 'success');
+                        bootstrap.Modal.getInstance('#modalSucursal').hide();
+                        location.reload();
+                    }
+                })
+                .fail(function(xhr) {
+                    Swal.fire('Error', xhr.responseJSON?.message || 'Error al guardar', 'error');
+                });
+        } else {
+            // Modo creacion: guardar en array temporal
+            const tempId = 'temp_' + (++contadorSucursales);
+            formData.tempId = tempId;
+            formData.ciudad_nombre = $('#sucursal_ciudad option:selected').text();
+
+            sucursalesTemp.push(formData);
+            actualizarSucursalesData();
+            renderizarSucursalesTemp();
+
+            bootstrap.Modal.getInstance('#modalSucursal').hide();
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucursal agregada',
+                text: 'Se guardara cuando guarde el cliente',
+                timer: 1500,
+                showConfirmButton: false
             });
+        }
     }
 
     function eliminarSucursal(id) {
@@ -576,54 +611,207 @@
             confirmButtonText: 'Si, eliminar'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: `/sucursales/${id}`,
-                    type: 'DELETE',
-                    data: { _token: '{{ csrf_token() }}' },
-                    success: function(response) {
-                        if (response.success) {
-                            $(`#sucursal-${id}`).fadeOut(300, function() { $(this).remove(); });
-                            Swal.fire('Eliminado', response.message, 'success');
+                if (esEdicion) {
+                    $.ajax({
+                        url: `/sucursales/${id}`,
+                        type: 'DELETE',
+                        data: { _token: '{{ csrf_token() }}' },
+                        success: function(response) {
+                            if (response.success) {
+                                $(`#sucursal-${id}`).fadeOut(300, function() { $(this).remove(); });
+                                Swal.fire('Eliminado', response.message, 'success');
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error', xhr.responseJSON?.message || 'Error al eliminar', 'error');
                         }
-                    },
-                    error: function(xhr) {
-                        Swal.fire('Error', xhr.responseJSON?.message || 'Error al eliminar', 'error');
+                    });
+                } else {
+                    // Modo creacion: eliminar del array temporal
+                    sucursalesTemp = sucursalesTemp.filter(s => s.tempId !== id);
+                    actualizarSucursalesData();
+                    $(`#sucursal-${id}`).fadeOut(300, function() { $(this).remove(); });
+                    if (sucursalesTemp.length === 0) {
+                        $('#listaSucursales').html('<p class="text-muted text-center" id="sinSucursales">No hay sucursales registradas.</p>');
                     }
-                });
+                }
             }
         });
     }
 
+    function editarSucursalTemp(tempId) {
+        const sucursal = sucursalesTemp.find(s => s.tempId === tempId);
+        if (sucursal) {
+            $('#modalSucursalTitle').text('Editar Sucursal');
+            $('#sucursal_id').val(tempId);
+            $('#sucursal_nombre').val(sucursal.nombre);
+            $('#sucursal_direccion').val(sucursal.direccion);
+            $('#sucursal_ciudad').val(sucursal.ciudad_id);
+            $('#sucursal_telefono').val(sucursal.telefono);
+            $('#sucursal_email').val(sucursal.email);
+            $('#sucursal_contacto').val(sucursal.contacto);
+            $('#sucursal_principal').prop('checked', sucursal.es_principal);
+            new bootstrap.Modal('#modalSucursal').show();
+        }
+    }
+
+    function actualizarSucursalesData() {
+        $('#sucursalesData').val(JSON.stringify(sucursalesTemp));
+    }
+
+    function renderizarSucursalesTemp() {
+        $('#sinSucursales').remove();
+        const container = $('#listaSucursales');
+
+        // Remover sucursales temporales existentes
+        container.find('[id^="sucursal-temp_"]').remove();
+
+        sucursalesTemp.forEach(s => {
+            const html = `
+                <div class="sucursal-item" id="sucursal-${s.tempId}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                ${s.nombre}
+                                ${s.es_principal ? '<span class="badge bg-success badge-principal ms-2">Principal</span>' : ''}
+                                <span class="badge bg-warning ms-2">Pendiente</span>
+                            </h6>
+                            <p class="mb-1 text-muted small">
+                                <i class="bi bi-geo-alt me-1"></i>${s.direccion}
+                                ${s.ciudad_id ? ' - ' + s.ciudad_nombre : ''}
+                            </p>
+                            ${s.telefono || s.email ? `
+                            <p class="mb-0 text-muted small">
+                                ${s.telefono ? '<i class="bi bi-telephone me-1"></i>' + s.telefono : ''}
+                                ${s.email ? '<i class="bi bi-envelope ms-2 me-1"></i>' + s.email : ''}
+                            </p>` : ''}
+                            ${s.contacto ? `<p class="mb-0 text-muted small"><i class="bi bi-person me-1"></i>Contacto: ${s.contacto}</p>` : ''}
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarSucursalTemp('${s.tempId}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarSucursal('${s.tempId}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.append(html);
+        });
+    }
+
+    // =========================================
     // Funciones Documentos
+    // =========================================
     function abrirModalDocumento() {
         $('#formDocumento')[0].reset();
         new bootstrap.Modal('#modalDocumento').show();
     }
 
     function subirDocumento() {
-        const formData = new FormData();
-        formData.append('nombre', $('#documento_nombre').val());
-        formData.append('tipo', $('#documento_tipo').val());
-        formData.append('documento', $('#documento_archivo')[0].files[0]);
-        formData.append('_token', '{{ csrf_token() }}');
+        const archivos = $('#documento_archivo')[0].files;
+        const nombreBase = $('#documento_nombre').val();
+        const tipo = $('#documento_tipo').val();
 
-        $.ajax({
-            url: `/clientes/${clienteId}/documentos`,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire('Exito', response.message, 'success');
-                    bootstrap.Modal.getInstance('#modalDocumento').hide();
-                    location.reload();
-                }
-            },
-            error: function(xhr) {
-                Swal.fire('Error', xhr.responseJSON?.message || 'Error al subir', 'error');
+        if (archivos.length === 0) {
+            Swal.fire('Error', 'Debe seleccionar al menos un archivo', 'error');
+            return;
+        }
+
+        if (esEdicion) {
+            // Modo edicion: subir via AJAX (uno por uno)
+            let subidos = 0;
+            const total = archivos.length;
+
+            for (let i = 0; i < archivos.length; i++) {
+                const formData = new FormData();
+                const nombre = archivos.length === 1 ? nombreBase : `${nombreBase} (${i + 1})`;
+                formData.append('nombre', nombre);
+                formData.append('tipo', tipo);
+                formData.append('documento', archivos[i]);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                $.ajax({
+                    url: `/clientes/${clienteId}/documentos`,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        subidos++;
+                        if (subidos === total) {
+                            Swal.fire('Exito', `${total} documento(s) subido(s) correctamente`, 'success');
+                            bootstrap.Modal.getInstance('#modalDocumento').hide();
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Error al subir', 'error');
+                    }
+                });
             }
-        });
+        } else {
+            // Modo creacion: agregar al formulario y mostrar en lista
+            const container = $('#documentosNuevosContainer');
+            $('#sinDocumentos').remove();
+
+            for (let i = 0; i < archivos.length; i++) {
+                const tempId = 'doc_' + (++contadorDocumentos);
+                const archivo = archivos[i];
+                const nombre = archivos.length === 1 ? nombreBase : `${nombreBase} (${i + 1})`;
+
+                // Agregar input file oculto con el archivo
+                const inputFile = $(`<input type="file" name="documentos[]" style="display:none" id="file_${tempId}">`);
+                const dt = new DataTransfer();
+                dt.items.add(archivo);
+                inputFile[0].files = dt.files;
+                container.append(inputFile);
+
+                // Agregar inputs para nombre y tipo
+                container.append(`<input type="hidden" name="documentos_nombres[]" value="${nombre}" id="nombre_${tempId}">`);
+                container.append(`<input type="hidden" name="documentos_tipos[]" value="${tipo}" id="tipo_${tempId}">`);
+
+                // Determinar icono segun extension
+                const extension = archivo.name.split('.').pop().toLowerCase();
+                const icono = obtenerIcono(extension);
+
+                // Agregar a la lista visual
+                const html = `
+                    <div class="documento-item" id="documento-${tempId}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="bi ${icono} fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">${nombre} <span class="badge bg-warning">Pendiente</span></h6>
+                                    <small class="text-muted">
+                                        ${archivo.name} | ${formatearTamano(archivo.size)}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarDocumentoTemp('${tempId}')" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#listaDocumentos').append(html);
+
+                documentosTemp.push({ tempId, nombre, tipo, archivo: archivo.name });
+            }
+
+            bootstrap.Modal.getInstance('#modalDocumento').hide();
+            Swal.fire({
+                icon: 'success',
+                title: `${archivos.length} documento(s) agregado(s)`,
+                text: 'Se guardaran cuando guarde el cliente',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
     }
 
     function eliminarDocumento(id) {
@@ -652,6 +840,60 @@
                 });
             }
         });
+    }
+
+    function eliminarDocumentoTemp(tempId) {
+        Swal.fire({
+            title: 'Eliminar documento?',
+            text: 'El archivo sera removido de la lista',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Si, eliminar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Remover inputs del formulario
+                $(`#file_${tempId}, #nombre_${tempId}, #tipo_${tempId}`).remove();
+                // Remover de la lista visual
+                $(`#documento-${tempId}`).fadeOut(300, function() { $(this).remove(); });
+                // Remover del array
+                documentosTemp = documentosTemp.filter(d => d.tempId !== tempId);
+
+                if (documentosTemp.length === 0 && !esEdicion) {
+                    $('#listaDocumentos').html('<p class="text-muted text-center" id="sinDocumentos">No hay documentos cargados.</p>');
+                }
+            }
+        });
+    }
+
+    // Utilidades
+    function obtenerIcono(extension) {
+        const iconos = {
+            'pdf': 'bi-file-earmark-pdf text-danger',
+            'doc': 'bi-file-earmark-word text-primary',
+            'docx': 'bi-file-earmark-word text-primary',
+            'xls': 'bi-file-earmark-excel text-success',
+            'xlsx': 'bi-file-earmark-excel text-success',
+            'ppt': 'bi-file-earmark-ppt text-warning',
+            'pptx': 'bi-file-earmark-ppt text-warning',
+            'jpg': 'bi-file-earmark-image text-info',
+            'jpeg': 'bi-file-earmark-image text-info',
+            'png': 'bi-file-earmark-image text-info',
+            'gif': 'bi-file-earmark-image text-info',
+            'zip': 'bi-file-earmark-zip text-secondary',
+            'rar': 'bi-file-earmark-zip text-secondary',
+            'txt': 'bi-file-earmark-text text-dark',
+        };
+        return iconos[extension] || 'bi-file-earmark text-secondary';
+    }
+
+    function formatearTamano(bytes) {
+        if (bytes >= 1048576) {
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        } else if (bytes >= 1024) {
+            return (bytes / 1024).toFixed(2) + ' KB';
+        }
+        return bytes + ' bytes';
     }
     </script>
     @endpush

@@ -23,7 +23,7 @@ class ListaPreciosController extends Controller
                     $urlEdit = route('listas-precios.form', $l->id);
                     $toggleText = $l->activo ? 'Desactivar' : 'Activar';
                     $toggleClass = $l->activo ? 'btn-outline-warning' : 'btn-outline-success';
-                    $toggleIcon = $l->activo ? 'bi-toggle-off' : 'bi-toggle-on';
+                    $toggleIcon = $l->activo ? 'bi-toggle-on' : 'bi-toggle-off';
 
                     return <<<HTML
 <div class="d-flex justify-content-center gap-1">

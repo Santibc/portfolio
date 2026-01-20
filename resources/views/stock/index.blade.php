@@ -62,6 +62,16 @@
         </div>
       </div>
 
+      {{-- Acciones rápidas --}}
+      <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('traslados.form') }}" class="btn btn-primary">
+          <i class="bi bi-arrow-left-right me-1"></i> Nuevo Traslado
+        </a>
+        <a href="{{ route('traslados') }}" class="btn btn-outline-secondary ms-2">
+          <i class="bi bi-list-ul me-1"></i> Ver Traslados
+        </a>
+      </div>
+
       {{-- Panel de Filtros --}}
       <div class="card shadow-sm mb-4">
         <div class="card-header bg-light">
@@ -74,7 +84,7 @@
         </div>
         <div class="card-body">
           <div class="row align-items-end">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Buscar Producto</label>
               <select id="filtroProducto" class="form-select select2-productos w-100">
                 <option value="">-- Todos los productos --</option>
@@ -88,8 +98,8 @@
                 @endif
               </select>
             </div>
-            
-            <div class="col-md-3">
+
+            <div class="col-md-2">
               <label class="form-label">Estado de Stock</label>
               <select id="filtroEstado" class="form-select">
                 <option value="">-- Todos --</option>
@@ -98,7 +108,17 @@
                 <option value="stock_bajo">Stock Bajo</option>
               </select>
             </div>
-            
+
+            <div class="col-md-3">
+              <label class="form-label">Ubicación</label>
+              <select id="filtroUbicacion" class="form-select">
+                <option value="">-- Todas las ubicaciones --</option>
+                @foreach($ubicaciones as $ubicacion)
+                  <option value="{{ $ubicacion->id }}">{{ $ubicacion->nombre }}</option>
+                @endforeach
+              </select>
+            </div>
+
             <div class="col-md-3">
               <div class="btn-group w-100" role="group">
                 <button type="button" class="btn btn-primary" onclick="aplicarFiltros()">
@@ -380,6 +400,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const productoId = urlParams.get('producto_id');
     const estadoFiltro = urlParams.get('estado');
+    const ubicacionFiltro = urlParams.get('ubicacion_id');
     
     // Configurar Select2 para búsqueda de productos
     $('.select2-productos').select2({
@@ -421,6 +442,11 @@
     if (estadoFiltro) {
       $('#filtroEstado').val(estadoFiltro);
     }
+
+    // Si hay un filtro de ubicación, seleccionarlo
+    if (ubicacionFiltro) {
+      $('#filtroUbicacion').val(ubicacionFiltro);
+    }
     
     // Configurar DataTable
     const table = $('#stock-table').DataTable({
@@ -438,6 +464,10 @@
           const estado = $('#filtroEstado').val();
           if (estado) {
             d.estado = estado;
+          }
+          const ubicacion = $('#filtroUbicacion').val();
+          if (ubicacion) {
+            d.ubicacion_id = ubicacion;
           }
         }
       },
@@ -488,21 +518,25 @@
     window.aplicarFiltros = function() {
       const productoId = $('#filtroProducto').val();
       const estado = $('#filtroEstado').val();
-      
+      const ubicacionId = $('#filtroUbicacion').val();
+
       let url = "{{ route('stock.index') }}";
       const params = [];
-      
+
       if (productoId) {
         params.push('producto_id=' + productoId);
       }
       if (estado) {
         params.push('estado=' + estado);
       }
-      
+      if (ubicacionId) {
+        params.push('ubicacion_id=' + ubicacionId);
+      }
+
       if (params.length > 0) {
         url += '?' + params.join('&');
       }
-      
+
       window.location.href = url;
     };
 

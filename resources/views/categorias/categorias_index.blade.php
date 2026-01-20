@@ -16,7 +16,6 @@
                 <th>Slug</th>
                 <th>Descripción</th>
                 <th>Orden</th>
-                <th>Activo</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -46,7 +45,6 @@
           render: data => data ? data.substr(0,50)+'…' : ''
         },
         { data:'orden',       name:'orden' },
-        { data:'activo',      name:'activo' },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -72,6 +70,42 @@
           .addClass('block w-full text-left px-4 py-2 rounded hover:bg-gray-100');
       }, 50);
     });
+
+    window.confirmarEliminar = function(id, url) {
+      Swal.fire({
+        title: '¿Eliminar categoría?',
+        text: 'Esta acción desactivará la categoría. Solo se permite si no tiene productos asociados.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Eliminada', data.message, 'success');
+              table.ajax.reload();
+            } else {
+              Swal.fire('Error', data.message, 'error');
+            }
+          })
+          .catch(error => {
+            Swal.fire('Error', 'Ocurrió un error al eliminar la categoría.', 'error');
+          });
+        }
+      });
+    };
   });
   </script>
   @endpush

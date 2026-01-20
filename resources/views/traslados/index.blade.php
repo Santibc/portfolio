@@ -14,6 +14,40 @@
             </div>
           @endif
 
+          {{-- Filtros --}}
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label">Estado</label>
+                  <select id="filtro-estado" class="form-select">
+                    <option value="">-- Todos --</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_transito">En Tránsito</option>
+                    <option value="completado">Completado</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Tipo de Operación</label>
+                  <select id="filtro-tipo-operacion" class="form-select">
+                    <option value="">-- Todos --</option>
+                    <option value="general">General</option>
+                    <option value="credito">Crédito</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <button type="button" id="btn-filtrar" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i> Filtrar
+                  </button>
+                  <button type="button" id="btn-limpiar" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Limpiar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <table id="traslados-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
@@ -22,6 +56,7 @@
                 <th>Producto</th>
                 <th>Ruta</th>
                 <th>Cantidad</th>
+                <th>Tipo Op.</th>
                 <th>Estado</th>
                 <th>Creado por</th>
                 <th>Fecha</th>
@@ -60,18 +95,25 @@
       serverSide: true,
       responsive: true,
       scrollX: true,
-      ajax: "{{ route('traslados') }}",
+      ajax: {
+        url: "{{ route('traslados') }}",
+        data: function(d) {
+          d.estado = $('#filtro-estado').val();
+          d.tipo_operacion = $('#filtro-tipo-operacion').val();
+        }
+      },
       columns: [
         { data: 'action', orderable: false, searchable: false },
         { data: 'numero_traslado', name: 'numero_traslado' },
         { data: 'producto_nombre', name: 'producto.nombre' },
         { data: 'ruta', name: 'ubicacion_origen_id', orderable: false },
         { data: 'cantidad', name: 'cantidad' },
+        { data: 'tipo_operacion_badge', name: 'tipo_operacion' },
         { data: 'estado_badge', name: 'estado' },
         { data: 'creador', name: 'usuarioCreador.name', orderable: false },
         { data: 'created_at', name: 'created_at' },
       ],
-      order: [[7, 'desc']],
+      order: [[8, 'desc']],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
         { extend: 'pageLength', className: 'btn btn-outline-dark', text: 'Filas' },
@@ -96,6 +138,17 @@
           .removeClass()
           .addClass('block w-full text-left px-4 py-2 rounded hover:bg-gray-100');
       }, 50);
+    });
+
+    // Filtros
+    $('#btn-filtrar').on('click', function() {
+      table.ajax.reload();
+    });
+
+    $('#btn-limpiar').on('click', function() {
+      $('#filtro-estado').val('');
+      $('#filtro-tipo-operacion').val('');
+      table.ajax.reload();
     });
 
     window.enviarTraslado = function(id) {
@@ -201,6 +254,9 @@
       fetch(`/traslados/${id}/detalle`)
         .then(res => res.json())
         .then(data => {
+          const tipoOpBadge = data.tipo_operacion === 'credito'
+            ? '<span class="badge bg-info">Crédito</span>'
+            : '<span class="badge bg-secondary">General</span>';
           let html = `
             <div class="space-y-3">
               <p><strong>Número:</strong> ${data.numero_traslado}</p>
@@ -208,6 +264,7 @@
               <p><strong>Origen:</strong> ${data.ubicacion_origen?.nombre || 'N/A'}</p>
               <p><strong>Destino:</strong> ${data.ubicacion_destino?.nombre || 'N/A'}</p>
               <p><strong>Cantidad:</strong> ${data.cantidad}</p>
+              <p><strong>Tipo de Operación:</strong> ${tipoOpBadge}</p>
               <p><strong>Estado:</strong> ${data.estado}</p>
               <p><strong>Creado por:</strong> ${data.usuario_creador?.name || 'N/A'}</p>
               ${data.usuario_receptor ? `<p><strong>Recibido por:</strong> ${data.usuario_receptor.name}</p>` : ''}

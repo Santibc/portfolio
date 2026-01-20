@@ -1340,8 +1340,16 @@ class SolicitudController extends Controller
             if ($request->hasFile('archivo_guia')) {
                 $archivo = $request->file('archivo_guia');
                 $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
-                $ruta = $archivo->storeAs('guias', $nombreArchivo, 'public');
-                $archivoGuia = 'storage/' . $ruta;
+
+                // Crear directorio si no existe
+                $directorioGuias = public_path('uploads/guias');
+                if (!file_exists($directorioGuias)) {
+                    mkdir($directorioGuias, 0755, true);
+                }
+
+                // Guardar directamente en public/uploads/guias/
+                $archivo->move($directorioGuias, $nombreArchivo);
+                $archivoGuia = 'uploads/guias/' . $nombreArchivo;
             }
 
             $solicitud->actualizarEstadoEnvio(
@@ -1388,14 +1396,21 @@ class SolicitudController extends Controller
         ]);
 
         try {
-            // Guardar archivo
+            // Guardar archivo directamente en public/uploads/guias/
             $archivo = $request->file('archivo_guia');
             $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
-            $ruta = $archivo->storeAs('guias', $nombreArchivo, 'public');
+
+            // Crear directorio si no existe
+            $directorioGuias = public_path('uploads/guias');
+            if (!file_exists($directorioGuias)) {
+                mkdir($directorioGuias, 0755, true);
+            }
+
+            $archivo->move($directorioGuias, $nombreArchivo);
 
             // Actualizar solicitud
             $solicitud->update([
-                'archivo_guia' => 'storage/' . $ruta,
+                'archivo_guia' => 'uploads/guias/' . $nombreArchivo,
             ]);
 
             return response()->json([

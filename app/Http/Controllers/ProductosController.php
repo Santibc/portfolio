@@ -13,6 +13,7 @@ use App\Models\ListaPrecio;
 use App\Models\VarianteProducto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
+use App\Models\Ubicacion;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
@@ -25,7 +26,7 @@ class ProductosController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal'])
+            $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal.ubicacionRelacion'])
                             ->where('eliminado', false)
                             ->select('productos.*');
 
@@ -53,6 +54,12 @@ class ProductosController extends Controller
                     }
 
                     return '<span class="badge bg-'.$badge.'">' . $stockDisponible . '</span>';
+                })
+                ->addColumn('ubicacion', function($p) {
+                    if ($p->stockPrincipal && $p->stockPrincipal->ubicacionRelacion) {
+                        return $p->stockPrincipal->ubicacionRelacion->nombre;
+                    }
+                    return '<span class="text-muted">-</span>';
                 })
                 ->addColumn('variantes', fn($p) => $p->tiene_variantes ? 'Sí' : 'No')
                 ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
@@ -93,7 +100,12 @@ class ProductosController extends Controller
                 ->filterColumn('marca', function($query, $keyword) {
                     $query->where('marca', 'like', "%{$keyword}%");
                 })
-                ->rawColumns(['imagen', 'stock', 'action'])
+                ->filterColumn('ubicacion', function($query, $keyword) {
+                    $query->whereHas('stockPrincipal.ubicacionRelacion', function($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->rawColumns(['imagen', 'stock', 'ubicacion', 'action'])
                 ->make(true);
         }
 
@@ -105,7 +117,8 @@ class ProductosController extends Controller
         $producto = $producto ?? new Producto();
         $categorias = Categoria::activas()->pluck('nombre', 'id');
         $listas = ListaPrecio::activas()->get();
-        
+        $ubicaciones = Ubicacion::activas()->get();
+
         // Cargar stock si el producto existe (NUEVO)
         $stocks = [];
         if ($producto->exists) {
@@ -118,8 +131,8 @@ class ProductosController extends Controller
                 }
             }
         }
-        
-        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks'));
+
+        return view('productos.productos_form', compact('producto', 'categorias', 'listas', 'stocks', 'ubicaciones'));
     }
 
     public function guardar(Request $request)
@@ -153,7 +166,7 @@ class ProductosController extends Controller
             'stock_inicial' => ['nullable','integer','min:0'],  // NUEVO
             'stock_minimo' => ['nullable','integer','min:0'],  // NUEVO
             'stock_maximo' => ['nullable','integer','min:0'],  // NUEVO
-            'ubicacion_stock' => ['nullable','string','max:255'],  // NUEVO
+            'ubicacion_id' => ['nullable','exists:ubicaciones,id'],  // Ubicación seleccionada
         ];
 
         $messages = [
@@ -270,7 +283,7 @@ class ProductosController extends Controller
                         'cantidad_reservada' => 0,
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion' => $request->input('ubicacion_stock'),
+                        'ubicacion_id' => $request->input('ubicacion_id'),
                         'alerta_stock_bajo' => true
                     ])->save();
 
@@ -279,6 +292,7 @@ class ProductosController extends Controller
                         MovimientoStock::create([
                             'producto_id' => $producto->id,
                             'variante_producto_id' => null,
+                            'ubicacion_id' => $request->input('ubicacion_id'),
                             'tipo_movimiento' => 'entrada',
                             'cantidad' => $stockInicial,
                             'stock_anterior' => 0,
@@ -293,7 +307,7 @@ class ProductosController extends Controller
                     $stock->update([
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion' => $request->input('ubicacion_stock')
+                        'ubicacion_id' => $request->input('ubicacion_id')
                     ]);
                 }
             }
@@ -569,7 +583,7 @@ public function actualizarPreciosExcel(Request $request)
                 $html .= '<td>' . $stock->cantidad_reservada . '</td>';
                 $html .= '<td><span class="badge bg-' . $badge . '">' . $stock->stock_real . '</span></td>';
                 $html .= '<td>' . $stock->stock_minimo . '/' . ($stock->stock_maximo ?: '∞') . '</td>';
-                $html .= '<td>' . ($stock->ubicacion ?: '-') . '</td>';
+                $html .= '<td>' . ($stock->nombre_ubicacion ?: '-') . '</td>';
                 $html .= '</tr>';
             }
             

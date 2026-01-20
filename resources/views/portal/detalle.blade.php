@@ -106,7 +106,7 @@
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         @if($item->producto && $item->producto->imagenPrincipal)
-                                                            <img src="{{ asset($item->producto->imagenPrincipal->ruta) }}"
+                                                            <img src="{{ asset($item->producto->imagenPrincipal->ruta_imagen) }}"
                                                                  alt="{{ $item->producto->nombre }}"
                                                                  class="rounded me-2"
                                                                  style="width: 40px; height: 40px; object-fit: cover;">

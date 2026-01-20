@@ -31,6 +31,7 @@
                 <th>Nombre</th>
                 <th>Marca</th>
                 <th>Categoría</th>
+                <th>Ubicación</th>
                 <th>Unidad Venta</th>
                 <th>Unidad Empaque</th>
                 <th>Extensión</th>
@@ -61,6 +62,7 @@
         { data:'nombre',       name:'nombre' },
         { data:'marca',        name:'marca' },
         { data:'categoria',    name:'categoria', orderable:false },
+        { data:'ubicacion',    name:'ubicacion', orderable:false },
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
         { data:'extension',    name:'extension' },

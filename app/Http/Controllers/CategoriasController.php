@@ -12,17 +12,21 @@ class CategoriasController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Categoria::select('categorias.*');
+            $query = Categoria::select('categorias.*')
+                ->where('activo', true);
 
             return DataTables::of($query)
-                ->addColumn('activo', fn($c) => $c->activo ? 'Sí' : 'No')
                 ->addColumn('action', function($c) {
-                    $url = route('categorias.form', $c->id);
+                    $urlEditar = route('categorias.form', $c->id);
+                    $urlEliminar = route('categorias.eliminar', $c->id);
                     return <<<HTML
-<div class="d-flex justify-content-center">
-  <a href="{$url}" class="btn btn-outline-info btn-sm" title="Editar">
+<div class="d-flex justify-content-center gap-1">
+  <a href="{$urlEditar}" class="btn btn-outline-info btn-sm" title="Editar">
     <i class="bi bi-pencil"></i>
   </a>
+  <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="confirmarEliminar({$c->id}, '{$urlEliminar}')">
+    <i class="bi bi-trash"></i>
+  </button>
 </div>
 HTML;
                 })
@@ -78,5 +82,27 @@ HTML;
 
         return redirect()->route('categorias')
                          ->with('success','Categoría guardada correctamente.');
+    }
+
+    public function eliminar(Categoria $categoria)
+    {
+        // Verificar si tiene productos asociados (activos)
+        $productosActivos = $categoria->productos()->where('activo', true)->count();
+
+        if ($productosActivos > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "No se puede eliminar la categoría porque tiene {$productosActivos} producto(s) asociado(s)."
+            ], 422);
+        }
+
+        // Eliminación lógica
+        $categoria->activo = false;
+        $categoria->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Categoría eliminada correctamente.'
+        ]);
     }
 }

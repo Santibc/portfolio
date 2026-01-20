@@ -58,19 +58,24 @@ Route::middleware('auth')->group(function () {
 });
 
 // ============================================================
-// RUTAS SOLO ADMIN
+// USUARIOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Gestión de Usuarios
+Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+});
 
+// ============================================================
+// RUTAS SOLO ADMIN
+// ============================================================
+Route::middleware(['auth', 'role:admin'])->group(function () {
     // Categorías (solo admin)
     Route::get('categorias', [CategoriasController::class, 'index'])->name('categorias');
     Route::get('categorias/form/{categoria?}', [CategoriasController::class, 'form'])->name('categorias.form');
     Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])->name('categorias.guardar');
+    Route::delete('categorias/{categoria}/eliminar', [CategoriasController::class, 'eliminar'])->name('categorias.eliminar');
 
     // Listas de Precios (solo admin)
     Route::get('listas-precios', [ListaPreciosController::class, 'index'])->name('listas-precios');
@@ -107,11 +112,12 @@ Route::middleware(['auth', 'role:admin,vendedor,inventarios,facturacion'])->grou
     Route::get('documentos-cliente/{documento}/descargar', [ClientesController::class, 'descargarDocumento'])->name('clientes.documentos.descargar');
 });
 
-// Solo Admin e Inventarios pueden crear/editar clientes
+// Solo Admin e Inventarios pueden crear/editar/eliminar clientes
 Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     // Clientes - Crear/Editar
     Route::get('clientes/form/{cliente?}', [ClientesController::class, 'form'])->name('clientes.form');
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])->name('clientes.guardar');
+    Route::delete('clientes/{cliente}/eliminar', [ClientesController::class, 'eliminar'])->name('clientes.eliminar');
 
     // Sucursales de clientes
     Route::post('clientes/{cliente}/sucursales', [ClientesController::class, 'guardarSucursal'])->name('clientes.sucursales.guardar');
@@ -200,9 +206,9 @@ Route::middleware(['auth', 'role:admin,facturacion'])->group(function () {
 });
 
 // ============================================================
-// STOCK (Admin, Inventarios y Vendedor con permisos limitados)
+// STOCK (Solo Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,vendedor,inventarios'])->prefix('stock')->name('stock.')->group(function () {
+Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('stock.')->group(function () {
     // Vistas principales
     Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
@@ -256,6 +262,8 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
     Route::get('traslados/variantes/{productoId}', [TrasladosController::class, 'getVariantesPorProducto'])->name('traslados.variantes');
     Route::get('traslados/stock-disponible', [TrasladosController::class, 'getStockDisponible'])->name('traslados.stock-disponible');
+    Route::get('traslados/productos-por-ubicacion/{ubicacionId}', [TrasladosController::class, 'getProductosPorUbicacion'])->name('traslados.productos-por-ubicacion');
+    Route::get('traslados/variantes-por-ubicacion/{productoId}/{ubicacionId}', [TrasladosController::class, 'getVariantesPorProductoYUbicacion'])->name('traslados.variantes-por-ubicacion');
 });
 
 // ============================================================

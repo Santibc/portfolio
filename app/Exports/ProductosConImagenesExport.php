@@ -135,7 +135,7 @@ class ProductosConImagenesExport implements FromCollection, WithHeadings, WithMa
                     $sheet->getRowDimension($row)->setRowHeight(60);
 
                     if ($producto->imagenPrincipal) {
-                        $imagePath = public_path($producto->imagenPrincipal->ruta);
+                        $imagePath = public_path($producto->imagenPrincipal->ruta_imagen);
 
                         if (file_exists($imagePath)) {
                             try {

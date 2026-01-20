@@ -20,11 +20,24 @@ class TrasladoStock extends Model
         'cantidad',
         'estado',
         'notas',
+        'tipo_operacion',
         'usuario_creador_id',
         'usuario_receptor_id',
         'enviado_en',
         'recibido_en',
     ];
+
+    // Constantes de tipo de operación
+    const TIPO_OPERACION_GENERAL = 'general';
+    const TIPO_OPERACION_CREDITO = 'credito';
+
+    public static function tiposOperacion(): array
+    {
+        return [
+            self::TIPO_OPERACION_GENERAL => 'General',
+            self::TIPO_OPERACION_CREDITO => 'Crédito',
+        ];
+    }
 
     protected $casts = [
         'enviado_en' => 'datetime',
@@ -97,6 +110,11 @@ class TrasladoStock extends Model
             $nombre .= ' - ' . $this->varianteProducto->nombre_variante;
         }
         return $nombre;
+    }
+
+    public function getTipoOperacionNombreAttribute(): string
+    {
+        return self::tiposOperacion()[$this->tipo_operacion] ?? $this->tipo_operacion;
     }
 
     // =========================================

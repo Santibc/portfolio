@@ -6,7 +6,6 @@ use App\Models\Cliente;
 use App\Models\SolicitudCotizacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 /**
@@ -186,12 +185,7 @@ class PortalClienteController extends Controller
 
         $rutaArchivo = $solicitud->archivo_guia;
 
-        // Verificar si es ruta de storage o pública
-        if (Storage::exists($rutaArchivo)) {
-            return Storage::download($rutaArchivo, "guia-{$solicitud->numero_solicitud}.pdf");
-        }
-
-        // Intentar como ruta pública
+        // Buscar en public/
         $rutaPublica = public_path($rutaArchivo);
         if (file_exists($rutaPublica)) {
             return response()->download($rutaPublica, "guia-{$solicitud->numero_solicitud}.pdf");
@@ -213,12 +207,7 @@ class PortalClienteController extends Controller
 
         $rutaArchivo = $solicitud->archivo_factura;
 
-        // Verificar si es ruta de storage o pública
-        if (Storage::exists($rutaArchivo)) {
-            return Storage::download($rutaArchivo, "factura-{$solicitud->numero_factura}.pdf");
-        }
-
-        // Intentar como ruta pública
+        // Buscar en public/
         $rutaPublica = public_path($rutaArchivo);
         if (file_exists($rutaPublica)) {
             return response()->download($rutaPublica, "factura-{$solicitud->numero_factura}.pdf");

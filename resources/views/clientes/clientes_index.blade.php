@@ -19,6 +19,7 @@
                   <th>Ciudad</th>
                   <th>Vendedor</th>
                   <th>Lista Precio</th>
+                  <th>Documentos</th>
                   <th>Activo</th>
                 </tr>
               </thead>
@@ -44,10 +45,11 @@
           { data:'nombre_contacto',       name:'nombre_contacto' },
           { data:'email',                 name:'email' },
           { data:'telefono',              name:'telefono' },
-  { data:'pais',                 name:'pais',      orderable:false, searchable:false },
-  { data:'ciudad',               name:'ciudad',    orderable:false, searchable:false },
+          { data:'pais',                 name:'pais',      orderable:false, searchable:false },
+          { data:'ciudad',               name:'ciudad',    orderable:false, searchable:false },
           { data:'vendedor',              orderable:false, searchable:false },
           { data:'lista_precio',          orderable:false, searchable:false },
+          { data:'documentos',            orderable:false, searchable:false },
           { data:'activo',                name:'activo' },
         ],
         dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
@@ -76,6 +78,50 @@
             .addClass('block w-full text-left px-4 py-2 rounded hover:bg-gray-100');
         }, 50);
       });
+
+      // Función para eliminar cliente
+      window.eliminarCliente = function(id, nombre) {
+        Swal.fire({
+          title: '¿Eliminar cliente?',
+          html: `¿Está seguro de eliminar al cliente <strong>${nombre}</strong>?<br><small class="text-muted">El cliente dejará de aparecer en el catálogo y en la lista de clientes.</small>`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/clientes/${id}/eliminar`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                Swal.fire({
+                  title: 'Eliminado',
+                  text: data.message,
+                  icon: 'success',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+                table.ajax.reload();
+              } else {
+                Swal.fire('Error', data.message, 'error');
+              }
+            })
+            .catch(error => {
+              Swal.fire('Error', 'Ocurrió un error al eliminar el cliente.', 'error');
+              console.error('Error:', error);
+            });
+          }
+        });
+      };
     });
     </script>
     @endpush

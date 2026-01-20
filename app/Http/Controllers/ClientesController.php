@@ -22,7 +22,10 @@ class ClientesController extends Controller
             $query = Cliente::with(['vendedor', 'listaPrecio',
                         'pais',        // <-- relación país
             'ciudad',      // <-- relación ciudad
-            ])->select('clientes.*');
+            'documentos',  // <-- relación documentos
+            ])
+            ->activos() // Solo mostrar clientes activos (no eliminados)
+            ->select('clientes.*');
 
             // Filtrar por vendedor si no es admin ni inventarios ni facturacion
             $user = auth()->user();
@@ -36,15 +39,32 @@ class ClientesController extends Controller
                 ->addColumn('vendedor', fn($c) => $c->vendedor?->name)
                 ->addColumn('lista_precio', fn($c) => $c->listaPrecio?->nombre)
                 ->addColumn('activo', fn($c) => $c->activo ? 'Sí' : 'No')
+                ->addColumn('documentos', function($c) {
+                    if ($c->documentos->isEmpty()) {
+                        return '<span class="text-muted">-</span>';
+                    }
+
+                    $html = '<div class="dropdown"><button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-file-earmark-text me-1"></i>' . $c->documentos->count() . '</button>';
+                    $html .= '<ul class="dropdown-menu">';
+                    foreach ($c->documentos as $doc) {
+                        $url = route('clientes.documentos.descargar', $doc->id);
+                        $html .= '<li><a class="dropdown-item" href="' . $url . '"><i class="bi bi-download me-2"></i>' . e($doc->nombre) . '</a></li>';
+                    }
+                    $html .= '</ul></div>';
+                    return $html;
+                })
                 ->addColumn('action', function($c) {
-                    // Solo admin e inventarios pueden editar
+                    // Solo admin e inventarios pueden editar y eliminar
                     if (auth()->user()->hasRole(['admin', 'inventarios'])) {
                         $url = route('clientes.form', $c->id);
                         return <<<HTML
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center gap-1">
   <a href="{$url}" class="btn btn-outline-info btn-sm" title="Editar">
     <i class="bi bi-pencil"></i>
   </a>
+  <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="eliminarCliente({$c->id}, '{$c->nombre_contacto}')">
+    <i class="bi bi-trash"></i>
+  </button>
 </div>
 HTML;
                     }
@@ -71,7 +91,7 @@ HTML;
                         $q->where('nombre', 'like', "%{$keyword}%");
                     });
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'documentos'])
                 ->make(true);
         }
 
@@ -102,6 +122,7 @@ HTML;
 
     public function guardar(Request $request)
     {
+        $esNuevo = !$request->id;
         $cliente = $request->id
                  ? Cliente::findOrFail($request->id)
                  : new Cliente();
@@ -127,6 +148,13 @@ HTML;
             'valor_flete' => ['nullable', 'numeric', 'min:0'],
             'aplica_flete' => ['nullable', 'boolean'],
             'observaciones' => ['nullable', 'string', 'max:2000'],
+            // Validación de documentos en creación
+            'documentos' => ['nullable', 'array'],
+            'documentos.*' => ['file', 'max:51200'], // Max 50MB por archivo
+            'documentos_nombres' => ['nullable', 'array'],
+            'documentos_tipos' => ['nullable', 'array'],
+            // Validación de sucursales en creación
+            'sucursales' => ['nullable', 'array'],
         ];
 
         // Campos adicionales para persona jurídica
@@ -166,7 +194,71 @@ HTML;
             $data['lista_precio_id'] = $cliente->lista_precio_id;
         }
 
-        $cliente->fill($data)->save();
+        // Remover datos de documentos y sucursales antes de guardar cliente
+        unset($data['documentos'], $data['documentos_nombres'], $data['documentos_tipos'], $data['sucursales']);
+
+        DB::beginTransaction();
+        try {
+            $cliente->fill($data)->save();
+
+            // Procesar sucursales si es cliente nuevo
+            if ($esNuevo && $request->has('sucursales')) {
+                $sucursalesData = json_decode($request->sucursales, true);
+                if (is_array($sucursalesData)) {
+                    foreach ($sucursalesData as $sucursal) {
+                        Sucursal::create([
+                            'cliente_id' => $cliente->id,
+                            'nombre' => $sucursal['nombre'],
+                            'direccion' => $sucursal['direccion'],
+                            'ciudad_id' => $sucursal['ciudad_id'] ?: null,
+                            'telefono' => $sucursal['telefono'] ?? null,
+                            'email' => $sucursal['email'] ?? null,
+                            'contacto' => $sucursal['contacto'] ?? null,
+                            'es_principal' => $sucursal['es_principal'] ?? false,
+                        ]);
+                    }
+                }
+            }
+
+            // Procesar documentos si es cliente nuevo
+            if ($esNuevo && $request->hasFile('documentos')) {
+                $nombres = $request->documentos_nombres ?? [];
+                $tipos = $request->documentos_tipos ?? [];
+
+                foreach ($request->file('documentos') as $index => $archivo) {
+                    $nombreDoc = $nombres[$index] ?? $archivo->getClientOriginalName();
+                    $tipoDoc = $tipos[$index] ?? 'otro';
+
+                    // Guardar en public/documentos/clientes/{cliente_id}/
+                    $directorio = "documentos/clientes/{$cliente->id}";
+                    $rutaPublic = public_path($directorio);
+
+                    if (!file_exists($rutaPublic)) {
+                        mkdir($rutaPublic, 0755, true);
+                    }
+
+                    $nombreArchivo = time() . '_' . $index . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $archivo->getClientOriginalName());
+                    $archivo->move($rutaPublic, $nombreArchivo);
+
+                    DocumentoCliente::create([
+                        'cliente_id' => $cliente->id,
+                        'nombre' => $nombreDoc,
+                        'archivo' => "{$directorio}/{$nombreArchivo}",
+                        'tipo' => $tipoDoc,
+                        'mime_type' => $archivo->getClientMimeType(),
+                        'tamano' => filesize("{$rutaPublic}/{$nombreArchivo}"),
+                        'subido_por' => auth()->id(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                             ->withInput()
+                             ->with('error', 'Error al guardar: ' . $e->getMessage());
+        }
 
         return redirect()->route('clientes')
                          ->with('success', 'Cliente guardado correctamente.');
@@ -229,21 +321,31 @@ HTML;
     public function subirDocumento(Request $request, Cliente $cliente)
     {
         $request->validate([
-            'documento' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'], // Max 10MB
+            'documento' => ['required', 'file', 'max:51200'], // Max 50MB, cualquier tipo
             'nombre' => ['required', 'string', 'max:255'],
             'tipo' => ['nullable', 'string', 'max:50'],
         ]);
 
         $archivo = $request->file('documento');
-        $ruta = $archivo->store("documentos/clientes/{$cliente->id}", 'public');
+
+        // Guardar en public/documentos/clientes/{cliente_id}/
+        $directorio = "documentos/clientes/{$cliente->id}";
+        $rutaPublic = public_path($directorio);
+
+        if (!file_exists($rutaPublic)) {
+            mkdir($rutaPublic, 0755, true);
+        }
+
+        $nombreArchivo = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $archivo->getClientOriginalName());
+        $archivo->move($rutaPublic, $nombreArchivo);
 
         $documento = DocumentoCliente::create([
             'cliente_id' => $cliente->id,
             'nombre' => $request->nombre,
-            'archivo' => $ruta,
+            'archivo' => "{$directorio}/{$nombreArchivo}",
             'tipo' => $request->tipo,
-            'mime_type' => $archivo->getMimeType(),
-            'tamano' => $archivo->getSize(),
+            'mime_type' => $archivo->getClientMimeType(),
+            'tamano' => filesize("{$rutaPublic}/{$nombreArchivo}"),
             'subido_por' => auth()->id(),
         ]);
 
@@ -276,10 +378,49 @@ HTML;
      */
     public function descargarDocumento(DocumentoCliente $documento)
     {
-        if (!Storage::disk('public')->exists($documento->archivo)) {
+        $rutaCompleta = public_path($documento->archivo);
+
+        if (!file_exists($rutaCompleta)) {
             abort(404, 'Archivo no encontrado.');
         }
 
-        return Storage::disk('public')->download($documento->archivo, $documento->nombre);
+        // Obtener extensión original del archivo
+        $extension = pathinfo($documento->archivo, PATHINFO_EXTENSION);
+        $nombreDescarga = $documento->nombre;
+
+        // Agregar extensión si no la tiene
+        if (!str_ends_with(strtolower($nombreDescarga), '.' . strtolower($extension))) {
+            $nombreDescarga .= '.' . $extension;
+        }
+
+        return response()->download($rutaCompleta, $nombreDescarga);
+    }
+
+    /**
+     * Eliminar cliente (soft delete - marca como inactivo)
+     */
+    public function eliminar(Cliente $cliente)
+    {
+        // Solo admin e inventarios pueden eliminar
+        if (!auth()->user()->hasRole(['admin', 'inventarios'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tiene permisos para eliminar clientes.'
+            ], 403);
+        }
+
+        try {
+            $cliente->update(['activo' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cliente eliminado correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el cliente: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

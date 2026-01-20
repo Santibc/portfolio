@@ -18,6 +18,16 @@ class TrasladosController extends Controller
         if ($request->ajax()) {
             $query = TrasladoStock::with(['ubicacionOrigen', 'ubicacionDestino', 'producto', 'varianteProducto', 'usuarioCreador']);
 
+            // Filtro por estado
+            if ($request->filled('estado')) {
+                $query->where('estado', $request->estado);
+            }
+
+            // Filtro por tipo de operación
+            if ($request->filled('tipo_operacion')) {
+                $query->where('tipo_operacion', $request->tipo_operacion);
+            }
+
             return DataTables::of($query)
                 ->addColumn('action', function ($row) {
                     $btns = '<div class="d-flex gap-1">';
@@ -44,6 +54,10 @@ class TrasladosController extends Controller
                 ->addColumn('ruta', function ($row) {
                     return $row->ubicacionOrigen->nombre . ' → ' . $row->ubicacionDestino->nombre;
                 })
+                ->addColumn('tipo_operacion_badge', function ($row) {
+                    $color = $row->tipo_operacion === 'credito' ? 'info' : 'secondary';
+                    return '<span class="badge bg-' . $color . '">' . $row->tipo_operacion_nombre . '</span>';
+                })
                 ->addColumn('estado_badge', function ($row) {
                     $colores = [
                         'pendiente' => 'warning',
@@ -57,7 +71,7 @@ class TrasladosController extends Controller
                 ->addColumn('creador', function ($row) {
                     return $row->usuarioCreador->name ?? 'N/A';
                 })
-                ->rawColumns(['action', 'estado_badge'])
+                ->rawColumns(['action', 'tipo_operacion_badge', 'estado_badge'])
                 ->make(true);
         }
 
@@ -68,13 +82,81 @@ class TrasladosController extends Controller
     {
         $traslado = $id ? TrasladoStock::findOrFail($id) : new TrasladoStock();
         $ubicaciones = Ubicacion::activas()->get();
-        $productos = Producto::where('eliminado', false)
+
+        return view('traslados.form', compact('traslado', 'ubicaciones'));
+    }
+
+    /**
+     * Obtener productos con stock disponible en una ubicación específica
+     */
+    public function getProductosPorUbicacion($ubicacionId)
+    {
+        // Obtener IDs de productos que tienen stock en esta ubicación
+        $stockItems = StockProducto::where('ubicacion_id', $ubicacionId)
+            ->where('cantidad_disponible', '>', 0)
+            ->get();
+
+        $productosIds = $stockItems->pluck('producto_id')->unique();
+
+        $productos = Producto::whereIn('id', $productosIds)
+            ->where('eliminado', false)
             ->where('activo', true)
             ->where('controlar_stock', true)
             ->orderBy('nombre')
-            ->get();
+            ->get()
+            ->map(function ($producto) use ($stockItems, $ubicacionId) {
+                // Verificar si tiene variantes con stock en esta ubicación
+                $stockEnUbicacion = $stockItems->where('producto_id', $producto->id);
+                $tieneVariantesConStock = $stockEnUbicacion->whereNotNull('variante_producto_id')->count() > 0;
 
-        return view('traslados.form', compact('traslado', 'ubicaciones', 'productos'));
+                return [
+                    'id' => $producto->id,
+                    'referencia' => $producto->referencia,
+                    'nombre' => $producto->nombre,
+                    'tiene_variantes' => $producto->tiene_variantes && $tieneVariantesConStock,
+                ];
+            });
+
+        return response()->json([
+            'productos' => $productos
+        ]);
+    }
+
+    /**
+     * Obtener variantes de un producto con stock en una ubicación específica
+     */
+    public function getVariantesPorProductoYUbicacion($productoId, $ubicacionId)
+    {
+        $producto = Producto::with('variantes')->findOrFail($productoId);
+
+        if (!$producto->tiene_variantes) {
+            return response()->json([
+                'tiene_variantes' => false,
+                'variantes' => []
+            ]);
+        }
+
+        // Obtener solo variantes que tienen stock en esta ubicación
+        $stockItems = StockProducto::where('producto_id', $productoId)
+            ->where('ubicacion_id', $ubicacionId)
+            ->whereNotNull('variante_producto_id')
+            ->where('cantidad_disponible', '>', 0)
+            ->pluck('variante_producto_id');
+
+        $variantes = $producto->variantes()
+            ->whereIn('id', $stockItems)
+            ->get()
+            ->map(function ($variante) {
+                return [
+                    'id' => $variante->id,
+                    'nombre_variante' => $variante->nombre_variante,
+                ];
+            });
+
+        return response()->json([
+            'tiene_variantes' => true,
+            'variantes' => $variantes
+        ]);
     }
 
     public function guardar(Request $request)
@@ -85,6 +167,7 @@ class TrasladosController extends Controller
             'producto_id' => 'required|exists:productos,id',
             'variante_producto_id' => 'nullable|exists:variantes_productos,id',
             'cantidad' => 'required|integer|min:1',
+            'tipo_operacion' => 'required|in:general,credito',
             'notas' => 'nullable|string|max:500',
         ]);
 
@@ -107,6 +190,7 @@ class TrasladosController extends Controller
 
         DB::beginTransaction();
         try {
+            // Crear el traslado directamente en estado "en_transito"
             $traslado = TrasladoStock::create([
                 'numero_traslado' => TrasladoStock::generarNumeroTraslado(),
                 'ubicacion_origen_id' => $request->ubicacion_origen_id,
@@ -114,15 +198,38 @@ class TrasladosController extends Controller
                 'producto_id' => $request->producto_id,
                 'variante_producto_id' => $request->variante_producto_id,
                 'cantidad' => $request->cantidad,
-                'estado' => TrasladoStock::ESTADO_PENDIENTE,
+                'estado' => TrasladoStock::ESTADO_EN_TRANSITO,
                 'notas' => $request->notas,
+                'tipo_operacion' => $request->tipo_operacion,
                 'usuario_creador_id' => auth()->id(),
+                'enviado_en' => now(),
+            ]);
+
+            // Descontar del stock de origen automáticamente
+            $stockAnterior = $stockOrigen->cantidad_disponible;
+            $stockOrigen->cantidad_disponible -= $request->cantidad;
+            $stockOrigen->save();
+
+            // Registrar movimiento de salida
+            MovimientoStock::create([
+                'producto_id' => $request->producto_id,
+                'variante_producto_id' => $request->variante_producto_id,
+                'ubicacion_id' => $request->ubicacion_origen_id,
+                'tipo_movimiento' => 'salida',
+                'cantidad' => $request->cantidad,
+                'stock_anterior' => $stockAnterior,
+                'stock_nuevo' => $stockOrigen->cantidad_disponible,
+                'referencia_documento' => $traslado->numero_traslado,
+                'origen' => 'traslado',
+                'tipo_operacion' => $request->tipo_operacion,
+                'motivo' => 'Traslado a ' . Ubicacion::find($request->ubicacion_destino_id)->nombre,
+                'usuario_id' => auth()->id(),
             ]);
 
             DB::commit();
 
             return redirect()->route('traslados')
-                ->with('success', 'Traslado creado correctamente. Número: ' . $traslado->numero_traslado);
+                ->with('success', 'Traslado creado y enviado correctamente. Número: ' . $traslado->numero_traslado);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -179,7 +286,7 @@ class TrasladosController extends Controller
                 'stock_nuevo' => $stockOrigen->cantidad_disponible,
                 'referencia_documento' => $traslado->numero_traslado,
                 'origen' => 'traslado',
-                'tipo_operacion' => 'general',
+                'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
                 'motivo' => 'Traslado a ' . $traslado->ubicacionDestino->nombre,
                 'usuario_id' => auth()->id(),
             ]);
@@ -247,7 +354,7 @@ class TrasladosController extends Controller
                 'stock_nuevo' => $stockDestino->cantidad_disponible,
                 'referencia_documento' => $traslado->numero_traslado,
                 'origen' => 'traslado',
-                'tipo_operacion' => 'general',
+                'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
                 'motivo' => 'Traslado desde ' . $traslado->ubicacionOrigen->nombre,
                 'usuario_id' => auth()->id(),
             ]);
@@ -313,7 +420,7 @@ class TrasladosController extends Controller
                         'stock_nuevo' => $stockOrigen->cantidad_disponible,
                         'referencia_documento' => $traslado->numero_traslado,
                         'origen' => 'traslado',
-                        'tipo_operacion' => 'general',
+                        'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
                         'motivo' => 'Cancelación de traslado',
                         'usuario_id' => auth()->id(),
                     ]);

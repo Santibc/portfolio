@@ -7,6 +7,7 @@ use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
+use App\Models\Ubicacion;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -18,7 +19,7 @@ class StockController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = StockProducto::with(['producto', 'variante'])
+            $query = StockProducto::with(['producto', 'variante', 'ubicacionRelacion'])
                 ->whereHas('producto', function($q) {
                     $q->where('eliminado', false);
                 })
@@ -44,6 +45,11 @@ class StockController extends Controller
                 }
             }
 
+            // Filtrar por ubicación
+            if ($request->has('ubicacion_id') && $request->ubicacion_id) {
+                $query->where('ubicacion_id', $request->ubicacion_id);
+            }
+
             return DataTables::of($query)
                 ->addColumn('producto_info', function($stock) {
                     $info = '<strong>' . $stock->producto->referencia . '</strong><br>';
@@ -67,7 +73,12 @@ class StockController extends Controller
                     }
                     return $info;
                 })
-                ->addColumn('ubicacion', fn($stock) => $stock->ubicacion ?: '-')
+                ->addColumn('ubicacion', function($stock) {
+                    if ($stock->ubicacionRelacion) {
+                        return $stock->ubicacionRelacion->nombre;
+                    }
+                    return '<span class="text-muted">-</span>';
+                })
                 ->addColumn('action', function($stock) {
                     $buttons = '<div class="btn-group btn-group-sm">';
 
@@ -107,20 +118,23 @@ class StockController extends Controller
                         $q->where('nombre_variante', 'like', "%{$keyword}%");
                     });
                 })
-                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'action'])
+                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'ubicacion', 'action'])
                 ->make(true);
         }
 
         $productosConStockBajo = StockProducto::conStockBajo()->count();
         $productosSinStock = StockProducto::sinStock()->count();
-        
+
         // Obtener información del producto si viene filtrado
         $productoFiltrado = null;
         if ($request->has('producto_id') && $request->producto_id) {
             $productoFiltrado = Producto::find($request->producto_id);
         }
-        
-        return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado'));
+
+        // Obtener ubicaciones activas para el filtro
+        $ubicaciones = Ubicacion::activas()->orderBy('nombre')->get();
+
+        return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'ubicaciones'));
     }
 
     // Entrada de stock

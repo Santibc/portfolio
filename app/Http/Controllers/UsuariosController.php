@@ -62,7 +62,7 @@ class UsuariosController extends Controller
     public function form(User $user = null)
     {
         $user  = $user ?? new User();
-        $roles = Role::pluck('name','name');      // ← lista de roles (clave and valor = nombre)
+        $roles = Role::where('name', '!=', 'cliente')->pluck('name','name');
 
         return view('usuarios.usuarios_form', compact('user','roles'));
     }

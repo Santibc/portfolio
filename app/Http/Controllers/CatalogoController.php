@@ -11,11 +11,9 @@ use App\Models\SolicitudCotizacion;
 use App\Models\ItemSolicitudCotizacion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Mail\SolicitudCreada;
 use App\Events\CotizacionCreada;
-use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use App\Services\ReservaStockService;
 
 class CatalogoController extends Controller
 {
@@ -49,19 +47,25 @@ class CatalogoController extends Controller
 
         $user = Auth::user();
 
-        // Tanto vendedores como admin pueden ver todos los clientes
-        if ($user->hasRole(['vendedor', 'admin'])) {
+        // Admin ve todos los clientes, vendedor solo los suyos
+        if ($user->hasRole('admin')) {
             $clientes = Cliente::activos()
                               ->with('vendedor')
                               ->orderBy('nombre_contacto')
                               ->get();
-
-            return view('catalogo.seleccionar_cliente', compact('clientes'));
+        } elseif ($user->hasRole('vendedor')) {
+            $clientes = Cliente::activos()
+                              ->where('vendedor_id', $user->id)
+                              ->with('vendedor')
+                              ->orderBy('nombre_contacto')
+                              ->get();
+        } else {
+            return redirect()->route('dashboard')->with('error', 'No tiene permisos para acceder al catálogo.');
         }
 
-        return redirect()->route('dashboard')->with('error', 'No tiene permisos para acceder al catálogo.');
+        return view('catalogo.seleccionar_cliente', compact('clientes'));
     }
-    
+
     /**
      * Flujo B: Mostrar catálogo para cliente seleccionado
      */
@@ -213,22 +217,8 @@ class CatalogoController extends Controller
             }
         }
 
-        // Si es flujo B interno, obtener todas las listas de precios del producto
+        // No enviar todas las listas de precios - solo el precio asignado al cliente
         $todasListasPrecios = [];
-        if ($esFlujoBInterno) {
-            $preciosProducto = $producto->precios()
-                ->with('listaPrecio')
-                ->get();
-
-            foreach ($preciosProducto as $precio) {
-                if ($precio->precio > 0 && $precio->listaPrecio) {
-                    $todasListasPrecios[] = [
-                        'nombre' => $precio->listaPrecio->nombre,
-                        'precio' => $precio->precio
-                    ];
-                }
-            }
-        }
 
         if ($mostrarStock) {
             $producto->stock_info = $this->obtenerStockProducto($producto);
@@ -413,9 +403,10 @@ class CatalogoController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
-            'items.*.precio_manual' => 'nullable|numeric|min:0',
-            'items.*.precio_original' => 'nullable|numeric|min:0',
-            'notas_cliente' => 'nullable|string|max:1000'
+            'notas_cliente' => 'required|string|min:1|max:1000'
+        ], [
+            'notas_cliente.required' => 'Las notas son obligatorias.',
+            'notas_cliente.min' => 'Las notas son obligatorias.'
         ]);
         
         DB::beginTransaction();
@@ -521,47 +512,35 @@ class CatalogoController extends Controller
 
             DB::commit();
 
-            // Disparar evento para crear cuenta de cliente automáticamente
-            event(new CotizacionCreada($solicitud));
+            // Crear reservas de stock para la cotización
+            $reservaService = new ReservaStockService();
+            $resultadoReserva = $reservaService->reservarParaCotizacion($solicitud);
 
-            // Enviar correo de confirmación al cliente
-            try {
-                // Cargar relaciones necesarias para el correo y PDF
-                $solicitud->load([
-                    'cliente.vendedor',
-                    'cliente.ciudad',
-                    'cliente.ciudad.departamento',
-                    'items.producto.imagenPrincipal'
-                ]);
-
-                if ($cliente->email) {
-                    // Generar PDF
-                    $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
-                    $pdf->setPaper('letter', 'portrait');
-
-                    Mail::to($cliente->email)->send(new SolicitudCreada($solicitud, $pdf));
-                    Log::info('Correo de solicitud creada enviado', [
-                        'solicitud_id' => $solicitud->id,
-                        'cliente_email' => $cliente->email
-                    ]);
-                } else {
-                    Log::warning('No se pudo enviar correo: cliente sin email', [
-                        'solicitud_id' => $solicitud->id,
-                        'cliente_id' => $cliente->id
-                    ]);
+            $advertenciasReserva = [];
+            if (!$resultadoReserva['exito'] && !empty($resultadoReserva['errores'])) {
+                foreach ($resultadoReserva['errores'] as $error) {
+                    $advertenciasReserva[] = $error['mensaje'] ?? 'Error al reservar stock';
                 }
-            } catch (\Exception $e) {
-                // No fallar si el correo no se envía, solo registrar el error
-                Log::error('Error al enviar correo de solicitud creada', [
-                    'solicitud_id' => $solicitud->id,
-                    'error' => $e->getMessage()
-                ]);
+            }
+
+            // Disparar evento para crear cuenta de cliente automáticamente
+            // TEMPORALMENTE DESACTIVADO - Descomentar para reactivar creación automática de cuenta
+            // event(new CotizacionCreada($solicitud));
+
+            $mensaje = 'Solicitud de cotización creada exitosamente.';
+            if ($resultadoReserva['reservas_creadas'] > 0) {
+                $mensaje .= " Se reservó stock por 24 horas ({$resultadoReserva['reservas_creadas']} items).";
             }
 
             return response()->json([
                 'success' => true,
-                'mensaje' => 'Solicitud de cotización creada exitosamente.',
-                'numero_solicitud' => $solicitud->numero_solicitud
+                'mensaje' => $mensaje,
+                'numero_solicitud' => $solicitud->numero_solicitud,
+                'reserva' => [
+                    'creada' => $resultadoReserva['reservas_creadas'] > 0,
+                    'items_reservados' => $resultadoReserva['reservas_creadas'],
+                    'advertencias' => $advertenciasReserva
+                ]
             ]);
             
         } catch (\Exception $e) {

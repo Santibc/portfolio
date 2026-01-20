@@ -367,9 +367,10 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Notas adicionales (opcional)</label>
-            <textarea class="form-control" id="notasSolicitud" rows="3"
+            <label class="form-label">Notas <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="notasSolicitud" rows="3" required
                       placeholder="Ingrese cualquier comentario o requerimiento especial..."></textarea>
+            <div class="invalid-feedback">Las notas son obligatorias.</div>
           </div>
           <div class="alert alert-info">
             <i class="bi bi-info-circle"></i> Al confirmar, se enviará la solicitud de cotización con los productos seleccionados.
@@ -431,16 +432,8 @@
                     <small class="text-muted">Ref: ${item.referencia}</small>
                     ${item.variante?`<br><small class="text-info">${item.variante}</small>`:''}
                     ${(mostrarPrecios && !isNaN(precioUnit))
-                      ?`<br><div class="input-group input-group-sm mt-1" style="width:150px">
-                          <span class="input-group-text">$</span>
-                          <input type="number" class="form-control form-control-sm"
-                                 value="${precioUnit.toFixed(2)}"
-                                 onchange="actualizarPrecio(${i}, this.value)"
-                                 min="0" step="0.01"
-                                 style="font-size:0.8rem">
-                        </div>
-                        <small class="text-muted">c/u ${item.unidad_venta ? `- Und/V: ${item.unidad_venta}` : ''}</small>
-                        ${item.editado ? '<br><small class="badge bg-warning text-dark">Precio editado</small>' : ''}`
+                      ?`<br><span class="text-primary fw-bold">${new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0}).format(precioUnit)}</span>
+                        <small class="text-muted d-block">c/u ${item.unidad_venta ? `- Und/V: ${item.unidad_venta}` : ''}</small>`
                       :''}
                   </div>
                   <button class="btn btn-sm btn-outline-danger" onclick="eliminarDelCarrito(${i})">
@@ -481,47 +474,25 @@
       if(val>0){ carrito[i].cantidad=val; actualizarCarrito(); }
     };
 
-    window.actualizarPrecio = (i, nuevoPrecio)=>{
-      const precio = parseFloat(nuevoPrecio);
-      if(!isNaN(precio) && precio >= 0) {
-        carrito[i].precio = precio;
-        carrito[i].editado = true;
-        if(!carrito[i].precio_original) {
-          carrito[i].precio_original = precio;
-        }
-        actualizarCarrito();
-      }
-    };
 
-    function agregarAlCarrito(producto, cantidad, variante=null, precioEditado=null){
-      const precioRaw   = variante? variante.precio_final: producto.precio;
-      const precioOriginal = parseFloat(precioRaw)||0;
+    function agregarAlCarrito(producto, cantidad, variante=null){
+      const precioRaw = variante ? variante.precio_final : producto.precio;
+      const precioUnit = parseFloat(precioRaw) || 0;
 
-      // Usar precio editado si se proporciona, sino usar el precio original
-      const precioUnit = precioEditado !== null ? parseFloat(precioEditado) : precioOriginal;
-
-      const idx = carrito.findIndex(it=>
-        it.producto_id===producto.id &&
-        it.variante_id === (variante?.id||null)
+      const idx = carrito.findIndex(it =>
+        it.producto_id === producto.id &&
+        it.variante_id === (variante?.id || null)
       );
-      if(idx > -1){
+      if (idx > -1) {
         carrito[idx].cantidad += cantidad;
-        // Si se proporciona un precio editado, actualizar el precio
-        if(precioEditado !== null) {
-          carrito[idx].precio = precioUnit;
-          carrito[idx].precio_original = precioOriginal;
-          carrito[idx].editado = true;
-        }
       } else {
         carrito.push({
           producto_id: producto.id,
-          variante_id: variante?.id||null,
+          variante_id: variante?.id || null,
           referencia: producto.referencia,
           nombre: producto.nombre,
-          variante: variante? `${variante.referencia_variante||''} ${variante.color||''}`.trim():null,
+          variante: variante ? `${variante.referencia_variante || ''} ${variante.color || ''}`.trim() : null,
           precio: precioUnit,
-          precio_original: precioOriginal,
-          editado: precioEditado !== null,
           unidad_venta: producto.unidad_venta || '',
           cantidad
         });
@@ -547,10 +518,7 @@
           }
         }
 
-        // Capturar precio editado
-        const precioEditado = parseFloat($('#precioEditableProducto').val()) || null;
-
-        agregarAlCarrito(prod, cnt, null, precioEditado);
+        agregarAlCarrito(prod, cnt, null);
         $('#modalProducto').modal('hide');
         mostrarNotificacion('Producto agregado al carrito','success');
       }
@@ -810,32 +778,16 @@ function cargarProductos(page=1){
           if(raw!=null&&!isNaN(num)) {
             html+=`<div class="mb-3">`;
 
-            // Mostrar todas las listas de precios si están disponibles (solo flujo B interno)
-            if(resp.todas_listas_precios && resp.todas_listas_precios.length > 0) {
-              html+=`<label class="form-label text-muted"><small>Precios de Lista:</small></label>`;
-              html+=`<div class="mb-2">`;
-              resp.todas_listas_precios.forEach(lista => {
-                const precioFormateado = new Intl.NumberFormat('es-CO', {
-                  style: 'currency',
-                  currency: 'COP',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0
-                }).format(lista.precio);
-                html+=`<p class="mb-1 text-muted small"><strong>${lista.nombre}:</strong> ${precioFormateado}</p>`;
-              });
-              html+=`</div>`;
-            } else {
-              // Mostrar precio de lista normal (flujo A o cuando no hay listas)
-              html+=`<label class="form-label text-muted"><small>Precio de Lista:</small></label>
-              <p class="mb-2 text-muted">$${num.toFixed(2)}</p>`;
-            }
-
-            html+=`<label class="form-label"><strong>Precio a Cotizar:</strong></label>
-              <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="number" class="form-control" id="precioEditableProducto"
-                       value="${num.toFixed(2)}" min="0" step="0.01">
-              </div>
+            // Mostrar solo el precio asignado al cliente (no editable)
+            const precioFormateado = new Intl.NumberFormat('es-CO', {
+              style: 'currency',
+              currency: 'COP',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            }).format(num);
+            html+=`<label class="form-label"><strong>Precio:</strong></label>
+              <p class="h4 text-primary mb-0">${precioFormateado}</p>
+              <input type="hidden" id="precioEditableProducto" value="${num.toFixed(2)}">
             </div>`;
           }
         }
@@ -894,25 +846,26 @@ function cargarProductos(page=1){
         // Variantes o cantidad simple
         if(p.tiene_variantes&&p.variantes?.length){
           html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Variante</th><th>SKU</th>';
-          if(mostrarPrecios) html+='<th>Precio Lista</th><th>Precio a Cotizar</th>';
+          if(mostrarPrecios) html+='<th>Precio</th>';
           if(mostrarStock) html+='<th>Stock</th>';
           html+='<th>Cantidad</th></tr></thead><tbody>';
-          
+
           p.variantes.forEach((v,i)=>{
             html+='<tr>';
             html+=`<td>${v.nombre_variante||"Estándar"}</td><td><small>${v.sku}</small></td>`;
-            
-            // Precio de variante
+
+            // Precio de variante (no editable)
             if(mostrarPrecios) {
-              const precioVariante = (v.precio_final||0).toFixed(2);
-              html+=`<td class="text-muted">$${precioVariante}</td>`;
-              html+=`<td><div class="input-group input-group-sm">
-                <span class="input-group-text">$</span>
-                <input type="number" class="form-control variante-precio"
-                       data-variante-index="${i}"
-                       value="${precioVariante}"
-                       min="0" step="0.01">
-              </div></td>`;
+              const precioVariante = (v.precio_final||0);
+              const precioFormateado = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              }).format(precioVariante);
+              html+=`<td class="text-primary"><strong>${precioFormateado}</strong>
+                <input type="hidden" class="variante-precio" data-variante-index="${i}" value="${precioVariante.toFixed(2)}">
+              </td>`;
             }
             
             // Stock de variante
@@ -1035,10 +988,7 @@ function cargarProductos(page=1){
             }
           }
 
-          // Capturar precio editado de la variante
-          const precioEditado = parseFloat($(`.variante-precio[data-variante-index="${idx}"]`).val()) || null;
-
-          agregarAlCarrito(prod, cnt, v, precioEditado);
+          agregarAlCarrito(prod, cnt, v);
           ok=true;
         }
       });
@@ -1056,14 +1006,21 @@ function cargarProductos(page=1){
     });
     
     $('#btnConfirmarSolicitud').click(()=>{
-      const notas = $('#notasSolicitud').val();
+      const notas = $('#notasSolicitud').val().trim();
+
+      // Validar que las notas no estén vacías
+      if(!notas) {
+        $('#notasSolicitud').addClass('is-invalid');
+        mostrarNotificacion('Las notas son obligatorias', 'warning');
+        return;
+      }
+      $('#notasSolicitud').removeClass('is-invalid');
+
       $('#loadingOverlay').show();
       const items = carrito.map(i=>({
         producto_id: i.producto_id,
         variante_id: i.variante_id,
-        cantidad: i.cantidad,
-        precio_manual: i.editado ? i.precio : null,
-        precio_original: i.precio_original || null
+        cantidad: i.cantidad
       }));
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,

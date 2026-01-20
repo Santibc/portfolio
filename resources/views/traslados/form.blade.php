@@ -53,19 +53,13 @@
             <div class="mb-4">
               <label for="producto_id" class="block text-sm font-medium text-gray-700 mb-1">Producto *</label>
               <select name="producto_id" id="producto_id"
-                class="w-full px-3 py-2 border rounded-md @error('producto_id') border-red-500 @enderror" required>
-                <option value="">Seleccione un producto</option>
-                @foreach($productos as $producto)
-                  <option value="{{ $producto->id }}"
-                    data-tiene-variantes="{{ $producto->tiene_variantes ? '1' : '0' }}"
-                    {{ old('producto_id') == $producto->id ? 'selected' : '' }}>
-                    {{ $producto->referencia }} - {{ $producto->nombre }}
-                  </option>
-                @endforeach
+                class="w-full px-3 py-2 border rounded-md @error('producto_id') border-red-500 @enderror" required disabled>
+                <option value="">Primero seleccione una ubicación de origen</option>
               </select>
               @error('producto_id')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
               @enderror
+              <small class="text-gray-500 block mt-1" id="productoHelp">Solo se muestran productos con stock en la ubicación de origen seleccionada.</small>
             </div>
 
             <div class="mb-4" id="varianteContainer" style="display: none;">
@@ -90,6 +84,19 @@
               @error('cantidad')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
               @enderror
+            </div>
+
+            <div class="mb-4">
+              <label for="tipo_operacion" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Operación *</label>
+              <select name="tipo_operacion" id="tipo_operacion"
+                class="w-full px-3 py-2 border rounded-md @error('tipo_operacion') border-red-500 @enderror" required>
+                <option value="general" {{ old('tipo_operacion', 'general') == 'general' ? 'selected' : '' }}>General</option>
+                <option value="credito" {{ old('tipo_operacion') == 'credito' ? 'selected' : '' }}>Crédito</option>
+              </select>
+              @error('tipo_operacion')
+                <span class="text-red-500 text-sm">{{ $message }}</span>
+              @enderror
+              <small class="text-gray-500 block mt-1">Indica si el traslado corresponde a una operación de crédito o general.</small>
             </div>
 
             <div class="mb-4">
@@ -120,41 +127,96 @@
     const varianteContainer = document.getElementById('varianteContainer');
     const varianteSelect = document.getElementById('variante_producto_id');
     const ubicacionOrigenSelect = document.getElementById('ubicacion_origen_id');
+    const ubicacionDestinoSelect = document.getElementById('ubicacion_destino_id');
     const stockInfo = document.getElementById('stockInfo');
     const stockDisponible = document.getElementById('stockDisponible');
+    const productoHelp = document.getElementById('productoHelp');
 
-    productoSelect.addEventListener('change', async function() {
-      const productoId = this.value;
-      varianteSelect.innerHTML = '<option value="">Seleccione una variante</option>';
+    // Cuando cambia la ubicación de origen, cargar productos disponibles
+    ubicacionOrigenSelect.addEventListener('change', async function() {
+      const ubicacionId = this.value;
+
+      // Resetear selector de producto
+      productoSelect.innerHTML = '<option value="">Cargando productos...</option>';
+      productoSelect.disabled = true;
       varianteContainer.style.display = 'none';
+      varianteSelect.innerHTML = '<option value="">Seleccione una variante</option>';
+      stockInfo.style.display = 'none';
 
-      if (!productoId) {
-        stockInfo.style.display = 'none';
+      if (!ubicacionId) {
+        productoSelect.innerHTML = '<option value="">Primero seleccione una ubicación de origen</option>';
         return;
       }
 
       try {
-        const res = await fetch(`/traslados/variantes/${productoId}`);
+        const res = await fetch(`/traslados/productos-por-ubicacion/${ubicacionId}`);
         const data = await res.json();
 
-        if (data.tiene_variantes && data.variantes.length > 0) {
-          data.variantes.forEach(v => {
-            const option = document.createElement('option');
-            option.value = v.id;
-            option.textContent = v.nombre_variante;
-            varianteSelect.appendChild(option);
-          });
-          varianteContainer.style.display = 'block';
-        }
+        productoSelect.innerHTML = '<option value="">Seleccione un producto</option>';
 
-        actualizarStockDisponible();
+        if (data.productos.length === 0) {
+          productoSelect.innerHTML = '<option value="">No hay productos con stock en esta ubicación</option>';
+          productoHelp.textContent = 'No se encontraron productos con stock disponible en la ubicación seleccionada.';
+          productoHelp.classList.add('text-red-500');
+          productoHelp.classList.remove('text-gray-500');
+        } else {
+          data.productos.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = `${p.referencia} - ${p.nombre}`;
+            option.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
+            productoSelect.appendChild(option);
+          });
+          productoSelect.disabled = false;
+          productoHelp.textContent = `${data.productos.length} producto(s) disponible(s) en esta ubicación.`;
+          productoHelp.classList.remove('text-red-500');
+          productoHelp.classList.add('text-gray-500');
+        }
       } catch (e) {
-        console.error('Error al cargar variantes:', e);
+        console.error('Error al cargar productos:', e);
+        productoSelect.innerHTML = '<option value="">Error al cargar productos</option>';
       }
     });
 
+    // Cuando cambia el producto, cargar variantes si aplica
+    productoSelect.addEventListener('change', async function() {
+      const productoId = this.value;
+      const ubicacionId = ubicacionOrigenSelect.value;
+
+      varianteSelect.innerHTML = '<option value="">Seleccione una variante</option>';
+      varianteContainer.style.display = 'none';
+
+      if (!productoId || !ubicacionId) {
+        stockInfo.style.display = 'none';
+        return;
+      }
+
+      const selectedOption = this.options[this.selectedIndex];
+      const tieneVariantes = selectedOption.dataset.tieneVariantes === '1';
+
+      if (tieneVariantes) {
+        try {
+          const res = await fetch(`/traslados/variantes-por-ubicacion/${productoId}/${ubicacionId}`);
+          const data = await res.json();
+
+          if (data.tiene_variantes && data.variantes.length > 0) {
+            data.variantes.forEach(v => {
+              const option = document.createElement('option');
+              option.value = v.id;
+              option.textContent = v.nombre_variante;
+              varianteSelect.appendChild(option);
+            });
+            varianteContainer.style.display = 'block';
+          }
+        } catch (e) {
+          console.error('Error al cargar variantes:', e);
+        }
+      }
+
+      actualizarStockDisponible();
+    });
+
     varianteSelect.addEventListener('change', actualizarStockDisponible);
-    ubicacionOrigenSelect.addEventListener('change', actualizarStockDisponible);
 
     async function actualizarStockDisponible() {
       const productoId = productoSelect.value;
@@ -182,7 +244,13 @@
         stockInfo.style.display = 'block';
 
         // Validar cantidad máxima
-        document.getElementById('cantidad').max = data.stock_disponible;
+        const cantidadInput = document.getElementById('cantidad');
+        cantidadInput.max = data.stock_disponible;
+
+        // Si la cantidad actual excede el máximo, ajustarla
+        if (parseInt(cantidadInput.value) > data.stock_disponible) {
+          cantidadInput.value = data.stock_disponible;
+        }
       } catch (e) {
         console.error('Error al obtener stock:', e);
       }

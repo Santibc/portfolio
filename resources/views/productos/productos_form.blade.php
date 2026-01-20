@@ -241,12 +241,18 @@
 
         {{-- Ubicación --}}
         <div class="col-md-3 mb-3">
-          <label class="form-label">Ubicación en Bodega</label>
-          <input type="text" name="ubicacion_stock" 
-                 class="form-control @error('ubicacion_stock') is-invalid @enderror"
-                 value="{{ old('ubicacion_stock', $producto->stockPrincipal->ubicacion ?? '') }}"
-                 placeholder="Ej: A-1-3">
-          @error('ubicacion_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          <label class="form-label">Ubicación</label>
+          <select name="ubicacion_id" class="form-select @error('ubicacion_id') is-invalid @enderror">
+            <option value="">-- Sin ubicación --</option>
+            @foreach($ubicaciones as $ubicacion)
+              <option value="{{ $ubicacion->id }}"
+                {{ old('ubicacion_id', $producto->stockPrincipal->ubicacion_id ?? '') == $ubicacion->id ? 'selected' : '' }}>
+                {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
+              </option>
+            @endforeach
+          </select>
+          @error('ubicacion_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          <small class="text-muted">Bodega o tienda donde se almacena</small>
         </div>
       </div>
     </div>
