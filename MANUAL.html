@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual del Sistema - Flores y Algo Más</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e91e63;
+            --primary-dark: #c2185b;
+            --secondary-color: #9c27b0;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --info-color: #2196f3;
+            --dark-color: #2c3e50;
+            --light-bg: #f8f9fa;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            line-height: 1.7;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--dark-color) 0%, #1a252f 100%);
+            color: #fff;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            background: rgba(233, 30, 99, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-header small {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            padding: 0.5rem 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 2px 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(233, 30, 99, 0.2);
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 50%;
+            height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(15deg);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .main-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        /* Section */
+        .section {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--dark-color) 0%, #34495e 100%);
+            color: #fff;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header i {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            opacity: 0.9;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .section-body {
+            padding: 1.5rem;
+        }
+
+        /* Cards */
+        .feature-card {
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 1.25rem;
+            height: 100%;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .feature-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card .icon.pink { background: rgba(233, 30, 99, 0.1); color: var(--primary-color); }
+        .feature-card .icon.purple { background: rgba(156, 39, 176, 0.1); color: var(--secondary-color); }
+        .feature-card .icon.green { background: rgba(76, 175, 80, 0.1); color: var(--success-color); }
+        .feature-card .icon.blue { background: rgba(33, 150, 243, 0.1); color: var(--info-color); }
+        .feature-card .icon.orange { background: rgba(255, 152, 0, 0.1); color: var(--warning-color); }
+
+        .feature-card h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            font-size: 0.875rem;
+            color: #666;
+            margin: 0;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block .comment { color: #6a9955; }
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .variable { color: #9cdcfe; }
+
+        /* Tables */
+        .table-custom {
+            margin: 0;
+        }
+
+        .table-custom thead {
+            background: var(--dark-color);
+            color: #fff;
+        }
+
+        .table-custom thead th {
+            font-weight: 500;
+            padding: 0.875rem 1rem;
+            border: none;
+        }
+
+        .table-custom tbody td {
+            padding: 0.875rem 1rem;
+            vertical-align: middle;
+            border-color: #eee;
+        }
+
+        .table-custom tbody tr:hover {
+            background: rgba(233, 30, 99, 0.03);
+        }
+
+        /* Badges */
+        .badge-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-status.active { background: rgba(76, 175, 80, 0.1); color: var(--success-color); }
+        .badge-status.pending { background: rgba(255, 152, 0, 0.1); color: var(--warning-color); }
+        .badge-status.info { background: rgba(33, 150, 243, 0.1); color: var(--info-color); }
+
+        /* Flow Steps */
+        .flow-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .flow-step {
+            background: var(--light-bg);
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .flow-step .step-num {
+            background: var(--primary-color);
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .flow-arrow {
+            color: #ccc;
+            font-size: 1.25rem;
+        }
+
+        /* Alert Boxes */
+        .alert-box {
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .alert-box i {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+            margin-top: 0.125rem;
+        }
+
+        .alert-box.info {
+            background: rgba(33, 150, 243, 0.1);
+            border-left: 4px solid var(--info-color);
+            color: #1565c0;
+        }
+
+        .alert-box.warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--warning-color);
+            color: #e65100;
+        }
+
+        .alert-box.success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--success-color);
+            color: #2e7d32;
+        }
+
+        .alert-box.danger {
+            background: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        /* Accordion */
+        .accordion-custom .accordion-button {
+            font-weight: 500;
+            background: var(--light-bg);
+        }
+
+        .accordion-custom .accordion-button:not(.collapsed) {
+            background: rgba(233, 30, 99, 0.1);
+            color: var(--primary-color);
+        }
+
+        .accordion-custom .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(233, 30, 99, 0.2);
+        }
+
+        /* Lists */
+        .custom-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .custom-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.75rem;
+            position: relative;
+        }
+
+        .custom-list li::before {
+            content: '\F26A';
+            font-family: 'bootstrap-icons';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        /* Subsection */
+        .subsection {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .subsection:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .subsection h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .subsection h4 i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Stats */
+        .stat-box {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--light-bg);
+            border-radius: 10px;
+        }
+
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .stat-box .label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* TOC */
+        .toc-list {
+            columns: 2;
+            column-gap: 2rem;
+        }
+
+        .toc-list li {
+            break-inside: avoid;
+        }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .toc-list {
+                columns: 1;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-header {
+                padding: 2rem 1rem;
+            }
+
+            .main-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+
+            .flow-steps {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar, .mobile-toggle {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .section {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-flower1"></i> Flores y Algo Más</h3>
+            <small>Manual del Sistema v2.0</small>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Inicio</div>
+                <a href="#inicio" class="nav-link active"><i class="bi bi-house"></i> Introducción</a>
+                <a href="#arquitectura" class="nav-link"><i class="bi bi-diagram-3"></i> Arquitectura</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Instalación</div>
+                <a href="#requisitos" class="nav-link"><i class="bi bi-check2-square"></i> Requisitos</a>
+                <a href="#instalacion" class="nav-link"><i class="bi bi-download"></i> Instalación</a>
+                <a href="#configuracion" class="nav-link"><i class="bi bi-gear"></i> Configuración</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Administración</div>
+                <a href="#productos" class="nav-link"><i class="bi bi-box-seam"></i> Productos</a>
+                <a href="#categorias" class="nav-link"><i class="bi bi-tags"></i> Categorías</a>
+                <a href="#stock" class="nav-link"><i class="bi bi-boxes"></i> Inventario</a>
+                <a href="#descuentos" class="nav-link"><i class="bi bi-percent"></i> Descuentos</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Tienda Online</div>
+                <a href="#tienda" class="nav-link"><i class="bi bi-shop"></i> Tienda Pública</a>
+                <a href="#arma-tu-ramo" class="nav-link"><i class="bi bi-flower2"></i> Arma tu Ramo</a>
+                <a href="#carrito" class="nav-link"><i class="bi bi-cart3"></i> Carrito</a>
+                <a href="#checkout" class="nav-link"><i class="bi bi-credit-card"></i> Checkout</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Gestión</div>
+                <a href="#compras" class="nav-link"><i class="bi bi-receipt"></i> Compras</a>
+                <a href="#logistica" class="nav-link"><i class="bi bi-truck"></i> Logística</a>
+                <a href="#clientes" class="nav-link"><i class="bi bi-people"></i> Clientes</a>
+                <a href="#puntos" class="nav-link"><i class="bi bi-star"></i> Puntos</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Cliente</div>
+                <a href="#panel-cliente" class="nav-link"><i class="bi bi-person-circle"></i> Panel Cliente</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Integraciones</div>
+                <a href="#transbank" class="nav-link"><i class="bi bi-bank"></i> Transbank</a>
+                <a href="#whatsapp" class="nav-link"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Avanzado</div>
+                <a href="#templates" class="nav-link"><i class="bi bi-palette"></i> Templates</a>
+                <a href="#base-datos" class="nav-link"><i class="bi bi-database"></i> Base de Datos</a>
+                <a href="#comandos" class="nav-link"><i class="bi bi-terminal"></i> Comandos</a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <h1><i class="bi bi-flower1"></i> Manual del Sistema</h1>
+            <p>Documentación completa de Flores y Algo Más - E-commerce de Floristería</p>
+        </header>
+
+        <div class="content-area">
+            <!-- Introducción -->
+            <section id="inicio" class="section">
+                <div class="section-header">
+                    <i class="bi bi-info-circle"></i>
+                    <h2>Introducción</h2>
+                </div>
+                <div class="section-body">
+                    <p><strong>Flores y Algo Más</strong> es una plataforma de e-commerce especializada en floristería, desarrollada con Laravel 9. El sistema permite la venta de arreglos florales, ramos personalizados y productos complementarios.</p>
+
+                    <div class="row g-4 mt-3">
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <div class="number">57</div>
+                                <div class="label">Modelos</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <div class="number">50+</div>
+                                <div class="label">Controladores</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <div class="number">95+</div>
+                                <div class="label">Migraciones</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="stat-box">
+                                <div class="number">4</div>
+                                <div class="label">Pasos Wizard</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-stars"></i> Características Principales</h4>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon pink"><i class="bi bi-flower2"></i></div>
+                                    <h5>Arma tu Ramo</h5>
+                                    <p>Wizard de 4 pasos para crear ramos personalizados</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon purple"><i class="bi bi-percent"></i></div>
+                                    <h5>Sistema de Descuentos</h5>
+                                    <p>Códigos promocionales y descuentos automáticos</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon green"><i class="bi bi-star"></i></div>
+                                    <h5>Puntos de Fidelización</h5>
+                                    <p>Sistema de puntos y programa de referidos</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon blue"><i class="bi bi-credit-card"></i></div>
+                                    <h5>Pago con Transbank</h5>
+                                    <p>Integración completa con WebPay</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon orange"><i class="bi bi-truck"></i></div>
+                                    <h5>Logística Avanzada</h5>
+                                    <p>Zonas de cobertura y tarifas dinámicas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="icon pink"><i class="bi bi-palette"></i></div>
+                                    <h5>Templates de Tienda</h5>
+                                    <p>Sistema de templates intercambiables</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Arquitectura -->
+            <section id="arquitectura" class="section">
+                <div class="section-header">
+                    <i class="bi bi-diagram-3"></i>
+                    <h2>Arquitectura del Sistema</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-stack"></i> Stack Tecnológico</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Backend</h6>
+                                <ul class="custom-list">
+                                    <li>Laravel 9 (PHP 8+)</li>
+                                    <li>MySQL como base de datos</li>
+                                    <li>Spatie Laravel Permission (roles)</li>
+                                    <li>Maatwebsite Excel (exportaciones)</li>
+                                    <li>DomPDF (generación PDF)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Frontend</h6>
+                                <ul class="custom-list">
+                                    <li>Bootstrap 5.3.7</li>
+                                    <li>jQuery + DataTables</li>
+                                    <li>SweetAlert2</li>
+                                    <li>Blade Templates</li>
+                                    <li>Vite (solo páginas de auth)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-folder-symlink"></i> Estructura de Directorios</h4>
+                        <div class="code-block">
+<span class="comment">app/</span>
+├── Models/          <span class="comment"># 57 modelos Eloquent</span>
+├── Http/
+│   ├── Controllers/ <span class="comment"># 50+ controladores</span>
+│   ├── Middleware/  <span class="comment"># VerificarEmpresa, VerificarMembresia</span>
+│   └── Requests/    <span class="comment"># Validaciones</span>
+├── Services/        <span class="comment"># TransbankService, WhatsAppService, etc.</span>
+├── Repositories/    <span class="comment"># TemplateRepository</span>
+└── Providers/       <span class="comment"># Service Providers</span>
+
+<span class="comment">resources/views/</span>
+├── tienda/          <span class="comment"># Vistas públicas de la tienda</span>
+├── productos/       <span class="comment"># Administración de productos</span>
+├── compras/         <span class="comment"># Gestión de compras</span>
+├── cliente/         <span class="comment"># Panel del cliente</span>
+└── layouts/         <span class="comment"># Layouts base</span>
+
+<span class="comment">database/</span>
+├── migrations/      <span class="comment"># 95+ migraciones</span>
+└── seeders/         <span class="comment"># Datos iniciales</span>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-link-45deg"></i> Patrones de Diseño Utilizados</h4>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Patrón</th>
+                                        <th>Uso en el Sistema</th>
+                                        <th>Ubicación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Strategy Pattern</strong></td>
+                                        <td>Sistema de templates de tienda</td>
+                                        <td><code>app/Services/Templates/</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Repository Pattern</strong></td>
+                                        <td>Acceso a datos de templates</td>
+                                        <td><code>app/Repositories/</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Factory Pattern</strong></td>
+                                        <td>Creación de instancias de templates</td>
+                                        <td><code>TemplateResolver</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Service Layer</strong></td>
+                                        <td>Lógica de negocio</td>
+                                        <td><code>app/Services/</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Requisitos -->
+            <section id="requisitos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-check2-square"></i>
+                    <h2>Requisitos del Sistema</h2>
+                </div>
+                <div class="section-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon blue"><i class="bi bi-server"></i></div>
+                                <h5>Servidor</h5>
+                                <ul class="custom-list mb-0">
+                                    <li>PHP 8.0 o superior</li>
+                                    <li>MySQL 5.7+ / MariaDB 10.3+</li>
+                                    <li>Apache o Nginx</li>
+                                    <li>Composer 2.x</li>
+                                    <li>Node.js 16+ y NPM</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon purple"><i class="bi bi-gear-wide-connected"></i></div>
+                                <h5>Extensiones PHP</h5>
+                                <ul class="custom-list mb-0">
+                                    <li>BCMath, Ctype, cURL</li>
+                                    <li>DOM, Fileinfo, JSON</li>
+                                    <li>Mbstring, OpenSSL, PDO</li>
+                                    <li>Tokenizer, XML, GD</li>
+                                    <li>Zip (para Excel)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert-box info mt-4">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Recomendación:</strong> Para desarrollo local, se recomienda usar XAMPP (Windows) o Laravel Valet (macOS).
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Instalación -->
+            <section id="instalacion" class="section">
+                <div class="section-header">
+                    <i class="bi bi-download"></i>
+                    <h2>Guía de Instalación</h2>
+                </div>
+                <div class="section-body">
+                    <div class="accordion accordion-custom" id="installAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#step1">
+                                    <strong>Paso 1:</strong>&nbsp; Clonar el repositorio
+                                </button>
+                            </h2>
+                            <div id="step1" class="accordion-collapse collapse show" data-bs-parent="#installAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<span class="keyword">git</span> clone [url-del-repositorio]
+<span class="keyword">cd</span> portfolio
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step2">
+                                    <strong>Paso 2:</strong>&nbsp; Instalar dependencias
+                                </button>
+                            </h2>
+                            <div id="step2" class="accordion-collapse collapse" data-bs-parent="#installAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<span class="comment"># Instalar dependencias de PHP</span>
+<span class="keyword">composer</span> install
+
+<span class="comment"># Instalar dependencias de Node</span>
+<span class="keyword">npm</span> install
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step3">
+                                    <strong>Paso 3:</strong>&nbsp; Configurar el entorno
+                                </button>
+                            </h2>
+                            <div id="step3" class="accordion-collapse collapse" data-bs-parent="#installAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<span class="comment"># Copiar archivo de entorno</span>
+<span class="keyword">cp</span> .env.example .env
+
+<span class="comment"># Generar clave de aplicación</span>
+<span class="keyword">php</span> artisan key:generate
+
+<span class="comment"># Crear enlace simbólico de storage</span>
+<span class="keyword">php</span> artisan storage:link
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step4">
+                                    <strong>Paso 4:</strong>&nbsp; Configurar base de datos
+                                </button>
+                            </h2>
+                            <div id="step4" class="accordion-collapse collapse" data-bs-parent="#installAccordion">
+                                <div class="accordion-body">
+                                    <p>Editar el archivo <code>.env</code> con las credenciales de la base de datos:</p>
+                                    <div class="code-block">
+<span class="variable">DB_CONNECTION</span>=<span class="string">mysql</span>
+<span class="variable">DB_HOST</span>=<span class="string">127.0.0.1</span>
+<span class="variable">DB_PORT</span>=<span class="string">3306</span>
+<span class="variable">DB_DATABASE</span>=<span class="string">floresyalgomas</span>
+<span class="variable">DB_USERNAME</span>=<span class="string">root</span>
+<span class="variable">DB_PASSWORD</span>=<span class="string"></span>
+                                    </div>
+                                    <p class="mt-3">Luego ejecutar las migraciones:</p>
+                                    <div class="code-block">
+<span class="keyword">php</span> artisan migrate
+<span class="keyword">php</span> artisan db:seed
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step5">
+                                    <strong>Paso 5:</strong>&nbsp; Iniciar el servidor
+                                </button>
+                            </h2>
+                            <div id="step5" class="accordion-collapse collapse" data-bs-parent="#installAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<span class="comment"># Iniciar servidor de desarrollo</span>
+<span class="keyword">php</span> artisan serve
+
+<span class="comment"># En otra terminal, compilar assets (opcional, solo para auth)</span>
+<span class="keyword">npm</span> run dev
+                                    </div>
+                                    <p class="mt-3">El sistema estará disponible en <code>http://localhost:8000</code></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuración -->
+            <section id="configuracion" class="section">
+                <div class="section-header">
+                    <i class="bi bi-gear"></i>
+                    <h2>Configuración</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-envelope"></i> Configuración de Email</h4>
+                        <div class="code-block">
+<span class="variable">MAIL_MAILER</span>=<span class="string">smtp</span>
+<span class="variable">MAIL_HOST</span>=<span class="string">smtp.gmail.com</span>
+<span class="variable">MAIL_PORT</span>=<span class="string">587</span>
+<span class="variable">MAIL_USERNAME</span>=<span class="string">tu-email@gmail.com</span>
+<span class="variable">MAIL_PASSWORD</span>=<span class="string">tu-app-password</span>
+<span class="variable">MAIL_ENCRYPTION</span>=<span class="string">tls</span>
+<span class="variable">MAIL_FROM_ADDRESS</span>=<span class="string">noreply@tudominio.com</span>
+<span class="variable">MAIL_FROM_NAME</span>=<span class="string">"Flores y Algo Más"</span>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-credit-card"></i> Configuración de Transbank</h4>
+                        <p>La configuración de Transbank se realiza desde el modelo <code>ConfiguracionPasarela</code> en la base de datos.</p>
+                        <div class="alert-box warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <div>
+                                <strong>Importante:</strong> Para producción, asegúrese de usar las credenciales reales de Transbank y configurar el ambiente como "produccion".
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-bar-chart"></i> Configuración de Analytics</h4>
+                        <p>Los códigos de seguimiento se configuran en el modelo <code>Empresa</code>:</p>
+                        <ul class="custom-list">
+                            <li><strong>ga4_measurement_id:</strong> ID de Google Analytics 4</li>
+                            <li><strong>fb_pixel_id:</strong> ID del Pixel de Facebook</li>
+                            <li><strong>gtm_container_id:</strong> ID del contenedor de Google Tag Manager</li>
+                            <li><strong>custom_scripts_head:</strong> Scripts personalizados en el head</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Productos -->
+            <section id="productos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-box-seam"></i>
+                    <h2>Gestión de Productos</h2>
+                </div>
+                <div class="section-body">
+                    <p>El sistema de productos permite gestionar el catálogo completo de la floristería, incluyendo arreglos, ramos y complementos.</p>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-plus-circle"></i> Crear un Producto</h4>
+                        <p>Acceda a <strong>Productos → Nuevo Producto</strong> y complete los siguientes campos:</p>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th>Descripción</th>
+                                        <th>Requerido</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Referencia</strong></td>
+                                        <td>Código único del producto (SKU)</td>
+                                        <td><span class="badge-status active">Sí</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Nombre</strong></td>
+                                        <td>Nombre del producto</td>
+                                        <td><span class="badge-status active">Sí</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Descripción</strong></td>
+                                        <td>Descripción detallada del producto</td>
+                                        <td><span class="badge-status pending">No</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Categoría</strong></td>
+                                        <td>Categoría a la que pertenece</td>
+                                        <td><span class="badge-status active">Sí</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tiene variantes</strong></td>
+                                        <td>Si el producto tiene tallas/colores</td>
+                                        <td><span class="badge-status pending">No</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Controlar stock</strong></td>
+                                        <td>Si se debe verificar disponibilidad</td>
+                                        <td><span class="badge-status pending">No</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-images"></i> Imágenes del Producto</h4>
+                        <ul class="custom-list">
+                            <li>Cada producto puede tener múltiples imágenes</li>
+                            <li>Una imagen debe ser marcada como <strong>principal</strong></li>
+                            <li>Las imágenes pueden ser reordenadas</li>
+                            <li>Formatos soportados: JPG, PNG, WebP</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-palette2"></i> Variantes de Producto</h4>
+                        <p>Si el producto tiene variantes (tallas, colores), se pueden configurar:</p>
+                        <ul class="custom-list">
+                            <li><strong>Talla:</strong> Pequeño, Mediano, Grande, etc.</li>
+                            <li><strong>Color:</strong> Variaciones de color disponibles</li>
+                            <li><strong>SKU:</strong> Código único por variante</li>
+                            <li><strong>Precio:</strong> Precio específico de la variante</li>
+                            <li><strong>Stock:</strong> Stock independiente por variante</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-currency-dollar"></i> Listas de Precios</h4>
+                        <p>El sistema soporta múltiples listas de precios para diferentes tipos de clientes:</p>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Lista General</h5>
+                                    <p>Precio base para todos los clientes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Lista Mayorista</h5>
+                                    <p>Precios especiales para mayoristas</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Lista VIP</h5>
+                                    <p>Precios preferenciales para clientes VIP</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categorías -->
+            <section id="categorias" class="section">
+                <div class="section-header">
+                    <i class="bi bi-tags"></i>
+                    <h2>Categorías</h2>
+                </div>
+                <div class="section-body">
+                    <p>Las categorías organizan los productos y se dividen en dos tipos:</p>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon pink"><i class="bi bi-heart"></i></div>
+                                <h5>Categorías por Ocasión</h5>
+                                <p>Organizan productos según el evento o momento:</p>
+                                <ul class="custom-list mb-0">
+                                    <li>Cumpleaños</li>
+                                    <li>Aniversario</li>
+                                    <li>Día de la Madre</li>
+                                    <li>San Valentín</li>
+                                    <li>Condolencias</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon purple"><i class="bi bi-flower1"></i></div>
+                                <h5>Categorías por Formato</h5>
+                                <p>Organizan productos según su presentación:</p>
+                                <ul class="custom-list mb-0">
+                                    <li>Ramos</li>
+                                    <li>Arreglos florales</li>
+                                    <li>Plantas</li>
+                                    <li>Cajas de rosas</li>
+                                    <li>Coronas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert-box info mt-4">
+                        <i class="bi bi-lightbulb"></i>
+                        <div>
+                            <strong>Tip:</strong> Un producto puede pertenecer a una categoría de cada tipo, lo que permite filtrar tanto por ocasión como por formato.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stock -->
+            <section id="stock" class="section">
+                <div class="section-header">
+                    <i class="bi bi-boxes"></i>
+                    <h2>Gestión de Inventario</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-box-seam"></i> Control de Stock</h4>
+                        <p>El modelo <code>StockProducto</code> gestiona el inventario:</p>
+                        <ul class="custom-list">
+                            <li><strong>cantidad_disponible:</strong> Stock actual disponible</li>
+                            <li><strong>cantidad_reservada:</strong> Stock reservado en carritos</li>
+                            <li><strong>stock_minimo:</strong> Umbral para alertas</li>
+                            <li><strong>alerta_stock_bajo:</strong> Activar notificaciones</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-arrow-left-right"></i> Movimientos de Stock</h4>
+                        <p>El sistema registra todos los movimientos de inventario:</p>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Descripción</th>
+                                        <th>Efecto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge bg-success">Entrada</span></td>
+                                        <td>Compra de inventario</td>
+                                        <td>+ Stock</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-danger">Salida</span></td>
+                                        <td>Venta completada</td>
+                                        <td>- Stock</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-warning">Reserva</span></td>
+                                        <td>Producto en carrito</td>
+                                        <td>Stock reservado</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-info">Ajuste</span></td>
+                                        <td>Corrección manual</td>
+                                        <td>+/- Stock</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-bell"></i> Alertas de Stock Bajo</h4>
+                        <p>El sistema genera alertas cuando:</p>
+                        <ul class="custom-list">
+                            <li>El stock cae por debajo del mínimo configurado</li>
+                            <li>Un producto agota su inventario</li>
+                            <li>Se detecta una alta demanda</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Descuentos -->
+            <section id="descuentos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-percent"></i>
+                    <h2>Sistema de Descuentos</h2>
+                </div>
+                <div class="section-body">
+                    <p>El sistema de descuentos permite crear promociones flexibles y códigos promocionales.</p>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-tag"></i> Tipos de Descuento</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="feature-card">
+                                    <div class="icon green"><i class="bi bi-percent"></i></div>
+                                    <h5>Porcentaje</h5>
+                                    <p>Descuento por porcentaje del total. Ej: 10% de descuento</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-card">
+                                    <div class="icon blue"><i class="bi bi-currency-dollar"></i></div>
+                                    <h5>Cantidad Fija</h5>
+                                    <p>Descuento de monto fijo. Ej: $5.000 de descuento</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-bullseye"></i> Aplicabilidad</h4>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Aplica a</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Orden completa</strong></td>
+                                        <td>Se aplica al total de la compra</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Productos específicos</strong></td>
+                                        <td>Solo aplica a productos seleccionados</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Categorías</strong></td>
+                                        <td>Aplica a todos los productos de una categoría</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-shield-check"></i> Validaciones</h4>
+                        <p>Los descuentos pueden tener las siguientes restricciones:</p>
+                        <ul class="custom-list">
+                            <li><strong>Monto mínimo de compra:</strong> Compra mínima para aplicar</li>
+                            <li><strong>Cantidad mínima de productos:</strong> Número de items requeridos</li>
+                            <li><strong>Solo primera compra:</strong> Exclusivo para nuevos clientes</li>
+                            <li><strong>Límite de usos total:</strong> Cantidad máxima de usos</li>
+                            <li><strong>Límite por cliente:</strong> Máximo de usos por email</li>
+                            <li><strong>Rango de fechas:</strong> Período de vigencia</li>
+                            <li><strong>Es acumulable:</strong> Puede combinarse con otros descuentos</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-plus-circle"></i> Crear un Código de Descuento</h4>
+                        <p>Acceda a <strong>Descuentos → Nuevo Descuento</strong>:</p>
+                        <ol>
+                            <li>Ingrese un <strong>código único</strong> (ej: VERANO2024)</li>
+                            <li>Seleccione el <strong>tipo</strong> (porcentaje o cantidad fija)</li>
+                            <li>Configure el <strong>valor</strong> del descuento</li>
+                            <li>Defina a qué <strong>aplica</strong> (orden, productos, categorías)</li>
+                            <li>Configure las <strong>restricciones</strong> necesarias</li>
+                            <li>Establezca el <strong>período de vigencia</strong></li>
+                            <li>Active el descuento</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tienda -->
+            <section id="tienda" class="section">
+                <div class="section-header">
+                    <i class="bi bi-shop"></i>
+                    <h2>Tienda Pública</h2>
+                </div>
+                <div class="section-body">
+                    <p>La tienda pública es el frontend donde los clientes navegan y compran productos.</p>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-house"></i> Página Principal</h4>
+                        <p>La página principal muestra:</p>
+                        <ul class="custom-list">
+                            <li>Banner principal / Hero con video</li>
+                            <li>Categorías destacadas</li>
+                            <li>Productos destacados</li>
+                            <li>Sección de ocasiones</li>
+                            <li>Información de contacto</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-grid"></i> Catálogo de Productos</h4>
+                        <p>Los clientes pueden:</p>
+                        <ul class="custom-list">
+                            <li>Filtrar por categoría (ocasión o formato)</li>
+                            <li>Ordenar por precio, nombre o popularidad</li>
+                            <li>Ver detalles del producto</li>
+                            <li>Seleccionar variantes (si aplica)</li>
+                            <li>Ver disponibilidad de stock</li>
+                            <li>Agregar productos al carrito</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-eye"></i> Detalle del Producto</h4>
+                        <p>La página de detalle incluye:</p>
+                        <ul class="custom-list">
+                            <li>Galería de imágenes</li>
+                            <li>Nombre y descripción</li>
+                            <li>Precio (con descuento si aplica)</li>
+                            <li>Selector de variantes</li>
+                            <li>Selector de cantidad</li>
+                            <li>Disponibilidad de stock</li>
+                            <li>Productos relacionados</li>
+                            <li>Calificaciones y reviews</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Arma tu Ramo -->
+            <section id="arma-tu-ramo" class="section">
+                <div class="section-header">
+                    <i class="bi bi-flower2"></i>
+                    <h2>Arma tu Ramo</h2>
+                </div>
+                <div class="section-body">
+                    <p>La funcionalidad "Arma tu Ramo" permite a los clientes crear ramos personalizados mediante un wizard de 4 pasos.</p>
+
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <span class="step-num">1</span>
+                            Seleccionar Estilo
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">2</span>
+                            Elegir Flores
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">3</span>
+                            Seleccionar Envoltura
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">4</span>
+                            Resumen y Extras
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-1-circle"></i> Paso 1: Seleccionar Estilo</h4>
+                        <p>El cliente elige el estilo base del ramo:</p>
+                        <ul class="custom-list">
+                            <li>Cada estilo tiene un <strong>precio base</strong></li>
+                            <li>Define el <strong>rango de flores</strong> permitido (mínimo/máximo)</li>
+                            <li>Incluye imagen de referencia y descripción</li>
+                        </ul>
+                        <div class="alert-box info">
+                            <i class="bi bi-info-circle"></i>
+                            <div>
+                                Los estilos se gestionan en <strong>Configuración → Estilos de Ramo</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-2-circle"></i> Paso 2: Elegir Flores</h4>
+                        <p>El cliente selecciona las flores para su ramo:</p>
+                        <ul class="custom-list">
+                            <li>Catálogo de flores disponibles con imagen y precio</li>
+                            <li>Filtro por color</li>
+                            <li>Selector de cantidad por flor</li>
+                            <li>Validación del rango mínimo/máximo del estilo</li>
+                            <li>Cálculo dinámico del subtotal de flores</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-3-circle"></i> Paso 3: Seleccionar Envoltura</h4>
+                        <p>El cliente elige el tipo de empaque:</p>
+                        <ul class="custom-list">
+                            <li>Cada envoltura tiene un <strong>precio adicional</strong></li>
+                            <li>Opciones como papel kraft, celofán, tela, etc.</li>
+                            <li>Vista previa de la envoltura</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-4-circle"></i> Paso 4: Resumen y Extras</h4>
+                        <p>En el paso final:</p>
+                        <ul class="custom-list">
+                            <li>Ver <strong>resumen completo</strong> del ramo</li>
+                            <li>Agregar <strong>productos adicionales</strong> (chocolates, peluches, etc.)</li>
+                            <li>Escribir <strong>mensaje para la tarjeta</strong></li>
+                            <li>Ver <strong>desglose de precios</strong></li>
+                            <li><strong>Agregar al carrito</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-calculator"></i> Cálculo del Precio</h4>
+                        <div class="code-block">
+Total = Precio Base del Estilo
+      + (Cantidad × Precio por cada Flor)
+      + Precio de la Envoltura
+      + Subtotal de Adicionales
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gear"></i> Administración de Arma tu Ramo</h4>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Estilos de Ramo</h5>
+                                    <p>Gestionar estilos con precio base y rango de flores</p>
+                                    <small class="text-muted">Menú → Estilos de Ramo</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Flores Disponibles</h5>
+                                    <p>Catálogo de flores con precios y stock</p>
+                                    <small class="text-muted">Menú → Flores</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <h5>Envolturas</h5>
+                                    <p>Tipos de empaque con precio adicional</p>
+                                    <small class="text-muted">Menú → Envolturas</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Carrito -->
+            <section id="carrito" class="section">
+                <div class="section-header">
+                    <i class="bi bi-cart3"></i>
+                    <h2>Carrito de Compras</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-bag"></i> Funcionalidades del Carrito</h4>
+                        <ul class="custom-list">
+                            <li>Agregar productos y ramos personalizados</li>
+                            <li>Modificar cantidades</li>
+                            <li>Eliminar productos</li>
+                            <li>Ver subtotales y total</li>
+                            <li>Aplicar códigos de descuento</li>
+                            <li>Agregar productos adicionales (upsells)</li>
+                            <li>Validación de stock en tiempo real</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-clock-history"></i> Carrito Abandonado</h4>
+                        <p>El sistema rastrea carritos abandonados para remarketing:</p>
+                        <ul class="custom-list">
+                            <li>Registro del último carrito por sesión</li>
+                            <li>Email de cliente si está registrado</li>
+                            <li>Tiempo desde creación del carrito</li>
+                            <li>Tracking de UTM para análisis</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gift"></i> Productos Adicionales (Upsells)</h4>
+                        <p>Durante el proceso de compra se ofrecen complementos:</p>
+                        <ul class="custom-list">
+                            <li>Chocolates y dulces</li>
+                            <li>Peluches y globos</li>
+                            <li>Tarjetas personalizadas</li>
+                            <li>Velas aromáticas</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Checkout -->
+            <section id="checkout" class="section">
+                <div class="section-header">
+                    <i class="bi bi-credit-card"></i>
+                    <h2>Proceso de Checkout</h2>
+                </div>
+                <div class="section-body">
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <span class="step-num">1</span>
+                            Datos del Cliente
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">2</span>
+                            Datos de Entrega
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">3</span>
+                            Resumen
+                        </div>
+                        <i class="bi bi-arrow-right flow-arrow"></i>
+                        <div class="flow-step">
+                            <span class="step-num">4</span>
+                            Pago
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-person"></i> Datos del Cliente</h4>
+                        <ul class="custom-list">
+                            <li>Nombre completo</li>
+                            <li>Email (para confirmación)</li>
+                            <li>Teléfono de contacto</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-geo-alt"></i> Datos de Entrega (Específico Floristería)</h4>
+                        <p>Información especial para entregas de flores:</p>
+                        <ul class="custom-list">
+                            <li><strong>Nombre del destinatario:</strong> Quién recibe las flores</li>
+                            <li><strong>Teléfono del destinatario:</strong> Para coordinar entrega</li>
+                            <li><strong>Dirección de entrega:</strong> Dirección completa</li>
+                            <li><strong>Fecha de entrega deseada:</strong> Cuándo entregar</li>
+                            <li><strong>Horario de entrega:</strong> Mañana, tarde, etc.</li>
+                            <li><strong>Es sorpresa:</strong> Si no debe llamar antes</li>
+                            <li><strong>Mensaje para la tarjeta:</strong> Dedicatoria personal</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-receipt"></i> Resumen del Pedido</h4>
+                        <ul class="custom-list">
+                            <li>Listado de productos</li>
+                            <li>Subtotal</li>
+                            <li>Descuentos aplicados</li>
+                            <li>Costo de envío</li>
+                            <li>Total a pagar</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-credit-card-2-back"></i> Proceso de Pago</h4>
+                        <p>Al confirmar la compra:</p>
+                        <ol>
+                            <li>Se crea la compra en estado "pendiente"</li>
+                            <li>Se genera una referencia única</li>
+                            <li>Se redirige a Transbank WebPay</li>
+                            <li>El cliente completa el pago</li>
+                            <li>Transbank retorna el resultado</li>
+                            <li>Se actualiza el estado de la compra</li>
+                            <li>Se envía confirmación por email</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Compras -->
+            <section id="compras" class="section">
+                <div class="section-header">
+                    <i class="bi bi-receipt"></i>
+                    <h2>Gestión de Compras</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-card-checklist"></i> Estados de Compra</h4>
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Estado</th>
+                                        <th>Descripción</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge bg-warning">Pendiente</span></td>
+                                        <td>Compra creada, esperando pago</td>
+                                        <td>Esperar confirmación</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-success">Pagada</span></td>
+                                        <td>Pago confirmado por Transbank</td>
+                                        <td>Preparar pedido</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-info">Enviada</span></td>
+                                        <td>Pedido en tránsito</td>
+                                        <td>Seguimiento de entrega</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-primary">Entregada</span></td>
+                                        <td>Pedido entregado</td>
+                                        <td>Solicitar calificación</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-danger">Cancelada</span></td>
+                                        <td>Compra cancelada</td>
+                                        <td>Revertir stock</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-list-ul"></i> Listado de Compras</h4>
+                        <p>Acceda a <strong>Compras</strong> para ver todas las órdenes:</p>
+                        <ul class="custom-list">
+                            <li>Filtrar por estado, fecha, cliente</li>
+                            <li>Buscar por número de orden</li>
+                            <li>Ver detalle de cada compra</li>
+                            <li>Cambiar estado de compra</li>
+                            <li>Asignar repartidor</li>
+                            <li>Imprimir comprobante</li>
+                            <li>Exportar a Excel</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-eye"></i> Detalle de Compra</h4>
+                        <p>La vista de detalle muestra:</p>
+                        <ul class="custom-list">
+                            <li>Información del cliente</li>
+                            <li>Datos del destinatario</li>
+                            <li>Productos comprados (con detalle si es ramo personalizado)</li>
+                            <li>Mensaje de la tarjeta</li>
+                            <li>Fecha y horario de entrega</li>
+                            <li>Historial de estados</li>
+                            <li>Información de pago</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logística -->
+            <section id="logistica" class="section">
+                <div class="section-header">
+                    <i class="bi bi-truck"></i>
+                    <h2>Logística y Envíos</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-geo"></i> Zonas de Cobertura</h4>
+                        <p>Defina las zonas donde puede entregar:</p>
+                        <ul class="custom-list">
+                            <li>Crear zonas por comunas o regiones</li>
+                            <li>Activar/desactivar zonas</li>
+                            <li>Asignar productos a zonas específicas</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-currency-dollar"></i> Tarifas de Envío</h4>
+                        <p>Configure tarifas por zona:</p>
+                        <ul class="custom-list">
+                            <li>Tarifa fija por zona</li>
+                            <li>Tarifa por rango de monto de compra</li>
+                            <li>Envío gratis sobre cierto monto</li>
+                            <li>Tarifas especiales por horario</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-clock"></i> Horarios de Entrega</h4>
+                        <p>Gestione los horarios disponibles:</p>
+                        <ul class="custom-list">
+                            <li>Definir franjas horarias (mañana, tarde, noche)</li>
+                            <li>Configurar horarios por día de la semana</li>
+                            <li>Bloquear fechas específicas</li>
+                            <li>Capacidad máxima por franja horaria</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-person-badge"></i> Repartidores</h4>
+                        <p>Administre su equipo de reparto:</p>
+                        <ul class="custom-list">
+                            <li>Registrar repartidores</li>
+                            <li>Asignar zonas de cobertura</li>
+                            <li>Asignar entregas a repartidores</li>
+                            <li>Seguimiento de entregas</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clientes -->
+            <section id="clientes" class="section">
+                <div class="section-header">
+                    <i class="bi bi-people"></i>
+                    <h2>Gestión de Clientes</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-person-plus"></i> Registro de Clientes</h4>
+                        <p>Los clientes pueden registrarse de dos formas:</p>
+                        <ul class="custom-list">
+                            <li><strong>Registro manual:</strong> Desde el panel de administración</li>
+                            <li><strong>Auto-registro:</strong> Al realizar su primera compra</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-person-vcard"></i> Información del Cliente</h4>
+                        <ul class="custom-list">
+                            <li>Nombre y contacto</li>
+                            <li>Email y teléfono</li>
+                            <li>Múltiples direcciones de envío</li>
+                            <li>Historial de compras</li>
+                            <li>Puntos acumulados</li>
+                            <li>Código de referido</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-geo-alt"></i> Direcciones</h4>
+                        <p>Cada cliente puede tener múltiples direcciones:</p>
+                        <ul class="custom-list">
+                            <li>Dirección predeterminada</li>
+                            <li>Etiquetas personalizadas (Casa, Oficina, etc.)</li>
+                            <li>Región, comuna, dirección completa</li>
+                            <li>Instrucciones especiales de entrega</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Puntos -->
+            <section id="puntos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-star"></i>
+                    <h2>Sistema de Puntos y Referidos</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-coin"></i> Puntos de Fidelización</h4>
+                        <p>Los clientes acumulan puntos por sus compras:</p>
+                        <ul class="custom-list">
+                            <li>Puntos por cada peso gastado (factor configurable)</li>
+                            <li>Puntos extra en fechas especiales (cumpleaños)</li>
+                            <li>Canje de puntos por descuentos</li>
+                            <li>Historial de movimientos de puntos</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-people"></i> Programa de Referidos</h4>
+                        <p>Incentive a sus clientes a referir:</p>
+                        <ul class="custom-list">
+                            <li>Cada cliente tiene un código de referido único</li>
+                            <li>Puntos extra al referir nuevos clientes</li>
+                            <li>Beneficios para el referido en su primera compra</li>
+                            <li>Dashboard de referidos realizados</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-calendar-heart"></i> Fechas Especiales</h4>
+                        <p>Los clientes pueden registrar fechas importantes:</p>
+                        <ul class="custom-list">
+                            <li>Cumpleaños propios</li>
+                            <li>Aniversarios</li>
+                            <li>Cumpleaños de seres queridos</li>
+                            <li>Recordatorios automáticos</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gear"></i> Configuración del Sistema</h4>
+                        <p>Desde <strong>Admin → Puntos</strong> puede configurar:</p>
+                        <ul class="custom-list">
+                            <li>Factor de conversión: pesos → puntos</li>
+                            <li>Factor de canje: puntos → descuento</li>
+                            <li>Puntos de bienvenida</li>
+                            <li>Puntos por referido</li>
+                            <li>Multiplicador en fechas especiales</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel Cliente -->
+            <section id="panel-cliente" class="section">
+                <div class="section-header">
+                    <i class="bi bi-person-circle"></i>
+                    <h2>Panel del Cliente</h2>
+                </div>
+                <div class="section-body">
+                    <p>Los clientes registrados tienen acceso a su panel personal:</p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon pink"><i class="bi bi-receipt"></i></div>
+                                <h5>Mis Compras</h5>
+                                <p>Ver historial de compras, detalles de cada pedido y estado de entrega</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon purple"><i class="bi bi-person"></i></div>
+                                <h5>Mi Perfil</h5>
+                                <p>Actualizar datos personales, email, teléfono y contraseña</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon green"><i class="bi bi-geo-alt"></i></div>
+                                <h5>Mis Direcciones</h5>
+                                <p>Gestionar direcciones de envío guardadas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon blue"><i class="bi bi-star"></i></div>
+                                <h5>Mis Puntos</h5>
+                                <p>Ver puntos acumulados, historial y canjear por descuentos</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon orange"><i class="bi bi-people"></i></div>
+                                <h5>Mis Referidos</h5>
+                                <p>Ver código de referido y personas que han usado el código</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="icon pink"><i class="bi bi-star-half"></i></div>
+                                <h5>Calificar Productos</h5>
+                                <p>Dejar reviews de productos comprados</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transbank -->
+            <section id="transbank" class="section">
+                <div class="section-header">
+                    <i class="bi bi-bank"></i>
+                    <h2>Integración Transbank</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-credit-card"></i> WebPay Plus</h4>
+                        <p>El sistema está integrado con WebPay Plus de Transbank para procesar pagos:</p>
+                        <ul class="custom-list">
+                            <li>Tarjetas de crédito (Visa, MasterCard, Amex)</li>
+                            <li>Tarjetas de débito</li>
+                            <li>RedCompra</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-arrow-repeat"></i> Flujo de Pago</h4>
+                        <div class="flow-steps">
+                            <div class="flow-step">
+                                <span class="step-num">1</span>
+                                Crear transacción
+                            </div>
+                            <i class="bi bi-arrow-right flow-arrow"></i>
+                            <div class="flow-step">
+                                <span class="step-num">2</span>
+                                Redirigir a WebPay
+                            </div>
+                            <i class="bi bi-arrow-right flow-arrow"></i>
+                            <div class="flow-step">
+                                <span class="step-num">3</span>
+                                Cliente paga
+                            </div>
+                            <i class="bi bi-arrow-right flow-arrow"></i>
+                            <div class="flow-step">
+                                <span class="step-num">4</span>
+                                Retorno y confirmación
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-code-slash"></i> TransbankService</h4>
+                        <p>El servicio <code>TransbankService</code> maneja:</p>
+                        <ul class="custom-list">
+                            <li>Creación de transacciones</li>
+                            <li>Generación de URL de pago</li>
+                            <li>Validación de retorno</li>
+                            <li>Consulta de estado</li>
+                            <li>Manejo de errores</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gear"></i> Configuración</h4>
+                        <p>La configuración de Transbank se almacena en <code>ConfiguracionPasarela</code>:</p>
+                        <ul class="custom-list">
+                            <li><strong>Ambiente:</strong> Integración o Producción</li>
+                            <li><strong>Código de comercio:</strong> Proporcionado por Transbank</li>
+                            <li><strong>API Key:</strong> Clave de autenticación</li>
+                        </ul>
+
+                        <div class="alert-box warning mt-3">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <div>
+                                <strong>Importante:</strong> En ambiente de integración use las credenciales de prueba de Transbank. En producción use las credenciales reales después de la certificación.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WhatsApp -->
+            <section id="whatsapp" class="section">
+                <div class="section-header">
+                    <i class="bi bi-whatsapp"></i>
+                    <h2>Integración WhatsApp</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-chat-dots"></i> WhatsApp Business API</h4>
+                        <p>El sistema puede enviar notificaciones por WhatsApp:</p>
+                        <ul class="custom-list">
+                            <li>Confirmación de compra</li>
+                            <li>Actualización de estado del pedido</li>
+                            <li>Recordatorio de carrito abandonado</li>
+                            <li>Notificación de entrega</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gear"></i> Configuración</h4>
+                        <p>Configure las credenciales de WhatsApp en la Empresa:</p>
+                        <ul class="custom-list">
+                            <li><strong>whatsapp_api_token:</strong> Token de acceso</li>
+                            <li><strong>whatsapp_phone_id:</strong> ID del número</li>
+                            <li><strong>whatsapp_business_id:</strong> ID del negocio</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-telephone"></i> Contacto Directo</h4>
+                        <p>Los clientes pueden contactar directamente vía WhatsApp:</p>
+                        <ul class="custom-list">
+                            <li>Botón de WhatsApp en la tienda</li>
+                            <li>Link directo con mensaje predefinido</li>
+                            <li>Número configurado en el campo <code>whatsapp</code> de la empresa</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Templates -->
+            <section id="templates" class="section">
+                <div class="section-header">
+                    <i class="bi bi-palette"></i>
+                    <h2>Sistema de Templates</h2>
+                </div>
+                <div class="section-body">
+                    <p>El sistema utiliza el patrón Strategy para permitir múltiples diseños de tienda intercambiables.</p>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-diagram-3"></i> Arquitectura</h4>
+                        <div class="code-block">
+TemplateTienda (Modelo BD)
+        ↓
+TemplateResolver (Context - Strategy Pattern)
+        ↓
+{Default, Brasilia}TemplateStrategy (Strategies)
+        ↓
+TemplateStrategyInterface (Contrato)
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-collection"></i> Templates Disponibles</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="feature-card">
+                                    <div class="icon pink"><i class="bi bi-layout-text-window"></i></div>
+                                    <h5>Template Default</h5>
+                                    <p>Diseño clásico y elegante con Bootstrap 5. Ideal para la mayoría de floristerías.</p>
+                                    <small class="text-muted">Vistas: tienda.index, tienda.categoria, tienda.producto</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="feature-card">
+                                    <div class="icon purple"><i class="bi bi-stars"></i></div>
+                                    <h5>Template Brasilia</h5>
+                                    <p>Diseño moderno con carruseles Swiper y animaciones. Inspirado en tiendas de moda.</p>
+                                    <small class="text-muted">Vistas: tienda.brasilia_*</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-plus-lg"></i> Agregar Nuevo Template</h4>
+                        <ol>
+                            <li>Crear las vistas Blade en <code>resources/views/tienda/</code></li>
+                            <li>Crear clase Strategy en <code>app/Services/Templates/Strategies/</code></li>
+                            <li>Registrar en <code>TemplateResolver::$strategyMap</code></li>
+                            <li>Insertar registro en tabla <code>templates_tienda</code></li>
+                            <li>Limpiar cache</li>
+                        </ol>
+                        <div class="alert-box info mt-3">
+                            <i class="bi bi-book"></i>
+                            <div>
+                                Para instrucciones detalladas, consulte la sección "Sistema de Templates de Tienda" en el archivo <code>CLAUDE.md</code>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-gear"></i> Seleccionar Template</h4>
+                        <p>La empresa puede seleccionar su template desde:</p>
+                        <p><strong>Configuración de Empresa → Template de Tienda</strong></p>
+                        <ul class="custom-list">
+                            <li>Vista previa de cada template</li>
+                            <li>Selección con un clic</li>
+                            <li>Cambio inmediato (con limpieza de cache)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Base de Datos -->
+            <section id="base-datos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-database"></i>
+                    <h2>Base de Datos</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-table"></i> Tablas Principales</h4>
+                        <div class="accordion accordion-custom" id="tablesAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tablesAuth">
+                                        Autenticación y Usuarios
+                                    </button>
+                                </h2>
+                                <div id="tablesAuth" class="accordion-collapse collapse" data-bs-parent="#tablesAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="custom-list">
+                                            <li><strong>users:</strong> Usuarios del sistema</li>
+                                            <li><strong>roles:</strong> Roles (Spatie Permission)</li>
+                                            <li><strong>permissions:</strong> Permisos</li>
+                                            <li><strong>model_has_roles:</strong> Asignación de roles</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tablesProducts">
+                                        Productos y Catálogo
+                                    </button>
+                                </h2>
+                                <div id="tablesProducts" class="accordion-collapse collapse" data-bs-parent="#tablesAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="custom-list">
+                                            <li><strong>productos:</strong> Catálogo de productos</li>
+                                            <li><strong>categorias:</strong> Categorías por ocasión/formato</li>
+                                            <li><strong>variantes_producto:</strong> Variantes (talla, color)</li>
+                                            <li><strong>imagenes_producto:</strong> Galería de imágenes</li>
+                                            <li><strong>precios_producto:</strong> Precios y listas de precios</li>
+                                            <li><strong>stock_productos:</strong> Inventario</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tablesOrders">
+                                        Compras y Pagos
+                                    </button>
+                                </h2>
+                                <div id="tablesOrders" class="accordion-collapse collapse" data-bs-parent="#tablesAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="custom-list">
+                                            <li><strong>compras:</strong> Pedidos</li>
+                                            <li><strong>items_compra:</strong> Ítems del pedido</li>
+                                            <li><strong>transacciones_pago:</strong> Transacciones Transbank</li>
+                                            <li><strong>descuentos:</strong> Códigos de descuento</li>
+                                            <li><strong>carritos:</strong> Carritos de compra</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tablesRamo">
+                                        Arma tu Ramo
+                                    </button>
+                                </h2>
+                                <div id="tablesRamo" class="accordion-collapse collapse" data-bs-parent="#tablesAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="custom-list">
+                                            <li><strong>estilos_ramo:</strong> Estilos base de ramos</li>
+                                            <li><strong>flores_disponibles:</strong> Catálogo de flores</li>
+                                            <li><strong>envolturas_ramo:</strong> Tipos de envoltura</li>
+                                            <li><strong>ramos_personalizados:</strong> Ramos en construcción</li>
+                                            <li><strong>productos_adicionales:</strong> Complementos</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#tablesLogistics">
+                                        Logística
+                                    </button>
+                                </h2>
+                                <div id="tablesLogistics" class="accordion-collapse collapse" data-bs-parent="#tablesAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="custom-list">
+                                            <li><strong>zonas_cobertura:</strong> Zonas de entrega</li>
+                                            <li><strong>tarifas_zona:</strong> Tarifas por zona</li>
+                                            <li><strong>horarios_entrega:</strong> Horarios disponibles</li>
+                                            <li><strong>repartidores:</strong> Equipo de reparto</li>
+                                            <li><strong>envios:</strong> Información de envío</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-arrow-right-circle"></i> Migraciones</h4>
+                        <p>El sistema cuenta con <strong>95+ migraciones</strong> que definen la estructura completa.</p>
+                        <div class="code-block">
+<span class="comment"># Ver estado de migraciones</span>
+<span class="keyword">php</span> artisan migrate:status
+
+<span class="comment"># Ejecutar migraciones pendientes</span>
+<span class="keyword">php</span> artisan migrate
+
+<span class="comment"># Revertir última migración</span>
+<span class="keyword">php</span> artisan migrate:rollback
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comandos -->
+            <section id="comandos" class="section">
+                <div class="section-header">
+                    <i class="bi bi-terminal"></i>
+                    <h2>Comandos Artisan</h2>
+                </div>
+                <div class="section-body">
+                    <div class="subsection">
+                        <h4><i class="bi bi-play"></i> Servidor de Desarrollo</h4>
+                        <div class="code-block">
+<span class="comment"># Iniciar servidor</span>
+<span class="keyword">php</span> artisan serve
+
+<span class="comment"># Iniciar en puerto específico</span>
+<span class="keyword">php</span> artisan serve --port=8080
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-database"></i> Base de Datos</h4>
+                        <div class="code-block">
+<span class="comment"># Ejecutar migraciones</span>
+<span class="keyword">php</span> artisan migrate
+
+<span class="comment"># Ejecutar seeders</span>
+<span class="keyword">php</span> artisan db:seed
+
+<span class="comment"># Reiniciar BD (peligroso en producción)</span>
+<span class="keyword">php</span> artisan migrate:fresh --seed
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-trash"></i> Limpieza de Cache</h4>
+                        <div class="code-block">
+<span class="comment"># Limpiar cache de aplicación</span>
+<span class="keyword">php</span> artisan cache:clear
+
+<span class="comment"># Limpiar cache de configuración</span>
+<span class="keyword">php</span> artisan config:clear
+
+<span class="comment"># Limpiar cache de rutas</span>
+<span class="keyword">php</span> artisan route:clear
+
+<span class="comment"># Limpiar cache de vistas</span>
+<span class="keyword">php</span> artisan view:clear
+
+<span class="comment"># Limpiar todo</span>
+<span class="keyword">php</span> artisan optimize:clear
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-tools"></i> Utilidades</h4>
+                        <div class="code-block">
+<span class="comment"># Crear enlace simbólico de storage</span>
+<span class="keyword">php</span> artisan storage:link
+
+<span class="comment"># Generar clave de aplicación</span>
+<span class="keyword">php</span> artisan key:generate
+
+<span class="comment"># Consola interactiva</span>
+<span class="keyword">php</span> artisan tinker
+
+<span class="comment"># Ver todas las rutas</span>
+<span class="keyword">php</span> artisan route:list
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h4><i class="bi bi-npm"></i> Comandos NPM</h4>
+                        <div class="code-block">
+<span class="comment"># Instalar dependencias</span>
+<span class="keyword">npm</span> install
+
+<span class="comment"># Desarrollo con hot reload</span>
+<span class="keyword">npm</span> run dev
+
+<span class="comment"># Build de producción</span>
+<span class="keyword">npm</span> run build
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="text-center py-4 text-muted">
+                <p class="mb-1">
+                    <i class="bi bi-flower1"></i> Manual del Sistema - Flores y Algo Más
+                </p>
+                <small>Generado automáticamente | Laravel 9 | Bootstrap 5</small>
+            </footer>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Close sidebar when clicking a link on mobile
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 992) {
+                    document.getElementById('sidebar').classList.remove('show');
+                }
+            });
+        });
+
+        // Active link highlighting
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
