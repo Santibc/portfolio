@@ -15,8 +15,8 @@
             <span>Inicio</span>
         </a>
 
-        {{-- Servicio Técnico (para admin y técnico) --}}
-        @if(auth()->user()->hasRole(['admin', 'tecnico']))
+        {{-- Servicio Técnico (para admin, técnico y vendedor) --}}
+        @if(auth()->user()->hasRole(['admin', 'tecnico', 'vendedor']))
             <div class="nav-item mb-2">
                 <a href="#" class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('st.*') ? 'active' : 'text-dark' }}"
                    data-bs-toggle="collapse" data-bs-target="#submenuServicioTecnico"
@@ -78,6 +78,10 @@
                 <i class="bi bi-tags"></i>
                 <span>Categorías</span>
             </a>
+        @endif
+
+        {{-- Productos (para vendedor y admin) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin']))
             <a href="/productos"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-basket3"></i>
