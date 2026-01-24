@@ -88,7 +88,7 @@
                                 <label class="form-label">Documento de Valoracion</label>
                                 @if($discrepancia->documento_valoracion_path)
                                     <div class="mb-2">
-                                        <a href="{{ asset('storage/' . $discrepancia->documento_valoracion_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ asset($discrepancia->documento_valoracion_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-file-earmark me-1"></i>Ver documento actual
                                         </a>
                                     </div>

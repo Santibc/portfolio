@@ -11,7 +11,9 @@ use App\Models\Cliente;
 use App\Models\Trabajador;
 use App\Models\Cuadrilla;
 use App\Models\User;
+use App\Models\Auditoria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ObraController extends Controller
 {
@@ -167,6 +169,9 @@ class ObraController extends Controller
                 'comentario' => 'Obra creada',
                 'cambiado_por' => auth()->id(),
             ]);
+
+            // Registrar en auditoría
+            Auditoria::registrar('crear', 'obras', $obra->id, null, $obra->toArray());
 
             // Crear conceptos de producción si se proporcionaron
             if ($request->has('conceptos') && is_array($request->conceptos)) {
@@ -376,7 +381,13 @@ class ObraController extends Controller
             ]);
         }
 
+        // Guardar datos anteriores para auditoría
+        $datosAnteriores = $obra->toArray();
+
         $obra->update($validated);
+
+        // Registrar en auditoría
+        Auditoria::registrar('editar', 'obras', $obra->id, $datosAnteriores, $obra->fresh()->toArray());
 
         return redirect()->route('obras.show', $obra)
             ->with('success', 'Obra actualizada exitosamente.');
@@ -389,6 +400,9 @@ class ObraController extends Controller
             return redirect()->route('obras.index')
                 ->with('error', 'No se puede eliminar una obra con partes diarios registrados.');
         }
+
+        // Registrar en auditoría antes de eliminar
+        Auditoria::registrar('eliminar', 'obras', $obra->id, $obra->toArray(), null);
 
         $obra->delete();
 

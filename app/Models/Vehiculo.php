@@ -77,9 +77,41 @@ class Vehiculo extends Model
         return $this->fecha_vencimiento_seguro->diffInDays(now()) <= 30;
     }
 
+    // Accessor para status de ITV (más descriptivo)
+    public function getItvStatusAttribute(): string
+    {
+        if (!$this->fecha_proxima_itv) return 'sin_datos';
+        $dias = now()->diffInDays($this->fecha_proxima_itv, false);
+        if ($dias < 0) return 'vencida';
+        if ($dias <= 30) return 'proxima';
+        return 'vigente';
+    }
+
+    // Accessor para status de Seguro
+    public function getSeguroStatusAttribute(): string
+    {
+        if (!$this->fecha_vencimiento_seguro) return 'sin_datos';
+        $dias = now()->diffInDays($this->fecha_vencimiento_seguro, false);
+        if ($dias < 0) return 'vencido';
+        if ($dias <= 45) return 'proximo';
+        return 'vigente';
+    }
+
     // Scopes
     public function scopeOperativos($query)
     {
         return $query->where('estado', 'operativo');
+    }
+
+    public function scopeConItvProxima($query, $dias = 30)
+    {
+        return $query->whereNotNull('fecha_proxima_itv')
+            ->where('fecha_proxima_itv', '<=', now()->addDays($dias));
+    }
+
+    public function scopeConSeguroProximo($query, $dias = 45)
+    {
+        return $query->whereNotNull('fecha_vencimiento_seguro')
+            ->where('fecha_vencimiento_seguro', '<=', now()->addDays($dias));
     }
 }

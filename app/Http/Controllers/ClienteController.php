@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Lead;
+use App\Models\Auditoria;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
@@ -95,6 +96,9 @@ class ClienteController extends Controller
         $validated['pais'] = $validated['pais'] ?? 'España';
 
         $cliente = Cliente::create($validated);
+
+        // Registrar en auditoría
+        Auditoria::registrar('crear', 'clientes', $cliente->id, null, $cliente->toArray());
 
         return redirect()->route('clientes.index')
             ->with('success', 'Cliente creado exitosamente.');
@@ -192,7 +196,13 @@ class ClienteController extends Controller
 
         $validated['activo'] = $request->boolean('activo', true);
 
+        // Guardar datos anteriores para auditoría
+        $datosAnteriores = $cliente->toArray();
+
         $cliente->update($validated);
+
+        // Registrar en auditoría
+        Auditoria::registrar('editar', 'clientes', $cliente->id, $datosAnteriores, $cliente->fresh()->toArray());
 
         return redirect()->route('clientes.index')
             ->with('success', 'Cliente actualizado exitosamente.');
@@ -211,6 +221,9 @@ class ClienteController extends Controller
             return redirect()->route('clientes.index')
                 ->with('error', 'No se puede eliminar un cliente con facturas pendientes.');
         }
+
+        // Registrar en auditoría antes de eliminar
+        Auditoria::registrar('eliminar', 'clientes', $cliente->id, $cliente->toArray(), null);
 
         $cliente->delete();
 

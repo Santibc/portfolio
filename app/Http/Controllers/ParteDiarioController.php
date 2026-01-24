@@ -124,16 +124,6 @@ class ParteDiarioController extends Controller
             'producciones.*.cantidad' => 'required|numeric|min:0',
         ]);
 
-        // Verificar que no exista un parte para la misma obra y fecha
-        $existe = ParteDiario::where('obra_id', $validated['obra_id'])
-                             ->where('fecha', $validated['fecha'])
-                             ->exists();
-
-        if ($existe) {
-            return back()->withErrors(['fecha' => 'Ya existe un parte diario para esta obra en esta fecha.'])
-                         ->withInput();
-        }
-
         DB::beginTransaction();
         try {
             $parte = ParteDiario::create([
@@ -440,15 +430,6 @@ class ParteDiarioController extends Controller
             'fecha' => 'required|date',
         ]);
 
-        // Verificar que no exista un parte para la misma obra y fecha
-        $existe = ParteDiario::where('obra_id', $partes_diario->obra_id)
-                             ->where('fecha', $validated['fecha'])
-                             ->exists();
-
-        if ($existe) {
-            return back()->withErrors(['fecha' => 'Ya existe un parte para esta obra en la fecha seleccionada.']);
-        }
-
         DB::beginTransaction();
         try {
             $nuevoParte = $partes_diario->replicate();
@@ -469,13 +450,28 @@ class ParteDiarioController extends Controller
                 ]);
             }
 
+            // Duplicar producciones
+            foreach ($partes_diario->producciones as $produccion) {
+                ParteDiarioProduccion::create([
+                    'parte_diario_id' => $nuevoParte->id,
+                    'concepto_produccion_id' => $produccion->concepto_produccion_id,
+                    'cantidad' => $produccion->cantidad,
+                    'precio_unitario' => $produccion->precio_unitario,
+                    'importe_calculado' => $produccion->importe_calculado,
+                    'observaciones' => $produccion->observaciones,
+                ]);
+            }
+
+            // Recalcular importe total
+            $nuevoParte->calcularYActualizarImporte();
+
             DB::commit();
 
             return redirect()->route('partes-diarios.edit', $nuevoParte)
                              ->with('success', 'Parte duplicado correctamente. Modifica los datos necesarios.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error al duplicar el parte.');
+            return back()->with('error', 'Error al duplicar el parte: ' . $e->getMessage());
         }
     }
 }

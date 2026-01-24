@@ -7,7 +7,6 @@ use App\Models\ObraDiscrepanciaValoracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class ObraDiscrepanciaController extends Controller
 {
@@ -39,17 +38,6 @@ class ObraDiscrepanciaController extends Controller
             ->whereIn('estado', ['completado', 'validado'])
             ->sum('importe_total_calculado');
 
-        // Check if discrepancy already exists for this period
-        $existente = $obra->discrepancias()
-            ->where('periodo_mes', $periodo)
-            ->first();
-
-        if ($existente) {
-            return redirect()
-                ->route('obras.discrepancias.index', $obra)
-                ->with('warning', 'Ya existe una discrepancia registrada para este período.');
-        }
-
         return view('obras.discrepancias.create', compact('obra', 'periodo', 'importeProducidoManzer'));
     }
 
@@ -67,17 +55,6 @@ class ObraDiscrepanciaController extends Controller
             'notas' => 'nullable|string',
             'documento_valoracion' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
-
-        // Check uniqueness
-        $exists = $obra->discrepancias()
-            ->where('periodo_mes', $validated['periodo_mes'])
-            ->exists();
-
-        if ($exists) {
-            return back()
-                ->withInput()
-                ->withErrors(['periodo_mes' => 'Ya existe una discrepancia para este período.']);
-        }
 
         DB::beginTransaction();
         try {
@@ -102,9 +79,13 @@ class ObraDiscrepanciaController extends Controller
             // Handle file upload
             if ($request->hasFile('documento_valoracion')) {
                 $file = $request->file('documento_valoracion');
-                $filename = 'valoracion_' . $obra->id . '_' . $validated['periodo_mes'] . '.' . $file->extension();
-                $path = $file->storeAs('obras/' . $obra->id . '/discrepancias', $filename, 'public');
-                $data['documento_valoracion_path'] = $path;
+                $filename = 'valoracion_' . $obra->id . '_' . $validated['periodo_mes'] . '_' . time() . '.' . $file->extension();
+                $directory = public_path('uploads/obras/' . $obra->id . '/discrepancias');
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                $file->move($directory, $filename);
+                $data['documento_valoracion_path'] = 'uploads/obras/' . $obra->id . '/discrepancias/' . $filename;
             }
 
             $discrepancia = ObraDiscrepanciaValoracion::create($data);
@@ -179,14 +160,18 @@ class ObraDiscrepanciaController extends Controller
             // Handle file upload
             if ($request->hasFile('documento_valoracion')) {
                 // Delete old file if exists
-                if ($discrepancia->documento_valoracion_path) {
-                    Storage::disk('public')->delete($discrepancia->documento_valoracion_path);
+                if ($discrepancia->documento_valoracion_path && file_exists(public_path($discrepancia->documento_valoracion_path))) {
+                    unlink(public_path($discrepancia->documento_valoracion_path));
                 }
 
                 $file = $request->file('documento_valoracion');
-                $filename = 'valoracion_' . $obra->id . '_' . $discrepancia->periodo_mes . '.' . $file->extension();
-                $path = $file->storeAs('obras/' . $obra->id . '/discrepancias', $filename, 'public');
-                $validated['documento_valoracion_path'] = $path;
+                $filename = 'valoracion_' . $obra->id . '_' . $discrepancia->periodo_mes . '_' . time() . '.' . $file->extension();
+                $directory = public_path('uploads/obras/' . $obra->id . '/discrepancias');
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                $file->move($directory, $filename);
+                $validated['documento_valoracion_path'] = 'uploads/obras/' . $obra->id . '/discrepancias/' . $filename;
             }
 
             $discrepancia->update($validated);

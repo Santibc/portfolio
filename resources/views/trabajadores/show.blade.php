@@ -415,49 +415,143 @@
                 <div class="tab-pane" id="epis" role="tabpanel">
                     <div class="tab-header">
                         <h5><i class="bi bi-shield-check me-2"></i>EPIs Entregados</h5>
+                        @role('Administrador|RRHH')
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#entregarEpiModal">
+                            <i class="bi bi-plus-lg me-1"></i>Entregar EPI
+                        </button>
+                        @endrole
                     </div>
 
-                    @if($trabajador->episEntregados->count() > 0)
-                    <div class="table-responsive">
+                    @php
+                        $episActivos = $trabajador->episEntregados->whereNull('fecha_devolucion');
+                        $episDevueltos = $trabajador->episEntregados->whereNotNull('fecha_devolucion');
+                    @endphp
+
+                    @if($episActivos->count() > 0)
+                    <h6 class="text-muted mb-3"><i class="bi bi-check-circle me-1"></i>EPIs Actualmente Asignados ({{ $episActivos->count() }})</h6>
+                    <div class="table-responsive mb-4">
                         <table class="table table-hover align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th>EPI</th>
-                                    <th>Categoría</th>
+                                    <th>Categoria</th>
                                     <th>Fecha Entrega</th>
                                     <th>Caducidad</th>
-                                    <th>Estado</th>
+                                    <th class="text-center">Firma</th>
+                                    <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($trabajador->episEntregados as $entrega)
-                                <tr>
+                                @foreach($episActivos as $entrega)
+                                <tr class="{{ $entrega->inventario?->estaCaducado() ? 'table-danger' : ($entrega->inventario?->proximoACaducar() ? 'table-warning' : '') }}">
                                     <td>
-                                        <strong>{{ $entrega->nombre_epi }}</strong>
+                                        <a href="{{ route('epi-inventario.show', $entrega->epi_inventario_id) }}" class="text-decoration-none fw-semibold">
+                                            {{ $entrega->inventario?->catalogo?->nombre ?? $entrega->nombre_epi }}
+                                        </a>
                                         @if($entrega->inventario?->numero_serie)
                                         <br><small class="text-muted">S/N: {{ $entrega->inventario->numero_serie }}</small>
                                         @endif
                                     </td>
-                                    <td>{{ $entrega->categoria_epi ?? '-' }}</td>
+                                    <td>{{ $entrega->inventario?->catalogo?->categoria ?? $entrega->categoria_epi ?? '-' }}</td>
                                     <td>{{ $entrega->fecha_entrega?->format('d/m/Y') }}</td>
-                                    <td>{{ $entrega->fecha_caducidad_epi?->format('d/m/Y') ?? 'Sin caducidad' }}</td>
                                     <td>
-                                        @if($entrega->fecha_devolucion)
-                                            <x-manzer.badge variant="secondary">Devuelto</x-manzer.badge>
+                                        @if($entrega->inventario?->fecha_caducidad)
+                                            @if($entrega->inventario->estaCaducado())
+                                                <span class="text-danger fw-bold">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                                    {{ $entrega->inventario->fecha_caducidad->format('d/m/Y') }}
+                                                </span>
+                                            @elseif($entrega->inventario->proximoACaducar())
+                                                <span class="text-warning">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ $entrega->inventario->fecha_caducidad->format('d/m/Y') }}
+                                                </span>
+                                            @else
+                                                {{ $entrega->inventario->fecha_caducidad->format('d/m/Y') }}
+                                            @endif
                                         @else
-                                            <x-manzer.badge variant="success">En uso</x-manzer.badge>
+                                            <span class="text-muted">Sin caducidad</span>
                                         @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if($entrega->firma_trabajador_path)
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                onclick="verFirmaEpi('{{ asset($entrega->firma_trabajador_path) }}')">
+                                            <i class="bi bi-pen"></i>
+                                        </button>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ route('epi-inventario.show', $entrega->epi_inventario_id) }}" class="btn btn-sm btn-outline-info" title="Ver EPI">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @role('Administrador|RRHH')
+                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                                onclick="abrirModalDevolver({{ $entrega->epi_inventario_id }})"
+                                                title="Devolver">
+                                            <i class="bi bi-box-arrow-left"></i>
+                                        </button>
+                                        @endrole
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                    @else
+                    @endif
+
+                    @if($episDevueltos->count() > 0)
+                    <h6 class="text-muted mb-3"><i class="bi bi-clock-history me-1"></i>Historial de EPIs Devueltos ({{ $episDevueltos->count() }})</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>EPI</th>
+                                    <th>Categoria</th>
+                                    <th>Fecha Entrega</th>
+                                    <th>Fecha Devolucion</th>
+                                    <th>Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($episDevueltos->take(10) as $entrega)
+                                <tr class="table-light">
+                                    <td>
+                                        <a href="{{ route('epi-inventario.show', $entrega->epi_inventario_id) }}" class="text-decoration-none">
+                                            {{ $entrega->inventario?->catalogo?->nombre ?? $entrega->nombre_epi }}
+                                        </a>
+                                        @if($entrega->inventario?->numero_serie)
+                                        <br><small class="text-muted">S/N: {{ $entrega->inventario->numero_serie }}</small>
+                                        @endif
+                                    </td>
+                                    <td>{{ $entrega->inventario?->catalogo?->categoria ?? $entrega->categoria_epi ?? '-' }}</td>
+                                    <td>{{ $entrega->fecha_entrega?->format('d/m/Y') }}</td>
+                                    <td>{{ $entrega->fecha_devolucion?->format('d/m/Y') }}</td>
+                                    <td>{{ $entrega->motivo_devolucion ?? '-' }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @if($episDevueltos->count() > 10)
+                        <div class="text-center mt-2">
+                            <small class="text-muted">Mostrando 10 de {{ $episDevueltos->count() }} entregas anteriores</small>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+
+                    @if($trabajador->episEntregados->count() == 0)
                     <div class="empty-tab-state">
                         <i class="bi bi-shield-check text-success"></i>
                         <h5>No hay EPIs entregados</h5>
                         <p>Este trabajador no tiene EPIs asignados actualmente.</p>
+                        @role('Administrador|RRHH')
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#entregarEpiModal">
+                            <i class="bi bi-plus-lg me-1"></i>Entregar primer EPI
+                        </button>
+                        @endrole
                     </div>
                     @endif
                 </div>
@@ -761,6 +855,119 @@
     @csrf
     @method('DELETE')
 </form>
+
+{{-- Modal Entregar EPI --}}
+@role('Administrador|RRHH')
+<div class="modal fade" id="entregarEpiModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="entregarEpiForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-shield-check me-2"></i>Entregar EPI a {{ $trabajador->nombre_completo }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="trabajador_id" value="{{ $trabajador->id }}">
+
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar EPI Disponible <span class="text-danger">*</span></label>
+                        <select name="epi_inventario_id" id="selectEpiInventario" class="form-select" required>
+                            <option value="">Cargando EPIs disponibles...</option>
+                        </select>
+                        <small class="text-muted">Solo se muestran EPIs con estado "disponible"</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas adicionales sobre la entrega..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Firma del Trabajador</label>
+                        <div class="border rounded p-2 bg-light">
+                            <canvas id="signatureCanvasEntrega" class="border bg-white" style="width: 100%; height: 150px;"></canvas>
+                        </div>
+                        <input type="hidden" name="firma_trabajador" id="firmaInputEntrega">
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limpiarFirmaEntrega()">
+                                <i class="bi bi-eraser me-1"></i>Limpiar Firma
+                            </button>
+                        </div>
+                        <small class="text-muted">El trabajador debe firmar para confirmar la recepcion del EPI</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Confirmar Entrega</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Devolver EPI --}}
+<div class="modal fade" id="devolverEpiModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="devolverEpiForm" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-box-arrow-left me-2"></i>Devolver EPI</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de Devolucion <span class="text-danger">*</span></label>
+                        <select name="motivo_devolucion" class="form-select" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Fin de uso">Fin de uso</option>
+                            <option value="Deterioro">Deterioro</option>
+                            <option value="Cambio de talla">Cambio de talla</option>
+                            <option value="Caducidad">Caducidad</option>
+                            <option value="Baja del trabajador">Baja del trabajador</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo Estado del EPI</label>
+                        <select name="nuevo_estado" class="form-select">
+                            <option value="disponible">Disponible (puede reutilizarse)</option>
+                            <option value="en_revision">En Revision (necesita verificacion)</option>
+                            <option value="baja">Baja (no utilizable)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="2" placeholder="Comentarios adicionales..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-box-arrow-left me-1"></i>Confirmar Devolucion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Ver Firma EPI --}}
+<div class="modal fade" id="firmaEpiModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pen me-2"></i>Firma del Trabajador</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="firmaEpiImage" src="" alt="Firma" class="img-fluid border">
+            </div>
+        </div>
+    </div>
+</div>
+@endrole
 
 @push('styles')
 <style>
@@ -1131,6 +1338,136 @@ function deleteFormacion(formacionId, nombre) {
 function editTrabajador(trabajadorId) {
     window.location.href = `{{ url('trabajadores') }}/${trabajadorId}/edit`;
 }
+
+// ==========================================
+// EPIs - Funciones
+// ==========================================
+let signaturePadEntrega = null;
+
+function verFirmaEpi(url) {
+    document.getElementById('firmaEpiImage').src = url;
+    new bootstrap.Modal(document.getElementById('firmaEpiModal')).show();
+}
+
+function abrirModalDevolver(epiInventarioId) {
+    const form = document.getElementById('devolverEpiForm');
+    form.action = `{{ url('epi-inventario') }}/${epiInventarioId}/devolver`;
+    new bootstrap.Modal(document.getElementById('devolverEpiModal')).show();
+}
+
+function limpiarFirmaEntrega() {
+    if (signaturePadEntrega) {
+        signaturePadEntrega.clear();
+    }
+}
+
+// Inicializar signature pad cuando se abre el modal
+document.addEventListener('DOMContentLoaded', function() {
+    const entregarEpiModal = document.getElementById('entregarEpiModal');
+    if (entregarEpiModal) {
+        entregarEpiModal.addEventListener('shown.bs.modal', function() {
+            // Cargar EPIs disponibles
+            cargarEpisDisponibles();
+
+            // Inicializar signature pad
+            const canvas = document.getElementById('signatureCanvasEntrega');
+            if (canvas && typeof SignaturePad !== 'undefined') {
+                // Ajustar tamaño del canvas
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+
+                signaturePadEntrega = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    penColor: 'rgb(0, 0, 0)'
+                });
+            }
+        });
+
+        // Limpiar al cerrar
+        entregarEpiModal.addEventListener('hidden.bs.modal', function() {
+            if (signaturePadEntrega) {
+                signaturePadEntrega.clear();
+            }
+        });
+    }
+
+    // Manejar submit del formulario de entrega
+    const entregarEpiForm = document.getElementById('entregarEpiForm');
+    if (entregarEpiForm) {
+        entregarEpiForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Guardar firma en el input hidden
+            if (signaturePadEntrega && !signaturePadEntrega.isEmpty()) {
+                document.getElementById('firmaInputEntrega').value = signaturePadEntrega.toDataURL('image/png');
+            }
+
+            // Obtener el EPI seleccionado
+            const epiId = document.getElementById('selectEpiInventario').value;
+            if (!epiId) {
+                Swal.fire('Error', 'Debes seleccionar un EPI', 'error');
+                return;
+            }
+
+            // Actualizar action del form y enviar
+            this.action = `{{ url('epi-inventario') }}/${epiId}/entregar`;
+            this.submit();
+        });
+    }
+});
+
+function cargarEpisDisponibles() {
+    const select = document.getElementById('selectEpiInventario');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Cargando...</option>';
+
+    // Hacer peticion AJAX para obtener EPIs disponibles
+    fetch('{{ route("epi-inventario.index") }}?estado=disponible&format=json')
+        .then(response => response.json())
+        .then(data => {
+            select.innerHTML = '<option value="">Seleccionar EPI...</option>';
+
+            if (data.inventario && data.inventario.length > 0) {
+                // Agrupar por categoria
+                const grupos = {};
+                data.inventario.forEach(epi => {
+                    const cat = epi.catalogo?.categoria || 'Sin categoria';
+                    if (!grupos[cat]) grupos[cat] = [];
+                    grupos[cat].push(epi);
+                });
+
+                // Crear optgroups
+                Object.keys(grupos).sort().forEach(cat => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = cat;
+
+                    grupos[cat].forEach(epi => {
+                        const option = document.createElement('option');
+                        option.value = epi.id;
+                        let texto = epi.catalogo?.nombre || 'EPI #' + epi.id;
+                        if (epi.numero_serie) texto += ` (S/N: ${epi.numero_serie})`;
+                        if (epi.fecha_caducidad) texto += ` - Cad: ${epi.fecha_caducidad}`;
+                        option.textContent = texto;
+                        optgroup.appendChild(option);
+                    });
+
+                    select.appendChild(optgroup);
+                });
+            } else {
+                select.innerHTML = '<option value="">No hay EPIs disponibles</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando EPIs:', error);
+            select.innerHTML = '<option value="">Error al cargar EPIs</option>';
+        });
+}
 </script>
+
+{{-- Signature Pad Library --}}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.2.0/dist/signature_pad.umd.min.js"></script>
 @endpush
 @endsection

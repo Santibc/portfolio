@@ -9,8 +9,13 @@ use App\Models\TrabajadorDocumento;
 use App\Models\TrabajadorFormacion;
 use App\Models\FormacionTipo;
 use App\Models\TrabajadorHistorialDisciplinario;
+use App\Models\Auditoria;
+use App\Models\EmailLog;
+use App\Notifications\DocumentoTrabajadorNotification;
+use App\Notifications\BienvenidaTrabajadorNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class TrabajadorController extends Controller
 {
@@ -110,6 +115,9 @@ class TrabajadorController extends Controller
         $validated['antiguedad'] = $validated['fecha_alta'];
 
         $trabajador = Trabajador::create($validated);
+
+        // Registrar en auditoría
+        Auditoria::registrar('crear', 'trabajadores', $trabajador->id, null, $trabajador->toArray());
 
         // Asignar a cuadrilla si se especificó
         if ($request->filled('cuadrilla_id')) {
@@ -213,7 +221,13 @@ class TrabajadorController extends Controller
 
         $validated['activo'] = $request->boolean('activo', true);
 
+        // Guardar datos anteriores para auditoría
+        $datosAnteriores = $trabajador->toArray();
+
         $trabajador->update($validated);
+
+        // Registrar en auditoría
+        Auditoria::registrar('editar', 'trabajadores', $trabajador->id, $datosAnteriores, $trabajador->fresh()->toArray());
 
         // Gestionar cuadrilla
         $cuadrillaActual = $trabajador->cuadrillaActual();
@@ -257,6 +271,9 @@ class TrabajadorController extends Controller
                 ->with('error', 'No se puede eliminar un trabajador con fichajes activos.');
         }
 
+        // Registrar en auditoría antes de eliminar
+        Auditoria::registrar('eliminar', 'trabajadores', $trabajador->id, $trabajador->toArray(), null);
+
         $trabajador->delete();
 
         return redirect()->route('trabajadores.index')
@@ -291,7 +308,7 @@ class TrabajadorController extends Controller
         $rutaCarpeta = 'uploads/trabajadores/' . $trabajador->id . '/documentos';
         $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
 
-        TrabajadorDocumento::create([
+        $documento = TrabajadorDocumento::create([
             'trabajador_id' => $trabajador->id,
             'tipo' => $validated['tipo'],
             'nombre' => $validated['nombre'],
@@ -301,6 +318,36 @@ class TrabajadorController extends Controller
             'visible_trabajador' => $request->boolean('visible_trabajador', true),
             'requiere_lectura' => $request->boolean('requiere_lectura', false),
         ]);
+
+        // Enviar notificación por email si el documento es visible para el trabajador
+        if ($documento->visible_trabajador && $trabajador->user) {
+            try {
+                $trabajador->user->notify(new DocumentoTrabajadorNotification($documento));
+
+                EmailLog::logEnviado(
+                    EmailLog::TIPO_DOCUMENTO,
+                    $trabajador->user->email,
+                    "Nuevo documento disponible - {$documento->nombre}",
+                    $documento,
+                    $trabajador->user->id
+                );
+            } catch (\Exception $e) {
+                Log::error("Error enviando notificación de documento", [
+                    'documento_id' => $documento->id,
+                    'trabajador_id' => $trabajador->id,
+                    'error' => $e->getMessage()
+                ]);
+
+                EmailLog::logFallido(
+                    EmailLog::TIPO_DOCUMENTO,
+                    $trabajador->user->email,
+                    "Nuevo documento disponible - {$documento->nombre}",
+                    $e->getMessage(),
+                    $documento,
+                    $trabajador->user->id
+                );
+            }
+        }
 
         return redirect()->route('trabajadores.show', $trabajador)
             ->with('success', 'Documento subido exitosamente.');

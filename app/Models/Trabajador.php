@@ -114,6 +114,11 @@ class Trabajador extends Model
         return $this->hasMany(PrimaTrabajador::class);
     }
 
+    public function bonos(): HasMany
+    {
+        return $this->hasMany(TrabajadorBono::class);
+    }
+
     // Accessors
     public function getNombreCompletoAttribute(): string
     {

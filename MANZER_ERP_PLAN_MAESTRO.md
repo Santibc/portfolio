@@ -676,6 +676,11 @@ CREATE TABLE obra_historial (
 
 #### 7. MÓDULO DE FICHAJES Y CONTROL HORARIO
 
+> **⚠️ ACTUALIZACIÓN (Enero 2026)**
+> Se ha eliminado el constraint `UNIQUE KEY unique_fichaje_dia` para permitir **múltiples fichajes por día**.
+> Un trabajador puede fichar entrada y salida múltiples veces en el mismo día (ej: jornada partida, emergencias).
+> La lógica del controlador busca fichajes "abiertos" (sin hora_salida) en lugar de "cualquier fichaje del día".
+
 ```sql
 -- Fichajes de trabajadores
 CREATE TABLE fichajes (
@@ -683,41 +688,42 @@ CREATE TABLE fichajes (
     trabajador_id BIGINT UNSIGNED NOT NULL,
     obra_id BIGINT UNSIGNED NULL,
     fecha DATE NOT NULL,
-    
+
     -- Check-in
     hora_entrada TIME NULL,
     latitud_entrada DECIMAL(10,8) NULL,
     longitud_entrada DECIMAL(11,8) NULL,
-    
+
     -- Check-out
     hora_salida TIME NULL,
     latitud_salida DECIMAL(10,8) NULL,
     longitud_salida DECIMAL(11,8) NULL,
-    
+
     -- Calculado
     horas_trabajadas DECIMAL(5,2) NULL,
     horas_extra DECIMAL(5,2) DEFAULT 0,
-    
+
     -- Validación
     validado BOOLEAN DEFAULT FALSE,
     validado_por BIGINT UNSIGNED NULL,
     fecha_validacion DATETIME NULL,
-    
+
     -- Correcciones
     corregido BOOLEAN DEFAULT FALSE,
     corregido_por BIGINT UNSIGNED NULL,
     motivo_correccion TEXT NULL,
-    
+
     notas TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (trabajador_id) REFERENCES trabajadores(id) ON DELETE CASCADE,
     FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE SET NULL,
     FOREIGN KEY (validado_por) REFERENCES users(id),
-    FOREIGN KEY (corregido_por) REFERENCES users(id),
-    
-    UNIQUE KEY unique_fichaje_dia (trabajador_id, fecha)
+    FOREIGN KEY (corregido_por) REFERENCES users(id)
+
+    -- ⚠️ ELIMINADO: UNIQUE KEY unique_fichaje_dia (trabajador_id, fecha)
+    -- Permite múltiples fichajes por día para jornadas partidas
 );
 ```
 
@@ -772,9 +778,10 @@ CREATE TABLE partes_diarios (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE CASCADE,
-    FOREIGN KEY (creado_por) REFERENCES users(id),
-    
-    UNIQUE KEY unique_parte_obra_fecha (obra_id, fecha)
+    FOREIGN KEY (creado_por) REFERENCES users(id)
+
+    -- ⚠️ ELIMINADO: UNIQUE KEY unique_parte_obra_fecha (obra_id, fecha)
+    -- Permite múltiples partes diarios por obra/fecha (ej: jornada diurna + nocturna)
 );
 
 -- Trabajadores en el parte diario
@@ -898,11 +905,16 @@ INSERT INTO obra_conceptos_produccion (obra_id, codigo, nombre, categoria, unida
 (2, 'DESBROCE_A', 'Desbroce zona A', 'desbroce', 'm2', 0.12, 2);
 ```
 
-#### 8c. DISCREPANCIAS DE VALORACIÓN (NUEVO)
+#### 8c. DISCREPANCIAS DE VALORACIÓN ✅ COMPLETADO
 
-> **🆕 Control de Diferencias con Clientes**
+> **✅ Control de Diferencias con Clientes**
 > Registra discrepancias cuando el cliente (ej: ADIF) no acepta el total producido por Manzer.
 > Permite tracking de importes pendientes por obra y período.
+>
+> **⚠️ ACTUALIZACIÓN (Enero 2026)**
+> - Se ha eliminado el constraint `UNIQUE KEY unique_obra_periodo` para permitir **múltiples discrepancias por período**.
+> - Documentos se almacenan en `public/uploads/obras/{obra_id}/discrepancias/` (NO en storage/).
+> - Nombres de archivo incluyen timestamp para evitar colisiones: `valoracion_{obra_id}_{periodo}_{timestamp}.ext`
 
 ```sql
 -- Discrepancias mensuales entre producido y aceptado por cliente
@@ -925,7 +937,7 @@ CREATE TABLE obra_discrepancias_valoracion (
 
     -- Metadatos
     notas TEXT NULL,
-    documento_valoracion_path VARCHAR(500) NULL,       -- PDF valoración del cliente
+    documento_valoracion_path VARCHAR(500) NULL,       -- Ruta en public/uploads/ (sin storage/)
     registrado_por BIGINT UNSIGNED NOT NULL,
     fecha_resolucion DATE NULL,
 
@@ -934,9 +946,20 @@ CREATE TABLE obra_discrepancias_valoracion (
 
     FOREIGN KEY (obra_id) REFERENCES obras(id) ON DELETE CASCADE,
     FOREIGN KEY (registrado_por) REFERENCES users(id),
-    UNIQUE KEY unique_obra_periodo (obra_id, periodo_mes),
-    INDEX idx_obra_estado (obra_id, estado)
+    INDEX idx_obra_estado (obra_id, estado),
+    INDEX idx_obra_periodo (obra_id, periodo_mes)
+
+    -- ⚠️ ELIMINADO: UNIQUE KEY unique_obra_periodo (obra_id, periodo_mes)
+    -- Permite múltiples discrepancias por período (ej: parciales, correcciones)
 );
+```
+
+**Almacenamiento de documentos:**
+```
+public/uploads/obras/{obra_id}/discrepancias/
+├── valoracion_4_2026-01_1737052800.pdf
+├── valoracion_4_2026-01_1737139200.pdf  -- Otra discrepancia del mismo período
+└── valoracion_4_2026-02_1739731200.jpg
 ```
 
 **Flujo de uso:**
@@ -945,6 +968,7 @@ CREATE TABLE obra_discrepancias_valoracion (
 3. Admin registra `importe_aceptado_cliente` cuando cliente responde
 4. Sistema calcula automáticamente: `importe_pendiente` = producido - aceptado
 5. Se marca como `resuelto` cuando se aclara/cobra
+6. **Se pueden crear múltiples discrepancias por período** si hay varias diferencias
 
 #### 8d. BONOS Y PRIMAS MANUALES (NUEVO)
 
@@ -1630,31 +1654,32 @@ CREATE TABLE auditoria (
 
 ### Estado de Desarrollo
 
-| # | Módulo | Estado | Prioridad |
-|---|--------|--------|-----------|
-| 1 | Base, Usuarios, Roles y Permisos | ✅ Completado | - |
-| 2 | Trabajadores | ✅ Completado | Alta |
-| 3 | Cuadrillas | ✅ Completado | Alta |
-| 4 | Clientes y CRM | ✅ Completado | Alta |
-| 5 | Obras/Proyectos | ✅ Completado | Alta |
-| 6 | Fichajes/Control Horario | ✅ Completado | Alta |
-| 7 | Partes Diarios (Base) | ✅ Completado | Alta |
-| 7b | Conceptos de Producción por Obra | 🔄 En desarrollo | Alta |
-| 7c | Discrepancias de Valoración | 🔄 En desarrollo | Alta |
-| 8 | Maquinaria | ⬜ Pendiente | Media |
-| 9 | Vehículos | ⬜ Pendiente | Media |
-| 10 | Subcontratas | ⬜ Pendiente | Media |
-| 11 | Contratos y Garantías | ⬜ Pendiente | Media |
-| 12 | Ingresos y Gastos | ⬜ Pendiente | Alta |
-| 13 | Facturación | ⬜ Pendiente | Alta |
-| 14 | EPIs | ⬜ Pendiente | Media |
-| 15 | Formaciones | ⬜ Pendiente | Media |
-| 16 | Bonos/Primas Manuales | 🔄 En desarrollo | Media |
-| 17 | Alertas y Caducidades | ⬜ Pendiente | Alta |
-| 18 | Dashboard Admin | ⬜ Pendiente | Alta |
-| 19 | Dashboard Encargado | ⬜ Pendiente | Alta |
-| 20 | Dashboard Trabajador (Portal) | ⬜ Pendiente | Alta |
-| 21 | Auditoría | ⬜ Pendiente | Media |
+| # | Módulo | Estado | Prioridad | Notas |
+|---|--------|--------|-----------|-------|
+| 1 | Base, Usuarios, Roles y Permisos | ✅ Completado | - | |
+| 2 | Trabajadores | ✅ Completado | Alta | |
+| 3 | Cuadrillas | ✅ Completado | Alta | |
+| 4 | Clientes y CRM | ✅ Completado | Alta | |
+| 5 | Obras/Proyectos | ✅ Completado | Alta | |
+| 6 | Fichajes/Control Horario | ✅ Completado | Alta | Múltiples fichajes/día permitidos |
+| 7 | Partes Diarios (Base) | ✅ Completado | Alta | Múltiples partes/obra/día permitidos |
+| 7b | Conceptos de Producción por Obra | ✅ Completado | Alta | Sistema flexible P5, P6, etc. por obra |
+| 7c | Discrepancias de Valoración | ✅ Completado | Alta | Múltiples por período, docs en public/ |
+| 8 | Maquinaria | ✅ Completado | Media | CRUD, asignaciones, inspecciones con checklist, mantenimientos |
+| 9 | Vehículos | ✅ Completado | Media | CRUD, documentos, alertas ITV/Seguro, asignación conductor |
+| 10 | Subcontratas | ✅ Completado | Media | CRUD, docs CAE, asignación obras, homologación |
+| 11 | Contratos y Garantías | ✅ Completado | Media | CRUD, estados, garantías, documentos |
+| 12 | Ingresos y Gastos | ✅ Completado | Alta | CRUD completo con estados, KPIs |
+| 13 | Facturación | ✅ Completado | Alta | CRUD, líneas dinámicas, estados, PDF con DomPDF |
+| 14 | EPIs | ✅ Completado | Media | Catálogo, inventario, entregas con firma, revisiones, devoluciones, bajas |
+| 15 | Formaciones | ✅ Completado | Media | Catálogo tipos (seeder incluido), registro desde trabajador, estadísticas caducidades |
+| 16 | Bonos/Primas Manuales | ✅ Completado | Media | Registro manual de primas y plus |
+| 17 | Alertas y Caducidades | ✅ Completado | Alta | Dashboard, configuración, caducidades empresa, command artisan |
+| 18 | Dashboard Admin | ✅ Completado | Alta | KPIs, gráficos Chart.js, widgets AJAX, filtros |
+| 19 | Dashboard Encargado | ✅ Completado | Alta | Vista operativa para encargados, filtrado por obras asignadas |
+| 20 | Dashboard Trabajador (Portal) | ✅ Completado | Alta | Portal personal: KPIs, fichajes, vacaciones, EPIs, formaciones, documentos, primas, alertas |
+| 21 | Auditoría | ✅ Completado | Media | Registro de acciones CRUD, filtros por usuario/tabla/acción/fecha, vista detalle, exportación CSV |
+| 22 | Integración Email | ✅ Completado | Alta | Facturas con PDF adjunto, notificaciones trabajadores, logs de envíos |
 
 ---
 
@@ -1796,6 +1821,49 @@ CREATE TABLE auditoria (
 6. Añade observaciones/incidencias si las hay
 7. Guarda como borrador o completado
 8. Opcionalmente genera PDF para firma
+
+### MÓDULO 12: INGRESOS Y GASTOS
+
+**Descripción:** Gestión completa de ingresos y gastos por obra. Permite seguimiento de flujo de caja, estados de cobro/pago y categorización de gastos.
+
+**Vistas Ingresos:**
+1. `ingresos/index.blade.php` - Listado con KPIs (total, pendiente, cobrado, mes actual)
+2. `ingresos/create.blade.php` - Formulario con cálculo automático IVA/retención
+3. `ingresos/edit.blade.php` - Edición de ingreso
+4. `ingresos/show.blade.php` - Detalle con acciones (marcar cobrado/pendiente)
+
+**Vistas Gastos:**
+1. `gastos/index.blade.php` - Listado con KPIs y filtros por categoría
+2. `gastos/create.blade.php` - Formulario con cálculo automático IVA
+3. `gastos/edit.blade.php` - Edición con reemplazo de documentos
+4. `gastos/show.blade.php` - Detalle con acciones (marcar pagado/pendiente)
+
+**Vistas Categorías:**
+1. `gasto-categorias/index.blade.php` - Gestión CRUD con modales (solo Admin)
+
+**Flujo de Ingreso:**
+1. Contabilidad/Admin crea ingreso asociado a obra
+2. Al seleccionar obra, se auto-selecciona cliente
+3. Cliente tiene % de retención configurado que se aplica automáticamente
+4. Cálculo automático: Total = Base + IVA - Retención
+5. Guarda como pendiente
+6. Cuando cobran → Marca como "Cobrado" con fecha
+
+**Flujo de Gasto:**
+1. Contabilidad/Admin crea gasto
+2. Selecciona categoría (directo/indirecto)
+3. Si es directo, selecciona obra
+4. Puede adjuntar documento (PDF, JPG, PNG) en `public/uploads/gastos/{año}/{mes}/`
+5. Guarda como pendiente
+6. Cuando pagan → Marca como "Pagado" con fecha
+
+**Categorías de Gastos:**
+- **Directos:** Asociados a obra específica (personal, materiales, maquinaria, combustible)
+- **Indirectos:** Gastos generales de empresa (gestoría, seguros, alquileres, administración)
+
+**Acceso:**
+- Ingresos y Gastos: Administrador + Contabilidad
+- Categorías de Gastos: Solo Administrador
 
 ### MÓDULO 13: FACTURACIÓN
 
@@ -2052,10 +2120,95 @@ Antes de empezar cada módulo:
 
 ---
 
-**Última actualización:** 2026-01-10
-**Versión del documento:** 1.1
+**Última actualización:** 2026-01-19
+**Versión del documento:** 1.6
 
-### Cambios en esta versión:
+### Cambios en versión 1.6 (2026-01-19):
+- ✅ Marcado módulo 22 (Integración Email) como **completado**
+  - Migraciones: `email_logs`, campos `email_enviado` en facturas
+  - Modelo: `EmailLog.php` - Tracking de emails enviados/fallidos
+  - Mailable: `FacturaEnviadaMail.php` - Email con PDF adjunto
+  - Notificaciones:
+    - `DocumentoTrabajadorNotification.php` - Aviso de nuevo documento
+    - `FichajeCorregidoNotification.php` - Aviso de corrección de fichaje
+    - `BienvenidaTrabajadorNotification.php` - Bienvenida al portal
+  - Vistas email: `resources/views/emails/factura-enviada.blade.php`
+  - Controladores modificados:
+    - `FacturaController::enviar()` - Envía email con PDF al cliente
+    - `TrabajadorController::storeDocumento()` - Notifica al trabajador
+    - `FichajeController::update()` - Notifica correcciones
+  - Configuración SMTP: Gmail (configurable en .env)
+  - Tabla `email_logs` para auditoría de envíos
+
+### Cambios en versión 1.5 (2026-01-19):
+- ✅ Marcado módulo 18 (Dashboard Admin) como **completado** (ya existía implementado)
+- ✅ Marcado módulo 19 (Dashboard Encargado) como **completado**
+  - Servicio: `EncargadoDashboardService.php` - Datos filtrados por obras del encargado
+  - Controlador: `Encargado\DashboardController.php` - Vista principal + 8 endpoints API
+  - Vista principal: `encargado/dashboard/index.blade.php` - Dashboard operativo completo
+  - Widgets parciales (7):
+    - `_widget-mis-obras.blade.php` - Obras asignadas con estado
+    - `_widget-produccion-diaria.blade.php` - Producción de hoy con variaciones
+    - `_widget-horas-trabajadores.blade.php` - Horas por trabajador hoy/semana
+    - `_widget-maquinaria-asignada.blade.php` - Maquinaria en sus obras
+    - `_widget-calendario-semanal.blade.php` - Vista 7 días con eventos
+    - `_widget-partes-pendientes.blade.php` - Partes borrador/completados
+    - `_widget-alertas-encargado.blade.php` - Alertas de sus obras
+  - Rutas: `/encargado/dashboard/*` con middleware `role:Encargado`
+  - Navegación: Enlace "Mi Panel" para rol Encargado
+  - Restricciones de seguridad: No muestra márgenes, rentabilidad ni costes globales
+  - Solo datos de obras donde `encargado_id = auth()->id()`
+
+### Cambios en versión 1.4 (2026-01-19):
+- ✅ Marcado módulo 17 (Alertas y Caducidades) como **completado**
+  - Servicio: `AlertaService.php` - Generación automática y consultas de alertas
+  - Controladores: `AlertaController`, `AlertaConfiguracionController`, `CaducidadGeneralController`
+  - Command: `php artisan alertas:generar` - Genera alertas de caducidades próximas
+  - Vistas:
+    - `alertas/index.blade.php` - Dashboard con KPIs, filtros, acciones masivas
+    - `alertas/show.blade.php` - Detalle con enlace al registro relacionado
+    - `alertas/configuracion/index.blade.php` - Config días de antelación por tipo
+    - `caducidades-generales/*.blade.php` - CRUD completo para caducidades empresa
+  - View Composer: `AlertaComposer.php` - Badge con contador en navegación
+  - Seeder: `AlertaConfiguracionSeeder.php` - 12 tipos de alerta configurados
+  - Rutas con middleware según rol (Administrador, RRHH, Contabilidad, etc.)
+  - Tipos de alerta monitoreados:
+    - Formaciones, documentos trabajador, aptos médicos
+    - EPIs (caducidad y revisiones)
+    - Vehículos (ITV, seguro, documentos)
+    - Contratos (vencimiento y garantías)
+    - Documentos CAE de subcontratas
+    - Caducidades generales de empresa (ISO, RC, etc.)
+
+### Cambios en versión 1.3 (2026-01-16):
+- ✅ Marcado módulo 7b (Conceptos de Producción por Obra) como **completado**
+  - Migraciones: `obra_conceptos_produccion`, `parte_diario_producciones`
+  - Modelos: `ObraConceptoProduccion`, `ParteDiarioProduccion`
+  - Controlador: `ObraConceptoProduccionController` (CRUD + duplicar)
+  - Vistas integradas en `obras/show.blade.php` y `partes-diarios/*`
+  - Rutas: `/obras/{obra}/conceptos/*` con middleware
+- ✅ Marcado módulo 16 (Bonos/Primas Manuales) como **completado**
+  - Migración: `trabajador_bonos`
+  - Modelo: `TrabajadorBono` con scopes y helpers
+  - Controlador: `TrabajadorBonoController` (CRUD + marcarPagado/Pendiente)
+  - Vistas: `trabajadores/bonos/index|create|edit.blade.php`
+  - Rutas con middleware `role:Administrador|Contabilidad`
+- 📝 Agregada relación `bonos()` en modelo `Trabajador.php`
+
+### Cambios en versión 1.2 (2026-01-16):
+- ✅ Marcado módulo 7c (Discrepancias de Valoración) como **completado**
+- ⚠️ **ELIMINADO** constraint `UNIQUE KEY unique_fichaje_dia` de tabla `fichajes`
+  - Permite múltiples fichajes por día para jornadas partidas
+  - Lógica actualizada para buscar fichajes "abiertos" (sin hora_salida)
+- ⚠️ **ELIMINADO** constraint `UNIQUE KEY unique_parte_obra_fecha` de tabla `partes_diarios`
+  - Permite múltiples partes por obra/fecha (ej: jornada diurna + nocturna)
+- ⚠️ **ELIMINADO** constraint `UNIQUE KEY unique_obra_periodo` de tabla `obra_discrepancias_valoracion`
+  - Permite múltiples discrepancias por período
+- 📝 Documentos de discrepancias se almacenan en `public/uploads/obras/{id}/discrepancias/`
+  - Nombres incluyen timestamp para evitar colisiones
+- 📝 Migraciones creadas: `2026_01_16_000001_drop_unique_parte_obra_fecha.php`, `2026_01_16_000002_drop_unique_fichaje_dia.php`
+
+### Cambios en versión 1.1 (2026-01-10):
 - ✅ Marcado módulo 5 (Obras/Proyectos) como completado
 - ✅ Marcado módulo 7 (Partes Diarios - Base) como completado
 - 🆕 Agregado módulo 7b: Conceptos de Producción por Obra (en desarrollo)

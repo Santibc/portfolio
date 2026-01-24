@@ -25,8 +25,21 @@ class VehiculoDocumento extends Model
         'fecha_caducidad' => 'date',
     ];
 
+    const TIPOS = [
+        'ficha_tecnica' => 'Ficha Técnica',
+        'permiso_circulacion' => 'Permiso de Circulación',
+        'seguro' => 'Seguro',
+        'itv' => 'ITV',
+        'otro' => 'Otro',
+    ];
+
     public function vehiculo(): BelongsTo
     {
         return $this->belongsTo(Vehiculo::class);
+    }
+
+    public function getTipoLabelAttribute(): string
+    {
+        return self::TIPOS[$this->tipo] ?? $this->tipo;
     }
 }

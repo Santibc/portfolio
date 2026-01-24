@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Fichaje;
 use App\Models\Trabajador;
 use App\Models\Obra;
+use App\Models\EmailLog;
+use App\Exports\FichajesExport;
+use App\Notifications\FichajeCorregidoNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FichajeController extends Controller
 {
@@ -34,13 +40,16 @@ class FichajeController extends Controller
 
             $query->where('trabajador_id', $trabajadorActual->id);
 
-            // Verificar si tiene fichaje hoy (para mostrar botón de salida)
+            // Verificar si tiene fichaje ABIERTO hoy (sin hora de salida)
+            // Esto permite múltiples fichajes por día
             $fichajeHoy = Fichaje::where('trabajador_id', $trabajadorActual->id)
                                  ->where('fecha', now()->toDateString())
+                                 ->whereNull('hora_salida')
+                                 ->orderBy('id', 'desc')
                                  ->first();
         }
 
-        // Filtros (solo para no-trabajadores o filtros básicos)
+        // Filtros
         if ($request->filled('fecha_desde')) {
             $query->where('fecha', '>=', $request->fecha_desde);
         }
@@ -54,6 +63,7 @@ class FichajeController extends Controller
             $query->where('trabajador_id', $request->trabajador_id);
         }
 
+        // Filtro por obra (disponible para todos)
         if ($request->filled('obra_id')) {
             $query->where('obra_id', $request->obra_id);
         }
@@ -72,27 +82,28 @@ class FichajeController extends Controller
                           ->orderBy('hora_entrada', 'desc')
                           ->paginate(50);
 
-        // Estadísticas del período (filtradas para trabajador)
-        if ($esTrabajador && $trabajadorActual) {
-            $statsQuery = Fichaje::where('trabajador_id', $trabajadorActual->id)
-                                 ->where('fecha', '>=', now()->startOfMonth());
-            $stats = [
-                'total_fichajes' => $statsQuery->count(),
-                'pendientes_validar' => (clone $statsQuery)->where('validado', false)->count(),
-                'horas_totales' => (clone $statsQuery)->sum('horas_trabajadas'),
-                'horas_extra' => (clone $statsQuery)->sum('horas_extra'),
-            ];
-        } else {
-            $stats = [
-                'total_fichajes' => Fichaje::where('fecha', '>=', now()->startOfMonth())->count(),
-                'pendientes_validar' => Fichaje::pendientesValidar()->count(),
-                'horas_totales' => Fichaje::whereNotNull('horas_trabajadas')
-                                          ->where('fecha', '>=', now()->startOfMonth())
-                                          ->sum('horas_trabajadas'),
-                'horas_extra' => Fichaje::where('fecha', '>=', now()->startOfMonth())
-                                        ->sum('horas_extra'),
-            ];
-        }
+        // Estadísticas del período - OPTIMIZADAS con una sola consulta
+        $statsBaseQuery = $esTrabajador && $trabajadorActual
+            ? Fichaje::where('trabajador_id', $trabajadorActual->id)
+            : Fichaje::query();
+
+        $statsBaseQuery->where('fecha', '>=', now()->startOfMonth());
+
+        $statsData = (clone $statsBaseQuery)
+            ->selectRaw('
+                COUNT(*) as total_fichajes,
+                SUM(CASE WHEN validado = 0 THEN 1 ELSE 0 END) as pendientes_validar,
+                COALESCE(SUM(horas_trabajadas), 0) as horas_totales,
+                COALESCE(SUM(horas_extra), 0) as horas_extra
+            ')
+            ->first();
+
+        $stats = [
+            'total_fichajes' => $statsData->total_fichajes ?? 0,
+            'pendientes_validar' => $statsData->pendientes_validar ?? 0,
+            'horas_totales' => $statsData->horas_totales ?? 0,
+            'horas_extra' => $statsData->horas_extra ?? 0,
+        ];
 
         $trabajadores = Trabajador::where('activo', true)
                                    ->orderBy('nombre')
@@ -106,6 +117,82 @@ class FichajeController extends Controller
             'fichajes', 'trabajadores', 'obras', 'stats',
             'esTrabajador', 'trabajadorActual', 'fichajeHoy'
         ));
+    }
+
+    /**
+     * Exportar fichajes a Excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        $fichajes = $this->getFilteredFichajes($request);
+
+        $filename = 'fichajes_' . now()->format('Y-m-d_H-i') . '.xlsx';
+
+        return Excel::download(new FichajesExport($fichajes), $filename);
+    }
+
+    /**
+     * Exportar fichajes a PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $fichajes = $this->getFilteredFichajes($request);
+
+        $pdf = Pdf::loadView('fichajes.pdf', [
+            'fichajes' => $fichajes,
+            'fechaDesde' => $request->input('fecha_desde', now()->startOfMonth()->format('d/m/Y')),
+            'fechaHasta' => $request->input('fecha_hasta', now()->endOfMonth()->format('d/m/Y')),
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download('fichajes_' . now()->format('Y-m-d_H-i') . '.pdf');
+    }
+
+    /**
+     * Obtener fichajes filtrados para exportación.
+     */
+    private function getFilteredFichajes(Request $request)
+    {
+        $user = Auth::user();
+        $esTrabajador = $user->hasRole('Trabajador');
+
+        $query = Fichaje::with(['trabajador', 'obra', 'validadoPor']);
+
+        if ($esTrabajador) {
+            $trabajadorActual = Trabajador::where('user_id', $user->id)->first();
+            if ($trabajadorActual) {
+                $query->where('trabajador_id', $trabajadorActual->id);
+            }
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('fecha', '>=', $request->fecha_desde);
+        } else {
+            $query->where('fecha', '>=', now()->startOfMonth());
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->where('fecha', '<=', $request->fecha_hasta);
+        } else {
+            $query->where('fecha', '<=', now()->endOfMonth());
+        }
+
+        if (!$esTrabajador && $request->filled('trabajador_id')) {
+            $query->where('trabajador_id', $request->trabajador_id);
+        }
+
+        if ($request->filled('obra_id')) {
+            $query->where('obra_id', $request->obra_id);
+        }
+
+        if ($request->filled('validado')) {
+            $query->where('validado', $request->validado === '1');
+        }
+
+        return $query->orderBy('fecha', 'desc')
+                     ->orderBy('hora_entrada', 'desc')
+                     ->get();
     }
 
     /**
@@ -156,31 +243,11 @@ class FichajeController extends Controller
             'notas' => 'nullable|string|max:1000',
         ]);
 
-        // Verificar que no exista un fichaje para el mismo trabajador y fecha
-        $existe = Fichaje::where('trabajador_id', $validated['trabajador_id'])
-                         ->where('fecha', $validated['fecha'])
-                         ->exists();
-
-        if ($existe) {
-            return back()->withErrors(['fecha' => 'Ya existe un fichaje para este trabajador en esta fecha.'])
-                         ->withInput();
-        }
-
-        // Calcular horas trabajadas si hay entrada y salida
-        $horasTrabajadas = null;
-        $horasExtra = 0;
-
-        if (!empty($validated['hora_entrada']) && !empty($validated['hora_salida'])) {
-            $entrada = Carbon::createFromFormat('H:i', $validated['hora_entrada']);
-            $salida = Carbon::createFromFormat('H:i', $validated['hora_salida']);
-            $horasTrabajadas = $salida->diffInMinutes($entrada) / 60;
-
-            // Si trabaja más de 8 horas, el resto son extras
-            if ($horasTrabajadas > 8) {
-                $horasExtra = $horasTrabajadas - 8;
-                $horasTrabajadas = 8;
-            }
-        }
+        // Calcular horas trabajadas con configuración
+        [$horasTrabajadas, $horasExtra] = $this->calcularHoras(
+            $validated['hora_entrada'] ?? null,
+            $validated['hora_salida'] ?? null
+        );
 
         $fichaje = Fichaje::create([
             'trabajador_id' => $validated['trabajador_id'],
@@ -200,6 +267,37 @@ class FichajeController extends Controller
     }
 
     /**
+     * Calcular horas trabajadas y extras con configuración.
+     */
+    private function calcularHoras(?string $horaEntrada, ?string $horaSalida): array
+    {
+        if (empty($horaEntrada) || empty($horaSalida)) {
+            return [null, 0];
+        }
+
+        $entrada = Carbon::createFromFormat('H:i', $horaEntrada);
+        $salida = Carbon::createFromFormat('H:i', $horaSalida);
+        $minutosTrabajados = $salida->diffInMinutes($entrada);
+        $horasTotales = $minutosTrabajados / 60;
+
+        // Obtener configuración
+        $horasJornada = config('fichajes.horas_jornada_normal', 8);
+        $pausaObligatoria = config('fichajes.pausa_obligatoria', 0.5);
+        $horasMinimasPausa = config('fichajes.horas_minimas_pausa', 6);
+
+        // Aplicar pausa obligatoria si corresponde
+        if ($horasTotales >= $horasMinimasPausa && $pausaObligatoria > 0) {
+            $horasTotales -= $pausaObligatoria;
+        }
+
+        // Calcular horas normales y extra
+        $horasTrabajadas = min($horasTotales, $horasJornada);
+        $horasExtra = max(0, $horasTotales - $horasJornada);
+
+        return [round($horasTrabajadas, 2), round($horasExtra, 2)];
+    }
+
+    /**
      * Display the specified fichaje.
      */
     public function show(Fichaje $fichaje)
@@ -207,6 +305,39 @@ class FichajeController extends Controller
         $fichaje->load(['trabajador', 'obra', 'validadoPor', 'corregidoPor']);
 
         return view('fichajes.show', compact('fichaje'));
+    }
+
+    /**
+     * Obtener detalles de un fichaje para modal (AJAX).
+     */
+    public function getDetails(Fichaje $fichaje)
+    {
+        $fichaje->load(['trabajador', 'obra', 'validadoPor', 'corregidoPor']);
+
+        return response()->json([
+            'id' => $fichaje->id,
+            'fecha' => $fichaje->fecha->format('d/m/Y'),
+            'dia' => $fichaje->fecha->translatedFormat('l'),
+            'trabajador' => $fichaje->trabajador ? $fichaje->trabajador->nombre . ' ' . $fichaje->trabajador->apellidos : '-',
+            'obra' => $fichaje->obra ? $fichaje->obra->nombre : '-',
+            'hora_entrada' => $fichaje->hora_entrada ? Carbon::parse($fichaje->hora_entrada)->format('H:i') : '-',
+            'hora_salida' => $fichaje->hora_salida ? Carbon::parse($fichaje->hora_salida)->format('H:i') : '-',
+            'horas_trabajadas' => $fichaje->horas_trabajadas ? number_format($fichaje->horas_trabajadas, 2) : '-',
+            'horas_extra' => $fichaje->horas_extra ? number_format($fichaje->horas_extra, 2) : '0',
+            'validado' => $fichaje->validado,
+            'validado_por' => $fichaje->validadoPor ? $fichaje->validadoPor->name : null,
+            'fecha_validacion' => $fichaje->fecha_validacion ? $fichaje->fecha_validacion->format('d/m/Y H:i') : null,
+            'corregido' => $fichaje->corregido,
+            'corregido_por' => $fichaje->corregidoPor ? $fichaje->corregidoPor->name : null,
+            'motivo_correccion' => $fichaje->motivo_correccion,
+            'notas' => $fichaje->notas,
+            'ubicacion_entrada' => $fichaje->latitud_entrada && $fichaje->longitud_entrada
+                ? ['lat' => $fichaje->latitud_entrada, 'lng' => $fichaje->longitud_entrada]
+                : null,
+            'ubicacion_salida' => $fichaje->latitud_salida && $fichaje->longitud_salida
+                ? ['lat' => $fichaje->latitud_salida, 'lng' => $fichaje->longitud_salida]
+                : null,
+        ]);
     }
 
     /**
@@ -238,20 +369,11 @@ class FichajeController extends Controller
             'notas' => 'nullable|string|max:1000',
         ]);
 
-        // Calcular horas trabajadas si hay entrada y salida
-        $horasTrabajadas = null;
-        $horasExtra = 0;
-
-        if (!empty($validated['hora_entrada']) && !empty($validated['hora_salida'])) {
-            $entrada = Carbon::createFromFormat('H:i', $validated['hora_entrada']);
-            $salida = Carbon::createFromFormat('H:i', $validated['hora_salida']);
-            $horasTrabajadas = $salida->diffInMinutes($entrada) / 60;
-
-            if ($horasTrabajadas > 8) {
-                $horasExtra = $horasTrabajadas - 8;
-                $horasTrabajadas = 8;
-            }
-        }
+        // Calcular horas trabajadas con configuración
+        [$horasTrabajadas, $horasExtra] = $this->calcularHoras(
+            $validated['hora_entrada'] ?? null,
+            $validated['hora_salida'] ?? null
+        );
 
         // Detectar si hay corrección
         $esCorreccion = $fichaje->hora_entrada != $validated['hora_entrada'] ||
@@ -268,6 +390,37 @@ class FichajeController extends Controller
             'corregido_por' => $esCorreccion ? Auth::id() : $fichaje->corregido_por,
             'motivo_correccion' => $esCorreccion ? $validated['motivo_correccion'] : $fichaje->motivo_correccion,
         ]);
+
+        // Enviar notificación al trabajador si hubo corrección
+        if ($esCorreccion && $fichaje->trabajador->user) {
+            try {
+                $fichaje->load(['trabajador', 'obra', 'corregidoPor']);
+                $fichaje->trabajador->user->notify(new FichajeCorregidoNotification($fichaje));
+
+                EmailLog::logEnviado(
+                    EmailLog::TIPO_FICHAJE,
+                    $fichaje->trabajador->user->email,
+                    "Fichaje corregido - {$fichaje->fecha->format('d/m/Y')}",
+                    $fichaje,
+                    $fichaje->trabajador->user->id
+                );
+            } catch (\Exception $e) {
+                Log::error("Error enviando notificación de fichaje corregido", [
+                    'fichaje_id' => $fichaje->id,
+                    'trabajador_id' => $fichaje->trabajador_id,
+                    'error' => $e->getMessage()
+                ]);
+
+                EmailLog::logFallido(
+                    EmailLog::TIPO_FICHAJE,
+                    $fichaje->trabajador->user->email,
+                    "Fichaje corregido - {$fichaje->fecha->format('d/m/Y')}",
+                    $e->getMessage(),
+                    $fichaje,
+                    $fichaje->trabajador->user->id
+                );
+            }
+        }
 
         return redirect()->route('fichajes.index')
                          ->with('success', 'Fichaje actualizado correctamente.');
@@ -338,36 +491,42 @@ class FichajeController extends Controller
             'longitud' => 'nullable|numeric',
         ]);
 
+        // Validar que el usuario tenga permiso para fichar por este trabajador
+        $user = Auth::user();
+        if ($user->hasRole('Trabajador')) {
+            $trabajadorUsuario = Trabajador::where('user_id', $user->id)->first();
+            if (!$trabajadorUsuario || $trabajadorUsuario->id != $validated['trabajador_id']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permiso para fichar por este trabajador.',
+                ], 403);
+            }
+        }
+
         $hoy = now()->toDateString();
 
-        // Verificar si ya hay fichaje hoy
-        $fichaje = Fichaje::where('trabajador_id', $validated['trabajador_id'])
+        // Verificar si hay un fichaje de hoy SIN hora de salida (fichaje abierto)
+        $fichajeAbierto = Fichaje::where('trabajador_id', $validated['trabajador_id'])
                           ->where('fecha', $hoy)
+                          ->whereNull('hora_salida')
                           ->first();
 
-        if ($fichaje && $fichaje->hora_entrada) {
+        if ($fichajeAbierto && $fichajeAbierto->hora_entrada) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ya has fichado entrada hoy.',
+                'message' => 'Ya tienes un fichaje abierto. Debes fichar salida antes de fichar una nueva entrada.',
             ], 400);
         }
 
-        if (!$fichaje) {
-            $fichaje = Fichaje::create([
-                'trabajador_id' => $validated['trabajador_id'],
-                'obra_id' => $validated['obra_id'] ?? null,
-                'fecha' => $hoy,
-                'hora_entrada' => now()->format('H:i'),
-                'latitud_entrada' => $validated['latitud'] ?? null,
-                'longitud_entrada' => $validated['longitud'] ?? null,
-            ]);
-        } else {
-            $fichaje->update([
-                'hora_entrada' => now()->format('H:i'),
-                'latitud_entrada' => $validated['latitud'] ?? null,
-                'longitud_entrada' => $validated['longitud'] ?? null,
-            ]);
-        }
+        // Crear nuevo fichaje (permite múltiples por día)
+        $fichaje = Fichaje::create([
+            'trabajador_id' => $validated['trabajador_id'],
+            'obra_id' => $validated['obra_id'] ?? null,
+            'fecha' => $hoy,
+            'hora_entrada' => now()->format('H:i'),
+            'latitud_entrada' => $validated['latitud'] ?? null,
+            'longitud_entrada' => $validated['longitud'] ?? null,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -387,43 +546,49 @@ class FichajeController extends Controller
             'longitud' => 'nullable|numeric',
         ]);
 
+        // Validar que el usuario tenga permiso para fichar por este trabajador
+        $user = Auth::user();
+        if ($user->hasRole('Trabajador')) {
+            $trabajadorUsuario = Trabajador::where('user_id', $user->id)->first();
+            if (!$trabajadorUsuario || $trabajadorUsuario->id != $validated['trabajador_id']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permiso para fichar por este trabajador.',
+                ], 403);
+            }
+        }
+
         $hoy = now()->toDateString();
 
+        // Buscar fichaje abierto (con entrada pero sin salida)
         $fichaje = Fichaje::where('trabajador_id', $validated['trabajador_id'])
                           ->where('fecha', $hoy)
+                          ->whereNotNull('hora_entrada')
+                          ->whereNull('hora_salida')
+                          ->orderBy('id', 'desc')
                           ->first();
 
-        if (!$fichaje || !$fichaje->hora_entrada) {
+        if (!$fichaje) {
             return response()->json([
                 'success' => false,
-                'message' => 'No has fichado entrada hoy.',
+                'message' => 'No tienes ningún fichaje abierto. Debes fichar entrada primero.',
             ], 400);
         }
 
-        if ($fichaje->hora_salida) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ya has fichado salida hoy.',
-            ], 400);
-        }
-
-        // Calcular horas
+        // Calcular horas con configuración
         $entrada = Carbon::parse($fichaje->hora_entrada);
         $salida = now();
-        $horasTrabajadas = $salida->diffInMinutes($entrada) / 60;
-        $horasExtra = 0;
-
-        if ($horasTrabajadas > 8) {
-            $horasExtra = $horasTrabajadas - 8;
-            $horasTrabajadas = 8;
-        }
+        [$horasTrabajadas, $horasExtra] = $this->calcularHoras(
+            $entrada->format('H:i'),
+            $salida->format('H:i')
+        );
 
         $fichaje->update([
             'hora_salida' => $salida->format('H:i'),
             'latitud_salida' => $validated['latitud'] ?? null,
             'longitud_salida' => $validated['longitud'] ?? null,
-            'horas_trabajadas' => round($horasTrabajadas, 2),
-            'horas_extra' => round($horasExtra, 2),
+            'horas_trabajadas' => $horasTrabajadas,
+            'horas_extra' => $horasExtra,
         ]);
 
         return response()->json([

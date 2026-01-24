@@ -88,7 +88,7 @@
                     <h5 class="card-title mb-0">Documento de Valoracion</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ asset('storage/' . $discrepancia->documento_valoracion_path) }}" target="_blank" class="btn btn-outline-primary">
+                    <a href="{{ asset($discrepancia->documento_valoracion_path) }}" target="_blank" class="btn btn-outline-primary">
                         <i class="bi bi-file-earmark me-2"></i>Ver Documento
                     </a>
                 </div>

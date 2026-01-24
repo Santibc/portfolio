@@ -33,6 +33,7 @@ class Alerta extends Model
         'fecha_vencimiento' => 'date',
         'fecha_lectura' => 'datetime',
         'fecha_resolucion' => 'datetime',
+        'created_at' => 'datetime',
         'leida' => 'boolean',
         'resuelta' => 'boolean',
     ];
