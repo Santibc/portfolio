@@ -223,7 +223,7 @@
 
         <div class="monto-destacado">
             <div class="label">Total del Pedido</div>
-            <div class="valor">$ {{ number_format($solicitud->monto_total, 0, ',', '.') }}</div>
+            <div class="valor">$ {{ number_format($solicitud->monto_total_con_iva, 0, ',', '.') }}</div>
         </div>
 
         @if($tipoEstado === 'envio' && in_array($estadoNuevo, ['despachado', 'en_transito', 'entregado']))
@@ -282,13 +282,13 @@
         </ul>
         @endif
 
-        <div style="text-align: center; margin-top: 25px;">
+{{--         <div style="text-align: center; margin-top: 25px;">
             <p style="color: #666; font-size: 14px;">
                 Puedes hacer seguimiento de tu pedido en nuestro portal:
             </p>
-            {{-- Nota: La URL del portal depende de si el cliente tiene cuenta --}}
+
             <a href="{{ config('app.url') }}/portal" class="action-btn">Ver Mi Pedido</a>
-        </div>
+        </div> --}}
 
         <div class="footer">
             <p><strong>Miracle Beauty Experts</strong></p>
