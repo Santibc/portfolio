@@ -547,7 +547,7 @@ class SolicitudCotizacion extends Model
         ?int $verificadoPor = null
     ): void {
         $nuevoMontoPagado = $this->monto_pagado + $monto;
-        $montoTotal = $this->monto_total;
+        $montoTotal = $this->monto_total_con_iva; // Incluye IVA
 
         // Determinar estado de pago
         $estadoPago = self::PAGO_PENDIENTE;
@@ -597,11 +597,19 @@ class SolicitudCotizacion extends Model
     }
 
     /**
-     * Obtener saldo pendiente
+     * Obtener monto total con IVA incluido
+     */
+    public function getMontoTotalConIvaAttribute(): float
+    {
+        return ($this->monto_total ?? 0) + ($this->valor_iva ?? 0);
+    }
+
+    /**
+     * Obtener saldo pendiente (incluye IVA)
      */
     public function getSaldoPendienteAttribute(): float
     {
-        return max(0, $this->monto_total - $this->monto_pagado);
+        return max(0, $this->monto_total_con_iva - $this->monto_pagado);
     }
 
     /**

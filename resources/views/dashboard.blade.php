@@ -298,15 +298,7 @@
                         <div class="card-body text-center py-5">
                             <i class="bi bi-person-circle display-1 text-muted mb-3"></i>
                             <h4>Bienvenido, {{ Auth::user()->name }}</h4>
-                            <p class="text-muted mb-4">Accede a las diferentes secciones desde el menú lateral</p>
-                            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                                <a href="{{ route('catalogo') }}" class="btn btn-primary">
-                                    <i class="bi bi-cart me-2"></i>Ir al Catálogo
-                                </a>
-                                <a href="{{ route('solicitudes') }}" class="btn btn-outline-primary">
-                                    <i class="bi bi-file-earmark-text me-2"></i>Ver Cotizaciones
-                                </a>
-                            </div>
+                            <p class="text-muted">Accede a las diferentes secciones desde el menú lateral</p>
                         </div>
                     </div>
                 </div>

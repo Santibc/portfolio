@@ -110,6 +110,14 @@
                 </tr>
             </thead>
             <tbody>
+                @php
+                    $subtotalItems = $solicitud->items->sum('precio_total');
+                    $flete = $solicitud->valor_flete ?? 0;
+                    $descuento = $solicitud->descuento_total ?? 0;
+                    $porcentajeIva = $solicitud->porcentaje_iva ?? 0;
+                    $valorIva = $solicitud->valor_iva ?? 0;
+                    $totalFinal = $solicitud->monto_total + $valorIva;
+                @endphp
                 @foreach($solicitud->items as $item)
                 <tr>
                     <td>
@@ -123,9 +131,36 @@
                     <td style="text-align: right;">${{ number_format($item->precio_total, 2) }}</td>
                 </tr>
                 @endforeach
+                {{-- Subtotal --}}
+                <tr>
+                    <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
+                    <td style="text-align: right;"><strong>${{ number_format($subtotalItems, 2) }}</strong></td>
+                </tr>
+                {{-- Flete --}}
+                @if($flete > 0)
+                <tr>
+                    <td colspan="3" style="text-align: right;">Flete:</td>
+                    <td style="text-align: right;">${{ number_format($flete, 2) }}</td>
+                </tr>
+                @endif
+                {{-- Descuento --}}
+                @if($descuento > 0)
+                <tr>
+                    <td colspan="3" style="text-align: right;">Descuento:</td>
+                    <td style="text-align: right; color: #dc3545;">-${{ number_format($descuento, 2) }}</td>
+                </tr>
+                @endif
+                {{-- IVA --}}
+                @if($porcentajeIva > 0 && $valorIva > 0)
+                <tr>
+                    <td colspan="3" style="text-align: right;">IVA ({{ number_format($porcentajeIva, 0) }}%):</td>
+                    <td style="text-align: right;">${{ number_format($valorIva, 2) }}</td>
+                </tr>
+                @endif
+                {{-- Total Final --}}
                 <tr class="total-row">
-                    <td colspan="3" style="text-align: right;">TOTAL:</td>
-                    <td style="text-align: right;">${{ number_format($solicitud->monto_total, 2) }}</td>
+                    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                    <td style="text-align: right;"><strong>${{ number_format($totalFinal, 2) }}</strong></td>
                 </tr>
             </tbody>
         </table>

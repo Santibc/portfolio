@@ -403,10 +403,8 @@ class CatalogoController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
-            'notas_cliente' => 'required|string|min:1|max:1000'
-        ], [
-            'notas_cliente.required' => 'Las notas son obligatorias.',
-            'notas_cliente.min' => 'Las notas son obligatorias.'
+            'notas_cliente' => 'nullable|string|max:1000',
+            'observaciones_vendedor' => 'nullable|string|max:1000'
         ]);
         
         DB::beginTransaction();
@@ -416,16 +414,16 @@ class CatalogoController extends Controller
             $cliente = null;
             $enlace = null;
 
-            if ($request->input('enlace_token') !== null) {
-                // Flujo A: Cliente con token
+            if ($request->filled('enlace_token')) {
+                // Flujo A: Cliente con token (acceso público)
                 $enlace = EnlaceAcceso::where('token', $request->enlace_token)->first();
                 if (!$enlace || !$enlace->esValido()) {
                     throw new \Exception('El enlace de acceso no es válido.');
                 }
                 $cliente = $enlace->cliente;
             }
-            elseif ($request->input('cliente_id') !== null) {
-                // Flujo B: Vendedor/Admin
+            elseif ($request->filled('cliente_id')) {
+                // Flujo B: Vendedor/Admin (usuario autenticado)
                 $cliente = Cliente::findOrFail($request->cliente_id);
             }
             else {
@@ -438,7 +436,8 @@ class CatalogoController extends Controller
                 'enlace_acceso_id' => $enlace ? $enlace->id : null,
                 'created_by' => Auth::check() ? Auth::id() : null,
                 'estado' => 'pendiente',
-                'notas_cliente' => $request->notas_cliente
+                'notas_cliente' => $request->notas_cliente,
+                'observaciones_vendedor' => $request->observaciones_vendedor
             ]);
             $solicitud->save();
             

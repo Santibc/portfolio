@@ -494,14 +494,7 @@
       title: 'Generar Factura',
       html: `
         <div class="text-start">
-          <div class="mb-3">
-            <label class="form-label">IVA (%)</label>
-            <select id="swal-iva" class="form-select">
-              <option value="">Sin IVA</option>
-              <option value="19">19%</option>
-              <option value="5">5%</option>
-            </select>
-          </div>
+          <p class="text-muted mb-3"><small>El IVA se toma del valor configurado en la edición de la cotización.</small></p>
           <div class="mb-3">
             <label class="form-label">Forma de Pago</label>
             <select id="swal-forma-pago" class="form-select">
@@ -524,7 +517,6 @@
       cancelButtonText: 'Cancelar',
       preConfirm: () => {
         return {
-          porcentaje_iva: document.getElementById('swal-iva').value || null,
           forma_pago: document.getElementById('swal-forma-pago').value,
           dias_vencimiento: document.getElementById('swal-dias-vencimiento').value || 0
         };
@@ -539,7 +531,6 @@
 
         $.post(`/solicitudes/${solicitudId}/factura`, {
           _token: '{{ csrf_token() }}',
-          porcentaje_iva: result.value.porcentaje_iva,
           forma_pago: result.value.forma_pago,
           dias_vencimiento: result.value.dias_vencimiento
         }, function(response) {

@@ -24,8 +24,11 @@
         <div class="p-4">
           <div class="row">
             <div class="col-md-4 text-center border-end">
-              <small class="text-muted d-block">Monto Total</small>
-              <h4 class="text-primary mb-0">$ {{ number_format($solicitud->monto_total, 0, ',', '.') }}</h4>
+              <small class="text-muted d-block">Monto Total (con IVA)</small>
+              <h4 class="text-primary mb-0">$ {{ number_format($solicitud->monto_total_con_iva, 0, ',', '.') }}</h4>
+              @if($solicitud->valor_iva > 0)
+                <small class="text-muted">(IVA {{ number_format($solicitud->porcentaje_iva, 0) }}%: ${{ number_format($solicitud->valor_iva, 0, ',', '.') }})</small>
+              @endif
             </div>
             <div class="col-md-4 text-center border-end">
               <small class="text-muted d-block">Ya Pagado</small>

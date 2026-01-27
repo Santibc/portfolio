@@ -383,11 +383,53 @@ class SolicitudController extends Controller
         
         $html .= '</tbody>';
         $html .= '<tfoot>';
-        $html .= '<tr>';
+
         $colspanTotal = ($solicitud->estado === 'pendiente') ? 6 : 5;
-        $html .= '<th colspan="' . $colspanTotal . '" class="text-end">Total:</th>';
-        $html .= '<th>$' . number_format($solicitud->monto_total, 2) . '</th>';
+
+        // Calcular subtotal de items
+        $subtotal = $solicitud->items->sum('precio_total');
+        $flete = $solicitud->valor_flete ?? 0;
+        $descuento = $solicitud->descuento_total ?? 0;
+
+        // Mostrar subtotal
+        $html .= '<tr>';
+        $html .= '<th colspan="' . $colspanTotal . '" class="text-end">Subtotal:</th>';
+        $html .= '<th>$' . number_format($subtotal, 2) . '</th>';
         $html .= '</tr>';
+
+        // Mostrar flete si existe
+        if ($flete > 0) {
+            $html .= '<tr>';
+            $html .= '<td colspan="' . $colspanTotal . '" class="text-end">Flete:</td>';
+            $html .= '<td>$' . number_format($flete, 2) . '</td>';
+            $html .= '</tr>';
+        }
+
+        // Mostrar descuento si existe
+        if ($descuento > 0) {
+            $html .= '<tr>';
+            $html .= '<td colspan="' . $colspanTotal . '" class="text-end">Descuento:</td>';
+            $html .= '<td class="text-danger">-$' . number_format($descuento, 2) . '</td>';
+            $html .= '</tr>';
+        }
+
+        // Mostrar IVA si existe
+        $porcentajeIva = $solicitud->porcentaje_iva ?? 0;
+        $valorIva = $solicitud->valor_iva ?? 0;
+        if ($porcentajeIva > 0 && $valorIva > 0) {
+            $html .= '<tr>';
+            $html .= '<td colspan="' . $colspanTotal . '" class="text-end">IVA (' . number_format($porcentajeIva, 0) . '%):</td>';
+            $html .= '<td>$' . number_format($valorIva, 2) . '</td>';
+            $html .= '</tr>';
+        }
+
+        // Total final (monto_total + IVA)
+        $totalConIva = $solicitud->monto_total + $valorIva;
+        $html .= '<tr class="table-primary">';
+        $html .= '<th colspan="' . $colspanTotal . '" class="text-end">Total:</th>';
+        $html .= '<th>$' . number_format($totalConIva, 2) . '</th>';
+        $html .= '</tr>';
+
         $html .= '</tfoot>';
         $html .= '</table>';
         $html .= '</div>';
@@ -842,8 +884,8 @@ class SolicitudController extends Controller
      */
     public function exportarExcel(Request $request)
     {
-        // Verificar que sea admin
-        if (!Auth::user()->hasRole('admin')) {
+        // Verificar que sea admin o facturación
+        if (!Auth::user()->hasAnyRole(['admin', 'facturacion'])) {
             abort(403, 'No tiene permisos para exportar solicitudes');
         }
 
@@ -1242,9 +1284,8 @@ class SolicitudController extends Controller
             ], 403);
         }
 
-        // Validar datos
+        // Validar datos (el IVA ya está guardado en la cotización desde la edición)
         $validated = $request->validate([
-            'porcentaje_iva' => 'nullable|numeric|min:0|max:100',
             'forma_pago' => 'nullable|string|max:50',
             'dias_vencimiento' => 'nullable|integer|min:0|max:365',
         ]);
@@ -1252,7 +1293,6 @@ class SolicitudController extends Controller
         $resultado = $this->facturacionService->generarFactura(
             $solicitud,
             $user->id,
-            $validated['porcentaje_iva'] ?? null,
             $validated['forma_pago'] ?? 'Contado',
             $validated['dias_vencimiento'] ?? 0
         );

@@ -126,10 +126,29 @@
                         </div>
                       </td>
                     </tr>
+                    <tr>
+                      <td colspan="5" class="text-end">IVA:</td>
+                      <td colspan="2">
+                        <select name="porcentaje_iva" class="form-select form-select-sm" id="porcentajeIva" onchange="actualizarTotal()">
+                          <option value="">Sin IVA</option>
+                          <option value="5" {{ ($solicitud->porcentaje_iva == 5) ? 'selected' : '' }}>5%</option>
+                          <option value="19" {{ ($solicitud->porcentaje_iva == 19) ? 'selected' : '' }}>19%</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="5" class="text-end">Valor IVA:</td>
+                      <td colspan="2" id="valorIvaDisplay">
+                        ${{ number_format($solicitud->valor_iva ?? 0, 2) }}
+                      </td>
+                    </tr>
                     <tr class="table-primary">
                       <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
                       <td colspan="2" class="fw-bold fs-5" id="totalGeneral">
-                        ${{ number_format($solicitud->monto_total, 2) }}
+                        @php
+                          $totalConIva = ($solicitud->monto_total ?? 0) + ($solicitud->valor_iva ?? 0);
+                        @endphp
+                        ${{ number_format($totalConIva, 2) }}
                       </td>
                     </tr>
                   </tfoot>
@@ -394,9 +413,15 @@
 
     const flete = parseFloat($('#valorFlete').val()) || 0;
     const descuento = parseFloat($('#descuentoTotal').val()) || 0;
-    const total = subtotal + flete - descuento;
+    const porcentajeIva = parseFloat($('#porcentajeIva').val()) || 0;
+
+    // El IVA se calcula sobre el subtotal de productos (sin flete ni descuento)
+    const valorIva = subtotal * (porcentajeIva / 100);
+    const totalSinIva = subtotal + flete - descuento;
+    const total = totalSinIva + valorIva;
 
     $('#subtotalGeneral').text('$' + subtotal.toFixed(2));
+    $('#valorIvaDisplay').text('$' + valorIva.toFixed(2));
     $('#totalGeneral').text('$' + total.toFixed(2));
   }
 

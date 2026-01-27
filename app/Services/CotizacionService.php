@@ -165,14 +165,28 @@ class CotizacionService
             }
 
             // Agregar flete y restar descuento
+            $subtotalProductos = $montoTotal; // Guardamos el subtotal de productos para calcular IVA
             $montoTotal += ($datos['valor_flete'] ?? $solicitud->valor_flete ?? 0);
             $montoTotal -= ($datos['descuento_total'] ?? $solicitud->descuento_total ?? 0);
+
+            // Calcular IVA si aplica
+            $porcentajeIva = isset($datos['porcentaje_iva']) && $datos['porcentaje_iva'] !== '' && $datos['porcentaje_iva'] !== null
+                ? (float) $datos['porcentaje_iva']
+                : null;
+            $valorIva = null;
+
+            if ($porcentajeIva && $porcentajeIva > 0) {
+                // El IVA se calcula sobre el subtotal de productos (sin flete ni descuento)
+                $valorIva = $subtotalProductos * ($porcentajeIva / 100);
+            }
 
             // Actualizar solicitud
             $solicitud->update([
                 'monto_total' => max(0, $montoTotal),
                 'valor_flete' => $datos['valor_flete'] ?? $solicitud->valor_flete,
                 'descuento_total' => $datos['descuento_total'] ?? $solicitud->descuento_total,
+                'porcentaje_iva' => $porcentajeIva,
+                'valor_iva' => $valorIva,
                 'notas_cliente' => $datos['notas_cliente'] ?? $solicitud->notas_cliente,
                 'observaciones_vendedor' => $datos['observaciones_vendedor'] ?? $solicitud->observaciones_vendedor,
                 'editada_en' => now(),

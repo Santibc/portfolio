@@ -449,9 +449,9 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-          <label class="form-label">Notas adicionales (opcional)</label>
+          <label class="form-label">Observaciones del Vendedor (opcional)</label>
           <textarea class="form-control" id="notasSolicitud" rows="3"
-                    placeholder="Ingrese cualquier comentario o requerimiento especial..."></textarea>
+                    placeholder="Ingrese cualquier observación sobre esta cotización..."></textarea>
         </div>
         <div class="alert alert-info">
           <i class="bi bi-info-circle"></i> Al confirmar, se enviará la solicitud de cotización con los productos seleccionados.
@@ -1050,7 +1050,7 @@ $(function(){
     const items = carrito.map(i=>({producto_id:i.producto_id,variante_id:i.variante_id,cantidad:i.cantidad}));
     $.post('{{route("catalogo.solicitud.guardar")}}',{
       _token:'{{csrf_token()}}',cliente_id:clienteId,
-      enlace_token:enlaceToken,items,notas_cliente:notas
+      enlace_token:enlaceToken,items,observaciones_vendedor:notas
     },r=>{
       $('#loadingOverlay').hide();
       $('#modalConfirmarSolicitud').modal('hide');

@@ -43,6 +43,7 @@ class ActualizarSolicitudRequest extends FormRequest
             'observaciones_vendedor' => 'nullable|string|max:2000',
             'valor_flete' => 'nullable|numeric|min:0',
             'descuento_total' => 'nullable|numeric|min:0',
+            'porcentaje_iva' => 'nullable|numeric|in:0,5,19',
         ];
     }
 
@@ -66,6 +67,8 @@ class ActualizarSolicitudRequest extends FormRequest
             'valor_flete.min' => 'El valor del flete no puede ser negativo',
             'descuento_total.numeric' => 'El descuento debe ser numérico',
             'descuento_total.min' => 'El descuento no puede ser negativo',
+            'porcentaje_iva.numeric' => 'El porcentaje de IVA debe ser numérico',
+            'porcentaje_iva.in' => 'El porcentaje de IVA debe ser 0%, 5% o 19%',
         ];
     }
 
@@ -84,6 +87,7 @@ class ActualizarSolicitudRequest extends FormRequest
             'observaciones_vendedor' => 'observaciones',
             'valor_flete' => 'flete',
             'descuento_total' => 'descuento',
+            'porcentaje_iva' => 'IVA',
         ];
     }
 }

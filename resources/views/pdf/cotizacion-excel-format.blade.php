@@ -387,11 +387,36 @@
         </tbody>
     </table>
 
-    {{-- TOTAL --}}
+    {{-- TOTALES --}}
     <div class="totales-container">
         <div class="total-row">
-            <span class="total-label">TOTAL:</span>
+            <span class="total-label">Subtotal:</span>
             <span class="total-valor">$ {{ number_format($totalGeneral, 0) }}</span>
+        </div>
+        @if($solicitud->valor_flete && $solicitud->valor_flete > 0)
+        <div class="total-row">
+            <span class="total-label">Flete:</span>
+            <span class="total-valor">$ {{ number_format($solicitud->valor_flete, 0) }}</span>
+        </div>
+        @endif
+        @if($solicitud->descuento_total && $solicitud->descuento_total > 0)
+        <div class="total-row">
+            <span class="total-label">Descuento:</span>
+            <span class="total-valor">-$ {{ number_format($solicitud->descuento_total, 0) }}</span>
+        </div>
+        @endif
+        @if($solicitud->porcentaje_iva && $solicitud->valor_iva)
+        <div class="total-row">
+            <span class="total-label">IVA {{ number_format($solicitud->porcentaje_iva, 0) }}%:</span>
+            <span class="total-valor">$ {{ number_format($solicitud->valor_iva, 0) }}</span>
+        </div>
+        @endif
+        <div class="total-row" style="margin-top: 5px; padding-top: 5px; border-top: 2px solid #FF84D5;">
+            <span class="total-label" style="font-size: 14pt;">TOTAL:</span>
+            @php
+                $totalFinal = $totalGeneral + ($solicitud->valor_flete ?? 0) - ($solicitud->descuento_total ?? 0) + ($solicitud->valor_iva ?? 0);
+            @endphp
+            <span class="total-valor" style="font-size: 16pt;">$ {{ number_format($totalFinal, 0) }}</span>
         </div>
     </div>
 

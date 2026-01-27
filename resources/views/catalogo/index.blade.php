@@ -367,10 +367,10 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Notas <span class="text-danger">*</span></label>
+            <label class="form-label">Observaciones del Vendedor <span class="text-danger">*</span></label>
             <textarea class="form-control" id="notasSolicitud" rows="3" required
-                      placeholder="Ingrese cualquier comentario o requerimiento especial..."></textarea>
-            <div class="invalid-feedback">Las notas son obligatorias.</div>
+                      placeholder="Ingrese cualquier observación sobre esta cotización..."></textarea>
+            <div class="invalid-feedback">Las observaciones son obligatorias.</div>
           </div>
           <div class="alert alert-info">
             <i class="bi bi-info-circle"></i> Al confirmar, se enviará la solicitud de cotización con los productos seleccionados.
@@ -1008,10 +1008,10 @@ function cargarProductos(page=1){
     $('#btnConfirmarSolicitud').click(()=>{
       const notas = $('#notasSolicitud').val().trim();
 
-      // Validar que las notas no estén vacías
+      // Validar que las observaciones no estén vacías
       if(!notas) {
         $('#notasSolicitud').addClass('is-invalid');
-        mostrarNotificacion('Las notas son obligatorias', 'warning');
+        mostrarNotificacion('Las observaciones del vendedor son obligatorias', 'warning');
         return;
       }
       $('#notasSolicitud').removeClass('is-invalid');
@@ -1024,7 +1024,7 @@ function cargarProductos(page=1){
       }));
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,
-        enlace_token:enlaceToken,items,notas_cliente:notas
+        enlace_token:enlaceToken,items,observaciones_vendedor:notas
       },r=>{
         $('#loadingOverlay').hide();
         $('#modalConfirmarSolicitud').modal('hide');

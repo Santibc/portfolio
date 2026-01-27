@@ -49,11 +49,11 @@ class FacturacionService
 
     /**
      * Generar factura para una cotización
+     * El IVA se toma del valor guardado en la cotización (desde la edición)
      */
     public function generarFactura(
         SolicitudCotizacion $solicitud,
         int $usuarioId,
-        ?float $porcentajeIva = null,
         ?string $formaPago = 'Contado',
         ?int $diasVencimiento = 0
     ): array {
@@ -84,25 +84,17 @@ class FacturacionService
             // Generar número de factura
             $numeroFactura = $this->generarNumeroFactura();
 
-            // Calcular IVA si aplica
-            $valorIva = null;
-            if ($porcentajeIva && $porcentajeIva > 0) {
-                $subtotal = $solicitud->items->sum('precio_total');
-                $valorIva = $subtotal * ($porcentajeIva / 100);
-            }
-
             // Calcular fecha de vencimiento
             $fechaVencimiento = $diasVencimiento > 0
                 ? now()->addDays($diasVencimiento)->toDateString()
                 : now()->toDateString();
 
             // Actualizar solicitud con datos de factura
+            // El IVA ya está guardado en la cotización desde la edición
             $solicitud->update([
                 'numero_factura' => $numeroFactura,
                 'facturada_en' => now(),
                 'facturada_por' => $usuarioId,
-                'porcentaje_iva' => $porcentajeIva,
-                'valor_iva' => $valorIva,
                 'forma_pago_factura' => $formaPago,
                 'fecha_vencimiento' => $fechaVencimiento,
             ]);
