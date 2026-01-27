@@ -273,13 +273,13 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin o vendedor
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        // Verificar que sea admin, vendedor o facturación
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
 
-        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
             }
@@ -409,8 +409,8 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones y botones si está pendiente (para admin y vendedor)
-        if ($solicitud->estado === 'pendiente' && ($user->hasRole('admin') || $user->hasRole('vendedor'))) {
+        // Campo de observaciones y botones si está pendiente (para admin, vendedor y facturación)
+        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
@@ -496,16 +496,16 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin o vendedor
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        // Verificar que sea admin, vendedor o facturación
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
             ], 403);
         }
 
-        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -623,16 +623,16 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin o vendedor
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        // Verificar que sea admin, vendedor o facturación
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar esta solicitud'
             ], 403);
         }
 
-        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -807,13 +807,13 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin o vendedor
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        // Verificar que sea admin, vendedor o facturación
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
 
-        // Si es vendedor (y NO es admin), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 abort(403, 'No tiene permisos para descargar este PDF');
             }
@@ -889,12 +889,12 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             abort(403, 'No tiene permisos para editar cotizaciones');
         }
 
-        // Verificar si es vendedor que sea su cliente
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 abort(403, 'No tiene permisos para editar esta cotización');
             }
@@ -955,15 +955,15 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para eliminar cotizaciones'
             ], 403);
         }
 
-        // Verificar si es vendedor que sea su cliente
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -995,15 +995,15 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para clonar cotizaciones'
             ], 403);
         }
 
-        // Verificar si es vendedor que sea su cliente
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -1042,15 +1042,15 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para cambiar el estado de cotizaciones'
             ], 403);
         }
 
-        // Verificar si es vendedor que sea su cliente
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+        // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -1090,7 +1090,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos'
@@ -1128,7 +1128,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos'
