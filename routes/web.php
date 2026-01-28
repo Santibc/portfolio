@@ -68,33 +68,39 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 });
 
 // ============================================================
-// RUTAS SOLO ADMIN
+// CATEGORÍAS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Categorías (solo admin)
+Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('categorias', [CategoriasController::class, 'index'])->name('categorias');
     Route::get('categorias/form/{categoria?}', [CategoriasController::class, 'form'])->name('categorias.form');
     Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])->name('categorias.guardar');
     Route::delete('categorias/{categoria}/eliminar', [CategoriasController::class, 'eliminar'])->name('categorias.eliminar');
+});
 
+// ============================================================
+// PRODUCTOS (Admin e Inventarios)
+// ============================================================
+Route::middleware(['auth', 'role:admin,inventarios'])->prefix('productos')->group(function () {
+    Route::get('/', [ProductosController::class, 'index'])->name('productos');
+    Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
+    Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
+    Route::delete('/{id}/eliminar', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
+    Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
+    Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
+    Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
+    Route::get('/{producto}/stock-ajax', [ProductosController::class, 'stockAjax'])->name('productos.stock-ajax');
+    Route::get('/exportar-con-imagenes', [ProductosController::class, 'exportarConImagenes'])->name('productos.exportar-con-imagenes');
+});
+
+// ============================================================
+// RUTAS SOLO ADMIN
+// ============================================================
+Route::middleware(['auth', 'role:admin'])->group(function () {
     // Listas de Precios (solo admin)
     Route::get('listas-precios', [ListaPreciosController::class, 'index'])->name('listas-precios');
     Route::get('listas-precios/form/{listaPrecio?}', [ListaPreciosController::class, 'form'])->name('listas-precios.form');
     Route::post('listas-precios/guardar', [ListaPreciosController::class, 'guardar'])->name('listas-precios.guardar');
     Route::post('listas-precios/{listaPrecio}/toggle-estado', [ListaPreciosController::class, 'toggleEstado'])->name('listas-precios.toggle-estado');
-
-    // Productos (solo admin)
-    Route::prefix('productos')->group(function () {
-        Route::get('/', [ProductosController::class, 'index'])->name('productos');
-        Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
-        Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
-        Route::delete('/{id}/eliminar', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
-        Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
-        Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
-        Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
-        // Exportar productos con imágenes
-        Route::get('/exportar-con-imagenes', [ProductosController::class, 'exportarConImagenes'])->name('productos.exportar-con-imagenes');
-    });
 
     // Descargar actualización de precios
     Route::get('actualizaciones/{id}/descargar',
@@ -238,9 +244,9 @@ Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('st
 });
 
 // ============================================================
-// UBICACIONES (Solo Admin)
+// UBICACIONES (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('ubicaciones', [UbicacionesController::class, 'index'])->name('ubicaciones');
     Route::get('ubicaciones/form/{id?}', [UbicacionesController::class, 'form'])->name('ubicaciones.form');
     Route::post('ubicaciones/guardar', [UbicacionesController::class, 'guardar'])->name('ubicaciones.guardar');
@@ -278,11 +284,6 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('novedades-stock/variantes/{productoId}', [NovedadesStockController::class, 'getVariantesPorProducto'])->name('novedades-stock.variantes');
     Route::get('novedades-stock/stock-disponible', [NovedadesStockController::class, 'getStockDisponible'])->name('novedades-stock.stock-disponible');
     Route::get('novedades-stock/dashboard', [NovedadesStockController::class, 'dashboard'])->name('novedades-stock.dashboard');
-});
-
-// Ver stock desde productos (admin)
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/productos/{producto}/stock-ajax', [App\Http\Controllers\ProductosController::class, 'stockAjax'])->name('productos.stock-ajax');
 });
 
 // ============================================================
