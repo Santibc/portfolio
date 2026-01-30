@@ -29,11 +29,13 @@ class Contrato extends Model
     // Constantes de estado de garantía
     const ESTADO_GARANTIA_PENDIENTE = 'pendiente';
     const ESTADO_GARANTIA_RETENIDA = 'retenida';
+    const ESTADO_GARANTIA_PARCIALMENTE_LIBERADA = 'parcialmente_liberada';
     const ESTADO_GARANTIA_LIBERADA = 'liberada';
 
     const ESTADOS_GARANTIA = [
         self::ESTADO_GARANTIA_PENDIENTE => 'Pendiente',
         self::ESTADO_GARANTIA_RETENIDA => 'Retenida',
+        self::ESTADO_GARANTIA_PARCIALMENTE_LIBERADA => 'Parcialmente Liberada',
         self::ESTADO_GARANTIA_LIBERADA => 'Liberada',
     ];
 
@@ -55,6 +57,8 @@ class Contrato extends Model
         'fecha_liberacion_garantia',
         'estado_garantia',
         'fecha_liberacion_real',
+        'porcentaje_total_liberado',
+        'importe_total_liberado',
         'estado',
         'responsable_id',
         'documento_path',
@@ -73,6 +77,8 @@ class Contrato extends Model
         'iva_porcentaje' => 'decimal:2',
         'retencion_porcentaje' => 'decimal:2',
         'importe_retenido' => 'decimal:2',
+        'porcentaje_total_liberado' => 'integer',
+        'importe_total_liberado' => 'decimal:2',
         'tiene_retencion' => 'boolean',
         'renovacion_automatica' => 'boolean',
     ];
@@ -104,6 +110,11 @@ class Contrato extends Model
     public function obras(): HasMany
     {
         return $this->hasMany(Obra::class);
+    }
+
+    public function liberaciones(): HasMany
+    {
+        return $this->hasMany(ContratoLiberacion::class)->ordenCronologico();
     }
 
     // ==========================================
@@ -178,6 +189,7 @@ class Contrato extends Model
         return match($this->estado_garantia) {
             self::ESTADO_GARANTIA_PENDIENTE => 'warning',
             self::ESTADO_GARANTIA_RETENIDA => 'info',
+            self::ESTADO_GARANTIA_PARCIALMENTE_LIBERADA => 'primary',
             self::ESTADO_GARANTIA_LIBERADA => 'success',
             default => 'secondary',
         };
@@ -222,6 +234,32 @@ class Contrato extends Model
         return $this->tiene_retencion && !$this->fecha_liberacion_real;
     }
 
+    /**
+     * Porcentaje pendiente de liberar.
+     */
+    public function getPorcentajePendienteLiberarAttribute(): int
+    {
+        return 100 - intval($this->porcentaje_total_liberado ?? 0);
+    }
+
+    /**
+     * Importe pendiente de liberar.
+     */
+    public function getImportePendienteLiberarAttribute(): float
+    {
+        return floatval($this->importe_retenido ?? 0) - floatval($this->importe_total_liberado ?? 0);
+    }
+
+    /**
+     * Si tiene liberaciones parciales.
+     */
+    public function getTieneLiberacionesParcialesAttribute(): bool
+    {
+        return $this->tiene_retencion &&
+               intval($this->porcentaje_total_liberado ?? 0) > 0 &&
+               intval($this->porcentaje_total_liberado ?? 0) < 100;
+    }
+
     // ==========================================
     // SCOPES
     // ==========================================
@@ -261,7 +299,10 @@ class Contrato extends Model
     public function scopeGarantiasPendientes($query)
     {
         return $query->where('tiene_retencion', true)
-                     ->whereNull('fecha_liberacion_real');
+                     ->where(function($q) {
+                         $q->whereNull('fecha_liberacion_real')
+                           ->orWhere('porcentaje_total_liberado', '<', 100);
+                     });
     }
 
     public function scopeGarantiasLiberadas($query)
@@ -343,17 +384,82 @@ class Contrato extends Model
 
     /**
      * Liberar garantía retenida.
+     *
+     * @deprecated Usar liberarGaranciaParcial() para nuevas liberaciones
      */
     public function liberarGarantia(?string $fecha = null): bool
     {
-        if (!$this->tiene_retencion || $this->fecha_liberacion_real) {
-            return false;
+        // Mantener por retrocompatibilidad, pero internamente usa liberarGaranciaParcial
+        return $this->liberarGaranciaParcial(100, $fecha, 'Liberación completa (método antiguo)');
+    }
+
+    /**
+     * Liberar un porcentaje de la garantía retenida.
+     *
+     * @param int $porcentaje Porcentaje a liberar (1-100)
+     * @param string|null $fecha Fecha de liberación
+     * @param string|null $notas Notas/motivo
+     * @return bool
+     * @throws \Exception
+     */
+    public function liberarGaranciaParcial(int $porcentaje, ?string $fecha = null, ?string $notas = null): bool
+    {
+        if (!$this->tiene_retencion) {
+            throw new \Exception('Este contrato no tiene retención de garantía.');
         }
 
-        $this->update([
-            'estado_garantia' => self::ESTADO_GARANTIA_LIBERADA,
-            'fecha_liberacion_real' => $fecha ?? now()->toDateString(),
+        // Validar que no exceda el 100%
+        $porcentajeDisponible = 100 - intval($this->porcentaje_total_liberado ?? 0);
+        if ($porcentaje > $porcentajeDisponible) {
+            throw new \Exception("Solo puede liberar hasta {$porcentajeDisponible}% restante.");
+        }
+
+        if ($porcentaje <= 0) {
+            throw new \Exception('El porcentaje debe ser mayor a 0.');
+        }
+
+        // Calcular importe a liberar
+        $importeALiberar = floatval($this->importe_retenido) * ($porcentaje / 100);
+
+        // Crear registro de liberación
+        $liberacion = $this->liberaciones()->create([
+            'porcentaje_liberado' => $porcentaje,
+            'importe_liberado' => $importeALiberar,
+            'fecha_liberacion' => $fecha ?? now()->toDateString(),
+            'notas' => $notas,
+            'user_id' => auth()->id(),
         ]);
+
+        // Actualizar totales en contrato
+        $nuevoTotal = intval($this->porcentaje_total_liberado ?? 0) + $porcentaje;
+        $nuevoImporte = floatval($this->importe_total_liberado ?? 0) + $importeALiberar;
+
+        // Determinar nuevo estado
+        $nuevoEstado = $nuevoTotal >= 100
+            ? self::ESTADO_GARANTIA_LIBERADA
+            : self::ESTADO_GARANTIA_PARCIALMENTE_LIBERADA;
+
+        // Si se liberó el 100%, registrar fecha_liberacion_real
+        $dataUpdate = [
+            'porcentaje_total_liberado' => $nuevoTotal,
+            'importe_total_liberado' => $nuevoImporte,
+            'estado_garantia' => $nuevoEstado,
+        ];
+
+        if ($nuevoTotal >= 100) {
+            $dataUpdate['fecha_liberacion_real'] = $fecha ?? now()->toDateString();
+        }
+
+        $this->update($dataUpdate);
+
+        // Registrar en auditoría
+        Auditoria::registrar(
+            'liberar_garantia_parcial',
+            'contratos',
+            $this->id,
+            ['porcentaje_anterior' => intval($this->porcentaje_total_liberado ?? 0) - $porcentaje],
+            ['liberacion_id' => $liberacion->id, 'porcentaje_nuevo' => $nuevoTotal]
+        );
 
         return true;
     }
