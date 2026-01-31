@@ -92,7 +92,7 @@ class CaducidadGeneralController extends Controller
             'descripcion' => 'nullable|string',
             'fecha_emision' => 'nullable|date',
             'fecha_caducidad' => 'required|date',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento' => 'nullable|file|max:10240',
             'alerta_activa' => 'sometimes|boolean',
         ]);
 
@@ -145,7 +145,7 @@ class CaducidadGeneralController extends Controller
             'descripcion' => 'nullable|string',
             'fecha_emision' => 'nullable|date',
             'fecha_caducidad' => 'required|date',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento' => 'nullable|file|max:10240',
             'alerta_activa' => 'sometimes|boolean',
         ]);
 

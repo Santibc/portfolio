@@ -68,6 +68,7 @@
                 </div>
             </div>
         </div>
+        @can('ver_rentabilidad_obras')
         <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
@@ -93,6 +94,7 @@
                 </div>
             </div>
         </div>
+        @endcan
         <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
@@ -177,6 +179,7 @@
             </div>
 
             <!-- Economía -->
+            @can('ver_rentabilidad_obras')
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent">
                     <h6 class="mb-0"><i class="bi bi-currency-euro me-2"></i>Economía</h6>
@@ -206,6 +209,7 @@
                     </table>
                 </div>
             </div>
+            @endcan
 
             <!-- Datos ADIF -->
             @if($obra->linea || $obra->trayecto || $obra->pk_inicio)
@@ -616,7 +620,9 @@
                                                 <th>Nombre</th>
                                                 <th>Categoría</th>
                                                 <th>Unidad</th>
+                                                @can('ver_rentabilidad_obras')
                                                 <th class="text-end">Precio Unit.</th>
+                                                @endcan
                                                 <th>Estado</th>
                                                 <th></th>
                                             </tr>
@@ -642,7 +648,9 @@
                                                     </span>
                                                 </td>
                                                 <td>{{ $concepto->unidad }}</td>
+                                                @can('ver_rentabilidad_obras')
                                                 <td class="text-end fw-semibold">{{ $concepto->precio_formateado }}</td>
+                                                @endcan
                                                 <td>
                                                     @if($concepto->activo)
                                                         <span class="badge bg-success-subtle text-success">Activo</span>
@@ -795,10 +803,14 @@
                                 <option value="jornal">Jornal</option>
                             </select>
                         </div>
+                        @can('ver_rentabilidad_obras')
                         <div class="col-md-4">
                             <label class="form-label">Precio Unitario (€) <span class="text-danger">*</span></label>
                             <input type="number" name="precio_unitario" id="conceptoPrecio" class="form-control" step="0.01" min="0" required placeholder="0.00">
                         </div>
+                        @else
+                        <input type="hidden" name="precio_unitario" id="conceptoPrecio" value="0">
+                        @endcan
                         <div class="col-12">
                             <label class="form-label">Descripción</label>
                             <textarea name="descripcion" id="conceptoDescripcion" class="form-control" rows="2" placeholder="Descripción opcional"></textarea>

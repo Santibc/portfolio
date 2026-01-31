@@ -96,7 +96,7 @@ class GastoController extends Controller
             'fecha' => 'required|date',
             'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha',
             'forma_pago' => 'nullable|string|max:100',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'documento' => 'nullable|file|max:5120',
             'notas' => 'nullable|string',
         ], [
             'gasto_categoria_id.required' => 'La categoría es obligatoria.',
@@ -104,7 +104,6 @@ class GastoController extends Controller
             'importe.required' => 'El importe es obligatorio.',
             'importe.min' => 'El importe debe ser mayor a 0.',
             'fecha.required' => 'La fecha es obligatoria.',
-            'documento.mimes' => 'El documento debe ser PDF, JPG o PNG.',
             'documento.max' => 'El documento no puede superar 5MB.',
         ]);
 
@@ -206,7 +205,7 @@ class GastoController extends Controller
             'fecha' => 'required|date',
             'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha',
             'forma_pago' => 'nullable|string|max:100',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'documento' => 'nullable|file|max:5120',
             'notas' => 'nullable|string',
         ], [
             'gasto_categoria_id.required' => 'La categoría es obligatoria.',
@@ -214,7 +213,6 @@ class GastoController extends Controller
             'importe.required' => 'El importe es obligatorio.',
             'importe.min' => 'El importe debe ser mayor a 0.',
             'fecha.required' => 'La fecha es obligatoria.',
-            'documento.mimes' => 'El documento debe ser PDF, JPG o PNG.',
             'documento.max' => 'El documento no puede superar 5MB.',
         ]);
 

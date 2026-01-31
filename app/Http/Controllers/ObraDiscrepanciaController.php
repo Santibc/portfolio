@@ -53,7 +53,7 @@ class ObraDiscrepanciaController extends Controller
             'importe_aceptado_cliente' => 'nullable|numeric|min:0',
             'fecha_respuesta_cliente' => 'nullable|date',
             'notas' => 'nullable|string',
-            'documento_valoracion' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento_valoracion' => 'nullable|file|max:10240',
         ]);
 
         DB::beginTransaction();
@@ -136,7 +136,7 @@ class ObraDiscrepanciaController extends Controller
             'importe_aceptado_cliente' => 'nullable|numeric|min:0',
             'fecha_respuesta_cliente' => 'nullable|date',
             'notas' => 'nullable|string',
-            'documento_valoracion' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento_valoracion' => 'nullable|file|max:10240',
         ]);
 
         DB::beginTransaction();

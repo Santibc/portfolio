@@ -5,6 +5,7 @@ use App\Http\Controllers\TrabajadorController;
 use App\Http\Controllers\TrabajadorBonoController;
 use App\Http\Controllers\CuadrillaController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ClienteEmailController;
 use App\Http\Controllers\ObraController;
 use App\Http\Controllers\ObraConceptoProduccionController;
 use App\Http\Controllers\ObraDiscrepanciaController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\ContratoTipoController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\EpiCatalogoController;
 use App\Http\Controllers\EpiInventarioController;
+use App\Http\Controllers\DocumentoEmpresaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
 });
 
 // ==========================================
@@ -163,6 +167,14 @@ Route::middleware(['auth', 'verified', 'permission:editar_clientes'])->group(fun
     // Interacciones CRM
     Route::post('clientes/{cliente}/interacciones', [ClienteController::class, 'storeInteraccion'])
         ->name('clientes.interacciones.store');
+
+    // CRUD de emails adicionales de cliente
+    Route::post('clientes/{cliente}/emails', [ClienteEmailController::class, 'store'])
+        ->name('clientes.emails.store');
+    Route::put('cliente-emails/{emailAdicional}', [ClienteEmailController::class, 'update'])
+        ->name('clientes.emails.update');
+    Route::delete('cliente-emails/{emailAdicional}', [ClienteEmailController::class, 'destroy'])
+        ->name('clientes.emails.destroy');
 });
 
 Route::middleware(['auth', 'verified', 'permission:eliminar_clientes'])->group(function () {
@@ -365,6 +377,14 @@ Route::middleware(['auth', 'verified', 'permission:editar_maquinaria'])->group(f
         ->name('maquinaria.mantenimientos.destroy');
 });
 
+// Documentos de Maquinaria (puede subir quien tenga editar_maquinaria O subir_documentos_maquinaria)
+Route::middleware(['auth', 'verified', 'permission:editar_maquinaria|subir_documentos_maquinaria'])->group(function () {
+    Route::post('maquinaria/{maquinaria}/documentos', [MaquinariaController::class, 'storeDocumento'])
+        ->name('maquinaria.documentos.store');
+    Route::delete('maquinaria/{maquinaria}/documentos/{documento}', [MaquinariaController::class, 'destroyDocumento'])
+        ->name('maquinaria.documentos.destroy');
+});
+
 Route::middleware(['auth', 'verified', 'permission:eliminar_maquinaria'])->group(function () {
     Route::delete('maquinaria/{maquinaria}', [MaquinariaController::class, 'destroy'])->name('maquinaria.destroy');
 });
@@ -473,9 +493,9 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
 });
 
 // ==========================================
-// RUTAS DE GASTOS (Administrador + Contabilidad)
+// RUTAS DE GASTOS (Administrador + Contabilidad + Encargado)
 // ==========================================
-Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad|Encargado'])->group(function () {
     Route::resource('gastos', GastoController::class);
     Route::post('gastos/{gasto}/marcar-pagado', [GastoController::class, 'marcarPagado'])->name('gastos.marcar-pagado');
     Route::post('gastos/{gasto}/marcar-pendiente', [GastoController::class, 'marcarPendiente'])->name('gastos.marcar-pendiente');
@@ -543,20 +563,24 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
 
     // Auxiliar AJAX
     Route::get('facturas/ajax/cliente-obra/{obra}', [FacturaController::class, 'getClienteObra'])->name('facturas.cliente-obra');
+
+    // Get emails disponibles del cliente de una factura
+    Route::get('facturas/{factura}/emails-cliente', [FacturaController::class, 'getClienteEmails'])
+        ->name('facturas.emails-cliente');
 });
 
 // ==========================================
 // RUTAS DE EPIs (Equipos de Protección Individual)
 // ==========================================
 
-// Catálogo de EPIs (Admin, RRHH)
-Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->group(function () {
+// Catálogo de EPIs (Admin, RRHH, Encargado)
+Route::middleware(['auth', 'verified', 'role:Administrador|RRHH|Encargado'])->group(function () {
     Route::resource('epi-catalogo', EpiCatalogoController::class)->except(['show']);
 });
 
-// Inventario de EPIs - CRUD y acciones (Admin, RRHH)
+// Inventario de EPIs - CRUD y acciones (Admin, RRHH, Encargado)
 // IMPORTANTE: Las rutas create/edit van ANTES de las rutas con parámetros {epiInventario}
-Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:Administrador|RRHH|Encargado'])->group(function () {
     Route::get('epi-inventario/create', [EpiInventarioController::class, 'create'])->name('epi-inventario.create');
     Route::post('epi-inventario', [EpiInventarioController::class, 'store'])->name('epi-inventario.store');
     Route::get('epi-inventario/{epiInventario}/edit', [EpiInventarioController::class, 'edit'])->name('epi-inventario.edit');
@@ -568,6 +592,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->group(functi
     Route::post('epi-inventario/{epiInventario}/devolver', [EpiInventarioController::class, 'devolverEpi'])->name('epi-inventario.devolver');
     Route::post('epi-inventario/{epiInventario}/revisiones', [EpiInventarioController::class, 'registrarRevision'])->name('epi-inventario.revisiones.store');
     Route::post('epi-inventario/{epiInventario}/baja', [EpiInventarioController::class, 'darDeBaja'])->name('epi-inventario.baja');
+
+    // Documentos de EPI
+    Route::post('epi-inventario/{epiInventario}/documentos', [EpiInventarioController::class, 'storeDocumento'])->name('epi-inventario.documentos.store');
+    Route::delete('epi-inventario/{epiInventario}/documentos/{documento}', [EpiInventarioController::class, 'destroyDocumento'])->name('epi-inventario.documentos.destroy');
 });
 
 // Inventario de EPIs - Ver (Admin, RRHH, Encargado, Contabilidad)
@@ -629,6 +657,20 @@ Route::middleware(['auth', 'verified', 'permission:ver_auditoria'])->group(funct
 });
 
 // ==========================================
+// RUTAS DE DOCUMENTOS DE EMPRESA (solo Administrador)
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador'])->group(function () {
+    Route::get('documentos-empresa', [DocumentoEmpresaController::class, 'index'])->name('documentos-empresa.index');
+    Route::get('documentos-empresa/create', [DocumentoEmpresaController::class, 'create'])->name('documentos-empresa.create');
+    Route::post('documentos-empresa', [DocumentoEmpresaController::class, 'store'])->name('documentos-empresa.store');
+    Route::get('documentos-empresa/{documentos_empresa}', [DocumentoEmpresaController::class, 'show'])->name('documentos-empresa.show');
+    Route::get('documentos-empresa/{documentos_empresa}/edit', [DocumentoEmpresaController::class, 'edit'])->name('documentos-empresa.edit');
+    Route::put('documentos-empresa/{documentos_empresa}', [DocumentoEmpresaController::class, 'update'])->name('documentos-empresa.update');
+    Route::delete('documentos-empresa/{documentos_empresa}', [DocumentoEmpresaController::class, 'destroy'])->name('documentos-empresa.destroy');
+    Route::get('documentos-empresa/{documentos_empresa}/descargar', [DocumentoEmpresaController::class, 'descargar'])->name('documentos-empresa.descargar');
+});
+
+// ==========================================
 // RUTAS DE ADMINISTRACIÓN
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
@@ -666,6 +708,7 @@ Route::middleware(['auth', 'verified', 'role:Encargado'])->prefix('encargado')->
         Route::get('/kpis', [EncargadoDashboardController::class, 'getKpis'])->name('kpis');
         Route::get('/mis-obras', [EncargadoDashboardController::class, 'getMisObras'])->name('mis-obras');
         Route::get('/produccion-diaria', [EncargadoDashboardController::class, 'getProduccionDiaria'])->name('produccion-diaria');
+        Route::get('/metricas-estado', [EncargadoDashboardController::class, 'getMetricasPorEstado'])->name('metricas-estado');
         Route::get('/horas-trabajadores', [EncargadoDashboardController::class, 'getHorasTrabajadores'])->name('horas-trabajadores');
         Route::get('/maquinaria-asignada', [EncargadoDashboardController::class, 'getMaquinariaAsignada'])->name('maquinaria-asignada');
         Route::get('/calendario-semanal', [EncargadoDashboardController::class, 'getCalendarioSemanal'])->name('calendario-semanal');
@@ -694,6 +737,7 @@ Route::middleware(['auth', 'verified', 'role:Trabajador'])->prefix('trabajador')
         Route::get('/mis-formaciones', [TrabajadorDashboardController::class, 'getMisFormaciones'])->name('mis-formaciones');
         Route::get('/mis-primas', [TrabajadorDashboardController::class, 'getMisPrimas'])->name('mis-primas');
         Route::get('/alertas', [TrabajadorDashboardController::class, 'getMisAlertas'])->name('alertas');
+        Route::get('/produccion-diaria', [TrabajadorDashboardController::class, 'getProduccionDiaria'])->name('produccion-diaria');
     });
 });
 

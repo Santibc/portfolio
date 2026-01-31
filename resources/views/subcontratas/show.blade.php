@@ -349,8 +349,8 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Archivo <span class="text-danger">*</span></label>
-                                                <input type="file" name="archivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-                                                <small class="text-muted">PDF, JPG, PNG (max 10MB)</small>
+                                                <input type="file" name="archivo" class="form-control" required>
+                                                <small class="text-muted">Máximo 10MB.</small>
                                             </div>
                                             <div class="col-12">
                                                 <button type="submit" class="btn btn-primary">

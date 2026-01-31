@@ -27,7 +27,13 @@ class Factura extends Model
         'fecha_cobro',
         'pdf_path',
         'notas',
+        'footer_text',
     ];
+
+    /**
+     * Texto por defecto para el pie de página del PDF
+     */
+    const DEFAULT_FOOTER_TEXT = 'MANZER AGROFORESTAL, S.R.L.U. | CIF: B12345678 | Inscrita en el Registro Mercantil de Barcelona';
 
     protected $casts = [
         'fecha_emision' => 'date',
@@ -69,6 +75,14 @@ class Factura extends Model
         $this->iva_importe = $baseImponible * ($this->iva_porcentaje / 100);
         $this->retencion_importe = $baseImponible * ($this->retencion_porcentaje / 100);
         $this->total = $baseImponible + $this->iva_importe - $this->retencion_importe;
+    }
+
+    /**
+     * Accessor para footer_text - devuelve el texto por defecto si es null
+     */
+    public function getFooterTextAttribute($value)
+    {
+        return $value ?? self::DEFAULT_FOOTER_TEXT;
     }
 
     // Scopes

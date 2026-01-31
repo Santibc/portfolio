@@ -317,12 +317,11 @@
                             @endif
                             <div class="col-12">
                                 <label for="documento" class="form-label">{{ $contrato->documento_path ? 'Nuevo documento' : 'Documento del Contrato' }}</label>
-                                <input type="file" name="documento" id="documento" class="form-control @error('documento') is-invalid @enderror"
-                                       accept=".pdf">
+                                <input type="file" name="documento" id="documento" class="form-control @error('documento') is-invalid @enderror">
                                 @error('documento')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">Solo PDF. Máximo 10MB.</small>
+                                <small class="text-muted">Máximo 10MB.</small>
                             </div>
                             <div class="col-12">
                                 <label for="notas" class="form-label">Notas</label>

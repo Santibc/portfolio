@@ -130,6 +130,24 @@ class Trabajador extends Model
         return $this->tipo_relacion === 'propio';
     }
 
+    public function getInitialsAttribute(): string
+    {
+        return strtoupper(substr($this->nombre, 0, 1)) . strtoupper(substr($this->apellidos, 0, 1));
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->user && $this->user->hasProfilePhoto()) {
+            return $this->user->profile_photo_url;
+        }
+        return null;
+    }
+
+    public function hasProfilePhoto(): bool
+    {
+        return $this->user && $this->user->hasProfilePhoto();
+    }
+
     // Scopes
     public function scopeActivos($query)
     {

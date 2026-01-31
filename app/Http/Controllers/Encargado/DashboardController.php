@@ -32,7 +32,15 @@ class DashboardController extends Controller
         $kpis = $this->dashboardService->getKpis();
         $opcionesFiltros = $this->dashboardService->getOpcionesFiltros();
 
-        return view('encargado.dashboard.index', compact('kpis', 'opcionesFiltros'));
+        // Parsear fechas desde request (para compatibilidad con filtros)
+        $fechaDesde = $request->filled('fecha_desde')
+            ? Carbon::parse($request->fecha_desde)
+            : null;
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? Carbon::parse($request->fecha_hasta)
+            : null;
+
+        return view('encargado.dashboard.index', compact('kpis', 'opcionesFiltros', 'fechaDesde', 'fechaHasta'));
     }
 
     /**
@@ -56,10 +64,33 @@ class DashboardController extends Controller
     /**
      * API: Producción diaria
      */
-    public function getProduccionDiaria(): JsonResponse
+    public function getProduccionDiaria(Request $request): JsonResponse
     {
-        $produccion = $this->dashboardService->getProduccionDiaria();
+        $fechaDesde = $request->filled('fecha_desde')
+            ? Carbon::parse($request->fecha_desde)
+            : null;
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? Carbon::parse($request->fecha_hasta)
+            : null;
+
+        $produccion = $this->dashboardService->getProduccionDiaria($fechaDesde, $fechaHasta);
         return response()->json($produccion);
+    }
+
+    /**
+     * API: Métricas por estado
+     */
+    public function getMetricasPorEstado(Request $request): JsonResponse
+    {
+        $fechaDesde = $request->filled('fecha_desde')
+            ? Carbon::parse($request->fecha_desde)
+            : null;
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? Carbon::parse($request->fecha_hasta)
+            : null;
+
+        $metricas = $this->dashboardService->getMetricasPorEstado($fechaDesde, $fechaHasta);
+        return response()->json($metricas);
     }
 
     /**

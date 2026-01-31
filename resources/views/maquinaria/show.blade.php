@@ -218,6 +218,12 @@
                                 <span class="badge bg-secondary ms-1">{{ $maquinaria->mantenimientos->count() }}</span>
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button">
+                                <i class="bi bi-file-earmark me-1"></i>Documentos
+                                <span class="badge bg-secondary ms-1">{{ $maquinaria->documentos->count() }}</span>
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body tabs-content">
@@ -498,6 +504,69 @@
                             </div>
                             @endcan
                         </div>
+
+                        <!-- Tab Documentos -->
+                        <div class="tab-pane fade" id="documentos" role="tabpanel">
+                            @if($maquinaria->documentos->count() > 0)
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-sm align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Documento</th>
+                                                <th>Subido por</th>
+                                                <th>Fecha</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($maquinaria->documentos as $documento)
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ asset($documento->archivo_path) }}" target="_blank">
+                                                        <i class="bi bi-file-earmark me-1"></i>{{ $documento->nombre }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ $documento->subidoPor->name ?? '-' }}</td>
+                                                <td>{{ $documento->created_at->format('d/m/Y') }}</td>
+                                                <td class="text-end">
+                                                    @canany(['editar_maquinaria', 'subir_documentos_maquinaria'])
+                                                    <form action="{{ route('maquinaria.documentos.destroy', [$maquinaria, $documento]) }}" method="POST" class="d-inline delete-documento-form">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-documento">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endcanany
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted mb-4">No hay documentos subidos</p>
+                            @endif
+
+                            @canany(['editar_maquinaria', 'subir_documentos_maquinaria'])
+                            <form action="{{ route('maquinaria.documentos.store', $maquinaria) }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <input type="text" name="nombre" class="form-control" placeholder="Nombre del documento" required>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="file" name="archivo" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-upload"></i> Subir
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            @endcanany
+                        </div>
                     </div>
                 </div>
             </div>
@@ -666,6 +735,27 @@
             const form = this.closest('.delete-mantenimiento-form');
             Swal.fire({
                 title: 'Eliminar mantenimiento?',
+                text: 'Esta accion no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Si, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    // Eliminar documento
+    document.querySelectorAll('.btn-delete-documento').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const form = this.closest('.delete-documento-form');
+            Swal.fire({
+                title: 'Eliminar documento?',
                 text: 'Esta accion no se puede deshacer',
                 icon: 'warning',
                 showCancelButton: true,

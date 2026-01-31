@@ -93,6 +93,32 @@ class ParteDiario extends Model
         return number_format($this->importe_total_calculado, 2, ',', '.') . ' €';
     }
 
+    /**
+     * Obtener producción agrupada por categoría de concepto.
+     */
+    public function getProduccionPorCategoriaAttribute(): array
+    {
+        $categorias = [
+            'desbroce' => 0,
+            'limpieza' => 0,
+            'herbicida' => 0,
+            'tala' => 0,
+            'poda' => 0,
+            'otro' => 0,
+        ];
+
+        foreach ($this->producciones as $produccion) {
+            if ($produccion->concepto) {
+                $cat = $produccion->concepto->categoria ?? 'otro';
+                if (isset($categorias[$cat])) {
+                    $categorias[$cat] += $produccion->cantidad;
+                }
+            }
+        }
+
+        return $categorias;
+    }
+
     // Métodos helper
     public function calcularYActualizarImporte(): float
     {

@@ -295,14 +295,19 @@
     </div>
 
     {{-- Tabla de lineas --}}
+    @php
+        $tieneDescuentos = $factura->lineas->contains(fn($linea) => $linea->descuento_porcentaje > 0);
+    @endphp
     <table class="lines-table">
         <thead>
             <tr>
-                <th style="width: 40%;">Concepto</th>
-                <th class="text-right" style="width: 12%;">Cantidad</th>
-                <th class="text-right" style="width: 15%;">Precio Unit.</th>
+                <th style="width: {{ $tieneDescuentos ? '40%' : '45%' }};">Concepto</th>
+                <th class="text-right" style="width: {{ $tieneDescuentos ? '12%' : '15%' }};">Cantidad</th>
+                <th class="text-right" style="width: {{ $tieneDescuentos ? '15%' : '18%' }};">Precio Unit.</th>
+                @if($tieneDescuentos)
                 <th class="text-right" style="width: 10%;">Dto.</th>
-                <th class="text-right" style="width: 18%;">Importe</th>
+                @endif
+                <th class="text-right" style="width: {{ $tieneDescuentos ? '18%' : '22%' }};">Importe</th>
             </tr>
         </thead>
         <tbody>
@@ -316,7 +321,9 @@
                 </td>
                 <td class="text-right">{{ number_format($linea->cantidad, 2, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($linea->precio_unitario, 2, ',', '.') }} EUR</td>
+                @if($tieneDescuentos)
                 <td class="text-right">{{ number_format($linea->descuento_porcentaje, 0) }}%</td>
+                @endif
                 <td class="text-right">{{ number_format($linea->importe, 2, ',', '.') }} EUR</td>
             </tr>
             @endforeach
@@ -371,7 +378,7 @@
 
     {{-- Pie de pagina --}}
     <div class="footer">
-        MANZER AGROFORESTAL, S.R.L.U. | CIF: B12345678 | Inscrita en el Registro Mercantil de Barcelona
+        {{ $factura->footer_text ?? \App\Models\Factura::DEFAULT_FOOTER_TEXT }}
     </div>
 </body>
 </html>

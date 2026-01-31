@@ -10,17 +10,26 @@
             <a href="{{ route('trabajadores.index') }}" class="btn btn-outline-secondary me-3">
                 <i class="bi bi-arrow-left fs-5"></i>
             </a>
-            <div class="worker-avatar {{ $trabajador->tipo_relacion === 'propio' ? 'bg-primary' : 'bg-warning' }}">
-                {{ strtoupper(substr($trabajador->nombre, 0, 1)) }}{{ strtoupper(substr($trabajador->apellidos, 0, 1)) }}
-            </div>
+            @if($trabajador->hasProfilePhoto())
+                <img src="{{ $trabajador->profile_photo_url }}"
+                     alt="{{ $trabajador->nombre_completo }}"
+                     class="worker-avatar"
+                     style="object-fit: cover;">
+            @else
+                <div class="worker-avatar {{ auth()->user()->hasRole('Encargado') ? 'bg-secondary' : ($trabajador->tipo_relacion === 'propio' ? 'bg-primary' : 'bg-warning') }}">
+                    {{ $trabajador->initials }}
+                </div>
+            @endif
             <div class="worker-info">
                 <h1 class="worker-name">{{ $trabajador->nombre_completo }}</h1>
                 <div class="worker-badges">
+                    @unlessrole('Encargado')
                     @if($trabajador->tipo_relacion === 'propio')
                         <x-manzer.badge variant="primary">Propio</x-manzer.badge>
                     @else
                         <x-manzer.badge variant="warning">{{ $trabajador->subcontrata?->nombre ?? 'Subcontrata' }}</x-manzer.badge>
                     @endif
+                    @endunlessrole
                     @if($trabajador->activo)
                         <x-manzer.badge variant="success">Activo</x-manzer.badge>
                     @else
@@ -170,6 +179,7 @@
             </div>
         </div>
 
+        @unlessrole('Encargado')
         {{-- Datos Económicos o Subcontrata --}}
         <div class="col-lg-4">
             @if($trabajador->tipo_relacion === 'propio')
@@ -233,6 +243,7 @@
             </div>
             @endif
         </div>
+        @endunlessrole
     </div>
 
     {{-- Tabs de contenido mejorados --}}
@@ -652,7 +663,7 @@
 
                     <x-manzer.form-group label="Nombre del Documento" name="nombre" type="text" required />
 
-                    <x-manzer.form-group label="Archivo" name="archivo" type="file" accept=".pdf,.jpg,.jpeg,.png" help="PDF, JPG o PNG. Máximo 10MB." required />
+                    <x-manzer.form-group label="Archivo" name="archivo" type="file" help="Máximo 10MB." required />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -732,8 +743,7 @@
                         label="Certificado"
                         name="certificado"
                         type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        help="PDF, JPG o PNG. Máximo 10MB."
+                        help="Máximo 10MB."
                     />
 
                     <x-manzer.form-group
@@ -802,7 +812,6 @@
                         label="Documento Adjunto"
                         name="documento"
                         type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
                     />
                 </div>
                 <div class="modal-footer">

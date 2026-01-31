@@ -16,7 +16,7 @@ class StoreDocumentRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:5000',
-            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:51200', // 50MB max
+            'file' => 'required|file|max:51200', // 50MB max
             'order' => 'nullable|integer|min:0',
         ];
     }
@@ -29,7 +29,6 @@ class StoreDocumentRequest extends FormRequest
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
             'file.required' => 'Debe seleccionar un archivo.',
             'file.file' => 'Debe subir un archivo válido.',
-            'file.mimes' => 'El archivo debe ser de tipo: PDF, Word, Excel o PowerPoint.',
             'file.max' => 'El archivo no puede superar los 50MB.',
         ];
     }

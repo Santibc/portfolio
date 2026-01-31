@@ -103,6 +103,7 @@ class FacturaController extends Controller
             'iva_porcentaje' => 'required|numeric|min:0|max:100',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'notas' => 'nullable|string',
+            'footer_text' => 'nullable|string|max:1000',
             'lineas' => 'required|array|min:1',
             'lineas.*.concepto' => 'required|string|max:255',
             'lineas.*.descripcion' => 'nullable|string',
@@ -118,6 +119,7 @@ class FacturaController extends Controller
             'lineas.*.cantidad.required' => 'La cantidad es obligatoria.',
             'lineas.*.cantidad.min' => 'La cantidad debe ser mayor a 0.',
             'lineas.*.precio_unitario.required' => 'El precio unitario es obligatorio.',
+            'footer_text.max' => 'El texto del pie de página no puede exceder 1000 caracteres.',
         ]);
 
         DB::beginTransaction();
@@ -133,6 +135,7 @@ class FacturaController extends Controller
                 'iva_porcentaje' => floatval($validated['iva_porcentaje']),
                 'retencion_porcentaje' => floatval($validated['retencion_porcentaje'] ?? 0),
                 'notas' => $validated['notas'] ?? null,
+                'footer_text' => $validated['footer_text'] ?? Factura::DEFAULT_FOOTER_TEXT,
                 'estado' => 'borrador',
                 'base_imponible' => 0,
                 'iva_importe' => 0,
@@ -229,6 +232,7 @@ class FacturaController extends Controller
             'iva_porcentaje' => 'required|numeric|min:0|max:100',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'notas' => 'nullable|string',
+            'footer_text' => 'nullable|string|max:1000',
             'lineas' => 'required|array|min:1',
             'lineas.*.concepto' => 'required|string|max:255',
             'lineas.*.descripcion' => 'nullable|string',
@@ -240,6 +244,7 @@ class FacturaController extends Controller
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',
             'lineas.required' => 'Debe añadir al menos una línea a la factura.',
             'lineas.min' => 'Debe añadir al menos una línea a la factura.',
+            'footer_text.max' => 'El texto del pie de página no puede exceder 1000 caracteres.',
         ]);
 
         DB::beginTransaction();
@@ -256,6 +261,7 @@ class FacturaController extends Controller
                 'iva_porcentaje' => floatval($validated['iva_porcentaje']),
                 'retencion_porcentaje' => floatval($validated['retencion_porcentaje'] ?? 0),
                 'notas' => $validated['notas'] ?? null,
+                'footer_text' => $validated['footer_text'] ?? $factura->footer_text,
             ]);
 
             // Eliminar líneas existentes y recrear
@@ -371,11 +377,12 @@ class FacturaController extends Controller
     }
 
     /**
-     * Enviar factura por email al cliente.
+     * Enviar factura por email a uno o múltiples destinatarios.
      */
-    public function enviar(Factura $factura): JsonResponse
+    public function enviar(Request $request, Factura $factura): JsonResponse
     {
         try {
+            // Validar estado
             if ($factura->estado !== 'emitida') {
                 return response()->json([
                     'success' => false,
@@ -386,12 +393,26 @@ class FacturaController extends Controller
             // Cargar relaciones necesarias
             $factura->load(['cliente', 'obra', 'lineas']);
 
-            // Verificar email del cliente
-            $emailCliente = $factura->cliente->email_contacto ?? $factura->cliente->email;
-            if (!$emailCliente) {
+            // Validar emails recibidos
+            $validated = $request->validate([
+                'emails' => 'required|array|min:1|max:10',
+                'emails.*' => 'required|email|max:255',
+            ], [
+                'emails.required' => 'Debe seleccionar al menos un destinatario.',
+                'emails.min' => 'Debe seleccionar al menos un destinatario.',
+                'emails.max' => 'No puede enviar a más de 10 destinatarios a la vez.',
+                'emails.*.email' => 'Uno de los emails proporcionados no es válido.',
+            ]);
+
+            $emails = $validated['emails'];
+
+            // Eliminar duplicados (case-insensitive)
+            $emails = array_unique(array_map('strtolower', $emails));
+
+            if (empty($emails)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'El cliente no tiene email configurado. Configure un email en la ficha del cliente.',
+                    'message' => 'No se proporcionaron emails válidos.',
                 ], 400);
             }
 
@@ -401,64 +422,167 @@ class FacturaController extends Controller
                 $factura->refresh();
             }
 
-            // Enviar email con PDF adjunto
+            // Preparar asunto
             $asunto = "Factura {$factura->numero} - Manzer Agroforestal";
 
-            try {
-                Mail::to($emailCliente)->send(new FacturaEnviadaMail($factura));
+            // Enviar emails
+            $resultados = $this->enviarEmailsMultiples($factura, $emails, $asunto);
 
-                // Actualizar estado de la factura
-                $factura->update([
-                    'estado' => 'enviada',
-                    'email_enviado' => true,
-                    'email_enviado_at' => now(),
+            // Analizar resultados
+            $totalEnviados = count($resultados['exitosos']);
+            $totalFallidos = count($resultados['fallidos']);
+
+            // Actualizar estado de factura
+            $factura->update([
+                'estado' => 'enviada',
+                'email_enviado' => $totalEnviados > 0,
+                'email_enviado_at' => now(),
+            ]);
+
+            // Preparar mensaje de respuesta
+            if ($totalFallidos === 0) {
+                // Todo exitoso
+                return response()->json([
+                    'success' => true,
+                    'message' => "Factura enviada correctamente a {$totalEnviados} destinatario(s).",
+                    'detalles' => [
+                        'enviados' => $resultados['exitosos'],
+                        'total' => $totalEnviados,
+                    ],
+                    'factura' => $factura->fresh(),
                 ]);
+            } elseif ($totalEnviados > 0) {
+                // Parcialmente exitoso
+                return response()->json([
+                    'success' => true,
+                    'message' => "Factura enviada a {$totalEnviados} destinatario(s), pero falló en {$totalFallidos}.",
+                    'warning' => true,
+                    'detalles' => [
+                        'enviados' => $resultados['exitosos'],
+                        'fallidos' => $resultados['fallidos'],
+                    ],
+                    'factura' => $factura->fresh(),
+                ]);
+            } else {
+                // Todos fallaron
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se pudo enviar a ningún destinatario. Errores: " . implode(', ', array_column($resultados['fallidos'], 'error')),
+                    'detalles' => [
+                        'fallidos' => $resultados['fallidos'],
+                    ],
+                ], 500);
+            }
 
-                // Registrar en log de emails
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación: ' . implode(' ', $e->validator->errors()->all()),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error("Error enviando factura", [
+                'factura_id' => $factura->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error inesperado: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Enviar email a múltiples destinatarios con seguimiento individual
+     */
+    private function enviarEmailsMultiples(Factura $factura, array $emails, string $asunto): array
+    {
+        $exitosos = [];
+        $fallidos = [];
+
+        foreach ($emails as $email) {
+            try {
+                // Enviar usando Mail::to() - Laravel lo encola automáticamente por ShouldQueue
+                Mail::to($email)->send(new FacturaEnviadaMail($factura));
+
+                $exitosos[] = $email;
+
+                // Log individual exitoso
                 EmailLog::logEnviado(
                     EmailLog::TIPO_FACTURA,
-                    $emailCliente,
+                    $email,
                     $asunto,
                     $factura
                 );
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Factura enviada correctamente a {$emailCliente}",
-                    'factura' => $factura->fresh(),
-                ]);
-
             } catch (\Exception $mailError) {
-                // Registrar error en log
+                $fallidos[] = [
+                    'email' => $email,
+                    'error' => $mailError->getMessage(),
+                ];
+
+                // Log individual fallido
                 EmailLog::logFallido(
                     EmailLog::TIPO_FACTURA,
-                    $emailCliente,
+                    $email,
                     $asunto,
                     $mailError->getMessage(),
                     $factura
                 );
 
-                Log::error("Error enviando factura por email", [
+                Log::warning("Error enviando factura a email específico", [
                     'factura_id' => $factura->id,
-                    'email' => $emailCliente,
+                    'email' => $email,
                     'error' => $mailError->getMessage()
                 ]);
-
-                // Marcar como enviada pero informar del error de email
-                $factura->update(['estado' => 'enviada']);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Factura marcada como enviada, pero el email no pudo ser enviado: ' . $mailError->getMessage(),
-                    'email_error' => true,
-                    'factura' => $factura->fresh(),
-                ]);
             }
+        }
+
+        return [
+            'exitosos' => $exitosos,
+            'fallidos' => $fallidos,
+        ];
+    }
+
+    /**
+     * Obtener todos los emails disponibles de un cliente para envío de factura
+     */
+    public function getClienteEmails(Factura $factura): JsonResponse
+    {
+        try {
+            $factura->load('cliente.emailsAdicionalesActivos');
+
+            if (!$factura->cliente) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La factura no tiene cliente asociado.',
+                ], 404);
+            }
+
+            $emails = $factura->cliente->todos_emails;
+
+            if (empty($emails)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El cliente no tiene emails configurados.',
+                    'emails' => [],
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'emails' => $emails,
+                'cliente' => [
+                    'id' => $factura->cliente->id,
+                    'nombre' => $factura->cliente->nombre_comercial,
+                ],
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'Error obteniendo emails: ' . $e->getMessage(),
             ], 500);
         }
     }

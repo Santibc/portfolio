@@ -59,6 +59,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_auditoria',
             // Configuración
             'gestionar_configuracion',
+            // Documentos
+            'subir_documentos_maquinaria',
         ];
 
         foreach ($permisos as $permiso) {
@@ -81,13 +83,16 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
             'Encargado' => [
                 'ver_trabajadores', 'ver_cuadrillas', 'editar_cuadrillas',
-                'ver_obras', 'crear_obras',
+                'ver_obras',
                 'ver_fichajes', 'crear_fichajes', 'editar_fichajes',
                 'ver_partes', 'crear_partes', 'editar_partes',
-                'ver_maquinaria', 'ver_vehiculos', 'ver_epis', 'ver_formaciones',
-                'ver_subcontratas', 'ver_contratos',
-                'ver_finanzas', // Solo parcial (horas, maquinaria)
+                'ver_maquinaria', 'ver_vehiculos',
+                'ver_epis', 'crear_epis', 'editar_epis', 'eliminar_epis', // Acceso completo a EPIs
+                'ver_formaciones',
+                'ver_contratos',
+                'ver_finanzas', 'crear_finanzas', 'editar_finanzas', 'eliminar_finanzas', // Acceso completo a Gastos
                 'ver_alertas', 'ver_dashboard_encargado',
+                'subir_documentos_maquinaria', // Puede subir documentos de maquinaria
             ],
             'RRHH' => [
                 'ver_usuarios', 'ver_trabajadores', 'crear_trabajadores', 'editar_trabajadores', 'eliminar_trabajadores',

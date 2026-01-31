@@ -57,10 +57,11 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">Tipo <span class="text-danger">*</span></label>
-                                <select name="tipo" class="form-select @error('tipo') is-invalid @enderror" required>
+                                <select name="tipo" id="tipoSelect" class="form-select @error('tipo') is-invalid @enderror" required>
                                     <option value="prima_produccion" {{ old('tipo') == 'prima_produccion' ? 'selected' : '' }}>Prima Produccion</option>
                                     <option value="bono_especial" {{ old('tipo') == 'bono_especial' ? 'selected' : '' }}>Bono Especial</option>
                                     <option value="plus_nocturnidad" {{ old('tipo') == 'plus_nocturnidad' ? 'selected' : '' }}>Plus Nocturnidad</option>
+                                    <option value="horas" {{ old('tipo') == 'horas' ? 'selected' : '' }}>Horas</option>
                                     <option value="otro" {{ old('tipo') == 'otro' ? 'selected' : '' }}>Otro</option>
                                 </select>
                                 @error('tipo')
@@ -85,6 +86,18 @@
                                     <span class="input-group-text">€</span>
                                 </div>
                                 @error('importe')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4" id="horasWrapper" style="{{ old('tipo') == 'horas' ? '' : 'display: none;' }}">
+                                <label class="form-label">Horas</label>
+                                <div class="input-group">
+                                    <input type="number" name="horas" id="horasInput" class="form-control @error('horas') is-invalid @enderror"
+                                           step="0.01" min="0" max="999.99" value="{{ old('horas') }}" placeholder="0.00">
+                                    <span class="input-group-text">h</span>
+                                </div>
+                                @error('horas')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -134,6 +147,7 @@
                             <li><strong>Prima Produccion:</strong> Bono por rendimiento en produccion</li>
                             <li><strong>Bono Especial:</strong> Bonificaciones extraordinarias</li>
                             <li><strong>Plus Nocturnidad:</strong> Complemento por trabajo nocturno</li>
+                            <li><strong>Horas:</strong> Bono por horas trabajadas (ej. horas extras)</li>
                             <li><strong>Otro:</strong> Cualquier otro tipo de bono</li>
                         </ul>
                     </div>
@@ -161,6 +175,25 @@
     pagadoCheck.addEventListener('change', function() {
         fechaPagoWrapper.style.display = this.checked ? 'block' : 'none';
     });
+
+    // Toggle campo horas
+    const tipoSelect = document.getElementById('tipoSelect');
+    const horasWrapper = document.getElementById('horasWrapper');
+    const horasInput = document.getElementById('horasInput');
+
+    function toggleHorasField() {
+        if (tipoSelect.value === 'horas') {
+            horasWrapper.style.display = 'block';
+            horasInput.removeAttribute('disabled');
+        } else {
+            horasWrapper.style.display = 'none';
+            horasInput.setAttribute('disabled', 'disabled');
+        }
+    }
+
+    tipoSelect.addEventListener('change', toggleHorasField);
+    // Ejecutar al cargar si hay old() value
+    toggleHorasField();
 </script>
 @endpush
 @endsection

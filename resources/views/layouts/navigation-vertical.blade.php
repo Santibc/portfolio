@@ -120,7 +120,7 @@
         <div class="nav-section-title">Recursos Humanos</div>
 
         @can('ver_trabajadores')
-        <div class="nav-item {{ request()->routeIs('trabajadores.*') ? 'active' : '' }}">
+        <div class="nav-item {{ request()->routeIs('trabajadores.*') && !request()->routeIs('trabajadores.bonos.*') ? 'active' : '' }}">
             <a href="{{ route('trabajadores.index') }}" class="nav-link">
                 <i class="bi bi-people-fill"></i>
                 <span>Trabajadores</span>
@@ -174,7 +174,7 @@
             </a>
         </div>
 
-        @role('Administrador|RRHH')
+        @role('Administrador|RRHH|Encargado')
         <div class="nav-item {{ request()->routeIs('epi-catalogo.*') ? 'active' : '' }}">
             <a href="{{ route('epi-catalogo.index') }}" class="nav-link">
                 <i class="bi bi-list-check"></i>
@@ -271,6 +271,18 @@
         @endrole
     @endrole
 
+    {{-- GASTOS - Encargado --}}
+    @role('Encargado')
+        <div class="nav-section-title">Finanzas</div>
+
+        <div class="nav-item {{ request()->routeIs('gastos.*') ? 'active' : '' }}">
+            <a href="{{ route('gastos.index') }}" class="nav-link">
+                <i class="bi bi-arrow-up-circle"></i>
+                <span>Gastos</span>
+            </a>
+        </div>
+    @endrole
+
     @if($isAdmin)
         {{-- SECCIÓN ADMIN --}}
         <div class="nav-section-title">Administración</div>
@@ -288,6 +300,13 @@
             <a href="{{ route('admin.usuarios.index') }}" class="nav-link">
                 <i class="bi bi-people"></i>
                 <span>Usuarios</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('documentos-empresa.*') ? 'active' : '' }}">
+            <a href="{{ route('documentos-empresa.index') }}" class="nav-link">
+                <i class="bi bi-folder2"></i>
+                <span>Docs. Empresa</span>
             </a>
         </div>
 

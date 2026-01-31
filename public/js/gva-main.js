@@ -51,6 +51,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* =====================================================
+       AUTO-SCROLL SIDEBAR TO ACTIVE ITEM
+    ====================================================== */
+    const sidebarNav = document.querySelector(".sidebar-nav");
+    const activeItem = sidebarNav?.querySelector(".nav-item.active");
+
+    if (sidebarNav && activeItem) {
+        // Use setTimeout to ensure layout is complete
+        setTimeout(() => {
+            activeItem.scrollIntoView({
+                block: "center",
+                behavior: "instant"
+            });
+        }, 0);
+    }
+
+    /* =====================================================
        Cerrar sidebar móvil al hacer click fuera
     ====================================================== */
     document.addEventListener("click", function (e) {

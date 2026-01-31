@@ -73,7 +73,10 @@
       "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\app\\\\Mail\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\app\\\\Mail\")",
       "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\")",
       "Bash(cmd /c \"if not exist f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\app\\\\Mail mkdir f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\app\\\\Mail\")",
-      "Bash(cmd /c \"if not exist f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails mkdir f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\")"
+      "Bash(cmd /c \"if not exist f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails mkdir f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\")",
+      "Bash(del:*)",
+      "Bash(php check_users.php:*)",
+      "Bash(php verify_cleanup.php:*)"
     ],
     "deny": [],
     "ask": []

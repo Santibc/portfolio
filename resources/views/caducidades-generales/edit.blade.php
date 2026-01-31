@@ -101,9 +101,8 @@
                             <!-- Nuevo Documento -->
                             <div class="col-md-8">
                                 <label class="form-label">{{ $caducidadGeneral->documento_path ? 'Reemplazar Documento' : 'Documento' }}</label>
-                                <input type="file" name="documento" class="form-control @error('documento') is-invalid @enderror"
-                                       accept=".pdf,.jpg,.jpeg,.png">
-                                <small class="text-muted">PDF, JPG, PNG (máx. 10MB)</small>
+                                <input type="file" name="documento" class="form-control @error('documento') is-invalid @enderror">
+                                <small class="text-muted">Máximo 10MB.</small>
                                 @error('documento')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

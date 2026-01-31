@@ -87,11 +87,13 @@ class EncargadoDashboardService
             ->where('estado', 'completado')
             ->count();
 
-        // Producción de hoy (m²)
-        $produccionHoy = ParteDiario::whereIn('obra_id', $obrasIds)
-            ->where('fecha', today())
-            ->whereIn('estado', ['completado', 'validado'])
-            ->sum('desbroce_total_m2');
+        // Producción de hoy (total de todas las categorías)
+        $produccionHoy = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->where('partes_diarios.fecha', today())
+            ->whereIn('partes_diarios.estado', ['completado', 'validado'])
+            ->sum('parte_diario_producciones.cantidad');
 
         // Alertas no leídas de sus obras
         $alertasNoLeidas = $this->getAlertasCount();
@@ -179,79 +181,248 @@ class EncargadoDashboardService
     }
 
     /**
-     * Producción diaria (hoy) agregada de todas sus obras
+     * Producción agregada del período especificado
      */
-    public function getProduccionDiaria(): array
+    public function getProduccionDiaria(?Carbon $fechaDesde = null, ?Carbon $fechaHasta = null): array
     {
         $obrasIds = $this->getObrasIds();
 
         if ($obrasIds->isEmpty()) {
-            return $this->getProduccionVacia();
+            return $this->getProduccionVacia($fechaDesde, $fechaHasta);
         }
 
-        $hoy = today();
-        $ayer = today()->subDay();
+        // Fechas por defecto: hoy
+        $fechaDesde = $fechaDesde ?? today();
+        $fechaHasta = $fechaHasta ?? today();
 
-        // Producción de hoy
-        $produccionHoy = ParteDiario::whereIn('obra_id', $obrasIds)
-            ->where('fecha', $hoy)
+        // Fecha de comparación: mismo período anterior
+        $diasDiferencia = $fechaDesde->diffInDays($fechaHasta);
+        $fechaDesdeAnterior = $fechaDesde->copy()->subDays($diasDiferencia + 1);
+        $fechaHastaAnterior = $fechaDesde->copy()->subDay();
+
+        // Producción del período actual agrupada por categoría
+        $produccionActualPorCat = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Datos complementarios del período actual
+        $resumenActual = ParteDiario::whereIn('obra_id', $obrasIds)
+            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
             ->whereIn('estado', ['completado', 'validado', 'borrador'])
             ->select([
-                DB::raw('COALESCE(SUM(desbroce_total_m2), 0) as desbroce_m2'),
-                DB::raw('COALESCE(SUM(talas_unidades), 0) as talas'),
-                DB::raw('COALESCE(SUM(podas_unidades), 0) as podas'),
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
-                DB::raw('COUNT(*) as num_partes'),
+                DB::raw('COUNT(*) as num_partes')
             ])
             ->first();
 
-        // Producción de ayer (para comparación)
-        $produccionAyer = ParteDiario::whereIn('obra_id', $obrasIds)
-            ->where('fecha', $ayer)
-            ->whereIn('estado', ['completado', 'validado'])
+        // Producción del período anterior agrupada por categoría (para comparación)
+        $produccionAnteriorPorCat = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->whereIn('partes_diarios.estado', ['completado', 'validado'])
             ->select([
-                DB::raw('COALESCE(SUM(desbroce_total_m2), 0) as desbroce_m2'),
-                DB::raw('COALESCE(SUM(talas_unidades), 0) as talas'),
-                DB::raw('COALESCE(SUM(podas_unidades), 0) as podas'),
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
             ])
-            ->first();
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Obtener unidades por categoría desde los conceptos de producción usados en el período
+        $unidadesPorCategoria = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
+            ->distinct()
+            ->get()
+            ->pluck('unidad', 'categoria')
+            ->toArray();
+
+        // Construir categorías con datos
+        $categorias = [];
+        foreach ($produccionActualPorCat as $cat => $cantidad) {
+            $categorias[$cat] = [
+                'cantidad' => $cantidad,
+                'unidad' => $unidadesPorCategoria[$cat] ?? 'unidades',
+            ];
+        }
+
+        // Calcular variaciones para todas las categorías
+        $variaciones = [];
+        foreach ($produccionActualPorCat as $cat => $cantidadActual) {
+            $cantidadAnterior = $produccionAnteriorPorCat[$cat] ?? 0;
+            $variaciones[$cat] = $this->calcularVariacion($cantidadActual, $cantidadAnterior);
+        }
 
         return [
-            'hoy' => [
-                'desbroce_m2' => round($produccionHoy->desbroce_m2, 0),
-                'talas' => intval($produccionHoy->talas),
-                'podas' => intval($produccionHoy->podas),
-                'importe' => round($produccionHoy->importe, 2),
-                'num_partes' => $produccionHoy->num_partes,
+            'hoy' => [  // Mantener nombre 'hoy' para compatibilidad con widget
+                'categorias' => $categorias,
+                'importe' => round($resumenActual->importe, 2),
+                'num_partes' => $resumenActual->num_partes,
             ],
-            'variaciones' => [
-                'desbroce' => $this->calcularVariacion($produccionHoy->desbroce_m2, $produccionAyer->desbroce_m2),
-                'talas' => $this->calcularVariacion($produccionHoy->talas, $produccionAyer->talas),
-                'podas' => $this->calcularVariacion($produccionHoy->podas, $produccionAyer->podas),
-            ],
-            'fecha' => $hoy->format('d/m/Y'),
+            'variaciones' => $variaciones,
+            'fecha' => $fechaDesde->eq($fechaHasta)
+                ? $fechaDesde->format('d/m/Y')
+                : $fechaDesde->format('d/m/Y') . ' - ' . $fechaHasta->format('d/m/Y'),
         ];
     }
 
     /**
      * Producción vacía
      */
-    protected function getProduccionVacia(): array
+    protected function getProduccionVacia(?Carbon $fechaDesde = null, ?Carbon $fechaHasta = null): array
     {
+        $fechaDesde = $fechaDesde ?? today();
+        $fechaHasta = $fechaHasta ?? today();
+
         return [
             'hoy' => [
-                'desbroce_m2' => 0,
-                'talas' => 0,
-                'podas' => 0,
+                'categorias' => [],
                 'importe' => 0,
                 'num_partes' => 0,
             ],
-            'variaciones' => [
-                'desbroce' => ['valor' => 0, 'tipo' => 'neutral'],
-                'talas' => ['valor' => 0, 'tipo' => 'neutral'],
-                'podas' => ['valor' => 0, 'tipo' => 'neutral'],
-            ],
-            'fecha' => today()->format('d/m/Y'),
+            'variaciones' => [],
+            'fecha' => $fechaDesde->eq($fechaHasta)
+                ? $fechaDesde->format('d/m/Y')
+                : $fechaDesde->format('d/m/Y') . ' - ' . $fechaHasta->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Métricas de producción por estado (borrador, completado, validado)
+     */
+    public function getMetricasPorEstado(?Carbon $fechaDesde = null, ?Carbon $fechaHasta = null): array
+    {
+        $obrasIds = $this->getObrasIds();
+
+        if ($obrasIds->isEmpty()) {
+            return $this->getMetricasVacias();
+        }
+
+        $fechaDesde = $fechaDesde ?? today();
+        $fechaHasta = $fechaHasta ?? today();
+
+        // Producción PENDIENTE (borrador + completado)
+        $pendiente = $this->getProduccionPorEstados(
+            $obrasIds,
+            ['borrador', 'completado'],
+            $fechaDesde,
+            $fechaHasta
+        );
+
+        // Producción POR APROBAR (completado)
+        $porAprobar = $this->getProduccionPorEstados(
+            $obrasIds,
+            ['completado'],
+            $fechaDesde,
+            $fechaHasta
+        );
+
+        // Producción APROBADA (validado)
+        $aprobada = $this->getProduccionPorEstados(
+            $obrasIds,
+            ['validado'],
+            $fechaDesde,
+            $fechaHasta
+        );
+
+        return [
+            'pendiente' => $pendiente,
+            'por_aprobar' => $porAprobar,
+            'aprobada' => $aprobada,
+            'fecha_inicio' => $fechaDesde->format('d/m/Y'),
+            'fecha_fin' => $fechaHasta->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Helper: Obtener producción por estados específicos
+     */
+    protected function getProduccionPorEstados(
+        Collection $obrasIds,
+        array $estados,
+        Carbon $fechaDesde,
+        Carbon $fechaHasta
+    ): array {
+        // Producción agrupada por categoría
+        $produccionPorCat = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('partes_diarios.estado', $estados)
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Unidades por categoría
+        $unidadesPorCategoria = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.obra_id', $obrasIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('partes_diarios.estado', $estados)
+            ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
+            ->distinct()
+            ->get()
+            ->pluck('unidad', 'categoria')
+            ->toArray();
+
+        // Número de partes y total importe
+        $resumen = ParteDiario::whereIn('obra_id', $obrasIds)
+            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('estado', $estados)
+            ->select([
+                DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total'),
+                DB::raw('COUNT(*) as num_partes')
+            ])
+            ->first();
+
+        // Construir categorías con datos
+        $categorias = [];
+        foreach ($produccionPorCat as $cat => $cantidad) {
+            $categorias[$cat] = [
+                'cantidad' => $cantidad,
+                'unidad' => $unidadesPorCategoria[$cat] ?? 'unidades',
+            ];
+        }
+
+        return [
+            'categorias' => $categorias,
+            'importe_total' => round($resumen->importe_total, 2),
+            'num_partes' => $resumen->num_partes,
+        ];
+    }
+
+    /**
+     * Métricas vacías
+     */
+    protected function getMetricasVacias(): array
+    {
+        return [
+            'pendiente' => ['categorias' => [], 'importe_total' => 0, 'num_partes' => 0],
+            'por_aprobar' => ['categorias' => [], 'importe_total' => 0, 'num_partes' => 0],
+            'aprobada' => ['categorias' => [], 'importe_total' => 0, 'num_partes' => 0],
+            'fecha_inicio' => today()->format('d/m/Y'),
+            'fecha_fin' => today()->format('d/m/Y'),
         ];
     }
 

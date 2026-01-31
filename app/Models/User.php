@@ -31,6 +31,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo',
     ];
 
     /**
@@ -74,5 +75,25 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->hasRole('Administrador');
+    }
+
+    /**
+     * Obtener la URL de la foto de perfil
+     */
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        if ($this->profile_photo) {
+            return asset('uploads/profile-photos/' . $this->profile_photo);
+        }
+
+        return '';
+    }
+
+    /**
+     * Verificar si tiene foto de perfil
+     */
+    public function hasProfilePhoto(): bool
+    {
+        return !empty($this->profile_photo);
     }
 }

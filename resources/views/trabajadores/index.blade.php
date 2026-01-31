@@ -49,6 +49,7 @@
                 </div>
             </div>
         </div>
+        @unlessrole('Encargado')
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -79,6 +80,7 @@
                 </div>
             </div>
         </div>
+        @endunlessrole
     </div>
 
     <!-- Filtros -->
@@ -90,6 +92,7 @@
                     <input type="text" name="search" class="form-control"
                            placeholder="Nombre, apellidos o DNI..." value="{{ request('search') }}">
                 </div>
+                @unlessrole('Encargado')
                 <div class="col-md-2">
                     <label class="form-label">Tipo</label>
                     <select name="tipo_relacion" class="form-select">
@@ -98,6 +101,7 @@
                         <option value="subcontrata" {{ request('tipo_relacion') == 'subcontrata' ? 'selected' : '' }}>Subcontrata</option>
                     </select>
                 </div>
+                @endunlessrole
                 <div class="col-md-2">
                     <label class="form-label">Estado</label>
                     <select name="activo" class="form-select">
@@ -106,6 +110,7 @@
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                 </div>
+                @unlessrole('Encargado')
                 <div class="col-md-2">
                     <label class="form-label">Subcontrata</label>
                     <select name="subcontrata_id" class="form-select">
@@ -117,6 +122,7 @@
                         @endforeach
                     </select>
                 </div>
+                @endunlessrole
                 <div class="col-md-2">
                     <label class="form-label">Cuadrilla</label>
                     <select name="cuadrilla_id" class="form-select">
@@ -146,7 +152,9 @@
                         <tr>
                             <th class="ps-4">Trabajador</th>
                             <th>DNI</th>
+                            @unlessrole('Encargado')
                             <th>Tipo</th>
+                            @endunlessrole
                             <th>Cuadrilla</th>
                             <th>Contacto</th>
                             <th>Estado</th>
@@ -158,10 +166,17 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-{{ $trabajador->tipo_relacion === 'propio' ? 'primary' : 'warning' }} text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                                         style="width: 40px; height: 40px;">
-                                        {{ strtoupper(substr($trabajador->nombre, 0, 1)) }}{{ strtoupper(substr($trabajador->apellidos, 0, 1)) }}
-                                    </div>
+                                    @if($trabajador->hasProfilePhoto())
+                                        <img src="{{ $trabajador->profile_photo_url }}"
+                                             alt="{{ $trabajador->nombre_completo }}"
+                                             class="rounded-circle me-3"
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-{{ auth()->user()->hasRole('Encargado') ? 'secondary' : ($trabajador->tipo_relacion === 'propio' ? 'primary' : 'warning') }} text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                             style="width: 40px; height: 40px;">
+                                            {{ $trabajador->initials }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <h6 class="mb-0">{{ $trabajador->nombre_completo }}</h6>
                                         <small class="text-muted">{{ $trabajador->categoria_convenio ?? 'Sin categoría' }}</small>
@@ -169,6 +184,7 @@
                                 </div>
                             </td>
                             <td>{{ $trabajador->dni }}</td>
+                            @unlessrole('Encargado')
                             <td>
                                 @if($trabajador->tipo_relacion === 'propio')
                                     <span class="badge bg-primary-subtle text-primary">Propio</span>
@@ -178,6 +194,7 @@
                                     </span>
                                 @endif
                             </td>
+                            @endunlessrole
                             <td>
                                 @php $cuadrillaActual = $trabajador->cuadrillas->where('pivot.activo', true)->first(); @endphp
                                 @if($cuadrillaActual)
@@ -227,7 +244,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">
+                            <td colspan="{{ auth()->user()->hasRole('Encargado') ? '6' : '7' }}" class="text-center py-4 text-muted">
                                 No hay trabajadores que mostrar
                             </td>
                         </tr>
@@ -252,6 +269,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
+                        @unlessrole('Encargado')
                         <!-- Tipo de relación -->
                         <div class="col-md-6">
                             <label class="form-label">Tipo de Relación <span class="text-danger">*</span></label>
@@ -271,6 +289,9 @@
                                 @endforeach
                             </select>
                         </div>
+                        @else
+                        <input type="hidden" name="tipo_relacion" value="propio">
+                        @endunlessrole
 
                         <!-- Datos personales -->
                         <div class="col-12">
@@ -339,6 +360,7 @@
                             </select>
                         </div>
 
+                        @unlessrole('Encargado')
                         <!-- Datos económicos (solo para propios) -->
                         <div class="col-12" id="createDatosEconomicos">
                             <hr class="my-2">
@@ -376,6 +398,7 @@
                                 <span class="input-group-text">días</span>
                             </div>
                         </div>
+                        @endunlessrole
                     </div>
                 </div>
 
@@ -402,6 +425,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
+                        @unlessrole('Encargado')
                         <!-- Tipo de relación -->
                         <div class="col-md-6">
                             <label class="form-label">Tipo de Relación <span class="text-danger">*</span></label>
@@ -421,6 +445,7 @@
                                 @endforeach
                             </select>
                         </div>
+                        @endunlessrole
 
                         <!-- Datos personales -->
                         <div class="col-12">
@@ -489,6 +514,7 @@
                             </select>
                         </div>
 
+                        @unlessrole('Encargado')
                         <!-- Datos económicos -->
                         <div class="col-12" id="editDatosEconomicos">
                             <hr class="my-2">
@@ -526,6 +552,7 @@
                                 <span class="input-group-text">días</span>
                             </div>
                         </div>
+                        @endunlessrole
 
                         <!-- Estado -->
                         <div class="col-12">

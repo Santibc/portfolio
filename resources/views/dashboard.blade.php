@@ -22,8 +22,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <h5 class="mb-3">Bienvenido al Sistema</h5>
-                    <p class="text-muted">Este es un template base de Laravel 9 con autenticación y sistema de roles ya configurado.</p>
-                    <p class="text-muted">¡Comienza a construir tus funcionalidades aquí!</p>
+
                 </div>
             </div>
         </div>

@@ -427,21 +427,29 @@ class DashboardService
         $mes = $mes ?? now()->month;
         $anio = $anio ?? now()->year;
 
-        // Producción del mes actual
-        $produccion = ParteDiario::query()
+        // Producción del mes actual agrupada por categoría
+        $produccionPorCategoria = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereMonth('partes_diarios.fecha', $mes)
+            ->whereYear('partes_diarios.fecha', $anio)
+            ->whereIn('partes_diarios.estado', ['completado', 'validado'])
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Datos complementarios (importe y num partes)
+        $resumen = \App\Models\ParteDiario::query()
             ->whereMonth('fecha', $mes)
             ->whereYear('fecha', $anio)
             ->whereIn('estado', ['completado', 'validado'])
             ->select([
-                DB::raw('COALESCE(SUM(desbroce_total_m2), 0) as desbroce_m2'),
-                DB::raw('COALESCE(SUM(desbroce_p5_m2), 0) as desbroce_p5_m2'),
-                DB::raw('COALESCE(SUM(desbroce_p6_m2), 0) as desbroce_p6_m2'),
-                DB::raw('COALESCE(SUM(limpieza_p8_m2), 0) as limpieza_m2'),
-                DB::raw('COALESCE(SUM(herbicida_p4_m2), 0) as herbicida_m2'),
-                DB::raw('COALESCE(SUM(talas_unidades), 0) as talas'),
-                DB::raw('COALESCE(SUM(podas_unidades), 0) as podas'),
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total'),
-                DB::raw('COUNT(*) as num_partes'),
+                DB::raw('COUNT(*) as num_partes')
             ])
             ->first();
 
@@ -449,44 +457,72 @@ class DashboardService
         $mesAnterior = $mes == 1 ? 12 : $mes - 1;
         $anioAnterior = $mes == 1 ? $anio - 1 : $anio;
 
-        $produccionAnterior = ParteDiario::query()
+        // Producción del mes anterior agrupada por categoría
+        $produccionAnteriorCat = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereMonth('partes_diarios.fecha', $mesAnterior)
+            ->whereYear('partes_diarios.fecha', $anioAnterior)
+            ->whereIn('partes_diarios.estado', ['completado', 'validado'])
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Datos complementarios mes anterior
+        $resumenAnterior = \App\Models\ParteDiario::query()
             ->whereMonth('fecha', $mesAnterior)
             ->whereYear('fecha', $anioAnterior)
             ->whereIn('estado', ['completado', 'validado'])
             ->select([
-                DB::raw('COALESCE(SUM(desbroce_total_m2), 0) as desbroce_m2'),
-                DB::raw('COALESCE(SUM(talas_unidades), 0) as talas'),
-                DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total'),
+                DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total')
             ])
             ->first();
 
-        // Calcular variaciones
-        $variaciones = [
-            'desbroce' => $this->calcularVariacion($produccion->desbroce_m2, $produccionAnterior->desbroce_m2),
-            'talas' => $this->calcularVariacion($produccion->talas, $produccionAnterior->talas),
-            'importe' => $this->calcularVariacion($produccion->importe_total, $produccionAnterior->importe_total),
-        ];
+        // Obtener unidades por categoría desde los conceptos usados en el mes
+        $unidadesPorCategoria = \App\Models\ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereMonth('partes_diarios.fecha', $mes)
+            ->whereYear('partes_diarios.fecha', $anio)
+            ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
+            ->distinct()
+            ->get()
+            ->pluck('unidad', 'categoria')
+            ->toArray();
+
+        // Construir categorías con datos (mostrar todas)
+        $categorias = [];
+        foreach ($produccionPorCategoria as $cat => $cantidad) {
+            $categorias[$cat] = [
+                'cantidad' => $cantidad,
+                'unidad' => $unidadesPorCategoria[$cat] ?? 'unidades',
+            ];
+        }
+
+        // Calcular variaciones para todas las categorías
+        $variaciones = [];
+        foreach ($produccionPorCategoria as $cat => $cantidadActual) {
+            $cantidadAnterior = $produccionAnteriorCat[$cat] ?? 0;
+            $variaciones[$cat] = $this->calcularVariacion($cantidadActual, $cantidadAnterior);
+        }
+        $variaciones['importe'] = $this->calcularVariacion($resumen->importe_total, $resumenAnterior->importe_total);
 
         return [
             'actual' => [
-                'desbroce_m2' => round($produccion->desbroce_m2, 0),
-                'desbroce_p5_m2' => round($produccion->desbroce_p5_m2, 0),
-                'desbroce_p6_m2' => round($produccion->desbroce_p6_m2, 0),
-                'limpieza_m2' => round($produccion->limpieza_m2, 0),
-                'herbicida_m2' => round($produccion->herbicida_m2, 0),
-                'talas' => intval($produccion->talas),
-                'podas' => intval($produccion->podas),
-                'importe_total' => round($produccion->importe_total, 2),
-                'num_partes' => $produccion->num_partes,
+                'categorias' => $categorias,
+                'importe_total' => round($resumen->importe_total, 2),
+                'num_partes' => $resumen->num_partes,
             ],
             'anterior' => [
-                'desbroce_m2' => round($produccionAnterior->desbroce_m2, 0),
-                'talas' => intval($produccionAnterior->talas),
-                'importe_total' => round($produccionAnterior->importe_total, 2),
+                'importe_total' => round($resumenAnterior->importe_total, 2),
             ],
             'variaciones' => $variaciones,
-            'periodo' => Carbon::createFromDate($anio, $mes, 1)->translatedFormat('F Y'),
-            'periodo_anterior' => Carbon::createFromDate($anioAnterior, $mesAnterior, 1)->translatedFormat('F Y'),
+            'periodo' => \Carbon\Carbon::createFromDate($anio, $mes, 1)->translatedFormat('F Y'),
+            'periodo_anterior' => \Carbon\Carbon::createFromDate($anioAnterior, $mesAnterior, 1)->translatedFormat('F Y'),
         ];
     }
 

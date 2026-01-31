@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Trabajador;
 use App\Http\Controllers\Controller;
 use App\Models\Trabajador;
 use App\Services\TrabajadorDashboardService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -39,13 +40,21 @@ class DashboardController extends Controller
     /**
      * Vista principal del portal del trabajador
      */
-    public function index()
+    public function index(Request $request)
     {
         $kpis = $this->dashboardService->getKpis();
         $trabajador = $this->dashboardService->getTrabajador();
         $fichajeAbierto = $this->dashboardService->getFichajeAbiertoHoy();
 
-        return view('trabajador.dashboard.index', compact('kpis', 'trabajador', 'fichajeAbierto'));
+        // Parsear fechas desde request
+        $fechaDesde = $request->filled('fecha_desde')
+            ? Carbon::parse($request->fecha_desde)
+            : null;
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? Carbon::parse($request->fecha_hasta)
+            : null;
+
+        return view('trabajador.dashboard.index', compact('kpis', 'trabajador', 'fichajeAbierto', 'fechaDesde', 'fechaHasta'));
     }
 
     /**
@@ -136,5 +145,21 @@ class DashboardController extends Controller
     {
         $limite = $request->integer('limite', 10);
         return response()->json($this->dashboardService->getMisAlertas($limite));
+    }
+
+    /**
+     * API: Producción diaria
+     */
+    public function getProduccionDiaria(Request $request): JsonResponse
+    {
+        $fechaDesde = $request->filled('fecha_desde')
+            ? Carbon::parse($request->fecha_desde)
+            : null;
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? Carbon::parse($request->fecha_hasta)
+            : null;
+
+        $produccion = $this->dashboardService->getProduccionDiaria($fechaDesde, $fechaHasta);
+        return response()->json($produccion);
     }
 }

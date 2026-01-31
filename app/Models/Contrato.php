@@ -430,8 +430,11 @@ class Contrato extends Model
             'user_id' => auth()->id(),
         ]);
 
+        // Guardar valores anteriores para auditoría
+        $porcentajeAnterior = intval($this->porcentaje_total_liberado ?? 0);
+
         // Actualizar totales en contrato
-        $nuevoTotal = intval($this->porcentaje_total_liberado ?? 0) + $porcentaje;
+        $nuevoTotal = $porcentajeAnterior + $porcentaje;
         $nuevoImporte = floatval($this->importe_total_liberado ?? 0) + $importeALiberar;
 
         // Determinar nuevo estado
@@ -454,11 +457,11 @@ class Contrato extends Model
 
         // Registrar en auditoría
         Auditoria::registrar(
-            'liberar_garantia_parcial',
+            'editar',
             'contratos',
             $this->id,
-            ['porcentaje_anterior' => intval($this->porcentaje_total_liberado ?? 0) - $porcentaje],
-            ['liberacion_id' => $liberacion->id, 'porcentaje_nuevo' => $nuevoTotal]
+            ['porcentaje_anterior' => $porcentajeAnterior, 'accion_detalle' => 'liberar_garantia_parcial'],
+            ['liberacion_id' => $liberacion->id, 'porcentaje_nuevo' => $nuevoTotal, 'porcentaje_liberado' => $porcentaje]
         );
 
         return true;

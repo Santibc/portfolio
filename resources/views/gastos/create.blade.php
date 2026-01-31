@@ -228,12 +228,11 @@
                             {{-- Documento --}}
                             <div class="col-12">
                                 <label for="documento" class="form-label">Documento/Factura</label>
-                                <input type="file" name="documento" id="documento" class="form-control @error('documento') is-invalid @enderror"
-                                       accept=".pdf,.jpg,.jpeg,.png">
+                                <input type="file" name="documento" id="documento" class="form-control @error('documento') is-invalid @enderror">
                                 @error('documento')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">Formatos: PDF, JPG, PNG. Máximo 5MB.</small>
+                                <small class="text-muted">Máximo 5MB.</small>
                             </div>
 
                             {{-- Notas --}}

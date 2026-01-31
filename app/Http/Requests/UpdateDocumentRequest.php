@@ -16,7 +16,7 @@ class UpdateDocumentRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:5000',
-            'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:51200', // 50MB max
+            'file' => 'nullable|file|max:51200', // 50MB max
             'order' => 'nullable|integer|min:0',
         ];
     }
@@ -28,7 +28,6 @@ class UpdateDocumentRequest extends FormRequest
             'title.max' => 'El título no puede exceder los 255 caracteres.',
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
             'file.file' => 'Debe subir un archivo válido.',
-            'file.mimes' => 'El archivo debe ser de tipo: PDF, Word, Excel o PowerPoint.',
             'file.max' => 'El archivo no puede superar los 50MB.',
         ];
     }

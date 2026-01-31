@@ -206,6 +206,12 @@
                                 <span class="badge bg-info ms-1">{{ $epiInventario->revisiones->count() }}</span>
                             </button>
                         </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documentos" type="button">
+                                <i class="bi bi-file-earmark me-2"></i>Documentos
+                                <span class="badge bg-secondary ms-1">{{ $epiInventario->documentos->count() }}</span>
+                            </button>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
@@ -327,6 +333,82 @@
                                 @endif
                             </div>
                             @endif
+                        </div>
+
+                        <!-- Tab Documentos -->
+                        <div class="tab-pane" id="documentos" role="tabpanel">
+                            @if($epiInventario->documentos->count() > 0)
+                            <div class="table-responsive mb-4">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Documento</th>
+                                            <th>Subido por</th>
+                                            <th>Fecha</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($epiInventario->documentos->sortByDesc('created_at') as $documento)
+                                        <tr>
+                                            <td>
+                                                <a href="{{ asset($documento->archivo_path) }}" target="_blank" class="text-decoration-none">
+                                                    <i class="bi bi-file-earmark me-1"></i>{{ $documento->nombre }}
+                                                </a>
+                                            </td>
+                                            <td>{{ $documento->subidoPor->name ?? '-' }}</td>
+                                            <td>{{ $documento->created_at->format('d/m/Y H:i') }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ asset($documento->archivo_path) }}" target="_blank" class="btn btn-sm btn-outline-info me-1">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                @can('editar_epis')
+                                                <form action="{{ route('epi-inventario.documentos.destroy', [$epiInventario, $documento]) }}" method="POST" class="d-inline delete-documento-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-documento">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                                @endcan
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            @else
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-file-earmark fs-1 d-block mb-2"></i>
+                                <p class="mb-0">No hay documentos subidos</p>
+                            </div>
+                            @endif
+
+                            <!-- Formulario subir documento -->
+                            @can('editar_epis')
+                            <div class="card bg-light border-0 mt-3">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3"><i class="bi bi-upload me-2"></i>Subir Documento</h6>
+                                    <form action="{{ route('epi-inventario.documentos.store', $epiInventario) }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="row g-2">
+                                            <div class="col-md-5">
+                                                <input type="text" name="nombre" class="form-control" placeholder="Nombre del documento" required>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <input type="file" name="archivo" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="bi bi-upload me-1"></i>Subir
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">Máximo 10MB.</small>
+                                    </form>
+                                </div>
+                            </div>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -485,8 +567,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Documento (opcional)</label>
-                        <input type="file" name="documento" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                        <small class="text-muted">PDF, JPG o PNG. Max 10MB</small>
+                        <input type="file" name="documento" class="form-control">
+                        <small class="text-muted">Máximo 10MB.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -633,6 +715,27 @@ function confirmarBaja() {
         }
     });
 }
+
+// Eliminar documento con confirmacion
+document.querySelectorAll('.btn-delete-documento').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const form = this.closest('.delete-documento-form');
+        Swal.fire({
+            title: 'Eliminar documento?',
+            text: 'Esta accion no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Si, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
 </script>
 @endpush
 @endsection

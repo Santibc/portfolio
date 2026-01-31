@@ -103,7 +103,9 @@
                         <h5 class="card-title mb-0">
                             <i class="bi bi-bar-chart me-2"></i>Producción del Día
                         </h5>
-                        <span class="badge bg-primary" id="totalImporteLabel">0.00 €</span>
+                        @unless(auth()->user()->hasRole('Encargado'))
+                            <span class="badge bg-primary" id="totalImporteLabel">0.00 €</span>
+                        @endunless
                     </div>
                     <div class="card-body">
                         <div id="produccionContainer">
@@ -125,9 +127,13 @@
                                                 <th style="width: 80px">Código</th>
                                                 <th>Concepto</th>
                                                 <th style="width: 100px">Unidad</th>
-                                                <th style="width: 120px" class="text-end">Precio Unit.</th>
+                                                @unless(auth()->user()->hasRole('Encargado'))
+                                                    <th style="width: 120px" class="text-end">Precio Unit.</th>
+                                                @endunless
                                                 <th style="width: 120px">Cantidad</th>
-                                                <th style="width: 120px" class="text-end">Importe</th>
+                                                @unless(auth()->user()->hasRole('Encargado'))
+                                                    <th style="width: 120px" class="text-end">Importe</th>
+                                                @endunless
                                             </tr>
                                         </thead>
                                         <tbody id="conceptosTableBody">
@@ -135,8 +141,12 @@
                                         </tbody>
                                         <tfoot class="table-light">
                                             <tr>
-                                                <th colspan="5" class="text-end">Total:</th>
-                                                <th class="text-end" id="totalImporte">0.00 €</th>
+                                                @unless(auth()->user()->hasRole('Encargado'))
+                                                    <th colspan="5" class="text-end">Total:</th>
+                                                    <th class="text-end" id="totalImporte">0.00 €</th>
+                                                @else
+                                                    <th colspan="3" class="text-end">Producción Registrada</th>
+                                                @endunless
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -234,6 +244,9 @@
 
 @push('scripts')
 <script>
+    // Check if user can view prices (not Encargado role)
+    const canViewPrices = @json(!auth()->user()->hasRole('Encargado'));
+
     const obraSelect = document.getElementById('obraSelect');
     const noObraSelected = document.getElementById('noObraSelected');
     const noConceptos = document.getElementById('noConceptos');
@@ -285,7 +298,7 @@
                         <input type="hidden" name="producciones[${index}][concepto_id]" value="${concepto.id}">
                     </td>
                     <td><span class="badge bg-secondary-subtle text-secondary">${concepto.unidad}</span></td>
-                    <td class="text-end">${formatCurrency(concepto.precio_unitario)}</td>
+                    ${canViewPrices ? `<td class="text-end">${formatCurrency(concepto.precio_unitario)}</td>` : ''}
                     <td>
                         <input type="number"
                                name="producciones[${index}][cantidad]"
@@ -296,7 +309,7 @@
                                data-precio="${concepto.precio_unitario}"
                                data-row="${index}">
                     </td>
-                    <td class="text-end fw-semibold importe-cell" id="importe-${index}">0.00 €</td>
+                    ${canViewPrices ? `<td class="text-end fw-semibold importe-cell" id="importe-${index}">0.00 €</td>` : ''}
                 `;
                 conceptosTableBody.appendChild(row);
             });
@@ -324,7 +337,11 @@
         const row = input.dataset.row;
         const importe = cantidad * precio;
 
-        document.getElementById(`importe-${row}`).textContent = formatCurrency(importe);
+        // Only update display if element exists (not Encargado role)
+        const importeEl = document.getElementById(`importe-${row}`);
+        if (importeEl) {
+            importeEl.textContent = formatCurrency(importe);
+        }
     }
 
     function updateTotals() {
@@ -335,17 +352,20 @@
             total += cantidad * precio;
         });
 
-        const formattedTotal = formatCurrency(total);
-        totalImporte.textContent = formattedTotal;
-        totalImporteLabel.textContent = formattedTotal;
+        // Only update display elements if they exist (not Encargado role)
+        if (totalImporte && totalImporteLabel) {
+            const formattedTotal = formatCurrency(total);
+            totalImporte.textContent = formattedTotal;
+            totalImporteLabel.textContent = formattedTotal;
 
-        // Color coding
-        if (total > 0) {
-            totalImporteLabel.classList.remove('bg-primary');
-            totalImporteLabel.classList.add('bg-success');
-        } else {
-            totalImporteLabel.classList.remove('bg-success');
-            totalImporteLabel.classList.add('bg-primary');
+            // Color coding
+            if (total > 0) {
+                totalImporteLabel.classList.remove('bg-primary');
+                totalImporteLabel.classList.add('bg-success');
+            } else {
+                totalImporteLabel.classList.remove('bg-success');
+                totalImporteLabel.classList.add('bg-primary');
+            }
         }
     }
 

@@ -21,6 +21,7 @@ class TrabajadorBono extends Model
         'concepto',
         'fecha',
         'importe',
+        'horas',
         'pagado',
         'fecha_pago',
         'notas',
@@ -31,6 +32,7 @@ class TrabajadorBono extends Model
         'fecha' => 'date',
         'fecha_pago' => 'date',
         'importe' => 'decimal:2',
+        'horas' => 'decimal:2',
         'pagado' => 'boolean',
         'created_at' => 'datetime',
     ];
@@ -94,6 +96,7 @@ class TrabajadorBono extends Model
             'prima_produccion' => 'Prima por Producción',
             'bono_especial' => 'Bono Especial',
             'plus_nocturnidad' => 'Plus Nocturnidad',
+            'horas' => 'Horas',
             'otro' => 'Otro',
         ];
 
@@ -103,6 +106,14 @@ class TrabajadorBono extends Model
     public function getEstadoPagoAttribute(): string
     {
         return $this->pagado ? 'Pagado' : 'Pendiente';
+    }
+
+    public function getHorasFormateadasAttribute(): string
+    {
+        if ($this->horas) {
+            return number_format($this->horas, 2, ',', '.') . ' h';
+        }
+        return '';
     }
 
     // Métodos helper

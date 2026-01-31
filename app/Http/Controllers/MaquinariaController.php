@@ -8,6 +8,7 @@ use App\Models\MaquinariaAsignacion;
 use App\Models\MaquinariaInspeccion;
 use App\Models\MaquinariaInspeccionItem;
 use App\Models\MaquinariaMantenimiento;
+use App\Models\MaquinariaDocumento;
 use App\Models\MaquinariaChecklistPlantilla;
 use App\Models\Obra;
 use App\Models\Trabajador;
@@ -144,6 +145,7 @@ class MaquinariaController extends Controller
             'inspecciones.plantilla',
             'inspecciones.realizadoPor',
             'mantenimientos',
+            'documentos.subidoPor',
         ]);
 
         // Plantillas de checklist disponibles para este tipo
@@ -457,7 +459,7 @@ class MaquinariaController extends Controller
             'proveedor' => 'nullable|string|max:255',
             'realizado_por' => 'nullable|string|max:255',
             'proxima_revision' => 'nullable|date|after:fecha',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento' => 'nullable|file|max:10240',
         ], [
             'tipo.required' => 'Debe seleccionar el tipo de mantenimiento.',
             'fecha.required' => 'La fecha es obligatoria.',
@@ -508,6 +510,54 @@ class MaquinariaController extends Controller
 
         return redirect()->route('maquinaria.show', $maquinaria)
             ->with('success', 'Mantenimiento eliminado.');
+    }
+
+    // =============================================
+    // DOCUMENTOS
+    // =============================================
+
+    public function storeDocumento(Request $request, Maquinaria $maquinaria)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'archivo' => 'required|file|max:10240',
+        ], [
+            'nombre.required' => 'El nombre del documento es obligatorio.',
+            'archivo.required' => 'Debe subir un archivo.',
+            'archivo.max' => 'El archivo no puede superar los 10MB.',
+        ]);
+
+        $archivo = $request->file('archivo');
+        $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+        $rutaCarpeta = 'uploads/maquinaria/' . $maquinaria->id . '/documentos';
+
+        if (!file_exists(public_path($rutaCarpeta))) {
+            mkdir(public_path($rutaCarpeta), 0755, true);
+        }
+
+        $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
+
+        MaquinariaDocumento::create([
+            'maquinaria_id' => $maquinaria->id,
+            'nombre' => $validated['nombre'],
+            'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
+            'subido_por' => auth()->id(),
+        ]);
+
+        return redirect()->route('maquinaria.show', $maquinaria)
+            ->with('success', 'Documento subido exitosamente.');
+    }
+
+    public function destroyDocumento(Maquinaria $maquinaria, MaquinariaDocumento $documento)
+    {
+        if ($documento->archivo_path && file_exists(public_path($documento->archivo_path))) {
+            unlink(public_path($documento->archivo_path));
+        }
+
+        $documento->delete();
+
+        return redirect()->route('maquinaria.show', $maquinaria)
+            ->with('success', 'Documento eliminado.');
     }
 
     // =============================================

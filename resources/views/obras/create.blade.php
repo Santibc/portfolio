@@ -193,6 +193,28 @@
                     </div>
                 </div>
 
+                <!-- Rango Facturación -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0"><i class="bi bi-receipt me-2"></i>Rango de Facturación</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Fecha Inicio Facturación</label>
+                                <input type="date" name="fecha_facturacion_inicio" class="form-control"
+                                       value="{{ old('fecha_facturacion_inicio') }}">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Fecha Fin Facturación</label>
+                                <input type="date" name="fecha_facturacion_fin" class="form-control"
+                                       value="{{ old('fecha_facturacion_fin') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Economía -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-transparent">
