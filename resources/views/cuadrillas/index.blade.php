@@ -90,7 +90,7 @@
 
 {{-- Modal Crear Cuadrilla --}}
 <x-manzer.modal id="createCuadrillaModal" title="Nueva Cuadrilla">
-    <form action="{{ route('cuadrillas.store') }}" method="POST">
+    <form action="{{ route('cuadrillas.store') }}" method="POST" id="createCuadrillaForm">
         @csrf
         <x-manzer.form-group
             label="Nombre"
@@ -119,14 +119,14 @@
             placeholder="Descripción opcional..."
             :rows="3"
         />
-
-        <x-slot name="footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <x-manzer.button type="submit" variant="primary" icon="bi bi-check-lg">
-                Crear Cuadrilla
-            </x-manzer.button>
-        </x-slot>
     </form>
+
+    <x-slot name="footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <x-manzer.button type="submit" variant="primary" icon="bi bi-check-lg" form="createCuadrillaForm">
+            Crear Cuadrilla
+        </x-manzer.button>
+    </x-slot>
 </x-manzer.modal>
 
 {{-- Modal Editar Cuadrilla --}}
