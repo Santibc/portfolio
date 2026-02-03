@@ -44,20 +44,27 @@
 <body>
     {{-- Header --}}
     <header class="dashboard-header">
-        <div class="header-container">
+        <div class="header-container" style="position: relative;">
             <div class="header-left">
-                <div class="nav-logo">
-                    <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 32px; margin-right: 8px;"> Manzer
-                </div>
                 <button class="sidebar-toggle" id="sidebarToggle">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
 
+            <div class="nav-logo" style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center;">
+                <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 32px; margin-right: 8px;"> Manzer Agroforestal
+            </div>
+
             <div class="header-right">
                 <div class="user-menu">
                     <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                        @if(Auth::user()->hasProfilePhoto())
+                            <img src="{{ Auth::user()->profile_photo_url }}"
+                                 alt="Foto de perfil"
+                                 style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user"></i>
+                        @endif
                     </div>
                     <div class="user-info">
                         <span class="user-name">{{ Auth::user()->name }}</span>

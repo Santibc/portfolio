@@ -72,6 +72,11 @@ class Maquinaria extends Model
         return $this->hasMany(MaquinariaMantenimiento::class);
     }
 
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(MaquinariaDocumento::class);
+    }
+
     // Accessors
     public function getNombreCompletoAttribute(): string
     {

@@ -11,8 +11,11 @@ use App\Models\TrabajadorBono;
 use App\Models\PrimaTrabajador;
 use App\Models\Alerta;
 use App\Models\DocumentoLectura;
+use App\Models\ParteDiario;
+use App\Models\ParteDiarioProduccion;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class TrabajadorDashboardService
 {
@@ -466,6 +469,183 @@ class TrabajadorDashboardService
                     'leida' => $alerta->leida,
                 ];
             });
+    }
+
+    /**
+     * Producción diaria del trabajador (de partes donde está asignado)
+     */
+    public function getProduccionDiaria(?Carbon $fechaDesde = null, ?Carbon $fechaHasta = null): array
+    {
+        if (!$this->trabajador) {
+            return $this->getProduccionVacia($fechaDesde, $fechaHasta);
+        }
+
+        // Fechas por defecto: hoy
+        $fechaDesde = $fechaDesde ?? today();
+        $fechaHasta = $fechaHasta ?? today();
+
+        // Obtener IDs de partes diarios donde el trabajador está asignado en el período
+        $partesDiariosIds = \App\Models\ParteDiarioTrabajador::where('trabajador_id', $this->trabajadorId)
+            ->pluck('parte_diario_id');
+
+        if ($partesDiariosIds->isEmpty()) {
+            return $this->getProduccionVacia($fechaDesde, $fechaHasta);
+        }
+
+        // Fecha de comparación: mismo período anterior
+        $diasDiferencia = $fechaDesde->diffInDays($fechaHasta);
+        $fechaDesdeAnterior = $fechaDesde->copy()->subDays($diasDiferencia + 1);
+        $fechaHastaAnterior = $fechaDesde->copy()->subDay();
+
+        // Producción del período actual agrupada por categoría
+        $produccionActualPorCat = ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.id', $partesDiariosIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Producción del período anterior para variaciones
+        $produccionAnteriorPorCat = ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.id', $partesDiariosIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
+            ->select([
+                'obra_conceptos_produccion.categoria',
+                DB::raw('SUM(parte_diario_producciones.cantidad) as total')
+            ])
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Unidades por categoría
+        $unidadesPorCategoria = ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereIn('partes_diarios.id', $partesDiariosIds)
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
+            ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
+            ->distinct()
+            ->get()
+            ->pluck('unidad', 'categoria')
+            ->toArray();
+
+        // Resumen actual (importe y num partes)
+        $resumenActual = ParteDiario::whereIn('id', $partesDiariosIds)
+            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->whereIn('estado', ['completado', 'validado', 'borrador'])
+            ->select([
+                DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
+                DB::raw('COUNT(*) as num_partes')
+            ])
+            ->first();
+
+        // Resumen anterior para variación de importe
+        $resumenAnterior = ParteDiario::whereIn('id', $partesDiariosIds)
+            ->whereBetween('fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->whereIn('estado', ['completado', 'validado', 'borrador'])
+            ->select([
+                DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
+            ])
+            ->first();
+
+        // Construir categorías con datos
+        $categorias = [];
+        foreach ($produccionActualPorCat as $cat => $cantidad) {
+            $categorias[$cat] = [
+                'cantidad' => $cantidad,
+                'unidad' => $unidadesPorCategoria[$cat] ?? 'unidades',
+            ];
+        }
+
+        // Calcular variaciones
+        $variaciones = [];
+        foreach ($produccionActualPorCat as $cat => $cantidadActual) {
+            $cantidadAnterior = $produccionAnteriorPorCat[$cat] ?? 0;
+            $variaciones[$cat] = $this->calcularVariacion($cantidadActual, $cantidadAnterior);
+        }
+
+        // Variación de importe
+        $variaciones['importe'] = $this->calcularVariacion(
+            $resumenActual->importe ?? 0,
+            $resumenAnterior->importe ?? 0
+        );
+
+        return [
+            'hoy' => [
+                'categorias' => $categorias,
+                'importe' => round($resumenActual->importe ?? 0, 2),
+                'num_partes' => $resumenActual->num_partes ?? 0,
+            ],
+            'variaciones' => $variaciones,
+            'fecha' => $fechaDesde->eq($fechaHasta)
+                ? $fechaDesde->format('d/m/Y')
+                : $fechaDesde->format('d/m/Y') . ' - ' . $fechaHasta->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Obtener IDs de obras donde el trabajador ha fichado
+     */
+    protected function getObrasIdsDondeFicho(): Collection
+    {
+        if (!$this->trabajador) {
+            return collect();
+        }
+
+        return Fichaje::where('trabajador_id', $this->trabajadorId)
+            ->whereNotNull('obra_id')
+            ->distinct()
+            ->pluck('obra_id');
+    }
+
+    /**
+     * Estructura vacía de producción
+     */
+    protected function getProduccionVacia(?Carbon $fechaDesde = null, ?Carbon $fechaHasta = null): array
+    {
+        $fechaDesde = $fechaDesde ?? today();
+        $fechaHasta = $fechaHasta ?? today();
+
+        return [
+            'hoy' => [
+                'categorias' => [],
+                'importe' => 0,
+                'num_partes' => 0,
+            ],
+            'variaciones' => [],
+            'fecha' => $fechaDesde->eq($fechaHasta)
+                ? $fechaDesde->format('d/m/Y')
+                : $fechaDesde->format('d/m/Y') . ' - ' . $fechaHasta->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Calcular variación porcentual
+     */
+    protected function calcularVariacion(float $actual, float $anterior): array
+    {
+        if ($anterior == 0) {
+            return ['valor' => 0, 'tipo' => 'neutral'];
+        }
+
+        $porcentaje = (($actual - $anterior) / $anterior) * 100;
+        $tipo = $porcentaje > 0 ? 'positive' : ($porcentaje < 0 ? 'negative' : 'neutral');
+
+        return [
+            'valor' => round(abs($porcentaje), 1),
+            'tipo' => $tipo,
+        ];
     }
 
     // ==========================================

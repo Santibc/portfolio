@@ -119,6 +119,8 @@ class ObraController extends Controller
             'distrito' => 'nullable|string|max:100',
             'fecha_inicio_prevista' => 'nullable|date',
             'fecha_fin_prevista' => 'nullable|date|after_or_equal:fecha_inicio_prevista',
+            'fecha_facturacion_inicio' => 'nullable|date',
+            'fecha_facturacion_fin' => 'nullable|date|after_or_equal:fecha_facturacion_inicio',
             'presupuesto' => 'nullable|numeric|min:0',
             'coste_estimado' => 'nullable|numeric|min:0',
             'riesgo_operativo' => 'nullable|in:bajo,medio,alto',
@@ -141,7 +143,8 @@ class ObraController extends Controller
         $nullableFields = [
             'coordenadas_lat', 'coordenadas_lng', 'presupuesto', 'coste_estimado',
             'importe_penalizacion_prevista', 'obra_tipo_id', 'encargado_id',
-            'fecha_inicio_prevista', 'fecha_fin_prevista'
+            'fecha_inicio_prevista', 'fecha_fin_prevista',
+            'fecha_facturacion_inicio', 'fecha_facturacion_fin'
         ];
         foreach ($nullableFields as $field) {
             if (array_key_exists($field, $validated) && $validated[$field] === '') {
@@ -281,6 +284,8 @@ class ObraController extends Controller
                 'fecha_fin_prevista' => $obra->fecha_fin_prevista?->format('Y-m-d'),
                 'fecha_inicio_real' => $obra->fecha_inicio_real?->format('Y-m-d'),
                 'fecha_fin_real' => $obra->fecha_fin_real?->format('Y-m-d'),
+                'fecha_facturacion_inicio' => $obra->fecha_facturacion_inicio?->format('Y-m-d'),
+                'fecha_facturacion_fin' => $obra->fecha_facturacion_fin?->format('Y-m-d'),
                 'presupuesto' => $obra->presupuesto,
                 'coste_estimado' => $obra->coste_estimado,
                 'estado' => $obra->estado,
@@ -333,6 +338,8 @@ class ObraController extends Controller
             'fecha_fin_prevista' => 'nullable|date|after_or_equal:fecha_inicio_prevista',
             'fecha_inicio_real' => 'nullable|date',
             'fecha_fin_real' => 'nullable|date|after_or_equal:fecha_inicio_real',
+            'fecha_facturacion_inicio' => 'nullable|date',
+            'fecha_facturacion_fin' => 'nullable|date|after_or_equal:fecha_facturacion_inicio',
             'presupuesto' => 'nullable|numeric|min:0',
             'coste_estimado' => 'nullable|numeric|min:0',
             'estado' => 'required|in:presentada,aprobada,en_curso,pausada,finalizada,cancelada',
@@ -355,7 +362,8 @@ class ObraController extends Controller
         $nullableFields = [
             'coordenadas_lat', 'coordenadas_lng', 'presupuesto', 'coste_estimado',
             'importe_penalizacion_prevista', 'obra_tipo_id', 'encargado_id',
-            'fecha_inicio_prevista', 'fecha_fin_prevista', 'fecha_inicio_real', 'fecha_fin_real'
+            'fecha_inicio_prevista', 'fecha_fin_prevista', 'fecha_inicio_real', 'fecha_fin_real',
+            'fecha_facturacion_inicio', 'fecha_facturacion_fin'
         ];
         foreach ($nullableFields as $field) {
             if (array_key_exists($field, $validated) && $validated[$field] === '') {
@@ -502,14 +510,13 @@ class ObraController extends Controller
         $validated = $request->validate([
             'tipo' => 'required|string|max:50',
             'nombre' => 'required|string|max:255',
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240',
+            'archivo' => 'required|file|max:10240',
             'descripcion' => 'nullable|string',
             'fecha_documento' => 'nullable|date',
         ], [
             'tipo.required' => 'El tipo de documento es obligatorio.',
             'nombre.required' => 'El nombre del documento es obligatorio.',
             'archivo.required' => 'Debe subir un archivo.',
-            'archivo.mimes' => 'El archivo debe ser PDF, imagen o documento Office.',
             'archivo.max' => 'El archivo no puede superar los 10MB.',
         ]);
 

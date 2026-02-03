@@ -14,7 +14,28 @@
                 {{ now()->translatedFormat('l, d F Y') }}
             </p>
         </div>
-        <div class="d-flex gap-2 align-items-center">
+        <div class="d-flex gap-3 align-items-center flex-wrap">
+            {{-- Filtros de fecha --}}
+            <form method="GET" action="{{ route('trabajador.dashboard') }}" class="d-flex gap-2 align-items-end">
+                <div>
+                    <label class="form-label small mb-1">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm"
+                           value="{{ request('fecha_desde', now()->format('Y-m-d')) }}">
+                </div>
+                <div>
+                    <label class="form-label small mb-1">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm"
+                           value="{{ request('fecha_hasta', now()->format('Y-m-d')) }}">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-filter"></i> Filtrar
+                    </button>
+                    <a href="{{ route('trabajador.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </div>
+            </form>
             <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRefresh">
                 <i class="bi bi-arrow-clockwise"></i> Actualizar
             </button>
@@ -109,6 +130,24 @@
                             <h4 class="mb-0" id="kpi-alertas">-</h4>
                             <small class="text-muted">Alertas</small>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Fila 1.5: Producción Diaria --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart-fill me-2 text-success"></i>Mi Producción
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="widget-produccion-diaria">
+                        @include('trabajador.dashboard.partials._widget-produccion-diaria', ['produccion' => []])
                     </div>
                 </div>
             </div>
@@ -305,6 +344,7 @@ function setupEventListeners() {
 async function loadAllWidgets() {
     await Promise.all([
         loadKpis(),
+        loadProduccionDiaria(),
         loadMisHoras(),
         loadMisVacaciones(),
         loadMisDocumentos(),
@@ -335,6 +375,22 @@ async function loadKpis() {
         }
     } catch (error) {
         console.error('Error loading KPIs:', error);
+    }
+}
+
+// Cargar Producción Diaria
+async function loadProduccionDiaria() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fechaDesde = urlParams.get('fecha_desde') || '';
+        const fechaHasta = urlParams.get('fecha_hasta') || '';
+
+        const url = `{{ route('trabajador.dashboard.api.produccion-diaria') }}?fecha_desde=${fechaDesde}&fecha_hasta=${fechaHasta}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById('widget-produccion-diaria').innerHTML = renderProduccionDiaria(data);
+    } catch (error) {
+        console.error('Error loading produccion:', error);
     }
 }
 
@@ -458,6 +514,83 @@ async function confirmarLecturaDocumento(documentoId) {
 }
 
 // Funciones de renderizado
+function renderProduccionDiaria(data) {
+    if (!data || !data.hoy || !data.hoy.categorias) {
+        return '<div class="text-center text-muted py-4">Sin datos de producción</div>';
+    }
+
+    const hoy = data.hoy;
+    const categorias = hoy.categorias;
+    const variaciones = data.variaciones || {};
+
+    // Mapeo de categorías a iconos
+    const iconosCat = {
+        'desbroce': { icon: 'bi-scissors', color: 'success' },
+        'limpieza': { icon: 'bi-stars', color: 'info' },
+        'herbicida': { icon: 'bi-droplet', color: 'danger' },
+        'tala': { icon: 'bi-tree', color: 'warning' },
+        'poda': { icon: 'bi-flower1', color: 'primary' },
+        'otro': { icon: 'bi-box', color: 'secondary' }
+    };
+
+    const unidadesFormato = {
+        'm2': 'm²',
+        'unidades': 'uds',
+        'hectareas': 'ha',
+        'jornal': 'j'
+    };
+
+    const renderVariation = (v) => {
+        if (!v || v.valor === 0) return '';
+        const icon = v.tipo === 'positive' ? 'bi-arrow-up' : (v.tipo === 'negative' ? 'bi-arrow-down' : 'bi-dash');
+        const color = v.tipo === 'positive' ? 'success' : (v.tipo === 'negative' ? 'danger' : 'secondary');
+        return `<span class="badge bg-${color}" style="font-size: 0.65rem;"><i class="bi ${icon}"></i> ${v.valor}%</span>`;
+    };
+
+    let html = `
+        <div class="text-center mb-3">
+            <small class="text-muted">${data.fecha || 'Hoy'}</small>
+        </div>
+        <div class="row g-2">
+    `;
+
+    // Iterar dinámicamente sobre todas las categorías
+    for (const [categoria, datos] of Object.entries(categorias)) {
+        const icono = iconosCat[categoria] || iconosCat['otro'];
+        const unidad = unidadesFormato[datos.unidad] || datos.unidad;
+
+        html += `
+            <div class="col-6">
+                <div class="border rounded p-2 text-center">
+                    <i class="bi ${icono.icon} text-${icono.color} fs-4"></i>
+                    <h5 class="mb-0">${formatNumber(datos.cantidad)}</h5>
+                    <small class="text-muted">${capitalize(categoria)} (${unidad})</small>
+                    <div class="mt-1">${renderVariation(variaciones[categoria])}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Card de número de partes
+    html += `
+            <div class="col-6">
+                <div class="border rounded p-2 text-center">
+                    <i class="bi bi-file-text text-secondary fs-4"></i>
+                    <h5 class="mb-0">${hoy.num_partes}</h5>
+                    <small class="text-muted">Partes diarios</small>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                Importe total: <strong>${formatNumber(hoy.importe)} €</strong>
+            </small>
+        </div>
+    `;
+
+    return html;
+}
+
 function renderMisHoras(data) {
     const fichajes = data.fichajes || [];
     const resumen = data.resumen || {};
@@ -754,6 +887,11 @@ function formatCurrency(value) {
 function truncate(str, length) {
     if (!str) return '';
     return str.length > length ? str.substring(0, length) + '...' : str;
+}
+
+function capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 </script>
 @endpush

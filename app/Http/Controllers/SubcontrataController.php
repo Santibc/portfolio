@@ -297,14 +297,13 @@ class SubcontrataController extends Controller
         $validated = $request->validate([
             'tipo' => 'required|string|max:100',
             'nombre' => 'required|string|max:255',
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'archivo' => 'required|file|max:10240',
             'fecha_documento' => 'nullable|date',
             'fecha_caducidad' => 'nullable|date|after_or_equal:fecha_documento',
         ], [
             'tipo.required' => 'Debe seleccionar el tipo de documento.',
             'nombre.required' => 'El nombre del documento es obligatorio.',
             'archivo.required' => 'Debe seleccionar un archivo.',
-            'archivo.mimes' => 'El archivo debe ser PDF, JPG o PNG.',
             'archivo.max' => 'El archivo no puede superar 10 MB.',
             'fecha_caducidad.after_or_equal' => 'La fecha de caducidad debe ser posterior a la fecha del documento.',
         ]);
@@ -460,7 +459,7 @@ class SubcontrataController extends Controller
         $validated = $request->validate([
             'tipo' => 'required|string|max:100',
             'nombre' => 'required|string|max:255',
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'archivo' => 'required|file|max:10240',
             'fecha_documento' => 'nullable|date',
             'fecha_caducidad' => 'nullable|date|after_or_equal:fecha_documento',
             'obligatorio' => 'boolean',

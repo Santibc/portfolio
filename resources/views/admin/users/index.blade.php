@@ -72,10 +72,17 @@
                         <tr>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
-                                         style="width: 40px; height: 40px;">
-                                        {{ strtoupper(substr($usuario->name, 0, 1)) }}
-                                    </div>
+                                    @if($usuario->hasProfilePhoto())
+                                        <img src="{{ $usuario->profile_photo_url }}"
+                                             alt="{{ $usuario->name }}"
+                                             class="rounded-circle me-3"
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                             style="width: 40px; height: 40px;">
+                                            {{ $usuario->initials }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <h6 class="mb-0">{{ $usuario->name }}</h6>
                                         <small class="text-muted">ID: {{ $usuario->id }}</small>

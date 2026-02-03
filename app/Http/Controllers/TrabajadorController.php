@@ -289,7 +289,7 @@ class TrabajadorController extends Controller
         $validated = $request->validate([
             'tipo' => 'required|string|max:50',
             'nombre' => 'required|string|max:255',
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'archivo' => 'required|file|max:10240',
             'fecha_documento' => 'nullable|date',
             'fecha_caducidad' => 'nullable|date',
             'visible_trabajador' => 'boolean',
@@ -298,7 +298,6 @@ class TrabajadorController extends Controller
             'tipo.required' => 'El tipo de documento es obligatorio.',
             'nombre.required' => 'El nombre del documento es obligatorio.',
             'archivo.required' => 'Debe subir un archivo.',
-            'archivo.mimes' => 'El archivo debe ser PDF, JPG o PNG.',
             'archivo.max' => 'El archivo no puede superar los 10MB.',
         ]);
 
@@ -377,12 +376,11 @@ class TrabajadorController extends Controller
             'fecha_realizacion' => 'required|date',
             'fecha_caducidad' => 'nullable|date|after:fecha_realizacion',
             'centro_formacion' => 'nullable|string|max:255',
-            'certificado' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'certificado' => 'nullable|file|max:10240',
             'notas' => 'nullable|string',
         ], [
             'formacion_tipo_id.required' => 'Debe seleccionar un tipo de formación.',
             'fecha_realizacion.required' => 'La fecha de realización es obligatoria.',
-            'certificado.mimes' => 'El certificado debe ser PDF, JPG o PNG.',
             'certificado.max' => 'El certificado no puede superar los 10MB.',
         ]);
 
@@ -432,7 +430,7 @@ class TrabajadorController extends Controller
             'tipo' => 'required|in:amonestacion_verbal,amonestacion_escrita,sancion_leve,sancion_grave,sancion_muy_grave',
             'fecha' => 'required|date',
             'descripcion' => 'required|string',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento' => 'nullable|file|max:10240',
         ], [
             'tipo.required' => 'El tipo de incidencia es obligatorio.',
             'tipo.in' => 'El tipo de incidencia seleccionado no es válido.',

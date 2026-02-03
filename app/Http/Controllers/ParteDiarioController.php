@@ -19,7 +19,15 @@ class ParteDiarioController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ParteDiario::with(['obra', 'creadoPor']);
+        // Determinar rango de fechas
+        $fechaDesde = $request->filled('fecha_desde')
+            ? $request->fecha_desde
+            : now()->startOfMonth()->format('Y-m-d');
+        $fechaHasta = $request->filled('fecha_hasta')
+            ? $request->fecha_hasta
+            : now()->endOfMonth()->format('Y-m-d');
+
+        $query = ParteDiario::with(['obra', 'creadoPor', 'producciones.concepto']);
 
         // Filtros
         if ($request->filled('fecha_desde')) {
@@ -51,13 +59,62 @@ class ParteDiarioController extends Controller
         $partes = $query->orderBy('fecha', 'desc')
                         ->paginate(25);
 
+        // Calcular producción por categoría desde parte_diario_producciones
+        $statsQuery = ParteDiarioProduccion::query()
+            ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
+            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+
+        if ($request->filled('obra_id')) {
+            $statsQuery->where('partes_diarios.obra_id', $request->obra_id);
+        }
+
+        $produccionPorCategoria = (clone $statsQuery)
+            ->select('obra_conceptos_produccion.categoria', DB::raw('SUM(parte_diario_producciones.cantidad) as total'))
+            ->groupBy('obra_conceptos_produccion.categoria')
+            ->pluck('total', 'categoria')
+            ->toArray();
+
+        // Obtener categorías activas con sus unidades predominantes
+        $categoriasActivas = ObraConceptoProduccion::query()
+            ->whereHas('producciones', function($q) use ($fechaDesde, $fechaHasta, $request) {
+                $q->whereHas('parteDiario', function($q2) use ($fechaDesde, $fechaHasta, $request) {
+                    $q2->whereBetween('fecha', [$fechaDesde, $fechaHasta]);
+                    if ($request->filled('obra_id')) {
+                        $q2->where('obra_id', $request->obra_id);
+                    }
+                });
+            })
+            ->select('categoria', 'unidad')
+            ->distinct()
+            ->get()
+            ->groupBy('categoria')
+            ->map(fn($items) => $items->first()->unidad)
+            ->toArray();
+
+        // Si no hay categorías activas, mostrar las categorías por defecto
+        if (empty($categoriasActivas)) {
+            $categoriasActivas = [
+                'desbroce' => 'm2',
+                'herbicida' => 'm2',
+                'tala' => 'unidades',
+                'poda' => 'unidades',
+            ];
+        }
+
         // Estadísticas del período
         $stats = [
-            'total_partes' => $query->count(),
-            'borradores' => ParteDiario::borradores()->count(),
-            'pendientes_validar' => ParteDiario::completados()->count(),
-            'desbroce_total' => ParteDiario::where('fecha', '>=', now()->startOfMonth())
-                                           ->sum('desbroce_total_m2'),
+            'total_partes' => $partes->total(),
+            'borradores' => ParteDiario::borradores()
+                ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+                ->when($request->filled('obra_id'), fn($q) => $q->where('obra_id', $request->obra_id))
+                ->count(),
+            'pendientes_validar' => ParteDiario::completados()
+                ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+                ->when($request->filled('obra_id'), fn($q) => $q->where('obra_id', $request->obra_id))
+                ->count(),
+            'produccion_por_categoria' => $produccionPorCategoria,
+            'categorias_activas' => $categoriasActivas,
         ];
 
         $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])

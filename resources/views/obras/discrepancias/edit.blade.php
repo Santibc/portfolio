@@ -93,9 +93,8 @@
                                         </a>
                                     </div>
                                 @endif
-                                <input type="file" name="documento_valoracion" class="form-control @error('documento_valoracion') is-invalid @enderror"
-                                       accept=".pdf,.jpg,.jpeg,.png">
-                                <small class="text-muted">PDF o imagen (max 10MB). Dejar vacio para mantener el actual.</small>
+                                <input type="file" name="documento_valoracion" class="form-control @error('documento_valoracion') is-invalid @enderror">
+                                <small class="text-muted">Máximo 10MB. Dejar vacío para mantener el actual.</small>
                             </div>
                         </div>
                     </div>

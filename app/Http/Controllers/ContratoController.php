@@ -103,7 +103,7 @@ class ContratoController extends Controller
             'tiene_retencion' => 'boolean',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'fecha_liberacion_garantia' => 'nullable|date',
-            'documento' => 'nullable|file|mimes:pdf|max:10240',
+            'documento' => 'nullable|file|max:10240',
             'notas' => 'nullable|string',
             'renovacion_automatica' => 'boolean',
             'dias_preaviso_vencimiento' => 'nullable|integer|min:1|max:365',
@@ -112,7 +112,6 @@ class ContratoController extends Controller
             'titulo.required' => 'El título es obligatorio.',
             'codigo.unique' => 'Este código ya está en uso.',
             'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la de inicio.',
-            'documento.mimes' => 'El documento debe ser PDF.',
             'documento.max' => 'El documento no puede superar 10MB.',
         ]);
 
@@ -165,7 +164,7 @@ class ContratoController extends Controller
                     mkdir(public_path($rutaCarpeta), 0755, true);
                 }
 
-                $nombreArchivo = 'contrato_' . time() . '.pdf';
+                $nombreArchivo = 'contrato_' . time() . '.' . $documento->getClientOriginalExtension();
                 $documento->move(public_path($rutaCarpeta), $nombreArchivo);
 
                 $contrato->update(['documento_path' => $rutaCarpeta . '/' . $nombreArchivo]);
@@ -227,7 +226,7 @@ class ContratoController extends Controller
             'tiene_retencion' => 'boolean',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'fecha_liberacion_garantia' => 'nullable|date',
-            'documento' => 'nullable|file|mimes:pdf|max:10240',
+            'documento' => 'nullable|file|max:10240',
             'notas' => 'nullable|string',
             'renovacion_automatica' => 'boolean',
             'dias_preaviso_vencimiento' => 'nullable|integer|min:1|max:365',
@@ -236,7 +235,6 @@ class ContratoController extends Controller
             'titulo.required' => 'El título es obligatorio.',
             'codigo.unique' => 'Este código ya está en uso.',
             'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la de inicio.',
-            'documento.mimes' => 'El documento debe ser PDF.',
             'documento.max' => 'El documento no puede superar 10MB.',
         ]);
 
@@ -287,7 +285,7 @@ class ContratoController extends Controller
                     mkdir(public_path($rutaCarpeta), 0755, true);
                 }
 
-                $nombreArchivo = 'contrato_' . time() . '.pdf';
+                $nombreArchivo = 'contrato_' . time() . '.' . $documento->getClientOriginalExtension();
                 $documento->move(public_path($rutaCarpeta), $nombreArchivo);
 
                 $data['documento_path'] = $rutaCarpeta . '/' . $nombreArchivo;
@@ -466,12 +464,20 @@ class ContratoController extends Controller
     // ==========================================
 
     /**
-     * Liberar garantía retenida.
+     * Liberar garantía retenida (soporta liberación parcial).
      */
     public function liberarGarantia(Request $request, Contrato $contrato): JsonResponse
     {
         $validated = $request->validate([
-            'fecha_liberacion' => 'nullable|date',
+            'fecha_liberacion' => 'required|date',
+            'porcentaje' => 'required|integer|min:1|max:100',
+            'notas' => 'nullable|string|max:500',
+        ], [
+            'fecha_liberacion.required' => 'La fecha de liberación es obligatoria.',
+            'porcentaje.required' => 'Debe especificar el porcentaje a liberar.',
+            'porcentaje.integer' => 'El porcentaje debe ser un número entero.',
+            'porcentaje.min' => 'El porcentaje mínimo es 1%.',
+            'porcentaje.max' => 'El porcentaje máximo es 100%.',
         ]);
 
         try {
@@ -482,20 +488,89 @@ class ContratoController extends Controller
                 ], 422);
             }
 
-            if ($contrato->fecha_liberacion_real) {
+            // Validar que no esté 100% liberado
+            if (intval($contrato->porcentaje_total_liberado ?? 0) >= 100) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'La garantía ya fue liberada anteriormente.',
+                    'message' => 'La garantía ya fue liberada completamente.',
                 ], 422);
             }
 
-            $contrato->liberarGarantia($validated['fecha_liberacion'] ?? null);
+            // Validar porcentaje disponible
+            $porcentajeDisponible = 100 - intval($contrato->porcentaje_total_liberado ?? 0);
+            if ($validated['porcentaje'] > $porcentajeDisponible) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Solo puede liberar hasta {$porcentajeDisponible}% restante.",
+                ], 422);
+            }
+
+            \DB::beginTransaction();
+
+            $contrato->liberarGaranciaParcial(
+                $validated['porcentaje'],
+                $validated['fecha_liberacion'],
+                $validated['notas'] ?? null
+            );
+
+            \DB::commit();
+
+            $contratoActualizado = $contrato->fresh();
+            $mensaje = $validated['porcentaje'] >= $porcentajeDisponible
+                ? 'Garantía liberada completamente.'
+                : "Liberado {$validated['porcentaje']}% de la garantía.";
 
             return response()->json([
                 'success' => true,
-                'message' => 'Garantía liberada correctamente.',
-                'importe_liberado' => number_format($contrato->importe_retenido, 2, ',', '.'),
-                'fecha_liberacion' => $contrato->fresh()->fecha_liberacion_real->format('d/m/Y'),
+                'message' => $mensaje,
+                'importe_liberado' => number_format(
+                    floatval($contrato->importe_retenido) * ($validated['porcentaje'] / 100),
+                    2, ',', '.'
+                ),
+                'porcentaje_total' => number_format($contratoActualizado->porcentaje_total_liberado, 0),
+                'porcentaje_pendiente' => number_format($contratoActualizado->porcentaje_pendiente_liberar, 0),
+                'estado_garantia' => $contratoActualizado->estado_garantia,
+            ]);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener historial de liberaciones de garantía.
+     */
+    public function historialLiberaciones(Contrato $contrato): JsonResponse
+    {
+        try {
+            $liberaciones = $contrato->liberaciones()
+                ->with('usuario:id,name')
+                ->ordenCronologico()
+                ->get()
+                ->map(function ($lib) {
+                    return [
+                        'id' => $lib->id,
+                        'fecha' => $lib->fecha_liberacion->format('d/m/Y'),
+                        'porcentaje' => $lib->porcentaje_liberado . '%',
+                        'importe' => number_format($lib->importe_liberado, 2, ',', '.') . ' €',
+                        'notas' => $lib->notas,
+                        'usuario' => $lib->usuario->name ?? 'Sistema',
+                        'fecha_registro' => $lib->created_at->format('d/m/Y H:i'),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'liberaciones' => $liberaciones,
+                'resumen' => [
+                    'total_liberado' => $contrato->porcentaje_total_liberado . '%',
+                    'importe_liberado' => number_format($contrato->importe_total_liberado, 2, ',', '.') . ' €',
+                    'pendiente' => $contrato->porcentaje_pendiente_liberar . '%',
+                    'importe_pendiente' => number_format($contrato->importe_pendiente_liberar, 2, ',', '.') . ' €',
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([

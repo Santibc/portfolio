@@ -156,6 +156,18 @@
                 </div>
             </div>
             @endif
+
+            {{-- Pie de página PDF --}}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-file-pdf me-2"></i>Pie de Página PDF</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 text-muted small">
+                        {{ $factura->footer_text ?? \App\Models\Factura::DEFAULT_FOOTER_TEXT }}
+                    </p>
+                </div>
+            </div>
         </div>
 
         {{-- Columna lateral --}}
@@ -324,43 +336,100 @@
         });
     }
 
-    function enviarFactura() {
-        Swal.fire({
-            title: '¿Marcar como enviada?',
-            text: 'La factura se marcará como enviada al cliente.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, marcar enviada',
-            cancelButtonText: 'Cancelar',
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`{{ route('facturas.enviar', $factura) }}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json',
-                        },
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Éxito',
-                            text: data.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                        }).then(() => window.location.reload());
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
+    async function enviarFactura() {
+        try {
+            const facturaId = {{ $factura->id }};
+            const emailsResponse = await fetch(`{{ url('facturas') }}/${facturaId}/emails-cliente`, {
+                headers: { 'Accept': 'application/json' },
+            });
+            const emailsData = await emailsResponse.json();
+            if (!emailsData.success) {
+                Swal.fire('Error', emailsData.message, 'error');
+                return;
+            }
+            const availableEmails = emailsData.emails;
+            if (availableEmails.length === 0) {
+                Swal.fire('Error', 'El cliente no tiene emails configurados.', 'error');
+                return;
+            }
+            const emailCheckboxesHtml = availableEmails.map((emailObj, index) => {
+                const checked = emailObj.por_defecto || index === 0 ? 'checked' : '';
+                const badgeHtml = emailObj.por_defecto ? '<span class="badge bg-info ms-2">Por defecto</span>' : '';
+                return `<div class="form-check text-start mb-2"><input class="form-check-input email-checkbox" type="checkbox" value="${emailObj.email}" id="email-${index}" ${checked}><label class="form-check-label" for="email-${index}">${emailObj.label} ${badgeHtml}</label></div>`;
+            }).join('');
+            const result = await Swal.fire({
+                title: 'Enviar Factura por Email',
+                html: `<div class="text-start"><p class="text-muted mb-3">Seleccione los destinatarios:</p><div class="mb-3 p-3 bg-light rounded">${emailCheckboxesHtml}</div><div class="mb-3"><label class="form-label fw-semibold"><i class="bi bi-plus-circle me-1"></i>Emails adicionales (separados por comas)</label><textarea id="emails-custom" class="form-control" rows="2" placeholder="email1@ejemplo.com, email2@ejemplo.com"></textarea><small class="text-muted">Puede añadir otros emails separados por comas</small></div><div class="alert alert-info mt-3 mb-0"><i class="bi bi-info-circle me-2"></i><small>El PDF se adjuntará automáticamente.</small></div></div>`,
+                width: 600,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-send me-2"></i>Enviar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#0d6efd',
+                preConfirm: () => {
+                    const selectedEmails = Array.from(document.querySelectorAll('.email-checkbox:checked')).map(cb => cb.value);
+                    const customEmailsText = document.getElementById('emails-custom').value.trim();
+                    let customEmails = [];
+                    if (customEmailsText) {
+                        customEmails = customEmailsText.split(',').map(email => email.trim().toLowerCase()).filter(email => email.length > 0);
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        for (const email of customEmails) {
+                            if (!emailRegex.test(email)) {
+                                Swal.showValidationMessage(`Email inválido: ${email}`);
+                                return false;
+                            }
+                        }
                     }
-                } catch (error) {
-                    Swal.fire('Error', 'Error de conexión', 'error');
+                    const allEmails = [...new Set([...selectedEmails, ...customEmails])];
+                    if (allEmails.length === 0) {
+                        Swal.showValidationMessage('Debe seleccionar al menos un destinatario');
+                        return false;
+                    }
+                    if (allEmails.length > 10) {
+                        Swal.showValidationMessage('No puede enviar a más de 10 destinatarios');
+                        return false;
+                    }
+                    return allEmails;
+                }
+            });
+            if (result.isConfirmed && result.value) {
+                const emailsToSend = result.value;
+                Swal.fire({
+                    title: 'Enviando...',
+                    html: `Enviando factura a ${emailsToSend.length} destinatario(s)...`,
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                const sendResponse = await fetch('{{ route("facturas.enviar", $factura) }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                    body: JSON.stringify({ emails: emailsToSend }),
+                });
+                const sendData = await sendResponse.json();
+                if (sendData.success) {
+                    let icon = sendData.warning ? 'warning' : 'success';
+                    let title = sendData.warning ? 'Enviado con advertencias' : '¡Enviado!';
+                    let detailsHtml = '';
+                    if (sendData.detalles) {
+                        if (sendData.detalles.enviados?.length > 0) {
+                            detailsHtml += '<div class="text-start mt-2"><strong>Enviados:</strong><ul>';
+                            sendData.detalles.enviados.forEach(email => { detailsHtml += `<li class="text-success">${email}</li>`; });
+                            detailsHtml += '</ul></div>';
+                        }
+                        if (sendData.detalles.fallidos?.length > 0) {
+                            detailsHtml += '<div class="text-start mt-2"><strong>Fallidos:</strong><ul>';
+                            sendData.detalles.fallidos.forEach(item => { detailsHtml += `<li class="text-danger">${item.email}: ${item.error}</li>`; });
+                            detailsHtml += '</ul></div>';
+                        }
+                    }
+                    Swal.fire({ icon: icon, title: title, html: sendData.message + detailsHtml, confirmButtonText: 'Aceptar' }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', sendData.message, 'error');
                 }
             }
-        });
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Error de conexión al servidor', 'error');
+        }
     }
 
     function cobrarFactura() {

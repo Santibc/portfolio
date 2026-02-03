@@ -18,8 +18,25 @@
     </div>
 
     <!-- Stats Cards -->
+    @php
+        $iconosPorCategoria = [
+            'desbroce' => ['icon' => 'bi-scissors', 'color' => 'success'],
+            'limpieza' => ['icon' => 'bi-stars', 'color' => 'info'],
+            'herbicida' => ['icon' => 'bi-droplet', 'color' => 'danger'],
+            'tala' => ['icon' => 'bi-tree', 'color' => 'warning'],
+            'poda' => ['icon' => 'bi-flower1', 'color' => 'primary'],
+            'otro' => ['icon' => 'bi-box', 'color' => 'secondary'],
+        ];
+        $unidadesFormato = [
+            'm2' => 'm²',
+            'unidades' => 'uds',
+            'hectareas' => 'ha',
+            'jornal' => 'j',
+        ];
+    @endphp
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <!-- Card Total Partes -->
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -36,7 +53,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- Card Borradores -->
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -53,7 +71,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- Card Pendientes -->
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -70,23 +89,32 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 p-3 rounded">
-                                <i class="bi bi-rulers text-success fs-4"></i>
+        <!-- Cards dinámicas por categoría de producción -->
+        @foreach($stats['categorias_activas'] as $categoria => $unidad)
+            @php
+                $icono = $iconosPorCategoria[$categoria] ?? $iconosPorCategoria['otro'];
+                $cantidad = $stats['produccion_por_categoria'][$categoria] ?? 0;
+                $unidadFormato = $unidadesFormato[$unidad] ?? $unidad;
+            @endphp
+            <div class="col-md-2">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-{{ $icono['color'] }} bg-opacity-10 p-3 rounded">
+                                    <i class="bi {{ $icono['icon'] }} text-{{ $icono['color'] }} fs-4"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1">Desbroce (m²)</h6>
-                            <h3 class="mb-0">{{ number_format($stats['desbroce_total'], 0, ',', '.') }}</h3>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">{{ ucfirst($categoria) }}</h6>
+                                <h3 class="mb-0">{{ number_format($cantidad, 0, ',', '.') }}</h3>
+                                <small class="text-muted">{{ $unidadFormato }}</small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endforeach
     </div>
 
     <!-- Filters -->
@@ -150,9 +178,12 @@
                             <th>Fecha</th>
                             <th>Obra</th>
                             <th class="text-center">Jornada</th>
-                            <th class="text-center">Desbroce</th>
-                            <th class="text-center">Herbicida</th>
-                            <th class="text-center">Talas</th>
+                            @foreach($stats['categorias_activas'] as $categoria => $unidad)
+                                <th class="text-center">
+                                    {{ ucfirst($categoria) }}
+                                    <small class="d-block text-muted fw-normal">({{ $unidadesFormato[$unidad] ?? $unidad }})</small>
+                                </th>
+                            @endforeach
                             <th class="text-center">Estado</th>
                             <th width="140">Acciones</th>
                         </tr>
@@ -183,27 +214,16 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    @if($parte->desbroce_total_m2 > 0)
-                                        <strong>{{ number_format($parte->desbroce_total_m2, 0, ',', '.') }}</strong> m²
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if($parte->herbicida_p4_m2 > 0)
-                                        {{ number_format($parte->herbicida_p4_m2, 0, ',', '.') }} m²
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if($parte->talas_unidades > 0 || $parte->podas_unidades > 0)
-                                        {{ $parte->talas_unidades }} / {{ $parte->podas_unidades }}
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
+                                @php $produccionParte = $parte->produccion_por_categoria; @endphp
+                                @foreach($stats['categorias_activas'] as $categoria => $unidad)
+                                    <td class="text-center">
+                                        @if(($produccionParte[$categoria] ?? 0) > 0)
+                                            <strong>{{ number_format($produccionParte[$categoria], 0, ',', '.') }}</strong>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                @endforeach
                                 <td class="text-center">
                                     @switch($parte->estado)
                                         @case('borrador')
@@ -270,7 +290,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">
+                                <td colspan="{{ 5 + count($stats['categorias_activas']) }}" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No hay partes diarios para mostrar
                                 </td>

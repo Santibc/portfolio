@@ -91,9 +91,8 @@
 
                             <div class="col-12">
                                 <label class="form-label">Documento de Valoracion</label>
-                                <input type="file" name="documento_valoracion" class="form-control @error('documento_valoracion') is-invalid @enderror"
-                                       accept=".pdf,.jpg,.jpeg,.png">
-                                <small class="text-muted">PDF o imagen (max 10MB)</small>
+                                <input type="file" name="documento_valoracion" class="form-control @error('documento_valoracion') is-invalid @enderror">
+                                <small class="text-muted">Máximo 10MB.</small>
                                 @error('documento_valoracion')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

@@ -241,14 +241,18 @@
                         </td>
                         <td class="text-center">
                             @if($contrato->tiene_retencion)
-                                @if($contrato->fecha_liberacion_real)
-                                    <span class="badge bg-success" title="Liberada el {{ $contrato->fecha_liberacion_real->format('d/m/Y') }}">
+                                <span class="badge bg-{{ $contrato->garantia_badge }}"
+                                      title="{{ \App\Models\Contrato::ESTADOS_GARANTIA[$contrato->estado_garantia] ?? 'N/A' }}">
+                                    @if($contrato->estado_garantia === \App\Models\Contrato::ESTADO_GARANTIA_LIBERADA)
                                         <i class="bi bi-unlock"></i> Liberada
-                                    </span>
-                                @else
-                                    <span class="badge bg-warning text-dark" title="Retención: {{ $contrato->retencion_porcentaje }}%">
-                                        {{ number_format($contrato->importe_retenido, 2, ',', '.') }} €
-                                    </span>
+                                    @elseif($contrato->estado_garantia === \App\Models\Contrato::ESTADO_GARANTIA_PARCIALMENTE_LIBERADA)
+                                        <i class="bi bi-unlock"></i> Parcial
+                                    @else
+                                        <i class="bi bi-lock"></i> {{ number_format($contrato->importe_retenido, 2, ',', '.') }} €
+                                    @endif
+                                </span>
+                                @if($contrato->estado_garantia === \App\Models\Contrato::ESTADO_GARANTIA_PARCIALMENTE_LIBERADA)
+                                    <br><small class="text-muted">{{ $contrato->porcentaje_total_liberado }}% liberado</small>
                                 @endif
                             @else
                                 <span class="text-muted">-</span>

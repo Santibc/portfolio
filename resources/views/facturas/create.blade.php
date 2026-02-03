@@ -164,6 +164,36 @@
                                   placeholder="Notas o condiciones adicionales...">{{ old('notas') }}</textarea>
                     </div>
                 </div>
+
+                {{-- Pie de página PDF --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-pdf me-2"></i>Pie de Página PDF
+                            <small class="text-muted" data-bs-toggle="tooltip" title="Este texto aparecerá en el pie de página del PDF generado">
+                                <i class="bi bi-info-circle"></i>
+                            </small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <textarea name="footer_text" id="footer_text"
+                                      class="form-control @error('footer_text') is-invalid @enderror"
+                                      rows="2"
+                                      maxlength="1000"
+                                      placeholder="Texto del pie de página para el PDF...">{{ old('footer_text', 'MANZER AGROFORESTAL, S.R.L.U. | CIF: B12345678 | Inscrita en el Registro Mercantil de Barcelona') }}</textarea>
+                            @error('footer_text')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Este texto aparecerá en el pie de todas las páginas del PDF</small>
+                            <small class="text-muted">
+                                <span id="charCount">{{ strlen(old('footer_text', 'MANZER AGROFORESTAL, S.R.L.U. | CIF: B12345678 | Inscrita en el Registro Mercantil de Barcelona')) }}</span>/1000 caracteres
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {{-- Columna lateral --}}
@@ -358,6 +388,17 @@
                 text: 'Debe añadir al menos una línea a la factura.',
             });
         }
+    });
+
+    // Character counter for footer text
+    document.getElementById('footer_text').addEventListener('input', function() {
+        document.getElementById('charCount').textContent = this.value.length;
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 </script>
 @endpush

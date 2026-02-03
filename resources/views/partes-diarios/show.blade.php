@@ -134,7 +134,19 @@
                     <h5 class="card-title mb-0">
                         <i class="bi bi-bar-chart me-2"></i>Producción Valorada
                     </h5>
-                    <span class="badge bg-success fs-6">{{ $partes_diario->importe_total_formateado }}</span>
+                    @unless(auth()->user()->hasRole('Encargado'))
+                        @if($partes_diario->producciones->count() > 0)
+                            <span class="badge bg-success fs-6">{{ $partes_diario->importe_total_formateado }}</span>
+                        @else
+                            <span class="badge bg-secondary fs-6">0,00 €</span>
+                        @endif
+                    @else
+                        @if($partes_diario->producciones->count() > 0)
+                            <span class="badge bg-info fs-6">{{ $partes_diario->producciones->count() }} conceptos</span>
+                        @else
+                            <span class="badge bg-secondary fs-6">Sin producción</span>
+                        @endif
+                    @endunless
                 </div>
                 <div class="card-body">
                     @if($partes_diario->producciones->count() > 0)
@@ -146,8 +158,10 @@
                                         <th>Concepto</th>
                                         <th class="text-center">Unidad</th>
                                         <th class="text-end">Cantidad</th>
-                                        <th class="text-end">Precio Unit.</th>
-                                        <th class="text-end">Importe</th>
+                                        @unless(auth()->user()->hasRole('Encargado'))
+                                            <th class="text-end">Precio Unit.</th>
+                                            <th class="text-end">Importe</th>
+                                        @endunless
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -159,85 +173,34 @@
                                             <span class="badge bg-secondary-subtle text-secondary">{{ $produccion->concepto->unidad }}</span>
                                         </td>
                                         <td class="text-end fw-semibold">{{ number_format($produccion->cantidad, 2, ',', '.') }}</td>
-                                        <td class="text-end">{{ number_format($produccion->precio_unitario, 2, ',', '.') }} €</td>
-                                        <td class="text-end fw-bold text-success">{{ number_format($produccion->importe_calculado, 2, ',', '.') }} €</td>
+                                        @unless(auth()->user()->hasRole('Encargado'))
+                                            <td class="text-end">{{ number_format($produccion->precio_unitario, 2, ',', '.') }} €</td>
+                                            <td class="text-end fw-bold text-success">{{ number_format($produccion->importe_calculado, 2, ',', '.') }} €</td>
+                                        @endunless
                                     </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot class="table-light">
                                     <tr>
-                                        <th colspan="5" class="text-end">Total del Día:</th>
-                                        <th class="text-end text-success fs-5">{{ $partes_diario->importe_total_formateado }}</th>
+                                        @unless(auth()->user()->hasRole('Encargado'))
+                                            <th colspan="5" class="text-end">Total del Día:</th>
+                                            <th class="text-end text-success fs-5">{{ $partes_diario->importe_total_formateado }}</th>
+                                        @else
+                                            <th colspan="4" class="text-end">Total de Producción Registrada</th>
+                                        @endunless
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
                     @else
-                        <!-- Datos legacy (para partes sin producción valorada) -->
-                        <div class="row g-4">
-                            @if($partes_diario->desbroce_total_m2 > 0 || $partes_diario->desbroce_p5_m2 > 0 || $partes_diario->desbroce_p6_m2 > 0)
-                            <div class="col-12">
-                                <h6 class="text-muted mb-3">Desbroce</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h2 class="mb-1 text-primary">{{ number_format($partes_diario->desbroce_total_m2, 0, ',', '.') }}</h2>
-                                            <small class="text-muted">Total m²</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p5_m2, 0, ',', '.') }}</h3>
-                                            <small class="text-muted">P5 m²</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ number_format($partes_diario->desbroce_p6_m2, 0, ',', '.') }}</h3>
-                                            <small class="text-muted">P6 m²</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                            @if($partes_diario->limpieza_p8_m2 > 0 || $partes_diario->herbicida_p4_m2 > 0 || $partes_diario->talas_unidades > 0 || $partes_diario->podas_unidades > 0)
-                            <div class="col-12">
-                                <h6 class="text-muted mb-3">Otros Trabajos</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-3">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ number_format($partes_diario->limpieza_p8_m2, 0, ',', '.') }}</h3>
-                                            <small class="text-muted">Limpieza P8 m²</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ number_format($partes_diario->herbicida_p4_m2, 0, ',', '.') }}</h3>
-                                            <small class="text-muted">Herbicida P4 m²</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ $partes_diario->talas_unidades }}</h3>
-                                            <small class="text-muted">Talas (uds)</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="bg-light rounded p-3 text-center">
-                                            <h3 class="mb-1">{{ $partes_diario->podas_unidades }}</h3>
-                                            <small class="text-muted">Podas (uds)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                            @if($partes_diario->desbroce_total_m2 == 0 && $partes_diario->desbroce_p5_m2 == 0 && $partes_diario->limpieza_p8_m2 == 0)
-                            <div class="col-12 text-center py-4 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                <p class="mb-0">No hay producción registrada</p>
-                            </div>
+                        <!-- Sin producción registrada -->
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <p class="mb-0">No hay producción registrada en este parte</p>
+                            @if($partes_diario->estado !== 'validado')
+                                <a href="{{ route('partes-diarios.edit', $partes_diario) }}" class="btn btn-sm btn-primary mt-2">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar Producción
+                                </a>
                             @endif
                         </div>
                     @endif

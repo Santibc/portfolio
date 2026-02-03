@@ -41,6 +41,11 @@ class EpiInventario extends Model
         return $this->hasMany(EpiRevision::class);
     }
 
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(EpiInventarioDocumento::class);
+    }
+
     public function entregaActual()
     {
         return $this->entregas()->whereNull('fecha_devolucion')->first();

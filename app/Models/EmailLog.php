@@ -14,6 +14,7 @@ class EmailLog extends Model
     protected $fillable = [
         'tipo',
         'destinatario_email',
+        'destinatarios',
         'destinatario_id',
         'asunto',
         'emailable_type',
@@ -25,6 +26,7 @@ class EmailLog extends Model
 
     protected $casts = [
         'enviado_at' => 'datetime',
+        'destinatarios' => 'array',
     ];
 
     /**
@@ -93,17 +95,22 @@ class EmailLog extends Model
 
     /**
      * Crear log de email enviado exitosamente
+     * @param array|string $emails Array of emails or single email string
      */
     public static function logEnviado(
         string $tipo,
-        string $email,
+        $emails,
         string $asunto,
         ?Model $emailable = null,
         ?int $userId = null
     ): self {
+        // Normalize to array
+        $emailArray = is_array($emails) ? $emails : [$emails];
+
         return self::create([
             'tipo' => $tipo,
-            'destinatario_email' => $email,
+            'destinatario_email' => $emailArray[0], // First email for backward compatibility
+            'destinatarios' => $emailArray, // All emails in JSON
             'destinatario_id' => $userId,
             'asunto' => $asunto,
             'emailable_type' => $emailable ? get_class($emailable) : null,
@@ -115,18 +122,23 @@ class EmailLog extends Model
 
     /**
      * Crear log de email fallido
+     * @param array|string $emails Array of emails or single email string
      */
     public static function logFallido(
         string $tipo,
-        string $email,
+        $emails,
         string $asunto,
         string $errorMessage,
         ?Model $emailable = null,
         ?int $userId = null
     ): self {
+        // Normalize to array
+        $emailArray = is_array($emails) ? $emails : [$emails];
+
         return self::create([
             'tipo' => $tipo,
-            'destinatario_email' => $email,
+            'destinatario_email' => $emailArray[0], // First email for backward compatibility
+            'destinatarios' => $emailArray, // All emails in JSON
             'destinatario_id' => $userId,
             'asunto' => $asunto,
             'emailable_type' => $emailable ? get_class($emailable) : null,

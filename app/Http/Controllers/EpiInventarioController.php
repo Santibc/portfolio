@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EpiCatalogo;
 use App\Models\EpiInventario;
+use App\Models\EpiInventarioDocumento;
 use App\Models\EpiEntrega;
 use App\Models\EpiRevision;
 use App\Models\Trabajador;
@@ -137,6 +138,7 @@ class EpiInventarioController extends Controller
             'entregas.trabajador',
             'entregas.entregadoPor',
             'revisiones.realizadoPor',
+            'documentos.subidoPor',
         ]);
 
         // Obtener trabajadores activos para el select de entrega
@@ -327,7 +329,7 @@ class EpiInventarioController extends Controller
             'resultado' => 'required|in:apto,no_apto,requiere_reparacion',
             'proxima_revision' => 'nullable|date|after:fecha_revision',
             'observaciones' => 'nullable|string',
-            'documento' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'documento' => 'nullable|file|max:10240',
         ], [
             'fecha_revision.required' => 'La fecha de revision es obligatoria.',
             'resultado.required' => 'El resultado de la revision es obligatorio.',
@@ -459,6 +461,56 @@ class EpiInventarioController extends Controller
         ];
 
         return view('epis.entregas.index', compact('entregas', 'trabajadores', 'catalogos', 'stats'));
+    }
+
+    /**
+     * Subir documento al EPI
+     */
+    public function storeDocumento(Request $request, EpiInventario $epiInventario)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'archivo' => 'required|file|max:10240',
+        ], [
+            'nombre.required' => 'El nombre del documento es obligatorio.',
+            'archivo.required' => 'Debe subir un archivo.',
+            'archivo.max' => 'El archivo no puede superar los 10MB.',
+        ]);
+
+        $archivo = $request->file('archivo');
+        $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+        $rutaCarpeta = 'uploads/epis/inventario/' . $epiInventario->id . '/documentos';
+
+        if (!file_exists(public_path($rutaCarpeta))) {
+            mkdir(public_path($rutaCarpeta), 0755, true);
+        }
+
+        $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
+
+        EpiInventarioDocumento::create([
+            'epi_inventario_id' => $epiInventario->id,
+            'nombre' => $validated['nombre'],
+            'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
+            'subido_por' => auth()->id(),
+        ]);
+
+        return redirect()->route('epi-inventario.show', $epiInventario)
+            ->with('success', 'Documento subido exitosamente.');
+    }
+
+    /**
+     * Eliminar documento del EPI
+     */
+    public function destroyDocumento(EpiInventario $epiInventario, EpiInventarioDocumento $documento)
+    {
+        if ($documento->archivo_path && file_exists(public_path($documento->archivo_path))) {
+            unlink(public_path($documento->archivo_path));
+        }
+
+        $documento->delete();
+
+        return redirect()->route('epi-inventario.show', $epiInventario)
+            ->with('success', 'Documento eliminado.');
     }
 
     /**

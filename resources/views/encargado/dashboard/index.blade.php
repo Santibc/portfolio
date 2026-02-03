@@ -10,6 +10,29 @@
             <h1 class="h3 mb-1">Mi Panel</h1>
             <p class="text-muted mb-0">{{ now()->translatedFormat('l, d F Y') }}</p>
         </div>
+        {{-- Filtros de fecha --}}
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <form method="GET" action="{{ route('encargado.dashboard') }}" class="d-flex gap-2">
+                <div>
+                    <label class="form-label small mb-1">Desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm"
+                           value="{{ request('fecha_desde', now()->format('Y-m-d')) }}">
+                </div>
+                <div>
+                    <label class="form-label small mb-1">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm"
+                           value="{{ request('fecha_hasta', now()->format('Y-m-d')) }}">
+                </div>
+                <div class="d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-filter"></i> Filtrar
+                    </button>
+                    <a href="{{ route('encargado.dashboard') }}" class="btn btn-outline-secondary btn-sm ms-1">
+                        <i class="bi bi-x"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
         <div class="d-flex gap-2 align-items-center">
             <button type="button" class="btn btn-outline-secondary btn-sm" id="btnRefresh">
                 <i class="bi bi-arrow-clockwise"></i> Actualizar
@@ -137,6 +160,24 @@
                 <div class="card-body">
                     <div id="widget-produccion-diaria">
                         @include('encargado.dashboard.partials._widget-produccion-diaria', ['produccion' => []])
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Fila 2.5: Métricas por Estado --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart me-2 text-primary"></i>Métricas por Estado
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="widget-metricas-estado">
+                        @include('encargado.dashboard.partials._widget-metricas-estado', ['metricas' => []])
                     </div>
                 </div>
             </div>
@@ -304,6 +345,7 @@ async function loadAllWidgets() {
         loadKpis(),
         loadMisObras(),
         loadProduccionDiaria(),
+        loadMetricasEstado(),
         loadHorasTrabajadores(),
         loadMaquinariaAsignada(),
         loadCalendarioSemanal(),
@@ -343,11 +385,32 @@ async function loadMisObras() {
 // Cargar Produccion Diaria
 async function loadProduccionDiaria() {
     try {
-        const response = await fetch(`{{ route('encargado.dashboard.api.produccion-diaria') }}`);
+        const urlParams = new URLSearchParams(window.location.search);
+        const fechaDesde = urlParams.get('fecha_desde') || '';
+        const fechaHasta = urlParams.get('fecha_hasta') || '';
+
+        const url = `{{ route('encargado.dashboard.api.produccion-diaria') }}?fecha_desde=${fechaDesde}&fecha_hasta=${fechaHasta}`;
+        const response = await fetch(url);
         const data = await response.json();
         document.getElementById('widget-produccion-diaria').innerHTML = renderProduccionDiaria(data);
     } catch (error) {
         console.error('Error loading produccion:', error);
+    }
+}
+
+// Cargar Métricas por Estado
+async function loadMetricasEstado() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fechaDesde = urlParams.get('fecha_desde') || '';
+        const fechaHasta = urlParams.get('fecha_hasta') || '';
+
+        const url = `{{ route('encargado.dashboard.api.metricas-estado') }}?fecha_desde=${fechaDesde}&fecha_hasta=${fechaHasta}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById('widget-metricas-estado').innerHTML = renderMetricasEstado(data);
+    } catch (error) {
+        console.error('Error loading metricas estado:', error);
     }
 }
 
@@ -445,12 +508,30 @@ function renderMisObras(obras) {
 }
 
 function renderProduccionDiaria(data) {
-    if (!data || !data.hoy) {
+    if (!data || !data.hoy || !data.hoy.categorias) {
         return '<div class="text-center text-muted py-4">Sin datos de hoy</div>';
     }
 
     const hoy = data.hoy;
+    const categorias = hoy.categorias;
     const variaciones = data.variaciones || {};
+
+    // Mapeo de categorías a iconos (mismo que widget Blade)
+    const iconosCat = {
+        'desbroce': { icon: 'bi-scissors', color: 'success' },
+        'limpieza': { icon: 'bi-stars', color: 'info' },
+        'herbicida': { icon: 'bi-droplet', color: 'danger' },
+        'tala': { icon: 'bi-tree', color: 'warning' },
+        'poda': { icon: 'bi-flower1', color: 'primary' },
+        'otro': { icon: 'bi-box', color: 'secondary' }
+    };
+
+    const unidadesFormato = {
+        'm2': 'm²',
+        'unidades': 'uds',
+        'hectareas': 'ha',
+        'jornal': 'j'
+    };
 
     const renderVariation = (v) => {
         if (!v || v.valor === 0) return '';
@@ -459,35 +540,32 @@ function renderProduccionDiaria(data) {
         return `<span class="badge bg-${color} variation-badge"><i class="bi ${icon}"></i> ${v.valor}%</span>`;
     };
 
-    return `
+    let html = `
         <div class="text-center mb-3">
             <small class="text-muted">${data.fecha || 'Hoy'}</small>
         </div>
         <div class="row g-2">
+    `;
+
+    // Iterar dinámicamente sobre todas las categorías
+    for (const [categoria, datos] of Object.entries(categorias)) {
+        const icono = iconosCat[categoria] || iconosCat['otro'];
+        const unidad = unidadesFormato[datos.unidad] || datos.unidad;
+
+        html += `
             <div class="col-6">
                 <div class="border rounded p-2 text-center">
-                    <i class="bi bi-rulers text-primary fs-4"></i>
-                    <h5 class="mb-0">${formatNumber(hoy.desbroce_m2)}</h5>
-                    <small class="text-muted">m²</small>
-                    <div>${renderVariation(variaciones.desbroce)}</div>
+                    <i class="bi ${icono.icon} text-${icono.color} fs-4"></i>
+                    <h5 class="mb-0">${formatNumber(datos.cantidad)}</h5>
+                    <small class="text-muted">${capitalize(categoria)} (${unidad})</small>
+                    <div>${renderVariation(variaciones[categoria])}</div>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="border rounded p-2 text-center">
-                    <i class="bi bi-tree text-success fs-4"></i>
-                    <h5 class="mb-0">${hoy.talas}</h5>
-                    <small class="text-muted">Talas</small>
-                    <div>${renderVariation(variaciones.talas)}</div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="border rounded p-2 text-center">
-                    <i class="bi bi-scissors text-info fs-4"></i>
-                    <h5 class="mb-0">${hoy.podas}</h5>
-                    <small class="text-muted">Podas</small>
-                    <div>${renderVariation(variaciones.podas)}</div>
-                </div>
-            </div>
+        `;
+    }
+
+    // Card de número de partes
+    html += `
             <div class="col-6">
                 <div class="border rounded p-2 text-center">
                     <i class="bi bi-file-text text-secondary fs-4"></i>
@@ -497,6 +575,13 @@ function renderProduccionDiaria(data) {
             </div>
         </div>
     `;
+
+    return html;
+}
+
+// Función auxiliar para capitalizar
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function renderHorasTrabajadores(trabajadores) {
@@ -660,6 +745,106 @@ function renderAlertas(alertas) {
     });
     html += '</ul>';
     return html;
+}
+
+function renderMetricasEstado(data) {
+    if (!data || (!data.pendiente && !data.por_aprobar && !data.aprobada)) {
+        return '<div class="text-center text-muted py-4">Sin datos</div>';
+    }
+
+    // Mapeo de categorías a iconos
+    const iconosCat = {
+        'desbroce': { icon: 'bi-scissors', color: 'success' },
+        'limpieza': { icon: 'bi-stars', color: 'info' },
+        'herbicida': { icon: 'bi-droplet', color: 'danger' },
+        'tala': { icon: 'bi-tree', color: 'warning' },
+        'poda': { icon: 'bi-flower1', color: 'primary' },
+        'otro': { icon: 'bi-box', color: 'secondary' }
+    };
+
+    const unidadesFormato = {
+        'm2': 'm²',
+        'unidades': 'uds',
+        'hectareas': 'ha',
+        'jornal': 'j'
+    };
+
+    const renderCategoria = (categoria, datos) => {
+        const icono = iconosCat[categoria] || iconosCat['otro'];
+        const unidad = unidadesFormato[datos.unidad] || datos.unidad;
+
+        return `
+            <div class="col-6">
+                <div class="border rounded p-2 text-center">
+                    <i class="bi ${icono.icon} text-${icono.color} fs-5"></i>
+                    <h6 class="mb-0">${formatNumber(datos.cantidad)}</h6>
+                    <small class="text-muted">${capitalize(categoria)} (${unidad})</small>
+                </div>
+            </div>
+        `;
+    };
+
+    const renderTab = (id, estado, datos, active = false) => {
+        if (!datos || !datos.categorias || Object.keys(datos.categorias).length === 0) {
+            return `
+                <div class="tab-pane fade ${active ? 'show active' : ''}" id="${id}">
+                    <div class="text-center text-muted py-3">Sin producción ${estado.toLowerCase()}</div>
+                </div>
+            `;
+        }
+
+        let html = `
+            <div class="tab-pane fade ${active ? 'show active' : ''}" id="${id}">
+                <div class="row g-2">
+        `;
+
+        for (const [categoria, info] of Object.entries(datos.categorias)) {
+            html += renderCategoria(categoria, info);
+        }
+
+        html += `
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <strong>${formatNumber(datos.importe_total)} €</strong>
+                        en ${datos.num_partes} partes
+                    </small>
+                </div>
+            </div>
+        `;
+
+        return html;
+    };
+
+    return `
+        <div class="text-center mb-3">
+            <small class="text-muted">${data.fecha_inicio || ''} - ${data.fecha_fin || ''}</small>
+        </div>
+
+        <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-pendiente" type="button">
+                    Pendiente <span class="badge bg-warning ms-1">${data.pendiente?.num_partes || 0}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-por-aprobar" type="button">
+                    Por Aprobar <span class="badge bg-info ms-1">${data.por_aprobar?.num_partes || 0}</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-aprobada" type="button">
+                    Aprobado <span class="badge bg-success ms-1">${data.aprobada?.num_partes || 0}</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            ${renderTab('tab-pendiente', 'Pendiente', data.pendiente, true)}
+            ${renderTab('tab-por-aprobar', 'Por Aprobar', data.por_aprobar)}
+            ${renderTab('tab-aprobada', 'Aprobado', data.aprobada)}
+        </div>
+    `;
 }
 
 // Utilidades

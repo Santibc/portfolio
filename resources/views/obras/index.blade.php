@@ -64,6 +64,7 @@
                 </div>
             </div>
         </div>
+        @can('ver_rentabilidad_obras')
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
@@ -79,6 +80,7 @@
                 </div>
             </div>
         </div>
+        @endcan
     </div>
 
     <!-- Filtros -->
@@ -159,7 +161,10 @@
                             <th>Tipo</th>
                             <th>Estado</th>
                             <th>Fechas</th>
+                            <th>Rango Facturación</th>
+                            @can('ver_rentabilidad_obras')
                             <th class="text-end">Presupuesto</th>
+                            @endcan
                             <th class="text-center">Equipo</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
@@ -228,6 +233,20 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
+                            <td>
+                                @if($obra->fecha_facturacion_inicio)
+                                    <small>
+                                        <i class="bi bi-receipt me-1"></i>
+                                        {{ $obra->fecha_facturacion_inicio->format('d/m/Y') }}
+                                        @if($obra->fecha_facturacion_fin)
+                                            - {{ $obra->fecha_facturacion_fin->format('d/m/Y') }}
+                                        @endif
+                                    </small>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            @can('ver_rentabilidad_obras')
                             <td class="text-end">
                                 @if($obra->presupuesto)
                                     <strong>{{ number_format($obra->presupuesto, 2, ',', '.') }} €</strong>
@@ -235,6 +254,7 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
+                            @endcan
                             <td class="text-center">
                                 @if($obra->trabajadores_activos_count > 0)
                                     <span class="badge bg-primary" title="Trabajadores">
@@ -263,7 +283,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
+                            <td colspan="{{ auth()->user()->can('ver_rentabilidad_obras') ? 9 : 8 }}" class="text-center py-4 text-muted">
                                 No hay obras que mostrar
                             </td>
                         </tr>

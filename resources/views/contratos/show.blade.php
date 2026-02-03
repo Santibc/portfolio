@@ -166,16 +166,15 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-lock me-2"></i>Retención de Garantía</h5>
-                    @if(!$contrato->fecha_liberacion_real)
-                        <span class="badge bg-warning text-dark">Pendiente de liberar</span>
-                    @else
-                        <span class="badge bg-success">Liberada</span>
-                    @endif
+                    <span class="badge bg-{{ $contrato->garantia_badge }} fs-6">
+                        {{ \App\Models\Contrato::ESTADOS_GARANTIA[$contrato->estado_garantia] ?? 'Pendiente' }}
+                    </span>
                 </div>
                 <div class="card-body">
-                    <div class="row g-4">
+                    {{-- Información general --}}
+                    <div class="row g-4 mb-4">
                         <div class="col-md-3">
-                            <label class="form-label text-muted small">Porcentaje</label>
+                            <label class="form-label text-muted small">Porcentaje Retención</label>
                             <p class="mb-0 fw-semibold">{{ $contrato->retencion_porcentaje }}%</p>
                         </div>
                         <div class="col-md-3">
@@ -187,22 +186,91 @@
                             <p class="mb-0">{{ $contrato->fecha_liberacion_garantia ? $contrato->fecha_liberacion_garantia->format('d/m/Y') : '-' }}</p>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label text-muted small">Liberación Real</label>
+                            <label class="form-label text-muted small">Liberación Completa</label>
                             <p class="mb-0">
                                 @if($contrato->fecha_liberacion_real)
-                                    <span class="text-success">{{ $contrato->fecha_liberacion_real->format('d/m/Y') }}</span>
+                                    <span class="text-success fw-semibold">{{ $contrato->fecha_liberacion_real->format('d/m/Y') }}</span>
                                 @else
-                                    <span class="text-muted">-</span>
+                                    <span class="text-muted">Pendiente</span>
                                 @endif
                             </p>
                         </div>
                     </div>
 
-                    @if(!$contrato->fecha_liberacion_real)
+                    {{-- Barra de progreso --}}
+                    @if($contrato->porcentaje_total_liberado > 0)
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Progreso de liberación</span>
+                            <span class="fw-semibold">{{ $contrato->porcentaje_total_liberado }}% liberado</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ $contrato->porcentaje_total_liberado }}%"
+                                 aria-valuenow="{{ $contrato->porcentaje_total_liberado }}"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ $contrato->porcentaje_total_liberado }}%
+                            </div>
+                        </div>
+                        <div class="row mt-3 text-center">
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Liberado</small>
+                                <span class="text-success fw-bold">{{ number_format($contrato->importe_total_liberado, 2, ',', '.') }} €</span>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Pendiente</small>
+                                <span class="text-warning fw-bold">{{ number_format($contrato->importe_pendiente_liberar, 2, ',', '.') }} €</span>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">% Restante</small>
+                                <span class="fw-bold">{{ $contrato->porcentaje_pendiente_liberar }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Historial de liberaciones --}}
+                    @if($contrato->liberaciones->count() > 0)
+                    <div class="border-top pt-4 mb-4">
+                        <h6 class="mb-3"><i class="bi bi-clock-history me-2"></i>Historial de Liberaciones</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th class="text-end">Porcentaje</th>
+                                        <th class="text-end">Importe</th>
+                                        <th>Usuario</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($contrato->liberaciones as $liberacion)
+                                    <tr>
+                                        <td>{{ $liberacion->fecha_liberacion->format('d/m/Y') }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary">{{ $liberacion->porcentaje_liberado }}%</span>
+                                        </td>
+                                        <td class="text-end">{{ number_format($liberacion->importe_liberado, 2, ',', '.') }} €</td>
+                                        <td>{{ $liberacion->usuario->name ?? 'Sistema' }}</td>
+                                        <td><small>{{ $liberacion->notas ?? '-' }}</small></td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Botón de liberar garantía --}}
+                    @if($contrato->porcentaje_pendiente_liberar > 0)
                         @role('Administrador|Contabilidad')
-                        <div class="mt-4 pt-3 border-top">
+                        <div class="pt-3 border-top">
                             <button type="button" class="btn btn-success" onclick="liberarGarantia()">
                                 <i class="bi bi-unlock me-2"></i>Liberar Garantía
+                                @if($contrato->porcentaje_total_liberado > 0)
+                                    ({{ $contrato->porcentaje_pendiente_liberar }}% restante)
+                                @endif
                             </button>
                         </div>
                         @endrole
@@ -455,20 +523,95 @@
     }
 
     function liberarGarantia() {
+        const porcentajePendiente = {{ $contrato->porcentaje_pendiente_liberar ?? 100 }};
+        const importeRetenido = {{ $contrato->importe_retenido ?? 0 }};
+        const importePendiente = {{ $contrato->importe_pendiente_liberar ?? $contrato->importe_retenido ?? 0 }};
+
         Swal.fire({
-            title: 'Liberar garantía',
+            title: 'Liberar Garantía',
             html: `
-                <p>Se liberará la garantía de <strong>{{ number_format($contrato->importe_retenido ?? 0, 2, ',', '.') }} €</strong></p>
-                <input type="date" id="fechaLiberacion" class="form-control" value="{{ date('Y-m-d') }}">
+                <div class="text-start">
+                    <div class="alert alert-info mb-3">
+                        <strong>Información de la garantía:</strong><br>
+                        <small>Importe total retenido: <strong>${new Intl.NumberFormat('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(importeRetenido)} €</strong></small><br>
+                        <small>Pendiente de liberar: <strong>${new Intl.NumberFormat('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(importePendiente)} €</strong> (${porcentajePendiente}%)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Porcentaje a liberar <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" id="porcentajeLiberacion" class="form-control"
+                                   value="${porcentajePendiente}" min="1" max="${porcentajePendiente}" step="1">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <input type="range" class="form-range mt-2" id="porcentajeSlider"
+                               min="1" max="${porcentajePendiente}" step="1" value="${porcentajePendiente}">
+                        <small class="text-muted">Importe a liberar: <span id="importeCalculado" class="fw-bold">0.00</span> €</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de liberación <span class="text-danger">*</span></label>
+                        <input type="date" id="fechaLiberacion" class="form-control" value="{{ date('Y-m-d') }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notas / Motivo</label>
+                        <textarea id="notasLiberacion" class="form-control" rows="3"
+                                  placeholder="Ej: Primera fase completada, liberación según contrato, etc."></textarea>
+                    </div>
+                </div>
             `,
+            width: '600px',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#198754',
             confirmButtonText: 'Liberar',
             cancelButtonText: 'Cancelar',
+            didOpen: () => {
+                const inputPorcentaje = document.getElementById('porcentajeLiberacion');
+                const slider = document.getElementById('porcentajeSlider');
+                const spanImporte = document.getElementById('importeCalculado');
+
+                function actualizarImporte() {
+                    const porcentaje = parseInt(inputPorcentaje.value) || 0;
+                    const importe = (importeRetenido * porcentaje / 100);
+                    spanImporte.textContent = new Intl.NumberFormat('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(importe);
+                }
+
+                inputPorcentaje.addEventListener('input', (e) => {
+                    slider.value = e.target.value;
+                    actualizarImporte();
+                });
+
+                slider.addEventListener('input', (e) => {
+                    inputPorcentaje.value = e.target.value;
+                    actualizarImporte();
+                });
+
+                actualizarImporte();
+            },
+            preConfirm: () => {
+                const porcentaje = parseInt(document.getElementById('porcentajeLiberacion').value);
+                const fecha = document.getElementById('fechaLiberacion').value;
+                const notas = document.getElementById('notasLiberacion').value;
+
+                if (!porcentaje || porcentaje <= 0) {
+                    Swal.showValidationMessage('Debe especificar un porcentaje válido');
+                    return false;
+                }
+                if (porcentaje > porcentajePendiente) {
+                    Swal.showValidationMessage(`Solo puede liberar hasta ${porcentajePendiente}%`);
+                    return false;
+                }
+                if (!fecha) {
+                    Swal.showValidationMessage('Debe especificar una fecha');
+                    return false;
+                }
+
+                return { porcentaje, fecha, notas };
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
-                const fechaLiberacion = document.getElementById('fechaLiberacion').value;
                 try {
                     const response = await fetch('{{ route('contratos.liberar-garantia', $contrato) }}', {
                         method: 'POST',
@@ -477,7 +620,11 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
                             'Accept': 'application/json',
                         },
-                        body: JSON.stringify({ fecha_liberacion: fechaLiberacion }),
+                        body: JSON.stringify({
+                            porcentaje: result.value.porcentaje,
+                            fecha_liberacion: result.value.fecha,
+                            notas: result.value.notas || null,
+                        }),
                     });
 
                     const data = await response.json();
@@ -486,9 +633,14 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Garantía liberada',
-                            text: `Importe liberado: ${data.importe_liberado} €`,
-                            timer: 2000,
-                            showConfirmButton: false,
+                            html: `
+                                <p><strong>Porcentaje liberado:</strong> ${result.value.porcentaje}%</p>
+                                <p><strong>Importe liberado:</strong> ${data.importe_liberado} €</p>
+                                <p><strong>Total liberado:</strong> ${data.porcentaje_total}%</p>
+                                ${data.porcentaje_pendiente > 0 ? `<p><strong>Restante:</strong> ${data.porcentaje_pendiente}%</p>` : '<p class="text-success">¡Garantía liberada completamente!</p>'}
+                            `,
+                            timer: 3000,
+                            showConfirmButton: true,
                         }).then(() => window.location.reload());
                     } else {
                         Swal.fire('Error', data.message, 'error');

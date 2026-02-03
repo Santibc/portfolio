@@ -92,6 +92,7 @@
                             <option value="prima_produccion" {{ request('tipo') == 'prima_produccion' ? 'selected' : '' }}>Prima Produccion</option>
                             <option value="bono_especial" {{ request('tipo') == 'bono_especial' ? 'selected' : '' }}>Bono Especial</option>
                             <option value="plus_nocturnidad" {{ request('tipo') == 'plus_nocturnidad' ? 'selected' : '' }}>Plus Nocturnidad</option>
+                            <option value="horas" {{ request('tipo') == 'horas' ? 'selected' : '' }}>Horas</option>
                             <option value="otro" {{ request('tipo') == 'otro' ? 'selected' : '' }}>Otro</option>
                         </select>
                     </div>
@@ -150,6 +151,7 @@
                                             'prima_produccion' => 'success',
                                             'bono_especial' => 'info',
                                             'plus_nocturnidad' => 'primary',
+                                            'horas' => 'warning',
                                             'otro' => 'secondary'
                                         ];
                                     @endphp
@@ -164,7 +166,12 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td class="text-end fw-bold">{{ $bono->importe_formateado }}</td>
+                                <td class="text-end fw-bold">
+                                    {{ $bono->importe_formateado }}
+                                    @if($bono->tipo === 'horas' && $bono->horas)
+                                        <small class="text-muted d-block">({{ $bono->horas_formateadas }})</small>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($bono->pagado)
                                         <span class="badge bg-success-subtle text-success">
