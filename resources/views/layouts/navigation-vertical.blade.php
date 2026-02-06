@@ -127,18 +127,16 @@
                 <i class="bi bi-boxes me-1"></i>
                 <span>Inventario</span>
             </p>
-            @if (auth()->user()->getRoleNames()->first() == 'admin')
-                <a href="/categorias"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-tags"></i>
-                    <span>Categorías</span>
-                </a>
-                <a href="/productos"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-basket3"></i>
-                    <span>Productos</span>
-                </a>
-            @endif
+            <a href="/categorias"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <a href="/productos"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-basket3"></i>
+                <span>Productos</span>
+            </a>
             <a href="{{ route('stock.index') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-box-seam"></i>
@@ -149,13 +147,11 @@
                 <i class="bi bi-arrow-left-right"></i>
                 <span>Traslados</span>
             </a>
-            @if (auth()->user()->getRoleNames()->first() == 'admin')
-                <a href="/ubicaciones"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('ubicaciones*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-geo-alt"></i>
-                    <span>Ubicaciones</span>
-                </a>
-            @endif
+            <a href="/ubicaciones"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('ubicaciones*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-geo-alt"></i>
+                <span>Ubicaciones</span>
+            </a>
             <a href="{{ route('novedades-stock') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('novedades-stock*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-exclamation-triangle"></i>

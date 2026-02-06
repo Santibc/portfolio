@@ -258,22 +258,22 @@ class StockController extends Controller
             'stock_id' => 'required|exists:stock_productos,id',
             'stock_minimo' => 'required|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',
-            'ubicacion' => 'nullable|string|max:255',
+            'ubicacion_id' => 'nullable|exists:ubicaciones,id',
             'alerta_stock_bajo' => 'boolean',
             'notas' => 'nullable|string'
         ]);
 
         try {
             $stock = StockProducto::findOrFail($request->stock_id);
-            
+
             $stock->update([
                 'stock_minimo' => $request->stock_minimo,
                 'stock_maximo' => $request->stock_maximo,
-                'ubicacion' => $request->ubicacion,
+                'ubicacion_id' => $request->ubicacion_id,
                 'alerta_stock_bajo' => $request->alerta_stock_bajo ?? true,
                 'notas' => $request->notas
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Configuración actualizada correctamente'
