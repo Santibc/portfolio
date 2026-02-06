@@ -36,7 +36,7 @@ class TrasladosController extends Controller
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
                     }
 
-                    if ($row->puedeRecibir()) {
+                    if ($row->puedeRecibir() && auth()->id() !== $row->usuario_creador_id) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="recibirTraslado(' . $row->id . ')" title="Recibir"><i class="bi bi-check-lg"></i></button>';
                     }
 
@@ -81,9 +81,17 @@ class TrasladosController extends Controller
     public function form($id = null)
     {
         $traslado = $id ? TrasladoStock::findOrFail($id) : new TrasladoStock();
-        $ubicaciones = Ubicacion::activas()->get();
 
-        return view('traslados.form', compact('traslado', 'ubicaciones'));
+        // Para rol inventarios, origen solo muestra bodegas
+        if (auth()->user()->hasRole('inventarios')) {
+            $ubicacionesOrigen = Ubicacion::activas()->bodegas()->get();
+        } else {
+            $ubicacionesOrigen = Ubicacion::activas()->get();
+        }
+
+        $ubicacionesDestino = Ubicacion::activas()->get();
+
+        return view('traslados.form', compact('traslado', 'ubicacionesOrigen', 'ubicacionesDestino'));
     }
 
     /**

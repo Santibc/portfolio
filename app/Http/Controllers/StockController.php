@@ -79,6 +79,9 @@ class StockController extends Controller
                     }
                     return '<span class="text-muted">-</span>';
                 })
+                ->addColumn('ubicacion_especifica', function($stock) {
+                    return $stock->ubicacion ?: '<span class="text-muted">-</span>';
+                })
                 ->addColumn('action', function($stock) {
                     $buttons = '<div class="btn-group btn-group-sm">';
 
@@ -118,7 +121,7 @@ class StockController extends Controller
                         $q->where('nombre_variante', 'like', "%{$keyword}%");
                     });
                 })
-                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'ubicacion', 'action'])
+                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'ubicacion', 'ubicacion_especifica', 'action'])
                 ->make(true);
         }
 

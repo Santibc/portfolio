@@ -804,30 +804,77 @@ $(function(){
     }
   });
 
+  // Función para construir carousel de imágenes
+  function buildModalCarousel(images) {
+    if (!images || !images.length) {
+      return '<img src="{{asset("images/no-image.png")}}" class="img-fluid" style="object-fit:contain;background-color:#f8f9fa;">';
+    }
+    let h = '<div id="carouselProducto" class="carousel slide" data-bs-ride="carousel"><div class="carousel-inner">';
+    images.forEach((img, i) => {
+      h += `<div class="carousel-item ${i===0?'active':''}"><img src="{{asset('')}}${img.ruta_imagen}" class="d-block w-100" style="height:400px;object-fit:contain;background-color:#f8f9fa;"></div>`;
+    });
+    h += '</div>';
+    if (images.length > 1) {
+      h += '<button class="carousel-control-prev" type="button" data-bs-target="#carouselProducto" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>';
+      h += '<button class="carousel-control-next" type="button" data-bs-target="#carouselProducto" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  // Variables para imágenes por variante
+  let currentProductImages = [];
+  let currentVariantImageSets = {};
+
+  window.switchVariantImages = function(variantId) {
+    $('.variant-row').removeClass('table-active');
+    $(`.variant-row[data-variant-id="${variantId}"]`).addClass('table-active');
+    const variantImgs = currentVariantImageSets[variantId];
+    const imagesToShow = (variantImgs && variantImgs.length) ? variantImgs : currentProductImages;
+    const oldCarousel = document.getElementById('carouselProducto');
+    if (oldCarousel) {
+      const bsC = bootstrap.Carousel.getInstance(oldCarousel);
+      if (bsC) bsC.dispose();
+    }
+    $('#carouselContainer').html(buildModalCarousel(imagesToShow));
+  };
+
+  window.switchToProductImages = function() {
+    $('.variant-row').removeClass('table-active');
+    const oldCarousel = document.getElementById('carouselProducto');
+    if (oldCarousel) {
+      const bsC = bootstrap.Carousel.getInstance(oldCarousel);
+      if (bsC) bsC.dispose();
+    }
+    $('#carouselContainer').html(buildModalCarousel(currentProductImages));
+  };
+
   window.verProducto = id=>{
     $('#modalProducto').modal('show');
     $('#modalProductoContent').html('<div class="text-center"><div class="spinner-border"></div></div>');
     $.get(`{{route("catalogo.producto.detalle","")}}/${id}`,{cliente_id:clienteId,enlace_token:enlaceToken},resp=>{
       const p=resp.producto;
       window.productoActual=p;
-      let html='<div class="row">';
-      
-      // Imágenes
-      html+='<div class="col-md-6">';
-      if(p.imagenes?.length){
-        html+='<div id="carouselProducto" class="carousel slide" data-bs-ride="carousel"><div class="carousel-inner">';
-        p.imagenes.forEach((img,i)=>{
-          html+=`<div class="carousel-item ${i===0?"active":""}"><img src="{{asset("")}}${img.ruta_imagen}" class="d-block w-100" style="height:400px;object-fit:contain;background-color:#f8f9fa;"></div>`;
+
+      // Guardar imágenes para switching
+      currentProductImages = p.imagenes || [];
+      currentVariantImageSets = {};
+      if (p.variantes) {
+        p.variantes.forEach(v => {
+          currentVariantImageSets[v.id] = v.imagenes || [];
         });
-        html+='</div>';
-        if(p.imagenes.length>1){
-          html+=`<button class="carousel-control-prev" type="button" data-bs-target="#carouselProducto" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>`;
-          html+=`<button class="carousel-control-next" type="button" data-bs-target="#carouselProducto" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>`;
-        }
-        html+='</div>';
-      } else {
-        html+='<img src="{{asset("images/no-image.png")}}" class="img-fluid" style="object-fit:contain;background-color:#f8f9fa;">';
       }
+
+      let html='<div class="row">';
+
+      // Imágenes con container para switching
+      html+='<div class="col-md-6">';
+      if(p.tiene_variantes && p.variantes?.length) {
+        html+='<small class="text-muted d-block mb-1"><a href="#" onclick="switchToProductImages(); return false;"><i class="bi bi-images"></i> Ver imágenes del producto</a></small>';
+      }
+      html+='<div id="carouselContainer">';
+      html+=buildModalCarousel(currentProductImages);
+      html+='</div>';
       html+='</div>';
 
       // Info del producto
@@ -895,13 +942,19 @@ $(function(){
       
       // Variantes o cantidad simple
       if(p.tiene_variantes&&p.variantes?.length){
-        html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Variante</th><th>SKU</th>';
+        html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th></th><th>Variante</th><th>SKU</th>';
         if(mostrarPrecios) html+='<th>Precio</th>';
         if(mostrarStock) html+='<th>Stock</th>';
         html+='<th>Cantidad</th></tr></thead><tbody>';
-        
+
         p.variantes.forEach((v,i)=>{
-          html+='<tr>';
+          const hasVImages = v.imagenes && v.imagenes.length;
+          html+=`<tr class="variant-row" data-variant-id="${v.id}" onclick="switchVariantImages(${v.id})" style="cursor:pointer">`;
+          // Thumbnail
+          const vThumb = hasVImages
+            ? `{{asset('')}}${v.imagenes[0].ruta_imagen}`
+            : (currentProductImages.length ? `{{asset('')}}${currentProductImages[0].ruta_imagen}` : '{{asset("images/no-image.png")}}');
+          html+=`<td><img src="${vThumb}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>`;
           html+=`<td>${v.nombre_variante||"Estándar"}</td><td><small>${v.sku}</small></td>`;
           
           // Precio de variante

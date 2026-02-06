@@ -68,7 +68,6 @@
                 <th>Estado</th>
                 <th>Pago</th>
                 <th>Envío</th>
-                <th>Factura</th>
                 <th>Reserva</th>
               </tr>
             </thead>
@@ -125,7 +124,6 @@
         { data:'estado_badge', name:'estado' },
         { data:'estado_pago_badge', name:'estado_pago', orderable:false, searchable:false },
         { data:'estado_envio_badge', name:'estado_envio', orderable:false, searchable:false },
-        { data:'factura', name:'numero_factura', orderable:false, searchable:false },
         { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
@@ -301,6 +299,109 @@
     });
   }
   
+  function confirmarDescontarStock(solicitudId) {
+    if (!confirm('¿Está seguro de descontar el stock del inventario para esta cotización?')) {
+      return;
+    }
+
+    // Mostrar loading
+    $('#modalDetalleContent').append(
+      '<div class="loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;">' +
+      '<div class="spinner-border text-warning" role="status"></div></div>'
+    );
+
+    $.post(`/solicitudes/${solicitudId}/descontar-stock`, {
+      _token: '{{ csrf_token() }}'
+    }, function(response) {
+      if (response.success) {
+        // Recargar el detalle del modal para mostrar el log
+        verDetalle(solicitudId);
+
+        const alert = `
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            ${response.mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        `;
+        $('.max-w-7xl').prepend(alert);
+
+        // Recargar tabla
+        $('#solicitudes-table').DataTable().ajax.reload();
+      }
+    }).fail(function(xhr) {
+      $('.loading-overlay').remove();
+      alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al descontar stock'));
+    });
+  }
+
+  // Aprobar un pago pendiente
+  function aprobarPago(solicitudId, pagoId) {
+    Swal.fire({
+      title: '¿Aprobar este pago?',
+      text: 'El monto se sumará al total pagado de la cotización',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#198754',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Aprobando...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.post(`/solicitudes/${solicitudId}/pagos/${pagoId}/aprobar`, {
+          _token: '{{ csrf_token() }}'
+        }, function(response) {
+          if (response.success) {
+            Swal.fire('Aprobado', response.mensaje, 'success');
+            verDetalle(solicitudId);
+            $('#solicitudes-table').DataTable().ajax.reload(null, false);
+          }
+        }).fail(function(xhr) {
+          Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al aprobar el pago', 'error');
+        });
+      }
+    });
+  }
+
+  // Rechazar un pago pendiente
+  function rechazarPago(solicitudId, pagoId) {
+    Swal.fire({
+      title: '¿Rechazar este pago?',
+      text: 'El pago será marcado como rechazado y no contará hacia el total pagado',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, rechazar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Rechazando...',
+          allowOutsideClick: false,
+          didOpen: () => { Swal.showLoading(); }
+        });
+
+        $.post(`/solicitudes/${solicitudId}/pagos/${pagoId}/rechazar`, {
+          _token: '{{ csrf_token() }}'
+        }, function(response) {
+          if (response.success) {
+            Swal.fire('Rechazado', response.mensaje, 'success');
+            verDetalle(solicitudId);
+            $('#solicitudes-table').DataTable().ajax.reload(null, false);
+          }
+        }).fail(function(xhr) {
+          Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al rechazar el pago', 'error');
+        });
+      }
+    });
+  }
+
   // Función para exportar Excel con filtros
   function exportarExcel() {
     const form = $('#formExportarExcel');
@@ -488,73 +589,6 @@
     });
   }
 
-  // Función para generar factura
-  function generarFactura(solicitudId) {
-    Swal.fire({
-      title: 'Generar Factura',
-      html: `
-        <div class="text-start">
-          <p class="text-muted mb-3"><small>El IVA se toma del valor configurado en la edición de la cotización.</small></p>
-          <div class="mb-3">
-            <label class="form-label">Forma de Pago</label>
-            <select id="swal-forma-pago" class="form-select">
-              <option value="Contado">Contado</option>
-              <option value="Crédito 30 días">Crédito 30 días</option>
-              <option value="Crédito 60 días">Crédito 60 días</option>
-              <option value="Crédito 90 días">Crédito 90 días</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Días de vencimiento</label>
-            <input type="number" id="swal-dias-vencimiento" class="form-control" value="0" min="0">
-          </div>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonColor: '#BCA9F5',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Generar Factura',
-      cancelButtonText: 'Cancelar',
-      preConfirm: () => {
-        return {
-          forma_pago: document.getElementById('swal-forma-pago').value,
-          dias_vencimiento: document.getElementById('swal-dias-vencimiento').value || 0
-        };
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: 'Generando factura...',
-          allowOutsideClick: false,
-          didOpen: () => { Swal.showLoading(); }
-        });
-
-        $.post(`/solicitudes/${solicitudId}/factura`, {
-          _token: '{{ csrf_token() }}',
-          forma_pago: result.value.forma_pago,
-          dias_vencimiento: result.value.dias_vencimiento
-        }, function(response) {
-          if (response.success) {
-            Swal.fire({
-              title: '¡Factura Generada!',
-              text: response.mensaje,
-              icon: 'success',
-              showCancelButton: true,
-              confirmButtonText: 'Descargar PDF',
-              cancelButtonText: 'Cerrar'
-            }).then((downloadResult) => {
-              if (downloadResult.isConfirmed) {
-                window.open(`/solicitudes/${solicitudId}/factura/pdf`, '_blank');
-              }
-              $('#solicitudes-table').DataTable().ajax.reload();
-            });
-          }
-        }).fail(function(xhr) {
-          Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al generar la factura', 'error');
-        });
-      }
-    });
-  }
   </script>
   @endpush
 

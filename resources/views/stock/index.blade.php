@@ -169,6 +169,7 @@
                 <th>Disp./Reserv.</th>
                 <th>Mín/Máx</th>
                 <th>Ubicación</th>
+                <th>Ubic. Específica</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -339,8 +340,8 @@
             </div>
             
             <div class="mb-3">
-              <label class="form-label">Ubicación en Bodega</label>
-              <input type="text" class="form-control" name="ubicacion" id="config_ubicacion" 
+              <label class="form-label">Ubicación Específica</label>
+              <input type="text" class="form-control" name="ubicacion" id="config_ubicacion"
                      placeholder="Ej: Pasillo A, Estante 3">
             </div>
             
@@ -477,6 +478,7 @@
         { data: 'disponible_reservado', orderable: false },
         { data: 'stock_minimo_maximo', orderable: false },
         { data: 'ubicacion', name: 'ubicacion' },
+        { data: 'ubicacion_especifica', name: 'ubicacion_especifica', orderable: false },
         { data: 'action', orderable: false, searchable: false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",

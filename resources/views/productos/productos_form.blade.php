@@ -254,6 +254,17 @@
           @error('ubicacion_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
           <small class="text-muted">Bodega o tienda donde se almacena</small>
         </div>
+
+        {{-- Ubicación Específica --}}
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Ubicación Específica</label>
+          <input type="text" name="ubicacion"
+                 class="form-control @error('ubicacion') is-invalid @enderror"
+                 value="{{ old('ubicacion', $producto->stockPrincipal->ubicacion ?? '') }}"
+                 placeholder="Ej: Pasillo A, Estante 3">
+          @error('ubicacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+          <small class="text-muted">Detalle de ubicación dentro de la bodega</small>
+        </div>
       </div>
     </div>
 
@@ -375,13 +386,21 @@
                             </label>
                           </div>
                           <div class="form-check">
-                            <input type="checkbox" name="eliminar_imagenes[]" 
-                                   value="{{ $imagen->id }}" 
+                            <input type="checkbox" name="eliminar_imagenes[]"
+                                   value="{{ $imagen->id }}"
                                    class="form-check-input"
                                    id="eliminar_{{ $imagen->id }}">
                             <label class="form-check-label text-danger" for="eliminar_{{ $imagen->id }}">
                               Eliminar
                             </label>
+                          </div>
+                          {{-- Asignación de variante --}}
+                          <div class="mt-2 imagen-variante-select" style="{{ $producto->tiene_variantes ? '' : 'display:none;' }}">
+                            <label class="form-label small mb-1">Variante:</label>
+                            <select name="imagen_variante[{{ $imagen->id }}]" class="form-select form-select-sm imagen-variante-dropdown"
+                                    data-current-variante-id="{{ $imagen->variante_producto_id }}">
+                              <option value="">General</option>
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -510,6 +529,26 @@
       
       $('#tiene_variantes').change(toggleVariantes);
       toggleVariantes(); // Ejecutar al cargar
+
+      // Inicializar opciones de variantes en imágenes existentes
+      setTimeout(function() {
+        actualizarVariantesEnImagenes();
+        // Restaurar selección de variante para imágenes existentes
+        @if($producto->exists)
+          @foreach($producto->imagenes as $imagen)
+            @if($imagen->variante_producto_id)
+              @php
+                $varianteIdx = $producto->variantes->search(function($v) use ($imagen) {
+                    return $v->id == $imagen->variante_producto_id;
+                });
+              @endphp
+              @if($varianteIdx !== false)
+                $('select[name="imagen_variante[{{ $imagen->id }}]"]').val('{{ $varianteIdx }}');
+              @endif
+            @endif
+          @endforeach
+        @endif
+      }, 100);
       
       // Contador para variantes
       let varianteIndex = {{ $producto->exists ? $producto->variantes->count() : 0 }};
@@ -550,6 +589,47 @@
       // Eliminar variante
       $(document).on('click', '.removeVariante', function() {
         $(this).closest('.variante-row').remove();
+        actualizarVariantesEnImagenes();
+      });
+
+      // Actualizar las opciones de variantes en los selects de imágenes
+      function actualizarVariantesEnImagenes() {
+        const variantes = [];
+        $('#variantesContainer .variante-row').each(function(idx) {
+          const ref = $(this).find('[name$="[referencia_variante]"]').val();
+          const color = $(this).find('[name$="[color]"]').val();
+          const label = [ref, color].filter(Boolean).join(' - ') || 'Variante ' + (idx + 1);
+          variantes.push({ index: idx, label: label });
+        });
+
+        // Actualizar todos los selects de imágenes (existentes y nuevas)
+        $('.imagen-variante-dropdown').each(function() {
+          const $select = $(this);
+          const currentVal = $select.val();
+          const currentVarianteId = $select.data('current-variante-id');
+          $select.find('option:not(:first)').remove();
+          variantes.forEach(v => {
+            $select.append(`<option value="${v.index}">${v.label}</option>`);
+          });
+          // Restaurar selección si posible
+          if (currentVal !== '' && currentVal !== null) {
+            $select.val(currentVal);
+          }
+        });
+
+        // Mostrar/ocultar dropdowns según tenga variantes
+        const tieneVariantes = $('#tiene_variantes').is(':checked');
+        $('.imagen-variante-select').toggle(tieneVariantes);
+      }
+
+      // Sincronizar al cambiar campos de variantes
+      $(document).on('input', '#variantesContainer input', function() {
+        actualizarVariantesEnImagenes();
+      });
+
+      // Sincronizar al cambiar tiene_variantes
+      $('#tiene_variantes').change(function() {
+        actualizarVariantesEnImagenes();
       });
       
       // Manejo de imágenes con acumulación
@@ -577,16 +657,30 @@
         
         $('#imagenesPreview').append('<h6 class="col-12 mb-2">Imágenes a subir:</h6>');
         
+        const tieneVariantes = $('#tiene_variantes').is(':checked');
+
         imagenesFiles.forEach((fileInfo, index) => {
+          let varianteSelectHtml = '';
+          if (tieneVariantes) {
+            varianteSelectHtml = `
+              <div class="mt-2 imagen-variante-select">
+                <label class="form-label small mb-1">Variante:</label>
+                <select name="imagen_variante_nueva[${index}]" class="form-select form-select-sm imagen-variante-dropdown">
+                  <option value="">General</option>
+                </select>
+              </div>
+            `;
+          }
+
           const preview = `
             <div class="col-md-3 mb-3" data-index="${index}">
               <div class="card">
-                <img src="${fileInfo.preview}" class="card-img-top" 
+                <img src="${fileInfo.preview}" class="card-img-top"
                      style="height: 150px; object-fit: cover;">
                 <div class="card-body p-2">
                   <div class="form-check mb-2">
-                    <input class="form-check-input imagen-principal-nueva" type="radio" 
-                           name="imagen_principal_nueva" value="${index}" 
+                    <input class="form-check-input imagen-principal-nueva" type="radio"
+                           name="imagen_principal_nueva" value="${index}"
                            id="principal_nueva_${index}" ${index === 0 ? 'checked' : ''}>
                     <label class="form-check-label" for="principal_nueva_${index}">
                       Principal
@@ -594,6 +688,7 @@
                   </div>
                   <small class="text-muted d-block text-truncate">${fileInfo.file.name}</small>
                   <small class="text-muted d-block">${(fileInfo.file.size / 1024).toFixed(2)} KB</small>
+                  ${varianteSelectHtml}
                   <button type="button" class="btn btn-danger btn-sm w-100 mt-2 removeImage" data-index="${index}">
                     <i class="bi bi-trash"></i> Eliminar
                   </button>
@@ -603,6 +698,11 @@
           `;
           $('#imagenesPreview').append(preview);
         });
+
+        // Actualizar opciones de variantes en los nuevos selects
+        if (tieneVariantes) {
+          actualizarVariantesEnImagenes();
+        }
         
         actualizarContadorImagenes();
       }

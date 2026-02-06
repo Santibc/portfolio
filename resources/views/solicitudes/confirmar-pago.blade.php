@@ -31,12 +31,21 @@
               @endif
             </div>
             <div class="col-md-4 text-center border-end">
-              <small class="text-muted d-block">Ya Pagado</small>
+              <small class="text-muted d-block">Pagado (aprobado)</small>
               <h4 class="text-success mb-0">$ {{ number_format($solicitud->monto_pagado, 0, ',', '.') }}</h4>
             </div>
             <div class="col-md-4 text-center">
               <small class="text-muted d-block">Saldo Pendiente</small>
               <h4 class="text-danger mb-0">$ {{ number_format($solicitud->saldo_pendiente, 0, ',', '.') }}</h4>
+              @php
+                $montoEnEspera = $solicitud->pagosPendientes()->sum('monto');
+              @endphp
+              @if($montoEnEspera > 0)
+                <small class="text-warning d-block mt-1">
+                  <i class="bi bi-clock me-1"></i>
+                  $ {{ number_format($montoEnEspera, 0, ',', '.') }} en espera de aprobación
+                </small>
+              @endif
             </div>
           </div>
         </div>
@@ -53,16 +62,20 @@
           <div class="p-4">
             <div class="row g-3">
               {{-- Monto --}}
+              @php
+                $montoPendienteAprobacion = $solicitud->pagosPendientes()->sum('monto');
+                $maxPermitido = max(0.01, $solicitud->saldo_pendiente - $montoPendienteAprobacion);
+              @endphp
               <div class="col-md-6">
                 <label for="monto" class="form-label">Monto a Registrar <span class="text-danger">*</span></label>
                 <div class="input-group">
                   <span class="input-group-text">$</span>
                   <input type="number" class="form-control" id="monto" name="monto"
-                         value="{{ $solicitud->saldo_pendiente }}"
-                         max="{{ $solicitud->saldo_pendiente }}"
+                         value="{{ $maxPermitido }}"
+                         max="{{ $maxPermitido }}"
                          min="0.01" step="0.01" required>
                 </div>
-                <small class="text-muted">Máximo: $ {{ number_format($solicitud->saldo_pendiente, 0, ',', '.') }}</small>
+                <small class="text-muted">Máximo disponible: $ {{ number_format($maxPermitido, 0, ',', '.') }}</small>
               </div>
 
               {{-- Método de pago --}}
@@ -106,32 +119,60 @@
         </form>
       </div>
 
-      {{-- Historial de pagos (si hay pago parcial) --}}
-      @if($solicitud->monto_pagado > 0)
+      {{-- Historial de pagos --}}
+      @if($solicitud->pagos->count() > 0)
       <div class="bg-white shadow-sm rounded-lg overflow-hidden mt-4">
         <div class="p-4 border-bottom">
-          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Información de Pago Anterior</h5>
+          <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historial de Pagos ({{ $solicitud->pagos->count() }})</h5>
         </div>
         <div class="p-4">
-          <div class="row">
-            <div class="col-md-6">
-              <p class="mb-1"><strong>Método:</strong> {{ $metodosPago[$solicitud->metodo_pago] ?? '-' }}</p>
-              <p class="mb-1"><strong>Monto pagado:</strong> $ {{ number_format($solicitud->monto_pagado, 0, ',', '.') }}</p>
-            </div>
-            <div class="col-md-6">
-              @if($solicitud->verificadoPor)
-                <p class="mb-1"><strong>Verificado por:</strong> {{ $solicitud->verificadoPor->name }}</p>
-              @endif
-              @if($solicitud->verificado_en)
-                <p class="mb-1"><strong>Fecha:</strong> {{ $solicitud->verificado_en->format('d/m/Y H:i') }}</p>
-              @endif
-            </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Monto</th>
+                  <th>Método</th>
+                  <th>Registrado por</th>
+                  <th>Estado</th>
+                  <th>Notas</th>
+                  <th>Comprobante</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($solicitud->pagos->sortBy('created_at') as $index => $pago)
+                <tr>
+                  <td>{{ $index + 1 }}</td>
+                  <td>{{ $pago->created_at->format('d/m/Y H:i') }}</td>
+                  <td><strong>$ {{ number_format($pago->monto, 0, ',', '.') }}</strong></td>
+                  <td>{{ $metodosPago[$pago->metodo_pago] ?? $pago->metodo_pago }}</td>
+                  <td>{{ $pago->registradoPor?->name ?? '-' }}</td>
+                  <td>
+                    <span class="badge bg-{{ $pago->color_estado }}">{{ $pago->etiqueta_estado }}</span>
+                    @if($pago->estaAprobado() && $pago->aprobadoPor)
+                      <br><small class="text-muted">por {{ $pago->aprobadoPor->name }}</small>
+                    @endif
+                    @if($pago->estaRechazado() && $pago->aprobadoPor)
+                      <br><small class="text-muted">por {{ $pago->aprobadoPor->name }}</small>
+                    @endif
+                  </td>
+                  <td>{{ $pago->notas ?? '-' }}</td>
+                  <td>
+                    @if($pago->comprobante)
+                      <a href="{{ url('/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante') }}"
+                         class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-download me-1"></i> Descargar
+                      </a>
+                    @else
+                      <span class="text-muted">-</span>
+                    @endif
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
           </div>
-          @if($solicitud->comprobante_pago)
-            <a href="{{ route('pagos.comprobante', $solicitud) }}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">
-              <i class="bi bi-file-earmark-pdf me-1"></i> Ver Comprobante
-            </a>
-          @endif
         </div>
       </div>
       @endif

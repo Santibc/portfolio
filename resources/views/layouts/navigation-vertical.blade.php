@@ -161,6 +161,11 @@
                 <i class="bi bi-exclamation-triangle"></i>
                 <span>Novedades</span>
             </a>
+            <a href="{{ route('productos.importacion.historial') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos/historial-importaciones*') || request()->is('productos/importacion*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-upload"></i>
+                <span>Importar Productos</span>
+            </a>
         @endif
 
         {{-- Punto de Venta (para admin, inventarios, punto_venta) - OCULTO TEMPORALMENTE

@@ -61,6 +61,10 @@ class SolicitudCotizacion extends Model
         'despachado_en',
         'despachado_por',
         'entregado_en',
+        // Campos de descuento de stock
+        'stock_descontado',
+        'stock_descontado_en',
+        'stock_descontado_por',
     ];
 
     protected $casts = [
@@ -85,6 +89,9 @@ class SolicitudCotizacion extends Model
         // Envío
         'despachado_en' => 'datetime',
         'entregado_en' => 'datetime',
+        // Stock
+        'stock_descontado' => 'boolean',
+        'stock_descontado_en' => 'datetime',
     ];
 
     /**
@@ -182,6 +189,26 @@ class SolicitudCotizacion extends Model
     }
 
     /**
+     * Pagos individuales registrados
+     */
+    public function pagos()
+    {
+        return $this->hasMany(PagoSolicitud::class, 'solicitud_cotizacion_id');
+    }
+
+    public function pagosAprobados()
+    {
+        return $this->hasMany(PagoSolicitud::class, 'solicitud_cotizacion_id')
+                    ->where('estado', PagoSolicitud::ESTADO_APROBADO);
+    }
+
+    public function pagosPendientes()
+    {
+        return $this->hasMany(PagoSolicitud::class, 'solicitud_cotizacion_id')
+                    ->where('estado', PagoSolicitud::ESTADO_PENDIENTE);
+    }
+
+    /**
      * Usuario que generó la factura
      */
     public function facturadaPor()
@@ -195,6 +222,14 @@ class SolicitudCotizacion extends Model
     public function despachadoPor()
     {
         return $this->belongsTo(User::class, 'despachado_por');
+    }
+
+    /**
+     * Usuario que descontó el stock
+     */
+    public function stockDescontadoPor()
+    {
+        return $this->belongsTo(User::class, 'stock_descontado_por');
     }
 
     /**
@@ -537,36 +572,91 @@ class SolicitudCotizacion extends Model
     }
 
     /**
-     * Registrar pago
+     * Registrar pago (queda pendiente de aprobación)
      */
     public function registrarPago(
         float $monto,
         string $metodoPago,
         ?string $comprobante = null,
         ?string $notas = null,
-        ?int $verificadoPor = null
-    ): void {
-        $nuevoMontoPagado = $this->monto_pagado + $monto;
-        $montoTotal = $this->monto_total_con_iva; // Incluye IVA
+        ?int $registradoPor = null
+    ): PagoSolicitud {
+        return $this->pagos()->create([
+            'monto' => $monto,
+            'metodo_pago' => $metodoPago,
+            'comprobante' => $comprobante,
+            'notas' => $notas,
+            'registrado_por' => $registradoPor,
+            'estado' => PagoSolicitud::ESTADO_PENDIENTE,
+        ]);
+    }
 
-        // Determinar estado de pago
+    /**
+     * Aprobar un pago pendiente y recalcular totales
+     */
+    public function aprobarPago(PagoSolicitud $pago, int $aprobadoPor): void
+    {
+        if (!$pago->estaPendiente()) {
+            throw new \Exception('Este pago ya fue procesado');
+        }
+
+        $pago->update([
+            'estado' => PagoSolicitud::ESTADO_APROBADO,
+            'aprobado_por' => $aprobadoPor,
+            'aprobado_en' => now(),
+        ]);
+
+        $this->recalcularPagos();
+    }
+
+    /**
+     * Rechazar un pago pendiente
+     */
+    public function rechazarPago(PagoSolicitud $pago, int $rechazadoPor): void
+    {
+        if (!$pago->estaPendiente()) {
+            throw new \Exception('Este pago ya fue procesado');
+        }
+
+        $pago->update([
+            'estado' => PagoSolicitud::ESTADO_RECHAZADO,
+            'aprobado_por' => $rechazadoPor,
+            'aprobado_en' => now(),
+        ]);
+    }
+
+    /**
+     * Recalcular totales de pago basado solo en pagos aprobados
+     */
+    public function recalcularPagos(): void
+    {
+        $totalAprobado = $this->pagos()
+            ->where('estado', PagoSolicitud::ESTADO_APROBADO)
+            ->sum('monto');
+
+        $montoTotal = $this->monto_total_con_iva;
+        $totalAprobado = min($totalAprobado, $montoTotal);
+
         $estadoPago = self::PAGO_PENDIENTE;
-        if ($nuevoMontoPagado >= $montoTotal) {
+        if ($totalAprobado >= $montoTotal) {
             $estadoPago = self::PAGO_PAGADO;
-            $nuevoMontoPagado = $montoTotal; // No permitir sobrepago
-        } elseif ($nuevoMontoPagado > 0) {
+        } elseif ($totalAprobado > 0) {
             $estadoPago = self::PAGO_PARCIAL;
         }
 
+        $ultimoPago = $this->pagos()
+            ->where('estado', PagoSolicitud::ESTADO_APROBADO)
+            ->latest()
+            ->first();
+
         $this->update([
             'estado_pago' => $estadoPago,
-            'metodo_pago' => $metodoPago,
-            'comprobante_pago' => $comprobante,
-            'monto_pagado' => $nuevoMontoPagado,
+            'monto_pagado' => $totalAprobado,
+            'metodo_pago' => $ultimoPago?->metodo_pago,
+            'comprobante_pago' => $ultimoPago?->comprobante,
             'pagado_en' => $estadoPago === self::PAGO_PAGADO ? now() : $this->pagado_en,
-            'verificado_por' => $verificadoPor,
-            'verificado_en' => $verificadoPor ? now() : null,
-            'notas_pago' => $notas,
+            'verificado_por' => $ultimoPago?->aprobado_por,
+            'verificado_en' => $ultimoPago ? now() : null,
         ]);
     }
 

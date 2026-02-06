@@ -156,6 +156,26 @@
               </div>
             </div>
 
+            {{-- Forma de Pago y Días de Vencimiento --}}
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Forma de Pago</label>
+                <select name="forma_pago_factura" class="form-select" id="formaPago">
+                  <option value="">Seleccione...</option>
+                  <option value="Contado" {{ ($solicitud->forma_pago_factura == 'Contado') ? 'selected' : '' }}>Contado</option>
+                  <option value="Crédito 30 días" {{ ($solicitud->forma_pago_factura == 'Crédito 30 días') ? 'selected' : '' }}>Crédito 30 días</option>
+                  <option value="Crédito 60 días" {{ ($solicitud->forma_pago_factura == 'Crédito 60 días') ? 'selected' : '' }}>Crédito 60 días</option>
+                  <option value="Crédito 90 días" {{ ($solicitud->forma_pago_factura == 'Crédito 90 días') ? 'selected' : '' }}>Crédito 90 días</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Días de Vencimiento</label>
+                <input type="number" name="dias_vencimiento" class="form-control" id="diasVencimiento"
+                       value="{{ $solicitud->fecha_vencimiento ? now()->diffInDays($solicitud->fecha_vencimiento, false) : 0 }}" min="0">
+                <small class="text-muted">Cantidad de días a partir de hoy para el vencimiento</small>
+              </div>
+            </div>
+
             {{-- Notas y observaciones --}}
             <div class="row mb-4">
               <div class="col-md-6">

@@ -23,7 +23,7 @@
               <select name="ubicacion_origen_id" id="ubicacion_origen_id"
                 class="w-full px-3 py-2 border rounded-md @error('ubicacion_origen_id') border-red-500 @enderror" required>
                 <option value="">Seleccione ubicación de origen</option>
-                @foreach($ubicaciones as $ubicacion)
+                @foreach($ubicacionesOrigen as $ubicacion)
                   <option value="{{ $ubicacion->id }}" {{ old('ubicacion_origen_id') == $ubicacion->id ? 'selected' : '' }}>
                     {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                   </option>
@@ -39,7 +39,7 @@
               <select name="ubicacion_destino_id" id="ubicacion_destino_id"
                 class="w-full px-3 py-2 border rounded-md @error('ubicacion_destino_id') border-red-500 @enderror" required>
                 <option value="">Seleccione ubicación de destino</option>
-                @foreach($ubicaciones as $ubicacion)
+                @foreach($ubicacionesDestino as $ubicacion)
                   <option value="{{ $ubicacion->id }}" {{ old('ubicacion_destino_id') == $ubicacion->id ? 'selected' : '' }}>
                     {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                   </option>

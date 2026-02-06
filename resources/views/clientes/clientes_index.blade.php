@@ -57,7 +57,7 @@
           { extend:'pageLength', className:'btn btn-outline-dark', text:'Filas ' },
           { extend:'colvis',     className:'btn btn-outline-dark', text:'Columnas', columns:':not(.noVis)' },
           { extend:'excelHtml5', className:'btn btn-outline-success', text:'Excel' },
-          @if(auth()->user()->hasRole(['admin', 'inventarios']))
+          @if(auth()->user()->hasRole(['admin', 'inventarios', 'facturacion']))
           {
             text:'Nuevo', className:'btn btn-outline-primary',
             action: () => window.location.href = "{{ route('clientes.form') }}"

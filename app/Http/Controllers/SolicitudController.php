@@ -137,12 +137,6 @@ class SolicitudController extends Controller
                     return $badge;
                 })
                 ->addColumn('factura', function($s) {
-                    if ($s->tieneFactura()) {
-                        return '<a href="'.route('solicitudes.factura-pdf', $s->id).'"
-                                   class="text-decoration-none" target="_blank" title="Descargar">
-                                   <i class="bi bi-file-earmark-check text-success"></i> '.$s->numero_factura.'
-                                </a>';
-                    }
                     return '-';
                 })
                 ->addColumn('action', function($s) {
@@ -154,8 +148,8 @@ class SolicitudController extends Controller
                                    <i class="bi bi-eye"></i>
                                 </button>';
 
-                    // Botón editar (solo si está pendiente)
-                    if ($s->esEditable()) {
+                    // Botón editar (solo admin y facturación, y si está pendiente)
+                    if ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'facturacion'])) {
                         $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
                                         title="Editar Cotización">
                                        <i class="bi bi-pencil"></i>
@@ -182,24 +176,8 @@ class SolicitudController extends Controller
                                     </a>';
                     }
 
-                    // Botón generar factura (solo si puede generar factura)
-                    if ($s->puedeGenerarFactura()) {
-                        $buttons .= '<button type="button" class="btn btn-outline-purple btn-sm"
-                                            title="Generar Factura" onclick="generarFactura('.$s->id.')">
-                                       <i class="bi bi-receipt"></i>
-                                    </button>';
-                    }
-
-                    // Botón descargar factura (si ya tiene factura)
-                    if ($s->tieneFactura()) {
-                        $buttons .= '<a href="'.route('solicitudes.factura-pdf', $s->id).'" class="btn btn-outline-dark btn-sm"
-                                        title="Descargar Factura" target="_blank">
-                                       <i class="bi bi-file-earmark-text"></i>
-                                    </a>';
-                    }
-
-                    // Botón eliminar (solo si está pendiente)
-                    if ($s->esEliminable()) {
+                    // Botón eliminar (solo admin y facturación, y si es eliminable)
+                    if ($s->esEliminable() && auth()->user()->hasAnyRole(['admin', 'facturacion'])) {
                         $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm"
                                             title="Eliminar Cotización" onclick="eliminarSolicitud('.$s->id.')">
                                        <i class="bi bi-trash"></i>
@@ -237,7 +215,7 @@ class SolicitudController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['estado_badge', 'reserva_badge', 'estado_pago_badge', 'estado_envio_badge', 'factura', 'action'])
+                ->rawColumns(['estado_badge', 'reserva_badge', 'estado_pago_badge', 'estado_envio_badge', 'action'])
                 ->make(true);
         }
 
@@ -285,8 +263,8 @@ class SolicitudController extends Controller
             }
         }
 
-        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso']);
-        
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor']);
+
         $html = '<div class="row">';
 
         // Información del cliente
@@ -330,6 +308,14 @@ class SolicitudController extends Controller
         if ($solicitud->estado === 'rechazada') {
             $html .= '<tr><td><strong>Rechazada por:</strong></td><td>' . $solicitud->rechazadaPor?->name . '</td></tr>';
             $html .= '<tr><td><strong>Fecha rechazo:</strong></td><td>' . $solicitud->rechazada_en->format('d/m/Y H:i') . '</td></tr>';
+        }
+
+        // Forma de pago y fecha de vencimiento
+        if ($solicitud->forma_pago_factura) {
+            $html .= '<tr><td><strong>Forma de Pago:</strong></td><td>' . e($solicitud->forma_pago_factura) . '</td></tr>';
+        }
+        if ($solicitud->fecha_vencimiento) {
+            $html .= '<tr><td><strong>Fecha Vencimiento:</strong></td><td>' . $solicitud->fecha_vencimiento->format('d/m/Y') . '</td></tr>';
         }
 
         $html .= '</table>';
@@ -461,15 +447,6 @@ class SolicitudController extends Controller
                               placeholder="Ingrese observaciones si va a aprobar, o motivo detallado si va a rechazar..."></textarea>';
             $html .= '<small class="text-muted">Este campo se usará como observaciones si aprueba, o como motivo de rechazo si rechaza.</small>';
             $html .= '</div>';
-            $html .= '<div class="mb-3">';
-            $html .= '<div class="form-check">';
-            $html .= '<input class="form-check-input" type="checkbox" id="procesarStock" checked>';
-            $html .= '<label class="form-check-label" for="procesarStock">';
-            $html .= '<strong>Procesar Stock:</strong> Descontar automáticamente del inventario (solo al aprobar)';
-            $html .= '</label>';
-            $html .= '</div>';
-            $html .= '<small class="text-muted">Si está marcado, se descontará el stock de los productos que lo controlen.</small>';
-            $html .= '</div>';
             $html .= '<div class="row g-2">';
             $html .= '<div class="col-md-6">';
             $html .= '<button type="button" class="btn btn-success w-100" onclick="confirmarAplicar(' . $solicitud->id . ')">
@@ -484,9 +461,201 @@ class SolicitudController extends Controller
             $html .= '</div>';
             $html .= '</div>';
         }
-        
+
+        // Historial de pagos (si la cotización está aplicada y tiene pagos registrados)
+        if ($solicitud->estado === 'aplicada' && $solicitud->pagos->count() > 0) {
+            $metodosPago = SolicitudCotizacion::METODOS_PAGO;
+
+            $html .= '<div class="col-12 mt-3">';
+            $html .= '<hr>';
+            $html .= '<h6><i class="bi bi-clock-history me-1"></i> Historial de Pagos</h6>';
+
+            // Resumen de pago
+            $html .= '<div class="row mb-3">';
+            $html .= '<div class="col-md-4 text-center">';
+            $html .= '<small class="text-muted d-block">Total con IVA</small>';
+            $html .= '<strong class="text-primary">$ ' . number_format($solicitud->monto_total_con_iva, 0, ',', '.') . '</strong>';
+            $html .= '</div>';
+            $html .= '<div class="col-md-4 text-center">';
+            $html .= '<small class="text-muted d-block">Pagado (aprobado)</small>';
+            $html .= '<strong class="text-success">$ ' . number_format($solicitud->monto_pagado, 0, ',', '.') . '</strong>';
+            $html .= '</div>';
+            $html .= '<div class="col-md-4 text-center">';
+            $html .= '<small class="text-muted d-block">Saldo Pendiente</small>';
+            $html .= '<strong class="text-danger">$ ' . number_format($solicitud->saldo_pendiente, 0, ',', '.') . '</strong>';
+            $html .= '</div>';
+            $html .= '</div>';
+
+            // Alerta de pagos pendientes de aprobación
+            $pagosPendientesAprobacion = $solicitud->pagos->where('estado', 'pendiente');
+            if ($pagosPendientesAprobacion->count() > 0) {
+                $montoPendienteAprobacion = $pagosPendientesAprobacion->sum('monto');
+                $html .= '<div class="alert alert-warning py-2 text-center small mb-3">';
+                $html .= '<i class="bi bi-clock me-1"></i>';
+                $html .= $pagosPendientesAprobacion->count() . ' pago(s) pendiente(s) de aprobación por ';
+                $html .= '<strong>$ ' . number_format($montoPendienteAprobacion, 0, ',', '.') . '</strong>';
+                $html .= '</div>';
+            }
+
+            // Tabla de pagos
+            $html .= '<div class="table-responsive">';
+            $html .= '<table class="table table-sm table-striped">';
+            $html .= '<thead class="table-light">';
+            $html .= '<tr>';
+            $html .= '<th>#</th>';
+            $html .= '<th>Fecha</th>';
+            $html .= '<th>Monto</th>';
+            $html .= '<th>Método</th>';
+            $html .= '<th>Registrado por</th>';
+            $html .= '<th>Estado</th>';
+            $html .= '<th>Notas</th>';
+            $html .= '<th>Comprobante</th>';
+            $html .= '<th>Acciones</th>';
+            $html .= '</tr>';
+            $html .= '</thead>';
+            $html .= '<tbody>';
+
+            foreach ($solicitud->pagos->sortBy('created_at') as $index => $pago) {
+                $html .= '<tr>';
+                $html .= '<td>' . ($index + 1) . '</td>';
+                $html .= '<td>' . $pago->created_at->format('d/m/Y H:i') . '</td>';
+                $html .= '<td><strong>$ ' . number_format($pago->monto, 0, ',', '.') . '</strong></td>';
+                $html .= '<td>' . ($metodosPago[$pago->metodo_pago] ?? $pago->metodo_pago) . '</td>';
+                $html .= '<td>' . ($pago->registradoPor?->name ?? '-') . '</td>';
+
+                // Estado del pago
+                $html .= '<td>';
+                $html .= '<span class="badge bg-' . $pago->color_estado . '">' . $pago->etiqueta_estado . '</span>';
+                if ($pago->estaAprobado() && $pago->aprobadoPor) {
+                    $html .= '<br><small class="text-muted">por ' . e($pago->aprobadoPor->name) . '</small>';
+                }
+                if ($pago->estaRechazado() && $pago->aprobadoPor) {
+                    $html .= '<br><small class="text-muted">por ' . e($pago->aprobadoPor->name) . '</small>';
+                }
+                $html .= '</td>';
+
+                $html .= '<td>' . ($pago->notas ? e($pago->notas) : '-') . '</td>';
+                $html .= '<td>';
+                if ($pago->comprobante) {
+                    $html .= '<a href="/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante" target="_blank" class="btn btn-sm btn-outline-primary">';
+                    $html .= '<i class="bi bi-download me-1"></i> Descargar';
+                    $html .= '</a>';
+                } else {
+                    $html .= '<span class="text-muted">-</span>';
+                }
+                $html .= '</td>';
+
+                // Acciones
+                $html .= '<td>';
+                if ($pago->estaPendiente() && $user->hasAnyRole(['admin', 'facturacion'])) {
+                    $html .= '<button type="button" class="btn btn-sm btn-success me-1" ';
+                    $html .= 'onclick="aprobarPago(' . $solicitud->id . ', ' . $pago->id . ')" ';
+                    $html .= 'title="Aprobar Pago">';
+                    $html .= '<i class="bi bi-check-circle"></i>';
+                    $html .= '</button>';
+                    $html .= '<button type="button" class="btn btn-sm btn-danger" ';
+                    $html .= 'onclick="rechazarPago(' . $solicitud->id . ', ' . $pago->id . ')" ';
+                    $html .= 'title="Rechazar Pago">';
+                    $html .= '<i class="bi bi-x-circle"></i>';
+                    $html .= '</button>';
+                } elseif ($pago->estaPendiente()) {
+                    $html .= '<span class="text-muted small">Esperando aprobación</span>';
+                } else {
+                    $html .= '-';
+                }
+                $html .= '</td>';
+
+                $html .= '</tr>';
+            }
+
+            $html .= '</tbody>';
+            $html .= '</table>';
+            $html .= '</div>';
+
+            // Badge de estado de pago
+            $html .= '<div class="text-end">';
+            $html .= '<span class="badge bg-' . $solicitud->color_estado_pago . ' fs-6">';
+            $html .= 'Estado de Pago: ' . $solicitud->etiqueta_estado_pago;
+            $html .= '</span>';
+            $html .= '</div>';
+
+            $html .= '</div>';
+        }
+
+        // Sección de descuento de stock (solo para cotizaciones aplicadas)
+        if ($solicitud->estado === 'aplicada') {
+            $html .= '<div class="col-12 mt-3">';
+            $html .= '<hr>';
+            $html .= '<h6><i class="bi bi-box-seam me-1"></i> Descuento de Stock</h6>';
+
+            if (!$solicitud->stock_descontado) {
+                // Botón para descontar stock
+                $html .= '<div class="alert alert-warning d-flex align-items-center justify-content-between">';
+                $html .= '<div>';
+                $html .= '<i class="bi bi-exclamation-triangle me-2"></i>';
+                $html .= '<strong>Stock pendiente de descontar.</strong> ';
+                $html .= '<span class="text-muted">El stock de los productos no ha sido descontado del inventario.</span>';
+                $html .= '</div>';
+                $html .= '<button type="button" class="btn btn-warning btn-sm ms-3" onclick="confirmarDescontarStock(' . $solicitud->id . ')">';
+                $html .= '<i class="bi bi-box-arrow-down me-1"></i> Descontar de Stock';
+                $html .= '</button>';
+                $html .= '</div>';
+            } else {
+                // Info de quién descontó y cuándo
+                $html .= '<div class="alert alert-success">';
+                $html .= '<i class="bi bi-check-circle me-2"></i>';
+                $html .= '<strong>Stock descontado</strong> por <strong>' . ($solicitud->stockDescontadoPor?->name ?? 'Sistema') . '</strong>';
+                $html .= ' el ' . $solicitud->stock_descontado_en->format('d/m/Y H:i');
+                $html .= '</div>';
+
+                // Tabla de movimientos de stock
+                $movimientos = MovimientoStock::where('solicitud_cotizacion_id', $solicitud->id)
+                    ->where('tipo_movimiento', 'salida')
+                    ->with(['producto', 'variante', 'usuario'])
+                    ->orderBy('created_at')
+                    ->get();
+
+                if ($movimientos->count() > 0) {
+                    $html .= '<div class="table-responsive">';
+                    $html .= '<table class="table table-sm table-striped">';
+                    $html .= '<thead class="table-light">';
+                    $html .= '<tr>';
+                    $html .= '<th>Producto</th>';
+                    $html .= '<th>Cantidad</th>';
+                    $html .= '<th>Stock Anterior</th>';
+                    $html .= '<th>Stock Nuevo</th>';
+                    $html .= '<th>Descontado por</th>';
+                    $html .= '<th>Fecha</th>';
+                    $html .= '</tr>';
+                    $html .= '</thead>';
+                    $html .= '<tbody>';
+
+                    foreach ($movimientos as $mov) {
+                        $descProducto = $mov->producto->nombre;
+                        if ($mov->variante) {
+                            $descProducto .= ' - ' . $mov->variante->nombre_variante;
+                        }
+                        $html .= '<tr>';
+                        $html .= '<td>' . e($descProducto) . '</td>';
+                        $html .= '<td><span class="badge bg-danger">-' . $mov->cantidad . '</span></td>';
+                        $html .= '<td>' . $mov->stock_anterior . '</td>';
+                        $html .= '<td>' . $mov->stock_nuevo . '</td>';
+                        $html .= '<td>' . ($mov->usuario?->name ?? '-') . '</td>';
+                        $html .= '<td>' . $mov->created_at->format('d/m/Y H:i') . '</td>';
+                        $html .= '</tr>';
+                    }
+
+                    $html .= '</tbody>';
+                    $html .= '</table>';
+                    $html .= '</div>';
+                }
+            }
+
+            $html .= '</div>';
+        }
+
         $html .= '</div>';
-        
+
         return response($html);
     }
 
@@ -566,41 +735,13 @@ class SolicitudController extends Controller
 
         $request->validate([
             'observaciones' => 'nullable|string|max:1000',
-            'procesar_stock' => 'boolean'
         ]);
 
         DB::beginTransaction();
 
         try {
-            $procesarStock = $request->boolean('procesar_stock', true);
-            $stockProcesado = [];
-            $stockInsuficiente = [];
-            
-            // Procesar stock si se solicita
-            if ($procesarStock) {
-                foreach ($solicitud->items as $item) {
-                    $resultado = $this->procesarStockItem($item, $user->id, $solicitud->id);
-                    
-                    if ($resultado['procesado']) {
-                        $stockProcesado[] = $resultado['mensaje'];
-                    } elseif ($resultado['error']) {
-                        $stockInsuficiente[] = $resultado['mensaje'];
-                    }
-                }
-                
-                // Si hay stock insuficiente y no se permite venta sin stock, fallar
-                if (!empty($stockInsuficiente)) {
-                    $errorMsg = "No se puede procesar la solicitud por stock insuficiente:\n" . implode("\n", $stockInsuficiente);
-                    throw new \Exception($errorMsg);
-                }
-            }
-            
             // Marcar como aplicada
             $observaciones = $request->observaciones;
-            if ($procesarStock && !empty($stockProcesado)) {
-                $observaciones .= "\n\nMovimientos de stock procesados:\n" . implode("\n", $stockProcesado);
-            }
-            
             $solicitud->marcarComoAplicada($user->id, $observaciones);
             
             // Cargar relaciones necesarias para el PDF
@@ -637,11 +778,7 @@ class SolicitudController extends Controller
 
             DB::commit();
             
-            $mensaje = 'Solicitud marcada como aplicada exitosamente.';
-            if ($procesarStock) {
-                $mensaje .= ' Stock procesado correctamente.';
-            }
-            $mensaje .= $mensajeEmail;
+            $mensaje = 'Solicitud marcada como aplicada exitosamente.' . $mensajeEmail;
             
             return response()->json([
                 'success' => true,
@@ -748,6 +885,79 @@ class SolicitudController extends Controller
     /**
      * Procesar stock de un item individual
      */
+    /**
+     * Descontar stock de una cotización aplicada (acción independiente)
+     */
+    public function descontarStock(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para descontar stock'
+            ], 403);
+        }
+
+        if ($solicitud->estado !== 'aplicada') {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'La cotización debe estar aplicada para descontar stock'
+            ], 400);
+        }
+
+        if ($solicitud->stock_descontado) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'El stock ya fue descontado para esta cotización'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $stockProcesado = [];
+            $stockInsuficiente = [];
+
+            foreach ($solicitud->items as $item) {
+                $resultado = $this->procesarStockItem($item, $user->id, $solicitud->id);
+
+                if ($resultado['procesado']) {
+                    $stockProcesado[] = $resultado['mensaje'];
+                } elseif ($resultado['error']) {
+                    $stockInsuficiente[] = $resultado['mensaje'];
+                }
+            }
+
+            if (!empty($stockInsuficiente)) {
+                $errorMsg = "No se puede descontar stock por stock insuficiente:\n" . implode("\n", $stockInsuficiente);
+                throw new \Exception($errorMsg);
+            }
+
+            // Marcar stock como descontado
+            $solicitud->update([
+                'stock_descontado' => true,
+                'stock_descontado_en' => now(),
+                'stock_descontado_por' => $user->id,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Stock descontado correctamente por ' . $user->name . '.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al descontar stock: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function procesarStockItem($item, $usuarioId, $solicitudId)
     {
         $producto = $item->producto;
@@ -930,16 +1140,9 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar permisos - solo admin y facturación pueden editar
+        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
             abort(403, 'No tiene permisos para editar cotizaciones');
-        }
-
-        // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
-            if ($solicitud->cliente->vendedor_id != $user->id) {
-                abort(403, 'No tiene permisos para editar esta cotización');
-            }
         }
 
         // Verificar que sea editable
@@ -996,8 +1199,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar permisos - solo admin y facturación pueden eliminar
+        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para eliminar cotizaciones'

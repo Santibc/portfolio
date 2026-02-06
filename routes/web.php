@@ -112,8 +112,8 @@ Route::middleware(['auth', 'role:admin,vendedor,inventarios,facturacion'])->grou
     Route::get('documentos-cliente/{documento}/descargar', [ClientesController::class, 'descargarDocumento'])->name('clientes.documentos.descargar');
 });
 
-// Solo Admin e Inventarios pueden crear/editar/eliminar clientes
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+// Admin, Inventarios y Facturación pueden crear/editar clientes
+Route::middleware(['auth', 'role:admin,inventarios,facturacion'])->group(function () {
     // Clientes - Crear/Editar
     Route::get('clientes/form/{cliente?}', [ClientesController::class, 'form'])->name('clientes.form');
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])->name('clientes.guardar');
@@ -166,11 +166,9 @@ Route::middleware(['auth', 'role:admin,vendedor,facturacion'])->group(function (
     // Acciones de estado (métodos antiguos, mantener por compatibilidad)
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
     Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
+    Route::post('/solicitudes/{solicitud}/descontar-stock', [SolicitudController::class, 'descontarStock'])->name('solicitudes.descontar-stock');
 
-    // CRUD completo (Fase 5)
-    Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
-    Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
-    Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
+    // CRUD completo (Fase 5) - Editar/Eliminar solo admin y facturación (ver grupo aparte abajo)
 
     // Acciones adicionales
     Route::post('/solicitudes/{solicitud}/clonar', [SolicitudController::class, 'clonar'])->name('solicitudes.clonar');
@@ -191,14 +189,28 @@ Route::middleware(['auth', 'role:admin,vendedor,facturacion'])->group(function (
 });
 
 // ============================================================
-// PAGOS Y FACTURACIÓN (Admin y Facturación)
+// EDICIÓN/ELIMINACIÓN DE COTIZACIONES (Solo Admin y Facturación)
 // ============================================================
 Route::middleware(['auth', 'role:admin,facturacion'])->group(function () {
+    Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
+    Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
+    Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
+});
+
+// ============================================================
+// PAGOS Y FACTURACIÓN (Admin, Facturación y Vendedor)
+// ============================================================
+Route::middleware(['auth', 'role:admin,facturacion,vendedor'])->group(function () {
     // Pagos
     Route::get('/solicitudes/{solicitud}/pago', [App\Http\Controllers\PagosController::class, 'create'])->name('pagos.create');
     Route::post('/solicitudes/{solicitud}/pago', [App\Http\Controllers\PagosController::class, 'store'])->name('pagos.store');
     Route::get('/solicitudes/{solicitud}/pago/detalle', [App\Http\Controllers\PagosController::class, 'show'])->name('pagos.show');
     Route::get('/solicitudes/{solicitud}/comprobante', [App\Http\Controllers\PagosController::class, 'descargarComprobante'])->name('pagos.comprobante');
+    Route::get('/solicitudes/{solicitud}/pagos/{pago}/comprobante', [App\Http\Controllers\PagosController::class, 'descargarComprobantePago'])->name('pagos.comprobante-individual');
+
+    // Aprobación/Rechazo de pagos (solo admin y facturación)
+    Route::post('/solicitudes/{solicitud}/pagos/{pago}/aprobar', [App\Http\Controllers\PagosController::class, 'aprobar'])->name('pagos.aprobar');
+    Route::post('/solicitudes/{solicitud}/pagos/{pago}/rechazar', [App\Http\Controllers\PagosController::class, 'rechazar'])->name('pagos.rechazar');
 
     // Facturación
     Route::post('/solicitudes/{solicitud}/factura', [SolicitudController::class, 'generarFactura'])->name('solicitudes.generar-factura');
@@ -286,17 +298,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 // ============================================================
-// IMPORTACIÓN Y ACTUALIZACIÓN DE PRECIOS (Solo Admin)
+// IMPORTACIÓN DE PRODUCTOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Importación de productos
+Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
     Route::get('/productos/importacion/descargar-plantilla-csv', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaCsv'])->name('productos.importacion.descargar-plantilla-csv');
     Route::get('/productos/importacion/descargar-plantilla-excel', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaExcel'])->name('productos.importacion.descargar-plantilla-excel');
     Route::post('/productos/importar-productos', [App\Http\Controllers\ImportacionProductosController::class, 'importarProductos'])->name('productos.importacion.importar');
     Route::get('/productos/historial-importaciones', [App\Http\Controllers\ImportacionProductosController::class, 'historial'])->name('productos.importacion.historial');
     Route::get('/productos/importacion/{id}', [App\Http\Controllers\ImportacionProductosController::class, 'verDetalle'])->name('productos.importacion.detalle');
+});
 
-    // Actualización de precios
+// ACTUALIZACIÓN DE PRECIOS (Solo Admin)
+// ============================================================
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/productos/actualizar-precios-excel', [ProductosController::class, 'actualizarPreciosExcel'])->name('productos.actualizar-precios-excel');
     Route::get('/productos/historial-precios', [ActualizacionPreciosController::class, 'historial'])->name('productos.historial-precios');
     Route::get('/productos/actualizacion-precios/{id}', [ActualizacionPreciosController::class, 'verDetalle'])->name('productos.actualizacion-precios.detalle');

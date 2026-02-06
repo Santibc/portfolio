@@ -48,7 +48,9 @@ class Producto extends Model
 
     public function imagenPrincipal()
     {
-        return $this->hasOne(ImagenProducto::class, 'producto_id')->where('es_principal', true);
+        return $this->hasOne(ImagenProducto::class, 'producto_id')
+                    ->whereNull('variante_producto_id')
+                    ->where('es_principal', true);
     }
 
     public function precios()

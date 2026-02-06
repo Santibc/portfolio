@@ -167,6 +167,7 @@ class ProductosController extends Controller
             'stock_minimo' => ['nullable','integer','min:0'],  // NUEVO
             'stock_maximo' => ['nullable','integer','min:0'],  // NUEVO
             'ubicacion_id' => ['nullable','exists:ubicaciones,id'],  // Ubicación seleccionada
+            'ubicacion' => ['nullable','string','max:255'],  // Ubicación específica
         ];
 
         $messages = [
@@ -201,6 +202,11 @@ class ProductosController extends Controller
             if ($producto->tiene_variantes && $request->has('variantes')) {
                 // Si es edición, eliminar variantes anteriores
                 if ($request->id) {
+                    // Desasociar imágenes de variantes antes de eliminar (para evitar cascade delete)
+                    ImagenProducto::where('producto_id', $producto->id)
+                        ->whereNotNull('variante_producto_id')
+                        ->update(['variante_producto_id' => null]);
+
                     // Eliminar stock de variantes eliminadas (NUEVO)
                     $variantesIds = $producto->variantes()->pluck('id');
                     StockProducto::whereIn('variante_producto_id', $variantesIds)
@@ -265,6 +271,19 @@ class ProductosController extends Controller
                         }
                     }
                 }
+                // Reasociar imágenes existentes con las nuevas variantes
+                if ($request->has('imagen_variante')) {
+                    $nuevasVariantes = $producto->variantes()->orderBy('id')->get()->values();
+                    foreach ($request->imagen_variante as $imagenId => $varianteRowIndex) {
+                        $varianteId = null;
+                        if ($varianteRowIndex !== '' && isset($nuevasVariantes[(int)$varianteRowIndex])) {
+                            $varianteId = $nuevasVariantes[(int)$varianteRowIndex]->id;
+                        }
+                        ImagenProducto::where('id', $imagenId)
+                            ->where('producto_id', $producto->id)
+                            ->update(['variante_producto_id' => $varianteId]);
+                    }
+                }
             } else if ($producto->controlar_stock && !$producto->tiene_variantes) {
                 // Producto sin variantes - crear o actualizar stock principal (NUEVO)
                 $stockInicial = $request->input('stock_inicial', 0);
@@ -284,6 +303,7 @@ class ProductosController extends Controller
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
                         'ubicacion_id' => $request->input('ubicacion_id'),
+                        'ubicacion' => $request->input('ubicacion'),
                         'alerta_stock_bajo' => true
                     ])->save();
 
@@ -307,33 +327,47 @@ class ProductosController extends Controller
                     $stock->update([
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion_id' => $request->input('ubicacion_id')
+                        'ubicacion_id' => $request->input('ubicacion_id'),
+                        'ubicacion' => $request->input('ubicacion')
                     ]);
                 }
             }
             
             // Guardar imágenes nuevas
+            $newImageIds = [];
             if ($request->hasFile('imagenes')) {
                 $directory = public_path('imagenes/productos/' . $producto->id);
                 if (!File::exists($directory)) {
                     File::makeDirectory($directory, 0755, true);
                 }
-                
+
                 $orden = $producto->imagenes()->max('orden') ?? 0;
                 $imagenPrincipalNueva = $request->input('imagen_principal_nueva', 0);
-                
+
                 foreach ($request->file('imagenes') as $index => $imagen) {
                     $filename = time() . '_' . uniqid() . '_' . $imagen->getClientOriginalName();
                     $imagen->move($directory, $filename);
                     $path = 'imagenes/productos/' . $producto->id . '/' . $filename;
-                    
+
                     $orden++;
-                    $producto->imagenes()->create([
+                    $newImg = $producto->imagenes()->create([
                         'ruta_imagen' => $path,
                         'texto_alternativo' => $producto->nombre,
                         'es_principal' => $index == $imagenPrincipalNueva,
                         'orden' => $orden
                     ]);
+                    $newImageIds[$index] = $newImg->id;
+                }
+            }
+
+            // Asociar imágenes nuevas con variantes
+            if (!empty($newImageIds) && $request->has('imagen_variante_nueva') && $producto->tiene_variantes) {
+                $nuevasVariantes = $producto->variantes()->orderBy('id')->get()->values();
+                foreach ($request->imagen_variante_nueva as $imgIndex => $varianteRowIndex) {
+                    if ($varianteRowIndex !== '' && isset($newImageIds[(int)$imgIndex]) && isset($nuevasVariantes[(int)$varianteRowIndex])) {
+                        ImagenProducto::where('id', $newImageIds[(int)$imgIndex])
+                            ->update(['variante_producto_id' => $nuevasVariantes[(int)$varianteRowIndex]->id]);
+                    }
                 }
             }
             
@@ -467,40 +501,55 @@ public function actualizarPreciosExcel(Request $request)
     // Métodos AJAX para los modales
     public function variantesAjax(Producto $producto)
     {
-        $variantes = $producto->variantes()->get();
-        
+        $variantes = $producto->variantes()->with('imagenes')->get();
+
         $html = '<div class="table-responsive">';
-        
+
         if ($variantes->isEmpty()) {
             $html .= '<p class="text-center text-muted">Este producto no tiene variantes configuradas.</p>';
         } else {
             $html .= '<table class="table table-striped">';
-            $html .= '<thead><tr><th>SKU</th><th>Referencia</th><th>Color</th><th>Estado</th></tr></thead>';
+            $html .= '<thead><tr><th>SKU</th><th>Referencia</th><th>Color</th><th>Imágenes</th><th>Estado</th></tr></thead>';
             $html .= '<tbody>';
-            
+
             foreach ($variantes as $variante) {
                 $html .= '<tr>';
                 $html .= '<td><code>' . $variante->sku . '</code></td>';
                 $html .= '<td>' . ($variante->referencia_variante ?: '-') . '</td>';
                 $html .= '<td>' . ($variante->color ?: '-') . '</td>';
+
+                // Thumbnails de imágenes de la variante
+                $html .= '<td>';
+                if ($variante->imagenes->count()) {
+                    foreach ($variante->imagenes->take(3) as $img) {
+                        $html .= '<img src="' . asset($img->ruta_imagen) . '" style="width:40px;height:40px;object-fit:cover;margin-right:2px;" class="rounded">';
+                    }
+                    if ($variante->imagenes->count() > 3) {
+                        $html .= '<span class="badge bg-secondary">+' . ($variante->imagenes->count() - 3) . '</span>';
+                    }
+                } else {
+                    $html .= '<span class="text-muted small">Sin imágenes</span>';
+                }
+                $html .= '</td>';
+
                 $html .= '<td>' . ($variante->activo ? '<span class="badge bg-success">Activa</span>' : '<span class="badge bg-secondary">Inactiva</span>') . '</td>';
                 $html .= '</tr>';
             }
-            
+
             $html .= '</tbody></table>';
         }
-        
+
         $html .= '</div>';
-        
+
         return response($html);
     }
 
     public function imagenesAjax(Producto $producto)
     {
-        $imagenes = $producto->imagenes()->orderBy('orden')->get();
-        
+        $imagenes = $producto->imagenes()->with('varianteProducto')->orderBy('variante_producto_id')->orderBy('orden')->get();
+
         $html = '<div class="row">';
-        
+
         if ($imagenes->isEmpty()) {
             $html .= '<p class="text-center text-muted">Este producto no tiene imágenes.</p>';
         } else {
@@ -509,17 +558,23 @@ public function actualizarPreciosExcel(Request $request)
                 $html .= '<div class="card">';
                 $html .= '<img src="' . asset($imagen->ruta_imagen) . '" class="card-img-top" style="height: 200px; object-fit: cover;">';
                 $html .= '<div class="card-body p-2 text-center">';
-                
+
                 if ($imagen->es_principal) {
-                    $html .= '<span class="badge bg-success">Principal</span>';
+                    $html .= '<span class="badge bg-success me-1">Principal</span>';
                 }
-                
+
+                if ($imagen->varianteProducto) {
+                    $html .= '<span class="badge bg-info">' . e($imagen->varianteProducto->nombre_variante) . '</span>';
+                } else {
+                    $html .= '<span class="badge bg-secondary">General</span>';
+                }
+
                 $html .= '</div></div></div>';
             }
         }
-        
+
         $html .= '</div>';
-        
+
         return response($html);
     }
 

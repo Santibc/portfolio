@@ -44,6 +44,8 @@ class ActualizarSolicitudRequest extends FormRequest
             'valor_flete' => 'nullable|numeric|min:0',
             'descuento_total' => 'nullable|numeric|min:0',
             'porcentaje_iva' => 'nullable|numeric|in:0,5,19',
+            'forma_pago_factura' => 'nullable|string|max:50',
+            'dias_vencimiento' => 'nullable|integer|min:0|max:365',
         ];
     }
 
@@ -69,6 +71,10 @@ class ActualizarSolicitudRequest extends FormRequest
             'descuento_total.min' => 'El descuento no puede ser negativo',
             'porcentaje_iva.numeric' => 'El porcentaje de IVA debe ser numérico',
             'porcentaje_iva.in' => 'El porcentaje de IVA debe ser 0%, 5% o 19%',
+            'forma_pago_factura.max' => 'La forma de pago no puede exceder 50 caracteres',
+            'dias_vencimiento.integer' => 'Los días de vencimiento deben ser un número entero',
+            'dias_vencimiento.min' => 'Los días de vencimiento no pueden ser negativos',
+            'dias_vencimiento.max' => 'Los días de vencimiento no pueden exceder 365',
         ];
     }
 

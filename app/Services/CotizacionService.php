@@ -180,6 +180,14 @@ class CotizacionService
                 $valorIva = $subtotalProductos * ($porcentajeIva / 100);
             }
 
+            // Calcular fecha de vencimiento a partir de días
+            $fechaVencimiento = $solicitud->fecha_vencimiento;
+            if (isset($datos['dias_vencimiento']) && $datos['dias_vencimiento'] !== null) {
+                $fechaVencimiento = $datos['dias_vencimiento'] > 0
+                    ? now()->addDays((int) $datos['dias_vencimiento'])->toDateString()
+                    : null;
+            }
+
             // Actualizar solicitud
             $solicitud->update([
                 'monto_total' => max(0, $montoTotal),
@@ -189,6 +197,8 @@ class CotizacionService
                 'valor_iva' => $valorIva,
                 'notas_cliente' => $datos['notas_cliente'] ?? $solicitud->notas_cliente,
                 'observaciones_vendedor' => $datos['observaciones_vendedor'] ?? $solicitud->observaciones_vendedor,
+                'forma_pago_factura' => $datos['forma_pago_factura'] ?? $solicitud->forma_pago_factura,
+                'fecha_vencimiento' => $fechaVencimiento,
                 'editada_en' => now(),
                 'editada_por' => $usuarioId,
             ]);

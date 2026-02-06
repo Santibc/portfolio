@@ -14,6 +14,7 @@ class ImagenProducto extends Model
 
     protected $fillable = [
         'producto_id',
+        'variante_producto_id',
         'ruta_imagen',
         'texto_alternativo',
         'orden',
@@ -29,6 +30,11 @@ class ImagenProducto extends Model
         return $this->belongsTo(Producto::class, 'producto_id');
     }
 
+    public function varianteProducto()
+    {
+        return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
+    }
+
     public function getUrlAttribute()
     {
         return Storage::url($this->ruta_imagen);
@@ -38,10 +44,11 @@ class ImagenProducto extends Model
     {
         parent::boot();
 
-        // Asegurar que solo una imagen sea principal por producto
+        // Asegurar que solo una imagen sea principal por producto o por variante
         static::creating(function ($imagen) {
             if ($imagen->es_principal) {
                 static::where('producto_id', $imagen->producto_id)
+                    ->where('variante_producto_id', $imagen->variante_producto_id)
                     ->update(['es_principal' => false]);
             }
         });
@@ -49,6 +56,7 @@ class ImagenProducto extends Model
         static::updating(function ($imagen) {
             if ($imagen->es_principal && $imagen->isDirty('es_principal')) {
                 static::where('producto_id', $imagen->producto_id)
+                    ->where('variante_producto_id', $imagen->variante_producto_id)
                     ->where('id', '!=', $imagen->id)
                     ->update(['es_principal' => false]);
             }

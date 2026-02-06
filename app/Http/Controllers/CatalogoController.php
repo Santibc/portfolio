@@ -174,11 +174,18 @@ class CatalogoController extends Controller
     {
         $producto->load([
             'variantes' => function($q) {
-                $q->activas()->with(['stock' => function($sq) {
-                    $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
-                }]);
+                $q->activas()->with([
+                    'stock' => function($sq) {
+                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
+                    },
+                    'imagenes' => function($iq) {
+                        $iq->orderBy('orden');
+                    }
+                ]);
             },
-            'imagenes',
+            'imagenes' => function($q) {
+                $q->whereNull('variante_producto_id')->orderBy('orden');
+            },
             'stock' => function($q) {
                 $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
             }

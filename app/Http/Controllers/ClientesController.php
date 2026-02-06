@@ -54,8 +54,9 @@ class ClientesController extends Controller
                     return $html;
                 })
                 ->addColumn('action', function($c) {
-                    // Solo admin e inventarios pueden editar y eliminar
-                    if (auth()->user()->hasRole(['admin', 'inventarios'])) {
+                    $user = auth()->user();
+                    // Admin e inventarios pueden editar y eliminar
+                    if ($user->hasRole(['admin', 'inventarios'])) {
                         $url = route('clientes.form', $c->id);
                         return <<<HTML
 <div class="d-flex justify-content-center gap-1">
@@ -65,6 +66,17 @@ class ClientesController extends Controller
   <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar" onclick="eliminarCliente({$c->id}, '{$c->nombre_contacto}')">
     <i class="bi bi-trash"></i>
   </button>
+</div>
+HTML;
+                    }
+                    // Facturación puede editar pero no eliminar
+                    if ($user->hasRole('facturacion')) {
+                        $url = route('clientes.form', $c->id);
+                        return <<<HTML
+<div class="d-flex justify-content-center gap-1">
+  <a href="{$url}" class="btn btn-outline-info btn-sm" title="Editar">
+    <i class="bi bi-pencil"></i>
+  </a>
 </div>
 HTML;
                     }

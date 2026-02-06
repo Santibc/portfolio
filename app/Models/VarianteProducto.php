@@ -59,6 +59,16 @@ public function stock()
         return implode(' - ', $partes);
     }
 
+    public function imagenes()
+    {
+        return $this->hasMany(ImagenProducto::class, 'variante_producto_id')->orderBy('orden');
+    }
+
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(ImagenProducto::class, 'variante_producto_id')->where('es_principal', true);
+    }
+
     public function scopeActivas($query)
     {
         return $query->where('activo', true);

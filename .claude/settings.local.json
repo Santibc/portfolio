@@ -43,7 +43,8 @@
       "mcp__playwright__browser_resize",
       "Bash(npm run dev:*)",
       "Bash(del:*)",
-      "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\")"
+      "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\")",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
