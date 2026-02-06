@@ -109,9 +109,14 @@ class FichajeController extends Controller
                                    ->orderBy('nombre')
                                    ->get();
 
-        $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
-                     ->orderBy('nombre')
-                     ->get();
+        // Filtrar obras según rol
+        if ($esTrabajador && $trabajadorActual) {
+            $obras = $trabajadorActual->obrasAsignadas();
+        } else {
+            $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
+                         ->orderBy('nombre')
+                         ->get();
+        }
 
         return view('fichajes.index', compact(
             'fichajes', 'trabajadores', 'obras', 'stats',
@@ -214,15 +219,19 @@ class FichajeController extends Controller
             }
 
             $trabajadores = collect([$trabajadorActual]);
+
+            // Solo obras asignadas al trabajador (directas + via cuadrilla)
+            $obras = $trabajadorActual->obrasAsignadas();
         } else {
             $trabajadores = Trabajador::where('activo', true)
                                        ->orderBy('nombre')
                                        ->get();
-        }
 
-        $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
-                     ->orderBy('nombre')
-                     ->get();
+            // Admin ve todas las obras activas inicialmente
+            $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
+                         ->orderBy('nombre')
+                         ->get();
+        }
 
         return view('fichajes.create', compact('trabajadores', 'obras', 'esTrabajador', 'trabajadorActual'));
     }
@@ -349,9 +358,22 @@ class FichajeController extends Controller
                                    ->orderBy('nombre')
                                    ->get();
 
-        $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
-                     ->orderBy('nombre')
-                     ->get();
+        // Filtrar obras según el trabajador del fichaje
+        $trabajadorFichaje = $fichaje->trabajador;
+        if ($trabajadorFichaje) {
+            $obras = $trabajadorFichaje->obrasAsignadas();
+            // Asegurar que la obra actual del fichaje esté incluida (aunque ya no esté asignada)
+            if ($fichaje->obra_id && !$obras->contains('id', $fichaje->obra_id)) {
+                $obraActual = Obra::find($fichaje->obra_id);
+                if ($obraActual) {
+                    $obras->push($obraActual);
+                }
+            }
+        } else {
+            $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
+                         ->orderBy('nombre')
+                         ->get();
+        }
 
         return view('fichajes.edit', compact('fichaje', 'trabajadores', 'obras'));
     }
@@ -595,6 +617,22 @@ class FichajeController extends Controller
             'success' => true,
             'message' => 'Salida registrada correctamente.',
             'fichaje' => $fichaje,
+        ]);
+    }
+
+    /**
+     * Obtener obras asignadas a un trabajador (AJAX).
+     */
+    public function getObrasTrabajador(Trabajador $trabajador)
+    {
+        $obras = $trabajador->obrasAsignadas();
+
+        return response()->json([
+            'success' => true,
+            'obras' => $obras->map(fn($obra) => [
+                'id' => $obra->id,
+                'nombre' => $obra->nombre,
+            ]),
         ]);
     }
 

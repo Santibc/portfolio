@@ -43,7 +43,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">Solo trabajadores propios activos</small>
+                            <small class="text-muted">Trabajadores activos</small>
                             @error('capataz_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

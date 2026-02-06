@@ -191,10 +191,10 @@
 </div>
 @endsection
 
-@if($esTrabajador ?? false)
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    @if($esTrabajador ?? false)
     const latInput = document.getElementById('latitud_entrada');
     const lngInput = document.getElementById('longitud_entrada');
     const gpsStatus = document.getElementById('gpsStatus');
@@ -251,7 +251,63 @@ document.addEventListener('DOMContentLoaded', function() {
         gpsStatus.classList.add('alert-warning');
         gpsMessage.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Tu navegador no soporta geolocalización.';
     }
+    @else
+    // Admin/Encargado: filtrar obras dinámicamente al seleccionar trabajador
+    const selectTrabajador = document.querySelector('select[name="trabajador_id"]');
+    const selectObra = document.querySelector('select[name="obra_id"]');
+
+    if (selectTrabajador && selectObra) {
+        // Guardar opciones originales
+        const todasLasObras = Array.from(selectObra.options).map(opt => ({
+            value: opt.value,
+            text: opt.text
+        }));
+
+        selectTrabajador.addEventListener('change', function() {
+            const trabajadorId = this.value;
+
+            if (!trabajadorId) {
+                // Sin trabajador seleccionado: restaurar todas las obras
+                selectObra.innerHTML = '<option value="">Sin asignar</option>';
+                todasLasObras.forEach(function(obra) {
+                    if (obra.value) {
+                        selectObra.add(new Option(obra.text, obra.value));
+                    }
+                });
+                return;
+            }
+
+            selectObra.disabled = true;
+            selectObra.innerHTML = '<option value="">Cargando obras...</option>';
+
+            fetch('/fichajes/ajax/obras-trabajador/' + trabajadorId)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    selectObra.innerHTML = '<option value="">Sin asignar</option>';
+
+                    if (data.success && data.obras.length > 0) {
+                        data.obras.forEach(function(obra) {
+                            selectObra.add(new Option(obra.nombre, obra.id));
+                        });
+                    } else {
+                        selectObra.innerHTML = '<option value="">-- Sin obras asignadas --</option>';
+                    }
+
+                    selectObra.disabled = false;
+                })
+                .catch(function() {
+                    // Error: restaurar todas las obras
+                    selectObra.innerHTML = '<option value="">Sin asignar</option>';
+                    todasLasObras.forEach(function(obra) {
+                        if (obra.value) {
+                            selectObra.add(new Option(obra.text, obra.value));
+                        }
+                    });
+                    selectObra.disabled = false;
+                });
+        });
+    }
+    @endif
 });
 </script>
 @endpush
-@endif

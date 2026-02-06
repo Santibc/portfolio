@@ -85,12 +85,16 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                               value="{{ old('email') }}">
+                               value="{{ old('email') }}" required placeholder="correo@ejemplo.com">
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <div class="form-text text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Se creará automáticamente acceso al portal. La contraseña será el DNI.
+                        </div>
                     </div>
 
                     <div class="col-md-4">

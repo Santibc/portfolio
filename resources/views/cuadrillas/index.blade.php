@@ -104,7 +104,7 @@
             label="Capataz"
             name="capataz_id"
             type="select"
-            help="Solo trabajadores propios activos"
+            help="Trabajadores activos"
         >
             <option value="">Sin asignar</option>
             @foreach($trabajadoresDisponibles as $trabajador)

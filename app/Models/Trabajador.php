@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\DB;
 
 class Trabajador extends Model
 {
@@ -146,6 +147,46 @@ class Trabajador extends Model
     public function hasProfilePhoto(): bool
     {
         return $this->user && $this->user->hasProfilePhoto();
+    }
+
+    /**
+     * Obtener todas las obras asignadas al trabajador (directas + via cuadrilla).
+     */
+    public function obrasAsignadas(?array $estados = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $estados = $estados ?? ['en_curso', 'aprobada'];
+
+        // IDs de cuadrillas activas del trabajador
+        $cuadrillasIds = DB::table('cuadrilla_trabajadores')
+            ->where('trabajador_id', $this->id)
+            ->where('activo', true)
+            ->pluck('cuadrilla_id');
+
+        return Obra::whereIn('estado', $estados)
+            ->where(function ($query) use ($cuadrillasIds) {
+                // Obras asignadas directamente
+                $query->whereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('obra_trabajadores')
+                        ->whereColumn('obra_trabajadores.obra_id', 'obras.id')
+                        ->where('obra_trabajadores.trabajador_id', $this->id)
+                        ->where('obra_trabajadores.activo', true);
+                })
+                // Obras via cuadrilla
+                ->orWhere(function ($q) use ($cuadrillasIds) {
+                    if ($cuadrillasIds->isNotEmpty()) {
+                        $q->whereExists(function ($sub) use ($cuadrillasIds) {
+                            $sub->select(DB::raw(1))
+                                ->from('obra_cuadrillas')
+                                ->whereColumn('obra_cuadrillas.obra_id', 'obras.id')
+                                ->whereIn('obra_cuadrillas.cuadrilla_id', $cuadrillasIds)
+                                ->where('obra_cuadrillas.activo', true);
+                        });
+                    }
+                });
+            })
+            ->orderBy('nombre')
+            ->get();
     }
 
     // Scopes

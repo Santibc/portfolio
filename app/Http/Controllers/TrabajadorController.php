@@ -11,11 +11,13 @@ use App\Models\FormacionTipo;
 use App\Models\TrabajadorHistorialDisciplinario;
 use App\Models\Auditoria;
 use App\Models\EmailLog;
+use App\Models\User;
 use App\Notifications\DocumentoTrabajadorNotification;
 use App\Notifications\BienvenidaTrabajadorNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class TrabajadorController extends Controller
 {
@@ -78,7 +80,7 @@ class TrabajadorController extends Controller
             'nombre' => 'required|string|max:100',
             'apellidos' => 'required|string|max:150',
             'dni' => 'required|string|max:20|unique:trabajadores',
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'nullable|date',
@@ -96,6 +98,8 @@ class TrabajadorController extends Controller
             'apellidos.required' => 'Los apellidos son obligatorios.',
             'dni.required' => 'El DNI es obligatorio.',
             'dni.unique' => 'Este DNI ya está registrado.',
+            'email.required' => 'El email es obligatorio para crear acceso al portal.',
+            'email.unique' => 'Este email ya está registrado como usuario.',
             'fecha_alta.required' => 'La fecha de alta es obligatoria.',
             'subcontrata_id.exists' => 'La subcontrata seleccionada no existe.',
         ]);
@@ -116,6 +120,35 @@ class TrabajadorController extends Controller
 
         $trabajador = Trabajador::create($validated);
 
+        // Crear usuario automáticamente
+        $user = User::create([
+            'name' => $validated['nombre'] . ' ' . $validated['apellidos'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['dni']),
+        ]);
+
+        $user->assignRole('Trabajador');
+        $trabajador->update(['user_id' => $user->id]);
+
+        // Enviar email de bienvenida con credenciales
+        try {
+            $user->notify(new BienvenidaTrabajadorNotification($trabajador, $validated['dni']));
+
+            EmailLog::logEnviado(
+                EmailLog::TIPO_BIENVENIDA,
+                $user->email,
+                "Bienvenido al Portal del Trabajador - Manzer ERP",
+                $trabajador,
+                $user->id
+            );
+        } catch (\Exception $e) {
+            Log::error("Error enviando email de bienvenida", [
+                'trabajador_id' => $trabajador->id,
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         // Registrar en auditoría
         Auditoria::registrar('crear', 'trabajadores', $trabajador->id, null, $trabajador->toArray());
 
@@ -128,7 +161,7 @@ class TrabajadorController extends Controller
         }
 
         return redirect()->route('trabajadores.index')
-            ->with('success', 'Trabajador creado exitosamente.');
+            ->with('success', 'Trabajador creado exitosamente. Se ha enviado un email con las credenciales de acceso.');
     }
 
     public function show(Trabajador $trabajador)

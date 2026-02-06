@@ -265,6 +265,10 @@ Route::middleware(['auth', 'verified', 'permission:crear_fichajes'])->group(func
     Route::get('fichajes/create', [FichajeController::class, 'create'])->name('fichajes.create');
     Route::post('fichajes', [FichajeController::class, 'store'])->name('fichajes.store');
 
+    // AJAX: Obtener obras asignadas a un trabajador
+    Route::get('fichajes/ajax/obras-trabajador/{trabajador}', [FichajeController::class, 'getObrasTrabajador'])
+        ->name('fichajes.obras-trabajador');
+
     // API para check-in/check-out desde móvil
     Route::post('fichajes/check-in', [FichajeController::class, 'checkIn'])->name('fichajes.check-in');
     Route::post('fichajes/check-out', [FichajeController::class, 'checkOut'])->name('fichajes.check-out');

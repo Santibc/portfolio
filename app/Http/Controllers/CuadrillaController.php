@@ -27,7 +27,7 @@ class CuadrillaController extends Controller
 
         // Trabajadores disponibles para asignar como capataz
         $trabajadoresDisponibles = Trabajador::where('activo', true)
-            ->where('tipo_relacion', 'propio')
+
             ->orderBy('apellidos')
             ->orderBy('nombre')
             ->get();
@@ -38,7 +38,7 @@ class CuadrillaController extends Controller
     public function create()
     {
         $trabajadoresDisponibles = Trabajador::where('activo', true)
-            ->where('tipo_relacion', 'propio')
+
             ->orderBy('apellidos')
             ->orderBy('nombre')
             ->get();
@@ -97,7 +97,7 @@ class CuadrillaController extends Controller
         }
 
         $trabajadoresDisponibles = Trabajador::where('activo', true)
-            ->where('tipo_relacion', 'propio')
+
             ->orderBy('apellidos')
             ->orderBy('nombre')
             ->get();
