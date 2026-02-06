@@ -350,7 +350,14 @@
                 @endforeach
               </select>
             </div>
-            
+
+            <div class="mb-3">
+              <label class="form-label">Ubicación Específica</label>
+              <input type="text" class="form-control" name="ubicacion" id="config_ubicacion"
+                     placeholder="Ej: Pasillo A, Estante 3">
+              <small class="text-muted">Detalle de ubicación dentro de la bodega</small>
+            </div>
+
             <div class="mb-3">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="alerta_stock_bajo" 
@@ -588,6 +595,7 @@
         $('#config_stock_minimo').val(data.stock.stock_minimo);
         $('#config_stock_maximo').val(data.stock.stock_maximo);
         $('#config_ubicacion_id').val(data.stock.ubicacion_id);
+        $('#config_ubicacion').val(data.stock.ubicacion);
         $('#config_alerta').prop('checked', data.stock.alerta_stock_bajo);
         $('#config_notas').val(data.stock.notas);
         $('#modalConfiguracion').modal('show');

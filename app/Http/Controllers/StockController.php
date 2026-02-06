@@ -259,6 +259,7 @@ class StockController extends Controller
             'stock_minimo' => 'required|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',
             'ubicacion_id' => 'nullable|exists:ubicaciones,id',
+            'ubicacion' => 'nullable|string|max:255',
             'alerta_stock_bajo' => 'boolean',
             'notas' => 'nullable|string'
         ]);
@@ -270,6 +271,7 @@ class StockController extends Controller
                 'stock_minimo' => $request->stock_minimo,
                 'stock_maximo' => $request->stock_maximo,
                 'ubicacion_id' => $request->ubicacion_id,
+                'ubicacion' => $request->ubicacion,
                 'alerta_stock_bajo' => $request->alerta_stock_bajo ?? true,
                 'notas' => $request->notas
             ]);
