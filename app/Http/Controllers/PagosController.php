@@ -249,7 +249,7 @@ class PagosController extends Controller
                 'monto_pagado' => $solicitud->monto_pagado,
                 'saldo_pendiente' => $solicitud->saldo_pendiente,
                 'metodo_pago' => $solicitud->metodo_pago ? $metodosPago[$solicitud->metodo_pago] : null,
-                'comprobante' => $solicitud->comprobante_pago ? asset('storage/' . $solicitud->comprobante_pago) : null,
+                'comprobante' => $solicitud->comprobante_pago ? url('/solicitudes/' . $solicitud->id . '/comprobante') : null,
                 'pagado_en' => $solicitud->pagado_en?->format('d/m/Y H:i'),
                 'verificado_por' => $solicitud->verificadoPor?->name,
                 'verificado_en' => $solicitud->verificado_en?->format('d/m/Y H:i'),
@@ -285,7 +285,7 @@ class PagosController extends Controller
             abort(404, 'No hay comprobante de pago');
         }
 
-        $path = storage_path('app/public/' . $solicitud->comprobante_pago);
+        $path = Storage::disk('public')->path($solicitud->comprobante_pago);
 
         if (!file_exists($path)) {
             abort(404, 'Archivo no encontrado');
@@ -308,7 +308,7 @@ class PagosController extends Controller
             abort(404, 'No hay comprobante para este pago');
         }
 
-        $path = storage_path('app/public/' . $pago->comprobante);
+        $path = Storage::disk('public')->path($pago->comprobante);
 
         if (!file_exists($path)) {
             abort(404, 'Archivo no encontrado');

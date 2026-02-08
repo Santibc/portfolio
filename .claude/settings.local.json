@@ -44,7 +44,8 @@
       "Bash(npm run dev:*)",
       "Bash(del:*)",
       "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\")",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

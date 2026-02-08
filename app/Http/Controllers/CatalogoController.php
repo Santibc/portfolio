@@ -437,12 +437,18 @@ class CatalogoController extends Controller
                 throw new \Exception('No se pudo identificar el cliente.');
             }
             
+            // Determinar flete del cliente
+            $valorFlete = ($cliente->aplica_flete && $cliente->valor_flete > 0)
+                ? $cliente->valor_flete
+                : 0;
+
             // Crear solicitud
             $solicitud = new SolicitudCotizacion([
                 'cliente_id' => $cliente->id,
                 'enlace_acceso_id' => $enlace ? $enlace->id : null,
                 'created_by' => Auth::check() ? Auth::id() : null,
                 'estado' => 'pendiente',
+                'valor_flete' => $valorFlete,
                 'notas_cliente' => $request->notas_cliente,
                 'observaciones_vendedor' => $request->observaciones_vendedor
             ]);
@@ -513,8 +519,8 @@ class CatalogoController extends Controller
                 ]);
             }
             
-            // Actualizar monto total
-            $solicitud->update(['monto_total' => $montoTotal]);
+            // Actualizar monto total (incluye flete)
+            $solicitud->update(['monto_total' => $montoTotal + $valorFlete]);
 
             DB::commit();
 
