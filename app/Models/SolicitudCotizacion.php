@@ -549,8 +549,7 @@ class SolicitudCotizacion extends Model
      */
     public function puedeRegistrarPago(): bool
     {
-        return $this->estado === self::ESTADO_APLICADA
-            && $this->estado_pago !== self::PAGO_PAGADO;
+        return $this->estado_pago !== self::PAGO_PAGADO;
     }
 
     /**

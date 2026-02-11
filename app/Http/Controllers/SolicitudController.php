@@ -113,9 +113,6 @@ class SolicitudController extends Controller
                     return $s->badge_reserva;
                 })
                 ->addColumn('estado_pago_badge', function($s) {
-                    if ($s->estado !== 'aplicada') {
-                        return '-';
-                    }
                     return '<span class="badge bg-' . $s->color_estado_pago . '">' . $s->etiqueta_estado_pago . '</span>';
                 })
                 ->addColumn('estado_envio_badge', function($s) {
@@ -437,8 +434,8 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones y botones si está pendiente (para admin, vendedor y facturación)
-        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Campo de observaciones y botones si está pendiente (para admin y facturación)
+        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'facturacion'])) {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
@@ -462,8 +459,8 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Historial de pagos (si la cotización está aplicada y tiene pagos registrados)
-        if ($solicitud->estado === 'aplicada' && $solicitud->pagos->count() > 0) {
+        // Historial de pagos (si tiene pagos registrados)
+        if ($solicitud->pagos->count() > 0) {
             $metodosPago = SolicitudCotizacion::METODOS_PAGO;
 
             $html .= '<div class="col-12 mt-3">';
@@ -596,9 +593,11 @@ class SolicitudController extends Controller
                 $html .= '<strong>Stock pendiente de descontar.</strong> ';
                 $html .= '<span class="text-muted">El stock de los productos no ha sido descontado del inventario.</span>';
                 $html .= '</div>';
-                $html .= '<button type="button" class="btn btn-warning btn-sm ms-3" onclick="confirmarDescontarStock(' . $solicitud->id . ')">';
-                $html .= '<i class="bi bi-box-arrow-down me-1"></i> Descontar de Stock';
-                $html .= '</button>';
+                if ($user->hasAnyRole(['admin', 'inventarios'])) {
+                    $html .= '<button type="button" class="btn btn-warning btn-sm ms-3" onclick="confirmarDescontarStock(' . $solicitud->id . ')">';
+                    $html .= '<i class="bi bi-box-arrow-down me-1"></i> Descontar de Stock';
+                    $html .= '</button>';
+                }
                 $html .= '</div>';
             } else {
                 // Info de quién descontó y cuándo
