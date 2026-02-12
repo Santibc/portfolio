@@ -71,8 +71,8 @@
             </a>
         @endif
 
-        {{-- Usuarios (para admin e inventarios) --}}
-        @if(auth()->user()->hasRole(['admin', 'inventarios']))
+        {{-- Usuarios (para admin, auxiliar_administrativo e inventarios) --}}
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <a href="/usuarios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-people"></i>
@@ -80,8 +80,8 @@
             </a>
         @endif
 
-        {{-- Cotizaciones (para vendedor, admin y facturación) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin', 'facturacion']))
+        {{-- Cotizaciones (para vendedor, admin, auxiliar_administrativo, facturación y auxiliar inventario) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario']))
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>
@@ -89,8 +89,8 @@
             </a>
         @endif
 
-        {{-- Clientes (para vendedor, admin, facturación e inventarios) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin', 'facturacion', 'inventarios']))
+        {{-- Clientes (para vendedor, admin, auxiliar_administrativo, facturación e inventarios) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']))
             <a href="/clientes"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('clientes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-person-badge"></i>
@@ -98,8 +98,8 @@
             </a>
         @endif
 
-        {{-- Catálogo (para vendedor y admin) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin']))
+        {{-- Catálogo (para vendedor, admin y auxiliar_administrativo) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'auxiliar_administrativo']))
             <a href="{{ route('catalogo') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('catalogo*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-cart"></i>
@@ -112,7 +112,16 @@
             </a>
         @endif
 
-        @if (auth()->user()->getRoleNames()->first() == 'admin')
+        {{-- Traslados (solo para centro de experiencia) --}}
+        @if(auth()->user()->hasRole('centro_experiencia'))
+            <a href="{{ route('traslados') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Traslados</span>
+            </a>
+        @endif
+
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo']))
             <a href="/listas-precios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('listas-precios*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-currency-dollar"></i>
@@ -120,13 +129,14 @@
             </a>
         @endif
 
-        {{-- Sección Inventario (para admin e inventarios) --}}
-        @if(auth()->user()->hasRole(['admin', 'inventarios']))
+        {{-- Sección Inventario (para admin, auxiliar_administrativo, inventarios y auxiliar inventario) --}}
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario']))
             <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
             <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
                 <i class="bi bi-boxes me-1"></i>
                 <span>Inventario</span>
             </p>
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <a href="/categorias"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-tags"></i>
@@ -137,11 +147,13 @@
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
+            @endif
             <a href="{{ route('stock.index') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-box-seam"></i>
                 <span>Gestión de Stock</span>
             </a>
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <a href="{{ route('traslados') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-arrow-left-right"></i>
@@ -162,6 +174,7 @@
                 <i class="bi bi-upload"></i>
                 <span>Importar Productos</span>
             </a>
+            @endif
         @endif
 
         {{-- Punto de Venta (para admin, inventarios, punto_venta) - OCULTO TEMPORALMENTE

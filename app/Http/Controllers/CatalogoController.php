@@ -47,8 +47,8 @@ class CatalogoController extends Controller
 
         $user = Auth::user();
 
-        // Admin ve todos los clientes, vendedor solo los suyos
-        if ($user->hasRole('admin')) {
+        // Admin y auxiliar_administrativo ven todos los clientes, vendedor solo los suyos
+        if ($user->hasRole(['admin', 'auxiliar_administrativo'])) {
             $clientes = Cliente::activos()
                               ->with('vendedor')
                               ->orderBy('nombre_contacto')

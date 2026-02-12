@@ -44,9 +44,9 @@ class SolicitudController extends Controller
     
     public function index(Request $request)
     {
-        // Verificar que el usuario sea admin, vendedor o facturación
+        // Verificar que el usuario sea admin, vendedor, facturación o auxiliar inventario
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
             abort(403, 'No tienes permisos para acceder a este módulo.');
         }
 
@@ -54,15 +54,20 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
                                        ->select('solicitudes_cotizacion.*');
 
-            // Si es vendedor (y NO es admin), filtrar solo solicitudes de sus clientes asignados
-            if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            // Si es vendedor (y NO es admin/auxiliar_administrativo), filtrar solo solicitudes de sus clientes asignados
+            if ($user->hasRole('vendedor') && !$user->hasRole(['admin', 'auxiliar_administrativo'])) {
                 $query->whereHas('cliente', function($subQ) use ($user) {
                     $subQ->where('vendedor_id', $user->id);
                 });
             }
 
+            // Auxiliar inventario solo ve cotizaciones con pago completo
+            if ($user->hasRole('auxiliar_inventario')) {
+                $query->where('estado_pago', 'pagado');
+            }
+
             // Filtrar por vendedor si se proporciona (solo admin puede usar este filtro)
-            if ($request->filled('vendedor_id') && $user->hasRole('admin')) {
+            if ($request->filled('vendedor_id') && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                 $vendedorId = $request->vendedor_id;
                 $query->where(function($q) use ($vendedorId) {
                     $q->where('created_by', $vendedorId)
@@ -124,7 +129,7 @@ class SolicitudController extends Controller
                            . $s->etiqueta_estado_envio . '</span>';
 
                     // Agregar botón de gestión de envío si el usuario tiene permisos
-                    if (auth()->user()->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
                         $badge .= ' <button type="button" class="btn btn-sm btn-link p-0"
                                            title="Gestionar Envío" onclick="gestionarEnvio(' . $s->id . ', \'' . $s->estado_envio . '\', \'' . ($s->numero_guia ?? '') . '\', \'' . ($s->transportadora ?? '') . '\')">
                                       <i class="bi bi-pencil-square text-info"></i>
@@ -138,6 +143,7 @@ class SolicitudController extends Controller
                 })
                 ->addColumn('action', function($s) {
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
+                    $isAuxiliar = auth()->user()->hasRole('auxiliar_inventario');
 
                     // Botón ver detalle (desde aquí se puede aprobar o rechazar)
                     $buttons .= '<button type="button" class="btn btn-outline-info btn-sm"
@@ -145,19 +151,21 @@ class SolicitudController extends Controller
                                    <i class="bi bi-eye"></i>
                                 </button>';
 
-                    // Botón editar (solo admin y facturación, y si está pendiente)
-                    if ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'facturacion'])) {
-                        $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
-                                        title="Editar Cotización">
-                                       <i class="bi bi-pencil"></i>
-                                    </a>';
-                    }
+                    if (!$isAuxiliar) {
+                        // Botón editar (solo admin y facturación, y si está pendiente)
+                        if ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+                            $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
+                                            title="Editar Cotización">
+                                           <i class="bi bi-pencil"></i>
+                                        </a>';
+                        }
 
-                    // Botón clonar
-                    $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm"
-                                        title="Clonar Cotización" onclick="clonarSolicitud('.$s->id.')">
-                                   <i class="bi bi-copy"></i>
-                                </button>';
+                        // Botón clonar
+                        $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm"
+                                            title="Clonar Cotización" onclick="clonarSolicitud('.$s->id.')">
+                                       <i class="bi bi-copy"></i>
+                                    </button>';
+                    }
 
                     // Botón descargar PDF
                     $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm"
@@ -165,20 +173,22 @@ class SolicitudController extends Controller
                                    <i class="bi bi-file-earmark-pdf"></i>
                                 </a>';
 
-                    // Botón registrar pago (solo si puede registrar pago)
-                    if ($s->puedeRegistrarPago()) {
-                        $buttons .= '<a href="'.route('pagos.create', $s->id).'" class="btn btn-outline-success btn-sm"
-                                        title="Registrar Pago">
-                                       <i class="bi bi-cash-coin"></i>
-                                    </a>';
-                    }
+                    if (!$isAuxiliar) {
+                        // Botón registrar pago (solo si puede registrar pago)
+                        if ($s->puedeRegistrarPago()) {
+                            $buttons .= '<a href="'.route('pagos.create', $s->id).'" class="btn btn-outline-success btn-sm"
+                                            title="Registrar Pago">
+                                           <i class="bi bi-cash-coin"></i>
+                                        </a>';
+                        }
 
-                    // Botón eliminar (solo admin y facturación, y si es eliminable)
-                    if ($s->esEliminable() && auth()->user()->hasAnyRole(['admin', 'facturacion'])) {
-                        $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm"
-                                            title="Eliminar Cotización" onclick="eliminarSolicitud('.$s->id.')">
-                                       <i class="bi bi-trash"></i>
-                                    </button>';
+                        // Botón eliminar (solo admin y facturación, y si es eliminable)
+                        if ($s->esEliminable() && auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+                            $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm"
+                                                title="Eliminar Cotización" onclick="eliminarSolicitud('.$s->id.')">
+                                           <i class="bi bi-trash"></i>
+                                        </button>';
+                        }
                     }
 
                     $buttons .= '</div>';
@@ -216,18 +226,21 @@ class SolicitudController extends Controller
                 ->make(true);
         }
 
-        // Contar solicitudes pendientes con más de 3 días
-        $queryAntiguas = SolicitudCotizacion::where('estado', 'pendiente')
-            ->where('created_at', '<', now()->subDays(3));
+        // Contar solicitudes pendientes con más de 3 días (no aplica para auxiliar inventario)
+        $totalAntiguas = 0;
+        if (!$user->hasRole('auxiliar_inventario')) {
+            $queryAntiguas = SolicitudCotizacion::where('estado', 'pendiente')
+                ->where('created_at', '<', now()->subDays(3));
 
-        // Si es vendedor (y NO es admin), filtrar solo solicitudes de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
-            $queryAntiguas->whereHas('cliente', function($subQ) use ($user) {
-                $subQ->where('vendedor_id', $user->id);
-            });
+            // Si es vendedor (y NO es admin/auxiliar_administrativo), filtrar solo solicitudes de sus clientes asignados
+            if ($user->hasRole('vendedor') && !$user->hasRole(['admin', 'auxiliar_administrativo'])) {
+                $queryAntiguas->whereHas('cliente', function($subQ) use ($user) {
+                    $subQ->where('vendedor_id', $user->id);
+                });
+            }
+
+            $totalAntiguas = $queryAntiguas->count();
         }
-
-        $totalAntiguas = $queryAntiguas->count();
 
         // Obtener lista de vendedores únicos (usuarios que han creado solicitudes o son vendedores de clientes)
         $vendedores = \App\Models\User::whereIn('id', function($query) {
@@ -248,17 +261,19 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor o facturación
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar que sea admin, vendedor, facturación o auxiliar inventario
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
 
         // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
             }
         }
+
+        $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
         $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor']);
 
@@ -434,8 +449,8 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones y botones si está pendiente (para admin y facturación)
-        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'facturacion'])) {
+        // Campo de observaciones y botones si está pendiente (para admin y facturación, no auxiliar)
+        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']) && !$isAuxiliar) {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
@@ -544,7 +559,7 @@ class SolicitudController extends Controller
 
                 // Acciones
                 $html .= '<td>';
-                if ($pago->estaPendiente() && $user->hasAnyRole(['admin', 'facturacion'])) {
+                if ($pago->estaPendiente() && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']) && !$isAuxiliar) {
                     $html .= '<button type="button" class="btn btn-sm btn-success me-1" ';
                     $html .= 'onclick="aprobarPago(' . $solicitud->id . ', ' . $pago->id . ')" ';
                     $html .= 'title="Aprobar Pago">';
@@ -593,7 +608,7 @@ class SolicitudController extends Controller
                 $html .= '<strong>Stock pendiente de descontar.</strong> ';
                 $html .= '<span class="text-muted">El stock de los productos no ha sido descontado del inventario.</span>';
                 $html .= '</div>';
-                if ($user->hasAnyRole(['admin', 'inventarios'])) {
+                if ($user->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios']) && !$isAuxiliar) {
                     $html .= '<button type="button" class="btn btn-warning btn-sm ms-3" onclick="confirmarDescontarStock(' . $solicitud->id . ')">';
                     $html .= '<i class="bi bi-box-arrow-down me-1"></i> Descontar de Stock';
                     $html .= '</button>';
@@ -706,8 +721,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor o facturación
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar que sea admin, vendedor, facturación o inventarios
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
@@ -715,7 +730,7 @@ class SolicitudController extends Controller
         }
 
         // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -801,8 +816,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor o facturación
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar que sea admin, vendedor, facturación o inventarios
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar esta solicitud'
@@ -810,7 +825,7 @@ class SolicitudController extends Controller
         }
 
         // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -891,7 +906,7 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para descontar stock'
@@ -1058,13 +1073,13 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor o facturación
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        // Verificar que sea admin, vendedor, facturación o auxiliar inventario
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
 
         // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 abort(403, 'No tiene permisos para descargar este PDF');
             }
@@ -1093,8 +1108,8 @@ class SolicitudController extends Controller
      */
     public function exportarExcel(Request $request)
     {
-        // Verificar que sea admin o facturación
-        if (!Auth::user()->hasAnyRole(['admin', 'facturacion'])) {
+        // Verificar que sea admin, facturación o inventarios
+        if (!Auth::user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             abort(403, 'No tiene permisos para exportar solicitudes');
         }
 
@@ -1139,8 +1154,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos - solo admin y facturación pueden editar
-        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+        // Verificar permisos - admin, facturación e inventarios pueden editar
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             abort(403, 'No tiene permisos para editar cotizaciones');
         }
 
@@ -1198,8 +1213,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos - solo admin y facturación pueden eliminar
-        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+        // Verificar permisos - admin, facturación e inventarios pueden eliminar
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para eliminar cotizaciones'
@@ -1207,7 +1222,7 @@ class SolicitudController extends Controller
         }
 
         // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -1239,7 +1254,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para clonar cotizaciones'
@@ -1247,7 +1262,7 @@ class SolicitudController extends Controller
         }
 
         // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -1286,7 +1301,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para cambiar el estado de cotizaciones'
@@ -1294,7 +1309,7 @@ class SolicitudController extends Controller
         }
 
         // Verificar si es vendedor que sea su cliente (no aplica a admin ni facturación)
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'facturacion'])) {
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             if ($solicitud->cliente->vendedor_id != $user->id) {
                 return response()->json([
                     'success' => false,
@@ -1334,7 +1349,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos'
@@ -1372,7 +1387,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'vendedor', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos'
@@ -1479,7 +1494,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para generar facturas'
@@ -1521,7 +1536,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'vendedor', 'cliente'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'vendedor', 'inventarios', 'cliente'])) {
             abort(403, 'No tiene permisos para descargar facturas');
         }
 
@@ -1552,8 +1567,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos (admin, facturación, inventarios)
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+        // Verificar permisos (admin, facturación, inventarios, auxiliar inventario)
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para gestionar envíos'
@@ -1625,7 +1640,7 @@ class SolicitudController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'inventarios'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para subir guías de envío'

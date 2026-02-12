@@ -26,7 +26,7 @@ class PagosController extends Controller
     {
         // Verificar permisos
         $user = Auth::user();
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'vendedor'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'vendedor', 'inventarios'])) {
             abort(403, 'No tiene permisos para registrar pagos');
         }
 
@@ -52,7 +52,7 @@ class PagosController extends Controller
         $user = Auth::user();
 
         // Verificar permisos
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'vendedor'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'vendedor', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para registrar pagos'
@@ -137,7 +137,7 @@ class PagosController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aprobar pagos'
@@ -185,7 +185,7 @@ class PagosController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'facturacion'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar pagos'
@@ -232,7 +232,7 @@ class PagosController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'facturacion', 'vendedor'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'vendedor', 'inventarios'])) {
             abort(403);
         }
 

@@ -85,25 +85,28 @@ class StockController extends Controller
                 ->addColumn('action', function($stock) {
                     $buttons = '<div class="btn-group btn-group-sm">';
 
-                    // Botón entrada
-                    $buttons .= '<button type="button" class="btn btn-success" onclick="entradaStock('.$stock->id.')" title="Entrada">
-                                    <i class="bi bi-plus-circle"></i>
-                                </button>';
+                    // Auxiliar inventario solo ve historial
+                    if (!auth()->user()->hasRole('auxiliar_inventario')) {
+                        // Botón entrada
+                        $buttons .= '<button type="button" class="btn btn-success" onclick="entradaStock('.$stock->id.')" title="Entrada">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>';
 
-                    // Botón salida
-                    $buttons .= '<button type="button" class="btn btn-danger" onclick="salidaStock('.$stock->id.')" title="Salida">
-                                    <i class="bi bi-dash-circle"></i>
-                                </button>';
+                        // Botón salida
+                        $buttons .= '<button type="button" class="btn btn-danger" onclick="salidaStock('.$stock->id.')" title="Salida">
+                                        <i class="bi bi-dash-circle"></i>
+                                    </button>';
 
-                    // Botón ajuste
-                    $buttons .= '<button type="button" class="btn btn-warning" onclick="ajusteStock('.$stock->id.')" title="Ajuste">
-                                    <i class="bi bi-gear"></i>
-                                </button>';
+                        // Botón ajuste
+                        $buttons .= '<button type="button" class="btn btn-warning" onclick="ajusteStock('.$stock->id.')" title="Ajuste">
+                                        <i class="bi bi-gear"></i>
+                                    </button>';
 
-                    // Botón configuración
-                    $buttons .= '<button type="button" class="btn btn-info" onclick="configurarStock('.$stock->id.')" title="Configurar">
-                                    <i class="bi bi-sliders"></i>
-                                </button>';
+                        // Botón configuración
+                        $buttons .= '<button type="button" class="btn btn-info" onclick="configurarStock('.$stock->id.')" title="Configurar">
+                                        <i class="bi bi-sliders"></i>
+                                    </button>';
+                    }
 
                     // Botón historial
                     $buttons .= '<button type="button" class="btn btn-secondary" onclick="verHistorial('.$stock->producto_id.', '.($stock->variante_producto_id ?: 'null').')" title="Historial">

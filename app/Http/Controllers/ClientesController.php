@@ -55,8 +55,8 @@ class ClientesController extends Controller
                 })
                 ->addColumn('action', function($c) {
                     $user = auth()->user();
-                    // Admin e inventarios pueden editar y eliminar
-                    if ($user->hasRole(['admin', 'inventarios'])) {
+                    // Admin, auxiliar_administrativo e inventarios pueden editar y eliminar
+                    if ($user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                         $url = route('clientes.form', $c->id);
                         return <<<HTML
 <div class="d-flex justify-content-center gap-1">
@@ -200,7 +200,7 @@ HTML;
 
         // Proteger campos sensibles: solo admin puede cambiar vendedor y lista de precios
         // en clientes existentes
-        if ($cliente->exists && !auth()->user()->hasRole('admin')) {
+        if ($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo'])) {
             // Restaurar valores originales que no puede modificar
             $data['vendedor_id'] = $cliente->vendedor_id;
             $data['lista_precio_id'] = $cliente->lista_precio_id;
@@ -414,7 +414,7 @@ HTML;
     public function eliminar(Cliente $cliente)
     {
         // Solo admin e inventarios pueden eliminar
-        if (!auth()->user()->hasRole(['admin', 'inventarios'])) {
+        if (!auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tiene permisos para eliminar clientes.'

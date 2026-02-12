@@ -63,6 +63,7 @@
       </div>
 
       {{-- Acciones rápidas --}}
+      @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
       <div class="d-flex justify-content-end mb-3">
         <a href="{{ route('traslados.form') }}" class="btn btn-primary">
           <i class="bi bi-arrow-left-right me-1"></i> Nuevo Traslado
@@ -71,6 +72,7 @@
           <i class="bi bi-list-ul me-1"></i> Ver Traslados
         </a>
       </div>
+      @endif
 
       {{-- Panel de Filtros --}}
       <div class="card shadow-sm mb-4">

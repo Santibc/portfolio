@@ -193,7 +193,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Vendedor Asignado <span class="text-danger">*</span></label>
                             <select name="vendedor_id" class="form-select"
-                                @if($cliente->exists && !auth()->user()->hasRole('admin')) disabled @endif>
+                                @if($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo'])) disabled @endif>
                                 <option value="">-- Seleccionar --</option>
                                 @foreach($vendedores as $id => $name)
                                 <option value="{{ $id }}"
@@ -202,7 +202,7 @@
                                 </option>
                                 @endforeach
                             </select>
-                            @if($cliente->exists && !auth()->user()->hasRole('admin'))
+                            @if($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo']))
                             <input type="hidden" name="vendedor_id" value="{{ $cliente->vendedor_id }}">
                             <small class="text-muted">Solo administradores pueden cambiar el vendedor asignado.</small>
                             @endif
@@ -211,7 +211,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Lista de Precio <span class="text-danger">*</span></label>
                             <select name="lista_precio_id" class="form-select"
-                                @if($cliente->exists && !auth()->user()->hasRole('admin')) disabled @endif>
+                                @if($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo'])) disabled @endif>
                                 <option value="">-- Seleccionar --</option>
                                 @foreach($listas as $id => $nombre)
                                 <option value="{{ $id }}"
@@ -220,7 +220,7 @@
                                 </option>
                                 @endforeach
                             </select>
-                            @if($cliente->exists && !auth()->user()->hasRole('admin'))
+                            @if($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo']))
                             <input type="hidden" name="lista_precio_id" value="{{ $cliente->lista_precio_id }}">
                             <small class="text-muted">Solo administradores pueden cambiar la lista de precios.</small>
                             @endif

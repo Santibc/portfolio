@@ -108,6 +108,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'portal.descargar_guia',
             'portal.descargar_factura',
 
+            // Módulo Traslados
+            'traslados.ver',
+            'traslados.aprobar',
+            'traslados.rechazar',
+
             // Reportes
             'reportes.ver',
             'reportes.exportar',
@@ -145,7 +150,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'stock.ver',
             ],
 
-            // Inventarios - Gestión de stock
+            // Inventarios - Gestión de stock + Cotizaciones completo
             'inventarios' => [
                 'dashboard.ver',
                 'productos.ver',
@@ -159,6 +164,18 @@ class RolesAndPermissionsSeeder extends Seeder
                 'stock.novedades',
                 'reportes.ver',
                 'reportes.exportar',
+                'cotizaciones.ver',
+                'cotizaciones.crear',
+                'cotizaciones.editar',
+                'cotizaciones.aprobar',
+                'cotizaciones.rechazar',
+                'cotizaciones.eliminar',
+                'cotizaciones.exportar',
+                'pagos.ver',
+                'pagos.confirmar',
+                'pagos.rechazar',
+                'facturacion.ver',
+                'facturacion.crear',
             ],
 
             // Facturación - Gestión de pagos y facturas
@@ -200,6 +217,29 @@ class RolesAndPermissionsSeeder extends Seeder
             'tecnico' => [
                 'dashboard.ver',
             ],
+
+            // Auxiliar de Inventario - Stock (solo lectura + historial) y cotizaciones pagadas
+            'auxiliar_inventario' => [
+                'dashboard.ver',
+                'stock.ver',
+                'cotizaciones.ver',
+                'cotizaciones.exportar',
+            ],
+
+            // Centro de Experiencia - Solo aprobar/rechazar traslados
+            'centro_experiencia' => [
+                'dashboard.ver',
+                'traslados.ver',
+                'traslados.aprobar',
+                'traslados.rechazar',
+            ],
+
+            // Auxiliar Administrativo - Todo lo del admin MENOS métricas y reportes
+            'auxiliar_administrativo' => array_values(array_diff($permisos, [
+                'dashboard.metricas',
+                'reportes.ver',
+                'reportes.exportar',
+            ])),
         ];
 
         // Crear roles y asignar permisos

@@ -22,6 +22,9 @@ class UsuariosPruebaSeeder extends Seeder
             ['name' => 'PDV Prueba', 'email' => 'pdv@miracle.com', 'role' => 'punto_venta'],
             ['name' => 'Cliente Prueba', 'email' => 'cliente@miracle.com', 'role' => 'cliente'],
             ['name' => 'Técnico Prueba', 'email' => 'tecnico@miracle.com', 'role' => 'tecnico'],
+            ['name' => 'Auxiliar Inventario Prueba', 'email' => 'auxiliar@miracle.com', 'role' => 'auxiliar_inventario'],
+            ['name' => 'Centro Experiencia Prueba', 'email' => 'centro@miracle.com', 'role' => 'centro_experiencia', 'password' => '12345678'],
+            ['name' => 'Auxiliar Admin Prueba', 'email' => 'auxiliar_admin@miracle.com', 'role' => 'auxiliar_administrativo', 'password' => '12345678'],
         ];
 
         foreach ($usuarios as $data) {
@@ -29,7 +32,7 @@ class UsuariosPruebaSeeder extends Seeder
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make($data['password'] ?? 'password'),
                     'email_verified_at' => now(),
                 ]
             );

@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
 // ============================================================
 // USUARIOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
@@ -70,7 +70,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 // ============================================================
 // CATEGORÍAS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('categorias', [CategoriasController::class, 'index'])->name('categorias');
     Route::get('categorias/form/{categoria?}', [CategoriasController::class, 'form'])->name('categorias.form');
     Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])->name('categorias.guardar');
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 // ============================================================
 // PRODUCTOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->prefix('productos')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->prefix('productos')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
@@ -95,8 +95,8 @@ Route::middleware(['auth', 'role:admin,inventarios'])->prefix('productos')->grou
 // ============================================================
 // RUTAS SOLO ADMIN
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Listas de Precios (solo admin)
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo'])->group(function () {
+    // Listas de Precios (admin y auxiliar administrativo)
     Route::get('listas-precios', [ListaPreciosController::class, 'index'])->name('listas-precios');
     Route::get('listas-precios/form/{listaPrecio?}', [ListaPreciosController::class, 'form'])->name('listas-precios.form');
     Route::post('listas-precios/guardar', [ListaPreciosController::class, 'guardar'])->name('listas-precios.guardar');
@@ -111,7 +111,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // ============================================================
 // RUTAS ADMIN, VENDEDOR, INVENTARIOS Y FACTURACIÓN
 // ============================================================
-Route::middleware(['auth', 'role:admin,vendedor,inventarios,facturacion'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,inventarios,facturacion'])->group(function () {
     // Clientes - Listado (todos pueden ver)
     Route::get('clientes', [ClientesController::class, 'index'])->name('clientes');
     // Documentos - Descargar (todos pueden descargar)
@@ -119,7 +119,7 @@ Route::middleware(['auth', 'role:admin,vendedor,inventarios,facturacion'])->grou
 });
 
 // Admin, Inventarios y Facturación pueden crear/editar clientes
-Route::middleware(['auth', 'role:admin,inventarios,facturacion'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,facturacion'])->group(function () {
     // Clientes - Crear/Editar
     Route::get('clientes/form/{cliente?}', [ClientesController::class, 'form'])->name('clientes.form');
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])->name('clientes.guardar');
@@ -146,7 +146,7 @@ Route::get('/catalogo/producto/{producto}', [CatalogoController::class, 'detalle
 Route::post('/catalogo/solicitud', [CatalogoController::class, 'guardarSolicitud'])->name('catalogo.solicitud.guardar');
 
 // Enlaces y Catálogo autenticado (admin y vendedor)
-Route::middleware(['auth', 'role:admin,vendedor'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor'])->group(function () {
     // Enlaces temporales
     Route::get('/enlaces', [App\Http\Controllers\EnlacesController::class, 'index'])->name('enlaces');
     Route::get('/enlaces/crear', [App\Http\Controllers\EnlacesController::class, 'crear'])->name('enlaces.crear');
@@ -160,15 +160,21 @@ Route::middleware(['auth', 'role:admin,vendedor'])->group(function () {
 });
 
 // ============================================================
-// COTIZACIONES/SOLICITUDES (Admin, Vendedor y Facturación)
+// COTIZACIONES/SOLICITUDES - Lectura (Admin, Vendedor, Facturación y Auxiliar Inventario)
 // ============================================================
-Route::middleware(['auth', 'role:admin,vendedor,facturacion'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturacion,inventarios,auxiliar_inventario'])->group(function () {
     // Listado principal
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
 
     // Ver detalle
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
 
+    // Exportar PDF
+    Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descargarPdf'])->name('solicitudes.pdf');
+});
+
+// COTIZACIONES/SOLICITUDES - Acciones (Admin, Vendedor, Facturación e Inventarios)
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturacion,inventarios'])->group(function () {
     // Acciones de estado (métodos antiguos, mantener por compatibilidad)
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
     Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
@@ -189,24 +195,23 @@ Route::middleware(['auth', 'role:admin,vendedor,facturacion'])->group(function (
     Route::get('/solicitudes/producto/{producto}/variantes', [SolicitudController::class, 'getVariantes'])->name('solicitudes.variantes');
     Route::post('/solicitudes/precio', [SolicitudController::class, 'getPrecio'])->name('solicitudes.precio');
 
-    // Exportar
-    Route::get('/solicitudes/{solicitud}/pdf', [SolicitudController::class, 'descargarPdf'])->name('solicitudes.pdf');
+    // Exportar Excel
     Route::get('/solicitudes/exportar-excel', [SolicitudController::class, 'exportarExcel'])->name('solicitudes.exportar-excel');
 });
 
 // ============================================================
-// EDICIÓN/ELIMINACIÓN DE COTIZACIONES (Solo Admin y Facturación)
+// EDICIÓN/ELIMINACIÓN DE COTIZACIONES (Admin, Facturación e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,facturacion'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios'])->group(function () {
     Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
     Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
     Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
 });
 
 // ============================================================
-// PAGOS Y FACTURACIÓN (Admin, Facturación y Vendedor)
+// PAGOS Y FACTURACIÓN (Admin, Facturación, Vendedor e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,facturacion,vendedor'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,vendedor,inventarios'])->group(function () {
     // Pagos
     Route::get('/solicitudes/{solicitud}/pago', [App\Http\Controllers\PagosController::class, 'create'])->name('pagos.create');
     Route::post('/solicitudes/{solicitud}/pago', [App\Http\Controllers\PagosController::class, 'store'])->name('pagos.store');
@@ -224,9 +229,9 @@ Route::middleware(['auth', 'role:admin,facturacion,vendedor'])->group(function (
 });
 
 // ============================================================
-// STOCK (Solo Admin e Inventarios)
+// STOCK - Lectura (Admin, Inventarios y Auxiliar Inventario)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('stock.')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->prefix('stock')->name('stock.')->group(function () {
     // Vistas principales
     Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
@@ -246,7 +251,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('st
 });
 
 // Operaciones de stock (solo admin e inventarios)
-Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('stock.')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->prefix('stock')->name('stock.')->group(function () {
     Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');
     Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
     Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
@@ -258,7 +263,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->prefix('stock')->name('st
 // ============================================================
 // UBICACIONES (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('ubicaciones', [UbicacionesController::class, 'index'])->name('ubicaciones');
     Route::get('ubicaciones/form/{id?}', [UbicacionesController::class, 'form'])->name('ubicaciones.form');
     Route::post('ubicaciones/guardar', [UbicacionesController::class, 'guardar'])->name('ubicaciones.guardar');
@@ -268,16 +273,21 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 });
 
 // ============================================================
-// TRASLADOS DE STOCK (Admin e Inventarios)
+// TRASLADOS DE STOCK (Admin, Inventarios y Centro de Experiencia)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+// Ver, aprobar (recibir) y rechazar (cancelar) — accesible para admin, inventarios y centro_experiencia
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centro_experiencia'])->group(function () {
     Route::get('traslados', [TrasladosController::class, 'index'])->name('traslados');
+    Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
+    Route::post('traslados/{id}/recibir', [TrasladosController::class, 'recibir'])->name('traslados.recibir');
+    Route::post('traslados/{id}/cancelar', [TrasladosController::class, 'cancelar'])->name('traslados.cancelar');
+});
+
+// Crear, enviar y AJAX — solo admin e inventarios
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('traslados/form/{id?}', [TrasladosController::class, 'form'])->name('traslados.form');
     Route::post('traslados/guardar', [TrasladosController::class, 'guardar'])->name('traslados.guardar');
     Route::post('traslados/{id}/enviar', [TrasladosController::class, 'enviar'])->name('traslados.enviar');
-    Route::post('traslados/{id}/recibir', [TrasladosController::class, 'recibir'])->name('traslados.recibir');
-    Route::post('traslados/{id}/cancelar', [TrasladosController::class, 'cancelar'])->name('traslados.cancelar');
-    Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
     Route::get('traslados/variantes/{productoId}', [TrasladosController::class, 'getVariantesPorProducto'])->name('traslados.variantes');
     Route::get('traslados/stock-disponible', [TrasladosController::class, 'getStockDisponible'])->name('traslados.stock-disponible');
     Route::get('traslados/productos-por-ubicacion/{ubicacionId}', [TrasladosController::class, 'getProductosPorUbicacion'])->name('traslados.productos-por-ubicacion');
@@ -287,7 +297,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 // ============================================================
 // NOVEDADES DE STOCK (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('novedades-stock', [NovedadesStockController::class, 'index'])->name('novedades-stock');
     Route::get('novedades-stock/form/{id?}', [NovedadesStockController::class, 'form'])->name('novedades-stock.form');
     Route::post('novedades-stock/guardar', [NovedadesStockController::class, 'guardar'])->name('novedades-stock.guardar');
@@ -301,7 +311,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 // ============================================================
 // IMPORTACIÓN DE PRODUCTOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('/productos/importacion/descargar-plantilla-csv', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaCsv'])->name('productos.importacion.descargar-plantilla-csv');
     Route::get('/productos/importacion/descargar-plantilla-excel', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaExcel'])->name('productos.importacion.descargar-plantilla-excel');
     Route::post('/productos/importar-productos', [App\Http\Controllers\ImportacionProductosController::class, 'importarProductos'])->name('productos.importacion.importar');
@@ -311,7 +321,7 @@ Route::middleware(['auth', 'role:admin,inventarios'])->group(function () {
 
 // ACTUALIZACIÓN DE PRECIOS (Solo Admin)
 // ============================================================
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo'])->group(function () {
     Route::post('/productos/actualizar-precios-excel', [ProductosController::class, 'actualizarPreciosExcel'])->name('productos.actualizar-precios-excel');
     Route::get('/productos/historial-precios', [ActualizacionPreciosController::class, 'historial'])->name('productos.historial-precios');
     Route::get('/productos/actualizacion-precios/{id}', [ActualizacionPreciosController::class, 'verDetalle'])->name('productos.actualizacion-precios.detalle');
@@ -347,7 +357,7 @@ Route::middleware(['auth', 'role:cliente'])->prefix('portal')->name('portal.')->
 // ============================================================
 // GESTIÓN DE ENVÍOS (Admin, Facturación, Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,facturacion,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios,auxiliar_inventario'])->group(function () {
     // Actualizar estado de envío
     Route::post('/solicitudes/{solicitud}/envio', [SolicitudController::class, 'actualizarEnvio'])->name('solicitudes.envio.update');
 
@@ -358,7 +368,7 @@ Route::middleware(['auth', 'role:admin,facturacion,inventarios'])->group(functio
 // ============================================================
 // PUNTO DE VENTA (Admin, Inventarios, Punto de Venta)
 // ============================================================
-Route::middleware(['auth', 'role:admin,inventarios,punto_venta'])->prefix('punto-venta')->name('punto-venta.')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,punto_venta'])->prefix('punto-venta')->name('punto-venta.')->group(function () {
     // Dashboard
     Route::get('/', [PuntoVentaController::class, 'dashboard'])->name('dashboard');
 
@@ -402,7 +412,7 @@ Route::middleware(['auth', 'role:admin,inventarios,punto_venta'])->prefix('punto
 // ============================================================
 // MÓDULO DE SERVICIO TÉCNICO (Admin y Técnico)
 // ============================================================
-Route::middleware(['auth', 'role:admin,tecnico'])->prefix('servicio-tecnico')->name('st.')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,tecnico'])->prefix('servicio-tecnico')->name('st.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\ServicioTecnico\DashboardSTController::class, 'index'])->name('dashboard');
 

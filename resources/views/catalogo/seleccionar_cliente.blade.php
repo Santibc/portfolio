@@ -71,7 +71,7 @@
                         <i class="bi bi-telephone"></i> {{ $cliente->telefono }}<br>
                         <i class="bi bi-envelope"></i> {{ $cliente->email }}<br>
                         <i class="bi bi-tag"></i> Lista: {{ $cliente->listaPrecio?->nombre ?? 'Sin lista' }}
-                        @if(auth()->user()->hasRole('admin'))
+                        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo']))
                           <br><i class="bi bi-person"></i> Vendedor: {{ $cliente->vendedor?->name ?? 'Sin vendedor' }}
                         @endif
                       </small>

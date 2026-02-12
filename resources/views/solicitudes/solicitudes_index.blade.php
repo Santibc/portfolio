@@ -40,8 +40,8 @@
             @endif
           </div>
 
-          {{-- Filtro de Vendedor (solo para admin) --}}
-          @if(auth()->user()->hasRole('admin'))
+          {{-- Filtro de Vendedor (para admin, auxiliar_administrativo e inventarios) --}}
+          @if(auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios']))
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Filtrar por Vendedor:</label>

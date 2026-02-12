@@ -30,17 +30,19 @@ class TrasladosController extends Controller
 
             return DataTables::of($query)
                 ->addColumn('action', function ($row) {
+                    $user = auth()->user();
+                    $puedeAprobarRechazar = $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia']);
                     $btns = '<div class="d-flex gap-1">';
 
-                    if ($row->puedeEnviar()) {
+                    if ($row->puedeEnviar() && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
                     }
 
-                    if ($row->puedeRecibir() && auth()->id() !== $row->usuario_creador_id) {
+                    if ($row->puedeRecibir() && $puedeAprobarRechazar) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="recibirTraslado(' . $row->id . ')" title="Recibir"><i class="bi bi-check-lg"></i></button>';
                     }
 
-                    if ($row->puedeCancelar()) {
+                    if ($row->puedeCancelar() && $puedeAprobarRechazar) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelarTraslado(' . $row->id . ')" title="Cancelar"><i class="bi bi-x-lg"></i></button>';
                     }
 
@@ -320,6 +322,13 @@ class TrasladosController extends Controller
 
     public function recibir($id)
     {
+        if (!auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para aprobar traslados.'
+            ], 403);
+        }
+
         $traslado = TrasladoStock::findOrFail($id);
 
         if (!$traslado->puedeRecibir()) {
@@ -388,6 +397,13 @@ class TrasladosController extends Controller
 
     public function cancelar($id)
     {
+        if (!auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para rechazar traslados.'
+            ], 403);
+        }
+
         $traslado = TrasladoStock::findOrFail($id);
 
         if (!$traslado->puedeCancelar()) {
