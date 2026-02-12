@@ -13,6 +13,8 @@ class ParteDiario extends Model
     protected $fillable = [
         'obra_id',
         'fecha',
+        'tipo',
+        'fecha_fin',
         'jornada',
         'linea',
         'trayecto',
@@ -39,6 +41,7 @@ class ParteDiario extends Model
 
     protected $casts = [
         'fecha' => 'date',
+        'fecha_fin' => 'date',
         'desbroce_total_m2' => 'decimal:2',
         'desbroce_p5_m2' => 'decimal:2',
         'desbroce_p6_m2' => 'decimal:2',
@@ -80,6 +83,11 @@ class ParteDiario extends Model
     public function producciones(): HasMany
     {
         return $this->hasMany(ParteDiarioProduccion::class)->with('concepto');
+    }
+
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(ParteDiarioDocumento::class);
     }
 
     // Accessors
@@ -141,5 +149,75 @@ class ParteDiario extends Model
     public function scopeValidados($query)
     {
         return $query->where('estado', 'validado');
+    }
+
+    public function scopeDiarios($query)
+    {
+        return $query->where('tipo', 'diario');
+    }
+
+    public function scopeMensuales($query)
+    {
+        return $query->where('tipo', 'mensual');
+    }
+
+    /**
+     * Filtro unificado: partes cuyo rango de fecha solapa con el periodo dado.
+     * Diarios: fecha BETWEEN $desde AND $hasta
+     * Mensuales: fecha <= $hasta AND fecha_fin >= $desde (solapamiento de rangos)
+     */
+    public function scopeEnPeriodo($query, $fechaDesde, $fechaHasta)
+    {
+        return $query->where(function ($q) use ($fechaDesde, $fechaHasta) {
+            $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                $q2->where('tipo', 'diario')
+                   ->whereBetween('fecha', [$fechaDesde, $fechaHasta]);
+            })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                $q2->where('tipo', 'mensual')
+                   ->where('fecha', '<=', $fechaHasta)
+                   ->where('fecha_fin', '>=', $fechaDesde);
+            });
+        });
+    }
+
+    /**
+     * Partes que pertenecen a un mes específico (YYYY-MM).
+     */
+    public function scopeDelMes($query, int $year, int $month)
+    {
+        $start = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+
+        return $query->enPeriodo($start, $end);
+    }
+
+    // Accessors de tipo
+    public function getEsMensualAttribute(): bool
+    {
+        return $this->tipo === 'mensual';
+    }
+
+    public function getEsDiarioAttribute(): bool
+    {
+        return $this->tipo === 'diario';
+    }
+
+    public function getFechaDisplayAttribute(): string
+    {
+        if ($this->es_mensual && $this->fecha_fin) {
+            return $this->fecha->format('d/m') . ' - ' . $this->fecha_fin->format('d/m/Y');
+        }
+        return $this->fecha->format('d/m/Y');
+    }
+
+    public function getPeriodoFormateadoAttribute(): string
+    {
+        if ($this->es_mensual && $this->fecha_fin) {
+            if ($this->fecha->month === $this->fecha_fin->month && $this->fecha->year === $this->fecha_fin->year) {
+                return $this->fecha->translatedFormat('F Y');
+            }
+            return $this->fecha->format('d/m/Y') . ' - ' . $this->fecha_fin->format('d/m/Y');
+        }
+        return $this->fecha->format('d/m/Y');
     }
 }

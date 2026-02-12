@@ -1,15 +1,20 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Parte Diario')
+@section('title', $partes_diario->es_mensual ? 'Editar Parte Mensual' : 'Editar Parte Diario')
 
 @section('content')
 <div class="container-fluid py-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Editar Parte Diario</h1>
+            <h1 class="h3 mb-1">
+                Editar {{ $partes_diario->es_mensual ? 'Parte Mensual' : 'Parte Diario' }}
+                @if($partes_diario->es_mensual)
+                    <span class="badge bg-info-subtle text-info fs-6 ms-2">Mensual</span>
+                @endif
+            </h1>
             <p class="text-muted mb-0">
-                {{ $partes_diario->obra->nombre }} - {{ $partes_diario->fecha->format('d/m/Y') }}
+                {{ $partes_diario->obra->nombre }} - {{ $partes_diario->fecha_display }}
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -22,7 +27,7 @@
         </div>
     </div>
 
-    <form action="{{ route('partes-diarios.update', $partes_diario) }}" method="POST">
+    <form action="{{ route('partes-diarios.update', $partes_diario) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="row">
@@ -40,22 +45,30 @@
                                        value="{{ $partes_diario->obra->nombre }}">
                             </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label">Fecha</label>
-                                <input type="text" class="form-control" readonly
-                                       value="{{ $partes_diario->fecha->format('d/m/Y') }}">
-                            </div>
+                            @if($partes_diario->es_mensual)
+                                <div class="col-md-3">
+                                    <label class="form-label">Periodo</label>
+                                    <input type="text" class="form-control" readonly
+                                           value="{{ $partes_diario->fecha_display }}">
+                                </div>
+                            @else
+                                <div class="col-md-3">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="text" class="form-control" readonly
+                                           value="{{ $partes_diario->fecha->format('d/m/Y') }}">
+                                </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label">Jornada <span class="text-danger">*</span></label>
-                                <select name="jornada" class="form-select @error('jornada') is-invalid @enderror" required>
-                                    <option value="diurna" {{ old('jornada', $partes_diario->jornada) == 'diurna' ? 'selected' : '' }}>Diurna</option>
-                                    <option value="nocturna" {{ old('jornada', $partes_diario->jornada) == 'nocturna' ? 'selected' : '' }}>Nocturna</option>
-                                </select>
-                                @error('jornada')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Jornada <span class="text-danger">*</span></label>
+                                    <select name="jornada" class="form-select @error('jornada') is-invalid @enderror" required>
+                                        <option value="diurna" {{ old('jornada', $partes_diario->jornada) == 'diurna' ? 'selected' : '' }}>Diurna</option>
+                                        <option value="nocturna" {{ old('jornada', $partes_diario->jornada) == 'nocturna' ? 'selected' : '' }}>Nocturna</option>
+                                    </select>
+                                    @error('jornada')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            @endif
 
                             <div class="col-12">
                                 <hr class="my-2">
@@ -93,7 +106,7 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-bar-chart me-2"></i>Producción del Día
+                            <i class="bi bi-bar-chart me-2"></i>{{ $partes_diario->es_mensual ? 'Producción del Periodo' : 'Producción del Día' }}
                         </h5>
                         @unless(auth()->user()->hasRole('Encargado'))
                             <span class="badge bg-success" id="totalImporteLabel">{{ $partes_diario->importe_total_formateado }}</span>
@@ -230,32 +243,59 @@
                     </div>
                 </div>
 
-                <!-- Trabajadores -->
+                @include('partes-diarios.partials.trabajadores-selector', [
+                    'preselected' => old('trabajadores', $partes_diario->trabajadores->pluck('trabajador_id')->toArray()),
+                    'obraId' => $partes_diario->obra_id,
+                ])
+
+                <!-- Documentos -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0">Trabajadores</h5>
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-paperclip me-2"></i>Documentos y Fotos
+                        </h5>
+                        @if($partes_diario->documentos->count() > 0)
+                            <span class="badge bg-primary">{{ $partes_diario->documentos->count() }}</span>
+                        @endif
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-3">Selecciona los trabajadores que participaron:</p>
-                        @php
-                            $trabajadoresAsignados = $partes_diario->trabajadores->pluck('trabajador_id')->toArray();
-                        @endphp
-                        <div class="trabajadores-list" style="max-height: 400px; overflow-y: auto;">
-                            @foreach($trabajadores as $trabajador)
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox"
-                                           name="trabajadores[]" value="{{ $trabajador->id }}"
-                                           id="trab{{ $trabajador->id }}"
-                                           {{ in_array($trabajador->id, old('trabajadores', $trabajadoresAsignados)) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="trab{{ $trabajador->id }}">
-                                        {{ $trabajador->nombre }} {{ $trabajador->apellidos }}
-                                        @if($trabajador->categoria)
-                                            <br><small class="text-muted">{{ $trabajador->categoria }}</small>
-                                        @endif
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
+                        {{-- Documentos existentes --}}
+                        @if($partes_diario->documentos->count() > 0)
+                            <div class="mb-3">
+                                @foreach($partes_diario->documentos as $doc)
+                                    <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            @php
+                                                $ext = strtolower(pathinfo($doc->archivo_nombre_original, PATHINFO_EXTENSION));
+                                                $iconClass = match(true) {
+                                                    in_array($ext, ['jpg','jpeg','png','gif','webp']) => 'bi-file-image text-success',
+                                                    $ext === 'pdf' => 'bi-file-pdf text-danger',
+                                                    in_array($ext, ['doc','docx']) => 'bi-file-word text-primary',
+                                                    in_array($ext, ['xls','xlsx']) => 'bi-file-excel text-success',
+                                                    default => 'bi-file-earmark text-secondary',
+                                                };
+                                            @endphp
+                                            <i class="bi {{ $iconClass }} fs-5 me-2"></i>
+                                            <a href="{{ asset($doc->archivo_path) }}" target="_blank" class="text-decoration-none small">
+                                                {{ Str::limit($doc->archivo_nombre_original, 25) }}
+                                            </a>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="eliminarDocumento({{ $partes_diario->id }}, {{ $doc->id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        {{-- Subir nuevos --}}
+                        <label class="form-label small text-muted">Añadir nuevos archivos:</label>
+                        <input type="file" name="documentos[]" class="form-control form-control-sm" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <div class="form-text">Máximo 10MB por archivo.</div>
+                        @error('documentos.*')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -323,6 +363,28 @@
             style: 'currency',
             currency: 'EUR'
         }).format(value);
+    }
+
+    function eliminarDocumento(parteId, docId) {
+        Swal.fire({
+            title: '¿Eliminar documento?',
+            text: 'Esta acción no se puede deshacer',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/partes-diarios/' + parteId + '/documentos/' + docId;
+                form.innerHTML = '@csrf @method("DELETE")';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
     }
 </script>
 @endpush

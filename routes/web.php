@@ -308,6 +308,8 @@ Route::middleware(['auth', 'verified', 'permission:crear_partes'])->group(functi
 
 Route::middleware(['auth', 'verified', 'permission:ver_partes'])->group(function () {
     Route::get('partes-diarios', [ParteDiarioController::class, 'index'])->name('partes-diarios.index');
+    Route::get('partes-diarios/ajax/trabajadores-obra/{obra}', [ParteDiarioController::class, 'getTrabajadoresObra'])
+        ->name('partes-diarios.trabajadores-obra');
     Route::get('partes-diarios/{partes_diario}', [ParteDiarioController::class, 'show'])->name('partes-diarios.show');
 });
 
@@ -329,6 +331,12 @@ Route::middleware(['auth', 'verified', 'permission:editar_partes'])->group(funct
         ->name('partes-diarios.trabajadores.add');
     Route::delete('partes-diarios/{partes_diario}/trabajadores/{trabajador}', [ParteDiarioController::class, 'removeTrabajador'])
         ->name('partes-diarios.trabajadores.remove');
+
+    // Gestión de documentos en parte
+    Route::post('partes-diarios/{partes_diario}/documentos', [ParteDiarioController::class, 'storeDocumento'])
+        ->name('partes-diarios.documentos.store');
+    Route::delete('partes-diarios/{partes_diario}/documentos/{documento}', [ParteDiarioController::class, 'destroyDocumento'])
+        ->name('partes-diarios.documentos.destroy');
 });
 
 Route::middleware(['auth', 'verified', 'permission:validar_partes'])->group(function () {

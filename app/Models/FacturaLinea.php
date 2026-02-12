@@ -20,6 +20,7 @@ class FacturaLinea extends Model
         'descuento_porcentaje',
         'importe',
         'orden',
+        'grupo',
     ];
 
     protected $casts = [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ParteDiario;
 use App\Models\ParteDiarioTrabajador;
 use App\Models\ParteDiarioProduccion;
+use App\Models\ParteDiarioDocumento;
 use App\Models\ObraConceptoProduccion;
 use App\Models\Obra;
 use App\Models\Trabajador;
@@ -27,16 +28,11 @@ class ParteDiarioController extends Controller
             ? $request->fecha_hasta
             : now()->endOfMonth()->format('Y-m-d');
 
-        $query = ParteDiario::with(['obra', 'creadoPor', 'producciones.concepto']);
+        $query = ParteDiario::with(['obra', 'creadoPor', 'producciones.concepto'])
+                            ->withCount('documentos');
 
-        // Filtros
-        if ($request->filled('fecha_desde')) {
-            $query->where('fecha', '>=', $request->fecha_desde);
-        }
-
-        if ($request->filled('fecha_hasta')) {
-            $query->where('fecha', '<=', $request->fecha_hasta);
-        }
+        // Filtro de fechas unificado (diarios + mensuales)
+        $query->enPeriodo($fechaDesde, $fechaHasta);
 
         if ($request->filled('obra_id')) {
             $query->where('obra_id', $request->obra_id);
@@ -50,10 +46,8 @@ class ParteDiarioController extends Controller
             $query->where('jornada', $request->jornada);
         }
 
-        // Por defecto mostrar el mes actual
-        if (!$request->filled('fecha_desde') && !$request->filled('fecha_hasta')) {
-            $query->where('fecha', '>=', now()->startOfMonth())
-                  ->where('fecha', '<=', now()->endOfMonth());
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
         }
 
         $partes = $query->orderBy('fecha', 'desc')
@@ -62,8 +56,9 @@ class ParteDiarioController extends Controller
         // Calcular producción por categoría desde parte_diario_producciones
         $statsQuery = ParteDiarioProduccion::query()
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
-            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+            ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id');
+
+        $this->applyPeriodoFilter($statsQuery, $fechaDesde, $fechaHasta);
 
         if ($request->filled('obra_id')) {
             $statsQuery->where('partes_diarios.obra_id', $request->obra_id);
@@ -79,7 +74,7 @@ class ParteDiarioController extends Controller
         $categoriasActivas = ObraConceptoProduccion::query()
             ->whereHas('producciones', function($q) use ($fechaDesde, $fechaHasta, $request) {
                 $q->whereHas('parteDiario', function($q2) use ($fechaDesde, $fechaHasta, $request) {
-                    $q2->whereBetween('fecha', [$fechaDesde, $fechaHasta]);
+                    $q2->enPeriodo($fechaDesde, $fechaHasta);
                     if ($request->filled('obra_id')) {
                         $q2->where('obra_id', $request->obra_id);
                     }
@@ -106,11 +101,11 @@ class ParteDiarioController extends Controller
         $stats = [
             'total_partes' => $partes->total(),
             'borradores' => ParteDiario::borradores()
-                ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+                ->enPeriodo($fechaDesde, $fechaHasta)
                 ->when($request->filled('obra_id'), fn($q) => $q->where('obra_id', $request->obra_id))
                 ->count(),
             'pendientes_validar' => ParteDiario::completados()
-                ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+                ->enPeriodo($fechaDesde, $fechaHasta)
                 ->when($request->filled('obra_id'), fn($q) => $q->where('obra_id', $request->obra_id))
                 ->count(),
             'produccion_por_categoria' => $produccionPorCategoria,
@@ -136,10 +131,6 @@ class ParteDiarioController extends Controller
                      ->orderBy('nombre')
                      ->get();
 
-        $trabajadores = Trabajador::where('activo', true)
-                                   ->orderBy('nombre')
-                                   ->get();
-
         // Pre-seleccionar obra si viene en el request
         $obraSeleccionada = null;
         if ($request->filled('obra_id')) {
@@ -148,7 +139,9 @@ class ParteDiarioController extends Controller
             }])->find($request->obra_id);
         }
 
-        return view('partes-diarios.create', compact('obras', 'trabajadores', 'obraSeleccionada'));
+        $tipo = $request->get('tipo', 'diario');
+
+        return view('partes-diarios.create', compact('obras', 'obraSeleccionada', 'tipo'));
     }
 
     /**
@@ -157,9 +150,11 @@ class ParteDiarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'tipo' => 'required|in:diario,mensual',
             'obra_id' => 'required|exists:obras,id',
             'fecha' => 'required|date',
-            'jornada' => 'required|in:diurna,nocturna',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha|required_if:tipo,mensual',
+            'jornada' => $request->input('tipo') === 'mensual' ? 'nullable|in:diurna,nocturna' : 'required|in:diurna,nocturna',
             'linea' => 'nullable|string|max:100',
             'trayecto' => 'nullable|string|max:255',
             'gerencia_jefatura' => 'nullable|string|max:50',
@@ -179,14 +174,39 @@ class ParteDiarioController extends Controller
             'producciones' => 'nullable|array',
             'producciones.*.concepto_id' => 'required|exists:obra_conceptos_produccion,id',
             'producciones.*.cantidad' => 'required|numeric|min:0',
+            'documentos' => 'nullable|array',
+            'documentos.*' => 'file|max:10240',
         ]);
+
+        // Aviso de coexistencia si hay partes en el mismo periodo
+        $warningMsg = null;
+        if ($validated['tipo'] === 'mensual') {
+            $existentes = ParteDiario::where('obra_id', $validated['obra_id'])
+                ->where('tipo', 'diario')
+                ->whereBetween('fecha', [$validated['fecha'], $validated['fecha_fin']])
+                ->count();
+            if ($existentes > 0) {
+                $warningMsg = "Existen {$existentes} parte(s) diario(s) en este periodo para esta obra.";
+            }
+        } else {
+            $existentes = ParteDiario::where('obra_id', $validated['obra_id'])
+                ->where('tipo', 'mensual')
+                ->where('fecha', '<=', $validated['fecha'])
+                ->where('fecha_fin', '>=', $validated['fecha'])
+                ->count();
+            if ($existentes > 0) {
+                $warningMsg = "Existe un parte mensual que cubre esta fecha para esta obra.";
+            }
+        }
 
         DB::beginTransaction();
         try {
             $parte = ParteDiario::create([
                 'obra_id' => $validated['obra_id'],
                 'fecha' => $validated['fecha'],
-                'jornada' => $validated['jornada'],
+                'tipo' => $validated['tipo'],
+                'fecha_fin' => $validated['tipo'] === 'mensual' ? $validated['fecha_fin'] : null,
+                'jornada' => $validated['tipo'] === 'mensual' ? ($validated['jornada'] ?? null) : $validated['jornada'],
                 'linea' => $validated['linea'] ?? null,
                 'trayecto' => $validated['trayecto'] ?? null,
                 'gerencia_jefatura' => $validated['gerencia_jefatura'] ?? null,
@@ -232,13 +252,38 @@ class ParteDiarioController extends Controller
                 }
             }
 
+            // Guardar documentos adjuntos
+            if ($request->hasFile('documentos')) {
+                $rutaCarpeta = 'uploads/partes-diarios/' . $parte->id;
+                foreach ($request->file('documentos') as $archivo) {
+                    $nombreOriginal = $archivo->getClientOriginalName();
+                    $nombreArchivo = time() . '_' . $nombreOriginal;
+                    $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
+
+                    ParteDiarioDocumento::create([
+                        'parte_diario_id' => $parte->id,
+                        'nombre' => pathinfo($nombreOriginal, PATHINFO_FILENAME),
+                        'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
+                        'archivo_nombre_original' => $nombreOriginal,
+                        'subido_por' => Auth::id(),
+                    ]);
+                }
+            }
+
             // Actualizar importe total del parte
             $parte->calcularYActualizarImporte();
 
             DB::commit();
 
-            return redirect()->route('partes-diarios.show', $parte)
-                             ->with('success', 'Parte diario creado correctamente.');
+            $tipoLabel = $parte->es_mensual ? 'mensual' : 'diario';
+            $redirect = redirect()->route('partes-diarios.show', $parte)
+                                  ->with('success', "Parte {$tipoLabel} creado correctamente.");
+
+            if ($warningMsg) {
+                $redirect->with('warning', $warningMsg);
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al crear el parte: ' . $e->getMessage()])
@@ -253,14 +298,54 @@ class ParteDiarioController extends Controller
     {
         $partes_diario->load([
             'obra.cliente',
+            'obra.cuadrillas' => function ($q) {
+                $q->wherePivot('activo', true);
+            },
+            'obra.cuadrillas.trabajadoresActivos',
+            'obra.trabajadoresActivos',
             'creadoPor',
             'trabajadores.trabajador',
             'lineas',
             'herbicidas',
             'producciones.concepto',
+            'documentos',
         ]);
 
-        return view('partes-diarios.show', compact('partes_diario'));
+        // Agrupar trabajadores del parte por categoría
+        $trabajadorIdsDelParte = $partes_diario->trabajadores->pluck('trabajador_id')->toArray();
+
+        // 1. Trabajadores agrupados por cuadrilla
+        $cuadrillasConTrabajadores = [];
+        $workerIdsInCuadrillas = [];
+        foreach ($partes_diario->obra->cuadrillas as $cuadrilla) {
+            $membersInParte = $cuadrilla->trabajadoresActivos
+                ->filter(fn ($t) => in_array($t->id, $trabajadorIdsDelParte));
+            if ($membersInParte->isNotEmpty()) {
+                $cuadrillasConTrabajadores[] = [
+                    'cuadrilla' => $cuadrilla,
+                    'trabajadores' => $membersInParte,
+                ];
+                $workerIdsInCuadrillas = array_merge($workerIdsInCuadrillas, $membersInParte->pluck('id')->toArray());
+            }
+        }
+        $workerIdsInCuadrillas = array_unique($workerIdsInCuadrillas);
+
+        // 2. Trabajadores directos de la obra (no via cuadrilla)
+        $obraDirectIds = $partes_diario->obra->trabajadoresActivos->pluck('id')->toArray();
+        $directWorkers = $partes_diario->trabajadores
+            ->filter(fn ($pt) => in_array($pt->trabajador_id, $obraDirectIds) && !in_array($pt->trabajador_id, $workerIdsInCuadrillas));
+
+        // 3. Trabajadores externos (no asignados a la obra)
+        $allObraWorkerIds = array_unique(array_merge($workerIdsInCuadrillas, $obraDirectIds));
+        $externalWorkers = $partes_diario->trabajadores
+            ->filter(fn ($pt) => !in_array($pt->trabajador_id, $allObraWorkerIds));
+
+        return view('partes-diarios.show', compact(
+            'partes_diario',
+            'cuadrillasConTrabajadores',
+            'directWorkers',
+            'externalWorkers'
+        ));
     }
 
     /**
@@ -279,13 +364,9 @@ class ParteDiarioController extends Controller
                      ->orderBy('nombre')
                      ->get();
 
-        $trabajadores = Trabajador::where('activo', true)
-                                   ->orderBy('nombre')
-                                   ->get();
+        $partes_diario->load(['trabajadores', 'producciones.concepto', 'obra.conceptosProduccion', 'documentos']);
 
-        $partes_diario->load(['trabajadores', 'producciones.concepto', 'obra.conceptosProduccion']);
-
-        return view('partes-diarios.edit', compact('partes_diario', 'obras', 'trabajadores'));
+        return view('partes-diarios.edit', compact('partes_diario', 'obras'));
     }
 
     /**
@@ -298,7 +379,7 @@ class ParteDiarioController extends Controller
         }
 
         $validated = $request->validate([
-            'jornada' => 'required|in:diurna,nocturna',
+            'jornada' => $partes_diario->es_mensual ? 'nullable|in:diurna,nocturna' : 'required|in:diurna,nocturna',
             'linea' => 'nullable|string|max:100',
             'trayecto' => 'nullable|string|max:255',
             'gerencia_jefatura' => 'nullable|string|max:50',
@@ -318,6 +399,8 @@ class ParteDiarioController extends Controller
             'producciones' => 'nullable|array',
             'producciones.*.concepto_id' => 'required|exists:obra_conceptos_produccion,id',
             'producciones.*.cantidad' => 'required|numeric|min:0',
+            'documentos' => 'nullable|array',
+            'documentos.*' => 'file|max:10240',
         ]);
 
         DB::beginTransaction();
@@ -366,6 +449,24 @@ class ParteDiarioController extends Controller
                             'importe_calculado' => $produccion['cantidad'] * $concepto->precio_unitario,
                         ]);
                     }
+                }
+            }
+
+            // Guardar nuevos documentos adjuntos
+            if ($request->hasFile('documentos')) {
+                $rutaCarpeta = 'uploads/partes-diarios/' . $partes_diario->id;
+                foreach ($request->file('documentos') as $archivo) {
+                    $nombreOriginal = $archivo->getClientOriginalName();
+                    $nombreArchivo = time() . '_' . $nombreOriginal;
+                    $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
+
+                    ParteDiarioDocumento::create([
+                        'parte_diario_id' => $partes_diario->id,
+                        'nombre' => pathinfo($nombreOriginal, PATHINFO_FILENAME),
+                        'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
+                        'archivo_nombre_original' => $nombreOriginal,
+                        'subido_por' => Auth::id(),
+                    ]);
                 }
             }
 
@@ -483,14 +584,17 @@ class ParteDiarioController extends Controller
      */
     public function duplicar(Request $request, ParteDiario $partes_diario)
     {
-        $validated = $request->validate([
-            'fecha' => 'required|date',
-        ]);
+        $rules = ['fecha' => 'required|date'];
+        if ($partes_diario->es_mensual) {
+            $rules['fecha_fin'] = 'required|date|after_or_equal:fecha';
+        }
+        $validated = $request->validate($rules);
 
         DB::beginTransaction();
         try {
             $nuevoParte = $partes_diario->replicate();
             $nuevoParte->fecha = $validated['fecha'];
+            $nuevoParte->fecha_fin = $partes_diario->es_mensual ? $validated['fecha_fin'] : null;
             $nuevoParte->estado = 'borrador';
             $nuevoParte->encargado_firma = null;
             $nuevoParte->cliente_firma = null;
@@ -530,5 +634,134 @@ class ParteDiarioController extends Controller
             DB::rollBack();
             return back()->with('error', 'Error al duplicar el parte: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Subir documento a un parte diario.
+     */
+    public function storeDocumento(Request $request, ParteDiario $partes_diario)
+    {
+        $request->validate([
+            'documentos' => 'required|array',
+            'documentos.*' => 'file|max:10240',
+        ]);
+
+        $rutaCarpeta = 'uploads/partes-diarios/' . $partes_diario->id;
+        foreach ($request->file('documentos') as $archivo) {
+            $nombreOriginal = $archivo->getClientOriginalName();
+            $nombreArchivo = time() . '_' . $nombreOriginal;
+            $archivo->move(public_path($rutaCarpeta), $nombreArchivo);
+
+            ParteDiarioDocumento::create([
+                'parte_diario_id' => $partes_diario->id,
+                'nombre' => pathinfo($nombreOriginal, PATHINFO_FILENAME),
+                'archivo_path' => $rutaCarpeta . '/' . $nombreArchivo,
+                'archivo_nombre_original' => $nombreOriginal,
+                'subido_por' => Auth::id(),
+            ]);
+        }
+
+        return back()->with('success', 'Documento(s) subido(s) correctamente.');
+    }
+
+    /**
+     * Eliminar documento de un parte diario.
+     */
+    public function destroyDocumento(ParteDiario $partes_diario, ParteDiarioDocumento $documento)
+    {
+        if ($documento->archivo_path && file_exists(public_path($documento->archivo_path))) {
+            unlink(public_path($documento->archivo_path));
+        }
+
+        $documento->delete();
+
+        return back()->with('success', 'Documento eliminado correctamente.');
+    }
+
+    /**
+     * Aplicar filtro de periodo para queries con JOIN (diarios + mensuales).
+     */
+    private function applyPeriodoFilter($query, $fechaDesde, $fechaHasta, string $alias = 'partes_diarios')
+    {
+        return $query->where(function ($q) use ($fechaDesde, $fechaHasta, $alias) {
+            $q->where(function ($q2) use ($fechaDesde, $fechaHasta, $alias) {
+                $q2->where("{$alias}.tipo", 'diario')
+                   ->whereBetween("{$alias}.fecha", [$fechaDesde, $fechaHasta]);
+            })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta, $alias) {
+                $q2->where("{$alias}.tipo", 'mensual')
+                   ->where("{$alias}.fecha", '<=', $fechaHasta)
+                   ->where("{$alias}.fecha_fin", '>=', $fechaDesde);
+            });
+        });
+    }
+
+    /**
+     * AJAX: Get workers categorized by their relationship to an obra.
+     */
+    public function getTrabajadoresObra(Obra $obra)
+    {
+        // 1. Cuadrillas activas de la obra con sus trabajadores activos
+        $cuadrillas = $obra->cuadrillas()
+            ->wherePivot('activo', true)
+            ->with(['trabajadoresActivos' => function ($q) {
+                $q->orderBy('nombre');
+            }, 'capataz'])
+            ->get();
+
+        // 2. IDs de trabajadores que pertenecen a alguna cuadrilla de la obra
+        $cuadrillaTrabajadorIds = $cuadrillas->flatMap(function ($c) {
+            return $c->trabajadoresActivos->pluck('id');
+        })->unique()->values()->toArray();
+
+        // 3. Trabajadores directamente asignados a la obra (activos)
+        $obraDirectos = $obra->trabajadoresActivos()
+            ->where('trabajadores.activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        // 4. Lista unificada de todos los trabajadores de la obra (directos + cuadrilla)
+        $allObraWorkerIds = collect($cuadrillaTrabajadorIds)
+            ->merge($obraDirectos->pluck('id'))
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Obtener todos los trabajadores de la obra para la pestaña unificada
+        $allObraWorkers = Trabajador::where('activo', true)
+            ->whereIn('id', $allObraWorkerIds)
+            ->orderBy('nombre')
+            ->get();
+
+        // 5. Todos los demás trabajadores activos (no asignados a la obra)
+        $otrosTrabajadores = Trabajador::where('activo', true)
+            ->whereNotIn('id', $allObraWorkerIds)
+            ->orderBy('nombre')
+            ->get();
+
+        $formatWorker = fn ($t) => [
+            'id' => $t->id,
+            'nombre' => $t->nombre,
+            'apellidos' => $t->apellidos,
+            'nombre_completo' => $t->nombre_completo,
+        ];
+
+        return response()->json([
+            'cuadrillas' => $cuadrillas->map(function ($cuadrilla) use ($formatWorker) {
+                return [
+                    'id' => $cuadrilla->id,
+                    'nombre' => $cuadrilla->nombre,
+                    'capataz' => $cuadrilla->capataz ? $cuadrilla->capataz->nombre_completo : null,
+                    'trabajadores' => $cuadrilla->trabajadoresActivos->map($formatWorker)->values(),
+                ];
+            }),
+            'obra_trabajadores' => $allObraWorkers->map(function ($t) use ($cuadrillaTrabajadorIds, $obraDirectos, $formatWorker) {
+                $data = $formatWorker($t);
+                $data['via_cuadrilla'] = in_array($t->id, $cuadrillaTrabajadorIds);
+                $directo = $obraDirectos->firstWhere('id', $t->id);
+                $data['rol'] = $directo ? $directo->pivot->rol : null;
+                return $data;
+            }),
+            'otros_trabajadores' => $otrosTrabajadores->map($formatWorker)->values(),
+        ]);
     }
 }

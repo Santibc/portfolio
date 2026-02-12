@@ -7,13 +7,18 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Partes Diarios</h1>
-            <p class="text-muted mb-0">Registro diario de trabajo en obras</p>
+            <h1 class="h3 mb-1">Partes de Producción</h1>
+            <p class="text-muted mb-0">Registro de trabajo en obras (diarios y mensuales)</p>
         </div>
         @can('crear_partes')
-        <a href="{{ route('partes-diarios.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Parte
-        </a>
+        <div class="btn-group">
+            <a href="{{ route('partes-diarios.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Parte Diario
+            </a>
+            <a href="{{ route('partes-diarios.create', ['tipo' => 'mensual']) }}" class="btn btn-outline-primary">
+                <i class="bi bi-calendar-range me-2"></i>Parte Mensual
+            </a>
+        </div>
         @endcan
     </div>
 
@@ -151,12 +156,12 @@
                         <option value="validado" {{ request('estado') === 'validado' ? 'selected' : '' }}>Validado</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Jornada</label>
-                    <select name="jornada" class="form-select">
-                        <option value="">Todas</option>
-                        <option value="diurna" {{ request('jornada') === 'diurna' ? 'selected' : '' }}>Diurna</option>
-                        <option value="nocturna" {{ request('jornada') === 'nocturna' ? 'selected' : '' }}>Nocturna</option>
+                <div class="col-md-1">
+                    <label class="form-label">Tipo</label>
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="diario" {{ request('tipo') === 'diario' ? 'selected' : '' }}>Diario</option>
+                        <option value="mensual" {{ request('tipo') === 'mensual' ? 'selected' : '' }}>Mensual</option>
                     </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
@@ -192,8 +197,16 @@
                         @forelse($partes as $parte)
                             <tr>
                                 <td>
-                                    <strong>{{ $parte->fecha->format('d/m/Y') }}</strong>
-                                    <br><small class="text-muted">{{ $parte->fecha->translatedFormat('l') }}</small>
+                                    @if($parte->es_mensual)
+                                        <span class="badge bg-info-subtle text-info mb-1"><i class="bi bi-calendar-range me-1"></i>Mensual</span>
+                                        <br><strong>{{ $parte->fecha_display }}</strong>
+                                    @else
+                                        <strong>{{ $parte->fecha->format('d/m/Y') }}</strong>
+                                        <br><small class="text-muted">{{ $parte->fecha->translatedFormat('l') }}</small>
+                                    @endif
+                                    @if($parte->documentos_count > 0)
+                                        <i class="bi bi-paperclip text-muted ms-1" title="{{ $parte->documentos_count }} adjunto(s)"></i>
+                                    @endif
                                 </td>
                                 <td>
                                     <a href="{{ route('obras.show', $parte->obra) }}" class="text-decoration-none">
@@ -204,7 +217,9 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if($parte->jornada === 'diurna')
+                                    @if($parte->es_mensual)
+                                        <span class="text-muted">-</span>
+                                    @elseif($parte->jornada === 'diurna')
                                         <span class="badge bg-warning text-dark">
                                             <i class="bi bi-sun me-1"></i>Diurna
                                         </span>
@@ -292,7 +307,7 @@
                             <tr>
                                 <td colspan="{{ 5 + count($stats['categorias_activas']) }}" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                    No hay partes diarios para mostrar
+                                    No hay partes para mostrar
                                 </td>
                             </tr>
                         @endforelse

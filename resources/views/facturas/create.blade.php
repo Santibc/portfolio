@@ -122,9 +122,14 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-list-ol me-2"></i>Líneas de Factura</h5>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="agregarLinea()">
-                            <i class="bi bi-plus-lg me-1"></i>Añadir Línea
-                        </button>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-success me-1" onclick="agregarGrupo()">
+                                <i class="bi bi-folder-plus me-1"></i>Añadir Grupo
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="agregarLinea()">
+                                <i class="bi bi-plus-lg me-1"></i>Añadir Línea
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -254,10 +259,11 @@
 @push('scripts')
 <script>
     let lineaIndex = 0;
+    let grupoIndex = 0;
 
-    // Agregar primera línea al cargar
+    // Agregar primer grupo al cargar
     document.addEventListener('DOMContentLoaded', function() {
-        agregarLinea();
+        agregarGrupo();
 
         // Evento para cambio de cliente
         document.getElementById('cliente_id').addEventListener('change', function() {
@@ -273,7 +279,6 @@
             const clienteId = option.dataset.cliente;
             if (clienteId) {
                 document.getElementById('cliente_id').value = clienteId;
-                // Disparar evento change para actualizar retención
                 document.getElementById('cliente_id').dispatchEvent(new Event('change'));
             }
         });
@@ -282,6 +287,149 @@
         document.getElementById('iva_porcentaje').addEventListener('input', calcularTotales);
         document.getElementById('retencion_porcentaje').addEventListener('input', calcularTotales);
     });
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ====== GRUPOS ======
+
+    function agregarGrupo(nombreGrupo = '', autoAddLine = true) {
+        const tbody = document.getElementById('lineasBody');
+        document.getElementById('sinLineas').style.display = 'none';
+
+        const gId = 'grupo-' + grupoIndex;
+        grupoIndex++;
+
+        const tr = document.createElement('tr');
+        tr.className = 'grupo-header';
+        tr.dataset.grupoId = gId;
+        tr.style.backgroundColor = '#e8f5e9';
+        tr.innerHTML = `
+            <td colspan="5" style="padding: 8px;">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-folder-fill text-success me-2"></i>
+                    <input type="text" class="form-control form-control-sm grupo-nombre fw-bold"
+                           placeholder="Nombre del grupo..."
+                           value="${escapeHtml(nombreGrupo)}"
+                           onchange="actualizarNombreGrupo(this)"
+                           onkeyup="actualizarNombreGrupo(this)"
+                           style="max-width: 400px;">
+                </div>
+            </td>
+            <td class="text-end fw-bold grupo-subtotal" style="padding: 8px; white-space: nowrap;">
+                0,00 €
+            </td>
+            <td class="text-center" style="padding: 8px;">
+                <button type="button" class="btn btn-sm btn-outline-success me-1"
+                        onclick="agregarLineaEnGrupo(this)" title="Añadir línea al grupo">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        onclick="eliminarGrupo(this)" title="Eliminar grupo completo">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+
+        if (autoAddLine) {
+            agregarLineaEnGrupo(tr.querySelector('.btn-outline-success'));
+        }
+    }
+
+    function agregarLineaEnGrupo(btn) {
+        const grupoHeaderTr = btn.closest('tr.grupo-header');
+        const gId = grupoHeaderTr.dataset.grupoId;
+        const grupoNombre = grupoHeaderTr.querySelector('.grupo-nombre').value;
+
+        // Encontrar la última línea hija de este grupo
+        let insertAfter = grupoHeaderTr;
+        let sibling = grupoHeaderTr.nextElementSibling;
+        while (sibling && sibling.dataset.grupo === gId) {
+            insertAfter = sibling;
+            sibling = sibling.nextElementSibling;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'linea-factura';
+        tr.dataset.index = lineaIndex;
+        tr.dataset.grupo = gId;
+        tr.style.backgroundColor = '#f8fdf8';
+        tr.innerHTML = `
+            <td style="padding-left: 30px;">
+                <input type="hidden" name="lineas[${lineaIndex}][grupo]" class="grupo-value" value="${escapeHtml(grupoNombre)}">
+                <input type="text" name="lineas[${lineaIndex}][concepto]" class="form-control form-control-sm" placeholder="Concepto..." required>
+            </td>
+            <td>
+                <input type="text" name="lineas[${lineaIndex}][descripcion]" class="form-control form-control-sm" placeholder="Descripción...">
+            </td>
+            <td>
+                <input type="number" name="lineas[${lineaIndex}][cantidad]" class="form-control form-control-sm text-end cantidad" value="1" step="0.01" min="0.01" required onchange="calcularLinea(this)" onkeyup="calcularLinea(this)">
+            </td>
+            <td>
+                <input type="number" name="lineas[${lineaIndex}][precio_unitario]" class="form-control form-control-sm text-end precio" value="0" step="0.01" min="0" required onchange="calcularLinea(this)" onkeyup="calcularLinea(this)">
+            </td>
+            <td>
+                <input type="number" name="lineas[${lineaIndex}][descuento_porcentaje]" class="form-control form-control-sm text-end descuento" value="0" step="0.01" min="0" max="100" onchange="calcularLinea(this)" onkeyup="calcularLinea(this)">
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm text-end importe" value="0,00 €" readonly disabled>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarLinea(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+
+        insertAfter.after(tr);
+        lineaIndex++;
+        calcularTotales();
+    }
+
+    function actualizarNombreGrupo(input) {
+        const grupoHeaderTr = input.closest('tr.grupo-header');
+        const gId = grupoHeaderTr.dataset.grupoId;
+        const nuevoNombre = input.value;
+
+        let sibling = grupoHeaderTr.nextElementSibling;
+        while (sibling && sibling.dataset.grupo === gId) {
+            const hiddenInput = sibling.querySelector('.grupo-value');
+            if (hiddenInput) {
+                hiddenInput.value = nuevoNombre;
+            }
+            sibling = sibling.nextElementSibling;
+        }
+    }
+
+    function eliminarGrupo(btn) {
+        const grupoHeaderTr = btn.closest('tr.grupo-header');
+        const gId = grupoHeaderTr.dataset.grupoId;
+
+        // Eliminar todas las líneas hijas
+        let sibling = grupoHeaderTr.nextElementSibling;
+        while (sibling && sibling.dataset.grupo === gId) {
+            const next = sibling.nextElementSibling;
+            sibling.remove();
+            sibling = next;
+        }
+
+        grupoHeaderTr.remove();
+
+        const lineas = document.querySelectorAll('.linea-factura');
+        const grupos = document.querySelectorAll('.grupo-header');
+        if (lineas.length === 0 && grupos.length === 0) {
+            document.getElementById('sinLineas').style.display = 'block';
+        }
+
+        calcularTotales();
+    }
+
+    // ====== LÍNEAS ======
 
     function agregarLinea() {
         const tbody = document.getElementById('lineasBody');
@@ -323,11 +471,23 @@
 
     function eliminarLinea(btn) {
         const tr = btn.closest('tr');
+        const gId = tr.dataset.grupo;
         tr.remove();
 
-        // Mostrar mensaje si no hay líneas
+        // Si la línea pertenecía a un grupo, verificar si el grupo queda vacío
+        if (gId) {
+            const grupoHeader = document.querySelector(`tr.grupo-header[data-grupo-id="${gId}"]`);
+            if (grupoHeader) {
+                const remaining = document.querySelectorAll(`tr.linea-factura[data-grupo="${gId}"]`);
+                if (remaining.length === 0) {
+                    grupoHeader.remove();
+                }
+            }
+        }
+
         const lineas = document.querySelectorAll('.linea-factura');
-        if (lineas.length === 0) {
+        const grupos = document.querySelectorAll('.grupo-header');
+        if (lineas.length === 0 && grupos.length === 0) {
             document.getElementById('sinLineas').style.display = 'block';
         }
 
@@ -355,6 +515,19 @@
             const descuento = parseFloat(tr.querySelector('.descuento').value) || 0;
             const importe = (cantidad * precio) * (1 - descuento / 100);
             baseImponible += importe;
+        });
+
+        // Actualizar subtotales de grupos
+        document.querySelectorAll('.grupo-header').forEach(grupoTr => {
+            const gId = grupoTr.dataset.grupoId;
+            let subtotal = 0;
+            document.querySelectorAll(`tr.linea-factura[data-grupo="${gId}"]`).forEach(tr => {
+                const cantidad = parseFloat(tr.querySelector('.cantidad').value) || 0;
+                const precio = parseFloat(tr.querySelector('.precio').value) || 0;
+                const descuento = parseFloat(tr.querySelector('.descuento').value) || 0;
+                subtotal += (cantidad * precio) * (1 - descuento / 100);
+            });
+            grupoTr.querySelector('.grupo-subtotal').textContent = formatearMoneda(subtotal);
         });
 
         const ivaPct = parseFloat(document.getElementById('iva_porcentaje').value) || 0;
@@ -386,6 +559,25 @@
                 icon: 'warning',
                 title: 'Sin líneas',
                 text: 'Debe añadir al menos una línea a la factura.',
+            });
+            return;
+        }
+
+        // Validar que todos los grupos tengan nombre
+        let grupoSinNombre = false;
+        document.querySelectorAll('.grupo-header').forEach(grupoTr => {
+            const nombre = grupoTr.querySelector('.grupo-nombre').value.trim();
+            if (!nombre) {
+                grupoSinNombre = true;
+            }
+        });
+
+        if (grupoSinNombre) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Grupo sin nombre',
+                text: 'Todos los grupos deben tener un nombre.',
             });
         }
     });

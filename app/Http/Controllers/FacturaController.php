@@ -110,6 +110,7 @@ class FacturaController extends Controller
             'lineas.*.cantidad' => 'required|numeric|min:0.01',
             'lineas.*.precio_unitario' => 'required|numeric|min:0',
             'lineas.*.descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'lineas.*.grupo' => 'nullable|string|max:255',
         ], [
             'cliente_id.required' => 'El cliente es obligatorio.',
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',
@@ -160,6 +161,7 @@ class FacturaController extends Controller
                     'descuento_porcentaje' => $descuentoPct,
                     'importe' => $importe,
                     'orden' => $orden++,
+                    'grupo' => !empty($lineaData['grupo']) ? $lineaData['grupo'] : null,
                 ]);
             }
 
@@ -239,6 +241,7 @@ class FacturaController extends Controller
             'lineas.*.cantidad' => 'required|numeric|min:0.01',
             'lineas.*.precio_unitario' => 'required|numeric|min:0',
             'lineas.*.descuento_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'lineas.*.grupo' => 'nullable|string|max:255',
         ], [
             'cliente_id.required' => 'El cliente es obligatorio.',
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',
@@ -283,6 +286,7 @@ class FacturaController extends Controller
                     'descuento_porcentaje' => $descuentoPct,
                     'importe' => $importe,
                     'orden' => $orden++,
+                    'grupo' => !empty($lineaData['grupo']) ? $lineaData['grupo'] : null,
                 ]);
             }
 

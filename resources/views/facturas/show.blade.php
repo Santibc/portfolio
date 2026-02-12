@@ -129,15 +129,49 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($factura->lineas as $linea)
-                                <tr>
-                                    <td>{{ $linea->concepto }}</td>
-                                    <td class="text-muted">{{ $linea->descripcion ?? '-' }}</td>
-                                    <td class="text-end">{{ number_format($linea->cantidad, 2, ',', '.') }}</td>
-                                    <td class="text-end">{{ number_format($linea->precio_unitario, 2, ',', '.') }} €</td>
-                                    <td class="text-end">{{ number_format($linea->descuento_porcentaje, 2, ',', '.') }}%</td>
-                                    <td class="text-end fw-semibold">{{ number_format($linea->importe, 2, ',', '.') }} €</td>
-                                </tr>
+                                @php
+                                    $currentGrupo = null;
+                                    $lineasArray = $factura->lineas->values();
+                                @endphp
+
+                                @foreach($lineasArray as $index => $linea)
+                                    @php
+                                        $nextLinea = $lineasArray[$index + 1] ?? null;
+                                        $isNewGroup = ($linea->grupo && $linea->grupo !== $currentGrupo);
+                                        $isLastInGroup = ($linea->grupo && (!$nextLinea || $nextLinea->grupo !== $linea->grupo));
+                                    @endphp
+
+                                    {{-- Cabecera de grupo --}}
+                                    @if($isNewGroup)
+                                        @php $currentGrupo = $linea->grupo; @endphp
+                                        <tr style="background-color: #e8f5e9;">
+                                            <td colspan="5" class="fw-bold">
+                                                <i class="bi bi-folder-fill text-success me-2"></i>{{ $currentGrupo }}
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                {{ number_format($factura->lineas->where('grupo', $currentGrupo)->sum('importe'), 2, ',', '.') }} €
+                                            </td>
+                                        </tr>
+                                    @endif
+
+                                    @if(!$linea->grupo && $currentGrupo)
+                                        @php $currentGrupo = null; @endphp
+                                    @endif
+
+                                    {{-- Línea normal --}}
+                                    <tr>
+                                        <td @if($linea->grupo) style="padding-left: 30px;" @endif>{{ $linea->concepto }}</td>
+                                        <td class="text-muted">{{ $linea->descripcion ?? '-' }}</td>
+                                        <td class="text-end">{{ number_format($linea->cantidad, 2, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($linea->precio_unitario, 2, ',', '.') }} €</td>
+                                        <td class="text-end">{{ number_format($linea->descuento_porcentaje, 2, ',', '.') }}%</td>
+                                        <td class="text-end fw-semibold">{{ number_format($linea->importe, 2, ',', '.') }} €</td>
+                                    </tr>
+
+                                    {{-- Subtotal de grupo --}}
+                                    @if($linea->grupo && $isLastInGroup)
+                                        @php $currentGrupo = null; @endphp
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>

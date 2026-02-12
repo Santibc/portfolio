@@ -31,10 +31,11 @@ class ObraDiscrepanciaController extends Controller
         // Get periodo from query param or default to current month
         $periodo = $request->query('periodo', now()->format('Y-m'));
 
-        // Calculate produced amount for the period
+        // Calculate produced amount for the period (incluye partes mensuales cuyo rango cubra el mes)
+        $year = (int) substr($periodo, 0, 4);
+        $month = (int) substr($periodo, 5, 2);
         $importeProducidoManzer = $obra->partesDiarios()
-            ->whereYear('fecha', '=', substr($periodo, 0, 4))
-            ->whereMonth('fecha', '=', substr($periodo, 5, 2))
+            ->delMes($year, $month)
             ->whereIn('estado', ['completado', 'validado'])
             ->sum('importe_total_calculado');
 

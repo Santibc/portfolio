@@ -87,11 +87,20 @@ class EncargadoDashboardService
             ->where('estado', 'completado')
             ->count();
 
-        // Producción de hoy (total de todas las categorías)
+        // Producción de hoy (total de todas las categorías, incluye mensuales cuyo rango cubra hoy)
         $produccionHoy = \App\Models\ParteDiarioProduccion::query()
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->where('partes_diarios.fecha', today())
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->where('partes_diarios.fecha', today());
+                })->orWhere(function ($q2) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', today())
+                       ->where('partes_diarios.fecha_fin', '>=', today());
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado'])
             ->sum('parte_diario_producciones.cantidad');
 
@@ -156,10 +165,9 @@ class EncargadoDashboardService
                     ->orderBy('fecha', 'desc')
                     ->first();
 
-                // Producción del mes actual
+                // Producción del mes actual (incluye partes mensuales cuyo rango cubra el mes)
                 $produccionMes = $obra->partesDiarios()
-                    ->whereMonth('fecha', now()->month)
-                    ->whereYear('fecha', now()->year)
+                    ->delMes(now()->year, now()->month)
                     ->whereIn('estado', ['completado', 'validado'])
                     ->sum('importe_total_calculado');
 
@@ -205,7 +213,16 @@ class EncargadoDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -217,7 +234,7 @@ class EncargadoDashboardService
 
         // Datos complementarios del período actual
         $resumenActual = ParteDiario::whereIn('obra_id', $obrasIds)
-            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->enPeriodo($fechaDesde, $fechaHasta)
             ->whereIn('estado', ['completado', 'validado', 'borrador'])
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
@@ -230,7 +247,16 @@ class EncargadoDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->where(function ($q) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                $q->where(function ($q2) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior]);
+                })->orWhere(function ($q2) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHastaAnterior)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesdeAnterior);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -245,7 +271,16 @@ class EncargadoDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
             ->distinct()
             ->get()
@@ -363,7 +398,16 @@ class EncargadoDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->whereIn('partes_diarios.estado', $estados)
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -378,7 +422,16 @@ class EncargadoDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.obra_id', $obrasIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->whereIn('partes_diarios.estado', $estados)
             ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
             ->distinct()
@@ -388,7 +441,7 @@ class EncargadoDashboardService
 
         // Número de partes y total importe
         $resumen = ParteDiario::whereIn('obra_id', $obrasIds)
-            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->enPeriodo($fechaDesde, $fechaHasta)
             ->whereIn('estado', $estados)
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total'),
@@ -566,17 +619,36 @@ class EncargadoDashboardService
             ];
         }
 
-        // Partes diarios
-        $partes = ParteDiario::whereIn('obra_id', $obrasIds)
+        // Partes diarios (tipo=diario, agrupados por fecha)
+        $partesDiarios = ParteDiario::whereIn('obra_id', $obrasIds)
+            ->where('tipo', 'diario')
             ->whereBetween('fecha', [$inicio, $fin])
             ->select('fecha', DB::raw('COUNT(*) as total'))
             ->groupBy('fecha')
             ->get();
 
-        foreach ($partes as $parte) {
+        foreach ($partesDiarios as $parte) {
             $fechaStr = $parte->fecha->format('Y-m-d');
             if (isset($eventos[$fechaStr])) {
-                $eventos[$fechaStr]['partes'] = $parte->total;
+                $eventos[$fechaStr]['partes'] += $parte->total;
+            }
+        }
+
+        // Partes mensuales cuyo rango solape con la semana (distribuidos en cada día)
+        $partesMensuales = ParteDiario::whereIn('obra_id', $obrasIds)
+            ->where('tipo', 'mensual')
+            ->where('fecha', '<=', $fin)
+            ->where('fecha_fin', '>=', $inicio)
+            ->get();
+
+        foreach ($partesMensuales as $parteMensual) {
+            $rangoInicio = $parteMensual->fecha->max($inicio);
+            $rangoFin = $parteMensual->fecha_fin->min($fin);
+            for ($d = $rangoInicio->copy(); $d <= $rangoFin; $d->addDay()) {
+                $fechaStr = $d->format('Y-m-d');
+                if (isset($eventos[$fechaStr])) {
+                    $eventos[$fechaStr]['partes'] += 1;
+                }
             }
         }
 

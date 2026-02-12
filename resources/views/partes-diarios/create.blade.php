@@ -1,24 +1,44 @@
 @extends('layouts.app')
 
-@section('title', 'Nuevo Parte Diario')
+@section('title', $tipo === 'mensual' ? 'Nuevo Parte Mensual' : 'Nuevo Parte Diario')
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" x-data="{ tipoParte: '{{ old('tipo', $tipo) }}' }">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1">Nuevo Parte Diario</h1>
-            <p class="text-muted mb-0">Registrar trabajo realizado en una obra</p>
+            <h1 class="h3 mb-1" x-text="tipoParte === 'mensual' ? 'Nuevo Parte Mensual' : 'Nuevo Parte Diario'">{{ $tipo === 'mensual' ? 'Nuevo Parte Mensual' : 'Nuevo Parte Diario' }}</h1>
+            <p class="text-muted mb-0" x-text="tipoParte === 'mensual' ? 'Registrar producción de un periodo' : 'Registrar trabajo realizado en una obra'"></p>
         </div>
         <a href="{{ route('partes-diarios.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-2"></i>Volver
         </a>
     </div>
 
-    <form action="{{ route('partes-diarios.store') }}" method="POST">
+    <form action="{{ route('partes-diarios.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
+        <input type="hidden" name="tipo" :value="tipoParte">
         <div class="row">
             <div class="col-lg-8">
+                <!-- Selector de Tipo -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-muted fw-semibold small">TIPO:</span>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" id="tipoDiario" value="diario" x-model="tipoParte">
+                                <label class="btn btn-outline-primary btn-sm" for="tipoDiario">
+                                    <i class="bi bi-calendar-day me-1"></i>Parte Diario
+                                </label>
+                                <input type="radio" class="btn-check" id="tipoMensual" value="mensual" x-model="tipoParte">
+                                <label class="btn btn-outline-primary btn-sm" for="tipoMensual">
+                                    <i class="bi bi-calendar-range me-1"></i>Parte Mensual
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Datos básicos -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white">
@@ -45,18 +65,39 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3">
+                            {{-- Fecha para Parte Diario --}}
+                            <div class="col-md-3" x-show="tipoParte === 'diario'">
                                 <label class="form-label">Fecha <span class="text-danger">*</span></label>
                                 <input type="date" name="fecha" class="form-control @error('fecha') is-invalid @enderror"
-                                       value="{{ old('fecha', date('Y-m-d')) }}" required>
+                                       value="{{ old('fecha', date('Y-m-d')) }}" x-bind:required="tipoParte === 'diario'">
                                 @error('fecha')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-3">
+                            {{-- Fecha Inicio / Fin para Parte Mensual --}}
+                            <div class="col-md-3" x-show="tipoParte === 'mensual'">
+                                <label class="form-label">Fecha Inicio <span class="text-danger">*</span></label>
+                                <input type="date" x-bind:name="tipoParte === 'mensual' ? 'fecha' : ''" class="form-control @error('fecha') is-invalid @enderror"
+                                       value="{{ old('fecha', now()->startOfMonth()->format('Y-m-d')) }}" x-bind:required="tipoParte === 'mensual'">
+                                @error('fecha')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-3" x-show="tipoParte === 'mensual'">
+                                <label class="form-label">Fecha Fin <span class="text-danger">*</span></label>
+                                <input type="date" name="fecha_fin" class="form-control @error('fecha_fin') is-invalid @enderror"
+                                       value="{{ old('fecha_fin', now()->endOfMonth()->format('Y-m-d')) }}" x-bind:required="tipoParte === 'mensual'">
+                                @error('fecha_fin')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Jornada solo para Parte Diario --}}
+                            <div class="col-md-3" x-show="tipoParte === 'diario'">
                                 <label class="form-label">Jornada <span class="text-danger">*</span></label>
-                                <select name="jornada" class="form-select @error('jornada') is-invalid @enderror" required>
+                                <select name="jornada" class="form-select @error('jornada') is-invalid @enderror" x-bind:required="tipoParte === 'diario'">
                                     <option value="diurna" {{ old('jornada') == 'diurna' ? 'selected' : '' }}>Diurna</option>
                                     <option value="nocturna" {{ old('jornada') == 'nocturna' ? 'selected' : '' }}>Nocturna</option>
                                 </select>
@@ -101,7 +142,7 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">
-                            <i class="bi bi-bar-chart me-2"></i>Producción del Día
+                            <i class="bi bi-bar-chart me-2"></i><span x-text="tipoParte === 'mensual' ? 'Producción del Periodo' : 'Producción del Día'">Producción del Día</span>
                         </h5>
                         @unless(auth()->user()->hasRole('Encargado'))
                             <span class="badge bg-primary" id="totalImporteLabel">0.00 €</span>
@@ -189,29 +230,24 @@
             </div>
 
             <div class="col-lg-4">
-                <!-- Trabajadores -->
+                @include('partes-diarios.partials.trabajadores-selector', [
+                    'preselected' => old('trabajadores', []),
+                    'obraId' => $obraSeleccionada?->id,
+                ])
+
+                <!-- Documentos -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white">
-                        <h5 class="card-title mb-0">Trabajadores</h5>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-paperclip me-2"></i>Documentos y Fotos
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-3">Selecciona los trabajadores que participaron:</p>
-                        <div class="trabajadores-list" style="max-height: 400px; overflow-y: auto;">
-                            @foreach($trabajadores as $trabajador)
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox"
-                                           name="trabajadores[]" value="{{ $trabajador->id }}"
-                                           id="trab{{ $trabajador->id }}"
-                                           {{ in_array($trabajador->id, old('trabajadores', [])) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="trab{{ $trabajador->id }}">
-                                        {{ $trabajador->nombre }} {{ $trabajador->apellidos }}
-                                        @if($trabajador->categoria)
-                                            <br><small class="text-muted">{{ $trabajador->categoria }}</small>
-                                        @endif
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
+                        <input type="file" name="documentos[]" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <div class="form-text">Máximo 10MB por archivo. Puedes seleccionar varios.</div>
+                        @error('documentos.*')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -262,6 +298,11 @@
         document.getElementById('trayectoInput').value = option.dataset.trayecto || '';
 
         loadConceptos(option);
+
+        // Notificar al selector de trabajadores del cambio de obra
+        window.dispatchEvent(new CustomEvent('parte-obra-changed', {
+            detail: { obraId: option.value }
+        }));
     });
 
     function loadConceptos(option) {

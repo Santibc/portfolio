@@ -292,8 +292,7 @@ class DashboardService
                 $obraIds = $cuadrilla->obras()->wherePivot('activo', true)->pluck('obras.id');
 
                 $produccionTotal = ParteDiario::whereIn('obra_id', $obraIds)
-                    ->whereMonth('fecha', $mesActual)
-                    ->whereYear('fecha', $anioActual)
+                    ->delMes($anioActual, $mesActual)
                     ->whereIn('estado', ['completado', 'validado'])
                     ->sum('importe_total_calculado');
 
@@ -427,12 +426,24 @@ class DashboardService
         $mes = $mes ?? now()->month;
         $anio = $anio ?? now()->year;
 
+        // Fechas inicio/fin del mes
+        $inicioMes = Carbon::createFromDate($anio, $mes, 1)->startOfMonth();
+        $finMes = $inicioMes->copy()->endOfMonth();
+
         // Producción del mes actual agrupada por categoría
         $produccionPorCategoria = \App\Models\ParteDiarioProduccion::query()
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
-            ->whereMonth('partes_diarios.fecha', $mes)
-            ->whereYear('partes_diarios.fecha', $anio)
+            ->where(function ($q) use ($inicioMes, $finMes) {
+                $q->where(function ($q2) use ($inicioMes, $finMes) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$inicioMes, $finMes]);
+                })->orWhere(function ($q2) use ($inicioMes, $finMes) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $finMes)
+                       ->where('partes_diarios.fecha_fin', '>=', $inicioMes);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -444,8 +455,7 @@ class DashboardService
 
         // Datos complementarios (importe y num partes)
         $resumen = \App\Models\ParteDiario::query()
-            ->whereMonth('fecha', $mes)
-            ->whereYear('fecha', $anio)
+            ->delMes($anio, $mes)
             ->whereIn('estado', ['completado', 'validado'])
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total'),
@@ -457,12 +467,24 @@ class DashboardService
         $mesAnterior = $mes == 1 ? 12 : $mes - 1;
         $anioAnterior = $mes == 1 ? $anio - 1 : $anio;
 
+        // Fechas inicio/fin del mes anterior
+        $inicioMesAnterior = Carbon::createFromDate($anioAnterior, $mesAnterior, 1)->startOfMonth();
+        $finMesAnterior = $inicioMesAnterior->copy()->endOfMonth();
+
         // Producción del mes anterior agrupada por categoría
         $produccionAnteriorCat = \App\Models\ParteDiarioProduccion::query()
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
-            ->whereMonth('partes_diarios.fecha', $mesAnterior)
-            ->whereYear('partes_diarios.fecha', $anioAnterior)
+            ->where(function ($q) use ($inicioMesAnterior, $finMesAnterior) {
+                $q->where(function ($q2) use ($inicioMesAnterior, $finMesAnterior) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$inicioMesAnterior, $finMesAnterior]);
+                })->orWhere(function ($q2) use ($inicioMesAnterior, $finMesAnterior) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $finMesAnterior)
+                       ->where('partes_diarios.fecha_fin', '>=', $inicioMesAnterior);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -474,8 +496,7 @@ class DashboardService
 
         // Datos complementarios mes anterior
         $resumenAnterior = \App\Models\ParteDiario::query()
-            ->whereMonth('fecha', $mesAnterior)
-            ->whereYear('fecha', $anioAnterior)
+            ->delMes($anioAnterior, $mesAnterior)
             ->whereIn('estado', ['completado', 'validado'])
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe_total')
@@ -486,8 +507,16 @@ class DashboardService
         $unidadesPorCategoria = \App\Models\ParteDiarioProduccion::query()
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
-            ->whereMonth('partes_diarios.fecha', $mes)
-            ->whereYear('partes_diarios.fecha', $anio)
+            ->where(function ($q) use ($inicioMes, $finMes) {
+                $q->where(function ($q2) use ($inicioMes, $finMes) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$inicioMes, $finMes]);
+                })->orWhere(function ($q2) use ($inicioMes, $finMes) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $finMes)
+                       ->where('partes_diarios.fecha_fin', '>=', $inicioMes);
+                });
+            })
             ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
             ->distinct()
             ->get()

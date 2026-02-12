@@ -502,7 +502,16 @@ class TrabajadorDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.id', $partesDiariosIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -517,7 +526,16 @@ class TrabajadorDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.id', $partesDiariosIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->where(function ($q) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                $q->where(function ($q2) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesdeAnterior, $fechaHastaAnterior]);
+                })->orWhere(function ($q2) use ($fechaDesdeAnterior, $fechaHastaAnterior) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHastaAnterior)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesdeAnterior);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
             ->select([
                 'obra_conceptos_produccion.categoria',
@@ -532,7 +550,16 @@ class TrabajadorDashboardService
             ->join('partes_diarios', 'parte_diario_producciones.parte_diario_id', '=', 'partes_diarios.id')
             ->join('obra_conceptos_produccion', 'parte_diario_producciones.concepto_produccion_id', '=', 'obra_conceptos_produccion.id')
             ->whereIn('partes_diarios.id', $partesDiariosIds)
-            ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta])
+            ->where(function ($q) use ($fechaDesde, $fechaHasta) {
+                $q->where(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'diario')
+                       ->whereBetween('partes_diarios.fecha', [$fechaDesde, $fechaHasta]);
+                })->orWhere(function ($q2) use ($fechaDesde, $fechaHasta) {
+                    $q2->where('partes_diarios.tipo', 'mensual')
+                       ->where('partes_diarios.fecha', '<=', $fechaHasta)
+                       ->where('partes_diarios.fecha_fin', '>=', $fechaDesde);
+                });
+            })
             ->whereIn('partes_diarios.estado', ['completado', 'validado', 'borrador'])
             ->select('obra_conceptos_produccion.categoria', 'obra_conceptos_produccion.unidad')
             ->distinct()
@@ -542,7 +569,7 @@ class TrabajadorDashboardService
 
         // Resumen actual (importe y num partes)
         $resumenActual = ParteDiario::whereIn('id', $partesDiariosIds)
-            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->enPeriodo($fechaDesde, $fechaHasta)
             ->whereIn('estado', ['completado', 'validado', 'borrador'])
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
@@ -552,7 +579,7 @@ class TrabajadorDashboardService
 
         // Resumen anterior para variación de importe
         $resumenAnterior = ParteDiario::whereIn('id', $partesDiariosIds)
-            ->whereBetween('fecha', [$fechaDesdeAnterior, $fechaHastaAnterior])
+            ->enPeriodo($fechaDesdeAnterior, $fechaHastaAnterior)
             ->whereIn('estado', ['completado', 'validado', 'borrador'])
             ->select([
                 DB::raw('COALESCE(SUM(importe_total_calculado), 0) as importe'),
