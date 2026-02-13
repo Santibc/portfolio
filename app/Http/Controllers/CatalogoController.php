@@ -92,7 +92,8 @@ class CatalogoController extends Controller
     {
         $query = Producto::activos()
             ->with([
-                'imagenPrincipal', 
+                'imagenPrincipal',
+                'todasImagenes',
                 'categoria',
                 'stock' => function($q) {
                     $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
@@ -158,8 +159,16 @@ class CatalogoController extends Controller
             
             // Asegurarse de que unidad_venta esté disponible en la respuesta
             $producto->unidad_venta = $producto->unidad_venta;
+
+            // Fallback: si no hay imagenPrincipal product-level, usar mejor imagen disponible
+            if (!$producto->imagenPrincipal) {
+                $mejor = $producto->mejor_imagen;
+                if ($mejor) {
+                    $producto->setRelation('imagenPrincipal', $mejor);
+                }
+            }
         }
-        
+
         return response()->json([
             'productos' => $productos,
             'mostrar_precios' => $mostrarPrecios,
@@ -184,7 +193,7 @@ class CatalogoController extends Controller
                 ]);
             },
             'imagenes' => function($q) {
-                $q->whereNull('variante_producto_id')->orderBy('orden');
+                $q->orderBy('orden');
             },
             'stock' => function($q) {
                 $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');

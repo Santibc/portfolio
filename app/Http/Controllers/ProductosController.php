@@ -26,7 +26,7 @@ class ProductosController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Producto::with(['categoria', 'imagenPrincipal', 'stockPrincipal.ubicacionRelacion'])
+            $query = Producto::with(['categoria', 'imagenPrincipal', 'todasImagenes', 'stockPrincipal.ubicacionRelacion'])
                             ->where('eliminado', false)
                             ->select('productos.*');
 
@@ -34,8 +34,9 @@ class ProductosController extends Controller
                 ->addColumn('marca', fn($p) => $p->marca ?: '-')
                 ->addColumn('categoria', fn($p) => $p->categoria?->nombre)
                 ->addColumn('imagen', function($p) {
-                    $url = $p->imagenPrincipal
-                        ? asset($p->imagenPrincipal->ruta_imagen)
+                    $imagen = $p->mejor_imagen;
+                    $url = $imagen
+                        ? asset($imagen->ruta_imagen)
                         : asset('images/no-image.png');
                     return '<img src="'.$url.'" class="img-thumbnail" style="width:50px;">';
                 })

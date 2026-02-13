@@ -53,6 +53,42 @@ class Producto extends Model
                     ->where('es_principal', true);
     }
 
+    public function todasImagenes()
+    {
+        return $this->hasMany(ImagenProducto::class, 'producto_id')->orderBy('orden');
+    }
+
+    public function getMejorImagenAttribute()
+    {
+        // 1) Product-level principal image
+        if ($this->relationLoaded('imagenPrincipal') && $this->imagenPrincipal) {
+            return $this->imagenPrincipal;
+        }
+
+        $imgs = $this->relationLoaded('todasImagenes')
+            ? $this->todasImagenes
+            : ($this->relationLoaded('imagenes') ? $this->imagenes : null);
+
+        if ($imgs && $imgs->count()) {
+            $productLevel = $imgs->whereNull('variante_producto_id');
+            $principal = $productLevel->where('es_principal', true)->first();
+            if ($principal) return $principal;
+            if ($productLevel->count()) return $productLevel->first();
+
+            // 2) Any variant's principal image
+            $variantPrincipal = $imgs->where('es_principal', true)->first();
+            if ($variantPrincipal) return $variantPrincipal;
+
+            // 3) First image of any kind
+            return $imgs->first();
+        }
+
+        // Fallback: query DB
+        return ImagenProducto::where('producto_id', $this->id)
+            ->orderByRaw('variante_producto_id IS NOT NULL, es_principal DESC, orden ASC')
+            ->first();
+    }
+
     public function precios()
     {
         return $this->hasMany(PrecioProducto::class, 'producto_id');
@@ -94,8 +130,8 @@ class Producto extends Model
     // Obtener URL de imagen principal
     public function getUrlImagenPrincipalAttribute()
     {
-        $imagenPrincipal = $this->imagenPrincipal ?? $this->imagenes->first();
-        return $imagenPrincipal ? Storage::url($imagenPrincipal->ruta_imagen) : asset('images/no-image.png');
+        $imagen = $this->mejor_imagen;
+        return $imagen ? asset($imagen->ruta_imagen) : asset('images/no-image.png');
     }
 
     // Obtener stock total del producto (suma de todas las variantes o stock principal)

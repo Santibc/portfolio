@@ -257,6 +257,28 @@
       color: #856404;
       border: 1px solid #ffeaa7;
     }
+
+    /* Variantes en modal - card layout */
+    .variantes-container {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+    .variant-card {
+      border-left: 3px solid var(--miracle-lilac);
+      transition: all 0.2s ease;
+    }
+    .variant-card:hover {
+      border-left-color: var(--miracle-pink);
+      background-color: #faf8fc;
+    }
+    .variant-card.active {
+      border-left-color: var(--miracle-pink);
+      background-color: var(--miracle-lilac-light);
+    }
+    .variant-card.disabled-stock {
+      opacity: 0.5;
+    }
+
     #cartItems {
       overflow-y: auto;
       overflow-x: hidden;
@@ -827,8 +849,8 @@ $(function(){
   let currentVariantImageSets = {};
 
   window.switchVariantImages = function(variantId) {
-    $('.variant-row').removeClass('table-active');
-    $(`.variant-row[data-variant-id="${variantId}"]`).addClass('table-active');
+    $('.variant-card').removeClass('active');
+    $(`.variant-card[data-variant-id="${variantId}"]`).addClass('active');
     const variantImgs = currentVariantImageSets[variantId];
     const imagesToShow = (variantImgs && variantImgs.length) ? variantImgs : currentProductImages;
     const oldCarousel = document.getElementById('carouselProducto');
@@ -840,7 +862,7 @@ $(function(){
   };
 
   window.switchToProductImages = function() {
-    $('.variant-row').removeClass('table-active');
+    $('.variant-card').removeClass('active');
     const oldCarousel = document.getElementById('carouselProducto');
     if (oldCarousel) {
       const bsC = bootstrap.Carousel.getInstance(oldCarousel);
@@ -856,8 +878,9 @@ $(function(){
       const p=resp.producto;
       window.productoActual=p;
 
-      // Guardar imágenes para switching
-      currentProductImages = p.imagenes || [];
+      // Separar imágenes product-level vs variant-level
+      const allImages = p.imagenes || [];
+      const productLevelImages = allImages.filter(img => !img.variante_producto_id);
       currentVariantImageSets = {};
       if (p.variantes) {
         p.variantes.forEach(v => {
@@ -865,12 +888,28 @@ $(function(){
         });
       }
 
+      // Determinar imágenes iniciales a mostrar
+      if (productLevelImages.length) {
+        currentProductImages = productLevelImages;
+      } else {
+        let firstVariantImages = [];
+        if (p.variantes) {
+          for (const v of p.variantes) {
+            if (v.imagenes && v.imagenes.length) {
+              firstVariantImages = v.imagenes;
+              break;
+            }
+          }
+        }
+        currentProductImages = firstVariantImages.length ? firstVariantImages : allImages;
+      }
+
       let html='<div class="row">';
 
       // Imágenes con container para switching
       html+='<div class="col-md-6">';
-      if(p.tiene_variantes && p.variantes?.length) {
-        html+='<small class="text-muted d-block mb-1"><a href="#" onclick="switchToProductImages(); return false;"><i class="bi bi-images"></i> Ver imágenes del producto</a></small>';
+      if(p.tiene_variantes && p.variantes?.length && productLevelImages.length && Object.values(currentVariantImageSets).some(imgs => imgs.length > 0)) {
+        html+=`<div class="mb-2"><button class="btn btn-sm btn-outline-secondary" onclick="switchToProductImages()"><i class="bi bi-images"></i> Imágenes del producto</button></div>`;
       }
       html+='<div id="carouselContainer">';
       html+=buildModalCarousel(currentProductImages);
@@ -942,84 +981,83 @@ $(function(){
       
       // Variantes o cantidad simple
       if(p.tiene_variantes&&p.variantes?.length){
-        html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th></th><th>Variante</th><th>SKU</th>';
-        if(mostrarPrecios) html+='<th>Precio</th>';
-        if(mostrarStock) html+='<th>Stock</th>';
-        html+='<th>Cantidad</th></tr></thead><tbody>';
+        html+='<hr><h6>Seleccione las variantes:</h6>';
+        html+='<div class="variantes-container">';
 
         p.variantes.forEach((v,i)=>{
           const hasVImages = v.imagenes && v.imagenes.length;
-          html+=`<tr class="variant-row" data-variant-id="${v.id}" onclick="switchVariantImages(${v.id})" style="cursor:pointer">`;
-          // Thumbnail
           const vThumb = hasVImages
             ? `{{asset('')}}${v.imagenes[0].ruta_imagen}`
             : (currentProductImages.length ? `{{asset('')}}${currentProductImages[0].ruta_imagen}` : '{{asset("images/no-image.png")}}');
-          html+=`<td><img src="${vThumb}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;"></td>`;
-          html+=`<td>${v.nombre_variante||"Estándar"}</td><td><small>${v.sku}</small></td>`;
-          
-          // Precio de variante
-          if(mostrarPrecios) html+=`<td>${(v.precio_final||0).toFixed(2)}</td>`;
-          
-          // Stock de variante
-          if(mostrarStock && v.stock_info) {
-            const vStock = v.stock_info;
-            let vStockClass = '';
-            let vStockIcon = '';
-            
-            if (!vStock.controla_stock) {
-              vStockClass = 'text-primary';
-              vStockIcon = 'bi-infinity';
-              html+=`<td class="stock-status"><i class="bi ${vStockIcon} ${vStockClass}"></i> <small class="${vStockClass}">Ilimitado</small></td>`;
-            } else {
-              switch(vStock.estado) {
-                case 'disponible':
-                  vStockClass = 'text-success';
-                  vStockIcon = 'bi-check-circle';
-                  break;
-                case 'stock_limitado':
-                  vStockClass = 'text-warning';
-                  vStockIcon = 'bi-exclamation-triangle';
-                  break;
-                case 'stock_bajo':
-                  vStockClass = 'text-danger';
-                  vStockIcon = 'bi-exclamation-circle';
-                  break;
-                case 'sin_stock':
-                  vStockClass = 'text-muted';
-                  vStockIcon = 'bi-x-circle';
-                  break;
-                case 'sin_stock_permitido':
-                  vStockClass = 'text-warning';
-                  vStockIcon = 'bi-x-circle';
-                  break;
-              }
-              
-              html+=`<td class="stock-status"><i class="bi ${vStockIcon} ${vStockClass}"></i> <small class="${vStockClass}">${vStock.mensaje}</small></td>`;
-            }
-          }
-          
-          // Campo cantidad - aplicar lógica de control de stock
+
+          // Stock
+          let stockHtml = '';
           let maxCantidad = 999999;
           let inputDisabled = '';
-          
-          if(mostrarStock && v.stock_info && v.stock_info.controla_stock) {
-            // Si controla stock pero no permite venta sin stock, limitar cantidad
-            if(!v.stock_info.permite_sin_stock && !v.stock_info.tiene_stock) {
-              maxCantidad = 0;
-              inputDisabled = 'disabled';
-            } else if(!v.stock_info.permite_sin_stock && v.stock_info.cantidad_disponible > 0) {
-              maxCantidad = v.stock_info.cantidad_disponible;
+
+          if(mostrarStock && v.stock_info) {
+            const vStock = v.stock_info;
+            let vStockClass = '', vStockIcon = '';
+            if (!vStock.controla_stock) {
+              vStockClass = 'text-primary'; vStockIcon = 'bi-infinity';
+              stockHtml = `<span class="${vStockClass}"><i class="bi ${vStockIcon}"></i> Ilimitado</span>`;
+            } else {
+              switch(vStock.estado) {
+                case 'disponible': vStockClass='text-success'; vStockIcon='bi-check-circle'; break;
+                case 'stock_limitado': vStockClass='text-warning'; vStockIcon='bi-exclamation-triangle'; break;
+                case 'stock_bajo': vStockClass='text-danger'; vStockIcon='bi-exclamation-circle'; break;
+                case 'sin_stock': vStockClass='text-muted'; vStockIcon='bi-x-circle'; break;
+                case 'sin_stock_permitido': vStockClass='text-warning'; vStockIcon='bi-x-circle'; break;
+              }
+              stockHtml = `<span class="${vStockClass}"><i class="bi ${vStockIcon}"></i> ${vStock.mensaje}</span>`;
             }
-            // Si permite venta sin stock o no controla stock, no limitar
+            if(vStock.controla_stock) {
+              if(!vStock.permite_sin_stock && !vStock.tiene_stock) { maxCantidad=0; inputDisabled='disabled'; }
+              else if(!vStock.permite_sin_stock && vStock.cantidad_disponible > 0) { maxCantidad=vStock.cantidad_disponible; }
+            }
           }
-          
-          html+=`<td><input type="number" class="form-control form-control-sm variante-cantidad" 
-                    data-variante-index="${i}" min="0" max="${maxCantidad}" value="0" ${inputDisabled}></td>`;
-          html+='</tr>';
+
+          // Precio
+          let precioHtml = '';
+          if(mostrarPrecios) {
+            const precioVariante = (v.precio_final||0);
+            const precioFormateado = new Intl.NumberFormat('es-CO', {
+              style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0
+            }).format(precioVariante);
+            precioHtml = `<span class="text-primary fw-bold">${precioFormateado}</span>
+              <input type="hidden" class="variante-precio" data-variante-index="${i}" value="${precioVariante.toFixed(2)}">`;
+          }
+
+          html+=`
+          <div class="card mb-2 variant-card ${inputDisabled ? 'disabled-stock' : ''}" data-variant-id="${v.id}" onclick="switchVariantImages(${v.id})" style="cursor:pointer">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center gap-2">
+                <img src="${vThumb}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;flex-shrink:0;">
+                <div class="flex-grow-1" style="min-width:0">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong class="d-block" style="font-size:0.9rem">${v.nombre_variante||"Estándar"}</strong>
+                      <small class="text-muted">SKU: ${v.sku}</small>
+                    </div>
+                    ${precioHtml ? `<div class="text-end text-nowrap">${precioHtml}</div>` : ''}
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    ${mostrarStock ? `<small>${stockHtml}</small>` : '<span></span>'}
+                    <div class="d-flex align-items-center gap-1" onclick="event.stopPropagation()">
+                      <label class="form-label mb-0 me-1" style="font-size:0.75rem">Cant:</label>
+                      <input type="number" class="form-control form-control-sm variante-cantidad"
+                        data-variante-index="${i}" min="0" max="${maxCantidad}" value="0"
+                        style="width:65px" ${inputDisabled}>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
         });
-        
-        html+='</tbody></table></div>';
-        html+=`<button class="btn btn-primary w-100" onclick="agregarVariantesAlCarrito(${p.id})">Agregar al Carrito</button>`;
+
+        html+='</div>';
+        html+=`<button class="btn btn-primary w-100 mt-2" onclick="agregarVariantesAlCarrito(${p.id})">Agregar al Carrito</button>`;
       } else {
         html+='<hr><div class="mb-3"><label class="form-label">Cantidad:</label>';
         
