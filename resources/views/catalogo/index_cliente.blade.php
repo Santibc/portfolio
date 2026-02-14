@@ -708,6 +708,7 @@ $(function(){
     $('#productosContainer').html(html);
     $('#productosContainer').before(buildCarouselNavigation());
     $('#productosContainer').after(buildCarouselNavigation());
+    $('#paginacionContainer').empty();
   }
 
   function buildCard(p, colClass = 'col-12 col-sm-4 col-md-3 col-lg-2') {
@@ -790,7 +791,54 @@ $(function(){
   }
 
   function buildPagination(resp) {
-    let pgHtml='';
+    const p = resp.productos;
+    if (p.last_page <= 1) return '';
+
+    const current = p.current_page;
+    const last = p.last_page;
+    const from = p.from || 0;
+    const to = p.to || 0;
+    const total = p.total || 0;
+
+    let pgHtml = '<nav><ul class="pagination justify-content-center mb-2">';
+
+    // Previous
+    pgHtml += `<li class="page-item ${current === 1 ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();cargarProductos(${current - 1})">
+        <i class="bi bi-chevron-left"></i>
+      </a></li>`;
+
+    // Page numbers con ventana deslizante (max 7 botones)
+    let startPage = Math.max(1, current - 3);
+    let endPage = Math.min(last, current + 3);
+    if (endPage - startPage < 6) {
+      if (startPage === 1) endPage = Math.min(last, 7);
+      else startPage = Math.max(1, last - 6);
+    }
+
+    if (startPage > 1) {
+      pgHtml += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault();cargarProductos(1)">1</a></li>`;
+      if (startPage > 2) pgHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pgHtml += `<li class="page-item ${i === current ? 'active' : ''}">
+        <a class="page-link" href="#" onclick="event.preventDefault();cargarProductos(${i})">${i}</a></li>`;
+    }
+
+    if (endPage < last) {
+      if (endPage < last - 1) pgHtml += '<li class="page-item disabled"><span class="page-link">...</span></li>';
+      pgHtml += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault();cargarProductos(${last})">${last}</a></li>`;
+    }
+
+    // Next
+    pgHtml += `<li class="page-item ${current === last ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();cargarProductos(${current + 1})">
+        <i class="bi bi-chevron-right"></i>
+      </a></li>`;
+
+    pgHtml += '</ul></nav>';
+    pgHtml += `<p class="text-center text-muted small">Mostrando ${from}-${to} de ${total} productos</p>`;
 
     return pgHtml;
   }
