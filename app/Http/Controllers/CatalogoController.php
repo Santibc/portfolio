@@ -116,7 +116,8 @@ class CatalogoController extends Controller
             $query->buscar($request->busqueda);
         }
         
-        $productos = $query->orderBy('nombre')->paginate(12);
+        $perPage = max(1, min(50, (int) ($request->per_page ?? 12)));
+        $productos = $query->orderBy('nombre')->paginate($perPage);
         
         // Obtener configuración de visualización
         $listaPrecioId = null;

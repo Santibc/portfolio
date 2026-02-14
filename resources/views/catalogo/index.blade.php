@@ -558,38 +558,36 @@
     $('#btnToggleView').click(toggleView);
     $('#itemsPerPageSelect').change(function(){
       itemsPerPage = parseInt($(this).val()) || 3;
-      carouselPage = 1;
-      totalCarouselPages = Math.ceil(productosCarousel.length / itemsPerPage) || 1;
-      renderCarousel();
+      cargarProductos(1);
     });
 
-function cargarProductos(page=1){
+window.cargarProductos = function(page=1){
+  const perPage = viewType === 'carousel' ? itemsPerPage : 12;
   $.post('{{route("catalogo.productos")}}',{
     _token:'{{csrf_token()}}',
-    page, busqueda:$('#busquedaProducto').val(),
+    page, per_page: perPage, busqueda:$('#busquedaProducto').val(),
     categoria_id:$('#filtroCategoria').val(),
     cliente_id:clienteId, enlace_token:enlaceToken
   },resp=>{
     const prods = resp.productos.data;
-    productosCarousel = prods;
-    
+
     // Asegurarnos de que los productos cargados tengan la unidad_venta
     prods.forEach(p => {
       productosCargados[p.id] = p;
     });
-    
+
     if (viewType === 'grid') {
       renderGrid(prods, resp);
     } else {
-      totalCarouselPages = Math.ceil(prods.length / itemsPerPage) || 1;
-      renderCarousel();
+      renderCarousel(prods, resp);
     }
   });
-}
+};
 
     function renderGrid(prods, resp) {
+      $('.carousel-pagination').remove();
       $('#productosContainer').removeClass('productos-carousel').addClass('productos-grid');
-      
+
       let html = !prods.length
         ?'<div class="col-12 text-center py-5"><p class="text-muted">No se encontraron productos</p></div>'
         : prods.map(p=>{
@@ -606,18 +604,14 @@ function cargarProductos(page=1){
       }
     }
 
-    function renderCarousel() {
+    function renderCarousel(prods, resp) {
       $('.carousel-pagination').remove();
       $('#productosContainer').removeClass('productos-grid').addClass('productos-carousel');
-      
-      totalCarouselPages = Math.ceil(productosCarousel.length / itemsPerPage) || 1;
-      if (carouselPage > totalCarouselPages) {
-        carouselPage = totalCarouselPages;
-      }
-      
-      const start = (carouselPage - 1) * itemsPerPage;
-      const pageItems = productosCarousel.slice(start, start + itemsPerPage);
-      
+
+      carouselPage = resp.productos.current_page;
+      totalCarouselPages = resp.productos.last_page;
+      const totalProducts = resp.productos.total;
+
       // Responsive columns para carrusel
       let colClass = 'col-12';
       if (itemsPerPage === 1) {
@@ -633,16 +627,20 @@ function cargarProductos(page=1){
       } else if (itemsPerPage === 12) {
         colClass = 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-1';
       }
-      
-      const html = pageItems.map(p => {
-        productosCargados[p.id] = p;
-        return buildCard(p, colClass);
-      }).join('');
-      
+
+      const html = !prods.length
+        ? '<div class="col-12 text-center py-5"><p class="text-muted">No se encontraron productos</p></div>'
+        : prods.map(p => {
+            productosCargados[p.id] = p;
+            return buildCard(p, colClass);
+          }).join('');
+
       $('#productosContainer').html(html);
-      $('#productosContainer').before(buildCarouselNavigation());
-      $('#productosContainer').after(buildCarouselNavigation());
-      $('#paginacionContainer').empty(); // Limpiar paginación en modo carrusel
+      if (totalCarouselPages > 1) {
+        $('#productosContainer').before(buildCarouselNavigation(totalProducts));
+        $('#productosContainer').after(buildCarouselNavigation(totalProducts));
+      }
+      $('#paginacionContainer').empty();
     }
 
     function buildCard(p, colClass = 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-2') {
@@ -777,7 +775,7 @@ function cargarProductos(page=1){
       return pgHtml;
     }
 
-    function buildCarouselNavigation() {
+    function buildCarouselNavigation(totalProducts) {
       return `
         <div class="carousel-pagination">
           <button class="carousel-nav-btn" id="prevCarouselBtn" ${carouselPage <= 1 ? 'disabled' : ''}>
@@ -785,7 +783,7 @@ function cargarProductos(page=1){
           </button>
           <div class="carousel-info">
             Página ${carouselPage} de ${totalCarouselPages}<br>
-            <small>(${productosCarousel.length} productos total)</small>
+            <small>(${totalProducts} productos total)</small>
           </div>
           <button class="carousel-nav-btn" id="nextCarouselBtn" ${carouselPage >= totalCarouselPages ? 'disabled' : ''}>
             <i class="bi bi-chevron-right"></i>
@@ -796,15 +794,13 @@ function cargarProductos(page=1){
     // Event delegation para botones del carrusel
     $(document).on('click', '#prevCarouselBtn', function() {
       if (carouselPage > 1) {
-        carouselPage--;
-        renderCarousel();
+        cargarProductos(carouselPage - 1);
       }
     });
 
     $(document).on('click', '#nextCarouselBtn', function() {
       if (carouselPage < totalCarouselPages) {
-        carouselPage++;
-        renderCarousel();
+        cargarProductos(carouselPage + 1);
       }
     });
 
