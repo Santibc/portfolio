@@ -295,6 +295,7 @@
                 @if($producto->exists && $producto->variantes->count() > 0)
                   @foreach($producto->variantes as $index => $variante)
                     <div class="variante-row mb-3">
+                      <input type="hidden" name="variantes[{{ $index }}][id]" value="{{ $variante->id }}">
                       <div class="row align-items-end">
                         <div class="col-md-3">
                           <label class="form-label">Referencia Variante</label>
@@ -557,6 +558,7 @@
       $('#addVariante').click(function() {
         const template = `
           <div class="variante-row mb-3">
+            <input type="hidden" name="variantes[${varianteIndex}][id]" value="">
             <div class="row align-items-end">
               <div class="col-md-3">
                 <label class="form-label">Referencia Variante</label>

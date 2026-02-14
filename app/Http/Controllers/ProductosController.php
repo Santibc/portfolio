@@ -156,6 +156,7 @@ class ProductosController extends Controller
             'controlar_stock' => ['boolean'],  // NUEVO
             'permitir_venta_sin_stock' => ['boolean'],  // NUEVO
             'imagenes.*' => ['nullable','image','mimes:jpeg,png,jpg,webp','max:2048'],
+            'variantes.*.id' => ['nullable','integer','exists:variantes_productos,id'],
             'variantes.*.referencia_variante' => ['nullable','string','max:50'],
             'variantes.*.color' => ['nullable','string','max:50'],
             'variantes.*.sku' => ['nullable','string','max:255'],
@@ -201,21 +202,32 @@ class ProductosController extends Controller
             
             // Guardar variantes
             if ($producto->tiene_variantes && $request->has('variantes')) {
-                // Si es edición, eliminar variantes anteriores
-                if ($request->id) {
-                    // Desasociar imágenes de variantes antes de eliminar (para evitar cascade delete)
-                    ImagenProducto::where('producto_id', $producto->id)
-                        ->whereNotNull('variante_producto_id')
-                        ->update(['variante_producto_id' => null]);
+                // Recoger IDs de variantes enviadas desde el formulario
+                $idsEnviados = collect($request->variantes)
+                    ->pluck('id')
+                    ->filter()
+                    ->map(fn($id) => (int) $id)
+                    ->values();
 
-                    // Eliminar stock de variantes eliminadas (NUEVO)
-                    $variantesIds = $producto->variantes()->pluck('id');
-                    StockProducto::whereIn('variante_producto_id', $variantesIds)
-                                 ->where('producto_id', $producto->id)
-                                 ->delete();
-                    $producto->variantes()->delete();
+                // Si es edición, sincronizar variantes (preservando stock)
+                if ($request->id) {
+                    $idsExistentes = $producto->variantes()->pluck('id');
+                    $idsAEliminar = $idsExistentes->diff($idsEnviados);
+
+                    // Eliminar solo las variantes que el usuario quitó
+                    if ($idsAEliminar->isNotEmpty()) {
+                        ImagenProducto::where('producto_id', $producto->id)
+                            ->whereIn('variante_producto_id', $idsAEliminar)
+                            ->update(['variante_producto_id' => null]);
+
+                        StockProducto::whereIn('variante_producto_id', $idsAEliminar)
+                                     ->where('producto_id', $producto->id)
+                                     ->delete();
+
+                        VarianteProducto::whereIn('id', $idsAEliminar)->delete();
+                    }
                 }
-                
+
                 foreach ($request->variantes as $index => $varianteData) {
                     if (!empty($varianteData['referencia_variante']) || !empty($varianteData['color']) || !empty($varianteData['sku'])) {
                         // Generar SKU si no se proporciona
@@ -234,51 +246,62 @@ class ProductosController extends Controller
                             }
                         }
 
-                        $variante = $producto->variantes()->create([
-                            'referencia_variante' => $varianteData['referencia_variante'],
-                            'color' => $varianteData['color'],
-                            'sku' => $sku,
-                            'activo' => true
-                        ]);
-                        
-                        // Crear registro de stock para la variante si se controla stock (NUEVO)
-                        if ($producto->controlar_stock) {
-                            $stockInicial = $varianteData['stock_inicial'] ?? 0;
-                            $stock = StockProducto::create([
-                                'producto_id' => $producto->id,
-                                'variante_producto_id' => $variante->id,
-                                'cantidad_disponible' => $stockInicial,
-                                'cantidad_reservada' => 0,
-                                'stock_minimo' => $varianteData['stock_minimo'] ?? 0,
-                                'stock_maximo' => $varianteData['stock_maximo'] ?? null,
-                                'ubicacion' => $varianteData['ubicacion'] ?? null,
-                                'alerta_stock_bajo' => true
+                        // Si tiene ID, es variante existente → actualizar sin tocar stock
+                        if (!empty($varianteData['id'])) {
+                            $variante = VarianteProducto::find($varianteData['id']);
+                            if ($variante && $variante->producto_id == $producto->id) {
+                                $variante->update([
+                                    'referencia_variante' => $varianteData['referencia_variante'],
+                                    'color' => $varianteData['color'],
+                                    'sku' => $sku,
+                                ]);
+                            }
+                        } else {
+                            // Variante nueva → crear con stock
+                            $variante = $producto->variantes()->create([
+                                'referencia_variante' => $varianteData['referencia_variante'],
+                                'color' => $varianteData['color'],
+                                'sku' => $sku,
+                                'activo' => true
                             ]);
-                            
-                            // Registrar movimiento inicial si hay stock
-                            if ($stockInicial > 0) {
-                                MovimientoStock::create([
+
+                            if ($producto->controlar_stock) {
+                                $stockInicial = $varianteData['stock_inicial'] ?? 0;
+                                StockProducto::create([
                                     'producto_id' => $producto->id,
                                     'variante_producto_id' => $variante->id,
-                                    'tipo_movimiento' => 'entrada',
-                                    'cantidad' => $stockInicial,
-                                    'stock_anterior' => 0,
-                                    'stock_nuevo' => $stockInicial,
-                                    'origen' => 'ajuste_inventario',
-                                    'motivo' => 'Stock inicial',
-                                    'usuario_id' => auth()->id() ?? 1
+                                    'cantidad_disponible' => $stockInicial,
+                                    'cantidad_reservada' => 0,
+                                    'stock_minimo' => $varianteData['stock_minimo'] ?? 0,
+                                    'stock_maximo' => $varianteData['stock_maximo'] ?? null,
+                                    'ubicacion' => $varianteData['ubicacion'] ?? null,
+                                    'alerta_stock_bajo' => true
                                 ]);
+
+                                if ($stockInicial > 0) {
+                                    MovimientoStock::create([
+                                        'producto_id' => $producto->id,
+                                        'variante_producto_id' => $variante->id,
+                                        'tipo_movimiento' => 'entrada',
+                                        'cantidad' => $stockInicial,
+                                        'stock_anterior' => 0,
+                                        'stock_nuevo' => $stockInicial,
+                                        'origen' => 'ajuste_inventario',
+                                        'motivo' => 'Stock inicial',
+                                        'usuario_id' => auth()->id() ?? 1
+                                    ]);
+                                }
                             }
                         }
                     }
                 }
-                // Reasociar imágenes existentes con las nuevas variantes
+                // Reasociar imágenes existentes con las variantes
                 if ($request->has('imagen_variante')) {
-                    $nuevasVariantes = $producto->variantes()->orderBy('id')->get()->values();
+                    $todasVariantes = $producto->variantes()->orderBy('id')->get()->values();
                     foreach ($request->imagen_variante as $imagenId => $varianteRowIndex) {
                         $varianteId = null;
-                        if ($varianteRowIndex !== '' && isset($nuevasVariantes[(int)$varianteRowIndex])) {
-                            $varianteId = $nuevasVariantes[(int)$varianteRowIndex]->id;
+                        if ($varianteRowIndex !== '' && isset($todasVariantes[(int)$varianteRowIndex])) {
+                            $varianteId = $todasVariantes[(int)$varianteRowIndex]->id;
                         }
                         ImagenProducto::where('id', $imagenId)
                             ->where('producto_id', $producto->id)
