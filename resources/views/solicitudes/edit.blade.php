@@ -123,7 +123,8 @@
                         <div class="input-group input-group-sm">
                           <span class="input-group-text">$</span>
                           <input type="number" name="descuento_total" class="form-control" id="descuentoTotal"
-                                 value="{{ $solicitud->descuento_total ?? 0 }}" step="0.01" min="0" onchange="actualizarTotal()">
+                                 value="{{ $solicitud->descuento_total ?? 0 }}" step="0.01" min="0" onchange="actualizarTotal()"
+                                 @if(auth()->user()->hasRole('vendedor')) readonly @endif>
                         </div>
                       </td>
                     </tr>
