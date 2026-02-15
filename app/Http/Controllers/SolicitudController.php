@@ -658,48 +658,6 @@ class SolicitudController extends Controller
                 $html .= '<strong>Stock descontado</strong> por <strong>' . ($solicitud->stockDescontadoPor?->name ?? 'Sistema') . '</strong>';
                 $html .= ' el ' . $solicitud->stock_descontado_en->format('d/m/Y H:i');
                 $html .= '</div>';
-
-                // Tabla de movimientos de stock
-                $movimientos = MovimientoStock::where('solicitud_cotizacion_id', $solicitud->id)
-                    ->where('tipo_movimiento', 'salida')
-                    ->with(['producto', 'variante', 'usuario'])
-                    ->orderBy('created_at')
-                    ->get();
-
-                if ($movimientos->count() > 0) {
-                    $html .= '<div class="table-responsive">';
-                    $html .= '<table class="table table-sm table-striped">';
-                    $html .= '<thead class="table-light">';
-                    $html .= '<tr>';
-                    $html .= '<th>Producto</th>';
-                    $html .= '<th>Cantidad</th>';
-                    $html .= '<th>Stock Anterior</th>';
-                    $html .= '<th>Stock Nuevo</th>';
-                    $html .= '<th>Descontado por</th>';
-                    $html .= '<th>Fecha</th>';
-                    $html .= '</tr>';
-                    $html .= '</thead>';
-                    $html .= '<tbody>';
-
-                    foreach ($movimientos as $mov) {
-                        $descProducto = $mov->producto->nombre;
-                        if ($mov->variante) {
-                            $descProducto .= ' - ' . $mov->variante->nombre_variante;
-                        }
-                        $html .= '<tr>';
-                        $html .= '<td>' . e($descProducto) . '</td>';
-                        $html .= '<td><span class="badge bg-danger">-' . $mov->cantidad . '</span></td>';
-                        $html .= '<td>' . $mov->stock_anterior . '</td>';
-                        $html .= '<td>' . $mov->stock_nuevo . '</td>';
-                        $html .= '<td>' . ($mov->usuario?->name ?? '-') . '</td>';
-                        $html .= '<td>' . $mov->created_at->format('d/m/Y H:i') . '</td>';
-                        $html .= '</tr>';
-                    }
-
-                    $html .= '</tbody>';
-                    $html .= '</table>';
-                    $html .= '</div>';
-                }
             }
 
             $html .= '</div>';
