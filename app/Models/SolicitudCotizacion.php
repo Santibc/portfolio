@@ -114,6 +114,7 @@ class SolicitudCotizacion extends Model
     const METODOS_PAGO = [
         'transferencia' => 'Transferencia bancaria',
         'efectivo' => 'Efectivo',
+        'credito' => 'Crédito',
         'tarjeta' => 'Tarjeta',
         'cheque' => 'Cheque',
         'otro' => 'Otro',

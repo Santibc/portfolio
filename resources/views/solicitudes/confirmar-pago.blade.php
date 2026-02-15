@@ -217,22 +217,37 @@
 
   @push('scripts')
   <script>
-    // Mostrar/ocultar días de vencimiento según forma de pago
+    // Mostrar/ocultar días de vencimiento y pre-seleccionar método según forma de pago
     const formaPagoSelect = document.getElementById('forma_pago');
+    const metodoPagoSelect = document.getElementById('metodo_pago');
+
+    function actualizarFormaPago(valor) {
+      const container = document.getElementById('diasVencimientoContainer');
+      const diasInput = document.getElementById('dias_vencimiento');
+      if (valor !== 'Contado') {
+        container.style.display = 'block';
+        const match = valor.match(/(\d+)/);
+        if (match) diasInput.value = match[1];
+        // Pre-seleccionar método "Crédito" (sin bloquearlo)
+        if (metodoPagoSelect) metodoPagoSelect.value = 'credito';
+      } else {
+        container.style.display = 'none';
+        diasInput.value = 0;
+        // Resetear método de pago
+        if (metodoPagoSelect) metodoPagoSelect.value = '';
+      }
+    }
+
     if (formaPagoSelect) {
       formaPagoSelect.addEventListener('change', function() {
-        const container = document.getElementById('diasVencimientoContainer');
-        const diasInput = document.getElementById('dias_vencimiento');
-        if (this.value !== 'Contado') {
-          container.style.display = 'block';
-          const match = this.value.match(/(\d+)/);
-          if (match) diasInput.value = match[1];
-        } else {
-          container.style.display = 'none';
-          diasInput.value = 0;
-        }
+        actualizarFormaPago(this.value);
       });
     }
+
+    // Si la forma de pago ya es crédito (guardada previamente), pre-seleccionar método
+    @if($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito'))
+      if (metodoPagoSelect) metodoPagoSelect.value = 'credito';
+    @endif
 
     document.getElementById('formPago').addEventListener('submit', function(e) {
       e.preventDefault();
