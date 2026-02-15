@@ -457,8 +457,8 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones y botones si está pendiente (para admin y facturación, no auxiliar)
-        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']) && !$isAuxiliar) {
+        // Campo de observaciones y botones si está pendiente (para admin y facturación, no auxiliar ni inventarios)
+        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion']) && !$isAuxiliar) {
             $html .= '<div class="col-12 mt-3">';
             $html .= '<hr>';
             $html .= '<div class="mb-3">';
@@ -716,8 +716,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor, facturación o inventarios
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
+        // Verificar que sea admin, vendedor o facturación (inventarios solo descuenta stock)
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
@@ -811,8 +811,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor, facturación o inventarios
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
+        // Verificar que sea admin, vendedor o facturación (inventarios solo descuenta stock)
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar esta solicitud'
