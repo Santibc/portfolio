@@ -506,6 +506,35 @@ class SolicitudController extends Controller
             $html .= '</div>';
             $html .= '</div>';
 
+            // Información de forma de pago / crédito
+            if ($solicitud->forma_pago_factura) {
+                $esCredito = str_contains($solicitud->forma_pago_factura, 'Crédito');
+                $bgClass = $esCredito ? 'alert-info' : 'alert-light';
+                $html .= '<div class="alert ' . $bgClass . ' py-2 mb-3">';
+                $html .= '<div class="row text-center">';
+                $html .= '<div class="col-md-' . ($solicitud->fecha_vencimiento ? '6' : '12') . '">';
+                $html .= '<small class="text-muted d-block">Forma de Pago</small>';
+                $html .= '<strong>' . e($solicitud->forma_pago_factura) . '</strong>';
+                $html .= '</div>';
+                if ($solicitud->fecha_vencimiento) {
+                    $diasRestantes = now()->diffInDays($solicitud->fecha_vencimiento, false);
+                    $colorDias = $diasRestantes < 0 ? 'text-danger' : ($diasRestantes <= 7 ? 'text-warning' : 'text-success');
+                    $html .= '<div class="col-md-6">';
+                    $html .= '<small class="text-muted d-block">Fecha de Vencimiento</small>';
+                    $html .= '<strong>' . $solicitud->fecha_vencimiento->format('d/m/Y') . '</strong>';
+                    $html .= ' <span class="' . $colorDias . ' small">';
+                    if ($diasRestantes < 0) {
+                        $html .= '(Vencido hace ' . abs((int) $diasRestantes) . ' días)';
+                    } else {
+                        $html .= '(' . (int) $diasRestantes . ' días restantes)';
+                    }
+                    $html .= '</span>';
+                    $html .= '</div>';
+                }
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+
             // Alerta de pagos pendientes de aprobación
             $pagosPendientesAprobacion = $solicitud->pagos->where('estado', 'pendiente');
             if ($pagosPendientesAprobacion->count() > 0) {
