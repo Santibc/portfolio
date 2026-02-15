@@ -596,7 +596,7 @@ class SolicitudController extends Controller
 
                 // Acciones
                 $html .= '<td>';
-                if ($pago->estaPendiente() && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']) && !$isAuxiliar) {
+                if ($pago->estaPendiente() && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion']) && !$isAuxiliar) {
                     $html .= '<button type="button" class="btn btn-sm btn-success me-1" ';
                     $html .= 'onclick="aprobarPago(' . $solicitud->id . ', ' . $pago->id . ')" ';
                     $html .= 'title="Aprobar Pago">';

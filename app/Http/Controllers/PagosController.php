@@ -150,7 +150,7 @@ class PagosController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aprobar pagos'
@@ -198,7 +198,7 @@ class PagosController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para rechazar pagos'
