@@ -48,6 +48,23 @@
               @endif
             </div>
           </div>
+
+          @if($solicitud->forma_pago_factura || $solicitud->fecha_vencimiento)
+          <div class="row mt-3 pt-3 border-top">
+            @if($solicitud->forma_pago_factura)
+            <div class="col-md-6 text-center">
+              <small class="text-muted d-block">Forma de Pago</small>
+              <strong>{{ $solicitud->forma_pago_factura }}</strong>
+            </div>
+            @endif
+            @if($solicitud->fecha_vencimiento)
+            <div class="col-md-6 text-center">
+              <small class="text-muted d-block">Fecha de Vencimiento</small>
+              <strong>{{ $solicitud->fecha_vencimiento->format('d/m/Y') }}</strong>
+            </div>
+            @endif
+          </div>
+          @endif
         </div>
       </div>
 
