@@ -202,7 +202,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturac
 // ============================================================
 // EDICIÓN/ELIMINACIÓN DE COTIZACIONES (Admin, Facturación e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios,vendedor'])->group(function () {
     Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
     Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
     Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
