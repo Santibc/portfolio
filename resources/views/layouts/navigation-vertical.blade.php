@@ -71,8 +71,8 @@
             </a>
         @endif
 
-        {{-- Usuarios (para admin, auxiliar_administrativo e inventarios) --}}
-        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
+        {{-- Usuarios (para admin, auxiliar_administrativo, inventarios y facturación) --}}
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'facturacion']))
             <a href="/usuarios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-people"></i>
@@ -130,13 +130,13 @@
         @endif
 
         {{-- Sección Inventario (para admin, auxiliar_administrativo, inventarios y auxiliar inventario) --}}
-        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario']))
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario', 'facturacion']))
             <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
             <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
                 <i class="bi bi-boxes me-1"></i>
                 <span>Inventario</span>
             </p>
-            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'facturacion']))
             <a href="/categorias"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-tags"></i>

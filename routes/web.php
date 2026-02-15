@@ -58,9 +58,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // ============================================================
-// USUARIOS (Admin e Inventarios)
+// USUARIOS (Admin, Inventarios y Facturación)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,facturacion'])->group(function () {
     Route::get('/usuarios', [UsuariosController::class, 'index'])->name('usuarios');
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
@@ -78,9 +78,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 });
 
 // ============================================================
-// PRODUCTOS (Admin e Inventarios)
+// PRODUCTOS (Admin, Inventarios y Facturación)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->prefix('productos')->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,facturacion'])->prefix('productos')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
