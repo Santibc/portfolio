@@ -84,6 +84,8 @@ class PagosController extends Controller
             'metodo_pago' => 'required|in:' . implode(',', array_keys(SolicitudCotizacion::METODOS_PAGO)),
             'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'notas_pago' => 'nullable|string|max:1000',
+            'forma_pago' => 'nullable|string|max:50',
+            'dias_vencimiento' => 'nullable|integer|min:0|max:365',
         ], [
             'monto.required' => 'El monto es obligatorio',
             'monto.min' => 'El monto debe ser mayor a 0',
@@ -101,6 +103,17 @@ class PagosController extends Controller
                 $archivo = $request->file('comprobante');
                 $nombreArchivo = 'pago_' . $solicitud->numero_solicitud . '_' . time() . '.' . $archivo->getClientOriginalExtension();
                 $rutaComprobante = $archivo->storeAs('comprobantes_pago', $nombreArchivo, 'public');
+            }
+
+            // Guardar forma de pago si se proporcionó y no existe
+            if (!$solicitud->forma_pago_factura && !empty($validated['forma_pago'])) {
+                $formaPago = $validated['forma_pago'];
+                $diasVencimiento = $validated['dias_vencimiento'] ?? 0;
+                $solicitud->forma_pago_factura = $formaPago;
+                if ($diasVencimiento > 0) {
+                    $solicitud->fecha_vencimiento = now()->addDays($diasVencimiento);
+                }
+                $solicitud->save();
             }
 
             // Registrar pago (queda pendiente de aprobación)

@@ -65,6 +65,25 @@
             @endif
           </div>
           @endif
+
+          @if(!$solicitud->forma_pago_factura)
+          <div class="row mt-3 pt-3 border-top">
+            <div class="col-md-6">
+              <label for="forma_pago" class="form-label">Forma de Pago</label>
+              <select class="form-select" id="forma_pago" name="forma_pago" form="formPago">
+                <option value="Contado">Contado</option>
+                <option value="Crédito 30 días">Crédito 30 días</option>
+                <option value="Crédito 60 días">Crédito 60 días</option>
+                <option value="Crédito 90 días">Crédito 90 días</option>
+              </select>
+            </div>
+            <div class="col-md-6" id="diasVencimientoContainer" style="display:none;">
+              <label for="dias_vencimiento" class="form-label">Días de Vencimiento</label>
+              <input type="number" class="form-control" id="dias_vencimiento" name="dias_vencimiento"
+                     form="formPago" min="0" max="365" value="30">
+            </div>
+          </div>
+          @endif
         </div>
       </div>
 
@@ -198,6 +217,23 @@
 
   @push('scripts')
   <script>
+    // Mostrar/ocultar días de vencimiento según forma de pago
+    const formaPagoSelect = document.getElementById('forma_pago');
+    if (formaPagoSelect) {
+      formaPagoSelect.addEventListener('change', function() {
+        const container = document.getElementById('diasVencimientoContainer');
+        const diasInput = document.getElementById('dias_vencimiento');
+        if (this.value !== 'Contado') {
+          container.style.display = 'block';
+          const match = this.value.match(/(\d+)/);
+          if (match) diasInput.value = match[1];
+        } else {
+          container.style.display = 'none';
+          diasInput.value = 0;
+        }
+      });
+    }
+
     document.getElementById('formPago').addEventListener('submit', function(e) {
       e.preventDefault();
 
