@@ -82,7 +82,8 @@
                         <div class="input-group input-group-sm">
                           <span class="input-group-text">$</span>
                           <input type="number" name="items[{{ $index }}][precio_manual]" class="form-control precio-input"
-                                 value="{{ $item->precio_unitario }}" step="0.01" min="0" onchange="actualizarSubtotal(this)">
+                                 value="{{ $item->precio_unitario }}" step="0.01" min="0" onchange="actualizarSubtotal(this)"
+                                 @if(auth()->user()->hasRole('vendedor')) readonly @endif>
                         </div>
                         @if($item->precio_editado_manualmente)
                           <small class="text-warning"><i class="bi bi-exclamation-triangle"></i> Editado</small>
@@ -153,26 +154,6 @@
                     </tr>
                   </tfoot>
                 </table>
-              </div>
-            </div>
-
-            {{-- Forma de Pago y Días de Vencimiento --}}
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <label class="form-label">Forma de Pago</label>
-                <select name="forma_pago_factura" class="form-select" id="formaPago">
-                  <option value="">Seleccione...</option>
-                  <option value="Contado" {{ ($solicitud->forma_pago_factura == 'Contado') ? 'selected' : '' }}>Contado</option>
-                  <option value="Crédito 30 días" {{ ($solicitud->forma_pago_factura == 'Crédito 30 días') ? 'selected' : '' }}>Crédito 30 días</option>
-                  <option value="Crédito 60 días" {{ ($solicitud->forma_pago_factura == 'Crédito 60 días') ? 'selected' : '' }}>Crédito 60 días</option>
-                  <option value="Crédito 90 días" {{ ($solicitud->forma_pago_factura == 'Crédito 90 días') ? 'selected' : '' }}>Crédito 90 días</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Días de Vencimiento</label>
-                <input type="number" name="dias_vencimiento" class="form-control" id="diasVencimiento"
-                       value="{{ $solicitud->fecha_vencimiento ? now()->diffInDays($solicitud->fecha_vencimiento, false) : 0 }}" min="0">
-                <small class="text-muted">Cantidad de días a partir de hoy para el vencimiento</small>
               </div>
             </div>
 
@@ -377,7 +358,8 @@
           <div class="input-group input-group-sm">
             <span class="input-group-text">$</span>
             <input type="number" name="items[${itemIndex}][precio_manual]" class="form-control precio-input"
-                   value="${precio.toFixed(2)}" step="0.01" min="0" onchange="actualizarSubtotal(this)">
+                   value="${precio.toFixed(2)}" step="0.01" min="0" onchange="actualizarSubtotal(this)"
+                   @if(auth()->user()->hasRole('vendedor')) readonly @endif>
           </div>
         </td>
         <td class="subtotal-cell">$${subtotal.toFixed(2)}</td>

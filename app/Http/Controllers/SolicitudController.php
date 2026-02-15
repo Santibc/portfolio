@@ -152,8 +152,8 @@ class SolicitudController extends Controller
                                 </button>';
 
                     if (!$isAuxiliar) {
-                        // Botón editar (solo admin y facturación, y si está pendiente)
-                        if ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+                        // Botón editar (admin, facturación, inventarios y vendedor si está pendiente)
+                        if ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'vendedor'])) {
                             $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
                                             title="Editar Cotización">
                                            <i class="bi bi-pencil"></i>
@@ -1162,8 +1162,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos - admin, facturación e inventarios pueden editar
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+        // Verificar permisos - admin, facturación, inventarios y vendedor pueden editar
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'vendedor'])) {
             abort(403, 'No tiene permisos para editar cotizaciones');
         }
 
