@@ -1461,7 +1461,7 @@ class SolicitudController extends Controller
     {
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
-            'variante_id' => 'nullable|exists:variantes_producto,id',
+            'variante_id' => 'nullable|exists:variantes_productos,id',
             'cliente_id' => 'required|exists:clientes,id',
         ]);
 

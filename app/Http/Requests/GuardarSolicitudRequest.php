@@ -30,7 +30,7 @@ class GuardarSolicitudRequest extends FormRequest
             // Items de la cotización
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
-            'items.*.variante_id' => 'nullable|exists:variantes_producto,id',
+            'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.precio_manual' => 'nullable|numeric|min:0',
 
