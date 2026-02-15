@@ -340,7 +340,15 @@ class SolicitudController extends Controller
             $html .= '<div class="alert alert-info">' . nl2br(e($solicitud->notas_cliente)) . '</div>';
             $html .= '</div>';
         }
-        
+
+        // Observaciones del vendedor
+        if ($solicitud->observaciones_vendedor) {
+            $html .= '<div class="col-12 mb-3">';
+            $html .= '<h6>Observaciones del Vendedor</h6>';
+            $html .= '<div class="alert alert-warning">' . nl2br(e($solicitud->observaciones_vendedor)) . '</div>';
+            $html .= '</div>';
+        }
+
         // Items de la cotización
         $html .= '<div class="col-12">';
         $html .= '<h6>Productos Cotizados</h6>';
