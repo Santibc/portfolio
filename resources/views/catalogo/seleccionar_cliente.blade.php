@@ -58,13 +58,16 @@
 
           <div class="row" id="clientesContainer">
             @forelse($clientes as $cliente)
-              <div class="col-md-4 mb-4 cliente-card" 
-                   data-nombre="{{ strtolower($cliente->nombre_contacto) }}"
+              <div class="col-md-4 mb-4 cliente-card"
+                   data-nombre="{{ strtolower($cliente->nombre_contacto . ' ' . ($cliente->razon_social ?? '')) }}"
                    data-ciudad="{{ $cliente->ciudad?->id }}"
                    data-lista="{{ $cliente->lista_precio_id }}">
                 <div class="card h-100">
                   <div class="card-body">
                     <h5 class="card-title">{{ $cliente->nombre_contacto }}</h5>
+                    @if($cliente->razon_social)
+                      <p class="card-text mb-1"><small><i class="bi bi-building"></i> {{ $cliente->razon_social }}</small></p>
+                    @endif
                     <p class="card-text">
                       <small class="text-muted">
                         <i class="bi bi-geo-alt"></i> {{ $cliente->ciudad?->nombre ?? 'Sin ciudad' }}<br>
@@ -76,6 +79,11 @@
                         @endif
                       </small>
                     </p>
+                    @if($cliente->observaciones)
+                      <div class="alert alert-warning py-1 px-2 mb-2">
+                        <small><i class="bi bi-chat-left-text me-1"></i>{{ $cliente->observaciones }}</small>
+                      </div>
+                    @endif
                     <form action="{{ route('catalogo.cliente') }}" method="POST">
                       @csrf
                       <input type="hidden" name="cliente_id" value="{{ $cliente->id }}">
