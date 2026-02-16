@@ -81,7 +81,7 @@ class SolicitudController extends Controller
 
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function($s) {
-                    return $s->cliente->nombre_contacto;
+                    return $s->cliente->razon_social ?: $s->cliente->nombre_contacto;
                 })
                 ->addColumn('vendedor', function($s) {
                     // Mostrar quién creó la solicitud, o el vendedor del cliente si no hay creador
