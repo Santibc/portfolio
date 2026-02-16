@@ -55,7 +55,6 @@ class CatalogoController extends Controller
                               ->get();
         } elseif ($user->hasRole('vendedor')) {
             $clientes = Cliente::activos()
-                              ->where('vendedor_id', $user->id)
                               ->with('vendedor')
                               ->orderBy('nombre_contacto')
                               ->get();
