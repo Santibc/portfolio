@@ -311,6 +311,14 @@
                     <span class="dato-label">Correo electronico</span>
                     <span class="dato-valor">{{ $solicitud->cliente->email ?? '' }}</span>
                 </div>
+                <div class="dato-row">
+                    <span class="dato-label">Ciudad</span>
+                    <span class="dato-valor">{{ $solicitud->cliente->ciudad->nombre ?? '' }}</span>
+                </div>
+                <div class="dato-row">
+                    <span class="dato-label">Direccion</span>
+                    <span class="dato-valor">{{ $solicitud->cliente->direccion ?? '' }}</span>
+                </div>
             </td>
             <td style="width: 50%; vertical-align: top;">
                 <div class="dato-row">
