@@ -13,6 +13,7 @@
                   <th>Acciones</th>
                   <th>Identificación</th>
                   <th>Contacto</th>
+                  <th>Razón Social</th>
                   <th>Email</th>
                   <th>Teléfono</th>
                   <th>País</th>
@@ -43,6 +44,7 @@
           { data:'action',       orderable:false, searchable:false },
           { data:'numero_identificacion', name:'numero_identificacion' },
           { data:'nombre_contacto',       name:'nombre_contacto' },
+          { data:'razon_social',          name:'razon_social', defaultContent: '-' },
           { data:'email',                 name:'email' },
           { data:'telefono',              name:'telefono' },
           { data:'pais',                 name:'pais',      orderable:false, searchable:false },
