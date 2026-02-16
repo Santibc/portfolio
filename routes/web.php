@@ -96,16 +96,20 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,factu
 // RUTAS SOLO ADMIN
 // ============================================================
 Route::middleware(['auth', 'role:admin,auxiliar_administrativo'])->group(function () {
-    // Listas de Precios (admin y auxiliar administrativo)
-    Route::get('listas-precios', [ListaPreciosController::class, 'index'])->name('listas-precios');
-    Route::get('listas-precios/form/{listaPrecio?}', [ListaPreciosController::class, 'form'])->name('listas-precios.form');
-    Route::post('listas-precios/guardar', [ListaPreciosController::class, 'guardar'])->name('listas-precios.guardar');
-    Route::post('listas-precios/{listaPrecio}/toggle-estado', [ListaPreciosController::class, 'toggleEstado'])->name('listas-precios.toggle-estado');
-
     // Descargar actualización de precios
     Route::get('actualizaciones/{id}/descargar',
         [ActualizacionPreciosController::class, 'descargarArchivoActualizacion']
     )->name('actualizaciones.descargar');
+});
+
+// ============================================================
+// LISTAS DE PRECIOS (Admin, Auxiliar Administrativo y Facturación)
+// ============================================================
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion'])->group(function () {
+    Route::get('listas-precios', [ListaPreciosController::class, 'index'])->name('listas-precios');
+    Route::get('listas-precios/form/{listaPrecio?}', [ListaPreciosController::class, 'form'])->name('listas-precios.form');
+    Route::post('listas-precios/guardar', [ListaPreciosController::class, 'guardar'])->name('listas-precios.guardar');
+    Route::post('listas-precios/{listaPrecio}/toggle-estado', [ListaPreciosController::class, 'toggleEstado'])->name('listas-precios.toggle-estado');
 });
 
 // ============================================================

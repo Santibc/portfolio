@@ -121,7 +121,7 @@
             </a>
         @endif
 
-        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo']))
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'facturacion']))
             <a href="/listas-precios"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('listas-precios*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-currency-dollar"></i>
@@ -136,23 +136,27 @@
                 <i class="bi bi-boxes me-1"></i>
                 <span>Inventario</span>
             </p>
-            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'facturacion']))
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <a href="/categorias"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-tags"></i>
                 <span>Categorías</span>
             </a>
+            @endif
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'facturacion']))
             <a href="/productos"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
             @endif
+            @if(!auth()->user()->hasRole('facturacion') || auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario']))
             <a href="{{ route('stock.index') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('stock.index*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-box-seam"></i>
                 <span>Gestión de Stock</span>
             </a>
+            @endif
             @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <a href="{{ route('traslados') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
