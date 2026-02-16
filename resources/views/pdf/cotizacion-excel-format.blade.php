@@ -302,7 +302,7 @@
             <td style="width: 50%; vertical-align: top;">
                 <div class="dato-row">
                     <span class="dato-label">Cliente</span>
-                    <span class="dato-valor">{{ $solicitud->cliente->nombre_contacto ?? 'N/A' }}</span>
+                    <span class="dato-valor">{{ $solicitud->cliente->razon_social ?: ($solicitud->cliente->nombre_contacto ?? 'N/A') }}</span>
                 </div>
                 <div class="dato-row">
                     <span class="dato-label">NIT</span>
@@ -419,6 +419,24 @@
             <span class="total-valor" style="font-size: 16pt;">$ {{ number_format($totalFinal, 0) }}</span>
         </div>
     </div>
+
+    {{-- OBSERVACIONES --}}
+    @if($solicitud->notas_cliente || $solicitud->observaciones_vendedor)
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        @if($solicitud->notas_cliente)
+        <div style="background-color: #f0f0f0; padding: 8px 12px; border-radius: 4px; margin-bottom: 5px;">
+            <strong style="color: #382E65; font-size: 9pt;">Notas del Cliente:</strong>
+            <span style="font-size: 9pt;">{{ $solicitud->notas_cliente }}</span>
+        </div>
+        @endif
+        @if($solicitud->observaciones_vendedor)
+        <div style="background-color: #FFF9E6; padding: 8px 12px; border-radius: 4px;">
+            <strong style="color: #382E65; font-size: 9pt;">Observaciones del Vendedor:</strong>
+            <span style="font-size: 9pt;">{{ $solicitud->observaciones_vendedor }}</span>
+        </div>
+        @endif
+    </div>
+    @endif
 
     {{-- TEXTOS LEGALES --}}
     <div class="texto-legal" style="color: #382E65; border-left: 3px solid #BCA9F5; padding-left: 10px;">
