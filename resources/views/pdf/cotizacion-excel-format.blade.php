@@ -371,8 +371,8 @@
                     <td class="col-referencia">{{ $item->referencia_producto }}</td>
                     <td class="col-descripcion">
                         {{ $item->nombre_producto }}
-                        @if($item->variante)
-                            <br><small>{{ $item->variante }}</small>
+                        @if($item->info_variante || $item->varianteProducto)
+                            <br><small>{{ $item->info_variante ?: $item->varianteProducto->nombre_variante }}</small>
                         @endif
                     </td>
 
