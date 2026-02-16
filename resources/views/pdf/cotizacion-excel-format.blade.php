@@ -201,11 +201,6 @@
             width: 40%;
         }
 
-        .productos-table .col-foto {
-            width: 10%;
-            text-align: center;
-        }
-
         .productos-table .col-cantidad {
             width: 10%;
             text-align: center;
@@ -349,7 +344,7 @@
             <tr>
                 <th class="col-referencia">REFERENCIA CODIGO</th>
                 <th class="col-descripcion">DESCRIPCION</th>
-                <th class="col-foto">FOTO</th>
+
                 <th class="col-cantidad">CANTIDAD</th>
                 <th class="col-precio">VALOR UNITARIO</th>
                 <th class="col-subtotal">SUBTOTAL</th>
@@ -372,13 +367,7 @@
                             <br><small>{{ $item->variante }}</small>
                         @endif
                     </td>
-                    <td class="col-foto">
-                        @if($item->producto && $item->producto->imagenPrincipal)
-                            <img src="{{ public_path($item->producto->imagenPrincipal->ruta_imagen) }}"
-                                 alt="{{ $item->nombre_producto }}"
-                                 class="producto-img">
-                        @endif
-                    </td>
+
                     <td class="col-cantidad">{{ number_format($item->cantidad, 0) }}</td>
                     <td class="col-precio">$ {{ number_format($item->precio_unitario, 0) }}</td>
                     <td class="col-subtotal">$ {{ number_format($item->precio_total, 0) }}</td>
