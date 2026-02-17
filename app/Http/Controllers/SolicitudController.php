@@ -1080,7 +1080,8 @@ class SolicitudController extends Controller
             'cliente.ciudad.departamento',
             'cliente.pais',
             'items.producto.imagenPrincipal',
-            'aplicadaPor'
+            'aplicadaPor',
+            'createdBy'
         ]);
 
         $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));

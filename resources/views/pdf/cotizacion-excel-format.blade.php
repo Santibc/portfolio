@@ -323,7 +323,7 @@
                 </div>
                 <div class="dato-row">
                     <span class="dato-label">Asesor</span>
-                    <span class="dato-valor">{{ $solicitud->cliente->vendedor->name ?? 'N/A' }}</span>
+                    <span class="dato-valor">{{ $solicitud->createdBy->name ?? ($solicitud->cliente->vendedor->name ?? 'N/A') }}</span>
                 </div>
                 <div class="dato-row">
                     <span class="dato-label">Fecha</span>
