@@ -308,9 +308,11 @@
                     <span class="dato-valor">{{ $solicitud->cliente->telefono ?? '' }}</span>
                 </div>
                 <div class="dato-row">
-                    <span class="dato-label">Correo electronico</span>
+                    <span class="dato-label">Correo</span>
                     <span class="dato-valor">{{ $solicitud->cliente->email ?? '' }}</span>
                 </div>
+            </td>
+            <td style="width: 50%; vertical-align: top;">
                 <div class="dato-row">
                     <span class="dato-label">Ciudad</span>
                     <span class="dato-valor">{{ $solicitud->cliente->ciudad->nombre ?? '' }}</span>
@@ -319,8 +321,6 @@
                     <span class="dato-label">Direccion</span>
                     <span class="dato-valor">{{ $solicitud->cliente->direccion ?? '' }}</span>
                 </div>
-            </td>
-            <td style="width: 50%; vertical-align: top;">
                 <div class="dato-row">
                     <span class="dato-label">Asesor</span>
                     <span class="dato-valor">{{ $solicitud->cliente->vendedor->name ?? 'N/A' }}</span>
@@ -329,22 +329,17 @@
                     <span class="dato-label">Fecha</span>
                     <span class="dato-valor">{{ $solicitud->created_at->format('d/m/Y') }}</span>
                 </div>
-                <div class="dato-row">
-                    @php
-                        $estadoClasses = [
-                            'Pendiente' => 'estado-pendiente',
-                            'Confirmada' => 'estado-confirmada',
-                            'Rechazada' => 'estado-rechazada',
-                            'Aplicada' => 'estado-aplicada',
-                        ];
-                        $estadoClass = $estadoClasses[$solicitud->estado] ?? 'estado-pendiente';
-                    @endphp
-                    <span class="dato-label">Estado</span>
-                    <span class="estado-badge {{ $estadoClass }}">{{ strtoupper($solicitud->estado) }}</span>
-                </div>
             </td>
         </tr>
     </table>
+
+    {{-- OBSERVACIONES DEL VENDEDOR (arriba de la tabla) --}}
+    @if($solicitud->observaciones_vendedor)
+    <div style="background-color: #FFF9E6; padding: 8px 12px; border-radius: 4px; margin: 10px 0;">
+        <strong style="color: #382E65; font-size: 9pt;">Observaciones:</strong>
+        <span style="font-size: 9pt;">{{ $solicitud->observaciones_vendedor }}</span>
+    </div>
+    @endif
 
     {{-- TABLA DE PRODUCTOS --}}
     <table class="productos-table">
@@ -428,7 +423,7 @@
         @endif
         @if($solicitud->observaciones_vendedor)
         <div style="background-color: #FFF9E6; padding: 8px 12px; border-radius: 4px;">
-            <strong style="color: #382E65; font-size: 9pt;">Observaciones del Vendedor:</strong>
+            <strong style="color: #382E65; font-size: 9pt;">Observaciones:</strong>
             <span style="font-size: 9pt;">{{ $solicitud->observaciones_vendedor }}</span>
         </div>
         @endif
@@ -440,9 +435,5 @@
         Autorizo el tratamiento de mis datos personales con fines exclusivamente comerciales, garantizándose que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.
     </div>
 
-    {{-- CONDICIONES FINALES --}}
-    <div class="condiciones-finales" style="background-color: #FFF1DD; padding: 15px; border-radius: 5px; color: #382E65;">
-        LA FECHA DE ENTREGA SE DETERMINARÁ EN EL MOMENTO DE EFECTUAR EL PEDIDO. LOS PRECIOS DE ESTA OFERTA SE PODRÁN MODIFICAR SIN PREVIO AVISO.
-    </div>
 </body>
 </html>
