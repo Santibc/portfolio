@@ -58,6 +58,9 @@
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
+                @if(auth()->user()->hasRole('inventarios'))
+                <th>Marca</th>
+                @endif
                 <th>Acciones</th>
                 <th>Nº Cotización</th>
                 <th>Cliente</th>
@@ -69,9 +72,6 @@
                 <th>Pago</th>
                 <th>Envío</th>
                 <th>Reserva</th>
-                @if(auth()->user()->hasRole('inventarios'))
-                <th>Marca</th>
-                @endif
               </tr>
             </thead>
             <tbody></tbody>
@@ -117,6 +117,9 @@
         }
       },
       columns: [
+        @if(auth()->user()->hasRole('inventarios'))
+        { data:'marcada_badge', name:'marcada_badge', orderable:false, searchable:false },
+        @endif
         { data:'action', orderable:false, searchable:false },
         { data:'numero_solicitud', name:'numero_solicitud' },
         { data:'cliente_nombre', name:'cliente_nombre' },
@@ -127,10 +130,7 @@
         { data:'estado_badge', name:'estado' },
         { data:'estado_pago_badge', name:'estado_pago', orderable:false, searchable:false },
         { data:'estado_envio_badge', name:'estado_envio', orderable:false, searchable:false },
-        { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false },
-        @if(auth()->user()->hasRole('inventarios'))
-        { data:'marcada_badge', name:'marcada_badge', orderable:false, searchable:false }
-        @endif
+        { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
