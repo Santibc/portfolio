@@ -179,16 +179,16 @@
             color: #FFFFFF;
             font-size: 11pt;
             font-weight: bold;
-            padding: 8px 5px;
+            padding: 5px 4px;
             border: 1px solid #BCA9F5;
             text-align: center;
         }
 
         .productos-table td {
             border: 1px solid #BCA9F5;
-            padding: 6px 5px;
+            padding: 3px 4px;
             vertical-align: middle;
-            font-size: 10pt;
+            font-size: 9pt;
             color: #382E65;
         }
 
