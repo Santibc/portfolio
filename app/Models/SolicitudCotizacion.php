@@ -428,7 +428,7 @@ class SolicitudCotizacion extends Model
      */
     public function esEditable(): bool
     {
-        return $this->estado === self::ESTADO_PENDIENTE;
+        return $this->estado_pago !== self::PAGO_PAGADO;
     }
 
     /**
