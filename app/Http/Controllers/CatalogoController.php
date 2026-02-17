@@ -456,7 +456,9 @@ class CatalogoController extends Controller
                 'cliente_id' => $cliente->id,
                 'enlace_acceso_id' => $enlace ? $enlace->id : null,
                 'created_by' => Auth::check() ? Auth::id() : null,
-                'estado' => 'pendiente',
+                'estado' => 'aplicada',
+                'aplicada_en' => now(),
+                'aplicada_por' => Auth::check() ? Auth::id() : null,
                 'valor_flete' => $valorFlete,
                 'notas_cliente' => $request->notas_cliente,
                 'observaciones_vendedor' => $request->observaciones_vendedor

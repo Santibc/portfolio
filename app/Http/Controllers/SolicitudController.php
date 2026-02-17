@@ -471,30 +471,6 @@ class SolicitudController extends Controller
             $html .= '</div>';
         }
 
-        // Campo de observaciones y botones si está pendiente (para admin y facturación, no auxiliar ni inventarios)
-        if ($solicitud->estado === 'pendiente' && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion']) && !$isAuxiliar) {
-            $html .= '<div class="col-12 mt-3">';
-            $html .= '<hr>';
-            $html .= '<div class="mb-3">';
-            $html .= '<label class="form-label">Observaciones / Motivo de Rechazo</label>';
-            $html .= '<textarea class="form-control" id="observacionesAdmin" rows="3"
-                              placeholder="Ingrese observaciones si va a aprobar, o motivo detallado si va a rechazar..."></textarea>';
-            $html .= '<small class="text-muted">Este campo se usará como observaciones si aprueba, o como motivo de rechazo si rechaza.</small>';
-            $html .= '</div>';
-            $html .= '<div class="row g-2">';
-            $html .= '<div class="col-md-6">';
-            $html .= '<button type="button" class="btn btn-success w-100" onclick="confirmarAplicar(' . $solicitud->id . ')">
-                        <i class="bi bi-check-circle"></i> Marcar como Aplicada
-                      </button>';
-            $html .= '</div>';
-            $html .= '<div class="col-md-6">';
-            $html .= '<button type="button" class="btn btn-danger w-100" onclick="confirmarRechazo(' . $solicitud->id . ')">
-                        <i class="bi bi-x-circle"></i> Rechazar Cotización
-                      </button>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
-        }
 
         // Historial de pagos (si tiene pagos registrados)
         if ($solicitud->pagos->count() > 0) {
