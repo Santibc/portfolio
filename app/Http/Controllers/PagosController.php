@@ -82,7 +82,8 @@ class PagosController extends Controller
         $validated = $request->validate([
             'monto' => 'required|numeric|min:0.01|max:' . $maxPermitido,
             'metodo_pago' => 'required|in:' . implode(',', array_keys(SolicitudCotizacion::METODOS_PAGO)),
-            'comprobante' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'comprobantes' => 'nullable|array|max:10',
+            'comprobantes.*' => 'file|mimes:pdf,jpg,jpeg,png|max:5120',
             'notas_pago' => 'nullable|string|max:1000',
             'forma_pago' => 'nullable|string|max:50',
             'dias_vencimiento' => 'nullable|integer|min:0|max:365',
@@ -92,17 +93,19 @@ class PagosController extends Controller
             'monto.max' => 'El monto no puede superar el saldo disponible',
             'metodo_pago.required' => 'Seleccione un método de pago',
             'metodo_pago.in' => 'Método de pago no válido',
-            'comprobante.mimes' => 'El comprobante debe ser PDF, JPG o PNG',
-            'comprobante.max' => 'El comprobante no puede superar 5MB',
+            'comprobantes.*.mimes' => 'Los comprobantes deben ser PDF, JPG o PNG',
+            'comprobantes.*.max' => 'Cada comprobante no puede superar 5MB',
         ]);
 
         try {
-            // Procesar archivo de comprobante
-            $rutaComprobante = null;
-            if ($request->hasFile('comprobante')) {
-                $archivo = $request->file('comprobante');
-                $nombreArchivo = 'pago_' . $solicitud->numero_solicitud . '_' . time() . '.' . $archivo->getClientOriginalExtension();
-                $rutaComprobante = $archivo->storeAs('comprobantes_pago', $nombreArchivo, 'public');
+            // Procesar archivos de comprobante (múltiples)
+            $rutasComprobantes = null;
+            if ($request->hasFile('comprobantes')) {
+                $rutasComprobantes = [];
+                foreach ($request->file('comprobantes') as $index => $archivo) {
+                    $nombreArchivo = 'pago_' . $solicitud->numero_solicitud . '_' . time() . '_' . ($index + 1) . '.' . $archivo->getClientOriginalExtension();
+                    $rutasComprobantes[] = $archivo->storeAs('comprobantes_pago', $nombreArchivo, 'public');
+                }
             }
 
             // Guardar forma de pago si se proporcionó y no existe
@@ -120,7 +123,7 @@ class PagosController extends Controller
             $solicitud->registrarPago(
                 $validated['monto'],
                 $validated['metodo_pago'],
-                $rutaComprobante,
+                $rutasComprobantes,
                 $validated['notas_pago'] ?? null,
                 $user->id
             );
@@ -296,9 +299,11 @@ class PagosController extends Controller
                     'color_estado' => $pago->color_estado,
                     'aprobado_por' => $pago->aprobadoPor?->name,
                     'aprobado_en' => $pago->aprobado_en?->format('d/m/Y H:i'),
-                    'comprobante_url' => $pago->comprobante
-                        ? url('/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante')
-                        : null,
+                    'comprobantes_urls' => $pago->comprobante
+                        ? collect(is_string($pago->comprobante) ? [$pago->comprobante] : $pago->comprobante)
+                            ->map(fn($c, $i) => url('/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante?index=' . $i))
+                            ->values()->toArray()
+                        : [],
                 ];
             }),
         ]);
@@ -325,9 +330,8 @@ class PagosController extends Controller
     /**
      * Descargar comprobante de un pago individual
      */
-    public function descargarComprobantePago(SolicitudCotizacion $solicitud, PagoSolicitud $pago)
+    public function descargarComprobantePago(Request $request, SolicitudCotizacion $solicitud, PagoSolicitud $pago)
     {
-        // Verificar que el pago pertenece a la solicitud
         if ($pago->solicitud_cotizacion_id !== $solicitud->id) {
             abort(404, 'Pago no encontrado');
         }
@@ -336,7 +340,19 @@ class PagosController extends Controller
             abort(404, 'No hay comprobante para este pago');
         }
 
-        $path = Storage::disk('public')->path($pago->comprobante);
+        $comprobantes = $pago->comprobante;
+        $index = (int) $request->query('index', 0);
+
+        // Compatibilidad: si es string (dato antiguo), convertir a array
+        if (is_string($comprobantes)) {
+            $comprobantes = [$comprobantes];
+        }
+
+        if (!isset($comprobantes[$index])) {
+            abort(404, 'Archivo no encontrado');
+        }
+
+        $path = Storage::disk('public')->path($comprobantes[$index]);
 
         if (!file_exists($path)) {
             abort(404, 'Archivo no encontrado');

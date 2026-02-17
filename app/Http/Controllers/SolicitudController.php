@@ -577,9 +577,13 @@ class SolicitudController extends Controller
                 $html .= '<td>' . ($pago->notas ? e($pago->notas) : '-') . '</td>';
                 $html .= '<td>';
                 if ($pago->comprobante) {
-                    $html .= '<a href="/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante" target="_blank" class="btn btn-sm btn-outline-primary">';
-                    $html .= '<i class="bi bi-download me-1"></i> Descargar';
-                    $html .= '</a>';
+                    $comprobantes = is_string($pago->comprobante) ? [$pago->comprobante] : (is_array($pago->comprobante) ? $pago->comprobante : []);
+                    foreach ($comprobantes as $idx => $comp) {
+                        $label = count($comprobantes) > 1 ? 'Archivo ' . ($idx + 1) : 'Descargar';
+                        $html .= '<a href="/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante?index=' . $idx . '" target="_blank" class="btn btn-sm btn-outline-primary mb-1">';
+                        $html .= '<i class="bi bi-download me-1"></i> ' . $label;
+                        $html .= '</a> ';
+                    }
                 } else {
                     $html .= '<span class="text-muted">-</span>';
                 }
@@ -1081,7 +1085,8 @@ class SolicitudController extends Controller
             'cliente.pais',
             'items.producto.imagenPrincipal',
             'aplicadaPor',
-            'createdBy'
+            'createdBy',
+            'pagos.registradoPor'
         ]);
 
         $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));

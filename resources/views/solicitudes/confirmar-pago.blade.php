@@ -125,12 +125,12 @@
                 </select>
               </div>
 
-              {{-- Comprobante --}}
+              {{-- Comprobantes --}}
               <div class="col-12">
-                <label for="comprobante" class="form-label">Comprobante de Pago</label>
-                <input type="file" class="form-control" id="comprobante" name="comprobante"
-                       accept=".pdf,.jpg,.jpeg,.png">
-                <small class="text-muted">Formatos: PDF, JPG, PNG. Máximo 5MB.</small>
+                <label for="comprobantes" class="form-label">Comprobante(s) de Pago</label>
+                <input type="file" class="form-control" id="comprobantes" name="comprobantes[]"
+                       accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <small class="text-muted">Puede subir una o varias imágenes/PDFs. Formatos: PDF, JPG, PNG. Máximo 5MB cada uno.</small>
               </div>
 
               {{-- Notas --}}
@@ -196,10 +196,15 @@
                   <td>{{ $pago->notas ?? '-' }}</td>
                   <td>
                     @if($pago->comprobante)
-                      <a href="{{ url('/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante') }}"
-                         class="btn btn-sm btn-outline-primary" target="_blank">
-                        <i class="bi bi-download me-1"></i> Descargar
-                      </a>
+                      @php
+                        $comprobantes = is_string($pago->comprobante) ? [$pago->comprobante] : (is_array($pago->comprobante) ? $pago->comprobante : []);
+                      @endphp
+                      @foreach($comprobantes as $idx => $comp)
+                        <a href="{{ url('/solicitudes/' . $solicitud->id . '/pagos/' . $pago->id . '/comprobante?index=' . $idx) }}"
+                           class="btn btn-sm btn-outline-primary mb-1" target="_blank">
+                          <i class="bi bi-download me-1"></i> {{ count($comprobantes) > 1 ? 'Archivo ' . ($idx + 1) : 'Descargar' }}
+                        </a>
+                      @endforeach
                     @else
                       <span class="text-muted">-</span>
                     @endif

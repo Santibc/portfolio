@@ -580,7 +580,7 @@ class SolicitudCotizacion extends Model
     public function registrarPago(
         float $monto,
         string $metodoPago,
-        ?string $comprobante = null,
+        $comprobante = null,
         ?string $notas = null,
         ?int $registradoPor = null
     ): PagoSolicitud {

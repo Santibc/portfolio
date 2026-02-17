@@ -430,6 +430,18 @@
     </div>
     @endif
 
+    {{-- OBSERVACIONES DE PAGO --}}
+    @if($solicitud->pagos->whereNotNull('notas')->where('notas', '!=', '')->count() > 0)
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        @foreach($solicitud->pagos->filter(fn($p) => !empty($p->notas)) as $pago)
+        <div style="background-color: #E8F5E9; padding: 8px 12px; border-radius: 4px; margin-bottom: 5px;">
+            <strong style="color: #382E65; font-size: 9pt;">Obs. Pago ({{ $pago->registradoPor->name ?? 'N/A' }} - {{ $pago->created_at->format('d/m/Y') }}):</strong>
+            <span style="font-size: 9pt;">{{ $pago->notas }}</span>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     {{-- TEXTOS LEGALES --}}
     <div class="texto-legal" style="color: #382E65; border-left: 3px solid #BCA9F5; padding-left: 10px;">
         Autorizo el tratamiento de mis datos personales con fines exclusivamente comerciales, garantizándose que esta información no será revelada a terceros salvo orden de autoridad competente - Ley 1581 de 2012, Decreto 1377 de 2013.

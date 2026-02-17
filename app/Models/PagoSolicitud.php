@@ -30,6 +30,7 @@ class PagoSolicitud extends Model
     protected $casts = [
         'monto' => 'float',
         'aprobado_en' => 'datetime',
+        'comprobante' => 'array',
     ];
 
     public function solicitud()
