@@ -65,6 +65,8 @@ class SolicitudCotizacion extends Model
         'stock_descontado',
         'stock_descontado_en',
         'stock_descontado_por',
+        // Marca de inventarios
+        'marcada_inventario',
     ];
 
     protected $casts = [
@@ -92,6 +94,7 @@ class SolicitudCotizacion extends Model
         // Stock
         'stock_descontado' => 'boolean',
         'stock_descontado_en' => 'datetime',
+        'marcada_inventario' => 'boolean',
     ];
 
     /**

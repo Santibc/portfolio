@@ -117,6 +117,16 @@ class SolicitudController extends Controller
                 ->addColumn('reserva_badge', function($s) {
                     return $s->badge_reserva;
                 })
+                ->addColumn('marcada_badge', function($s) {
+                    if (!auth()->user()->hasRole('inventarios')) {
+                        return '';
+                    }
+                    $icon = $s->marcada_inventario ? 'bi-heart-fill' : 'bi-heart';
+                    $color = $s->marcada_inventario ? 'text-danger' : 'text-muted';
+                    return '<button type="button" class="btn btn-sm btn-link p-0" onclick="toggleMarcada('.$s->id.', this)" title="Marcar/Desmarcar">
+                                <i class="bi '.$icon.' '.$color.' fs-5"></i>
+                            </button>';
+                })
                 ->addColumn('estado_pago_badge', function($s) {
                     return '<span class="badge bg-' . $s->color_estado_pago . '">' . $s->etiqueta_estado_pago . '</span>';
                 })
@@ -222,7 +232,7 @@ class SolicitudController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['estado_badge', 'reserva_badge', 'estado_pago_badge', 'estado_envio_badge', 'action'])
+                ->rawColumns(['estado_badge', 'reserva_badge', 'marcada_badge', 'estado_pago_badge', 'estado_envio_badge', 'action'])
                 ->make(true);
         }
 
@@ -1718,5 +1728,19 @@ class SolicitudController extends Controller
             // No interrumpir el flujo si falla el envío de alertas
             Log::error("Error al enviar alertas de cotización aceptada: " . $e->getMessage());
         }
+    }
+
+    public function toggleMarcada(SolicitudCotizacion $solicitud)
+    {
+        if (!auth()->user()->hasRole('inventarios')) {
+            return response()->json(['success' => false, 'mensaje' => 'No autorizado'], 403);
+        }
+
+        $solicitud->update(['marcada_inventario' => !$solicitud->marcada_inventario]);
+
+        return response()->json([
+            'success' => true,
+            'marcada' => $solicitud->marcada_inventario,
+        ]);
     }
 }

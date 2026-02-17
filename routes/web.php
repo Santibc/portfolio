@@ -201,6 +201,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturac
 
     // Exportar Excel
     Route::get('/solicitudes/exportar-excel', [SolicitudController::class, 'exportarExcel'])->name('solicitudes.exportar-excel');
+
+    // Toggle marcada (corazón) - inventarios
+    Route::post('/solicitudes/{solicitud}/toggle-marcada', [SolicitudController::class, 'toggleMarcada'])->name('solicitudes.toggle-marcada');
 });
 
 // ============================================================

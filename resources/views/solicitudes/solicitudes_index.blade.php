@@ -69,6 +69,9 @@
                 <th>Pago</th>
                 <th>Envío</th>
                 <th>Reserva</th>
+                @if(auth()->user()->hasRole('inventarios'))
+                <th>Marca</th>
+                @endif
               </tr>
             </thead>
             <tbody></tbody>
@@ -124,7 +127,10 @@
         { data:'estado_badge', name:'estado' },
         { data:'estado_pago_badge', name:'estado_pago', orderable:false, searchable:false },
         { data:'estado_envio_badge', name:'estado_envio', orderable:false, searchable:false },
-        { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false }
+        { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false },
+        @if(auth()->user()->hasRole('inventarios'))
+        { data:'marcada_badge', name:'marcada_badge', orderable:false, searchable:false }
+        @endif
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -487,6 +493,22 @@
             Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al eliminar la cotización', 'error');
           }
         });
+      }
+    });
+  }
+
+  // Toggle marcada (corazón) para inventarios
+  function toggleMarcada(solicitudId, btn) {
+    $.post(`/solicitudes/${solicitudId}/toggle-marcada`, {
+      _token: '{{ csrf_token() }}'
+    }, function(response) {
+      if (response.success) {
+        const icon = btn.querySelector('i');
+        if (response.marcada) {
+          icon.className = 'bi bi-heart-fill text-danger fs-5';
+        } else {
+          icon.className = 'bi bi-heart text-muted fs-5';
+        }
       }
     });
   }
