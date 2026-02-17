@@ -21,9 +21,9 @@ class ActualizarSolicitudRequest extends FormRequest
             return false;
         }
 
-        // Facturación puede editar siempre, los demás solo si es editable
+        // Facturación y auxiliar_administrativo pueden editar siempre, los demás solo si es editable
         return auth()->check()
-            && (auth()->user()->hasRole('facturacion') || $solicitud->esEditable());
+            && (auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) || $solicitud->esEditable());
     }
 
     /**
