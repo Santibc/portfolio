@@ -285,7 +285,7 @@ class SolicitudController extends Controller
 
         $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
-        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor']);
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor']);
 
         $html = '<div class="row">';
 
@@ -345,16 +345,18 @@ class SolicitudController extends Controller
         
         // Notas del cliente
         if ($solicitud->notas_cliente) {
+            $nombreCliente = e($solicitud->cliente->nombre_contacto ?? 'Cliente');
             $html .= '<div class="col-12 mb-3">';
-            $html .= '<h6>Notas del Cliente</h6>';
+            $html .= '<h6>Notas del Cliente <small class="text-muted">— ' . $nombreCliente . '</small></h6>';
             $html .= '<div class="alert alert-info">' . nl2br(e($solicitud->notas_cliente)) . '</div>';
             $html .= '</div>';
         }
 
         // Observaciones del vendedor
         if ($solicitud->observaciones_vendedor) {
+            $nombreVendedor = e($solicitud->createdBy?->name ?? $solicitud->cliente->vendedor?->name ?? 'Vendedor');
             $html .= '<div class="col-12 mb-3">';
-            $html .= '<h6>Observaciones del Vendedor</h6>';
+            $html .= '<h6>Observaciones del Vendedor <small class="text-muted">— ' . $nombreVendedor . '</small></h6>';
             $html .= '<div class="alert alert-warning">' . nl2br(e($solicitud->observaciones_vendedor)) . '</div>';
             $html .= '</div>';
         }
@@ -453,16 +455,18 @@ class SolicitudController extends Controller
         
         // Observaciones del admin (si está aplicada)
         if ($solicitud->estado === 'aplicada' && $solicitud->observaciones_admin) {
+            $nombreAprobador = e($solicitud->aplicadaPor?->name ?? 'Administrador');
             $html .= '<div class="col-12 mt-3">';
-            $html .= '<h6>Observaciones del Administrador</h6>';
+            $html .= '<h6>Observaciones del Administrador <small class="text-muted">— ' . $nombreAprobador . '</small></h6>';
             $html .= '<div class="alert alert-secondary">' . nl2br(e($solicitud->observaciones_admin)) . '</div>';
             $html .= '</div>';
         }
 
         // Motivo de rechazo (si está rechazada)
         if ($solicitud->estado === 'rechazada' && $solicitud->motivo_rechazo) {
+            $nombreRechazador = e($solicitud->rechazadaPor?->name ?? 'Administrador');
             $html .= '<div class="col-12 mt-3">';
-            $html .= '<h6>Motivo del Rechazo</h6>';
+            $html .= '<h6>Motivo del Rechazo <small class="text-muted">— ' . $nombreRechazador . '</small></h6>';
             $html .= '<div class="alert alert-warning">' . nl2br(e($solicitud->motivo_rechazo)) . '</div>';
             $html .= '</div>';
         }
