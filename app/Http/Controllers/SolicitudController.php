@@ -645,7 +645,7 @@ class SolicitudController extends Controller
                 $html .= '<strong>Stock pendiente de descontar.</strong> ';
                 $html .= '<span class="text-muted">El stock de los productos no ha sido descontado del inventario.</span>';
                 $html .= '</div>';
-                if ($user->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios']) && !$isAuxiliar) {
+                if ($user->hasAnyRole(['admin', 'auxiliar_administrativo', 'auxiliar_inventario'])) {
                     $html .= '<button type="button" class="btn btn-warning btn-sm ms-3" onclick="confirmarDescontarStock(' . $solicitud->id . ')">';
                     $html .= '<i class="bi bi-box-arrow-down me-1"></i> Descontar de Stock';
                     $html .= '</button>';
@@ -901,7 +901,7 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios'])) {
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'auxiliar_inventario'])) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para descontar stock'
