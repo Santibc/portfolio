@@ -54,10 +54,13 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
                                        ->select('solicitudes_cotizacion.*');
 
-            // Si es vendedor (y NO es admin/auxiliar_administrativo), filtrar solo solicitudes de sus clientes asignados
+            // Si es vendedor (y NO es admin/auxiliar_administrativo), ver sus cotizaciones creadas + las de sus clientes asignados
             if ($user->hasRole('vendedor') && !$user->hasRole(['admin', 'auxiliar_administrativo'])) {
-                $query->whereHas('cliente', function($subQ) use ($user) {
-                    $subQ->where('vendedor_id', $user->id);
+                $query->where(function($q) use ($user) {
+                    $q->where('created_by', $user->id)
+                      ->orWhereHas('cliente', function($subQ) use ($user) {
+                          $subQ->where('vendedor_id', $user->id);
+                      });
                 });
             }
 
