@@ -548,7 +548,6 @@ class SolicitudController extends Controller
             $html .= '<th>Método</th>';
             $html .= '<th>Registrado por</th>';
             $html .= '<th>Estado</th>';
-            $html .= '<th>Notas</th>';
             $html .= '<th>Comprobante</th>';
             $html .= '<th>Acciones</th>';
             $html .= '</tr>';
@@ -574,7 +573,6 @@ class SolicitudController extends Controller
                 }
                 $html .= '</td>';
 
-                $html .= '<td>' . ($pago->notas ? e($pago->notas) : '-') . '</td>';
                 $html .= '<td>';
                 if ($pago->comprobante) {
                     $comprobantes = is_string($pago->comprobante) ? [$pago->comprobante] : (is_array($pago->comprobante) ? $pago->comprobante : []);
@@ -610,6 +608,15 @@ class SolicitudController extends Controller
                 $html .= '</td>';
 
                 $html .= '</tr>';
+
+                // Fila de notas debajo del pago
+                if ($pago->notas) {
+                    $html .= '<tr>';
+                    $html .= '<td colspan="8" class="py-1 px-3 bg-light border-0" style="border-top: none !important;">';
+                    $html .= '<small><i class="bi bi-chat-text me-1 text-primary"></i><strong>Nota:</strong> ' . e($pago->notas) . '</small>';
+                    $html .= '</td>';
+                    $html .= '</tr>';
+                }
             }
 
             $html .= '</tbody>';
