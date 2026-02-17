@@ -668,6 +668,12 @@ class SolicitudCotizacion extends Model
      */
     public function getColorEstadoPagoAttribute(): string
     {
+        if ($this->estado_pago === self::PAGO_PAGADO
+            && $this->forma_pago_factura
+            && str_contains($this->forma_pago_factura, 'Crédito')) {
+            return 'primary';
+        }
+
         return match($this->estado_pago) {
             self::PAGO_PENDIENTE => 'warning',
             self::PAGO_PARCIAL => 'info',
@@ -681,6 +687,12 @@ class SolicitudCotizacion extends Model
      */
     public function getEtiquetaEstadoPagoAttribute(): string
     {
+        if ($this->estado_pago === self::PAGO_PAGADO
+            && $this->forma_pago_factura
+            && str_contains($this->forma_pago_factura, 'Crédito')) {
+            return 'Crédito';
+        }
+
         return match($this->estado_pago) {
             self::PAGO_PENDIENTE => 'Pendiente',
             self::PAGO_PARCIAL => 'Parcial',

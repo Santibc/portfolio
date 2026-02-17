@@ -125,11 +125,26 @@ class PagosController extends Controller
                 $user->id
             );
 
+            // Si es crédito, auto-aprobar el pago
+            $mensaje = 'Pago registrado exitosamente. Está pendiente de aprobación por el área de facturación.';
+            if ($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito')) {
+                $ultimoPago = $solicitud->pagos()->latest()->first();
+                if ($ultimoPago && $ultimoPago->estaPendiente()) {
+                    $ultimoPago->update([
+                        'estado' => PagoSolicitud::ESTADO_APROBADO,
+                        'aprobado_por' => $user->id,
+                        'aprobado_en' => now(),
+                    ]);
+                    $solicitud->recalcularPagos();
+                    $mensaje = 'Pago a crédito registrado y aprobado automáticamente.';
+                }
+            }
+
             Log::info("Pago registrado para cotización {$solicitud->numero_solicitud} por usuario {$user->id}");
 
             return response()->json([
                 'success' => true,
-                'mensaje' => 'Pago registrado exitosamente. Está pendiente de aprobación por el área de facturación.',
+                'mensaje' => $mensaje,
                 'estado_pago' => $solicitud->fresh()->estado_pago,
             ]);
 
