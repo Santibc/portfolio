@@ -134,7 +134,7 @@ class CotizacionService
             'advertencias' => [],
         ];
 
-        if (!$solicitud->esEditable()) {
+        if (!auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) && !$solicitud->esEditable()) {
             $resultado['exito'] = false;
             $resultado['errores'][] = 'La cotización no puede ser editada en su estado actual';
             return $resultado;
