@@ -977,6 +977,12 @@ window.cargarProductos = function(page=1){
           html+='<div class="variantes-container">';
 
           p.variantes.forEach((v,i)=>{
+            // Ocultar variantes sin stock disponible
+            if(mostrarStock && v.stock_info && v.stock_info.controla_stock
+               && !v.stock_info.permite_sin_stock && !v.stock_info.tiene_stock) {
+              return;
+            }
+
             const hasVImages = v.imagenes && v.imagenes.length;
             const vThumb = hasVImages
               ? `{{asset('')}}${v.imagenes[0].ruta_imagen}`

@@ -21,8 +21,9 @@ class ActualizarSolicitudRequest extends FormRequest
             return false;
         }
 
-        // Solo se pueden editar cotizaciones pendientes
-        return auth()->check() && $solicitud->esEditable();
+        // Facturación puede editar siempre, los demás solo si es editable
+        return auth()->check()
+            && (auth()->user()->hasRole('facturacion') || $solicitud->esEditable());
     }
 
     /**
