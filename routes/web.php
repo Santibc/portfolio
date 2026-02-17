@@ -257,8 +257,8 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxil
     Route::get('/movimiento/{id}/ver-pdf', [App\Http\Controllers\StockController::class, 'verNotaPdf'])->name('movimiento-ver-pdf');
 });
 
-// Operaciones de stock (solo admin e inventarios)
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->prefix('stock')->name('stock.')->group(function () {
+// Operaciones de stock (admin, inventarios y auxiliar_inventario)
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->prefix('stock')->name('stock.')->group(function () {
     Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');
     Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
     Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
@@ -270,7 +270,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->p
 // ============================================================
 // UBICACIONES (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->group(function () {
     Route::get('ubicaciones', [UbicacionesController::class, 'index'])->name('ubicaciones');
     Route::get('ubicaciones/form/{id?}', [UbicacionesController::class, 'form'])->name('ubicaciones.form');
     Route::post('ubicaciones/guardar', [UbicacionesController::class, 'guardar'])->name('ubicaciones.guardar');
@@ -283,15 +283,15 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 // TRASLADOS DE STOCK (Admin, Inventarios y Centro de Experiencia)
 // ============================================================
 // Ver, aprobar (recibir) y rechazar (cancelar) — accesible para admin, inventarios y centro_experiencia
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centro_experiencia'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario,centro_experiencia'])->group(function () {
     Route::get('traslados', [TrasladosController::class, 'index'])->name('traslados');
     Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
     Route::post('traslados/{id}/recibir', [TrasladosController::class, 'recibir'])->name('traslados.recibir');
     Route::post('traslados/{id}/cancelar', [TrasladosController::class, 'cancelar'])->name('traslados.cancelar');
 });
 
-// Crear, enviar y AJAX — solo admin e inventarios
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+// Crear, enviar y AJAX — solo admin, inventarios y auxiliar_inventario
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->group(function () {
     Route::get('traslados/form/{id?}', [TrasladosController::class, 'form'])->name('traslados.form');
     Route::post('traslados/guardar', [TrasladosController::class, 'guardar'])->name('traslados.guardar');
     Route::post('traslados/{id}/enviar', [TrasladosController::class, 'enviar'])->name('traslados.enviar');
@@ -304,7 +304,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 // ============================================================
 // NOVEDADES DE STOCK (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->group(function () {
     Route::get('novedades-stock', [NovedadesStockController::class, 'index'])->name('novedades-stock');
     Route::get('novedades-stock/form/{id?}', [NovedadesStockController::class, 'form'])->name('novedades-stock.form');
     Route::post('novedades-stock/guardar', [NovedadesStockController::class, 'guardar'])->name('novedades-stock.guardar');
@@ -318,7 +318,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 // ============================================================
 // IMPORTACIÓN DE PRODUCTOS (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxiliar_inventario'])->group(function () {
     Route::get('/productos/importacion/descargar-plantilla-csv', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaCsv'])->name('productos.importacion.descargar-plantilla-csv');
     Route::get('/productos/importacion/descargar-plantilla-excel', [App\Http\Controllers\ImportacionProductosController::class, 'descargarPlantillaExcel'])->name('productos.importacion.descargar-plantilla-excel');
     Route::post('/productos/importar-productos', [App\Http\Controllers\ImportacionProductosController::class, 'importarProductos'])->name('productos.importacion.importar');

@@ -136,14 +136,14 @@
                 <i class="bi bi-boxes me-1"></i>
                 <span>Inventario</span>
             </p>
-            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario']))
             <a href="/categorias"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('categorias*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-tags"></i>
                 <span>Categorías</span>
             </a>
             @endif
-            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'facturacion']))
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario', 'facturacion']))
             <a href="/productos"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-basket3"></i>
@@ -157,7 +157,7 @@
                 <span>Gestión de Stock</span>
             </a>
             @endif
-            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios']))
+            @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario']))
             <a href="{{ route('traslados') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-arrow-left-right"></i>
