@@ -64,10 +64,6 @@ class SolicitudController extends Controller
                 });
             }
 
-            // Auxiliar inventario solo ve cotizaciones con pago completo
-            if ($user->hasRole('auxiliar_inventario')) {
-                $query->where('estado_pago', 'pagado');
-            }
 
             // Filtrar por vendedor si se proporciona (solo admin puede usar este filtro)
             if ($request->filled('vendedor_id') && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
