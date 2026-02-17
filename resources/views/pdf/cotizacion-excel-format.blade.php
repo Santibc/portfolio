@@ -188,7 +188,7 @@
             border: 1px solid #BCA9F5;
             padding: 3px 4px;
             vertical-align: middle;
-            font-size: 9pt;
+            font-size: 8pt;
             color: #382E65;
         }
 
