@@ -295,6 +295,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centr
 Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
     Route::get('traslados/form/{id?}', [TrasladosController::class, 'form'])->name('traslados.form');
     Route::post('traslados/guardar', [TrasladosController::class, 'guardar'])->name('traslados.guardar');
+    Route::post('traslados/{id}/actualizar', [TrasladosController::class, 'actualizar'])->name('traslados.actualizar');
     Route::post('traslados/{id}/enviar', [TrasladosController::class, 'enviar'])->name('traslados.enviar');
     Route::get('traslados/variantes/{productoId}', [TrasladosController::class, 'getVariantesPorProducto'])->name('traslados.variantes');
     Route::get('traslados/stock-disponible', [TrasladosController::class, 'getStockDisponible'])->name('traslados.stock-disponible');

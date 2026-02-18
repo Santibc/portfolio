@@ -1,5 +1,5 @@
 <x-app-layout>
-  <x-slot name="header">Nuevo Traslado</x-slot>
+  <x-slot name="header">{{ $traslado->id ? 'Editar Traslado #' . $traslado->numero_traslado : 'Nuevo Traslado' }}</x-slot>
 
   <div class="py-6">
     <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
@@ -15,7 +15,7 @@
             </div>
           @endif
 
-          <form action="{{ route('traslados.guardar') }}" method="POST" id="trasladoForm">
+          <form action="{{ $traslado->id ? route('traslados.actualizar', $traslado->id) : route('traslados.guardar') }}" method="POST" id="trasladoForm">
             @csrf
 
             <div class="row mb-4">
@@ -25,7 +25,8 @@
                   class="w-full px-3 py-2 border rounded-md" required>
                   <option value="">Seleccione ubicaci&oacute;n de origen</option>
                   @foreach($ubicacionesOrigen as $ubicacion)
-                    <option value="{{ $ubicacion->id }}" {{ old('ubicacion_origen_id') == $ubicacion->id ? 'selected' : '' }}>
+                    <option value="{{ $ubicacion->id }}"
+                      {{ (old('ubicacion_origen_id', $traslado->ubicacion_origen_id)) == $ubicacion->id ? 'selected' : '' }}>
                       {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                     </option>
                   @endforeach
@@ -37,7 +38,8 @@
                   class="w-full px-3 py-2 border rounded-md" required>
                   <option value="">Seleccione ubicaci&oacute;n de destino</option>
                   @foreach($ubicacionesDestino as $ubicacion)
-                    <option value="{{ $ubicacion->id }}" {{ old('ubicacion_destino_id') == $ubicacion->id ? 'selected' : '' }}>
+                    <option value="{{ $ubicacion->id }}"
+                      {{ (old('ubicacion_destino_id', $traslado->ubicacion_destino_id)) == $ubicacion->id ? 'selected' : '' }}>
                       {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                     </option>
                   @endforeach
@@ -50,14 +52,14 @@
                 <label for="tipo_operacion" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Operaci&oacute;n *</label>
                 <select name="tipo_operacion" id="tipo_operacion"
                   class="w-full px-3 py-2 border rounded-md" required>
-                  <option value="general" {{ old('tipo_operacion', 'general') == 'general' ? 'selected' : '' }}>General</option>
-                  <option value="credito" {{ old('tipo_operacion') == 'credito' ? 'selected' : '' }}>Cr&eacute;dito</option>
+                  <option value="general" {{ old('tipo_operacion', $traslado->tipo_operacion ?? 'general') == 'general' ? 'selected' : '' }}>General</option>
+                  <option value="credito" {{ old('tipo_operacion', $traslado->tipo_operacion) == 'credito' ? 'selected' : '' }}>Cr&eacute;dito</option>
                 </select>
               </div>
               <div class="col-md-6">
                 <label for="notas" class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
                 <input type="text" name="notas" id="notas" class="w-full px-3 py-2 border rounded-md"
-                  placeholder="Observaciones del traslado..." value="{{ old('notas') }}">
+                  placeholder="Observaciones del traslado..." value="{{ old('notas', $traslado->notas) }}">
               </div>
             </div>
 
@@ -116,8 +118,8 @@
             </div>
 
             <div class="flex gap-2 mt-4">
-              <button type="submit" class="btn btn-primary" id="btnCrear" disabled>
-                <i class="bi bi-save me-1"></i> Crear Traslado
+              <button type="submit" class="btn btn-primary" id="btnCrear" {{ $traslado->id ? '' : 'disabled' }}>
+                <i class="bi bi-save me-1"></i> {{ $traslado->id ? 'Guardar Cambios' : 'Crear Traslado' }}
               </button>
               <a href="{{ route('traslados') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Volver
@@ -142,7 +144,6 @@
     const btnAgregar = document.getElementById('btnAgregarItem');
     const btnCrear = document.getElementById('btnCrear');
     const itemsBody = document.getElementById('itemsBody');
-    const sinItems = document.getElementById('sinItems');
 
     let items = [];
     let itemIndex = 0;
@@ -236,7 +237,7 @@
               selVariante.appendChild(o);
             });
             selVarianteContainer.style.display = 'block';
-            btnAgregar.disabled = true; // esperar selección de variante
+            btnAgregar.disabled = true;
             return;
           }
         } catch (e) {
@@ -244,7 +245,6 @@
         }
       }
 
-      // Producto sin variantes - obtener stock
       await actualizarStock();
       btnAgregar.disabled = false;
     });
@@ -271,7 +271,6 @@
         const res = await fetch(`/traslados/stock-disponible?${params}`);
         const data = await res.json();
 
-        // Restar lo que ya se agregó en la tabla para este mismo producto/variante
         const yaAgregado = items
           .filter(i => i.producto_id == productoId && (i.variante_producto_id || '') == (varianteId || ''))
           .reduce((sum, i) => sum + i.cantidad, 0);
@@ -285,7 +284,6 @@
       }
     }
 
-    // Agregar ítem a la tabla
     btnAgregar.addEventListener('click', () => {
       const productoId = selProducto.value;
       const varianteId = selVariante.value || null;
@@ -306,15 +304,7 @@
         varianteNombre = varianteOpt.dataset.nombre;
       }
 
-      const idx = itemIndex++;
-      items.push({
-        idx,
-        producto_id: productoId,
-        variante_producto_id: varianteId,
-        cantidad,
-        producto_nombre: productoNombre,
-        variante_nombre: varianteNombre
-      });
+      items.push({ idx: itemIndex++, producto_id: productoId, variante_producto_id: varianteId, cantidad, producto_nombre: productoNombre, variante_nombre: varianteNombre });
 
       renderItems();
       resetAddRow();
@@ -369,6 +359,24 @@
       selStock.textContent = '-';
       btnAgregar.disabled = true;
     }
+
+    // Pre-cargar items existentes (modo edición)
+    @if($traslado->id && $items->count())
+    const itemsIniciales = @json($items->map(fn($i) => [
+      'producto_id' => (string) $i->producto_id,
+      'variante_producto_id' => $i->variante_producto_id ? (string) $i->variante_producto_id : null,
+      'cantidad' => $i->cantidad,
+      'producto_nombre' => ($i->producto->referencia ?? '') . ' - ' . ($i->producto->nombre ?? ''),
+      'variante_nombre' => $i->varianteProducto->nombre_variante ?? '',
+    ]));
+    itemsIniciales.forEach(item => { items.push({ idx: itemIndex++, ...item }); });
+    renderItems();
+    @endif
+
+    // Si es edición y hay origen seleccionado, disparar carga de productos
+    @if($traslado->id && $traslado->ubicacion_origen_id)
+    ubicacionOrigenSelect.dispatchEvent(new Event('change'));
+    @endif
   });
   </script>
   @endpush

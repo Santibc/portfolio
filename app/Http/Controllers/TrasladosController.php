@@ -36,6 +36,10 @@ class TrasladosController extends Controller
                     $puedeAprobarRechazar = $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia']);
                     $btns = '<div class="d-flex gap-1">';
 
+                    if ($row->estado === TrasladoStock::ESTADO_PENDIENTE && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
+                        $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
+                    }
+
                     if ($row->puedeEnviar() && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
                     }
@@ -99,7 +103,9 @@ class TrasladosController extends Controller
 
         $ubicacionesDestino = Ubicacion::activas()->get();
 
-        return view('traslados.form', compact('traslado', 'ubicacionesOrigen', 'ubicacionesDestino'));
+        $items = $id ? $traslado->load('items.producto', 'items.varianteProducto')->items : collect();
+
+        return view('traslados.form', compact('traslado', 'ubicacionesOrigen', 'ubicacionesDestino', 'items'));
     }
 
     /**
@@ -220,92 +226,86 @@ class TrasladosController extends Controller
 
         DB::beginTransaction();
         try {
-            // Crear cabecera del traslado
+            // Crear cabecera del traslado en estado pendiente
             $traslado = TrasladoStock::create([
                 'numero_traslado' => TrasladoStock::generarNumeroTraslado(),
                 'ubicacion_origen_id' => $request->ubicacion_origen_id,
                 'ubicacion_destino_id' => $request->ubicacion_destino_id,
-                'estado' => TrasladoStock::ESTADO_EN_TRANSITO,
+                'estado' => TrasladoStock::ESTADO_PENDIENTE,
                 'notas' => $request->notas,
                 'tipo_operacion' => $request->tipo_operacion,
                 'usuario_creador_id' => auth()->id(),
-                'enviado_en' => now(),
             ]);
 
-            $ubicacionDestinoNombre = Ubicacion::find($request->ubicacion_destino_id)->nombre;
-
-            // Procesar cada ítem
+            // Crear ítems (sin descontar stock; eso ocurre al enviar)
             foreach ($request->items as $itemData) {
-                $cantidad = (int) $itemData['cantidad'];
-                $varianteId = $itemData['variante_producto_id'] ?? null;
-
-                // Buscar registros de stock disponibles para este producto (cualquier ubicación)
-                $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
-                    ->where('cantidad_disponible', '>', 0);
-
-                if (!empty($varianteId)) {
-                    $stockQuery->where('variante_producto_id', $varianteId);
-                } else {
-                    $stockQuery->whereNull('variante_producto_id');
-                }
-
-                // Priorizar la ubicación de origen, luego las demás
-                $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$request->ubicacion_origen_id])
-                    ->get();
-
-                $stockTotal = $stockRecords->sum('cantidad_disponible');
-
-                if ($stockTotal < $cantidad) {
-                    $producto = Producto::find($itemData['producto_id']);
-                    throw new \Exception("No hay suficiente stock para el producto: {$producto->referencia} - {$producto->nombre}");
-                }
-
-                // Crear ítem del traslado
                 ItemTrasladoStock::create([
                     'traslado_stock_id' => $traslado->id,
                     'producto_id' => $itemData['producto_id'],
-                    'variante_producto_id' => $varianteId,
-                    'cantidad' => $cantidad,
+                    'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
+                    'cantidad' => (int) $itemData['cantidad'],
                 ]);
-
-                // Descontar stock de los registros disponibles
-                $restante = $cantidad;
-                foreach ($stockRecords as $stockRecord) {
-                    if ($restante <= 0) break;
-
-                    $descontar = min($restante, $stockRecord->cantidad_disponible);
-                    $stockAnterior = $stockRecord->cantidad_disponible;
-                    $stockRecord->cantidad_disponible -= $descontar;
-                    $stockRecord->save();
-
-                    // Registrar movimiento de salida por cada ubicación afectada
-                    MovimientoStock::create([
-                        'producto_id' => $itemData['producto_id'],
-                        'variante_producto_id' => $varianteId,
-                        'ubicacion_id' => $stockRecord->ubicacion_id,
-                        'tipo_movimiento' => 'salida',
-                        'cantidad' => $descontar,
-                        'stock_anterior' => $stockAnterior,
-                        'stock_nuevo' => $stockRecord->cantidad_disponible,
-                        'referencia_documento' => $traslado->numero_traslado,
-                        'origen' => 'traslado',
-                        'tipo_operacion' => $request->tipo_operacion,
-                        'motivo' => 'Traslado a ' . $ubicacionDestinoNombre,
-                        'usuario_id' => auth()->id(),
-                    ]);
-
-                    $restante -= $descontar;
-                }
             }
 
             DB::commit();
 
             return redirect()->route('traslados')
-                ->with('success', 'Traslado creado y enviado correctamente. Número: ' . $traslado->numero_traslado);
+                ->with('success', 'Traslado creado correctamente. Número: ' . $traslado->numero_traslado);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Error al crear el traslado: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    public function actualizar(Request $request, $id)
+    {
+        $traslado = TrasladoStock::with('items')->findOrFail($id);
+
+        if ($traslado->estado !== TrasladoStock::ESTADO_PENDIENTE) {
+            return back()->withErrors(['error' => 'Solo se pueden editar traslados en estado Pendiente.']);
+        }
+
+        $request->validate([
+            'ubicacion_origen_id' => 'required|exists:ubicaciones,id',
+            'ubicacion_destino_id' => 'required|exists:ubicaciones,id|different:ubicacion_origen_id',
+            'tipo_operacion' => 'required|in:general,credito',
+            'notas' => 'nullable|string|max:500',
+            'items' => 'required|array|min:1',
+            'items.*.producto_id' => 'required|exists:productos,id',
+            'items.*.variante_producto_id' => 'nullable|exists:variantes_productos,id',
+            'items.*.cantidad' => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $traslado->update([
+                'ubicacion_origen_id' => $request->ubicacion_origen_id,
+                'ubicacion_destino_id' => $request->ubicacion_destino_id,
+                'tipo_operacion' => $request->tipo_operacion,
+                'notas' => $request->notas,
+            ]);
+
+            $traslado->items()->delete();
+
+            foreach ($request->items as $itemData) {
+                ItemTrasladoStock::create([
+                    'traslado_stock_id' => $traslado->id,
+                    'producto_id' => $itemData['producto_id'],
+                    'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
+                    'cantidad' => (int) $itemData['cantidad'],
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('traslados')
+                ->with('success', 'Traslado actualizado correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Error al actualizar el traslado: ' . $e->getMessage()])
                 ->withInput();
         }
     }
