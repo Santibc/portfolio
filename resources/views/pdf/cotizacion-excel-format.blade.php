@@ -116,23 +116,23 @@
         }
 
         .dato-row {
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
 
         .dato-label {
             background-color: #BCA9F5;
             color: #FFFFFF;
-            font-size: 11pt;
+            font-size: 8pt;
             font-weight: bold;
-            padding: 4px 8px;
+            padding: 2px 6px;
             display: inline-block;
-            min-width: 120px;
+            min-width: 80px;
             border-radius: 3px;
         }
 
         .dato-valor {
-            font-size: 11pt;
-            padding: 4px 8px;
+            font-size: 8pt;
+            padding: 2px 6px;
             display: inline-block;
         }
 
