@@ -71,7 +71,7 @@
 
   <!-- Modal Detalle -->
   <div class="modal fade" id="modalDetalle" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Detalle del Traslado</h5>
@@ -105,9 +105,9 @@
       columns: [
         { data: 'action', orderable: false, searchable: false },
         { data: 'numero_traslado', name: 'numero_traslado' },
-        { data: 'producto_nombre', name: 'producto.nombre' },
+        { data: 'producto_nombre', name: 'producto_nombre', orderable: false, searchable: false },
         { data: 'ruta', name: 'ubicacion_origen_id', orderable: false },
-        { data: 'cantidad', name: 'cantidad' },
+        { data: 'cantidad_total', name: 'cantidad_total', orderable: false, searchable: false },
         { data: 'tipo_operacion_badge', name: 'tipo_operacion' },
         { data: 'estado_badge', name: 'estado' },
         { data: 'creador', name: 'usuarioCreador.name', orderable: false },
@@ -259,13 +259,32 @@
           const tipoOpBadge = data.tipo_operacion === 'credito'
             ? '<span class="badge bg-info">Crédito</span>'
             : '<span class="badge bg-secondary">General</span>';
+
+          let itemsHtml = '';
+          if (data.items && data.items.length > 0) {
+            itemsHtml = `
+              <table class="table table-sm table-bordered mt-3">
+                <thead class="table-light">
+                  <tr><th>Producto</th><th>Variante</th><th>Cantidad</th></tr>
+                </thead>
+                <tbody>
+                  ${data.items.map(item => `
+                    <tr>
+                      <td>${item.producto?.referencia || ''} - ${item.producto?.nombre || 'N/A'}</td>
+                      <td>${item.variante_producto?.nombre_variante || '-'}</td>
+                      <td>${item.cantidad}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          }
+
           let html = `
             <div class="space-y-3">
               <p><strong>Número:</strong> ${data.numero_traslado}</p>
-              <p><strong>Producto:</strong> ${data.producto?.nombre || 'N/A'}${data.variante_producto ? ' - ' + data.variante_producto.nombre_variante : ''}</p>
               <p><strong>Origen:</strong> ${data.ubicacion_origen?.nombre || 'N/A'}</p>
               <p><strong>Destino:</strong> ${data.ubicacion_destino?.nombre || 'N/A'}</p>
-              <p><strong>Cantidad:</strong> ${data.cantidad}</p>
               <p><strong>Tipo de Operación:</strong> ${tipoOpBadge}</p>
               <p><strong>Estado:</strong> ${data.estado}</p>
               <p><strong>Creado por:</strong> ${data.usuario_creador?.name || 'N/A'}</p>
@@ -273,6 +292,8 @@
               ${data.enviado_en ? `<p><strong>Enviado:</strong> ${data.enviado_en}</p>` : ''}
               ${data.recibido_en ? `<p><strong>Recibido:</strong> ${data.recibido_en}</p>` : ''}
               ${data.notas ? `<p><strong>Notas:</strong> ${data.notas}</p>` : ''}
+              <h6 class="mt-3 mb-0"><strong>Productos:</strong></h6>
+              ${itemsHtml}
             </div>
           `;
           document.getElementById('detalleContent').innerHTML = html;

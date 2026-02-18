@@ -2,7 +2,7 @@
   <x-slot name="header">Nuevo Traslado</x-slot>
 
   <div class="py-6">
-    <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           @if($errors->any())
@@ -18,98 +18,103 @@
           <form action="{{ route('traslados.guardar') }}" method="POST" id="trasladoForm">
             @csrf
 
-            <div class="mb-4">
-              <label for="ubicacion_origen_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicación Origen *</label>
-              <select name="ubicacion_origen_id" id="ubicacion_origen_id"
-                class="w-full px-3 py-2 border rounded-md @error('ubicacion_origen_id') border-red-500 @enderror" required>
-                <option value="">Seleccione ubicación de origen</option>
-                @foreach($ubicacionesOrigen as $ubicacion)
-                  <option value="{{ $ubicacion->id }}" {{ old('ubicacion_origen_id') == $ubicacion->id ? 'selected' : '' }}>
-                    {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
-                  </option>
-                @endforeach
-              </select>
-              @error('ubicacion_origen_id')
-                <span class="text-red-500 text-sm">{{ $message }}</span>
-              @enderror
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="ubicacion_origen_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicaci&oacute;n Origen *</label>
+                <select name="ubicacion_origen_id" id="ubicacion_origen_id"
+                  class="w-full px-3 py-2 border rounded-md" required>
+                  <option value="">Seleccione ubicaci&oacute;n de origen</option>
+                  @foreach($ubicacionesOrigen as $ubicacion)
+                    <option value="{{ $ubicacion->id }}" {{ old('ubicacion_origen_id') == $ubicacion->id ? 'selected' : '' }}>
+                      {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="ubicacion_destino_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicaci&oacute;n Destino *</label>
+                <select name="ubicacion_destino_id" id="ubicacion_destino_id"
+                  class="w-full px-3 py-2 border rounded-md" required>
+                  <option value="">Seleccione ubicaci&oacute;n de destino</option>
+                  @foreach($ubicacionesDestino as $ubicacion)
+                    <option value="{{ $ubicacion->id }}" {{ old('ubicacion_destino_id') == $ubicacion->id ? 'selected' : '' }}>
+                      {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
+                    </option>
+                  @endforeach
+                </select>
+              </div>
             </div>
 
-            <div class="mb-4">
-              <label for="ubicacion_destino_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicación Destino *</label>
-              <select name="ubicacion_destino_id" id="ubicacion_destino_id"
-                class="w-full px-3 py-2 border rounded-md @error('ubicacion_destino_id') border-red-500 @enderror" required>
-                <option value="">Seleccione ubicación de destino</option>
-                @foreach($ubicacionesDestino as $ubicacion)
-                  <option value="{{ $ubicacion->id }}" {{ old('ubicacion_destino_id') == $ubicacion->id ? 'selected' : '' }}>
-                    {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
-                  </option>
-                @endforeach
-              </select>
-              @error('ubicacion_destino_id')
-                <span class="text-red-500 text-sm">{{ $message }}</span>
-              @enderror
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="tipo_operacion" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Operaci&oacute;n *</label>
+                <select name="tipo_operacion" id="tipo_operacion"
+                  class="w-full px-3 py-2 border rounded-md" required>
+                  <option value="general" {{ old('tipo_operacion', 'general') == 'general' ? 'selected' : '' }}>General</option>
+                  <option value="credito" {{ old('tipo_operacion') == 'credito' ? 'selected' : '' }}>Cr&eacute;dito</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="notas" class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                <input type="text" name="notas" id="notas" class="w-full px-3 py-2 border rounded-md"
+                  placeholder="Observaciones del traslado..." value="{{ old('notas') }}">
+              </div>
             </div>
 
-            <div class="mb-4">
-              <label for="producto_id" class="block text-sm font-medium text-gray-700 mb-1">Producto *</label>
-              <select name="producto_id" id="producto_id"
-                class="w-full px-3 py-2 border rounded-md @error('producto_id') border-red-500 @enderror" required disabled>
-                <option value="">Primero seleccione una ubicación de origen</option>
-              </select>
-              @error('producto_id')
-                <span class="text-red-500 text-sm">{{ $message }}</span>
-              @enderror
-              <small class="text-gray-500 block mt-1" id="productoHelp">
-                
-              </small>
+            <hr class="my-4">
+
+            {{-- Sección para agregar productos --}}
+            <h5 class="mb-3"><i class="bi bi-box-seam me-1"></i> Productos del Traslado</h5>
+
+            <div class="row mb-3 align-items-end" id="addItemRow">
+              <div class="col-md-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Producto</label>
+                <select id="sel_producto" class="w-full px-3 py-2 border rounded-md" disabled>
+                  <option value="">Primero seleccione ubicaci&oacute;n de origen</option>
+                </select>
+              </div>
+              <div class="col-md-3" id="sel_variante_container" style="display:none;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Variante</label>
+                <select id="sel_variante" class="w-full px-3 py-2 border rounded-md">
+                  <option value="">Seleccione variante</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
+                <input type="number" id="sel_cantidad" class="w-full px-3 py-2 border rounded-md" min="1" value="1">
+              </div>
+              <div class="col-md-1 text-center">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                <span id="sel_stock" class="badge bg-info fs-6">-</span>
+              </div>
+              <div class="col-md-2">
+                <button type="button" class="btn btn-success w-100" id="btnAgregarItem" disabled>
+                  <i class="bi bi-plus-lg me-1"></i> Agregar
+                </button>
+              </div>
             </div>
 
-            <div class="mb-4" id="varianteContainer" style="display: none;">
-              <label for="variante_producto_id" class="block text-sm font-medium text-gray-700 mb-1">Variante</label>
-              <select name="variante_producto_id" id="variante_producto_id"
-                class="w-full px-3 py-2 border rounded-md">
-                <option value="">Seleccione una variante</option>
-              </select>
+            {{-- Tabla de ítems agregados --}}
+            <div class="table-responsive">
+              <table class="table table-bordered table-sm" id="tablaItems">
+                <thead class="table-light">
+                  <tr>
+                    <th>Producto</th>
+                    <th>Variante</th>
+                    <th>Cantidad</th>
+                    <th style="width:60px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="itemsBody">
+                  <tr id="sinItems">
+                    <td colspan="4" class="text-center text-muted py-3">No se han agregado productos al traslado</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md" id="stockInfo" style="display: none;">
-              <span class="text-blue-800">
-                <i class="bi bi-info-circle"></i> Stock disponible en origen: <strong id="stockDisponible">0</strong>
-              </span>
-            </div>
-
-            <div class="mb-4">
-              <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
-              <input type="number" name="cantidad" id="cantidad"
-                class="w-full px-3 py-2 border rounded-md @error('cantidad') border-red-500 @enderror"
-                value="{{ old('cantidad', 1) }}" min="1" required>
-              @error('cantidad')
-                <span class="text-red-500 text-sm">{{ $message }}</span>
-              @enderror
-            </div>
-
-            <div class="mb-4">
-              <label for="tipo_operacion" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Operación *</label>
-              <select name="tipo_operacion" id="tipo_operacion"
-                class="w-full px-3 py-2 border rounded-md @error('tipo_operacion') border-red-500 @enderror" required>
-                <option value="general" {{ old('tipo_operacion', 'general') == 'general' ? 'selected' : '' }}>General</option>
-                <option value="credito" {{ old('tipo_operacion') == 'credito' ? 'selected' : '' }}>Crédito</option>
-              </select>
-              @error('tipo_operacion')
-                <span class="text-red-500 text-sm">{{ $message }}</span>
-              @enderror
-              <small class="text-gray-500 block mt-1">Indica si el traslado corresponde a una operación de crédito o general.</small>
-            </div>
-
-            <div class="mb-4">
-              <label for="notas" class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
-              <textarea name="notas" id="notas" rows="3"
-                class="w-full px-3 py-2 border rounded-md"
-                placeholder="Observaciones del traslado...">{{ old('notas') }}</textarea>
-            </div>
-
-            <div class="flex gap-2">
-              <button type="submit" class="btn btn-primary">
+            <div class="flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary" id="btnCrear" disabled>
                 <i class="bi bi-save me-1"></i> Crear Traslado
               </button>
               <a href="{{ route('traslados') }}" class="btn btn-outline-secondary">
@@ -125,137 +130,217 @@
   @push('scripts')
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const productoSelect = document.getElementById('producto_id');
-    const varianteContainer = document.getElementById('varianteContainer');
-    const varianteSelect = document.getElementById('variante_producto_id');
     const ubicacionOrigenSelect = document.getElementById('ubicacion_origen_id');
-    const ubicacionDestinoSelect = document.getElementById('ubicacion_destino_id');
-    const stockInfo = document.getElementById('stockInfo');
-    const stockDisponible = document.getElementById('stockDisponible');
-    const productoHelp = document.getElementById('productoHelp');
+    const selProducto = document.getElementById('sel_producto');
+    const selVarianteContainer = document.getElementById('sel_variante_container');
+    const selVariante = document.getElementById('sel_variante');
+    const selCantidad = document.getElementById('sel_cantidad');
+    const selStock = document.getElementById('sel_stock');
+    const btnAgregar = document.getElementById('btnAgregarItem');
+    const btnCrear = document.getElementById('btnCrear');
+    const itemsBody = document.getElementById('itemsBody');
+    const sinItems = document.getElementById('sinItems');
 
-    // Cuando cambia la ubicación de origen, cargar productos disponibles
+    let items = [];
+    let itemIndex = 0;
+    let productosData = [];
+
+    // Cargar productos al cambiar ubicación de origen
     ubicacionOrigenSelect.addEventListener('change', async function() {
       const ubicacionId = this.value;
-
-      // Resetear selector de producto
-      productoSelect.innerHTML = '<option value="">Cargando productos...</option>';
-      productoSelect.disabled = true;
-      varianteContainer.style.display = 'none';
-      varianteSelect.innerHTML = '<option value="">Seleccione una variante</option>';
-      stockInfo.style.display = 'none';
+      selProducto.innerHTML = '<option value="">Cargando...</option>';
+      selProducto.disabled = true;
+      resetAddRow();
 
       if (!ubicacionId) {
-        productoSelect.innerHTML = '<option value="">Primero seleccione una ubicación de origen</option>';
+        selProducto.innerHTML = '<option value="">Primero seleccione ubicaci&oacute;n de origen</option>';
         return;
       }
 
       try {
         const res = await fetch(`/traslados/productos-por-ubicacion/${ubicacionId}`);
         const data = await res.json();
+        productosData = data.productos;
 
-        productoSelect.innerHTML = '<option value="">Seleccione un producto</option>';
-
+        selProducto.innerHTML = '<option value="">Seleccione un producto</option>';
         if (data.productos.length === 0) {
-          productoSelect.innerHTML = '<option value="">No hay productos con stock en esta ubicación</option>';
-          productoHelp.textContent = 'No se encontraron productos con stock disponible en la ubicación seleccionada.';
-          productoHelp.classList.add('text-red-500');
-          productoHelp.classList.remove('text-gray-500');
+          selProducto.innerHTML = '<option value="">No hay productos con stock</option>';
         } else {
           data.productos.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.id;
-            option.textContent = `${p.referencia} - ${p.nombre} (Stock: ${p.stock_disponible})`;
-            option.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
-            productoSelect.appendChild(option);
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.referencia} - ${p.nombre} (Stock: ${p.stock_disponible})`;
+            opt.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
+            opt.dataset.nombre = `${p.referencia} - ${p.nombre}`;
+            selProducto.appendChild(opt);
           });
-          productoSelect.disabled = false;
-          productoHelp.textContent = `${data.productos.length} producto(s) disponible(s) en esta ubicación.`;
-          productoHelp.classList.remove('text-red-500');
-          productoHelp.classList.add('text-gray-500');
+          selProducto.disabled = false;
         }
       } catch (e) {
-        console.error('Error al cargar productos:', e);
-        productoSelect.innerHTML = '<option value="">Error al cargar productos</option>';
+        console.error('Error:', e);
+        selProducto.innerHTML = '<option value="">Error al cargar</option>';
       }
     });
 
-    // Cuando cambia el producto, cargar variantes si aplica
-    productoSelect.addEventListener('change', async function() {
+    // Al seleccionar producto, cargar variantes si aplica
+    selProducto.addEventListener('change', async function() {
       const productoId = this.value;
       const ubicacionId = ubicacionOrigenSelect.value;
+      selVarianteContainer.style.display = 'none';
+      selVariante.innerHTML = '<option value="">Seleccione variante</option>';
+      selStock.textContent = '-';
 
-      varianteSelect.innerHTML = '<option value="">Seleccione una variante</option>';
-      varianteContainer.style.display = 'none';
-
-      if (!productoId || !ubicacionId) {
-        stockInfo.style.display = 'none';
+      if (!productoId) {
+        btnAgregar.disabled = true;
         return;
       }
 
-      const selectedOption = this.options[this.selectedIndex];
-      const tieneVariantes = selectedOption.dataset.tieneVariantes === '1';
+      const opt = this.options[this.selectedIndex];
+      const tieneVariantes = opt.dataset.tieneVariantes === '1';
 
       if (tieneVariantes) {
         try {
           const res = await fetch(`/traslados/variantes-por-ubicacion/${productoId}/${ubicacionId}`);
           const data = await res.json();
-
           if (data.tiene_variantes && data.variantes.length > 0) {
             data.variantes.forEach(v => {
-              const option = document.createElement('option');
-              option.value = v.id;
-              option.textContent = v.nombre_variante;
-              varianteSelect.appendChild(option);
+              const o = document.createElement('option');
+              o.value = v.id;
+              o.textContent = `${v.nombre_variante} (Stock: ${v.stock_disponible})`;
+              o.dataset.nombre = v.nombre_variante;
+              selVariante.appendChild(o);
             });
-            varianteContainer.style.display = 'block';
+            selVarianteContainer.style.display = 'block';
+            btnAgregar.disabled = true; // esperar selección de variante
+            return;
           }
         } catch (e) {
-          console.error('Error al cargar variantes:', e);
+          console.error('Error variantes:', e);
         }
       }
 
-      actualizarStockDisponible();
+      // Producto sin variantes - obtener stock
+      await actualizarStock();
+      btnAgregar.disabled = false;
     });
 
-    varianteSelect.addEventListener('change', actualizarStockDisponible);
-
-    async function actualizarStockDisponible() {
-      const productoId = productoSelect.value;
-      const ubicacionId = ubicacionOrigenSelect.value;
-      const varianteId = varianteSelect.value;
-
-      if (!productoId || !ubicacionId) {
-        stockInfo.style.display = 'none';
-        return;
+    selVariante.addEventListener('change', async function() {
+      if (this.value) {
+        await actualizarStock();
+        btnAgregar.disabled = false;
+      } else {
+        selStock.textContent = '-';
+        btnAgregar.disabled = true;
       }
+    });
+
+    async function actualizarStock() {
+      const productoId = selProducto.value;
+      const varianteId = selVariante.value;
+      if (!productoId) return;
+
+      const params = new URLSearchParams({ producto_id: productoId });
+      if (varianteId) params.append('variante_producto_id', varianteId);
 
       try {
-        const params = new URLSearchParams({
-          producto_id: productoId,
-          ubicacion_id: ubicacionId
-        });
-        if (varianteId) {
-          params.append('variante_producto_id', varianteId);
-        }
-
         const res = await fetch(`/traslados/stock-disponible?${params}`);
         const data = await res.json();
 
-        stockDisponible.textContent = data.stock_disponible;
-        stockInfo.style.display = 'block';
+        // Restar lo que ya se agregó en la tabla para este mismo producto/variante
+        const yaAgregado = items
+          .filter(i => i.producto_id == productoId && (i.variante_producto_id || '') == (varianteId || ''))
+          .reduce((sum, i) => sum + i.cantidad, 0);
 
-        // Validar cantidad máxima
-        const cantidadInput = document.getElementById('cantidad');
-        cantidadInput.max = data.stock_disponible;
-
-        // Si la cantidad actual excede el máximo, ajustarla
-        if (parseInt(cantidadInput.value) > data.stock_disponible) {
-          cantidadInput.value = data.stock_disponible;
-        }
+        const stockReal = Math.max(0, data.stock_disponible - yaAgregado);
+        selStock.textContent = stockReal;
+        selCantidad.max = stockReal;
+        if (parseInt(selCantidad.value) > stockReal) selCantidad.value = stockReal;
       } catch (e) {
-        console.error('Error al obtener stock:', e);
+        console.error('Error stock:', e);
       }
+    }
+
+    // Agregar ítem a la tabla
+    btnAgregar.addEventListener('click', () => {
+      const productoId = selProducto.value;
+      const varianteId = selVariante.value || null;
+      const cantidad = parseInt(selCantidad.value);
+      const stockDisp = parseInt(selStock.textContent);
+
+      if (!productoId || cantidad < 1) return;
+      if (cantidad > stockDisp) {
+        alert('La cantidad excede el stock disponible.');
+        return;
+      }
+
+      const productoOpt = selProducto.options[selProducto.selectedIndex];
+      const productoNombre = productoOpt.dataset.nombre;
+      let varianteNombre = '';
+      if (varianteId) {
+        const varianteOpt = selVariante.options[selVariante.selectedIndex];
+        varianteNombre = varianteOpt.dataset.nombre;
+      }
+
+      const idx = itemIndex++;
+      items.push({
+        idx,
+        producto_id: productoId,
+        variante_producto_id: varianteId,
+        cantidad,
+        producto_nombre: productoNombre,
+        variante_nombre: varianteNombre
+      });
+
+      renderItems();
+      resetAddRow();
+      selProducto.value = '';
+    });
+
+    function renderItems() {
+      itemsBody.innerHTML = '';
+
+      if (items.length === 0) {
+        itemsBody.innerHTML = '<tr id="sinItems"><td colspan="4" class="text-center text-muted py-3">No se han agregado productos al traslado</td></tr>';
+        btnCrear.disabled = true;
+        return;
+      }
+
+      items.forEach((item, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            ${item.producto_nombre}
+            <input type="hidden" name="items[${i}][producto_id]" value="${item.producto_id}">
+            <input type="hidden" name="items[${i}][variante_producto_id]" value="${item.variante_producto_id || ''}">
+          </td>
+          <td>${item.variante_nombre || '-'}</td>
+          <td>
+            ${item.cantidad}
+            <input type="hidden" name="items[${i}][cantidad]" value="${item.cantidad}">
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${item.idx})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        `;
+        itemsBody.appendChild(tr);
+      });
+
+      btnCrear.disabled = false;
+    }
+
+    window.eliminarItem = function(idx) {
+      items = items.filter(i => i.idx !== idx);
+      renderItems();
+    };
+
+    function resetAddRow() {
+      selVarianteContainer.style.display = 'none';
+      selVariante.innerHTML = '<option value="">Seleccione variante</option>';
+      selCantidad.value = 1;
+      selStock.textContent = '-';
+      btnAgregar.disabled = true;
     }
   });
   </script>

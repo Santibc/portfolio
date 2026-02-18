@@ -15,9 +15,6 @@ class TrasladoStock extends Model
         'numero_traslado',
         'ubicacion_origen_id',
         'ubicacion_destino_id',
-        'producto_id',
-        'variante_producto_id',
-        'cantidad',
         'estado',
         'notas',
         'tipo_operacion',
@@ -75,14 +72,9 @@ class TrasladoStock extends Model
         return $this->belongsTo(Ubicacion::class, 'ubicacion_destino_id');
     }
 
-    public function producto()
+    public function items()
     {
-        return $this->belongsTo(Producto::class);
-    }
-
-    public function varianteProducto()
-    {
-        return $this->belongsTo(VarianteProducto::class);
+        return $this->hasMany(ItemTrasladoStock::class, 'traslado_stock_id');
     }
 
     public function usuarioCreador()
@@ -105,11 +97,24 @@ class TrasladoStock extends Model
 
     public function getProductoNombreAttribute(): string
     {
-        $nombre = $this->producto->nombre ?? '';
-        if ($this->varianteProducto) {
-            $nombre .= ' - ' . $this->varianteProducto->nombre_variante;
+        $items = $this->items;
+        if ($items->isEmpty()) {
+            return 'Sin productos';
+        }
+        $primer = $items->first();
+        $nombre = $primer->producto->referencia . ' - ' . $primer->producto->nombre;
+        if ($primer->varianteProducto) {
+            $nombre .= ' (' . $primer->varianteProducto->nombre_variante . ')';
+        }
+        if ($items->count() > 1) {
+            $nombre .= ' (+' . ($items->count() - 1) . ' más)';
         }
         return $nombre;
+    }
+
+    public function getCantidadTotalAttribute(): int
+    {
+        return $this->items->sum('cantidad');
     }
 
     public function getTipoOperacionNombreAttribute(): string
