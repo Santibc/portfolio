@@ -762,6 +762,9 @@ class SolicitudController extends Controller
             // Marcar como aplicada
             $observaciones = $request->observaciones;
             $solicitud->marcarComoAplicada($user->id, $observaciones);
+
+            // Liberar/aplicar reservas de stock
+            $this->reservaService->aplicarReservas($solicitud);
             
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
