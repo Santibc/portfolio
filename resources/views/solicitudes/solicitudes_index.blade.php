@@ -70,6 +70,7 @@
                 <th>Monto</th>
                 <th>Estado</th>
                 <th>Pago</th>
+                <th>Descargue</th>
                 <th>Envío</th>
                 <th>Reserva</th>
               </tr>
@@ -129,6 +130,7 @@
         { data:'monto_formateado', name:'monto_total' },
         { data:'estado_badge', name:'estado' },
         { data:'estado_pago_badge', name:'estado_pago', orderable:false, searchable:false },
+        { data:'descargue_badge', name:'descargue_badge', orderable:false, searchable:false },
         { data:'estado_envio_badge', name:'estado_envio', orderable:false, searchable:false },
         { data:'reserva_badge', name:'reserva_badge', orderable:false, searchable:false }
       ],

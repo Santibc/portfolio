@@ -51,7 +51,7 @@ class SolicitudController extends Controller
         }
 
         if ($request->ajax()) {
-            $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items'])
+            $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items', 'stockDescontadoPor'])
                                        ->select('solicitudes_cotizacion.*');
 
             // Si es vendedor (y NO es admin/auxiliar_administrativo), ver sus cotizaciones creadas + las de sus clientes asignados
@@ -128,6 +128,14 @@ class SolicitudController extends Controller
                 })
                 ->addColumn('estado_pago_badge', function($s) {
                     return '<span class="badge bg-' . $s->color_estado_pago . '">' . $s->etiqueta_estado_pago . '</span>';
+                })
+                ->addColumn('descargue_badge', function($s) {
+                    if ($s->stock_descontado && $s->stockDescontadoPor) {
+                        $nombre = e($s->stockDescontadoPor->name);
+                        $fecha = $s->stock_descontado_en?->format('d/m/Y H:i');
+                        return '<span class="badge bg-success" title="'.$fecha.'"><i class="bi bi-check-circle me-1"></i>'.$nombre.'</span>';
+                    }
+                    return '<span class="badge bg-secondary">No</span>';
                 })
                 ->addColumn('estado_envio_badge', function($s) {
                     if ($s->estado !== 'aplicada') {
@@ -233,7 +241,7 @@ class SolicitudController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['estado_badge', 'reserva_badge', 'marcada_badge', 'estado_pago_badge', 'estado_envio_badge', 'action'])
+                ->rawColumns(['estado_badge', 'reserva_badge', 'marcada_badge', 'estado_pago_badge', 'descargue_badge', 'estado_envio_badge', 'action'])
                 ->make(true);
         }
 

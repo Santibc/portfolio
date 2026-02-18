@@ -59,7 +59,9 @@
               @error('producto_id')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
               @enderror
-              <small class="text-gray-500 block mt-1" id="productoHelp">Solo se muestran productos con stock en la ubicación de origen seleccionada.</small>
+              <small class="text-gray-500 block mt-1" id="productoHelp">
+                
+              </small>
             </div>
 
             <div class="mb-4" id="varianteContainer" style="display: none;">
