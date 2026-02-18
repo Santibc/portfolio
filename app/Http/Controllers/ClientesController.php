@@ -141,11 +141,11 @@ HTML;
 
         $rules = [
             'numero_identificacion' => [
-                'required', 'string', 'max:255',
+                $request->tipo_cliente === 'juridica' ? 'nullable' : 'required', 'string', 'max:255',
                 Rule::unique('clientes')->ignore($cliente->id)
             ],
             'tipo_cliente' => ['required', 'in:natural,juridica'],
-            'nombre_contacto' => ['required', 'string', 'max:255'],
+            'nombre_contacto' => [$request->tipo_cliente === 'juridica' ? 'nullable' : 'required', 'string', 'max:255'],
             'email' => [
                 'required', 'email', 'max:255',
                 Rule::unique('clientes')->ignore($cliente->id)

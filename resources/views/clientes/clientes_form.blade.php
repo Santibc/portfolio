@@ -115,13 +115,13 @@
                     <h5 class="section-title"><i class="bi bi-person-lines-fill me-2"></i>Datos del Contacto</h5>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Identificacion <span class="text-danger">*</span></label>
+                            <label class="form-label">Identificacion <span class="text-danger req-natural">*</span></label>
                             <input name="numero_identificacion" type="text" class="form-control"
                                    value="{{ old('numero_identificacion', $cliente->numero_identificacion) }}">
                             @error('numero_identificacion') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Nombre Contacto <span class="text-danger">*</span></label>
+                            <label class="form-label">Nombre Contacto <span class="text-danger req-natural">*</span></label>
                             <input name="nombre_contacto" type="text" class="form-control"
                                    value="{{ old('nombre_contacto', $cliente->nombre_contacto) }}">
                             @error('nombre_contacto') <small class="text-danger">{{ $message }}</small> @enderror
@@ -487,6 +487,11 @@
         // Inicializamos Select2
         $('.select2').select2({theme: 'bootstrap-5', width: '100%'});
 
+        // Ocultar asteriscos si es jurídica al cargar
+        if ($('#tipo_cliente').val() === 'juridica') {
+            $('.req-natural').hide();
+        }
+
         // Al cambiar departamento, recargamos ciudades
         $('#departamento-select').on('change', function(){
             let depId = $(this).val();
@@ -526,8 +531,10 @@
 
         if (tipo === 'juridica') {
             $('#juridicaFields').addClass('show');
+            $('.req-natural').hide();
         } else {
             $('#juridicaFields').removeClass('show');
+            $('.req-natural').show();
         }
     }
 
