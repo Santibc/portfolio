@@ -36,7 +36,7 @@ class TrasladosController extends Controller
                     $puedeAprobarRechazar = $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia']);
                     $btns = '<div class="d-flex gap-1">';
 
-                    if ($row->estado === TrasladoStock::ESTADO_PENDIENTE && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
+                    if (in_array($row->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO]) && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                         $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
                     }
 
