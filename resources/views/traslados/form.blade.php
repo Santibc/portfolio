@@ -362,13 +362,18 @@
 
     // Pre-cargar items existentes (modo edición)
     @if($traslado->id && $items->count())
-    const itemsIniciales = @json($items->map(fn($i) => [
-      'producto_id' => (string) $i->producto_id,
-      'variante_producto_id' => $i->variante_producto_id ? (string) $i->variante_producto_id : null,
-      'cantidad' => $i->cantidad,
-      'producto_nombre' => ($i->producto->referencia ?? '') . ' - ' . ($i->producto->nombre ?? ''),
-      'variante_nombre' => $i->varianteProducto->nombre_variante ?? '',
-    ]));
+    @php
+      $itemsJson = $items->map(function($i) {
+        return [
+          'producto_id' => (string) $i->producto_id,
+          'variante_producto_id' => $i->variante_producto_id ? (string) $i->variante_producto_id : null,
+          'cantidad' => $i->cantidad,
+          'producto_nombre' => ($i->producto->referencia ?? '') . ' - ' . ($i->producto->nombre ?? ''),
+          'variante_nombre' => $i->varianteProducto ? $i->varianteProducto->nombre_variante : '',
+        ];
+      });
+    @endphp
+    const itemsIniciales = {!! json_encode($itemsJson) !!};
     itemsIniciales.forEach(item => { items.push({ idx: itemIndex++, ...item }); });
     renderItems();
     @endif
