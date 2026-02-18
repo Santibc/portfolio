@@ -234,20 +234,26 @@ class TrasladosController extends Controller
 
             // Procesar cada ítem
             foreach ($request->items as $itemData) {
-                // Verificar stock disponible en origen
-                $stockOrigen = StockProducto::where('producto_id', $itemData['producto_id'])
-                    ->where('ubicacion_id', $request->ubicacion_origen_id);
+                $cantidad = (int) $itemData['cantidad'];
+                $varianteId = $itemData['variante_producto_id'] ?? null;
 
-                if (!empty($itemData['variante_producto_id'])) {
-                    $stockOrigen->where('variante_producto_id', $itemData['variante_producto_id']);
+                // Buscar registros de stock disponibles para este producto (cualquier ubicación)
+                $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
+                    ->where('cantidad_disponible', '>', 0);
+
+                if (!empty($varianteId)) {
+                    $stockQuery->where('variante_producto_id', $varianteId);
                 } else {
-                    $stockOrigen->whereNull('variante_producto_id');
+                    $stockQuery->whereNull('variante_producto_id');
                 }
 
-                $stockOrigen = $stockOrigen->first();
-                $cantidad = (int) $itemData['cantidad'];
+                // Priorizar la ubicación de origen, luego las demás
+                $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$request->ubicacion_origen_id])
+                    ->get();
 
-                if (!$stockOrigen || $stockOrigen->cantidad_disponible < $cantidad) {
+                $stockTotal = $stockRecords->sum('cantidad_disponible');
+
+                if ($stockTotal < $cantidad) {
                     $producto = Producto::find($itemData['producto_id']);
                     throw new \Exception("No hay suficiente stock para el producto: {$producto->referencia} - {$producto->nombre}");
                 }
@@ -256,30 +262,38 @@ class TrasladosController extends Controller
                 ItemTrasladoStock::create([
                     'traslado_stock_id' => $traslado->id,
                     'producto_id' => $itemData['producto_id'],
-                    'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
+                    'variante_producto_id' => $varianteId,
                     'cantidad' => $cantidad,
                 ]);
 
-                // Descontar stock de origen
-                $stockAnterior = $stockOrigen->cantidad_disponible;
-                $stockOrigen->cantidad_disponible -= $cantidad;
-                $stockOrigen->save();
+                // Descontar stock de los registros disponibles
+                $restante = $cantidad;
+                foreach ($stockRecords as $stockRecord) {
+                    if ($restante <= 0) break;
 
-                // Registrar movimiento de salida
-                MovimientoStock::create([
-                    'producto_id' => $itemData['producto_id'],
-                    'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
-                    'ubicacion_id' => $request->ubicacion_origen_id,
-                    'tipo_movimiento' => 'salida',
-                    'cantidad' => $cantidad,
-                    'stock_anterior' => $stockAnterior,
-                    'stock_nuevo' => $stockOrigen->cantidad_disponible,
-                    'referencia_documento' => $traslado->numero_traslado,
-                    'origen' => 'traslado',
-                    'tipo_operacion' => $request->tipo_operacion,
-                    'motivo' => 'Traslado a ' . $ubicacionDestinoNombre,
-                    'usuario_id' => auth()->id(),
-                ]);
+                    $descontar = min($restante, $stockRecord->cantidad_disponible);
+                    $stockAnterior = $stockRecord->cantidad_disponible;
+                    $stockRecord->cantidad_disponible -= $descontar;
+                    $stockRecord->save();
+
+                    // Registrar movimiento de salida por cada ubicación afectada
+                    MovimientoStock::create([
+                        'producto_id' => $itemData['producto_id'],
+                        'variante_producto_id' => $varianteId,
+                        'ubicacion_id' => $stockRecord->ubicacion_id,
+                        'tipo_movimiento' => 'salida',
+                        'cantidad' => $descontar,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stockRecord->cantidad_disponible,
+                        'referencia_documento' => $traslado->numero_traslado,
+                        'origen' => 'traslado',
+                        'tipo_operacion' => $request->tipo_operacion,
+                        'motivo' => 'Traslado a ' . $ubicacionDestinoNombre,
+                        'usuario_id' => auth()->id(),
+                    ]);
+
+                    $restante -= $descontar;
+                }
             }
 
             DB::commit();
@@ -308,39 +322,46 @@ class TrasladosController extends Controller
         DB::beginTransaction();
         try {
             foreach ($traslado->items as $item) {
-                $stockOrigen = StockProducto::where('producto_id', $item->producto_id)
-                    ->where('ubicacion_id', $traslado->ubicacion_origen_id);
+                $stockQuery = StockProducto::where('producto_id', $item->producto_id)
+                    ->where('cantidad_disponible', '>', 0);
 
                 if ($item->variante_producto_id) {
-                    $stockOrigen->where('variante_producto_id', $item->variante_producto_id);
+                    $stockQuery->where('variante_producto_id', $item->variante_producto_id);
                 } else {
-                    $stockOrigen->whereNull('variante_producto_id');
+                    $stockQuery->whereNull('variante_producto_id');
                 }
 
-                $stockOrigen = $stockOrigen->first();
+                $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$traslado->ubicacion_origen_id])->get();
+                $stockTotal = $stockRecords->sum('cantidad_disponible');
 
-                if (!$stockOrigen || $stockOrigen->cantidad_disponible < $item->cantidad) {
+                if ($stockTotal < $item->cantidad) {
                     throw new \Exception('No hay suficiente stock para: ' . $item->producto->nombre);
                 }
 
-                $stockAnterior = $stockOrigen->cantidad_disponible;
-                $stockOrigen->cantidad_disponible -= $item->cantidad;
-                $stockOrigen->save();
+                $restante = $item->cantidad;
+                foreach ($stockRecords as $stockRecord) {
+                    if ($restante <= 0) break;
+                    $descontar = min($restante, $stockRecord->cantidad_disponible);
+                    $stockAnterior = $stockRecord->cantidad_disponible;
+                    $stockRecord->cantidad_disponible -= $descontar;
+                    $stockRecord->save();
 
-                MovimientoStock::create([
-                    'producto_id' => $item->producto_id,
-                    'variante_producto_id' => $item->variante_producto_id,
-                    'ubicacion_id' => $traslado->ubicacion_origen_id,
-                    'tipo_movimiento' => 'salida',
-                    'cantidad' => $item->cantidad,
-                    'stock_anterior' => $stockAnterior,
-                    'stock_nuevo' => $stockOrigen->cantidad_disponible,
-                    'referencia_documento' => $traslado->numero_traslado,
-                    'origen' => 'traslado',
-                    'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
-                    'motivo' => 'Traslado a ' . $traslado->ubicacionDestino->nombre,
-                    'usuario_id' => auth()->id(),
-                ]);
+                    MovimientoStock::create([
+                        'producto_id' => $item->producto_id,
+                        'variante_producto_id' => $item->variante_producto_id,
+                        'ubicacion_id' => $stockRecord->ubicacion_id,
+                        'tipo_movimiento' => 'salida',
+                        'cantidad' => $descontar,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stockRecord->cantidad_disponible,
+                        'referencia_documento' => $traslado->numero_traslado,
+                        'origen' => 'traslado',
+                        'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
+                        'motivo' => 'Traslado a ' . $traslado->ubicacionDestino->nombre,
+                        'usuario_id' => auth()->id(),
+                    ]);
+                    $restante -= $descontar;
+                }
             }
 
             $traslado->enviar();

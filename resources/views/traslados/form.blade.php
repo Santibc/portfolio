@@ -69,6 +69,8 @@
             <div class="row mb-3 align-items-end" id="addItemRow">
               <div class="col-md-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Producto</label>
+                <input type="text" id="sel_producto_buscar" class="w-full px-3 py-2 border rounded-md mb-1"
+                  placeholder="Buscar producto..." style="display:none;">
                 <select id="sel_producto" class="w-full px-3 py-2 border rounded-md" disabled>
                   <option value="">Primero seleccione ubicaci&oacute;n de origen</option>
                 </select>
@@ -132,6 +134,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const ubicacionOrigenSelect = document.getElementById('ubicacion_origen_id');
     const selProducto = document.getElementById('sel_producto');
+    const selProductoBuscar = document.getElementById('sel_producto_buscar');
     const selVarianteContainer = document.getElementById('sel_variante_container');
     const selVariante = document.getElementById('sel_variante');
     const selCantidad = document.getElementById('sel_cantidad');
@@ -150,6 +153,8 @@
       const ubicacionId = this.value;
       selProducto.innerHTML = '<option value="">Cargando...</option>';
       selProducto.disabled = true;
+      selProductoBuscar.style.display = 'none';
+      selProductoBuscar.value = '';
       resetAddRow();
 
       if (!ubicacionId) {
@@ -162,24 +167,44 @@
         const data = await res.json();
         productosData = data.productos;
 
-        selProducto.innerHTML = '<option value="">Seleccione un producto</option>';
-        if (data.productos.length === 0) {
-          selProducto.innerHTML = '<option value="">No hay productos con stock</option>';
-        } else {
-          data.productos.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `${p.referencia} - ${p.nombre} (Stock: ${p.stock_disponible})`;
-            opt.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
-            opt.dataset.nombre = `${p.referencia} - ${p.nombre}`;
-            selProducto.appendChild(opt);
-          });
+        renderProductos(productosData);
+        if (data.productos.length > 0) {
           selProducto.disabled = false;
+          selProductoBuscar.style.display = 'block';
         }
       } catch (e) {
         console.error('Error:', e);
         selProducto.innerHTML = '<option value="">Error al cargar</option>';
       }
+    });
+
+    function renderProductos(lista) {
+      selProducto.innerHTML = '<option value="">Seleccione un producto</option>';
+      if (lista.length === 0) {
+        selProducto.innerHTML = '<option value="">No hay productos con stock</option>';
+        return;
+      }
+      lista.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.referencia} - ${p.nombre} (Stock: ${p.stock_disponible})`;
+        opt.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
+        opt.dataset.nombre = `${p.referencia} - ${p.nombre}`;
+        selProducto.appendChild(opt);
+      });
+    }
+
+    // Buscador de productos
+    selProductoBuscar.addEventListener('input', function() {
+      const buscar = this.value.toLowerCase().trim();
+      if (!buscar) {
+        renderProductos(productosData);
+        return;
+      }
+      const filtrados = productosData.filter(p =>
+        p.referencia.toLowerCase().includes(buscar) || p.nombre.toLowerCase().includes(buscar)
+      );
+      renderProductos(filtrados);
     });
 
     // Al seleccionar producto, cargar variantes si aplica
@@ -294,6 +319,8 @@
       renderItems();
       resetAddRow();
       selProducto.value = '';
+      selProductoBuscar.value = '';
+      renderProductos(productosData);
     });
 
     function renderItems() {
