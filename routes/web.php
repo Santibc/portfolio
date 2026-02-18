@@ -286,6 +286,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centro_experiencia'])->group(function () {
     Route::get('traslados', [TrasladosController::class, 'index'])->name('traslados');
     Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
+    Route::get('traslados/{id}/pdf', [TrasladosController::class, 'generarPdf'])->name('traslados.pdf');
     Route::post('traslados/{id}/recibir', [TrasladosController::class, 'recibir'])->name('traslados.recibir');
     Route::post('traslados/{id}/cancelar', [TrasladosController::class, 'cancelar'])->name('traslados.cancelar');
 });

@@ -10,6 +10,7 @@ use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Yajra\DataTables\Facades\DataTables;
 
 class TrasladosController extends Controller
@@ -48,6 +49,7 @@ class TrasladosController extends Controller
                     }
 
                     $btns .= '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="verDetalleTraslado(' . $row->id . ')" title="Ver detalle"><i class="bi bi-eye"></i></button>';
+                    $btns .= '<a href="/traslados/' . $row->id . '/pdf" target="_blank" class="btn btn-sm btn-outline-info" title="Descargar PDF"><i class="bi bi-file-earmark-pdf"></i></a>';
                     $btns .= '</div>';
                     return $btns;
                 })
@@ -589,5 +591,23 @@ class TrasladosController extends Controller
         return response()->json([
             'stock_disponible' => $stockEfectivo
         ]);
+    }
+
+    public function generarPdf($id)
+    {
+        $traslado = TrasladoStock::with([
+            'ubicacionOrigen',
+            'ubicacionDestino',
+            'items.producto',
+            'items.varianteProducto',
+            'usuarioCreador',
+            'usuarioReceptor'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.traslado', compact('traslado'));
+
+        $nombreArchivo = 'Traslado_' . $traslado->numero_traslado . '.pdf';
+
+        return $pdf->stream($nombreArchivo);
     }
 }
