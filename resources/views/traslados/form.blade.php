@@ -165,7 +165,7 @@
           data.productos.forEach(p => {
             const option = document.createElement('option');
             option.value = p.id;
-            option.textContent = `${p.referencia} - ${p.nombre}`;
+            option.textContent = `${p.referencia} - ${p.nombre} (Stock: ${p.stock_disponible})`;
             option.dataset.tieneVariantes = p.tiene_variantes ? '1' : '0';
             productoSelect.appendChild(option);
           });

@@ -101,10 +101,13 @@ class TrasladosController extends Controller
      */
     public function getProductosPorUbicacion($ubicacionId)
     {
-        // Obtener IDs de productos que tienen stock en esta ubicación
-        $stockItems = StockProducto::where('ubicacion_id', $ubicacionId)
-            ->where('cantidad_disponible', '>', 0)
+        // Obtener todos los productos con stock disponible (cualquier ubicación o sin ubicación)
+        $stockItems = StockProducto::where('cantidad_disponible', '>', 0)->get();
+
+        // Obtener productos en traslados en tránsito (para excluirlos o restar)
+        $trasladosEnTransito = TrasladoStock::where('estado', TrasladoStock::ESTADO_EN_TRANSITO)
             ->get();
+        $productosEnTransitoIds = $trasladosEnTransito->pluck('producto_id')->unique();
 
         $productosIds = $stockItems->pluck('producto_id')->unique();
 
@@ -114,18 +117,32 @@ class TrasladosController extends Controller
             ->where('controlar_stock', true)
             ->orderBy('nombre')
             ->get()
-            ->map(function ($producto) use ($stockItems, $ubicacionId) {
-                // Verificar si tiene variantes con stock en esta ubicación
-                $stockEnUbicacion = $stockItems->where('producto_id', $producto->id);
-                $tieneVariantesConStock = $stockEnUbicacion->whereNotNull('variante_producto_id')->count() > 0;
+            ->map(function ($producto) use ($stockItems, $trasladosEnTransito) {
+                // Stock total disponible del producto
+                $stockTotal = $stockItems->where('producto_id', $producto->id)->sum('cantidad_disponible');
+
+                // Restar cantidades en traslados en tránsito
+                $enTransito = $trasladosEnTransito->where('producto_id', $producto->id)->sum('cantidad');
+                $stockEfectivo = $stockTotal - $enTransito;
+
+                if ($stockEfectivo <= 0) {
+                    return null;
+                }
+
+                // Verificar si tiene variantes con stock
+                $tieneVariantesConStock = $stockItems->where('producto_id', $producto->id)
+                    ->whereNotNull('variante_producto_id')->count() > 0;
 
                 return [
                     'id' => $producto->id,
                     'referencia' => $producto->referencia,
                     'nombre' => $producto->nombre,
                     'tiene_variantes' => $producto->tiene_variantes && $tieneVariantesConStock,
+                    'stock_disponible' => $stockEfectivo,
                 ];
-            });
+            })
+            ->filter()
+            ->values();
 
         return response()->json([
             'productos' => $productos
@@ -146,22 +163,40 @@ class TrasladosController extends Controller
             ]);
         }
 
-        // Obtener solo variantes que tienen stock en esta ubicación
+        // Obtener variantes con stock disponible (cualquier ubicación)
         $stockItems = StockProducto::where('producto_id', $productoId)
-            ->where('ubicacion_id', $ubicacionId)
             ->whereNotNull('variante_producto_id')
             ->where('cantidad_disponible', '>', 0)
-            ->pluck('variante_producto_id');
+            ->get();
+
+        $varianteIds = $stockItems->pluck('variante_producto_id')->unique();
+
+        // Cantidades en traslados en tránsito por variante
+        $trasladosEnTransito = TrasladoStock::where('producto_id', $productoId)
+            ->where('estado', TrasladoStock::ESTADO_EN_TRANSITO)
+            ->whereNotNull('variante_producto_id')
+            ->get();
 
         $variantes = $producto->variantes()
-            ->whereIn('id', $stockItems)
+            ->whereIn('id', $varianteIds)
             ->get()
-            ->map(function ($variante) {
+            ->map(function ($variante) use ($stockItems, $trasladosEnTransito) {
+                $stockTotal = $stockItems->where('variante_producto_id', $variante->id)->sum('cantidad_disponible');
+                $enTransito = $trasladosEnTransito->where('variante_producto_id', $variante->id)->sum('cantidad');
+                $stockEfectivo = $stockTotal - $enTransito;
+
+                if ($stockEfectivo <= 0) {
+                    return null;
+                }
+
                 return [
                     'id' => $variante->id,
                     'nombre_variante' => $variante->nombre_variante,
+                    'stock_disponible' => $stockEfectivo,
                 ];
-            });
+            })
+            ->filter()
+            ->values();
 
         return response()->json([
             'tiene_variantes' => true,
@@ -497,12 +532,11 @@ class TrasladosController extends Controller
     {
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
-            'ubicacion_id' => 'required|exists:ubicaciones,id',
+            'ubicacion_id' => 'nullable|exists:ubicaciones,id',
             'variante_producto_id' => 'nullable|exists:variantes_productos,id',
         ]);
 
-        $query = StockProducto::where('producto_id', $request->producto_id)
-            ->where('ubicacion_id', $request->ubicacion_id);
+        $query = StockProducto::where('producto_id', $request->producto_id);
 
         if ($request->variante_producto_id) {
             $query->where('variante_producto_id', $request->variante_producto_id);
@@ -510,10 +544,24 @@ class TrasladosController extends Controller
             $query->whereNull('variante_producto_id');
         }
 
-        $stock = $query->first();
+        // Sumar stock de todas las ubicaciones
+        $stockTotal = $query->sum('cantidad_disponible');
+
+        // Restar cantidades en traslados en tránsito
+        $trasladoQuery = TrasladoStock::where('producto_id', $request->producto_id)
+            ->where('estado', TrasladoStock::ESTADO_EN_TRANSITO);
+
+        if ($request->variante_producto_id) {
+            $trasladoQuery->where('variante_producto_id', $request->variante_producto_id);
+        } else {
+            $trasladoQuery->whereNull('variante_producto_id');
+        }
+
+        $enTransito = $trasladoQuery->sum('cantidad');
+        $stockEfectivo = max(0, $stockTotal - $enTransito);
 
         return response()->json([
-            'stock_disponible' => $stock ? $stock->stock_real : 0
+            'stock_disponible' => $stockEfectivo
         ]);
     }
 }
