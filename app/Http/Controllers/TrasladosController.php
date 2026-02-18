@@ -263,8 +263,8 @@ class TrasladosController extends Controller
     {
         $traslado = TrasladoStock::with('items')->findOrFail($id);
 
-        if ($traslado->estado !== TrasladoStock::ESTADO_PENDIENTE) {
-            return back()->withErrors(['error' => 'Solo se pueden editar traslados en estado Pendiente.']);
+        if (!in_array($traslado->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO])) {
+            return back()->withErrors(['error' => 'Solo se pueden editar traslados en estado Pendiente o En Tránsito.']);
         }
 
         $request->validate([
@@ -280,6 +280,42 @@ class TrasladosController extends Controller
 
         DB::beginTransaction();
         try {
+            // Si estaba en tránsito, devolver el stock de los ítems actuales al origen
+            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+                foreach ($traslado->items as $item) {
+                    $stockQuery = StockProducto::where('producto_id', $item->producto_id)
+                        ->where('ubicacion_id', $traslado->ubicacion_origen_id);
+
+                    if ($item->variante_producto_id) {
+                        $stockQuery->where('variante_producto_id', $item->variante_producto_id);
+                    } else {
+                        $stockQuery->whereNull('variante_producto_id');
+                    }
+
+                    $stockOrigen = $stockQuery->first();
+                    if ($stockOrigen) {
+                        $stockAnterior = $stockOrigen->cantidad_disponible;
+                        $stockOrigen->cantidad_disponible += $item->cantidad;
+                        $stockOrigen->save();
+
+                        MovimientoStock::create([
+                            'producto_id' => $item->producto_id,
+                            'variante_producto_id' => $item->variante_producto_id,
+                            'ubicacion_id' => $traslado->ubicacion_origen_id,
+                            'tipo_movimiento' => 'entrada',
+                            'cantidad' => $item->cantidad,
+                            'stock_anterior' => $stockAnterior,
+                            'stock_nuevo' => $stockOrigen->cantidad_disponible,
+                            'referencia_documento' => $traslado->numero_traslado,
+                            'origen' => 'traslado',
+                            'tipo_operacion' => $traslado->tipo_operacion,
+                            'motivo' => 'Edición de traslado - reversión',
+                            'usuario_id' => auth()->id(),
+                        ]);
+                    }
+                }
+            }
+
             $traslado->update([
                 'ubicacion_origen_id' => $request->ubicacion_origen_id,
                 'ubicacion_destino_id' => $request->ubicacion_destino_id,
@@ -289,13 +325,64 @@ class TrasladosController extends Controller
 
             $traslado->items()->delete();
 
+            $ubicacionDestinoNombre = Ubicacion::find($request->ubicacion_destino_id)->nombre;
+
             foreach ($request->items as $itemData) {
+                $cantidad = (int) $itemData['cantidad'];
+                $varianteId = $itemData['variante_producto_id'] ?? null;
+
                 ItemTrasladoStock::create([
                     'traslado_stock_id' => $traslado->id,
                     'producto_id' => $itemData['producto_id'],
-                    'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
-                    'cantidad' => (int) $itemData['cantidad'],
+                    'variante_producto_id' => $varianteId,
+                    'cantidad' => $cantidad,
                 ]);
+
+                // Si estaba en tránsito, descontar stock de los nuevos ítems
+                if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+                    $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
+                        ->where('cantidad_disponible', '>', 0);
+
+                    if (!empty($varianteId)) {
+                        $stockQuery->where('variante_producto_id', $varianteId);
+                    } else {
+                        $stockQuery->whereNull('variante_producto_id');
+                    }
+
+                    $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$request->ubicacion_origen_id])->get();
+                    $stockTotal = $stockRecords->sum('cantidad_disponible');
+
+                    if ($stockTotal < $cantidad) {
+                        $producto = Producto::find($itemData['producto_id']);
+                        throw new \Exception("No hay suficiente stock para: {$producto->referencia} - {$producto->nombre}");
+                    }
+
+                    $restante = $cantidad;
+                    foreach ($stockRecords as $stockRecord) {
+                        if ($restante <= 0) break;
+                        $descontar = min($restante, $stockRecord->cantidad_disponible);
+                        $stockAnterior = $stockRecord->cantidad_disponible;
+                        $stockRecord->cantidad_disponible -= $descontar;
+                        $stockRecord->save();
+
+                        MovimientoStock::create([
+                            'producto_id' => $itemData['producto_id'],
+                            'variante_producto_id' => $varianteId,
+                            'ubicacion_id' => $stockRecord->ubicacion_id,
+                            'tipo_movimiento' => 'salida',
+                            'cantidad' => $descontar,
+                            'stock_anterior' => $stockAnterior,
+                            'stock_nuevo' => $stockRecord->cantidad_disponible,
+                            'referencia_documento' => $traslado->numero_traslado,
+                            'origen' => 'traslado',
+                            'tipo_operacion' => $request->tipo_operacion,
+                            'motivo' => 'Edición de traslado a ' . $ubicacionDestinoNombre,
+                            'usuario_id' => auth()->id(),
+                        ]);
+
+                        $restante -= $descontar;
+                    }
+                }
             }
 
             DB::commit();
