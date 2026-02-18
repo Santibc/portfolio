@@ -191,7 +191,7 @@
                     <h5 class="section-title"><i class="bi bi-cash-stack me-2"></i>Configuracion Comercial</h5>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Vendedor Asignado <span class="text-danger">*</span></label>
+                            <label class="form-label">Vendedor Asignado</label>
                             <select name="vendedor_id" class="form-select"
                                 @if($cliente->exists && !auth()->user()->hasRole(['admin', 'auxiliar_administrativo'])) disabled @endif>
                                 <option value="">-- Seleccionar --</option>
@@ -506,7 +506,7 @@
                  data.forEach(c => {
                      $ciudad.append(`<option value="${c.id}">${c.nombre}</option>`);
                  });
-                 $ciudad.trigger('change');
+                 $ciudad.trigger('change.select2');
              });
         });
 
