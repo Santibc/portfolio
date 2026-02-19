@@ -292,35 +292,32 @@ class TrasladosController extends Controller
         foreach ($request->items as $itemData) {
             $cantidad = (int) $itemData['cantidad'];
             // Convertir string vacío a null para variante_id
-            $varianteId = !empty($itemData['variante_producto_id']) ? $itemData['variante_producto_id'] : null;
-            $productoId = $itemData['producto_id'];
+            $varianteId = !empty($itemData['variante_producto_id']) ? (int) $itemData['variante_producto_id'] : null;
+            $productoId = (int) $itemData['producto_id'];
 
-            // Buscar item original para comparar
-            $itemOriginalQuery = $traslado->items()
-                ->where('producto_id', $productoId);
+            // Buscar item original en la colección ya cargada
+            $itemOriginal = $traslado->items->first(function ($item) use ($productoId, $varianteId) {
+                $matchProducto = $item->producto_id == $productoId;
+                $matchVariante = ($varianteId === null && $item->variante_producto_id === null) ||
+                                 ($varianteId !== null && $item->variante_producto_id == $varianteId);
+                return $matchProducto && $matchVariante;
+            });
 
-            if ($varianteId) {
-                $itemOriginalQuery->where('variante_producto_id', $varianteId);
-            } else {
-                $itemOriginalQuery->whereNull('variante_producto_id');
-            }
-
-            $itemOriginal = $itemOriginalQuery->first();
-            $cantidadOriginal = $itemOriginal ? $itemOriginal->cantidad : 0;
+            $cantidadOriginal = $itemOriginal ? (int) $itemOriginal->cantidad : 0;
 
             // Log por cada item
             $productoLog = Producto::find($productoId);
             \Log::info("Item: {$productoLog->referencia} | ProdID: {$productoId} | VarID: " . ($varianteId ?: 'NULL') .
-                       " | Original encontrado: " . ($itemOriginal ? 'SI' : 'NO') .
+                       " | Original encontrado: " . ($itemOriginal ? 'SI (ID=' . $itemOriginal->id . ')' : 'NO') .
                        " | Cantidad original: {$cantidadOriginal} | Cantidad nueva: {$cantidad}");
 
             // Skip validación SOLO si: ubicación no cambió, item existe, Y cantidad EXACTAMENTE igual
-            if (!$ubicacionCambio && $itemOriginal && $cantidad == $cantidadOriginal) {
+            if (!$ubicacionCambio && $itemOriginal && $cantidad === $cantidadOriginal) {
                 \Log::info("  -> SKIP validación (sin cambios)");
                 continue; // Solo skip si cantidad NO cambió
             }
 
-            \Log::info("  -> VALIDANDO stock");
+            \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad})");
 
             $stockQuery = StockProducto::where('producto_id', $productoId)
                 ->where('ubicacion_id', $ubicacionOrigenId);
@@ -346,9 +343,16 @@ class TrasladosController extends Controller
 
             if ($stockReal < $cantidad) {
                 $producto = Producto::find($productoId);
-                $debugInfo = "DEBUG: ProdID={$productoId}, VarID=" . ($varianteId ?: 'NULL') .
-                            ", ItemOrig=" . ($itemOriginal ? "SI (cant={$cantidadOriginal})" : 'NO') .
-                            ", CantNueva={$cantidad}, UbicCambio=" . ($ubicacionCambio ? 'SI' : 'NO');
+                $debugInfo = "DEBUG: Este item DEBIÓ validarse porque ";
+                if ($ubicacionCambio) {
+                    $debugInfo .= "cambió la ubicación origen";
+                } elseif (!$itemOriginal) {
+                    $debugInfo .= "es un item NUEVO (no estaba en el traslado original)";
+                } elseif ($cantidad !== $cantidadOriginal) {
+                    $debugInfo .= "cambió la cantidad de {$cantidadOriginal} a {$cantidad}";
+                } else {
+                    $debugInfo .= "ERROR EN LA LÓGICA - no debería validarse!";
+                }
                 return back()->withErrors([
                     'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. Disponible: {$stockReal}, Solicitado: {$cantidad}. {$debugInfo}"
                 ])->withInput();
