@@ -377,6 +377,7 @@
     @php
       $itemsJson = $items->map(function($i) {
         return [
+          'item_original_id' => $i->id, // ID del item original para rastreo
           'producto_id' => (string) $i->producto_id,
           'variante_producto_id' => $i->variante_producto_id ? (string) $i->variante_producto_id : null,
           'cantidad' => $i->cantidad,
