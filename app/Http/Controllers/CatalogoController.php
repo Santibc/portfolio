@@ -424,7 +424,7 @@ class CatalogoController extends Controller
         ]);
         
         DB::beginTransaction();
-        
+
         try {
             // Determinar cliente y enlace
             $cliente = null;
@@ -445,7 +445,32 @@ class CatalogoController extends Controller
             else {
                 throw new \Exception('No se pudo identificar el cliente.');
             }
-            
+
+            // NUEVO: Validar y bloquear stock ANTES de crear la cotización
+            foreach ($request->items as $item) {
+                $producto = Producto::findOrFail($item['producto_id']);
+
+                // Bloqueo pesimista para evitar race conditions
+                $stockQuery = StockProducto::where('producto_id', $item['producto_id']);
+
+                if (!empty($item['variante_id'])) {
+                    $stockQuery->where('variante_producto_id', $item['variante_id']);
+                } else {
+                    $stockQuery->whereNull('variante_producto_id');
+                }
+
+                $stock = $stockQuery->lockForUpdate()->first();
+
+                // Validar con el stock BLOQUEADO
+                if ($producto->controlar_stock && !$producto->permitir_venta_sin_stock) {
+                    $disponibleReal = ($stock->cantidad_disponible ?? 0) - ($stock->cantidad_reservada ?? 0);
+
+                    if ($disponibleReal < $item['cantidad']) {
+                        throw new \Exception("Stock insuficiente para {$producto->nombre}. Disponible: {$disponibleReal}, Solicitado: {$item['cantidad']}");
+                    }
+                }
+            }
+
             // Determinar flete del cliente
             $valorFlete = ($cliente->aplica_flete && $cliente->valor_flete > 0)
                 ? $cliente->valor_flete
@@ -464,20 +489,14 @@ class CatalogoController extends Controller
                 'observaciones_vendedor' => $request->observaciones_vendedor
             ]);
             $solicitud->save();
-            
+
             // Obtener lista de precios
             $listaPrecioId = $cliente->lista_precio_id;
             $montoTotal = 0;
-            
-            // Agregar items y verificar stock SOLO si es necesario
+
+            // Agregar items y descontar stock DIRECTAMENTE (no reservar, ya que estado=aplicada)
             foreach ($request->items as $item) {
-                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])->findOrFail($item['producto_id']);
-                
-                // Verificar si se puede agregar al carrito
-                $validacion = $this->puedeAgregarAlCarrito($producto, $item['cantidad'], $item['variante_id'] ?? null);
-                if (!$validacion['puede']) {
-                    throw new \Exception("Error con el producto {$producto->nombre}: {$validacion['mensaje']}");
-                }
+                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])->findOrFail($item['producto_id'])
                 
                 // Determinar precio
                 $precioUnitario = 0;
@@ -514,7 +533,7 @@ class CatalogoController extends Controller
                 $montoTotal += $precioTotal;
 
                 // Crear item
-                ItemSolicitudCotizacion::create([
+                $itemCotizacion = ItemSolicitudCotizacion::create([
                     'solicitud_cotizacion_id' => $solicitud->id,
                     'producto_id' => $producto->id,
                     'variante_producto_id' => $item['variante_id'] ?? null,
@@ -528,42 +547,55 @@ class CatalogoController extends Controller
                     'marca_producto' => $producto->marca,
                     'info_variante' => $infoVariante
                 ]);
+
+                // NUEVO: Descontar stock DIRECTAMENTE (ya que estado=aplicada, NO se reserva)
+                if ($producto->controlar_stock) {
+                    $stockQuery = StockProducto::where('producto_id', $producto->id);
+
+                    if (!empty($item['variante_id'])) {
+                        $stockQuery->where('variante_producto_id', $item['variante_id']);
+                    } else {
+                        $stockQuery->whereNull('variante_producto_id');
+                    }
+
+                    $stock = $stockQuery->first();
+
+                    if ($stock) {
+                        $stockAnterior = $stock->cantidad_disponible;
+                        $stock->cantidad_disponible -= $item['cantidad'];
+                        $stock->save();
+
+                        // Crear movimiento de stock
+                        MovimientoStock::create([
+                            'producto_id' => $producto->id,
+                            'variante_producto_id' => $item['variante_id'] ?? null,
+                            'ubicacion_id' => $stock->ubicacion_id,
+                            'tipo_movimiento' => 'salida',
+                            'cantidad' => $item['cantidad'],
+                            'stock_anterior' => $stockAnterior,
+                            'stock_nuevo' => $stock->cantidad_disponible,
+                            'origen' => 'venta',
+                            'referencia_documento' => $solicitud->numero_solicitud,
+                            'motivo' => "Venta aplicada desde solicitud de cotización",
+                            'usuario_id' => Auth::id(),
+                        ]);
+                    }
+                }
             }
-            
+
             // Actualizar monto total (incluye flete)
             $solicitud->update(['monto_total' => $montoTotal + $valorFlete]);
 
             DB::commit();
 
-            // Crear reservas de stock para la cotización
-            $reservaService = new ReservaStockService();
-            $resultadoReserva = $reservaService->reservarParaCotizacion($solicitud);
-
-            $advertenciasReserva = [];
-            if (!$resultadoReserva['exito'] && !empty($resultadoReserva['errores'])) {
-                foreach ($resultadoReserva['errores'] as $error) {
-                    $advertenciasReserva[] = $error['mensaje'] ?? 'Error al reservar stock';
-                }
-            }
-
             // Disparar evento para crear cuenta de cliente automáticamente
             // TEMPORALMENTE DESACTIVADO - Descomentar para reactivar creación automática de cuenta
             // event(new CotizacionCreada($solicitud));
 
-            $mensaje = 'Solicitud de cotización creada exitosamente.';
-            if ($resultadoReserva['reservas_creadas'] > 0) {
-                $mensaje .= " Se reservó stock por 24 horas ({$resultadoReserva['reservas_creadas']} items).";
-            }
-
             return response()->json([
                 'success' => true,
-                'mensaje' => $mensaje,
-                'numero_solicitud' => $solicitud->numero_solicitud,
-                'reserva' => [
-                    'creada' => $resultadoReserva['reservas_creadas'] > 0,
-                    'items_reservados' => $resultadoReserva['reservas_creadas'],
-                    'advertencias' => $advertenciasReserva
-                ]
+                'mensaje' => 'Solicitud de cotización creada y aplicada exitosamente. Stock descontado.',
+                'numero_solicitud' => $solicitud->numero_solicitud
             ]);
             
         } catch (\Exception $e) {

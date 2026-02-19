@@ -476,6 +476,106 @@ class ReservaStockService
     }
 
     /**
+     * Liberar reservas directamente del stock (sin depender de registros ReservaStock)
+     * Útil para cotizaciones aplicadas que tienen cantidad_reservada pero sin registros de reserva
+     *
+     * @param SolicitudCotizacion $solicitud
+     * @return bool
+     */
+    public function liberarReservasDirectamente(SolicitudCotizacion $solicitud): bool
+    {
+        DB::beginTransaction();
+
+        try {
+            foreach ($solicitud->items as $item) {
+                $stockQuery = StockProducto::where('producto_id', $item->producto_id);
+
+                if ($item->variante_id) {
+                    $stockQuery->where('variante_producto_id', $item->variante_id);
+                } else {
+                    $stockQuery->whereNull('variante_producto_id');
+                }
+
+                $stock = $stockQuery->lockForUpdate()->first();
+
+                if ($stock && $stock->cantidad_reservada > 0) {
+                    $cantidadALiberar = min($item->cantidad, $stock->cantidad_reservada);
+
+                    if ($cantidadALiberar > 0) {
+                        $stock->cantidad_reservada -= $cantidadALiberar;
+                        $stock->save();
+
+                        Log::info("Liberada reserva directa: Producto {$item->producto_id}, Cantidad {$cantidadALiberar}, Stock reservado antes: {$stock->cantidad_reservada + $cantidadALiberar}");
+                    }
+                }
+            }
+
+            DB::commit();
+            return true;
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error liberando reservas directamente cotización {$solicitud->id}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Reservar stock dentro de una transacción existente (sin iniciar nueva transacción)
+     * Para usar cuando ya estamos dentro de un DB::beginTransaction()
+     *
+     * @param SolicitudCotizacion $solicitud
+     * @return bool
+     */
+    public function reservarParaCotizacionEnTransaccion(SolicitudCotizacion $solicitud): bool
+    {
+        // NO usar DB::beginTransaction() - ya estamos en una transacción
+
+        try {
+            foreach ($solicitud->items as $item) {
+                $stockQuery = StockProducto::where('producto_id', $item->producto_id);
+
+                if ($item->variante_id) {
+                    $stockQuery->where('variante_producto_id', $item->variante_id);
+                } else {
+                    $stockQuery->whereNull('variante_producto_id');
+                }
+
+                $stock = $stockQuery->first();
+
+                if (!$stock) {
+                    // Producto sin control de stock, omitir
+                    continue;
+                }
+
+                $disponibleReal = $stock->cantidad_disponible - $stock->cantidad_reservada;
+                $producto = $stock->producto;
+                $permiteVentaSinStock = $producto && $producto->permitir_venta_sin_stock;
+
+                if ($disponibleReal < $item->cantidad && !$permiteVentaSinStock) {
+                    throw new Exception("Stock insuficiente para producto {$item->producto_id}. Disponible: {$disponibleReal}, Solicitado: {$item->cantidad}");
+                }
+
+                // Calcular cantidad a reservar
+                $cantidadAReservar = min($item->cantidad, $disponibleReal);
+
+                if ($cantidadAReservar > 0) {
+                    $stock->cantidad_reservada += $cantidadAReservar;
+                    $stock->save();
+
+                    Log::info("Reservado en transacción: Producto {$item->producto_id}, Cantidad {$cantidadAReservar}");
+                }
+            }
+
+            return true;
+
+        } catch (Exception $e) {
+            Log::error("Error reservando stock en transacción: " . $e->getMessage());
+            throw $e; // Re-lanzar para que la transacción padre haga rollback
+        }
+    }
+
+    /**
      * Obtener resumen de reservas activas del sistema
      *
      * @return array

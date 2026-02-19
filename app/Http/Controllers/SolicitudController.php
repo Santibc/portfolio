@@ -765,7 +765,11 @@ class SolicitudController extends Controller
 
             // Liberar/aplicar reservas de stock
             $this->reservaService->aplicarReservas($solicitud);
-            
+
+            // NUEVO: Liberar reservas directamente como failsafe
+            // Esto asegura que se liberen reservas incluso si no hay registros en reservas_stock
+            $this->reservaService->liberarReservasDirectamente($solicitud);
+
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
                 'cliente',
