@@ -753,9 +753,12 @@ class TrasladosController extends Controller
             'traslado_id' => 'nullable|exists:traslados_stock,id',
         ]);
 
-        // Filtrar por ubicación Y producto
+        // Filtrar por ubicación Y producto (incluir stock sin ubicación asignada)
         $query = StockProducto::where('producto_id', $request->producto_id)
-            ->where('ubicacion_id', $request->ubicacion_id);
+            ->where(function($q) use ($request) {
+                $q->where('ubicacion_id', $request->ubicacion_id)
+                  ->orWhereNull('ubicacion_id');
+            });
 
         if ($request->variante_producto_id) {
             $query->where('variante_producto_id', $request->variante_producto_id);
