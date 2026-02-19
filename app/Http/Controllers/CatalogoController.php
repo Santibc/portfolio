@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Events\CotizacionCreada;
 use App\Services\ReservaStockService;
+use App\Models\StockProducto;
 
 class CatalogoController extends Controller
 {
