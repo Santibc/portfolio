@@ -283,13 +283,21 @@ class TrasladosController extends Controller
         $ubicacionOrigenId = $request->ubicacion_origen_id;
         $ubicacionCambio = ($traslado->ubicacion_origen_id != $ubicacionOrigenId);
 
+        // Log de debug temporal
+        \Log::info("=== VALIDACIÓN TRASLADO #{$traslado->id} ===");
+        \Log::info("Ubicación cambio: " . ($ubicacionCambio ? 'SI' : 'NO'));
+        \Log::info("Total items en request: " . count($request->items));
+        \Log::info("Total items originales: " . $traslado->items->count());
+
         foreach ($request->items as $itemData) {
             $cantidad = (int) $itemData['cantidad'];
-            $varianteId = $itemData['variante_producto_id'] ?? null;
+            // Convertir string vacío a null para variante_id
+            $varianteId = !empty($itemData['variante_producto_id']) ? $itemData['variante_producto_id'] : null;
+            $productoId = $itemData['producto_id'];
 
             // Buscar item original para comparar
             $itemOriginalQuery = $traslado->items()
-                ->where('producto_id', $itemData['producto_id']);
+                ->where('producto_id', $productoId);
 
             if ($varianteId) {
                 $itemOriginalQuery->where('variante_producto_id', $varianteId);
@@ -300,12 +308,21 @@ class TrasladosController extends Controller
             $itemOriginal = $itemOriginalQuery->first();
             $cantidadOriginal = $itemOriginal ? $itemOriginal->cantidad : 0;
 
+            // Log por cada item
+            $productoLog = Producto::find($productoId);
+            \Log::info("Item: {$productoLog->referencia} | ProdID: {$productoId} | VarID: " . ($varianteId ?: 'NULL') .
+                       " | Original encontrado: " . ($itemOriginal ? 'SI' : 'NO') .
+                       " | Cantidad original: {$cantidadOriginal} | Cantidad nueva: {$cantidad}");
+
             // Skip validación SOLO si: ubicación no cambió, item existe, Y cantidad EXACTAMENTE igual
             if (!$ubicacionCambio && $itemOriginal && $cantidad == $cantidadOriginal) {
+                \Log::info("  -> SKIP validación (sin cambios)");
                 continue; // Solo skip si cantidad NO cambió
             }
 
-            $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
+            \Log::info("  -> VALIDANDO stock");
+
+            $stockQuery = StockProducto::where('producto_id', $productoId)
                 ->where('ubicacion_id', $ubicacionOrigenId);
 
             if ($varianteId) {
@@ -328,9 +345,12 @@ class TrasladosController extends Controller
             }
 
             if ($stockReal < $cantidad) {
-                $producto = Producto::find($itemData['producto_id']);
+                $producto = Producto::find($productoId);
+                $debugInfo = "DEBUG: ProdID={$productoId}, VarID=" . ($varianteId ?: 'NULL') .
+                            ", ItemOrig=" . ($itemOriginal ? "SI (cant={$cantidadOriginal})" : 'NO') .
+                            ", CantNueva={$cantidad}, UbicCambio=" . ($ubicacionCambio ? 'SI' : 'NO');
                 return back()->withErrors([
-                    'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. Disponible: {$stockReal}, Solicitado: {$cantidad}"
+                    'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. Disponible: {$stockReal}, Solicitado: {$cantidad}. {$debugInfo}"
                 ])->withInput();
             }
         }
