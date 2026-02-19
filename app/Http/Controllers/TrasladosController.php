@@ -279,62 +279,67 @@ class TrasladosController extends Controller
             'items.*.item_original_id' => 'nullable|integer|exists:items_traslado_stock,id',
         ]);
 
-        // VALIDAR stock disponible ANTES de iniciar transacción
-        // Solo validar items que cambiaron de cantidad o ubicación
+        // ========================================
+        // NUEVA LÓGICA: Validar solo items que REALMENTE cambiaron
+        // Agrupa items por (producto_id + variante_id) y compara cantidades totales
+        // ========================================
+
+        // PASO 1: Agrupar items originales por clave
+        $itemsOriginalesAgrupados = [];
+        foreach ($traslado->items as $itemOrig) {
+            $clave = $itemOrig->producto_id . '_' . ($itemOrig->variante_producto_id ?: 'null');
+            if (!isset($itemsOriginalesAgrupados[$clave])) {
+                $itemsOriginalesAgrupados[$clave] = [
+                    'producto_id' => $itemOrig->producto_id,
+                    'variante_producto_id' => $itemOrig->variante_producto_id,
+                    'cantidad' => 0,
+                    'referencia' => $itemOrig->producto->referencia ?? '?'
+                ];
+            }
+            $itemsOriginalesAgrupados[$clave]['cantidad'] += $itemOrig->cantidad;
+        }
+
+        // PASO 2: Agrupar items editados por clave
+        $itemsEditadosAgrupados = [];
+        foreach ($request->items as $itemData) {
+            $productoId = (int) $itemData['producto_id'];
+            $varianteId = !empty($itemData['variante_producto_id']) ? (int) $itemData['variante_producto_id'] : null;
+            $clave = $productoId . '_' . ($varianteId ?: 'null');
+
+            if (!isset($itemsEditadosAgrupados[$clave])) {
+                $itemsEditadosAgrupados[$clave] = [
+                    'producto_id' => $productoId,
+                    'variante_producto_id' => $varianteId,
+                    'cantidad' => 0
+                ];
+            }
+            $itemsEditadosAgrupados[$clave]['cantidad'] += (int) $itemData['cantidad'];
+        }
+
+        // PASO 3: Validar SOLO lo que cambió
         $ubicacionOrigenId = $request->ubicacion_origen_id;
         $ubicacionCambio = ($traslado->ubicacion_origen_id != $ubicacionOrigenId);
 
-        // Log de debug temporal
-        \Log::info("=== VALIDACIÓN TRASLADO #{$traslado->id} ===");
+        \Log::info("=== VALIDACIÓN TRASLADO #{$traslado->id} (ENFOQUE DIFF) ===");
         \Log::info("Ubicación cambio: " . ($ubicacionCambio ? 'SI' : 'NO'));
-        \Log::info("Total items en request: " . count($request->items));
-        \Log::info("Total items originales: " . $traslado->items->count());
+        \Log::info("Items agrupados originales: " . count($itemsOriginalesAgrupados));
+        \Log::info("Items agrupados editados: " . count($itemsEditadosAgrupados));
 
-        foreach ($request->items as $itemData) {
-            $cantidad = (int) $itemData['cantidad'];
-            // Convertir string vacío a null para variante_id
-            $varianteId = !empty($itemData['variante_producto_id']) ? (int) $itemData['variante_producto_id'] : null;
-            $productoId = (int) $itemData['producto_id'];
-            $itemOriginalId = !empty($itemData['item_original_id']) ? (int) $itemData['item_original_id'] : null;
+        foreach ($itemsEditadosAgrupados as $clave => $itemEditado) {
+            $cantidadEditada = $itemEditado['cantidad'];
+            $cantidadOriginal = $itemsOriginalesAgrupados[$clave]['cantidad'] ?? 0;
+            $referenciaProducto = $itemsOriginalesAgrupados[$clave]['referencia'] ??
+                                 (Producto::find($itemEditado['producto_id'])->referencia ?? '?');
 
-            // Buscar item original por su ID específico (si fue eliminado y re-agregado, no tendrá ID)
-            $itemOriginal = null;
-            if ($itemOriginalId) {
-                $itemOriginal = $traslado->items->firstWhere('id', $itemOriginalId);
+            // SKIP si no cambió ubicación Y cantidad es igual
+            if (!$ubicacionCambio && $cantidadEditada === $cantidadOriginal) {
+                \Log::info("SKIP: {$referenciaProducto} ({$clave}) - cantidad sin cambios ({$cantidadOriginal})");
+                continue;
             }
 
-            $cantidadOriginal = $itemOriginal ? (int) $itemOriginal->cantidad : 0;
-            $esItemNuevo = !$itemOriginal;
-
-            // Log por cada item
-            $productoLog = Producto::find($productoId);
-            \Log::info("Item: {$productoLog->referencia} | ProdID: {$productoId} | VarID: " . ($varianteId ?: 'NULL') .
-                       " | ItemOrigID: " . ($itemOriginalId ?: 'NULL') .
-                       " | Original encontrado: " . ($itemOriginal ? 'SI (ID=' . $itemOriginal->id . ')' : 'NO (item nuevo)') .
-                       " | Cantidad original: {$cantidadOriginal} | Cantidad nueva: {$cantidad}");
-
-            // Skip validación SOLO si: ubicación no cambió, item existe, Y cantidad EXACTAMENTE igual
-            if (!$ubicacionCambio && $itemOriginal && $cantidad === $cantidadOriginal) {
-                \Log::info("  -> SKIP validación (sin cambios)");
-                continue; // Solo skip si cantidad NO cambió
-            }
-
-            $logExtra = "";
-            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO && !$ubicacionCambio) {
-                $cantEnTraslado = $esItemNuevo ?
-                    $traslado->items
-                        ->where('producto_id', $productoId)
-                        ->when($varianteId, fn($q) => $q->where('variante_producto_id', $varianteId), fn($q) => $q->whereNull('variante_producto_id'))
-                        ->sum('cantidad') :
-                    $cantidadOriginal;
-                $logExtra = " (se sumará {$cantEnTraslado} del traslado original)";
-            }
-
-            if ($esItemNuevo) {
-                \Log::info("  -> VALIDANDO stock (item NUEVO){$logExtra}");
-            } else {
-                \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad}){$logExtra}");
-            }
+            // VALIDAR stock disponible
+            $productoId = $itemEditado['producto_id'];
+            $varianteId = $itemEditado['variante_producto_id'];
 
             $stockQuery = StockProducto::where('producto_id', $productoId)
                 ->where('ubicacion_id', $ubicacionOrigenId);
@@ -346,53 +351,28 @@ class TrasladosController extends Controller
             }
 
             $stockRecord = $stockQuery->first();
-
-            // Stock real = disponible - reservado
             $stockDisponible = $stockRecord ? $stockRecord->cantidad_disponible : 0;
             $stockReservado = $stockRecord ? $stockRecord->cantidad_reservada : 0;
             $stockReal = $stockDisponible - $stockReservado;
 
-            // Si editando en_transito Y ubicación NO cambió, sumar de vuelta stock del traslado original
+            // Si EN_TRANSITO y ubicación NO cambió, sumar cantidad original
             if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO && !$ubicacionCambio) {
-                // Si es item modificado, ya tenemos $cantidadOriginal del item específico
-                // Si es item NUEVO, debemos buscar si había items de este producto en el traslado original
-                $cantidadEnTrasladoOriginal = $cantidadOriginal; // Para items modificados
-
-                if ($esItemNuevo) {
-                    // Buscar si hay items de este producto/variante en el traslado original
-                    $cantidadEnTrasladoOriginal = $traslado->items
-                        ->where('producto_id', $productoId)
-                        ->when($varianteId, function($q) use ($varianteId) {
-                            return $q->where('variante_producto_id', $varianteId);
-                        }, function($q) {
-                            return $q->whereNull('variante_producto_id');
-                        })
-                        ->sum('cantidad');
-                }
-
-                $stockReal += $cantidadEnTrasladoOriginal;
+                $stockReal += $cantidadOriginal;
             }
 
-            if ($stockReal < $cantidad) {
+            if ($stockReal < $cantidadEditada) {
                 $producto = Producto::find($productoId);
-                $debugInfo = "DEBUG: ";
-                if ($ubicacionCambio) {
-                    $debugInfo .= "Cambió ubicación origen";
-                } elseif ($esItemNuevo) {
-                    $cantEnTraslado = $traslado->items
-                        ->where('producto_id', $productoId)
-                        ->when($varianteId, fn($q) => $q->where('variante_producto_id', $varianteId), fn($q) => $q->whereNull('variante_producto_id'))
-                        ->sum('cantidad');
-                    $debugInfo .= "Item NUEVO (eliminado y re-agregado). Stock bodega={$stockDisponible}, Reservado={$stockReservado}, En traslado original={$cantEnTraslado}, Total disponible={$stockReal}";
-                } elseif ($cantidad !== $cantidadOriginal) {
-                    $debugInfo .= "Cantidad cambió de {$cantidadOriginal} a {$cantidad}. Stock bodega={$stockDisponible}, Reservado={$stockReservado}, Cantidad original={$cantidadOriginal}, Total disponible={$stockReal}";
-                } else {
-                    $debugInfo .= "ERROR EN LA LÓGICA - no debería validarse!";
-                }
+                $cambio = $cantidadEditada - $cantidadOriginal;
+                $accion = $cantidadOriginal == 0 ? 'NUEVO' : ($cambio > 0 ? "AUMENTO +{$cambio}" : "REDUCCIÓN {$cambio}");
+
                 return back()->withErrors([
-                    'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. Disponible: {$stockReal}, Solicitado: {$cantidad}. {$debugInfo}"
+                    'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. " .
+                              "Disponible: {$stockReal}, Solicitado: {$cantidadEditada}. " .
+                              "Cambio: {$accion} (original: {$cantidadOriginal})"
                 ])->withInput();
             }
+
+            \Log::info("VALIDADO: {$referenciaProducto} ({$clave}) - {$cantidadOriginal} → {$cantidadEditada}");
         }
 
         DB::beginTransaction();
