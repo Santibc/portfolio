@@ -379,7 +379,11 @@ class TrasladosController extends Controller
         try {
             // Si estaba en tránsito, devolver el stock de los ítems actuales al origen
             if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+                \Log::info("=== REVERSIÓN DE STOCK (traslado EN_TRANSITO) ===");
                 foreach ($traslado->items as $item) {
+                    $producto = Producto::find($item->producto_id);
+                    $referencia = $producto->referencia ?? '?';
+
                     $stockQuery = StockProducto::where('producto_id', $item->producto_id)
                         ->where('ubicacion_id', $traslado->ubicacion_origen_id);
 
@@ -409,6 +413,10 @@ class TrasladosController extends Controller
                             'motivo' => 'Edición de traslado - reversión',
                             'usuario_id' => auth()->id(),
                         ]);
+
+                        \Log::info("REVERSIÓN: {$referencia} +{$item->cantidad} (stock: {$stockAnterior} → {$stockOrigen->cantidad_disponible})");
+                    } else {
+                        \Log::warning("REVERSIÓN FALLIDA: {$referencia} - no se encontró stock en origen");
                     }
                 }
             }
@@ -437,8 +445,12 @@ class TrasladosController extends Controller
 
                 // Si estaba en tránsito, descontar stock de los nuevos ítems
                 if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+                    $producto = Producto::find($itemData['producto_id']);
+                    $referencia = $producto->referencia ?? '?';
+
+                    // CRÍTICO: Solo descontar de la ubicación ORIGEN, no de cualquier ubicación
                     $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
-                        ->where('cantidad_disponible', '>', 0);
+                        ->where('ubicacion_id', $request->ubicacion_origen_id);
 
                     if (!empty($varianteId)) {
                         $stockQuery->where('variante_producto_id', $varianteId);
@@ -446,26 +458,21 @@ class TrasladosController extends Controller
                         $stockQuery->whereNull('variante_producto_id');
                     }
 
-                    $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$request->ubicacion_origen_id])->get();
+                    $stockOrigen = $stockQuery->first();
 
-                    // NOTA: Ya validamos el stock arriba con el enfoque "diff", aquí solo descontamos
-
-                    $restante = $cantidad;
-                    foreach ($stockRecords as $stockRecord) {
-                        if ($restante <= 0) break;
-                        $descontar = min($restante, $stockRecord->cantidad_disponible);
-                        $stockAnterior = $stockRecord->cantidad_disponible;
-                        $stockRecord->cantidad_disponible -= $descontar;
-                        $stockRecord->save();
+                    if ($stockOrigen) {
+                        $stockAnterior = $stockOrigen->cantidad_disponible;
+                        $stockOrigen->cantidad_disponible -= $cantidad;
+                        $stockOrigen->save();
 
                         MovimientoStock::create([
                             'producto_id' => $itemData['producto_id'],
                             'variante_producto_id' => $varianteId,
-                            'ubicacion_id' => $stockRecord->ubicacion_id,
+                            'ubicacion_id' => $request->ubicacion_origen_id,
                             'tipo_movimiento' => 'salida',
-                            'cantidad' => $descontar,
+                            'cantidad' => $cantidad,
                             'stock_anterior' => $stockAnterior,
-                            'stock_nuevo' => $stockRecord->cantidad_disponible,
+                            'stock_nuevo' => $stockOrigen->cantidad_disponible,
                             'referencia_documento' => $traslado->numero_traslado,
                             'origen' => 'traslado',
                             'tipo_operacion' => $request->tipo_operacion,
@@ -473,7 +480,9 @@ class TrasladosController extends Controller
                             'usuario_id' => auth()->id(),
                         ]);
 
-                        $restante -= $descontar;
+                        \Log::info("DEDUCCIÓN: {$referencia} -{$cantidad} (stock: {$stockAnterior} → {$stockOrigen->cantidad_disponible})");
+                    } else {
+                        \Log::warning("DEDUCCIÓN FALLIDA: {$referencia} - no se encontró stock en origen");
                     }
                 }
             }
