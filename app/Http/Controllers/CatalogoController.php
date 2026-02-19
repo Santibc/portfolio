@@ -494,10 +494,10 @@ class CatalogoController extends Controller
             $listaPrecioId = $cliente->lista_precio_id;
             $montoTotal = 0;
 
-            // Agregar items y descontar stock DIRECTAMENTE (no reservar, ya que estado=aplicada)
+            // Agregar items (NO descontar stock, solo se RESERVA)
             foreach ($request->items as $item) {
-                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])->findOrFail($item['producto_id'])
-                
+                $producto = Producto::with(['stockPrincipal', 'variantes.stock'])->findOrFail($item['producto_id']);
+
                 // Determinar precio
                 $precioUnitario = 0;
                 $precioOriginal = 0;
@@ -547,44 +547,18 @@ class CatalogoController extends Controller
                     'marca_producto' => $producto->marca,
                     'info_variante' => $infoVariante
                 ]);
-
-                // NUEVO: Descontar stock DIRECTAMENTE (ya que estado=aplicada, NO se reserva)
-                if ($producto->controlar_stock) {
-                    $stockQuery = StockProducto::where('producto_id', $producto->id);
-
-                    if (!empty($item['variante_id'])) {
-                        $stockQuery->where('variante_producto_id', $item['variante_id']);
-                    } else {
-                        $stockQuery->whereNull('variante_producto_id');
-                    }
-
-                    $stock = $stockQuery->first();
-
-                    if ($stock) {
-                        $stockAnterior = $stock->cantidad_disponible;
-                        $stock->cantidad_disponible -= $item['cantidad'];
-                        $stock->save();
-
-                        // Crear movimiento de stock
-                        MovimientoStock::create([
-                            'producto_id' => $producto->id,
-                            'variante_producto_id' => $item['variante_id'] ?? null,
-                            'ubicacion_id' => $stock->ubicacion_id,
-                            'tipo_movimiento' => 'salida',
-                            'cantidad' => $item['cantidad'],
-                            'stock_anterior' => $stockAnterior,
-                            'stock_nuevo' => $stock->cantidad_disponible,
-                            'origen' => 'venta',
-                            'referencia_documento' => $solicitud->numero_solicitud,
-                            'motivo' => "Venta aplicada desde solicitud de cotización",
-                            'usuario_id' => Auth::id(),
-                        ]);
-                    }
-                }
             }
 
             // Actualizar monto total (incluye flete)
             $solicitud->update(['monto_total' => $montoTotal + $valorFlete]);
+
+            // RESERVAR stock (incrementar cantidad_reservada) - NO descontar
+            $reservaService = new ReservaStockService();
+            $resultadoReserva = $reservaService->reservarParaCotizacionEnTransaccion($solicitud);
+
+            if (!$resultadoReserva) {
+                throw new \Exception("No se pudo reservar el stock completamente");
+            }
 
             DB::commit();
 
