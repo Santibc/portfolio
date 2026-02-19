@@ -336,8 +336,9 @@
           </td>
           <td>${item.variante_nombre || '-'}</td>
           <td>
-            ${item.cantidad}
-            <input type="hidden" name="items[${i}][cantidad]" value="${item.cantidad}">
+            <input type="number" name="items[${i}][cantidad]" value="${item.cantidad}"
+                   class="form-control form-control-sm" min="1" max="9999"
+                   onchange="actualizarCantidadItem(${item.idx}, this.value)" style="width:80px">
           </td>
           <td class="text-center">
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${item.idx})">
@@ -354,6 +355,13 @@
     window.eliminarItem = function(idx) {
       items = items.filter(i => i.idx !== idx);
       renderItems();
+    };
+
+    window.actualizarCantidadItem = function(idx, nuevaCantidad) {
+      const item = items.find(i => i.idx === idx);
+      if (item) {
+        item.cantidad = parseInt(nuevaCantidad) || 1;
+      }
     };
 
     function resetAddRow() {

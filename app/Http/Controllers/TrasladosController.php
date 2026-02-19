@@ -279,10 +279,31 @@ class TrasladosController extends Controller
         ]);
 
         // VALIDAR stock disponible ANTES de iniciar transacción
+        // Solo validar items que cambiaron de cantidad o ubicación
         $ubicacionOrigenId = $request->ubicacion_origen_id;
+        $ubicacionCambio = ($traslado->ubicacion_origen_id != $ubicacionOrigenId);
+
         foreach ($request->items as $itemData) {
             $cantidad = (int) $itemData['cantidad'];
             $varianteId = $itemData['variante_producto_id'] ?? null;
+
+            // Buscar item original para comparar
+            $itemOriginalQuery = $traslado->items()
+                ->where('producto_id', $itemData['producto_id']);
+
+            if ($varianteId) {
+                $itemOriginalQuery->where('variante_producto_id', $varianteId);
+            } else {
+                $itemOriginalQuery->whereNull('variante_producto_id');
+            }
+
+            $itemOriginal = $itemOriginalQuery->first();
+            $cantidadOriginal = $itemOriginal ? $itemOriginal->cantidad : 0;
+
+            // Skip validación si: ubicación no cambió, item existe, y cantidad no cambió
+            if (!$ubicacionCambio && $itemOriginal && $cantidad == $cantidadOriginal) {
+                continue;
+            }
 
             $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
                 ->where('ubicacion_id', $ubicacionOrigenId);
@@ -300,19 +321,9 @@ class TrasladosController extends Controller
             $stockReservado = $stockRecord ? $stockRecord->cantidad_reservada : 0;
             $stockReal = $stockDisponible - $stockReservado;
 
-            // Si editando en_transito Y la ubicación origen NO cambió, sumar de vuelta los items originales
+            // Si editando en_transito Y ubicación NO cambió, sumar de vuelta cantidad original
             if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO &&
-                $traslado->ubicacion_origen_id == $ubicacionOrigenId) {
-                $cantidadOriginalQuery = $traslado->items()
-                    ->where('producto_id', $itemData['producto_id']);
-
-                if ($varianteId) {
-                    $cantidadOriginalQuery->where('variante_producto_id', $varianteId);
-                } else {
-                    $cantidadOriginalQuery->whereNull('variante_producto_id');
-                }
-
-                $cantidadOriginal = $cantidadOriginalQuery->sum('cantidad');
+                !$ubicacionCambio && $cantidadOriginal > 0) {
                 $stockReal += $cantidadOriginal;
             }
 
