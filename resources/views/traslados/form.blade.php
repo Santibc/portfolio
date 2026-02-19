@@ -262,20 +262,24 @@
     async function actualizarStock() {
       const productoId = selProducto.value;
       const varianteId = selVariante.value;
-      if (!productoId) return;
+      const ubicacionId = ubicacionOrigenSelect.value;
+      if (!productoId || !ubicacionId) return;
 
-      const params = new URLSearchParams({ producto_id: productoId });
+      const params = new URLSearchParams({
+        producto_id: productoId,
+        ubicacion_id: ubicacionId
+      });
       if (varianteId) params.append('variante_producto_id', varianteId);
+
+      @if($traslado->id)
+      params.append('traslado_id', '{{ $traslado->id }}');
+      @endif
 
       try {
         const res = await fetch(`/traslados/stock-disponible?${params}`);
         const data = await res.json();
 
-        const yaAgregado = items
-          .filter(i => i.producto_id == productoId && (i.variante_producto_id || '') == (varianteId || ''))
-          .reduce((sum, i) => sum + i.cantidad, 0);
-
-        const stockReal = Math.max(0, data.stock_disponible - yaAgregado);
+        const stockReal = data.stock_disponible;
         selStock.textContent = stockReal;
         selCantidad.max = stockReal;
         if (parseInt(selCantidad.value) > stockReal) selCantidad.value = stockReal;
