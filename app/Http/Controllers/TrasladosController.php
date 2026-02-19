@@ -300,8 +300,9 @@ class TrasladosController extends Controller
             $stockReservado = $stockRecord ? $stockRecord->cantidad_reservada : 0;
             $stockReal = $stockDisponible - $stockReservado;
 
-            // Si editando en_transito, sumar de vuelta los items originales de ESTE producto
-            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+            // Si editando en_transito Y la ubicación origen NO cambió, sumar de vuelta los items originales
+            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO &&
+                $traslado->ubicacion_origen_id == $ubicacionOrigenId) {
                 $cantidadOriginalQuery = $traslado->items()
                     ->where('producto_id', $itemData['producto_id']);
 
