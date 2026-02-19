@@ -554,7 +554,9 @@ class ReservaStockService
                 $permiteVentaSinStock = $producto && $producto->permitir_venta_sin_stock;
 
                 if ($disponibleReal < $item->cantidad && !$permiteVentaSinStock) {
-                    throw new Exception("Stock insuficiente para producto {$item->producto_id}. Disponible: {$disponibleReal}, Solicitado: {$item->cantidad}");
+                    $nombreProducto = $item->nombre_producto ?? ($producto->nombre ?? "ID {$item->producto_id}");
+                    $infoVariante = $item->info_variante ? " ({$item->info_variante})" : '';
+                    throw new Exception("Stock insuficiente para {$nombreProducto}{$infoVariante}. Disponible: {$disponibleReal}, Solicitado: {$item->cantidad}");
                 }
 
                 // Calcular cantidad a reservar
