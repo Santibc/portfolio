@@ -490,8 +490,8 @@ class ReservaStockService
             foreach ($solicitud->items as $item) {
                 $stockQuery = StockProducto::where('producto_id', $item->producto_id);
 
-                if ($item->variante_id) {
-                    $stockQuery->where('variante_producto_id', $item->variante_id);
+                if ($item->variante_producto_id) {
+                    $stockQuery->where('variante_producto_id', $item->variante_producto_id);
                 } else {
                     $stockQuery->whereNull('variante_producto_id');
                 }
@@ -534,15 +534,7 @@ class ReservaStockService
 
         try {
             foreach ($solicitud->items as $item) {
-                $stockQuery = StockProducto::where('producto_id', $item->producto_id);
-
-                if ($item->variante_id) {
-                    $stockQuery->where('variante_producto_id', $item->variante_id);
-                } else {
-                    $stockQuery->whereNull('variante_producto_id');
-                }
-
-                $stock = $stockQuery->first();
+                $stock = $this->obtenerStock($item->producto_id, $item->variante_producto_id);
 
                 if (!$stock) {
                     // Producto sin control de stock, omitir
