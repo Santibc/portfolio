@@ -447,12 +447,8 @@ class TrasladosController extends Controller
                     }
 
                     $stockRecords = $stockQuery->orderByRaw("CASE WHEN ubicacion_id = ? THEN 0 ELSE 1 END", [$request->ubicacion_origen_id])->get();
-                    $stockTotal = $stockRecords->sum('cantidad_disponible');
 
-                    if ($stockTotal < $cantidad) {
-                        $producto = Producto::find($itemData['producto_id']);
-                        throw new \Exception("No hay suficiente stock para: {$producto->referencia} - {$producto->nombre}");
-                    }
+                    // NOTA: Ya validamos el stock arriba con el enfoque "diff", aquí solo descontamos
 
                     $restante = $cantidad;
                     foreach ($stockRecords as $stockRecord) {
