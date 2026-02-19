@@ -276,6 +276,7 @@ class TrasladosController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.variante_producto_id' => 'nullable|exists:variantes_productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
+            'items.*.item_original_id' => 'nullable|integer|exists:items_traslado_stock,id',
         ]);
 
         // VALIDAR stock disponible ANTES de iniciar transacción
@@ -294,21 +295,22 @@ class TrasladosController extends Controller
             // Convertir string vacío a null para variante_id
             $varianteId = !empty($itemData['variante_producto_id']) ? (int) $itemData['variante_producto_id'] : null;
             $productoId = (int) $itemData['producto_id'];
+            $itemOriginalId = !empty($itemData['item_original_id']) ? (int) $itemData['item_original_id'] : null;
 
-            // Buscar item original en la colección ya cargada
-            $itemOriginal = $traslado->items->first(function ($item) use ($productoId, $varianteId) {
-                $matchProducto = $item->producto_id == $productoId;
-                $matchVariante = ($varianteId === null && $item->variante_producto_id === null) ||
-                                 ($varianteId !== null && $item->variante_producto_id == $varianteId);
-                return $matchProducto && $matchVariante;
-            });
+            // Buscar item original por su ID específico (si fue eliminado y re-agregado, no tendrá ID)
+            $itemOriginal = null;
+            if ($itemOriginalId) {
+                $itemOriginal = $traslado->items->firstWhere('id', $itemOriginalId);
+            }
 
             $cantidadOriginal = $itemOriginal ? (int) $itemOriginal->cantidad : 0;
+            $esItemNuevo = !$itemOriginal;
 
             // Log por cada item
             $productoLog = Producto::find($productoId);
             \Log::info("Item: {$productoLog->referencia} | ProdID: {$productoId} | VarID: " . ($varianteId ?: 'NULL') .
-                       " | Original encontrado: " . ($itemOriginal ? 'SI (ID=' . $itemOriginal->id . ')' : 'NO') .
+                       " | ItemOrigID: " . ($itemOriginalId ?: 'NULL') .
+                       " | Original encontrado: " . ($itemOriginal ? 'SI (ID=' . $itemOriginal->id . ')' : 'NO (item nuevo)') .
                        " | Cantidad original: {$cantidadOriginal} | Cantidad nueva: {$cantidad}");
 
             // Skip validación SOLO si: ubicación no cambió, item existe, Y cantidad EXACTAMENTE igual
@@ -317,7 +319,11 @@ class TrasladosController extends Controller
                 continue; // Solo skip si cantidad NO cambió
             }
 
-            \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad})");
+            if ($esItemNuevo) {
+                \Log::info("  -> VALIDANDO stock (item NUEVO)");
+            } else {
+                \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad})");
+            }
 
             $stockQuery = StockProducto::where('producto_id', $productoId)
                 ->where('ubicacion_id', $ubicacionOrigenId);

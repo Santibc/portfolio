@@ -333,6 +333,7 @@
             ${item.producto_nombre}
             <input type="hidden" name="items[${i}][producto_id]" value="${item.producto_id}">
             <input type="hidden" name="items[${i}][variante_producto_id]" value="${item.variante_producto_id || ''}">
+            <input type="hidden" name="items[${i}][item_original_id]" value="${item.item_original_id || ''}">
           </td>
           <td>${item.variante_nombre || '-'}</td>
           <td>
