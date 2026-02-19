@@ -728,7 +728,27 @@ class TrasladosController extends Controller
         }
 
         $enTransitoTotal = $enTransitoQuery->sum('cantidad');
-        $stockEfectivo = max(0, $stockReal - $enTransitoTotal);
+        $stockEfectivo = $stockReal - $enTransitoTotal;
+
+        // Si estamos editando un traslado en_transito, sumar de vuelta sus cantidades
+        if ($request->traslado_id) {
+            $traslado = TrasladoStock::find($request->traslado_id);
+            if ($traslado && $traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
+                $cantidadEnTraslado = $traslado->items()
+                    ->where('producto_id', $request->producto_id);
+
+                if ($request->variante_producto_id) {
+                    $cantidadEnTraslado->where('variante_producto_id', $request->variante_producto_id);
+                } else {
+                    $cantidadEnTraslado->whereNull('variante_producto_id');
+                }
+
+                $cantidadEnTraslado = $cantidadEnTraslado->sum('cantidad');
+                $stockEfectivo += $cantidadEnTraslado;
+            }
+        }
+
+        $stockEfectivo = max(0, $stockEfectivo);
 
         return response()->json([
             'stock_disponible' => $stockEfectivo
