@@ -300,9 +300,9 @@ class TrasladosController extends Controller
             $itemOriginal = $itemOriginalQuery->first();
             $cantidadOriginal = $itemOriginal ? $itemOriginal->cantidad : 0;
 
-            // Skip validación si: ubicación no cambió, item existe, y cantidad no cambió
+            // Skip validación SOLO si: ubicación no cambió, item existe, Y cantidad EXACTAMENTE igual
             if (!$ubicacionCambio && $itemOriginal && $cantidad == $cantidadOriginal) {
-                continue;
+                continue; // Solo skip si cantidad NO cambió
             }
 
             $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
