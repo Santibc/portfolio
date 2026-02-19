@@ -502,10 +502,11 @@ class ReservaStockService
                     $cantidadALiberar = min($item->cantidad, $stock->cantidad_reservada);
 
                     if ($cantidadALiberar > 0) {
+                        $reservadoAntes = $stock->cantidad_reservada;
                         $stock->cantidad_reservada -= $cantidadALiberar;
                         $stock->save();
 
-                        Log::info("Liberada reserva directa: Producto {$item->producto_id}, Cantidad {$cantidadALiberar}, Stock reservado antes: {$stock->cantidad_reservada + $cantidadALiberar}");
+                        Log::info("Liberada reserva directa: Producto {$item->producto_id}, Cantidad {$cantidadALiberar}, Reservado antes: {$reservadoAntes}, Reservado después: {$stock->cantidad_reservada}");
                     }
                 }
             }
