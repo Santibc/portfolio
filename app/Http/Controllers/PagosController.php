@@ -130,7 +130,10 @@ class PagosController extends Controller
 
             // Si es crédito, auto-aprobar el pago
             $mensaje = 'Pago registrado exitosamente. Está pendiente de aprobación por el área de facturación.';
-            if ($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito')) {
+            if (
+                ($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito'))
+                || $validated['metodo_pago'] === 'credito'
+            ) {
                 $ultimoPago = $solicitud->pagos()->latest()->first();
                 if ($ultimoPago && $ultimoPago->estaPendiente()) {
                     $ultimoPago->update([
