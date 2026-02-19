@@ -65,6 +65,12 @@ class SolicitudController extends Controller
             }
 
 
+            // Filtro para rol inventarios: solo aplicadas con pago != pendiente
+            if ($user->hasRole('inventarios') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
+                $query->where('estado', 'aplicada')
+                      ->where('estado_pago', '!=', 'pendiente');
+            }
+
             // Filtrar por vendedor si se proporciona (solo admin puede usar este filtro)
             if ($request->filled('vendedor_id') && $user->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                 $vendedorId = $request->vendedor_id;
