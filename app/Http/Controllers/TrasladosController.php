@@ -319,10 +319,21 @@ class TrasladosController extends Controller
                 continue; // Solo skip si cantidad NO cambió
             }
 
+            $logExtra = "";
+            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO && !$ubicacionCambio) {
+                $cantEnTraslado = $esItemNuevo ?
+                    $traslado->items
+                        ->where('producto_id', $productoId)
+                        ->when($varianteId, fn($q) => $q->where('variante_producto_id', $varianteId), fn($q) => $q->whereNull('variante_producto_id'))
+                        ->sum('cantidad') :
+                    $cantidadOriginal;
+                $logExtra = " (se sumará {$cantEnTraslado} del traslado original)";
+            }
+
             if ($esItemNuevo) {
-                \Log::info("  -> VALIDANDO stock (item NUEVO)");
+                \Log::info("  -> VALIDANDO stock (item NUEVO){$logExtra}");
             } else {
-                \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad})");
+                \Log::info("  -> VALIDANDO stock (cambió de {$cantidadOriginal} a {$cantidad}){$logExtra}");
             }
 
             $stockQuery = StockProducto::where('producto_id', $productoId)
@@ -341,21 +352,40 @@ class TrasladosController extends Controller
             $stockReservado = $stockRecord ? $stockRecord->cantidad_reservada : 0;
             $stockReal = $stockDisponible - $stockReservado;
 
-            // Si editando en_transito Y ubicación NO cambió, sumar de vuelta cantidad original
-            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO &&
-                !$ubicacionCambio && $cantidadOriginal > 0) {
-                $stockReal += $cantidadOriginal;
+            // Si editando en_transito Y ubicación NO cambió, sumar de vuelta stock del traslado original
+            if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO && !$ubicacionCambio) {
+                // Si es item modificado, ya tenemos $cantidadOriginal del item específico
+                // Si es item NUEVO, debemos buscar si había items de este producto en el traslado original
+                $cantidadEnTrasladoOriginal = $cantidadOriginal; // Para items modificados
+
+                if ($esItemNuevo) {
+                    // Buscar si hay items de este producto/variante en el traslado original
+                    $cantidadEnTrasladoOriginal = $traslado->items
+                        ->where('producto_id', $productoId)
+                        ->when($varianteId, function($q) use ($varianteId) {
+                            return $q->where('variante_producto_id', $varianteId);
+                        }, function($q) {
+                            return $q->whereNull('variante_producto_id');
+                        })
+                        ->sum('cantidad');
+                }
+
+                $stockReal += $cantidadEnTrasladoOriginal;
             }
 
             if ($stockReal < $cantidad) {
                 $producto = Producto::find($productoId);
-                $debugInfo = "DEBUG: Este item DEBIÓ validarse porque ";
+                $debugInfo = "DEBUG: ";
                 if ($ubicacionCambio) {
-                    $debugInfo .= "cambió la ubicación origen";
-                } elseif (!$itemOriginal) {
-                    $debugInfo .= "es un item NUEVO (no estaba en el traslado original)";
+                    $debugInfo .= "Cambió ubicación origen";
+                } elseif ($esItemNuevo) {
+                    $cantEnTraslado = $traslado->items
+                        ->where('producto_id', $productoId)
+                        ->when($varianteId, fn($q) => $q->where('variante_producto_id', $varianteId), fn($q) => $q->whereNull('variante_producto_id'))
+                        ->sum('cantidad');
+                    $debugInfo .= "Item NUEVO (eliminado y re-agregado). Stock bodega={$stockDisponible}, Reservado={$stockReservado}, En traslado original={$cantEnTraslado}, Total disponible={$stockReal}";
                 } elseif ($cantidad !== $cantidadOriginal) {
-                    $debugInfo .= "cambió la cantidad de {$cantidadOriginal} a {$cantidad}";
+                    $debugInfo .= "Cantidad cambió de {$cantidadOriginal} a {$cantidad}. Stock bodega={$stockDisponible}, Reservado={$stockReservado}, Cantidad original={$cantidadOriginal}, Total disponible={$stockReal}";
                 } else {
                     $debugInfo .= "ERROR EN LA LÓGICA - no debería validarse!";
                 }
