@@ -1096,9 +1096,9 @@ class SolicitudController extends Controller
             abort(403, 'No tiene permisos para descargar este PDF');
         }
 
-        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
+        // Si es vendedor (y NO es admin ni facturación), verificar que sea su cliente o que haya creado la cotización
         if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
-            if ($solicitud->cliente->vendedor_id != $user->id) {
+            if ($solicitud->cliente->vendedor_id != $user->id && $solicitud->created_by != $user->id) {
                 abort(403, 'No tiene permisos para descargar este PDF');
             }
         }
