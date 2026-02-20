@@ -403,6 +403,25 @@
     </div>
   </div>
 
+  {{-- Modal Reservas --}}
+  <div class="modal fade" id="modalReservas" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-bookmark-check"></i> Reservas de Stock</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="contenidoReservas">
+          <div class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @push('styles')
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
@@ -608,6 +627,16 @@
       $.get('/stock/historial', { producto_id: productoId, variante_id: varianteId }, function(response) {
         $('#contenidoHistorial').html(response.html);
         $('#modalHistorial').modal('show');
+      });
+    };
+
+    window.verReservas = function(stockId) {
+      $('#contenidoReservas').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+      $('#modalReservas').modal('show');
+      $.get('/stock/reservas', { stock_id: stockId }, function(response) {
+        $('#contenidoReservas').html(response.html);
+      }).fail(function() {
+        $('#contenidoReservas').html('<p class="text-center text-danger">Error al cargar las reservas.</p>');
       });
     };
 

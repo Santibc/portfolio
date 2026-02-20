@@ -447,9 +447,16 @@ class CatalogoController extends Controller
                 throw new \Exception('No se pudo identificar el cliente.');
             }
 
-            // NUEVO: Validar y bloquear stock ANTES de crear la cotización
+            // Validar variantes y stock ANTES de crear la cotización
             foreach ($request->items as $item) {
                 $producto = Producto::findOrFail($item['producto_id']);
+
+                // Validar que productos con variantes tengan variante seleccionada
+                if ($producto->tiene_variantes && empty($item['variante_id'])) {
+                    throw new \Exception(
+                        "El producto '{$producto->nombre}' tiene variantes. Debe seleccionar una variante específica."
+                    );
+                }
 
                 // Bloqueo pesimista para evitar race conditions
                 $stockQuery = StockProducto::where('producto_id', $item['producto_id']);

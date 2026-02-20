@@ -247,6 +247,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxil
     Route::get('/productos-json', [App\Http\Controllers\StockController::class, 'productosJson'])->name('productos-json');
     Route::get('/{id}/obtener', [App\Http\Controllers\StockController::class, 'obtenerStock'])->name('obtener');
     Route::get('/historial', [App\Http\Controllers\StockController::class, 'historial'])->name('historial');
+    Route::get('/reservas', [App\Http\Controllers\StockController::class, 'reservas'])->name('reservas');
 
     // Reportes (lectura)
     Route::get('/reporte-movimientos', [App\Http\Controllers\StockController::class, 'reporteMovimientos'])->name('reporte-movimientos');

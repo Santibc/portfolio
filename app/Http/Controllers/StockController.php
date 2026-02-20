@@ -8,6 +8,7 @@ use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
 use App\Models\Ubicacion;
+use App\Models\ReservaStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -106,6 +107,14 @@ class StockController extends Controller
                         // Botón configuración
                         $buttons .= '<button type="button" class="btn btn-info" onclick="configurarStock('.$stock->id.')" title="Configurar">
                                         <i class="bi bi-sliders"></i>
+                                    </button>';
+                    }
+
+                    // Botón reservas (solo si hay reservas)
+                    if ($stock->cantidad_reservada > 0) {
+                        $buttons .= '<button type="button" class="btn btn-outline-primary" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
+                                        <i class="bi bi-bookmark-check"></i>
+                                        <span class="badge bg-primary">'.$stock->cantidad_reservada.'</span>
                                     </button>';
                     }
 
@@ -313,6 +322,23 @@ class StockController extends Controller
         
         $html = view('stock.historial', compact('movimientos'))->render();
         
+        return response()->json(['html' => $html]);
+    }
+
+    // Ver reservas de stock
+    public function reservas(Request $request)
+    {
+        $stockId = $request->stock_id;
+
+        $reservas = ReservaStock::with(['solicitudCotizacion.cliente', 'itemSolicitud'])
+            ->where('stock_producto_id', $stockId)
+            ->orderByRaw("FIELD(estado, 'activa', 'aplicada', 'expirada', 'liberada_manual')")
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        $html = view('stock.reservas', compact('reservas'))->render();
+
         return response()->json(['html' => $html]);
     }
 
