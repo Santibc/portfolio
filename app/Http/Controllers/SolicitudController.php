@@ -172,16 +172,11 @@ class SolicitudController extends Controller
                                    <i class="bi bi-eye"></i>
                                 </button>';
 
-                    // Si es vendedor viendo cotización ajena, solo mostrar el ojito
-                    if ($isVendedor && !$esSuya) {
-                        $buttons .= '</div>';
-                        return $buttons;
-                    }
-
                     if (!$isAuxiliar) {
-                        // Botón editar: facturación siempre, los demás solo si es editable
+                        // Botón editar: solo si es cotización propia del vendedor (o admin/facturación)
                         $puedeEditar = auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo'])
-                            || ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'inventarios', 'vendedor']));
+                            || ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'inventarios']))
+                            || ($s->esEditable() && $isVendedor && $esSuya);
                         if ($puedeEditar) {
                             $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
                                             title="Editar Cotización">
@@ -189,11 +184,13 @@ class SolicitudController extends Controller
                                         </a>';
                         }
 
-                        // Botón clonar
-                        $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm"
-                                            title="Clonar Cotización" onclick="clonarSolicitud('.$s->id.')">
-                                       <i class="bi bi-copy"></i>
-                                    </button>';
+                        // Botón clonar (solo cotización propia del vendedor, o admin/otros roles)
+                        if (!$isVendedor || $esSuya) {
+                            $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm"
+                                                title="Clonar Cotización" onclick="clonarSolicitud('.$s->id.')">
+                                           <i class="bi bi-copy"></i>
+                                        </button>';
+                        }
                     }
 
                     // Botón descargar PDF
@@ -211,7 +208,7 @@ class SolicitudController extends Controller
                                         </a>';
                         }
 
-                        // Botón eliminar (solo admin y facturación, y si es eliminable)
+                        // Botón eliminar (solo admin y facturación, y si es eliminable - nunca vendedor)
                         if ($s->esEliminable() && auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
                             $buttons .= '<button type="button" class="btn btn-outline-danger btn-sm"
                                                 title="Eliminar Cotización" onclick="eliminarSolicitud('.$s->id.')">
