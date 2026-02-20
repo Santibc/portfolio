@@ -226,20 +226,32 @@
     const formaPagoSelect = document.getElementById('forma_pago');
     const metodoPagoSelect = document.getElementById('metodo_pago');
 
+    const creditoOption = metodoPagoSelect ? metodoPagoSelect.querySelector('option[value="credito"]') : null;
+
     function actualizarFormaPago(valor) {
       const container = document.getElementById('diasVencimientoContainer');
       const diasInput = document.getElementById('dias_vencimiento');
-      if (valor !== 'Contado') {
+      const esCredito = valor !== 'Contado';
+
+      if (esCredito) {
         container.style.display = 'block';
         const match = valor.match(/(\d+)/);
         if (match) diasInput.value = match[1];
-        // Pre-seleccionar método "Crédito" (sin bloquearlo)
-        if (metodoPagoSelect) metodoPagoSelect.value = 'credito';
+        // Seleccionar crédito, mostrar opción y bloquear
+        if (creditoOption) creditoOption.style.display = '';
+        if (metodoPagoSelect) {
+          metodoPagoSelect.value = 'credito';
+          metodoPagoSelect.disabled = true;
+        }
       } else {
         container.style.display = 'none';
         diasInput.value = 0;
-        // Resetear método de pago
-        if (metodoPagoSelect) metodoPagoSelect.value = '';
+        // Ocultar opción crédito y desbloquear
+        if (creditoOption) creditoOption.style.display = 'none';
+        if (metodoPagoSelect) {
+          metodoPagoSelect.disabled = false;
+          metodoPagoSelect.value = '';
+        }
       }
     }
 
@@ -247,11 +259,19 @@
       formaPagoSelect.addEventListener('change', function() {
         actualizarFormaPago(this.value);
       });
+      // Ejecutar al cargar para estado inicial
+      actualizarFormaPago(formaPagoSelect.value);
     }
 
-    // Si la forma de pago ya es crédito (guardada previamente), pre-seleccionar método
+    // Si la forma de pago ya es crédito (guardada previamente), bloquear método
     @if($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito'))
-      if (metodoPagoSelect) metodoPagoSelect.value = 'credito';
+      if (creditoOption) creditoOption.style.display = '';
+      if (metodoPagoSelect) {
+        metodoPagoSelect.value = 'credito';
+        metodoPagoSelect.disabled = true;
+      }
+    @elseif($solicitud->forma_pago_factura === 'Contado')
+      if (creditoOption) creditoOption.style.display = 'none';
     @endif
 
     document.getElementById('formPago').addEventListener('submit', function(e) {
@@ -263,6 +283,10 @@
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
 
       const formData = new FormData(this);
+      // Si método de pago está bloqueado (crédito), agregar manualmente al form
+      if (metodoPagoSelect && metodoPagoSelect.disabled) {
+        formData.set('metodo_pago', metodoPagoSelect.value);
+      }
 
       fetch('{{ route("pagos.store", $solicitud) }}', {
         method: 'POST',
