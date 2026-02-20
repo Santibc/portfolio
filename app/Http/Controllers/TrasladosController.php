@@ -342,7 +342,10 @@ class TrasladosController extends Controller
             $varianteId = $itemEditado['variante_producto_id'];
 
             $stockQuery = StockProducto::where('producto_id', $productoId)
-                ->where('ubicacion_id', $ubicacionOrigenId);
+                ->where(function($q) use ($ubicacionOrigenId) {
+                    $q->where('ubicacion_id', $ubicacionOrigenId)
+                      ->orWhereNull('ubicacion_id');
+                });
 
             if ($varianteId) {
                 $stockQuery->where('variante_producto_id', $varianteId);
@@ -385,7 +388,10 @@ class TrasladosController extends Controller
                     $referencia = $producto->referencia ?? '?';
 
                     $stockQuery = StockProducto::where('producto_id', $item->producto_id)
-                        ->where('ubicacion_id', $traslado->ubicacion_origen_id);
+                        ->where(function($q) use ($traslado) {
+                            $q->where('ubicacion_id', $traslado->ubicacion_origen_id)
+                              ->orWhereNull('ubicacion_id');
+                        });
 
                     if ($item->variante_producto_id) {
                         $stockQuery->where('variante_producto_id', $item->variante_producto_id);
@@ -448,9 +454,12 @@ class TrasladosController extends Controller
                     $producto = Producto::find($itemData['producto_id']);
                     $referencia = $producto->referencia ?? '?';
 
-                    // CRÍTICO: Solo descontar de la ubicación ORIGEN, no de cualquier ubicación
+                    // CRÍTICO: Solo descontar de la ubicación ORIGEN (o sin ubicación)
                     $stockQuery = StockProducto::where('producto_id', $itemData['producto_id'])
-                        ->where('ubicacion_id', $request->ubicacion_origen_id);
+                        ->where(function($q) use ($request) {
+                            $q->where('ubicacion_id', $request->ubicacion_origen_id)
+                              ->orWhereNull('ubicacion_id');
+                        });
 
                     if (!empty($varianteId)) {
                         $stockQuery->where('variante_producto_id', $varianteId);
@@ -670,7 +679,10 @@ class TrasladosController extends Controller
             if ($traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO) {
                 foreach ($traslado->items as $item) {
                     $stockOrigen = StockProducto::where('producto_id', $item->producto_id)
-                        ->where('ubicacion_id', $traslado->ubicacion_origen_id);
+                        ->where(function($q) use ($traslado) {
+                            $q->where('ubicacion_id', $traslado->ubicacion_origen_id)
+                              ->orWhereNull('ubicacion_id');
+                        });
 
                     if ($item->variante_producto_id) {
                         $stockOrigen->where('variante_producto_id', $item->variante_producto_id);
