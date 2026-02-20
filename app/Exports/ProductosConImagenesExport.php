@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Producto;
+use App\Models\ListaPrecio;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -25,11 +26,13 @@ class ProductosConImagenesExport implements FromCollection, WithHeadings, WithMa
     protected $productos;
     protected $incluirImagenes;
     protected $categoriaId;
+    protected $listasPrecios;
 
     public function __construct($categoriaId = null, $incluirImagenes = true)
     {
         $this->categoriaId = $categoriaId;
         $this->incluirImagenes = $incluirImagenes;
+        $this->listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
     }
 
     public function collection()
@@ -51,51 +54,55 @@ class ProductosConImagenesExport implements FromCollection, WithHeadings, WithMa
 
     public function map($producto): array
     {
-        // Obtener precios de las listas activas
-        $precios = [];
+        // Indexar precios por lista_precio_id
+        $preciosPorLista = [];
         foreach ($producto->precios as $precio) {
-            if ($precio->listaPrecio && $precio->listaPrecio->activo) {
-                $precios[$precio->listaPrecio->nombre] = number_format($precio->precio, 2);
-            }
+            $preciosPorLista[$precio->lista_precio_id] = $precio->precio;
         }
 
         // Columna para imagen (placeholder, la imagen se inserta con eventos)
         $imagenPlaceholder = $producto->imagenPrincipal ? '[IMG]' : '-';
 
-        return [
+        $row = [
             $imagenPlaceholder,
             $producto->referencia,
             $producto->nombre,
             $producto->categoria->nombre ?? 'Sin categoría',
             $producto->descripcion ? substr($producto->descripcion, 0, 100) . '...' : '-',
             $producto->unidad_venta,
-            $precios['Export 1'] ?? '-',
-            $precios['Export 2'] ?? '-',
-            $precios['Local 1'] ?? '-',
-            $precios['Local 2'] ?? '-',
-            $precios['Local 3'] ?? '-',
-            $precios['Local 4'] ?? '-',
-            $producto->controlar_stock ? 'Sí' : 'No',
         ];
+
+        // Agregar precio de cada lista dinámicamente
+        foreach ($this->listasPrecios as $lista) {
+            $row[] = isset($preciosPorLista[$lista->id])
+                ? number_format($preciosPorLista[$lista->id], 2)
+                : '-';
+        }
+
+        $row[] = $producto->controlar_stock ? 'Sí' : 'No';
+
+        return $row;
     }
 
     public function headings(): array
     {
-        return [
+        $headings = [
             'Imagen',
             'Referencia',
             'Nombre',
             'Categoría',
             'Descripción',
             'Unidad',
-            'Export 1',
-            'Export 2',
-            'Local 1',
-            'Local 2',
-            'Local 3',
-            'Local 4',
-            'Control Stock',
         ];
+
+        // Agregar nombre de cada lista de precios dinámicamente
+        foreach ($this->listasPrecios as $lista) {
+            $headings[] = $lista->nombre;
+        }
+
+        $headings[] = 'Control Stock';
+
+        return $headings;
     }
 
     public function styles(Worksheet $sheet)
@@ -130,6 +137,10 @@ class ProductosConImagenesExport implements FromCollection, WithHeadings, WithMa
                 $sheet = $event->sheet->getDelegate();
                 $row = 2; // Empezar desde la fila 2 (después de encabezados)
 
+                // Calcular última columna dinámicamente
+                $totalColumnas = 6 + $this->listasPrecios->count() + 1; // 6 fijas + listas + control stock
+                $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($totalColumnas);
+
                 foreach ($this->productos as $producto) {
                     // Ajustar altura de fila para la imagen
                     $sheet->getRowDimension($row)->setRowHeight(60);
@@ -160,7 +171,7 @@ class ProductosConImagenesExport implements FromCollection, WithHeadings, WithMa
 
                 // Centrar contenido de todas las celdas
                 $lastRow = $row - 1;
-                $sheet->getStyle('A2:M' . $lastRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                $sheet->getStyle('A2:' . $lastCol . $lastRow)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
             },
         ];
     }
