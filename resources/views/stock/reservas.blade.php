@@ -44,8 +44,8 @@
             </td>
             <td><strong>{{ $reserva->cantidad_reservada }}</strong></td>
             <td>
-              <span class="badge bg-{{ $reserva->getColorEstado() }}">
-                {{ $reserva->getEtiquetaEstado() }}
+              <span class="badge bg-{{ $reserva->color_estado }}">
+                {{ $reserva->etiqueta_estado }}
               </span>
             </td>
             <td>
@@ -53,7 +53,7 @@
                 @if($reserva->haExpirado())
                   <span class="text-danger">Expirada</span>
                 @else
-                  {{ $reserva->getTiempoRestante() }}
+                  {{ $reserva->tiempo_restante }}
                 @endif
               @elseif($reserva->expira_en)
                 {{ $reserva->expira_en->format('d/m/Y H:i') }}
