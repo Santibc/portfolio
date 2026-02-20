@@ -54,15 +54,7 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items', 'stockDescontadoPor'])
                                        ->select('solicitudes_cotizacion.*');
 
-            // Si es vendedor (y NO es admin/auxiliar_administrativo), ver sus cotizaciones creadas + las de sus clientes asignados
-            if ($user->hasRole('vendedor') && !$user->hasRole(['admin', 'auxiliar_administrativo'])) {
-                $query->where(function($q) use ($user) {
-                    $q->where('created_by', $user->id)
-                      ->orWhereHas('cliente', function($subQ) use ($user) {
-                          $subQ->where('vendedor_id', $user->id);
-                      });
-                });
-            }
+            // Vendedor puede ver TODAS las cotizaciones (solo lectura para las que no son suyas)
 
 
             // Filtro para rol inventarios: solo aplicadas con pago != pendiente
@@ -167,12 +159,24 @@ class SolicitudController extends Controller
                 ->addColumn('action', function($s) {
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
                     $isAuxiliar = auth()->user()->hasRole('auxiliar_inventario');
+                    $isVendedor = auth()->user()->hasRole('vendedor') && !auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo']);
+
+                    // Determinar si la cotización es "propia" del vendedor
+                    $esSuya = $isVendedor
+                        ? ($s->created_by == auth()->id() || ($s->cliente && $s->cliente->vendedor_id == auth()->id()))
+                        : true;
 
                     // Botón ver detalle (desde aquí se puede aprobar o rechazar)
                     $buttons .= '<button type="button" class="btn btn-outline-info btn-sm"
                                         title="Ver Detalle" onclick="verDetalle('.$s->id.')">
                                    <i class="bi bi-eye"></i>
                                 </button>';
+
+                    // Si es vendedor viendo cotización ajena, solo mostrar el ojito
+                    if ($isVendedor && !$esSuya) {
+                        $buttons .= '</div>';
+                        return $buttons;
+                    }
 
                     if (!$isAuxiliar) {
                         // Botón editar: facturación siempre, los demás solo si es editable
@@ -291,12 +295,7 @@ class SolicitudController extends Controller
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
 
-        // Si es vendedor (y NO es admin ni facturación), verificar que la solicitud sea de uno de sus clientes asignados
-        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
-            if ($solicitud->cliente->vendedor_id != $user->id) {
-                return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
-            }
-        }
+        // Vendedor puede ver detalle de cualquier cotización (solo lectura)
 
         $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
