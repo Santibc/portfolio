@@ -54,7 +54,10 @@ class SolicitudController extends Controller
             $query = SolicitudCotizacion::with(['cliente', 'cliente.vendedor', 'createdBy', 'items', 'stockDescontadoPor'])
                                        ->select('solicitudes_cotizacion.*');
 
-            // Vendedor puede ver TODAS las cotizaciones (solo lectura para las que no son suyas)
+            // Vendedor solo ve las cotizaciones que él creó
+            if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
+                $query->where('created_by', $user->id);
+            }
 
 
             // Filtro para rol inventarios: solo aplicadas con pago != pendiente
