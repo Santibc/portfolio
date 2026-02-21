@@ -164,7 +164,11 @@ class MetricasService
                 SUM(CASE WHEN estado = "aplicada" THEN 1 ELSE 0 END) as aplicadas,
                 SUM(CASE WHEN estado = "pendiente" THEN 1 ELSE 0 END) as pendientes,
                 SUM(CASE WHEN estado = "rechazada" THEN 1 ELSE 0 END) as rechazadas,
-                SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END) as monto_aplicadas
+                SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END) as monto_aplicadas,
+                SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN 1 ELSE 0 END) as pagadas,
+                SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN monto_total ELSE 0 END) as monto_pagadas,
+                SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN 1 ELSE 0 END) as descontadas,
+                SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN monto_total ELSE 0 END) as monto_descontadas
             ')
             ->groupBy('users.id', 'users.name')
             ->orderByDesc('monto_aplicadas')
@@ -172,7 +176,7 @@ class MetricasService
             ->get()
             ->map(function ($vendedor) {
                 $vendedor->tasa_conversion = $vendedor->total_cotizaciones > 0
-                    ? round(($vendedor->aplicadas / $vendedor->total_cotizaciones) * 100, 1)
+                    ? round(($vendedor->descontadas / $vendedor->total_cotizaciones) * 100, 1)
                     : 0;
                 return $vendedor;
             })

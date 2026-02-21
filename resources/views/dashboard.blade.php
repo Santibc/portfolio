@@ -130,7 +130,7 @@
             {{-- Tablas --}}
             <div class="row g-3 mb-4">
                 {{-- Top vendedores --}}
-                <div class="col-lg-6">
+                <div class="col-12">
                     <div class="card h-100">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Top 5 Vendedores</h6>
@@ -143,7 +143,9 @@
                                             <th>#</th>
                                             <th>Vendedor</th>
                                             <th class="text-center">Cotiz.</th>
-                                            <th class="text-end">Monto</th>
+                                            <th class="text-center">Aplicadas</th>
+                                            <th class="text-center">Pagadas</th>
+                                            <th class="text-center">Descontadas</th>
                                             <th class="text-center">Conv.</th>
                                         </tr>
                                     </thead>
@@ -163,7 +165,18 @@
                                                 <td class="text-center">
                                                     <span class="badge bg-secondary">{{ $vendedor['total_cotizaciones'] }}</span>
                                                 </td>
-                                                <td class="text-end">${{ number_format($vendedor['monto_aplicadas'], 0, ',', '.') }}</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-success">{{ $vendedor['aplicadas'] }}</span>
+                                                    <br><small class="text-muted">${{ number_format($vendedor['monto_aplicadas'], 0, ',', '.') }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary">{{ $vendedor['pagadas'] }}</span>
+                                                    <br><small class="text-muted">${{ number_format($vendedor['monto_pagadas'], 0, ',', '.') }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge" style="background-color: #FF84D5;">{{ $vendedor['descontadas'] }}</span>
+                                                    <br><small class="text-muted">${{ number_format($vendedor['monto_descontadas'], 0, ',', '.') }}</small>
+                                                </td>
                                                 <td class="text-center">
                                                     <span class="badge {{ $vendedor['tasa_conversion'] >= 50 ? 'bg-success' : 'bg-warning text-dark' }}">
                                                         {{ $vendedor['tasa_conversion'] }}%
@@ -172,8 +185,8 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted py-3">
-                                                    Sin datos para este período
+                                                <td colspan="7" class="text-center text-muted py-3">
+                                                    Sin datos para este periodo
                                                 </td>
                                             </tr>
                                         @endforelse
