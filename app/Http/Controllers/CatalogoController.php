@@ -96,11 +96,11 @@ class CatalogoController extends Controller
                 'todasImagenes',
                 'categoria',
                 'stock' => function($q) {
-                    $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
+                    $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
                 },
                 'variantes' => function($q) {
                     $q->activas()->with(['stock' => function($sq) {
-                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
+                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
                     }]);
                 }
             ])
@@ -197,7 +197,7 @@ class CatalogoController extends Controller
                 $q->orderBy('orden');
             },
             'stock' => function($q) {
-                $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
+                $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
             }
         ]);
 
@@ -278,14 +278,15 @@ class CatalogoController extends Controller
             $stockTotal = $producto->stock->sum(function($stock) {
                 return $stock->cantidad_disponible - $stock->cantidad_reservada;
             });
-            
+
             return [
                 'tiene_stock' => $stockTotal > 0 || $producto->permitir_venta_sin_stock,
                 'cantidad_disponible' => $stockTotal,
                 'estado' => $this->getEstadoStock($stockTotal, false, $producto->permitir_venta_sin_stock),
                 'mensaje' => $this->getMensajeStock($stockTotal, false, $producto->permitir_venta_sin_stock),
                 'controla_stock' => true,
-                'permite_sin_stock' => $producto->permitir_venta_sin_stock
+                'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+                'stock_maximo' => null
             ];
         } else {
             // Para productos sin variantes
@@ -297,12 +298,13 @@ class CatalogoController extends Controller
                     'estado' => $producto->permitir_venta_sin_stock ? 'sin_stock_permitido' : 'sin_stock',
                     'mensaje' => $producto->permitir_venta_sin_stock ? 'Sin stock (se permite venta)' : 'Sin stock',
                     'controla_stock' => true,
-                    'permite_sin_stock' => $producto->permitir_venta_sin_stock
+                    'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+                    'stock_maximo' => null
                 ];
             }
-            
+
             $disponible = $stock->cantidad_disponible - $stock->cantidad_reservada;
-            
+
             return [
                 'tiene_stock' => $disponible > 0 || $producto->permitir_venta_sin_stock,
                 'cantidad_disponible' => $disponible,
@@ -310,7 +312,8 @@ class CatalogoController extends Controller
                 'estado' => $this->getEstadoStock($disponible, $stock->stock_bajo, $producto->permitir_venta_sin_stock),
                 'mensaje' => $this->getMensajeStock($disponible, $stock->stock_bajo, $producto->permitir_venta_sin_stock),
                 'controla_stock' => true,
-                'permite_sin_stock' => $producto->permitir_venta_sin_stock
+                'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+                'stock_maximo' => $stock->stock_maximo
             ];
         }
     }
@@ -339,12 +342,13 @@ class CatalogoController extends Controller
                 'estado' => $producto->permitir_venta_sin_stock ? 'sin_stock_permitido' : 'sin_stock',
                 'mensaje' => $producto->permitir_venta_sin_stock ? 'Sin stock (se permite venta)' : 'Sin stock',
                 'controla_stock' => true,
-                'permite_sin_stock' => $producto->permitir_venta_sin_stock
+                'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+                'stock_maximo' => null
             ];
         }
-        
+
         $disponible = $stock->cantidad_disponible - $stock->cantidad_reservada;
-        
+
         return [
             'tiene_stock' => $disponible > 0 || $producto->permitir_venta_sin_stock,
             'cantidad_disponible' => $disponible,
@@ -352,7 +356,8 @@ class CatalogoController extends Controller
             'estado' => $this->getEstadoStock($disponible, $stock->stock_bajo, $producto->permitir_venta_sin_stock),
             'mensaje' => $this->getMensajeStock($disponible, $stock->stock_bajo, $producto->permitir_venta_sin_stock),
             'controla_stock' => true,
-            'permite_sin_stock' => $producto->permitir_venta_sin_stock
+            'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+            'stock_maximo' => $stock->stock_maximo
         ];
     }
     
@@ -477,6 +482,11 @@ class CatalogoController extends Controller
                     if ($disponibleReal < $item['cantidad']) {
                         throw new \Exception("Stock insuficiente para {$producto->nombre}. Disponible: {$disponibleReal}, Solicitado: {$item['cantidad']}");
                     }
+                }
+
+                // Validar stock máximo (aplica siempre que esté configurado, incluso si permite venta sin stock)
+                if ($stock && $stock->stock_maximo && $item['cantidad'] > $stock->stock_maximo) {
+                    throw new \Exception("La cantidad ({$item['cantidad']}) supera el máximo permitido ({$stock->stock_maximo}) para {$producto->nombre}");
                 }
             }
 

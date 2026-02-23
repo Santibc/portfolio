@@ -623,13 +623,19 @@ $(function(){
           mostrarNotificacion('No hay stock disponible para este producto', 'warning');
           return;
         }
-        
+
         if(cnt > prod.stock_info.cantidad_disponible) {
           mostrarNotificacion(`Cantidad solicitada (${cnt}) excede el stock disponible (${prod.stock_info.cantidad_disponible})`, 'warning');
           return;
         }
       }
-      
+
+      // Verificar stock máximo
+      if(prod.stock_info && prod.stock_info.stock_maximo && cnt > prod.stock_info.stock_maximo) {
+        mostrarNotificacion(`Cantidad solicitada (${cnt}) supera el máximo permitido (${prod.stock_info.stock_maximo})`, 'warning');
+        return;
+      }
+
       agregarAlCarrito(prod,cnt);
       $('#modalProducto').modal('hide');
       mostrarNotificacion('Producto agregado al carrito','success');
@@ -1068,6 +1074,10 @@ $(function(){
               if(!vStock.permite_sin_stock && !vStock.tiene_stock) { maxCantidad=0; inputDisabled='disabled'; }
               else if(!vStock.permite_sin_stock && vStock.cantidad_disponible > 0) { maxCantidad=vStock.cantidad_disponible; }
             }
+            // Limitar por stock_maximo si está configurado
+            if(vStock.stock_maximo) {
+              maxCantidad = Math.min(maxCantidad, vStock.stock_maximo);
+            }
           }
 
           // Precio
@@ -1117,7 +1127,7 @@ $(function(){
         // Determinar cantidad máxima disponible
         let maxCantidad = 999999;
         let inputDisabled = '';
-        
+
         if(mostrarStock && p.stock_info && p.stock_info.controla_stock) {
           // Si controla stock pero no permite venta sin stock, limitar
           if(!p.stock_info.permite_sin_stock && !p.stock_info.tiene_stock) {
@@ -1126,7 +1136,11 @@ $(function(){
           } else if(!p.stock_info.permite_sin_stock && p.stock_info.cantidad_disponible > 0) {
             maxCantidad = p.stock_info.cantidad_disponible;
           }
-          // Si permite venta sin stock o no controla stock, no limitar
+        }
+
+        // Limitar por stock_maximo si está configurado
+        if(p.stock_info && p.stock_info.stock_maximo) {
+          maxCantidad = Math.min(maxCantidad, p.stock_info.stock_maximo);
         }
         
         html+=`<input type="number" class="form-control" id="cantidadProducto" min="1" max="${maxCantidad}" value="1" ${inputDisabled}>`;
@@ -1164,13 +1178,19 @@ $(function(){
             mostrarNotificacion(`No hay stock disponible para la variante: ${v.nombre_variante}`, 'warning');
             return;
           }
-          
+
           if(cnt > v.stock_info.cantidad_disponible) {
             mostrarNotificacion(`Cantidad solicitada (${cnt}) excede el stock disponible (${v.stock_info.cantidad_disponible}) para: ${v.nombre_variante}`, 'warning');
             return;
           }
         }
-        
+
+        // Verificar stock máximo
+        if(v.stock_info && v.stock_info.stock_maximo && cnt > v.stock_info.stock_maximo) {
+          mostrarNotificacion(`Cantidad solicitada (${cnt}) supera el máximo permitido (${v.stock_info.stock_maximo}) para: ${v.nombre_variante}`, 'warning');
+          return;
+        }
+
         agregarAlCarrito(prod,cnt,v);
         ok=true;
       }
