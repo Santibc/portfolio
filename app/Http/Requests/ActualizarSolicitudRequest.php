@@ -38,6 +38,7 @@ class ActualizarSolicitudRequest extends FormRequest
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.precio_manual' => 'nullable|numeric|min:0',
+            'items.*.observacion' => 'nullable|string|max:500',
 
             // Información adicional
             'notas_cliente' => 'nullable|string|max:1000',

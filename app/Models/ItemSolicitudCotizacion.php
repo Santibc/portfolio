@@ -23,7 +23,8 @@ class ItemSolicitudCotizacion extends Model
         'referencia_producto',
         'nombre_producto',
         'marca_producto',
-        'info_variante'
+        'info_variante',
+        'observacion'
     ];
 
     protected $casts = [

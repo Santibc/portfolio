@@ -420,6 +420,7 @@ class CatalogoController extends Controller
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
+            'items.*.observacion' => 'nullable|string|max:500',
             'notas_cliente' => 'nullable|string|max:1000',
             'observaciones_vendedor' => 'nullable|string|max:1000'
         ]);
@@ -553,7 +554,8 @@ class CatalogoController extends Controller
                     'referencia_producto' => $producto->referencia,
                     'nombre_producto' => $producto->nombre,
                     'marca_producto' => $producto->marca,
-                    'info_variante' => $infoVariante
+                    'info_variante' => $infoVariante,
+                    'observacion' => $item['observacion'] ?? null
                 ]);
             }
 

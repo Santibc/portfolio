@@ -548,6 +548,7 @@ class CotizacionService
             'nombre_producto' => $producto->nombre,
             'marca_producto' => $producto->marca,
             'info_variante' => $infoVariante,
+            'observacion' => $itemData['observacion'] ?? null,
         ]);
     }
 

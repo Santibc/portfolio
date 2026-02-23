@@ -471,6 +471,10 @@
                     ?`<span class="ms-auto"><strong>$${subtotal.toFixed(2)}</strong></span>`
                     :''}
                 </div>
+                <div class="mt-1">
+                  <input type="text" class="form-control form-control-sm" placeholder="Observación del producto..."
+                    value="${item.observacion||''}" onchange="actualizarObservacion(${i},this.value)">
+                </div>
               </div>
             </div>`;
         });
@@ -494,6 +498,10 @@
       val = parseInt(val)||0;
       if(val>0){ carrito[i].cantidad=val; actualizarCarrito(); }
     };
+    window.actualizarObservacion = (i,val)=>{
+      carrito[i].observacion = val;
+      localStorage.setItem('carrito_'+clienteId, JSON.stringify(carrito));
+    };
 
 
     function agregarAlCarrito(producto, cantidad, variante=null){
@@ -515,7 +523,8 @@
           variante: variante ? `${variante.referencia_variante || ''} ${variante.color || ''}`.trim() : null,
           precio: precioUnit,
           unidad_venta: producto.unidad_venta || '',
-          cantidad
+          cantidad,
+          observacion: ''
         });
       }
       actualizarCarrito();
@@ -1148,7 +1157,8 @@ window.cargarProductos = function(page=1){
       const items = carrito.map(i=>({
         producto_id: i.producto_id,
         variante_id: i.variante_id,
-        cantidad: i.cantidad
+        cantidad: i.cantidad,
+        observacion: i.observacion || ''
       }));
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,

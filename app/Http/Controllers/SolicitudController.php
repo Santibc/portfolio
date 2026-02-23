@@ -388,13 +388,14 @@ class SolicitudController extends Controller
         $html .= '<th>Cantidad</th>';
         $html .= '<th>Precio Unit.</th>';
         $html .= '<th>Subtotal</th>';
+        $html .= '<th>Observación</th>';
         if ($solicitud->estado === 'pendiente') {
             $html .= '<th>Stock Disponible</th>';
         }
         $html .= '</tr>';
         $html .= '</thead>';
         $html .= '<tbody>';
-        
+
         foreach ($solicitud->items as $item) {
             $html .= '<tr>';
             $html .= '<td><code>' . $item->referencia_producto . '</code></td>';
@@ -403,20 +404,21 @@ class SolicitudController extends Controller
             $html .= '<td>' . $item->cantidad . '</td>';
             $html .= '<td>$' . number_format($item->precio_unitario, 2) . '</td>';
             $html .= '<td>$' . number_format($item->precio_total, 2) . '</td>';
-            
+            $html .= '<td>' . ($item->observacion ? '<small class="text-muted">' . e($item->observacion) . '</small>' : '-') . '</td>';
+
             // Mostrar stock disponible solo si está pendiente
             if ($solicitud->estado === 'pendiente') {
                 $stockInfo = $this->obtenerStockItem($item);
                 $html .= '<td>' . $stockInfo . '</td>';
             }
-            
+
             $html .= '</tr>';
         }
         
         $html .= '</tbody>';
         $html .= '<tfoot>';
 
-        $colspanTotal = ($solicitud->estado === 'pendiente') ? 6 : 5;
+        $colspanTotal = ($solicitud->estado === 'pendiente') ? 7 : 6;
 
         // Calcular subtotal de items
         $subtotal = $solicitud->items->sum('precio_total');

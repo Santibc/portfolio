@@ -554,6 +554,10 @@ $(function(){
                   ?`<span class="ms-auto">${subtotal.toFixed(2)}</span>`
                   :''}
               </div>
+              <div class="mt-1">
+                <input type="text" class="form-control form-control-sm" placeholder="Observación del producto..."
+                  value="${item.observacion||''}" onchange="actualizarObservacion(${i},this.value)">
+              </div>
             </div>
           </div>`;
       });
@@ -578,6 +582,10 @@ $(function(){
     val = parseInt(val)||0;
     if(val>0){ carrito[i].cantidad=val; actualizarCarrito(); }
   };
+  window.actualizarObservacion = (i,val)=>{
+    carrito[i].observacion = val;
+    localStorage.setItem('carrito_'+clienteId, JSON.stringify(carrito));
+  };
 
   function agregarAlCarrito(producto,cantidad,variante=null){
     const precioRaw   = variante? variante.precio_final: producto.precio;
@@ -596,8 +604,9 @@ $(function(){
         nombre: producto.nombre,
         variante: variante? `${variante.referencia_variante||''} ${variante.color||''}`.trim():null,
         precio: precioUnit,
-        unidad_venta: producto.unidad_venta || '', // Agregamos la unidad de venta
-        cantidad
+        unidad_venta: producto.unidad_venta || '',
+        cantidad,
+        observacion: ''
       });
     }
     actualizarCarrito();
@@ -1182,7 +1191,7 @@ $(function(){
   $('#btnConfirmarSolicitud').click(()=>{
     const notas = $('#notasSolicitud').val();
     $('#loadingOverlay').show();
-    const items = carrito.map(i=>({producto_id:i.producto_id,variante_id:i.variante_id,cantidad:i.cantidad}));
+    const items = carrito.map(i=>({producto_id:i.producto_id,variante_id:i.variante_id,cantidad:i.cantidad,observacion:i.observacion||''}));
     $.post('{{route("catalogo.solicitud.guardar")}}',{
       _token:'{{csrf_token()}}',cliente_id:clienteId,
       enlace_token:enlaceToken,items,observaciones_vendedor:notas

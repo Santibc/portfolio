@@ -369,6 +369,9 @@
                         @if($item->info_variante || $item->varianteProducto)
                             <br><small>{{ $item->info_variante ?: $item->varianteProducto->nombre_variante }}</small>
                         @endif
+                        @if($item->observacion)
+                            <br><small style="color: #666; font-style: italic;">Obs: {{ $item->observacion }}</small>
+                        @endif
                     </td>
 
                     <td class="col-cantidad">{{ number_format($item->cantidad, 0) }}</td>

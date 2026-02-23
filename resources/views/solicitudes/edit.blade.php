@@ -61,6 +61,7 @@
                       <th style="width: 100px;">Cantidad</th>
                       <th style="width: 120px;">Precio Unit.</th>
                       <th style="width: 120px;">Subtotal</th>
+                      <th>Observación</th>
                       <th style="width: 60px;">Acciones</th>
                     </tr>
                   </thead>
@@ -93,6 +94,10 @@
                         ${{ number_format($item->precio_total, 2) }}
                       </td>
                       <td>
+                        <input type="text" name="items[{{ $index }}][observacion]" class="form-control form-control-sm"
+                               value="{{ $item->observacion }}" placeholder="Observación...">
+                      </td>
+                      <td>
                         <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarItem(this)">
                           <i class="bi bi-trash"></i>
                         </button>
@@ -102,13 +107,13 @@
                   </tbody>
                   <tfoot>
                     <tr class="table-light">
-                      <td colspan="5" class="text-end fw-bold">Subtotal:</td>
+                      <td colspan="6" class="text-end fw-bold">Subtotal:</td>
                       <td colspan="2" class="fw-bold" id="subtotalGeneral">
                         ${{ number_format($solicitud->subtotal, 2) }}
                       </td>
                     </tr>
                     <tr>
-                      <td colspan="5" class="text-end">Flete:</td>
+                      <td colspan="6" class="text-end">Flete:</td>
                       <td colspan="2">
                         <div class="input-group input-group-sm">
                           <span class="input-group-text">$</span>
@@ -118,7 +123,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <td colspan="5" class="text-end">Descuento:</td>
+                      <td colspan="6" class="text-end">Descuento:</td>
                       <td colspan="2">
                         <div class="input-group input-group-sm">
                           <span class="input-group-text">$</span>
@@ -129,7 +134,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <td colspan="5" class="text-end">IVA:</td>
+                      <td colspan="6" class="text-end">IVA:</td>
                       <td colspan="2">
                         <select name="porcentaje_iva" class="form-select form-select-sm" id="porcentajeIva" onchange="actualizarTotal()">
                           <option value="">Sin IVA</option>
@@ -139,13 +144,13 @@
                       </td>
                     </tr>
                     <tr>
-                      <td colspan="5" class="text-end">Valor IVA:</td>
+                      <td colspan="6" class="text-end">Valor IVA:</td>
                       <td colspan="2" id="valorIvaDisplay">
                         ${{ number_format($solicitud->valor_iva ?? 0, 2) }}
                       </td>
                     </tr>
                     <tr class="table-primary">
-                      <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
+                      <td colspan="6" class="text-end fw-bold fs-5">TOTAL:</td>
                       <td colspan="2" class="fw-bold fs-5" id="totalGeneral">
                         @php
                           $totalConIva = ($solicitud->monto_total ?? 0) + ($solicitud->valor_iva ?? 0);
@@ -364,6 +369,9 @@
           </div>
         </td>
         <td class="subtotal-cell">$${subtotal.toFixed(2)}</td>
+        <td>
+          <input type="text" name="items[${itemIndex}][observacion]" class="form-control form-control-sm" placeholder="Observación...">
+        </td>
         <td>
           <button type="button" class="btn btn-outline-danger btn-sm" onclick="eliminarItem(this)">
             <i class="bi bi-trash"></i>
