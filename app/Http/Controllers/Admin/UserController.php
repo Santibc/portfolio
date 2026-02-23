@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
@@ -39,13 +40,14 @@ class UserController extends Controller
         }
 
         $usuarios = $query->orderBy('created_at', 'desc')->get();
-        $roles = Role::all();
-        return view('admin.users.index', compact('usuarios', 'roles'));
+        $roles = Role::where('name', '!=', 'Trabajador')->get();
+        $allRoles = Role::all();
+        return view('admin.users.index', compact('usuarios', 'roles', 'allRoles'));
     }
 
     public function create()
     {
-        $roles = Role::all();
+        $roles = Role::where('name', '!=', 'Trabajador')->get();
         return view('admin.users.create', compact('roles'));
     }
 
@@ -55,7 +57,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
-            'role' => 'required|exists:roles,name',
+            'role' => ['required', 'exists:roles,name', Rule::notIn(['Trabajador'])],
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -66,6 +68,7 @@ class UserController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'role.required' => 'El rol es obligatorio.',
             'role.exists' => 'El rol seleccionado no existe.',
+            'role.not_in' => 'El rol Trabajador se asigna automáticamente al crear un trabajador.',
         ]);
 
         $user = User::create([
@@ -92,7 +95,7 @@ class UserController extends Controller
             ]);
         }
 
-        $roles = Role::all();
+        $roles = Role::where('name', '!=', 'Trabajador')->get();
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
@@ -102,7 +105,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
-            'role' => 'required|exists:roles,name',
+            'role' => ['required', 'exists:roles,name', Rule::notIn(['Trabajador'])],
         ], [
             'name.required' => 'El nombre es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -112,6 +115,7 @@ class UserController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'role.required' => 'El rol es obligatorio.',
             'role.exists' => 'El rol seleccionado no existe.',
+            'role.not_in' => 'El rol Trabajador se asigna automáticamente al crear un trabajador.',
         ]);
 
         $user->update([

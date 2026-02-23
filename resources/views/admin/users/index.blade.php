@@ -28,7 +28,7 @@
                     <label class="form-label">Rol</label>
                     <select name="role" class="form-select">
                         <option value="">Todos los roles</option>
-                        @foreach($roles ?? [] as $role)
+                        @foreach($allRoles ?? $roles ?? [] as $role)
                         <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
                             {{ $role->name }}
                         </option>

@@ -80,7 +80,7 @@ class TrabajadorController extends Controller
             'nombre' => 'required|string|max:100',
             'apellidos' => 'required|string|max:150',
             'dni' => 'required|string|max:20|unique:trabajadores',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email' => 'required|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'nullable|date',
@@ -99,10 +99,20 @@ class TrabajadorController extends Controller
             'dni.required' => 'El DNI es obligatorio.',
             'dni.unique' => 'Este DNI ya está registrado.',
             'email.required' => 'El email es obligatorio para crear acceso al portal.',
-            'email.unique' => 'Este email ya está registrado como usuario.',
             'fecha_alta.required' => 'La fecha de alta es obligatoria.',
             'subcontrata_id.exists' => 'La subcontrata seleccionada no existe.',
         ]);
+
+        // Verificar si el email ya pertenece a un usuario asignado a otro trabajador
+        $userExistente = User::where('email', $validated['email'])->first();
+        if ($userExistente) {
+            $trabajadorConEsteUser = Trabajador::where('user_id', $userExistente->id)->first();
+            if ($trabajadorConEsteUser) {
+                return back()->withErrors([
+                    'email' => 'Este correo ya está asignado al trabajador: ' . $trabajadorConEsteUser->nombre . ' ' . $trabajadorConEsteUser->apellidos . '.'
+                ])->withInput();
+            }
+        }
 
         // Si es de subcontrata, debe tener subcontrata_id
         if ($validated['tipo_relacion'] === 'subcontrata' && empty($validated['subcontrata_id'])) {
@@ -120,19 +130,30 @@ class TrabajadorController extends Controller
 
         $trabajador = Trabajador::create($validated);
 
-        // Crear usuario automáticamente
-        $user = User::create([
-            'name' => $validated['nombre'] . ' ' . $validated['apellidos'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['dni']),
-        ]);
+        if ($userExistente) {
+            // Asociar usuario existente
+            $user = $userExistente;
+            $trabajador->update(['user_id' => $user->id]);
 
-        $user->assignRole('Trabajador');
-        $trabajador->update(['user_id' => $user->id]);
+            if (!$user->hasRole('Trabajador')) {
+                $user->assignRole('Trabajador');
+            }
+        } else {
+            // Crear usuario nuevo
+            $user = User::create([
+                'name' => $validated['nombre'] . ' ' . $validated['apellidos'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['dni']),
+            ]);
 
-        // Enviar email de bienvenida con credenciales
+            $user->assignRole('Trabajador');
+            $trabajador->update(['user_id' => $user->id]);
+        }
+
+        // Enviar email de bienvenida
         try {
-            $user->notify(new BienvenidaTrabajadorNotification($trabajador, $validated['dni']));
+            $password = $userExistente ? null : $validated['dni'];
+            $user->notify(new BienvenidaTrabajadorNotification($trabajador, $password));
 
             EmailLog::logEnviado(
                 EmailLog::TIPO_BIENVENIDA,
@@ -160,8 +181,11 @@ class TrabajadorController extends Controller
             ]);
         }
 
-        return redirect()->route('trabajadores.index')
-            ->with('success', 'Trabajador creado exitosamente. Se ha enviado un email con las credenciales de acceso.');
+        $mensaje = $userExistente
+            ? 'Trabajador creado exitosamente. Se asoció el usuario existente con este correo.'
+            : 'Trabajador creado exitosamente. Se ha enviado un email con las credenciales de acceso.';
+
+        return redirect()->route('trabajadores.index')->with('success', $mensaje);
     }
 
     public function show(Trabajador $trabajador)
@@ -219,7 +243,7 @@ class TrabajadorController extends Controller
             'nombre' => 'required|string|max:100',
             'apellidos' => 'required|string|max:150',
             'dni' => 'required|string|max:20|unique:trabajadores,dni,' . $trabajador->id,
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
             'fecha_nacimiento' => 'nullable|date',
@@ -239,8 +263,25 @@ class TrabajadorController extends Controller
             'apellidos.required' => 'Los apellidos son obligatorios.',
             'dni.required' => 'El DNI es obligatorio.',
             'dni.unique' => 'Este DNI ya está registrado.',
+            'email.required' => 'El email es obligatorio para el acceso al portal.',
             'fecha_alta.required' => 'La fecha de alta es obligatoria.',
         ]);
+
+        // Verificar si el email ya pertenece a un usuario asignado a otro trabajador
+        $userExistente = User::where('email', $validated['email'])->first();
+        if ($userExistente) {
+            // Si el usuario encontrado no es el mismo que ya tiene este trabajador
+            if ($userExistente->id !== $trabajador->user_id) {
+                $otroTrabajador = Trabajador::where('user_id', $userExistente->id)
+                    ->where('id', '!=', $trabajador->id)
+                    ->first();
+                if ($otroTrabajador) {
+                    return back()->withErrors([
+                        'email' => 'Este correo ya está asignado al trabajador: ' . $otroTrabajador->nombre . ' ' . $otroTrabajador->apellidos . '.'
+                    ])->withInput();
+                }
+            }
+        }
 
         // Si es de subcontrata, debe tener subcontrata_id
         if ($validated['tipo_relacion'] === 'subcontrata' && empty($validated['subcontrata_id'])) {
@@ -258,6 +299,65 @@ class TrabajadorController extends Controller
         $datosAnteriores = $trabajador->toArray();
 
         $trabajador->update($validated);
+
+        // Gestionar usuario asociado
+        if (!$trabajador->user_id) {
+            if ($userExistente) {
+                // Asociar usuario existente que no está asignado a otro trabajador
+                $user = $userExistente;
+                $trabajador->update(['user_id' => $user->id]);
+
+                if (!$user->hasRole('Trabajador')) {
+                    $user->assignRole('Trabajador');
+                }
+            } else {
+                // Crear usuario nuevo
+                $user = User::create([
+                    'name' => $validated['nombre'] . ' ' . $validated['apellidos'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['dni']),
+                ]);
+
+                $user->assignRole('Trabajador');
+                $trabajador->update(['user_id' => $user->id]);
+            }
+
+            // Enviar email de bienvenida
+            try {
+                $password = $userExistente ? null : $validated['dni'];
+                $user->notify(new BienvenidaTrabajadorNotification($trabajador, $password));
+
+                EmailLog::logEnviado(
+                    EmailLog::TIPO_BIENVENIDA,
+                    $user->email,
+                    "Bienvenido al Portal del Trabajador - Manzer ERP",
+                    $trabajador,
+                    $user->id
+                );
+            } catch (\Exception $e) {
+                Log::error("Error enviando email de bienvenida", [
+                    'trabajador_id' => $trabajador->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        } elseif ($userExistente && $userExistente->id !== $trabajador->user_id) {
+            // El email cambió a uno de un usuario existente libre → reasociar
+            $user = $userExistente;
+            $trabajador->update(['user_id' => $user->id]);
+
+            if (!$user->hasRole('Trabajador')) {
+                $user->assignRole('Trabajador');
+            }
+        } else {
+            // Actualizar email y nombre del usuario actual
+            $user = User::find($trabajador->user_id);
+            if ($user) {
+                $user->update([
+                    'name' => $validated['nombre'] . ' ' . $validated['apellidos'],
+                    'email' => $validated['email'],
+                ]);
+            }
+        }
 
         // Registrar en auditoría
         Auditoria::registrar('editar', 'trabajadores', $trabajador->id, $datosAnteriores, $trabajador->fresh()->toArray());

@@ -86,12 +86,23 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                               value="{{ old('email', $trabajador->email) }}">
+                               value="{{ old('email', $trabajador->email) }}" required placeholder="correo@ejemplo.com">
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        @if(!$trabajador->user_id)
+                            <div class="form-text text-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Este trabajador no tiene usuario. Al guardar se creará automáticamente (contraseña: DNI).
+                            </div>
+                        @else
+                            <div class="form-text text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Acceso al portal con este email. Contraseña: DNI.
+                            </div>
+                        @endif
                     </div>
 
                     <div class="col-md-4">
