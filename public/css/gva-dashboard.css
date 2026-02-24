@@ -1,5 +1,5 @@
 /* ==============================================
-   Manzer - Dashboard Styles
+   Sinden - Dashboard Styles
    ============================================== */
 
 /* ==============================================
@@ -12,16 +12,16 @@
 }
 
 .course-card {
-    background: var(--manzer-white);
-    border-radius: var(--manzer-radius-lg);
-    box-shadow: var(--manzer-shadow);
+    background: var(--sinden-white);
+    border-radius: var(--sinden-radius-lg);
+    box-shadow: var(--sinden-shadow);
     overflow: hidden;
-    transition: var(--manzer-transition);
+    transition: var(--sinden-transition);
 }
 
 .course-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--manzer-shadow-lg);
+    box-shadow: var(--sinden-shadow-lg);
 }
 
 .course-card.locked {
@@ -50,7 +50,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--manzer-transition);
+    transition: var(--sinden-transition);
 }
 
 .course-card:hover .course-thumbnail img {
@@ -60,11 +60,11 @@
 .course-thumbnail-placeholder {
     width: 100%;
     height: 100%;
-    background: var(--manzer-gradient);
+    background: var(--sinden-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
     font-size: 3rem;
 }
 
@@ -99,7 +99,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
     font-size: 1.5rem;
     z-index: 10;
 }
@@ -111,7 +111,7 @@
 .course-category {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.5rem;
@@ -120,7 +120,7 @@
 .course-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--manzer-gray-900);
+    color: var(--sinden-gray-900);
     margin: 0 0 0.5rem;
     line-height: 1.4;
 }
@@ -131,12 +131,12 @@
 }
 
 .course-title a:hover {
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
 }
 
 .course-description {
     font-size: 0.875rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -149,7 +149,7 @@
     align-items: center;
     gap: 1rem;
     font-size: 0.75rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
 }
 
 .course-meta-item {
@@ -159,12 +159,12 @@
 }
 
 .course-meta-item i {
-    color: var(--manzer-gray-400);
+    color: var(--sinden-gray-400);
 }
 
 .course-footer {
     padding: 1rem 1.25rem;
-    border-top: 1px solid var(--manzer-gray-200);
+    border-top: 1px solid var(--sinden-gray-200);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -176,7 +176,7 @@
 }
 
 .course-progress-text.completed {
-    color: var(--manzer-success);
+    color: var(--sinden-success);
 }
 
 /* ==============================================
@@ -189,11 +189,11 @@
 }
 
 .category-card {
-    background: var(--manzer-white);
-    border-radius: var(--manzer-radius-lg);
-    box-shadow: var(--manzer-shadow);
+    background: var(--sinden-white);
+    border-radius: var(--sinden-radius-lg);
+    box-shadow: var(--sinden-shadow);
     overflow: hidden;
-    transition: var(--manzer-transition);
+    transition: var(--sinden-transition);
     text-decoration: none;
     color: inherit;
     display: block;
@@ -201,7 +201,7 @@
 
 .category-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--manzer-shadow-lg);
+    box-shadow: var(--sinden-shadow-lg);
 }
 
 .category-image {
@@ -213,7 +213,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--manzer-transition);
+    transition: var(--sinden-transition);
 }
 
 .category-card:hover .category-image img {
@@ -223,11 +223,11 @@
 .category-image-placeholder {
     width: 100%;
     height: 100%;
-    background: var(--manzer-gradient-secondary);
+    background: var(--sinden-gradient-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
     font-size: 3rem;
 }
 
@@ -238,13 +238,13 @@
 .category-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--manzer-gray-900);
+    color: var(--sinden-gray-900);
     margin: 0 0 0.5rem;
 }
 
 .category-description {
     font-size: 0.875rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -257,11 +257,11 @@
     align-items: center;
     gap: 1rem;
     font-size: 0.875rem;
-    color: var(--manzer-gray-600);
+    color: var(--sinden-gray-600);
 }
 
 .category-stats i {
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
 }
 
 /* ==============================================
@@ -270,7 +270,7 @@
 .video-player-container {
     position: relative;
     background: #000;
-    border-radius: var(--manzer-radius-lg);
+    border-radius: var(--sinden-radius-lg);
     overflow: hidden;
     margin-bottom: 1.5rem;
 }
@@ -303,7 +303,7 @@
 
 .video-progress-bar {
     height: 100%;
-    background: var(--manzer-primary-light);
+    background: var(--sinden-primary-light);
     border-radius: 9999px;
     transition: width 0.1s linear;
 }
@@ -312,11 +312,11 @@
    Course Detail
    ============================================== */
 .course-detail-header {
-    background: var(--manzer-gradient);
+    background: var(--sinden-gradient);
     padding: 2rem;
-    border-radius: var(--manzer-radius-lg);
+    border-radius: var(--sinden-radius-lg);
     margin-bottom: 2rem;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
 }
 
 .course-detail-title {
@@ -358,8 +358,8 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    border-bottom: 1px solid var(--manzer-gray-200);
-    transition: var(--manzer-transition);
+    border-bottom: 1px solid var(--sinden-gray-200);
+    transition: var(--sinden-transition);
 }
 
 .video-item:last-child {
@@ -367,16 +367,16 @@
 }
 
 .video-item:hover {
-    background: var(--manzer-gray-50);
+    background: var(--sinden-gray-50);
 }
 
 .video-item.active {
-    background: var(--manzer-primary-50);
-    border-left: 3px solid var(--manzer-primary);
+    background: var(--sinden-primary-50);
+    border-left: 3px solid var(--sinden-primary);
 }
 
 .video-item.completed {
-    background: var(--manzer-secondary-50);
+    background: var(--sinden-secondary-50);
 }
 
 .video-item.locked {
@@ -388,24 +388,24 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--manzer-gray-200);
+    background: var(--sinden-gray-200);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     font-size: 0.875rem;
-    color: var(--manzer-gray-600);
+    color: var(--sinden-gray-600);
     flex-shrink: 0;
 }
 
 .video-item.completed .video-number {
-    background: var(--manzer-secondary);
-    color: var(--manzer-white);
+    background: var(--sinden-secondary);
+    color: var(--sinden-white);
 }
 
 .video-item.active .video-number {
-    background: var(--manzer-primary);
-    color: var(--manzer-white);
+    background: var(--sinden-primary);
+    color: var(--sinden-white);
 }
 
 .video-info {
@@ -415,7 +415,7 @@
 
 .video-title {
     font-weight: 500;
-    color: var(--manzer-gray-800);
+    color: var(--sinden-gray-800);
     margin-bottom: 0.25rem;
 }
 
@@ -425,12 +425,12 @@
 }
 
 .video-item a:hover .video-title {
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
 }
 
 .video-duration {
     font-size: 0.75rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
 }
 
 .video-status {
@@ -442,15 +442,15 @@
 }
 
 .video-status .fa-check-circle {
-    color: var(--manzer-success);
+    color: var(--sinden-success);
 }
 
 .video-status .fa-lock {
-    color: var(--manzer-gray-400);
+    color: var(--sinden-gray-400);
 }
 
 .video-status .fa-play-circle {
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
 }
 
 /* ==============================================
@@ -468,7 +468,7 @@
 
 .note-item {
     padding: 1.25rem;
-    border-bottom: 1px solid var(--manzer-gray-200);
+    border-bottom: 1px solid var(--sinden-gray-200);
 }
 
 .note-item:last-child {
@@ -492,27 +492,27 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--manzer-primary);
+    background: var(--sinden-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
     font-weight: 600;
     font-size: 0.875rem;
 }
 
 .note-author-name {
     font-weight: 600;
-    color: var(--manzer-gray-800);
+    color: var(--sinden-gray-800);
 }
 
 .note-date {
     font-size: 0.75rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
 }
 
 .note-content {
-    color: var(--manzer-gray-700);
+    color: var(--sinden-gray-700);
     line-height: 1.6;
 }
 
@@ -524,7 +524,7 @@
 .note-form {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid var(--manzer-gray-200);
+    border-top: 1px solid var(--sinden-gray-200);
 }
 
 .note-form textarea {
@@ -542,24 +542,24 @@
 }
 
 .progress-card {
-    background: var(--manzer-white);
+    background: var(--sinden-white);
     padding: 1.5rem;
-    border-radius: var(--manzer-radius-lg);
-    box-shadow: var(--manzer-shadow);
+    border-radius: var(--sinden-radius-lg);
+    box-shadow: var(--sinden-shadow);
     text-align: center;
 }
 
 .progress-card-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--manzer-primary);
+    color: var(--sinden-primary);
     line-height: 1;
     margin-bottom: 0.5rem;
 }
 
 .progress-card-label {
     font-size: 0.875rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
 }
 
 .progress-ring {
@@ -579,11 +579,11 @@
 }
 
 .progress-ring-bg {
-    stroke: var(--manzer-gray-200);
+    stroke: var(--sinden-gray-200);
 }
 
 .progress-ring-fill {
-    stroke: var(--manzer-primary);
+    stroke: var(--sinden-primary);
     stroke-linecap: round;
     transition: stroke-dashoffset 0.5s ease;
 }
@@ -595,18 +595,18 @@
     transform: translate(-50%, -50%);
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--manzer-gray-800);
+    color: var(--sinden-gray-800);
 }
 
 /* ==============================================
    Dashboard Welcome
    ============================================== */
 .welcome-banner {
-    background: var(--manzer-gradient);
-    border-radius: var(--manzer-radius-lg);
+    background: var(--sinden-gradient);
+    border-radius: var(--sinden-radius-lg);
     padding: 2rem;
     margin-bottom: 2rem;
-    color: var(--manzer-white);
+    color: var(--sinden-white);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -629,12 +629,12 @@
 }
 
 .welcome-action .btn {
-    background: var(--manzer-white);
-    color: var(--manzer-primary);
+    background: var(--sinden-white);
+    color: var(--sinden-primary);
 }
 
 .welcome-action .btn:hover {
-    background: var(--manzer-gray-100);
+    background: var(--sinden-gray-100);
 }
 
 /* ==============================================
@@ -651,7 +651,7 @@
     align-items: flex-start;
     gap: 1rem;
     padding: 1rem 0;
-    border-bottom: 1px solid var(--manzer-gray-200);
+    border-bottom: 1px solid var(--sinden-gray-200);
 }
 
 .activity-item:last-child {
@@ -669,13 +669,13 @@
 }
 
 .activity-icon.completed {
-    background: var(--manzer-secondary-100);
-    color: var(--manzer-secondary);
+    background: var(--sinden-secondary-100);
+    color: var(--sinden-secondary);
 }
 
 .activity-icon.started {
-    background: var(--manzer-primary-100);
-    color: var(--manzer-primary);
+    background: var(--sinden-primary-100);
+    color: var(--sinden-primary);
 }
 
 .activity-icon.note {
@@ -688,17 +688,17 @@
 }
 
 .activity-text {
-    color: var(--manzer-gray-700);
+    color: var(--sinden-gray-700);
     margin-bottom: 0.25rem;
 }
 
 .activity-text strong {
-    color: var(--manzer-gray-900);
+    color: var(--sinden-gray-900);
 }
 
 .activity-time {
     font-size: 0.75rem;
-    color: var(--manzer-gray-500);
+    color: var(--sinden-gray-500);
 }
 
 /* ==============================================

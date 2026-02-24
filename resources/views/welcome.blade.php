@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Sinden') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -13,20 +13,20 @@
 </head>
 <body class="antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <div class="flex flex-col items-center justify-center min-h-screen p-6">
-        <!-- Logo Manzer -->
+        <!-- Logo -->
         <div class="mb-8 text-center">
-            <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" class="mx-auto mb-4" style="width: 150px; height: auto;">
-            <h1 class="text-5xl font-bold text-gray-800">Manzer</h1>
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sinden') }}" class="mx-auto mb-4" style="width: 150px; height: auto;">
+            <h1 class="text-5xl font-bold text-gray-800">{{ config('app.name', 'Sinden') }}</h1>
         </div>
 
         <!-- Mensaje principal -->
         <div class="text-center mb-8">
             <h2 class="text-4xl font-semibold text-gray-700 mb-4">
-                Bienvenido a Manzer
+                Bienvenido a {{ config('app.name', 'Sinden') }}
             </h2>
         </div>
 
-        <!-- Botones de acción -->
+        <!-- Botones de accion -->
         <div class="flex gap-4">
             @if (Route::has('login'))
                 @auth
@@ -35,7 +35,7 @@
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105">
-                        Iniciar Sesión
+                        Iniciar Sesion
                     </a>
 
                     @if (Route::has('register'))
@@ -49,7 +49,7 @@
 
         <!-- Footer -->
         <div class="mt-16 text-center text-gray-500 text-sm">
-            <p>&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name', 'Sinden') }}. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>

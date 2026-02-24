@@ -3,59 +3,71 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
-use App\Models\Lead;
-use App\Models\Auditoria;
+use App\Exports\ClientesExport;
+use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClienteController extends Controller
 {
+    use RegistraActividad;
+
     public function index(Request $request)
     {
-        $query = Cliente::withCount(['obras', 'facturas', 'leads']);
+        if ($request->ajax()) {
+            $query = Cliente::query();
 
-        // Filtro por búsqueda (nombre, razón social, CIF)
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre_comercial', 'like', "%{$search}%")
-                  ->orWhere('razon_social', 'like', "%{$search}%")
-                  ->orWhere('cif', 'like', "%{$search}%")
-                  ->orWhere('persona_contacto', 'like', "%{$search}%");
-            });
+            return DataTables::of($query)
+                ->addColumn('estado', function ($cliente) {
+                    $variant = $cliente->activo ? 'success' : 'danger';
+                    $text = $cliente->activo ? 'ACTIVO' : 'INACTIVO';
+                    return '<span class="status-badge ' . $variant . '">' . $text . '</span>';
+                })
+                ->addColumn('acciones', function ($cliente) {
+                    $viewUrl = route('recepcion.clientes.show', $cliente);
+                    $editUrl = route('recepcion.clientes.edit', $cliente);
+
+                    $html = '<div class="action-buttons justify-content-end">'
+                        . '<a href="' . $viewUrl . '" class="action-btn view" title="Ver" data-tooltip="Ver"><i class="bi bi-eye"></i></a>'
+                        . '<a href="' . $editUrl . '" class="action-btn edit" title="Editar" data-tooltip="Editar"><i class="bi bi-pencil"></i></a>';
+
+                    if (auth()->user()->hasRole('Administrador')) {
+                        $toggleIcon = $cliente->activo ? 'toggle-on' : 'toggle-off';
+                        $toggleTitle = $cliente->activo ? 'Desactivar' : 'Activar';
+                        $html .= '<button type="button" class="action-btn" title="' . $toggleTitle . '" data-tooltip="' . $toggleTitle . '"'
+                            . ' onclick="toggleActivo(' . $cliente->id . ', \'' . addslashes($cliente->nombre) . '\')">'
+                            . '<i class="bi bi-' . $toggleIcon . '"></i></button>';
+                    }
+
+                    $html .= '</div>';
+                    return $html;
+                })
+                ->editColumn('created_at', function ($cliente) {
+                    return $cliente->created_at ? $cliente->created_at->format('d/m/Y') : '-';
+                })
+                ->editColumn('cedula', function ($cliente) {
+                    return $cliente->cedula ?? '-';
+                })
+                ->editColumn('correo', function ($cliente) {
+                    return $cliente->correo ?? '-';
+                })
+                ->editColumn('celular_1', function ($cliente) {
+                    return $cliente->celular_1 ?? '-';
+                })
+                ->rawColumns(['estado', 'acciones'])
+                ->make(true);
         }
 
-        // Filtro por tipo
-        if ($request->filled('tipo')) {
-            $query->where('tipo', $request->tipo);
-        }
+        $totalClientes = Cliente::count();
+        $clientesActivos = Cliente::where('activo', true)->count();
+        $clientesInactivos = Cliente::where('activo', false)->count();
+        $clientesRecientes = Cliente::where('created_at', '>=', now()->subDays(30))->count();
 
-        // Filtro por estado
-        if ($request->filled('activo')) {
-            $query->where('activo', $request->activo === '1');
-        }
-
-        // Filtro por provincia
-        if ($request->filled('provincia')) {
-            $query->where('provincia', $request->provincia);
-        }
-
-        $clientes = $query->orderBy('nombre_comercial')->get();
-
-        // Obtener provincias únicas para el filtro
-        $provincias = Cliente::whereNotNull('provincia')
-            ->distinct()
-            ->orderBy('provincia')
-            ->pluck('provincia');
-
-        // Estadísticas
-        $stats = [
-            'total' => Cliente::count(),
-            'activos' => Cliente::where('activo', true)->count(),
-            'publicos' => Cliente::where('tipo', 'publico')->count(),
-            'privados' => Cliente::where('tipo', 'privado')->count(),
-        ];
-
-        return view('clientes.index', compact('clientes', 'provincias', 'stats'));
+        return view('clientes.index', compact(
+            'totalClientes', 'clientesActivos', 'clientesInactivos', 'clientesRecientes'
+        ));
     }
 
     public function create()
@@ -65,200 +77,180 @@ class ClienteController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'tipo' => 'required|in:publico,privado',
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social' => 'nullable|string|max:255',
-            'cif' => 'nullable|string|max:20|unique:clientes',
-            'direccion' => 'nullable|string|max:500',
-            'codigo_postal' => 'nullable|string|max:10',
-            'ciudad' => 'nullable|string|max:100',
-            'provincia' => 'nullable|string|max:100',
-            'pais' => 'nullable|string|max:100',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'persona_contacto' => 'nullable|string|max:150',
-            'telefono_contacto' => 'nullable|string|max:20',
-            'email_contacto' => 'nullable|email|max:255',
-            'condiciones_pago' => 'nullable|string|max:100',
-            'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
-            'notas' => 'nullable|string',
-        ], [
-            'tipo.required' => 'El tipo de cliente es obligatorio.',
-            'tipo.in' => 'El tipo de cliente debe ser público o privado.',
-            'nombre_comercial.required' => 'El nombre comercial es obligatorio.',
-            'cif.unique' => 'Este CIF ya está registrado.',
-            'email.email' => 'El email no tiene un formato válido.',
-            'email_contacto.email' => 'El email de contacto no tiene un formato válido.',
-        ]);
-
-        $validated['activo'] = true;
-        $validated['pais'] = $validated['pais'] ?? 'España';
+        $validated = $request->validate(
+            $this->rules(),
+            $this->messages()
+        );
 
         $cliente = Cliente::create($validated);
 
-        // Registrar en auditoría
-        Auditoria::registrar('crear', 'clientes', $cliente->id, null, $cliente->toArray());
+        $this->registrarActividad(
+            'cliente.creado',
+            "Se creo el cliente: {$cliente->nombre}",
+            null,
+            ['cliente_id' => $cliente->id]
+        );
 
-        return redirect()->route('clientes.index')
+        return redirect()->route('recepcion.clientes.index')
             ->with('success', 'Cliente creado exitosamente.');
     }
 
     public function show(Cliente $cliente)
     {
-        $cliente->load([
-            'obras' => function ($query) {
-                $query->orderBy('created_at', 'desc')->limit(10);
-            },
-            'facturas' => function ($query) {
-                $query->orderBy('fecha_emision', 'desc')->limit(10);
-            },
-            'leads' => function ($query) {
-                $query->orderBy('created_at', 'desc')->limit(10);
-            },
-            'contratos' => function ($query) {
-                $query->orderBy('created_at', 'desc')->limit(10);
-            },
-            'interacciones' => function ($query) {
-                $query->orderBy('fecha', 'desc')->limit(10);
-            },
-        ]);
+        $cliente->load(['ordenes' => function ($q) {
+            $q->latest();
+        }]);
 
-        // Estadísticas del cliente
-        $stats = [
-            'total_obras' => $cliente->obras()->count(),
-            'obras_activas' => $cliente->obras()->whereIn('estado', ['en_curso', 'aprobada'])->count(),
-            'total_facturas' => $cliente->facturas()->count(),
-            'facturas_pendientes' => $cliente->facturas()->where('estado', '!=', 'cobrada')->count(),
-            'importe_facturado' => $cliente->facturas()->sum('total'),
-            'importe_pendiente' => $cliente->facturas()->where('estado', '!=', 'cobrada')->sum('total'),
-        ];
-
-        return view('clientes.show', compact('cliente', 'stats'));
+        return view('clientes.show', compact('cliente'));
     }
 
-    public function edit(Request $request, Cliente $cliente)
+    public function edit(Cliente $cliente)
     {
-        // Si es petición AJAX, devolver JSON
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'id' => $cliente->id,
-                'tipo' => $cliente->tipo,
-                'nombre_comercial' => $cliente->nombre_comercial,
-                'razon_social' => $cliente->razon_social,
-                'cif' => $cliente->cif,
-                'direccion' => $cliente->direccion,
-                'codigo_postal' => $cliente->codigo_postal,
-                'ciudad' => $cliente->ciudad,
-                'provincia' => $cliente->provincia,
-                'pais' => $cliente->pais,
-                'telefono' => $cliente->telefono,
-                'email' => $cliente->email,
-                'persona_contacto' => $cliente->persona_contacto,
-                'telefono_contacto' => $cliente->telefono_contacto,
-                'email_contacto' => $cliente->email_contacto,
-                'condiciones_pago' => $cliente->condiciones_pago,
-                'retencion_porcentaje' => $cliente->retencion_porcentaje,
-                'notas' => $cliente->notas,
-                'activo' => $cliente->activo,
-            ]);
-        }
-
         return view('clientes.edit', compact('cliente'));
     }
 
     public function update(Request $request, Cliente $cliente)
     {
-        $validated = $request->validate([
-            'tipo' => 'required|in:publico,privado',
-            'nombre_comercial' => 'required|string|max:255',
-            'razon_social' => 'nullable|string|max:255',
-            'cif' => 'nullable|string|max:20|unique:clientes,cif,' . $cliente->id,
-            'direccion' => 'nullable|string|max:500',
-            'codigo_postal' => 'nullable|string|max:10',
-            'ciudad' => 'nullable|string|max:100',
-            'provincia' => 'nullable|string|max:100',
-            'pais' => 'nullable|string|max:100',
-            'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'persona_contacto' => 'nullable|string|max:150',
-            'telefono_contacto' => 'nullable|string|max:20',
-            'email_contacto' => 'nullable|email|max:255',
-            'condiciones_pago' => 'nullable|string|max:100',
-            'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
-            'notas' => 'nullable|string',
-            'activo' => 'boolean',
-        ], [
-            'tipo.required' => 'El tipo de cliente es obligatorio.',
-            'nombre_comercial.required' => 'El nombre comercial es obligatorio.',
-            'cif.unique' => 'Este CIF ya está registrado.',
-        ]);
+        $validated = $request->validate(
+            $this->rules(),
+            $this->messages()
+        );
 
-        $validated['activo'] = $request->boolean('activo', true);
-
-        // Guardar datos anteriores para auditoría
-        $datosAnteriores = $cliente->toArray();
+        $cambios = array_diff_assoc(
+            $request->only(['nombre', 'cedula', 'direccion', 'correo', 'celular_1', 'celular_2']),
+            $cliente->only(['nombre', 'cedula', 'direccion', 'correo', 'celular_1', 'celular_2'])
+        );
 
         $cliente->update($validated);
 
-        // Registrar en auditoría
-        Auditoria::registrar('editar', 'clientes', $cliente->id, $datosAnteriores, $cliente->fresh()->toArray());
+        $this->registrarActividad(
+            'cliente.actualizado',
+            "Se actualizo el cliente: {$cliente->nombre}",
+            null,
+            ['cliente_id' => $cliente->id, 'cambios' => $cambios]
+        );
 
-        return redirect()->route('clientes.index')
+        return redirect()->route('recepcion.clientes.index')
             ->with('success', 'Cliente actualizado exitosamente.');
     }
 
-    public function destroy(Cliente $cliente)
+    public function toggleActivo(Cliente $cliente)
     {
-        // Verificar que no tiene obras activas
-        if ($cliente->obras()->whereIn('estado', ['en_curso', 'aprobada'])->exists()) {
-            return redirect()->route('clientes.index')
-                ->with('error', 'No se puede eliminar un cliente con obras activas.');
+        $cliente->activo = !$cliente->activo;
+        $cliente->save();
+
+        $accion = $cliente->activo ? 'activo' : 'desactivo';
+
+        $this->registrarActividad(
+            'cliente.actualizado',
+            "Se {$accion} el cliente: {$cliente->nombre}",
+            null,
+            ['cliente_id' => $cliente->id, 'activo' => $cliente->activo]
+        );
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'activo' => $cliente->activo,
+                'message' => "Cliente {$accion} exitosamente.",
+            ]);
         }
 
-        // Verificar que no tiene facturas pendientes
-        if ($cliente->facturas()->where('estado', '!=', 'cobrada')->exists()) {
-            return redirect()->route('clientes.index')
-                ->with('error', 'No se puede eliminar un cliente con facturas pendientes.');
-        }
-
-        // Registrar en auditoría antes de eliminar
-        Auditoria::registrar('eliminar', 'clientes', $cliente->id, $cliente->toArray(), null);
-
-        $cliente->delete();
-
-        return redirect()->route('clientes.index')
-            ->with('success', 'Cliente eliminado exitosamente.');
+        return redirect()->back()->with('success', "Cliente {$accion} exitosamente.");
     }
 
-    // =============================================
-    // INTERACCIONES (CRM básico)
-    // =============================================
-
-    public function storeInteraccion(Request $request, Cliente $cliente)
+    public function autocomplete(Request $request)
     {
-        $validated = $request->validate([
-            'tipo' => 'required|in:llamada,email,reunion,visita,otro',
-            'fecha' => 'required|date',
-            'descripcion' => 'required|string',
-            'proximo_paso' => 'nullable|string',
-            'fecha_proximo_contacto' => 'nullable|date|after_or_equal:today',
-        ], [
-            'tipo.required' => 'El tipo de interacción es obligatorio.',
-            'fecha.required' => 'La fecha es obligatoria.',
-            'descripcion.required' => 'La descripción es obligatoria.',
-        ]);
+        $q = $request->get('q', '');
 
-        $cliente->interacciones()->create([
-            'tipo' => $validated['tipo'],
-            'fecha' => $validated['fecha'],
-            'descripcion' => $validated['descripcion'],
-            'proximo_paso' => $validated['proximo_paso'],
-            'fecha_proximo_contacto' => $validated['fecha_proximo_contacto'],
-            'registrado_por' => auth()->id(),
-        ]);
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
 
-        return redirect()->route('clientes.show', $cliente)
-            ->with('success', 'Interacción registrada exitosamente.');
+        $clientes = Cliente::where('activo', true)
+            ->where(function ($query) use ($q) {
+                $query->where('nombre', 'LIKE', "%{$q}%")
+                    ->orWhere('cedula', 'LIKE', "%{$q}%")
+                    ->orWhere('celular_1', 'LIKE', "%{$q}%")
+                    ->orWhere('celular_2', 'LIKE', "%{$q}%")
+                    ->orWhere('correo', 'LIKE', "%{$q}%");
+            })
+            ->select('id', 'nombre', 'cedula', 'celular_1', 'correo')
+            ->limit(10)
+            ->get();
+
+        return response()->json($clientes);
+    }
+
+    public function exportExcel()
+    {
+        $clientes = Cliente::orderBy('nombre')->get();
+        return Excel::download(new ClientesExport($clientes), 'clientes-' . now()->format('Y-m-d') . '.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $clientes = Cliente::where('activo', true)->orderBy('nombre')->get();
+        $fecha = now()->timezone('America/Bogota')->format('d/m/Y H:i');
+
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+            body { font-family: sans-serif; font-size: 11px; color: #1f2937; }
+            h1 { color: #4A7C59; font-size: 18px; margin-bottom: 2px; }
+            .fecha { color: #6b7280; font-size: 10px; margin-bottom: 15px; }
+            table { width: 100%; border-collapse: collapse; }
+            th { background: #4A7C59; color: white; padding: 8px 6px; text-align: left; font-size: 10px; }
+            td { padding: 6px; border-bottom: 1px solid #e5e7eb; }
+            tr:nth-child(even) td { background: #f9fafb; }
+            .footer { margin-top: 20px; font-size: 9px; color: #9ca3af; text-align: center; }
+        </style></head><body>';
+        $html .= '<h1>Listado de Clientes Activos</h1>';
+        $html .= '<p class="fecha">Generado: ' . $fecha . '</p>';
+        $html .= '<table><thead><tr>';
+        $html .= '<th>ID</th><th>Nombre</th><th>Cedula</th><th>Correo</th><th>Celular</th><th>Direccion</th>';
+        $html .= '</tr></thead><tbody>';
+
+        foreach ($clientes as $c) {
+            $html .= '<tr>';
+            $html .= '<td>' . $c->id . '</td>';
+            $html .= '<td>' . e($c->nombre) . '</td>';
+            $html .= '<td>' . e($c->cedula ?? '-') . '</td>';
+            $html .= '<td>' . e($c->correo ?? '-') . '</td>';
+            $html .= '<td>' . e($c->celular_1 ?? '-') . '</td>';
+            $html .= '<td>' . e($c->direccion ?? '-') . '</td>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+        $html .= '<div class="footer">SINDEN S.A.S. - ' . now()->year . '</div>';
+        $html .= '</body></html>';
+
+        return Pdf::loadHTML($html)
+            ->setPaper('letter', 'landscape')
+            ->download('clientes-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'nombre' => 'required|string|max:255',
+            'cedula' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string',
+            'correo' => 'nullable|email|max:255',
+            'celular_1' => 'nullable|string|max:20',
+            'celular_2' => 'nullable|string|max:20',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'nombre.required' => 'El nombre del cliente es obligatorio.',
+            'nombre.max' => 'El nombre no puede exceder 255 caracteres.',
+            'cedula.max' => 'La cedula no puede exceder 20 caracteres.',
+            'correo.email' => 'El correo electronico debe ser un email valido.',
+            'correo.max' => 'El correo no puede exceder 255 caracteres.',
+            'celular_1.max' => 'El celular no puede exceder 20 caracteres.',
+            'celular_2.max' => 'El celular secundario no puede exceder 20 caracteres.',
+        ];
     }
 }

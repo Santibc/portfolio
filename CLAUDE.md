@@ -44,26 +44,24 @@ Role management is centralized in `app/Services/Auth/RoleService.php`:
 - `assignDefaultRole()`, `changeUserRole()`, `addRoleToUser()`
 - `getDashboardRoute()`, `canAccessSection()`
 
-Dashboard services in `app/Services/Dashboard/` provide role-specific dashboard data.
-
 ### Roles & Permissions (Spatie)
 Default roles defined in `database/seeders/RolesAndPermissionsSeeder.php`:
 - Administrador (all permissions)
-- Usuario
 
 User model uses `HasRoles` trait. Use middleware: `->middleware('role:Administrador')`
 
 ### Routes
-- `routes/web.php`: Main routes (/, /dashboard, /profile)
+- `routes/web.php`: Main routes (/, /dashboard, /profile, /admin/usuarios)
 - `routes/auth.php`: Authentication routes (Breeze)
 
 ### Frontend
 - Layouts: `resources/views/layouts/` (app.blade.php, guest.blade.php, navigation-vertical.blade.php)
+- Reusable components: `resources/views/components/sinden/` (modal, alert, button, badge, stat-card, etc.)
 - Global JS: jQuery as `window.$`, SweetAlert2 as `window.Swal`, Alpine.js as `window.Alpine`
 - DataTables with export buttons (Excel, PDF, Print)
 
 ### Database
-MySQL database "agro" on 127.0.0.1:3306 (no password for local XAMPP).
+MySQL database "sinden" on 127.0.0.1:3306 (no password for local XAMPP).
 
 Core tables: users, roles, permissions, model_has_roles, model_has_permissions, role_has_permissions
 

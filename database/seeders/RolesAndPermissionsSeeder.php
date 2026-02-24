@@ -15,155 +15,133 @@ class RolesAndPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear permisos del sistema
+        // Crear todos los permisos del sistema
         $permisos = [
-            // Usuarios
-            'ver_usuarios', 'crear_usuarios', 'editar_usuarios', 'eliminar_usuarios',
-            // Trabajadores
-            'ver_trabajadores', 'crear_trabajadores', 'editar_trabajadores', 'eliminar_trabajadores',
-            // Cuadrillas
-            'ver_cuadrillas', 'crear_cuadrillas', 'editar_cuadrillas', 'eliminar_cuadrillas',
-            // Clientes
-            'ver_clientes', 'crear_clientes', 'editar_clientes', 'eliminar_clientes',
-            // Leads
-            'ver_leads', 'crear_leads', 'editar_leads', 'eliminar_leads',
-            // Obras
-            'ver_obras', 'crear_obras', 'editar_obras', 'eliminar_obras', 'ver_rentabilidad_obras',
-            // Fichajes
-            'ver_fichajes', 'crear_fichajes', 'editar_fichajes', 'eliminar_fichajes', 'validar_fichajes',
-            // Partes diarios
-            'ver_partes', 'crear_partes', 'editar_partes', 'eliminar_partes', 'validar_partes',
-            // Maquinaria
-            'ver_maquinaria', 'crear_maquinaria', 'editar_maquinaria', 'eliminar_maquinaria',
-            // Vehículos
-            'ver_vehiculos', 'crear_vehiculos', 'editar_vehiculos', 'eliminar_vehiculos',
-            // Subcontratas
-            'ver_subcontratas', 'crear_subcontratas', 'editar_subcontratas', 'eliminar_subcontratas',
-            // Contratos
-            'ver_contratos', 'crear_contratos', 'editar_contratos', 'eliminar_contratos',
-            // Facturación
-            'ver_facturas', 'crear_facturas', 'editar_facturas', 'eliminar_facturas',
-            // Ingresos/Gastos
-            'ver_finanzas', 'crear_finanzas', 'editar_finanzas', 'eliminar_finanzas',
-            // EPIs
-            'ver_epis', 'crear_epis', 'editar_epis', 'eliminar_epis',
-            // Formaciones
-            'ver_formaciones', 'crear_formaciones', 'editar_formaciones', 'eliminar_formaciones',
-            // Primas
-            'ver_primas', 'crear_primas', 'editar_primas',
-            // Alertas
-            'ver_alertas', 'gestionar_alertas',
             // Dashboard
-            'ver_dashboard_admin', 'ver_dashboard_encargado', 'ver_dashboard_trabajador',
-            // Auditoría
-            'ver_auditoria',
-            // Configuración
+            'ver_dashboard',
+            // Usuarios
+            'gestionar_usuarios',
+            // Configuracion
             'gestionar_configuracion',
-            // Documentos
-            'subir_documentos_maquinaria',
+            // Tabla precios
+            'gestionar_tabla_precios',
+            // Clientes
+            'ver_clientes', 'crear_clientes', 'editar_clientes',
+            // Catalogo items
+            'ver_catalogo_items', 'crear_catalogo_items', 'editar_catalogo_items',
+            // Bosquejos
+            'ver_bosquejos_matriz', 'gestionar_bosquejos_matriz',
+            // Ordenes
+            'ver_ordenes', 'crear_ordenes', 'editar_ordenes', 'anular_ordenes', 'generar_ordenes',
+            // Entregas
+            'gestionar_entregas',
+            // Pagos
+            'ver_pagos', 'crear_pagos', 'aprobar_pagos',
+            // Actividades
+            'ver_actividades_globales', 'ver_actividades_propias',
+            // Operario
+            'trabajar_piezas', 'transferir_piezas', 'complementar_ordenes',
+            // Consultar precios
+            'consultar_precios',
+            // Garantias
+            'gestionar_garantias',
+            // Notificaciones
+            'ver_notificaciones',
         ];
 
         foreach ($permisos as $permiso) {
             Permission::firstOrCreate(['name' => $permiso]);
         }
 
-        // Crear roles
-        $roles = [
-            'Administrador' => Permission::all()->pluck('name')->toArray(),
-            'Contabilidad' => [
-                'ver_usuarios', 'ver_trabajadores', 'ver_obras', 'ver_clientes', 'ver_leads',
-                'crear_clientes', 'editar_clientes', 'crear_leads', 'editar_leads',
-                'ver_fichajes', 'ver_partes', 'ver_maquinaria', 'ver_vehiculos',
-                'ver_subcontratas', 'crear_subcontratas', 'editar_subcontratas',
-                'ver_contratos', 'crear_contratos', 'editar_contratos',
-                'ver_facturas', 'crear_facturas', 'editar_facturas',
-                'ver_finanzas', 'crear_finanzas', 'editar_finanzas',
-                'ver_epis', 'ver_formaciones', 'ver_primas',
-                'ver_alertas', 'ver_auditoria',
-            ],
-            'Encargado' => [
-                'ver_trabajadores', 'ver_cuadrillas', 'editar_cuadrillas',
-                'ver_obras',
-                'ver_fichajes', 'crear_fichajes', 'editar_fichajes',
-                'ver_partes', 'crear_partes', 'editar_partes',
-                'ver_maquinaria', 'ver_vehiculos',
-                'ver_epis', 'crear_epis', 'editar_epis', 'eliminar_epis', // Acceso completo a EPIs
-                'ver_formaciones',
-                'ver_contratos',
-                'ver_finanzas', 'crear_finanzas', 'editar_finanzas', 'eliminar_finanzas', // Acceso completo a Gastos
-                'ver_alertas', 'ver_dashboard_encargado',
-                'subir_documentos_maquinaria', // Puede subir documentos de maquinaria
-            ],
-            'RRHH' => [
-                'ver_usuarios', 'ver_trabajadores', 'crear_trabajadores', 'editar_trabajadores', 'eliminar_trabajadores',
-                'ver_cuadrillas', 'crear_cuadrillas', 'editar_cuadrillas', 'eliminar_cuadrillas',
-                'ver_fichajes', 'ver_partes',
-                'ver_maquinaria', 'ver_vehiculos',
-                'ver_epis', 'crear_epis', 'editar_epis',
-                'ver_formaciones', 'crear_formaciones', 'editar_formaciones',
-                'ver_subcontratas', 'ver_contratos',
-                'ver_alertas', 'gestionar_alertas',
-                'ver_auditoria',
-            ],
-            'Auditor' => [
-                'ver_usuarios', 'ver_trabajadores', 'ver_cuadrillas', 'ver_obras', 'ver_rentabilidad_obras',
-                'ver_clientes', 'ver_leads', 'ver_fichajes', 'ver_partes',
-                'ver_maquinaria', 'ver_vehiculos', 'ver_subcontratas', 'ver_contratos',
-                'ver_facturas', 'ver_finanzas', 'ver_epis', 'ver_formaciones', 'ver_primas',
-                'ver_alertas', 'ver_auditoria', 'ver_dashboard_admin',
-            ],
-            'Trabajador' => [
-                'ver_fichajes', 'crear_fichajes', // Solo los propios
-                'ver_epis', 'ver_formaciones', 'ver_primas',
-                'ver_alertas', 'ver_dashboard_trabajador',
-            ],
-        ];
+        // === Crear roles con permisos asignados ===
 
-        foreach ($roles as $roleName => $permisos) {
-            $role = Role::firstOrCreate(['name' => $roleName]);
-            $role->syncPermissions($permisos);
-        }
+        // Administrador: todos los permisos
+        $admin = Role::firstOrCreate(['name' => 'Administrador']);
+        $admin->syncPermissions(Permission::all());
 
-        // Crear usuarios de ejemplo
-        $usuarios = [
+        // Recepcion
+        $recepcion = Role::firstOrCreate(['name' => 'Recepcion']);
+        $recepcion->syncPermissions([
+            'ver_dashboard',
+            'ver_clientes', 'crear_clientes', 'editar_clientes',
+            'ver_catalogo_items',
+            'ver_bosquejos_matriz',
+            'ver_ordenes', 'crear_ordenes', 'editar_ordenes', 'anular_ordenes', 'generar_ordenes',
+            'gestionar_entregas',
+            'ver_pagos', 'crear_pagos',
+            'ver_actividades_globales', 'ver_actividades_propias',
+            'consultar_precios',
+            'gestionar_garantias',
+            'ver_notificaciones',
+        ]);
+
+        // Contabilidad
+        $contabilidad = Role::firstOrCreate(['name' => 'Contabilidad']);
+        $contabilidad->syncPermissions([
+            'ver_dashboard',
+            'ver_catalogo_items',
+            'ver_bosquejos_matriz',
+            'ver_ordenes',
+            'ver_pagos', 'crear_pagos', 'aprobar_pagos',
+            'ver_actividades_propias',
+            'ver_notificaciones',
+        ]);
+
+        // Operario
+        $operario = Role::firstOrCreate(['name' => 'Operario']);
+        $operario->syncPermissions([
+            'ver_dashboard',
+            'ver_bosquejos_matriz',
+            'ver_ordenes',
+            'ver_actividades_propias',
+            'trabajar_piezas', 'transferir_piezas', 'complementar_ordenes',
+            'ver_notificaciones',
+        ]);
+
+        // === Crear usuarios de prueba ===
+
+        $user = User::firstOrCreate(
+            ['email' => 'admin@sinden.com'],
             [
                 'name' => 'Administrador',
-                'email' => 'admin@manzer.com',
-                'password' => 'password',
-                'role' => 'Administrador',
-            ],
-            [
-                'name' => 'María García (Contabilidad)',
-                'email' => 'contabilidad@manzer.com',
-                'password' => 'password',
-                'role' => 'Contabilidad',
-            ],
-            [
-                'name' => 'Juan Martínez (Encargado)',
-                'email' => 'encargado@manzer.com',
-                'password' => 'password',
-                'role' => 'Encargado',
-            ],
-            [
-                'name' => 'Ana López (RRHH)',
-                'email' => 'rrhh@manzer.com',
-                'password' => 'password',
-                'role' => 'RRHH',
-            ],
-        ];
+                'password' => Hash::make('password'),
+            ]
+        );
+        if (!$user->hasRole('Administrador')) {
+            $user->assignRole('Administrador');
+        }
 
-        foreach ($usuarios as $userData) {
-            $user = User::firstOrCreate(
-                ['email' => $userData['email']],
-                [
-                    'name' => $userData['name'],
-                    'password' => Hash::make($userData['password']),
-                ]
-            );
+        $user = User::firstOrCreate(
+            ['email' => 'recepcion@sinden.com'],
+            [
+                'name' => 'Usuario Recepcion',
+                'password' => Hash::make('password'),
+            ]
+        );
+        if (!$user->hasRole('Recepcion')) {
+            $user->assignRole('Recepcion');
+        }
 
-            if (!$user->hasRole($userData['role'])) {
-                $user->assignRole($userData['role']);
-            }
+        $user = User::firstOrCreate(
+            ['email' => 'contabilidad@sinden.com'],
+            [
+                'name' => 'Usuario Contabilidad',
+                'password' => Hash::make('password'),
+            ]
+        );
+        if (!$user->hasRole('Contabilidad')) {
+            $user->assignRole('Contabilidad');
+        }
+
+        $user = User::firstOrCreate(
+            ['email' => 'operario@sinden.com'],
+            [
+                'name' => 'Usuario Operario',
+                'password' => Hash::make('password'),
+            ]
+        );
+        if (!$user->hasRole('Operario')) {
+            $user->assignRole('Operario');
         }
     }
 }

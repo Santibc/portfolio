@@ -76,7 +76,9 @@
       "Bash(cmd /c \"if not exist f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails mkdir f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\")",
       "Bash(del:*)",
       "Bash(php check_users.php:*)",
-      "Bash(php verify_cleanup.php:*)"
+      "Bash(php verify_cleanup.php:*)",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_hover"
     ],
     "deny": [],
     "ask": []

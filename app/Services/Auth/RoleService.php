@@ -16,7 +16,7 @@ class RoleService
      * @param string $roleType
      * @return void
      */
-    public function assignDefaultRole(User $user, string $roleType = 'Estudiante'): void
+    public function assignDefaultRole(User $user, string $roleType = 'Administrador'): void
     {
         try {
             $role = Role::where('name', $roleType)->first();
@@ -109,14 +109,59 @@ class RoleService
     }
 
     /**
-     * Obtener la ruta del dashboard.
-     *
-     * @param User $user
-     * @return string
+     * Jerarquia de roles (mayor numero = mayor jerarquia).
+     */
+    public const ROLE_HIERARCHY = [
+        'Administrador' => 4,
+        'Recepcion' => 3,
+        'Contabilidad' => 2,
+        'Operario' => 1,
+    ];
+
+    /**
+     * Rutas de dashboard por rol.
+     */
+    protected const ROLE_DASHBOARD_ROUTES = [
+        'Administrador' => 'admin.configuracion',
+        'Recepcion' => 'recepcion.panel',
+        'Contabilidad' => 'contabilidad.panel',
+        'Operario' => 'operario.panel',
+    ];
+
+    /**
+     * Obtener la ruta del dashboard segun el rol de mayor jerarquia del usuario.
      */
     public function getDashboardRoute(User $user): string
     {
-        return 'dashboard';
+        $topRole = $this->getTopRole($user);
+
+        return self::ROLE_DASHBOARD_ROUTES[$topRole] ?? 'dashboard';
+    }
+
+    /**
+     * Obtener el rol de mayor jerarquia del usuario.
+     */
+    public function getTopRole(User $user): ?string
+    {
+        $roles = $user->getRoleNames();
+
+        if ($roles->isEmpty()) {
+            return null;
+        }
+
+        return $roles->sortByDesc(function ($role) {
+            return self::ROLE_HIERARCHY[$role] ?? 0;
+        })->first();
+    }
+
+    /**
+     * Obtener el nivel de jerarquia del usuario.
+     */
+    public function getJerarquia(User $user): int
+    {
+        $topRole = $this->getTopRole($user);
+
+        return self::ROLE_HIERARCHY[$topRole] ?? 0;
     }
 
     /**

@@ -1,0 +1,5 @@
+[    2296ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://[::1]:5173/@vite/client:0
+[    2311ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://[::1]:5173/resources/css/app.css:0
+[    2335ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://[::1]:5173/resources/js/app.js:0
+[   17767ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:8000/admin/configuracion:0
+[   19818ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://[::1]:5173/@vite/client:0

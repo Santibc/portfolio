@@ -14,14 +14,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            // 1. Roles y permisos (incluye usuarios base)
             RolesAndPermissionsSeeder::class,
-
-            // 2. Catálogos (tipos, categorías)
-            CatalogosSeeder::class,
-
-            // 3. Datos de ejemplo (clientes, trabajadores, obras)
-            DatosEjemploSeeder::class,
+            ConfiguracionSistemaSeeder::class,
+            TablaPreciosSeeder::class,
+            ClientePredeterminadoSeeder::class,
         ]);
     }
 }

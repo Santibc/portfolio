@@ -139,6 +139,7 @@
                 </div>
             </div>
 
+            @role('Administrador')
             {{-- Cambiar contraseña --}}
             <div class="card mb-4">
                 <div class="card-header">
@@ -207,10 +208,12 @@
                     </button>
                 </div>
             </div>
+            @endrole
         </div>
     </div>
 </div>
 
+@role('Administrador')
 {{-- Modal eliminar cuenta --}}
 <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -253,4 +256,5 @@
 </script>
 @endpush
 @endif
+@endrole
 @endsection

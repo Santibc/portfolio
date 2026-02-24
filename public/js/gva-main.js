@@ -1,6 +1,5 @@
 /**
- * Manzer - Main JavaScript
- * Plataforma de Cursos Educativos
+ * Sinden - Main JavaScript
  */
 
 document.addEventListener("DOMContentLoaded", function () {

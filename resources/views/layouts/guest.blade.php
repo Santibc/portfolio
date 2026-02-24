@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Manzer') }}</title>
+        <title>{{ config('app.name', 'Sinden') }}</title>
         <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
 
         <!-- Fonts -->
@@ -21,12 +21,12 @@
 
         <style>
             :root {
-                --manzer-primary: #1E40AF;
-                --manzer-primary-dark: #1E3A8A;
-                --manzer-secondary: #059669;
+                --sinden-primary: #1E40AF;
+                --sinden-primary-dark: #1E3A8A;
+                --sinden-secondary: #059669;
             }
 
-            .manzer-auth-container {
+            .sinden-auth-container {
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
@@ -36,7 +36,7 @@
                 background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #059669 100%);
             }
 
-            .manzer-logo {
+            .sinden-logo {
                 display: flex;
                 align-items: center;
                 gap: 0.75rem;
@@ -46,11 +46,11 @@
                 margin-bottom: 2rem;
             }
 
-            .manzer-logo i {
+            .sinden-logo i {
                 font-size: 2.5rem;
             }
 
-            .manzer-auth-card {
+            .sinden-auth-card {
                 width: 100%;
                 max-width: 28rem;
                 background: white;
@@ -59,7 +59,7 @@
                 padding: 2rem;
             }
 
-            .manzer-auth-title {
+            .sinden-auth-title {
                 text-align: center;
                 font-size: 1.5rem;
                 font-weight: 600;
@@ -67,7 +67,7 @@
                 margin-bottom: 1.5rem;
             }
 
-            .manzer-footer {
+            .sinden-footer {
                 margin-top: 2rem;
                 text-align: center;
                 color: rgba(255, 255, 255, 0.8);
@@ -76,18 +76,18 @@
         </style>
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="manzer-auth-container">
-            <div class="manzer-logo">
-                <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 50px; margin-right: 12px;">
-                <span>Manzer</span>
+        <div class="sinden-auth-container">
+            <div class="sinden-logo">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sinden') }}" style="height: 50px; margin-right: 12px;">
+                <span>{{ config('app.name', 'Sinden') }}</span>
             </div>
 
-            <div class="manzer-auth-card">
+            <div class="sinden-auth-card">
                 {{ $slot }}
             </div>
 
-            <div class="manzer-footer">
-                <p>&copy; {{ date('Y') }} Manzer</p>
+            <div class="sinden-footer">
+                <p>&copy; {{ date('Y') }} {{ config('app.name', 'Sinden') }}</p>
             </div>
         </div>
     </body>

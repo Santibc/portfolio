@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Manzer') }}</title>
+    <title>{{ config('app.name', 'Sinden') }}</title>
 
     {{-- Fuentes --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -29,11 +29,11 @@
         }
     </script>
 
-    {{-- Manzer CSS --}}
+    {{-- Sinden CSS --}}
     <link href="{{ asset('css/gva-global.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-components.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/manzer-components.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/sinden-components.css') }}" rel="stylesheet">
 
     {{-- DataTables CSS --}}
     <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
@@ -52,7 +52,7 @@
             </div>
 
             <div class="nav-logo" style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center;">
-                <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 32px; margin-right: 8px;"> Manzer Agroforestal
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 32px; margin-right: 8px;"> {{ config('app.name', 'Sinden') }}
             </div>
 
             <div class="header-right">
@@ -144,7 +144,7 @@
     {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    {{-- Manzer Main JS --}}
+    {{-- Main JS --}}
     <script src="{{ asset('js/gva-main.js') }}"></script>
 
     @stack('scripts')

@@ -1,0 +1,489 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ConfiguracionSistema;
+use App\Models\Orden;
+use App\Models\OrdenPieza;
+use App\Models\User;
+use App\Services\BloqueoService;
+use App\Services\OperarioPiezaService;
+use App\Services\OrdenEstadoService;
+use App\Traits\RegistraActividad;
+use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+
+class OperarioController extends Controller
+{
+    use RegistraActividad;
+
+    protected OperarioPiezaService $piezaService;
+    protected BloqueoService $bloqueoService;
+    protected OrdenEstadoService $estadoService;
+
+    public function __construct(
+        OperarioPiezaService $piezaService,
+        BloqueoService $bloqueoService,
+        OrdenEstadoService $estadoService
+    ) {
+        $this->piezaService = $piezaService;
+        $this->bloqueoService = $bloqueoService;
+        $this->estadoService = $estadoService;
+    }
+
+    // ==========================================
+    // PAGINAS (retornan vistas)
+    // ==========================================
+
+    /**
+     * GET /operario/panel - Dashboard del operario.
+     */
+    public function panel()
+    {
+        $user = auth()->user();
+        $stats = $this->piezaService->getStatsOperario($user);
+
+        return view('operario.panel', compact('stats'));
+    }
+
+    /**
+     * GET /operario/ordenes-asignadas - Listado de ordenes asignadas.
+     */
+    public function ordenesAsignadas(Request $request)
+    {
+        $user = auth()->user();
+
+        if ($request->ajax()) {
+            $query = Orden::whereHas('piezas', function ($q) use ($user) {
+                $q->where('operario_actual_id', $user->id);
+            })
+            ->with(['cliente'])
+            ->noAnuladas()
+            ->noBorradores()
+            ->select('ordenes.*');
+
+            return DataTables::eloquent($query)
+                ->addColumn('cliente_nombre', function ($orden) {
+                    return $orden->cliente->nombre ?? 'Sin cliente';
+                })
+                ->addColumn('fecha_entrega_fmt', function ($orden) {
+                    return $orden->fecha_entrega ? $orden->fecha_entrega->format('d/m/Y') : '-';
+                })
+                ->addColumn('mis_piezas', function ($orden) use ($user) {
+                    $total = $orden->piezas->count();
+                    $mias = $orden->piezas->where('operario_actual_id', $user->id)->count();
+                    return "{$mias} de {$total}";
+                })
+                ->addColumn('estado', function ($orden) {
+                    return $this->badgeEstadoTrabajo($orden->estado_trabajo);
+                })
+                ->addColumn('acciones', function ($orden) {
+                    $url = route('operario.ordenes.trabajar', $orden);
+                    return '<div class="action-buttons justify-content-end">'
+                        . '<a href="' . $url . '" class="action-btn view" title="Trabajar" data-tooltip="Trabajar"><i class="bi bi-tools"></i></a>'
+                        . '</div>';
+                })
+                ->rawColumns(['estado', 'acciones'])
+                ->make(true);
+        }
+
+        return view('operario.ordenes-asignadas');
+    }
+
+    /**
+     * GET /operario/ordenes/{orden} - Vista de trabajo.
+     */
+    public function trabajar(Orden $orden)
+    {
+        $user = auth()->user();
+
+        // Verificar que la orden no sea borrador ni anulada
+        if (in_array($orden->estado_trabajo, ['borrador', 'anulada'])) {
+            return redirect()->route('operario.ordenes-asignadas')
+                ->with('error', 'Esta orden no esta disponible para trabajar.');
+        }
+
+        // Cargar piezas asignadas al operario actual
+        $piezas = $orden->piezas()
+            ->where('operario_actual_id', $user->id)
+            ->with(['bosquejo', 'historialAvances.operario', 'fotos', 'asignaciones.asignadoDesde'])
+            ->orderBy('orden_visual')
+            ->get();
+
+        if ($piezas->isEmpty()) {
+            return redirect()->route('operario.ordenes-asignadas')
+                ->with('error', 'No tienes piezas asignadas en esta orden.');
+        }
+
+        // Intentar adquirir bloqueo
+        $lockResult = $this->bloqueoService->bloquear($orden, $user);
+
+        // Cargar datos de la orden
+        $orden->load('cliente');
+
+        // Obtener operarios para dropdown de transferencia
+        $operarios = User::role('Operario')
+            ->where('id', '!=', $user->id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $timeoutInactividad = ConfiguracionSistema::get('timeout_inactividad_operario', 10);
+
+        // Colores para barra de progreso multi-operario
+        $coloresOperarios = [
+            '#4A7C59', '#2196F3', '#FF9800', '#9C27B0', '#E91E63',
+            '#00BCD4', '#795548', '#607D8B', '#FF5722', '#3F51B5',
+        ];
+
+        return view('operario.trabajar', compact(
+            'orden', 'piezas', 'operarios', 'lockResult',
+            'timeoutInactividad', 'coloresOperarios'
+        ));
+    }
+
+    /**
+     * GET /operario/buscar - Vista de busqueda.
+     */
+    public function buscar()
+    {
+        return view('operario.buscar');
+    }
+
+    /**
+     * GET /operario/buscar-orden - AJAX busqueda por numero.
+     */
+    public function buscarOrden(Request $request)
+    {
+        $numero = $request->input('q', '');
+
+        if (strlen($numero) < 1) {
+            return response()->json(['success' => false, 'error' => 'Ingresa un numero de orden.']);
+        }
+
+        // Agregar # si no lo tiene
+        if (!str_starts_with($numero, '#')) {
+            $numero = '#' . $numero;
+        }
+
+        $orden = Orden::where('numero_orden', $numero)
+            ->noAnuladas()
+            ->noBorradores()
+            ->with(['cliente', 'piezas.operarioActual', 'piezas.historialAvances.operario'])
+            ->first();
+
+        if (!$orden) {
+            return response()->json(['success' => false, 'error' => 'Orden no encontrada.']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'orden' => [
+                'id' => $orden->id,
+                'numero_orden' => $orden->numero_orden,
+                'cliente' => $orden->cliente->nombre ?? 'Sin cliente',
+                'estado_trabajo' => $orden->estado_trabajo,
+                'estado_entrega' => $orden->estado_entrega,
+                'fecha_entrega' => $orden->fecha_entrega ? $orden->fecha_entrega->format('d/m/Y') : null,
+                'total' => $orden->total,
+                'notas' => $orden->notas,
+                'piezas' => $orden->piezas->map(function ($p) {
+                    return [
+                        'id' => $p->id,
+                        'nombre' => $p->nombre,
+                        'cantidad' => $p->cantidad,
+                        'especificacion' => $p->especificacion,
+                        'material' => $p->material,
+                        'calibre' => $p->calibre,
+                        'porcentaje_avance' => (float) $p->porcentaje_avance,
+                        'estado' => $p->estado,
+                        'operario' => $p->operarioActual ? $p->operarioActual->name : 'Sin operario',
+                        'entregada' => $p->entregada,
+                        'historial' => $p->historialAvances->map(function ($h) {
+                            return [
+                                'operario' => $h->operario->name ?? 'Desconocido',
+                                'desde' => (float) $h->porcentaje_desde,
+                                'hasta' => (float) $h->porcentaje_hasta,
+                                'contribucion' => (float) $h->contribucion,
+                                'fecha' => $h->created_at->format('d/m/Y H:i'),
+                            ];
+                        }),
+                    ];
+                }),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /operario/complementar - Vista de piezas disponibles.
+     */
+    public function complementar(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = OrdenPieza::whereNull('operario_actual_id')
+                ->where('porcentaje_avance', '<', 100)
+                ->where('estado', '!=', 'completada')
+                ->whereHas('orden', function ($q) {
+                    $q->noAnuladas()->noBorradores()
+                        ->where(function ($q2) {
+                            $q2->whereNull('estado_entrega')
+                                ->orWhere('estado_entrega', '!=', 'entregada');
+                        });
+                })
+                ->with(['orden.cliente'])
+                ->select('orden_piezas.*');
+
+            return DataTables::eloquent($query)
+                ->addColumn('orden_numero', function ($pieza) {
+                    return $pieza->orden->numero_orden ?? '-';
+                })
+                ->addColumn('pieza_info', function ($pieza) {
+                    $info = '<span class="fw-semibold">' . e($pieza->nombre) . '</span>';
+                    if ($pieza->especificacion) {
+                        $info .= '<br><small class="text-muted">' . e($pieza->especificacion) . '</small>';
+                    }
+                    return $info;
+                })
+                ->addColumn('progreso', function ($pieza) {
+                    $pct = (float) $pieza->porcentaje_avance;
+                    $color = $pct >= 50 ? 'warning' : ($pct > 0 ? 'info' : 'secondary');
+                    return '<div class="d-flex align-items-center gap-2">'
+                        . '<div class="progress flex-grow-1" style="height:8px;">'
+                        . '<div class="progress-bar bg-' . $color . '" style="width:' . $pct . '%"></div>'
+                        . '</div>'
+                        . '<small class="text-muted fw-semibold">' . intval($pct) . '%</small>'
+                        . '</div>';
+                })
+                ->addColumn('ultimo_operario', function ($pieza) {
+                    $ultimaAsignacion = $pieza->asignaciones()
+                        ->where('activa', false)
+                        ->latest()
+                        ->with('asignadoA')
+                        ->first();
+                    return $ultimaAsignacion ? $ultimaAsignacion->asignadoA->name : '-';
+                })
+                ->addColumn('cliente_nombre', function ($pieza) {
+                    return $pieza->orden->cliente->nombre ?? '-';
+                })
+                ->addColumn('fecha_entrega', function ($pieza) {
+                    return $pieza->orden->fecha_entrega
+                        ? $pieza->orden->fecha_entrega->format('d/m/Y')
+                        : '-';
+                })
+                ->addColumn('acciones', function ($pieza) {
+                    return '<button class="btn btn-sm btn-primary btn-tomar-pieza" '
+                        . 'data-pieza-id="' . $pieza->id . '" '
+                        . 'data-pieza-nombre="' . e($pieza->nombre) . '">'
+                        . '<i class="bi bi-hand-index me-1"></i>Tomar'
+                        . '</button>';
+                })
+                ->rawColumns(['pieza_info', 'progreso', 'acciones'])
+                ->make(true);
+        }
+
+        return view('operario.complementar');
+    }
+
+    // ==========================================
+    // AJAX: Trabajo con piezas
+    // ==========================================
+
+    /**
+     * POST /operario/ordenes/{orden}/actualizar-avances - Batch update.
+     */
+    public function actualizarAvances(Request $request, Orden $orden)
+    {
+        $request->validate([
+            'cambios' => 'required|array|min:1',
+            'cambios.*.pieza_id' => 'required|integer',
+            'cambios.*.porcentaje' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $user = auth()->user();
+        $resultado = $this->piezaService->actualizarAvances($orden, $request->input('cambios'), $user);
+
+        if ($resultado['success']) {
+            // Registrar actividad
+            $desc = "Avances actualizados: {$resultado['piezas_actualizadas']} pieza(s)";
+            if (!empty($resultado['piezas_terminadas'])) {
+                $desc .= '. Terminadas: ' . implode(', ', $resultado['piezas_terminadas']);
+            }
+            $this->registrarActividad('pieza.avance_actualizado', $desc, $orden->id, [
+                'piezas_actualizadas' => $resultado['piezas_actualizadas'],
+                'piezas_terminadas' => $resultado['piezas_terminadas'],
+            ]);
+
+            // Registrar avances disminuidos
+            foreach ($resultado['avances_disminuidos'] as $disminuido) {
+                $this->registrarActividad('pieza.avance_disminuido',
+                    "Avance disminuido en '{$disminuido['pieza']}': {$disminuido['desde']}% -> {$disminuido['hasta']}%",
+                    $orden->id,
+                    $disminuido
+                );
+            }
+        }
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * POST /operario/piezas/{pieza}/transferir
+     */
+    public function transferirPieza(Request $request, OrdenPieza $pieza)
+    {
+        $request->validate([
+            'nuevo_operario_id' => 'required|integer|exists:users,id',
+            'notas' => 'nullable|string|max:500',
+        ]);
+
+        $user = auth()->user();
+        $resultado = $this->piezaService->transferirPieza(
+            $pieza,
+            $request->input('nuevo_operario_id'),
+            $user,
+            $request->input('notas')
+        );
+
+        if ($resultado['success']) {
+            $this->registrarActividad('pieza.transferida',
+                "Pieza '{$pieza->nombre}' transferida a {$resultado['nuevo_operario']}",
+                $pieza->orden_id,
+                ['pieza_id' => $pieza->id, 'nuevo_operario_id' => $request->input('nuevo_operario_id')]
+            );
+        }
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * POST /operario/piezas/{pieza}/dejar-cola
+     */
+    public function dejarEnCola(OrdenPieza $pieza)
+    {
+        $user = auth()->user();
+        $resultado = $this->piezaService->dejarEnCola($pieza, $user);
+
+        if ($resultado['success']) {
+            $this->registrarActividad('pieza.liberada_a_pool',
+                "Pieza '{$pieza->nombre}' dejada en cola general",
+                $pieza->orden_id,
+                ['pieza_id' => $pieza->id]
+            );
+        }
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * POST /operario/piezas/{pieza}/tomar
+     */
+    public function tomarPieza(OrdenPieza $pieza)
+    {
+        $user = auth()->user();
+        $resultado = $this->piezaService->tomarPieza($pieza, $user);
+
+        if ($resultado['success']) {
+            $this->registrarActividad('pieza.tomada_de_pool',
+                "Pieza '{$resultado['pieza']}' tomada de cola general",
+                $resultado['orden_id'],
+                ['pieza_id' => $pieza->id]
+            );
+        }
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * POST /operario/piezas/{pieza}/foto
+     */
+    public function subirFoto(Request $request, OrdenPieza $pieza)
+    {
+        $request->validate([
+            'foto' => 'required|image|max:5120', // Max 5MB
+        ]);
+
+        $user = auth()->user();
+        $foto = $this->piezaService->subirFoto($pieza, $request->file('foto'), $user);
+
+        return response()->json([
+            'success' => true,
+            'foto' => [
+                'id' => $foto->id,
+                'url' => asset($foto->ruta_archivo),
+            ],
+        ]);
+    }
+
+    // ==========================================
+    // AJAX: Bloqueo
+    // ==========================================
+
+    /**
+     * POST /operario/ordenes/{orden}/bloquear
+     */
+    public function bloquear(Orden $orden)
+    {
+        $result = $this->bloqueoService->bloquear($orden, auth()->user());
+        return response()->json($result);
+    }
+
+    /**
+     * POST /operario/ordenes/{orden}/heartbeat
+     */
+    public function heartbeat(Orden $orden)
+    {
+        $renewed = $this->bloqueoService->renovarBloqueo($orden, auth()->user());
+        return response()->json(['success' => $renewed]);
+    }
+
+    /**
+     * POST /operario/ordenes/{orden}/desbloquear
+     */
+    public function desbloquear(Orden $orden)
+    {
+        $released = $this->bloqueoService->desbloquear($orden, auth()->user());
+        return response()->json(['success' => $released]);
+    }
+
+    /**
+     * GET /operario/ordenes/{orden}/estado-bloqueo
+     */
+    public function estadoBloqueo(Orden $orden)
+    {
+        $orden->refresh();
+        $status = $this->bloqueoService->verificarBloqueo($orden);
+        return response()->json($status);
+    }
+
+    /**
+     * GET /operario/operarios-disponibles
+     */
+    public function operariosDisponibles()
+    {
+        $operarios = User::role('Operario')
+            ->where('id', '!=', auth()->id())
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json(['success' => true, 'operarios' => $operarios]);
+    }
+
+    // ==========================================
+    // Helpers
+    // ==========================================
+
+    protected function badgeEstadoTrabajo(string $estado): string
+    {
+        $config = [
+            'borrador' => ['label' => 'BORRADOR', 'class' => 'secondary'],
+            'generada' => ['label' => 'GENERADA', 'class' => 'info'],
+            'en_ejecucion' => ['label' => 'EN EJECUCION', 'class' => 'warning'],
+            'ejecutada_parcialmente' => ['label' => 'EJECUTADA PARC.', 'class' => 'warning'],
+            'ejecutada' => ['label' => 'EJECUTADA', 'class' => 'success'],
+            'anulada' => ['label' => 'ANULADA', 'class' => 'danger'],
+        ];
+
+        $c = $config[$estado] ?? ['label' => strtoupper($estado), 'class' => 'secondary'];
+
+        return '<span class="badge bg-' . $c['class'] . '">' . $c['label'] . '</span>';
+    }
+}
