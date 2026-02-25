@@ -35,92 +35,125 @@
       </div>
 
       {{-- Métricas Principales --}}
-      <div class="row g-4 mb-4">
+      <div class="row g-3 mb-4">
         {{-- Total Cotizado --}}
-        <div class="col-md-6 col-lg-3">
+        <div class="col-6 col-lg">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
                   <p class="text-muted mb-1 small">Total Cotizado</p>
-                  <h3 class="mb-0">${{ number_format($valorCotizadoTotal, 2) }}</h3>
+                  <h4 class="mb-0">${{ number_format($valorCotizadoTotal, 0) }}</h4>
                   <small class="text-muted">{{ $totalSolicitudes }} solicitudes</small>
                 </div>
-                <div class="bg-primary bg-opacity-10 p-3 rounded">
-                  <i class="bi bi-currency-dollar text-primary fs-4"></i>
+                <div class="bg-secondary bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-currency-dollar text-secondary fs-5"></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- Cotizaciones Aprobadas --}}
-        <div class="col-md-6 col-lg-3">
-          <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <p class="text-muted mb-1 small">Aprobadas</p>
-                  <h3 class="mb-0 text-success">${{ number_format($valorAprobado, 2) }}</h3>
-                  <small class="text-muted">
-                    {{ $totalAprobadas }} solicitudes ({{ number_format($porcentajeAprobadas, 1) }}%)
-                  </small>
-                </div>
-                <div class="bg-success bg-opacity-10 p-3 rounded">
-                  <i class="bi bi-check-circle text-success fs-4"></i>
-                </div>
-              </div>
-              <div class="progress mt-2" style="height: 5px;">
-                <div class="progress-bar bg-success" role="progressbar"
-                     style="width: {{ $porcentajeAprobadas }}%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {{-- Cotizaciones Pendientes --}}
-        <div class="col-md-6 col-lg-3">
+        {{-- Pendientes --}}
+        <div class="col-6 col-lg">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
                   <p class="text-muted mb-1 small">Pendientes</p>
-                  <h3 class="mb-0 text-warning">${{ number_format($valorPendiente, 2) }}</h3>
-                  <small class="text-muted">
-                    {{ $totalPendientes }} solicitudes ({{ number_format($porcentajePendientes, 1) }}%)
-                  </small>
+                  <h4 class="mb-0 text-warning">${{ number_format($valorPendiente, 0) }}</h4>
+                  <small class="text-muted">{{ $totalPendientes }} ({{ number_format($porcentajePendientes, 1) }}%)</small>
                 </div>
-                <div class="bg-warning bg-opacity-10 p-3 rounded">
-                  <i class="bi bi-clock-history text-warning fs-4"></i>
+                <div class="bg-warning bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-clock-history text-warning fs-5"></i>
                 </div>
               </div>
-              <div class="progress mt-2" style="height: 5px;">
-                <div class="progress-bar bg-warning" role="progressbar"
-                     style="width: {{ $porcentajePendientes }}%"></div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $porcentajePendientes }}%"></div>
               </div>
             </div>
           </div>
         </div>
 
-        {{-- Cotizaciones Perdidas --}}
-        <div class="col-md-6 col-lg-3">
+        {{-- Aplicadas --}}
+        <div class="col-6 col-lg">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-muted mb-1 small">Perdidas</p>
-                  <h3 class="mb-0 text-danger">${{ number_format($valorPerdido, 2) }}</h3>
-                  <small class="text-muted">
-                    {{ $totalPerdidas }} solicitudes ({{ number_format($porcentajePerdidas, 1) }}%)
-                  </small>
+                  <p class="text-muted mb-1 small">Aplicadas</p>
+                  <h4 class="mb-0 text-success">${{ number_format($valorAplicadas, 0) }}</h4>
+                  <small class="text-muted">{{ $totalAplicadas }} ({{ number_format($porcentajeAplicadas, 1) }}%)</small>
                 </div>
-                <div class="bg-danger bg-opacity-10 p-3 rounded">
-                  <i class="bi bi-x-circle text-danger fs-4"></i>
+                <div class="bg-success bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-check-circle text-success fs-5"></i>
                 </div>
               </div>
-              <div class="progress mt-2" style="height: 5px;">
-                <div class="progress-bar bg-danger" role="progressbar"
-                     style="width: {{ $porcentajePerdidas }}%"></div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $porcentajeAplicadas }}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Pagadas --}}
+        <div class="col-6 col-lg">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1 small">Pagadas</p>
+                  <h4 class="mb-0 text-primary">${{ number_format($valorPagadas, 0) }}</h4>
+                  <small class="text-muted">{{ $totalPagadas }} ({{ number_format($porcentajePagadas, 1) }}%)</small>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-cash-stack text-primary fs-5"></i>
+                </div>
+              </div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $porcentajePagadas }}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Descontadas --}}
+        <div class="col-6 col-lg">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1 small">Descontadas</p>
+                  <h4 class="mb-0 text-info">${{ number_format($valorDescontadas, 0) }}</h4>
+                  <small class="text-muted">{{ $totalDescontadas }} ({{ number_format($porcentajeDescontadas, 1) }}%)</small>
+                </div>
+                <div class="bg-info bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-box-arrow-down text-info fs-5"></i>
+                </div>
+              </div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-info" role="progressbar" style="width: {{ $porcentajeDescontadas }}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Rechazadas --}}
+        <div class="col-6 col-lg">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1 small">Rechazadas</p>
+                  <h4 class="mb-0 text-danger">${{ number_format($valorRechazadas, 0) }}</h4>
+                  <small class="text-muted">{{ $totalRechazadas }} ({{ number_format($porcentajeRechazadas, 1) }}%)</small>
+                </div>
+                <div class="bg-danger bg-opacity-10 p-2 rounded">
+                  <i class="bi bi-x-circle text-danger fs-5"></i>
+                </div>
+              </div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ $porcentajeRechazadas }}%"></div>
               </div>
             </div>
           </div>
@@ -144,12 +177,14 @@
                 <thead class="table-light">
                   <tr>
                     <th>Asesor Comercial</th>
-                    <th class="text-center">Total Solicitudes</th>
-                    <th class="text-end">Valor Total Cotizado</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-end">Valor Total</th>
                     <th class="text-center">Pendientes</th>
+                    <th class="text-center">Aplicadas</th>
+                    <th class="text-center">Pagadas</th>
+                    <th class="text-center">Descontadas</th>
                     <th class="text-center">Rechazadas</th>
-                    <th class="text-center">Aprobadas</th>
-                    <th class="text-end">Promedio por Solicitud</th>
+                    <th class="text-end">Promedio</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -163,7 +198,7 @@
                         <span class="badge bg-secondary">{{ $asesor['total_solicitudes'] }}</span>
                       </td>
                       <td class="text-end">
-                        <strong>${{ number_format($asesor['valor_total'], 2) }}</strong>
+                        <strong>${{ number_format($asesor['valor_total'], 0) }}</strong>
                       </td>
                       <td class="text-center">
                         <div class="d-flex flex-column align-items-center">
@@ -173,18 +208,30 @@
                       </td>
                       <td class="text-center">
                         <div class="d-flex flex-column align-items-center">
-                          <span class="badge bg-danger mb-1">{{ $asesor['total_rechazadas'] }}</span>
-                          <small class="text-muted">${{ number_format($asesor['valor_rechazadas'], 0) }}</small>
+                          <span class="badge bg-success mb-1">{{ $asesor['total_aplicadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_aplicadas'], 0) }}</small>
                         </div>
                       </td>
                       <td class="text-center">
                         <div class="d-flex flex-column align-items-center">
-                          <span class="badge bg-success mb-1">{{ $asesor['total_aprobadas'] }}</span>
-                          <small class="text-muted">${{ number_format($asesor['valor_aprobadas'], 0) }}</small>
+                          <span class="badge bg-primary mb-1">{{ $asesor['total_pagadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_pagadas'], 0) }}</small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge bg-info mb-1">{{ $asesor['total_descontadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_descontadas'], 0) }}</small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge bg-danger mb-1">{{ $asesor['total_rechazadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_rechazadas'], 0) }}</small>
                         </div>
                       </td>
                       <td class="text-end text-muted">
-                        ${{ number_format($asesor['valor_total'] / $asesor['total_solicitudes'], 2) }}
+                        ${{ number_format($asesor['valor_total'] / max($asesor['total_solicitudes'], 1), 0) }}
                       </td>
                     </tr>
                   @endforeach
@@ -193,7 +240,7 @@
                   <tr>
                     <th>Total General</th>
                     <th class="text-center">{{ $valorPorAsesor->sum('total_solicitudes') }}</th>
-                    <th class="text-end">${{ number_format($valorPorAsesor->sum('valor_total'), 2) }}</th>
+                    <th class="text-end">${{ number_format($valorPorAsesor->sum('valor_total'), 0) }}</th>
                     <th class="text-center">
                       <div class="d-flex flex-column align-items-center">
                         <span class="badge bg-warning text-dark mb-1">{{ $valorPorAsesor->sum('total_pendientes') }}</span>
@@ -202,14 +249,26 @@
                     </th>
                     <th class="text-center">
                       <div class="d-flex flex-column align-items-center">
-                        <span class="badge bg-danger mb-1">{{ $valorPorAsesor->sum('total_rechazadas') }}</span>
-                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_rechazadas'), 0) }}</small>
+                        <span class="badge bg-success mb-1">{{ $valorPorAsesor->sum('total_aplicadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_aplicadas'), 0) }}</small>
                       </div>
                     </th>
                     <th class="text-center">
                       <div class="d-flex flex-column align-items-center">
-                        <span class="badge bg-success mb-1">{{ $valorPorAsesor->sum('total_aprobadas') }}</span>
-                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_aprobadas'), 0) }}</small>
+                        <span class="badge bg-primary mb-1">{{ $valorPorAsesor->sum('total_pagadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_pagadas'), 0) }}</small>
+                      </div>
+                    </th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge bg-info mb-1">{{ $valorPorAsesor->sum('total_descontadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_descontadas'), 0) }}</small>
+                      </div>
+                    </th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge bg-danger mb-1">{{ $valorPorAsesor->sum('total_rechazadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_rechazadas'), 0) }}</small>
                       </div>
                     </th>
                     <th></th>
@@ -235,24 +294,38 @@
               <div class="w-100">
                 <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
                   <div>
-                    <i class="bi bi-check-circle text-success me-2"></i>
-                    <span>Aprobadas</span>
-                  </div>
-                  <strong class="text-success">{{ $totalAprobadas }} ({{ number_format($porcentajeAprobadas, 1) }}%)</strong>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
-                  <div>
                     <i class="bi bi-clock-history text-warning me-2"></i>
                     <span>Pendientes</span>
                   </div>
                   <strong class="text-warning">{{ $totalPendientes }} ({{ number_format($porcentajePendientes, 1) }}%)</strong>
                 </div>
+                <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
+                  <div>
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    <span>Aplicadas</span>
+                  </div>
+                  <strong class="text-success">{{ $totalAplicadas }} ({{ number_format($porcentajeAplicadas, 1) }}%)</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
+                  <div>
+                    <i class="bi bi-cash-stack text-primary me-2"></i>
+                    <span>Pagadas</span>
+                  </div>
+                  <strong class="text-primary">{{ $totalPagadas }} ({{ number_format($porcentajePagadas, 1) }}%)</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
+                  <div>
+                    <i class="bi bi-box-arrow-down text-info me-2"></i>
+                    <span>Descontadas</span>
+                  </div>
+                  <strong class="text-info">{{ $totalDescontadas }} ({{ number_format($porcentajeDescontadas, 1) }}%)</strong>
+                </div>
                 <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
                   <div>
                     <i class="bi bi-x-circle text-danger me-2"></i>
-                    <span>Perdidas</span>
+                    <span>Rechazadas</span>
                   </div>
-                  <strong class="text-danger">{{ $totalPerdidas }} ({{ number_format($porcentajePerdidas, 1) }}%)</strong>
+                  <strong class="text-danger">{{ $totalRechazadas }} ({{ number_format($porcentajeRechazadas, 1) }}%)</strong>
                 </div>
               </div>
             </div>
@@ -267,23 +340,26 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Gráfico de pastel
       const ctx = document.getElementById('estadoCotizacionesChart');
 
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Aprobadas', 'Pendientes', 'Perdidas'],
+          labels: ['Pendientes', 'Aplicadas', 'Pagadas', 'Descontadas', 'Rechazadas'],
           datasets: [{
-            data: [{{ $totalAprobadas }}, {{ $totalPendientes }}, {{ $totalPerdidas }}],
+            data: [{{ $totalPendientes }}, {{ $totalAplicadas }}, {{ $totalPagadas }}, {{ $totalDescontadas }}, {{ $totalRechazadas }}],
             backgroundColor: [
-              'rgba(40, 167, 69, 0.8)',   // Verde
-              'rgba(255, 193, 7, 0.8)',   // Amarillo
-              'rgba(220, 53, 69, 0.8)'    // Rojo
+              'rgba(255, 193, 7, 0.8)',   // Amarillo - Pendientes
+              'rgba(40, 167, 69, 0.8)',   // Verde - Aplicadas
+              'rgba(13, 110, 253, 0.8)',  // Azul - Pagadas
+              'rgba(13, 202, 240, 0.8)',  // Cyan - Descontadas
+              'rgba(220, 53, 69, 0.8)'   // Rojo - Rechazadas
             ],
             borderColor: [
-              'rgba(40, 167, 69, 1)',
               'rgba(255, 193, 7, 1)',
+              'rgba(40, 167, 69, 1)',
+              'rgba(13, 110, 253, 1)',
+              'rgba(13, 202, 240, 1)',
               'rgba(220, 53, 69, 1)'
             ],
             borderWidth: 2

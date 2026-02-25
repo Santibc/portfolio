@@ -47,12 +47,16 @@ class DashboardMetricasController extends Controller
                 'created_by',
                 DB::raw('COUNT(*) as total_solicitudes'),
                 DB::raw('SUM(monto_total) as valor_total'),
-                DB::raw('SUM(CASE WHEN estado = "pendiente" THEN monto_total ELSE 0 END) as valor_pendientes'),
-                DB::raw('SUM(CASE WHEN estado = "rechazada" THEN monto_total ELSE 0 END) as valor_rechazadas'),
-                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END) as valor_aprobadas'),
                 DB::raw('SUM(CASE WHEN estado = "pendiente" THEN 1 ELSE 0 END) as total_pendientes'),
+                DB::raw('SUM(CASE WHEN estado = "pendiente" THEN monto_total ELSE 0 END) as valor_pendientes'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN 1 ELSE 0 END) as total_aplicadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END) as valor_aplicadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN 1 ELSE 0 END) as total_pagadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN monto_total ELSE 0 END) as valor_pagadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN 1 ELSE 0 END) as total_descontadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN monto_total ELSE 0 END) as valor_descontadas'),
                 DB::raw('SUM(CASE WHEN estado = "rechazada" THEN 1 ELSE 0 END) as total_rechazadas'),
-                DB::raw('SUM(CASE WHEN estado = "aplicada" THEN 1 ELSE 0 END) as total_aprobadas')
+                DB::raw('SUM(CASE WHEN estado = "rechazada" THEN monto_total ELSE 0 END) as valor_rechazadas')
             )
             ->whereNotNull('created_by')
             ->groupBy('created_by')
@@ -63,48 +67,70 @@ class DashboardMetricasController extends Controller
                     'asesor' => $item->createdBy ? $item->createdBy->name : 'Sin asignar',
                     'total_solicitudes' => $item->total_solicitudes,
                     'valor_total' => $item->valor_total,
-                    'valor_pendientes' => $item->valor_pendientes,
                     'total_pendientes' => $item->total_pendientes,
-                    'valor_rechazadas' => $item->valor_rechazadas,
+                    'valor_pendientes' => $item->valor_pendientes,
+                    'total_aplicadas' => $item->total_aplicadas,
+                    'valor_aplicadas' => $item->valor_aplicadas,
+                    'total_pagadas' => $item->total_pagadas,
+                    'valor_pagadas' => $item->valor_pagadas,
+                    'total_descontadas' => $item->total_descontadas,
+                    'valor_descontadas' => $item->valor_descontadas,
                     'total_rechazadas' => $item->total_rechazadas,
-                    'valor_aprobadas' => $item->valor_aprobadas,
-                    'total_aprobadas' => $item->total_aprobadas
+                    'valor_rechazadas' => $item->valor_rechazadas,
                 ];
             });
 
-        // 3. Valor y total de cotizaciones aprobadas (aplicadas)
-        $solicitudesAprobadas = (clone $querySolicitudes)->where('estado', 'aplicada');
-        $valorAprobado = $solicitudesAprobadas->sum('monto_total');
-        $totalAprobadas = $solicitudesAprobadas->count();
-
-        // 4. Valor y total de cotizaciones perdidas (rechazadas)
-        $solicitudesPerdidas = (clone $querySolicitudes)->where('estado', 'rechazada');
-        $valorPerdido = $solicitudesPerdidas->sum('monto_total');
-        $totalPerdidas = $solicitudesPerdidas->count();
-
-        // 5. Cotizaciones pendientes
+        // 3. Pendientes
         $solicitudesPendientes = (clone $querySolicitudes)->where('estado', 'pendiente');
         $valorPendiente = $solicitudesPendientes->sum('monto_total');
         $totalPendientes = $solicitudesPendientes->count();
 
+        // 4. Aplicadas
+        $solicitudesAplicadas = (clone $querySolicitudes)->where('estado', 'aplicada');
+        $valorAplicadas = $solicitudesAplicadas->sum('monto_total');
+        $totalAplicadas = $solicitudesAplicadas->count();
+
+        // 5. Pagadas (aplicada + pagado)
+        $solicitudesPagadas = (clone $querySolicitudes)->where('estado', 'aplicada')->where('estado_pago', 'pagado');
+        $valorPagadas = $solicitudesPagadas->sum('monto_total');
+        $totalPagadas = $solicitudesPagadas->count();
+
+        // 6. Descontadas (aplicada + stock_descontado)
+        $solicitudesDescontadas = (clone $querySolicitudes)->where('estado', 'aplicada')->where('stock_descontado', 1);
+        $valorDescontadas = $solicitudesDescontadas->sum('monto_total');
+        $totalDescontadas = $solicitudesDescontadas->count();
+
+        // 7. Rechazadas
+        $solicitudesRechazadas = (clone $querySolicitudes)->where('estado', 'rechazada');
+        $valorRechazadas = $solicitudesRechazadas->sum('monto_total');
+        $totalRechazadas = $solicitudesRechazadas->count();
+
         // Calcular porcentajes
-        $porcentajeAprobadas = $totalSolicitudes > 0 ? ($totalAprobadas / $totalSolicitudes) * 100 : 0;
-        $porcentajePerdidas = $totalSolicitudes > 0 ? ($totalPerdidas / $totalSolicitudes) * 100 : 0;
         $porcentajePendientes = $totalSolicitudes > 0 ? ($totalPendientes / $totalSolicitudes) * 100 : 0;
+        $porcentajeAplicadas = $totalSolicitudes > 0 ? ($totalAplicadas / $totalSolicitudes) * 100 : 0;
+        $porcentajePagadas = $totalSolicitudes > 0 ? ($totalPagadas / $totalSolicitudes) * 100 : 0;
+        $porcentajeDescontadas = $totalSolicitudes > 0 ? ($totalDescontadas / $totalSolicitudes) * 100 : 0;
+        $porcentajeRechazadas = $totalSolicitudes > 0 ? ($totalRechazadas / $totalSolicitudes) * 100 : 0;
 
         return view('dashboard-metricas.index', compact(
             'valorCotizadoTotal',
             'totalSolicitudes',
             'valorPorAsesor',
-            'valorAprobado',
-            'totalAprobadas',
-            'valorPerdido',
-            'totalPerdidas',
             'valorPendiente',
             'totalPendientes',
-            'porcentajeAprobadas',
-            'porcentajePerdidas',
             'porcentajePendientes',
+            'valorAplicadas',
+            'totalAplicadas',
+            'porcentajeAplicadas',
+            'valorPagadas',
+            'totalPagadas',
+            'porcentajePagadas',
+            'valorDescontadas',
+            'totalDescontadas',
+            'porcentajeDescontadas',
+            'valorRechazadas',
+            'totalRechazadas',
+            'porcentajeRechazadas',
             'fechaDesde',
             'fechaHasta'
         ));
