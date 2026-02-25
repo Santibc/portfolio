@@ -117,18 +117,39 @@
           </div>
         </div>
 
-        {{-- Descontadas --}}
+        {{-- Total Pagadas --}}
         <div class="col-6 col-lg">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <p class="text-muted mb-1 small">Descontadas</p>
+                  <p class="text-muted mb-1 small">Total Pagadas</p>
+                  <h4 class="mb-0" style="color: #6f42c1;">${{ number_format($valorPagadas, 0) }}</h4>
+                  <small class="text-muted">{{ $totalPagadas }} ({{ number_format($porcentajePagadas, 1) }}%)</small>
+                </div>
+                <div style="background-color: rgba(111,66,193,0.1);" class="p-2 rounded">
+                  <i class="bi bi-wallet2 fs-5" style="color: #6f42c1;"></i>
+                </div>
+              </div>
+              <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ $porcentajePagadas }}%; background-color: #6f42c1;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Despachadas --}}
+        <div class="col-6 col-lg">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <p class="text-muted mb-1 small">Despachadas</p>
                   <h4 class="mb-0 text-info">${{ number_format($valorDescontadas, 0) }}</h4>
                   <small class="text-muted">{{ $totalDescontadas }} ({{ number_format($porcentajeDescontadas, 1) }}%)</small>
                 </div>
                 <div class="bg-info bg-opacity-10 p-2 rounded">
-                  <i class="bi bi-box-arrow-down text-info fs-5"></i>
+                  <i class="bi bi-truck text-info fs-5"></i>
                 </div>
               </div>
               <div class="progress mt-2" style="height: 4px;">
@@ -182,7 +203,8 @@
                     <th class="text-center">Aplicadas</th>
                     <th class="text-center">Contado</th>
                     <th class="text-center">Crédito</th>
-                    <th class="text-center">Descontadas</th>
+                    <th class="text-center">Total Pagadas</th>
+                    <th class="text-center">Despachadas</th>
                     <th class="text-center">Rechazadas</th>
                     <th class="text-end">Promedio</th>
                   </tr>
@@ -216,6 +238,12 @@
                         <div class="d-flex flex-column align-items-center">
                           <span class="badge bg-primary mb-1">{{ $asesor['total_credito'] }}</span>
                           <small class="text-muted">${{ number_format($asesor['valor_credito'], 0) }}</small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                          <span class="badge mb-1" style="background-color: #6f42c1;">{{ $asesor['total_pagadas'] }}</span>
+                          <small class="text-muted">${{ number_format($asesor['valor_pagadas'], 0) }}</small>
                         </div>
                       </td>
                       <td class="text-center">
@@ -257,6 +285,12 @@
                       <div class="d-flex flex-column align-items-center">
                         <span class="badge bg-primary mb-1">{{ $valorPorAsesor->sum('total_credito') }}</span>
                         <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_credito'), 0) }}</small>
+                      </div>
+                    </th>
+                    <th class="text-center">
+                      <div class="d-flex flex-column align-items-center">
+                        <span class="badge mb-1" style="background-color: #6f42c1;">{{ $valorPorAsesor->sum('total_pagadas') }}</span>
+                        <small class="text-muted">${{ number_format($valorPorAsesor->sum('valor_pagadas'), 0) }}</small>
                       </div>
                     </th>
                     <th class="text-center">
@@ -315,8 +349,15 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
                   <div>
-                    <i class="bi bi-box-arrow-down text-info me-2"></i>
-                    <span>Descontadas</span>
+                    <i class="bi bi-wallet2 me-2" style="color: #6f42c1;"></i>
+                    <span>Total Pagadas</span>
+                  </div>
+                  <strong style="color: #6f42c1;">{{ $totalPagadas }} ({{ number_format($porcentajePagadas, 1) }}%)</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2 p-3 bg-light rounded">
+                  <div>
+                    <i class="bi bi-truck text-info me-2"></i>
+                    <span>Despachadas</span>
                   </div>
                   <strong class="text-info">{{ $totalDescontadas }} ({{ number_format($porcentajeDescontadas, 1) }}%)</strong>
                 </div>
@@ -345,20 +386,22 @@
       new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Aplicadas', 'Contado', 'Crédito', 'Descontadas', 'Rechazadas'],
+          labels: ['Aplicadas', 'Contado', 'Crédito', 'Total Pagadas', 'Despachadas', 'Rechazadas'],
           datasets: [{
-            data: [{{ $totalAplicadas }}, {{ $totalContado }}, {{ $totalCredito }}, {{ $totalDescontadas }}, {{ $totalRechazadas }}],
+            data: [{{ $totalAplicadas }}, {{ $totalContado }}, {{ $totalCredito }}, {{ $totalPagadas }}, {{ $totalDescontadas }}, {{ $totalRechazadas }}],
             backgroundColor: [
               'rgba(40, 167, 69, 0.8)',   // Verde - Aplicadas
               'rgba(25, 135, 84, 0.8)',   // Verde oscuro - Contado
               'rgba(13, 110, 253, 0.8)',  // Azul - Crédito
-              'rgba(13, 202, 240, 0.8)',  // Cyan - Descontadas
+              'rgba(111, 66, 193, 0.8)',  // Morado - Total Pagadas
+              'rgba(13, 202, 240, 0.8)',  // Cyan - Despachadas
               'rgba(220, 53, 69, 0.8)'   // Rojo - Rechazadas
             ],
             borderColor: [
               'rgba(40, 167, 69, 1)',
               'rgba(25, 135, 84, 1)',
               'rgba(13, 110, 253, 1)',
+              'rgba(111, 66, 193, 1)',
               'rgba(13, 202, 240, 1)',
               'rgba(220, 53, 69, 1)'
             ],

@@ -55,6 +55,8 @@ class DashboardMetricasController extends Controller
                 DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND (forma_pago_factura IS NULL OR forma_pago_factura NOT LIKE "%Crédito%") THEN monto_total ELSE 0 END) as valor_contado'),
                 DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND forma_pago_factura LIKE "%Crédito%" THEN 1 ELSE 0 END) as total_credito'),
                 DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND forma_pago_factura LIKE "%Crédito%" THEN monto_total ELSE 0 END) as valor_credito'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN 1 ELSE 0 END) as total_pagadas'),
+                DB::raw('SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" THEN monto_total ELSE 0 END) as valor_pagadas'),
                 DB::raw('SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN 1 ELSE 0 END) as total_descontadas'),
                 DB::raw('SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN monto_total ELSE 0 END) as valor_descontadas'),
                 DB::raw('SUM(CASE WHEN estado = "rechazada" THEN 1 ELSE 0 END) as total_rechazadas'),
@@ -77,6 +79,8 @@ class DashboardMetricasController extends Controller
                     'valor_contado' => $item->valor_contado,
                     'total_credito' => $item->total_credito,
                     'valor_credito' => $item->valor_credito,
+                    'total_pagadas' => $item->total_pagadas,
+                    'valor_pagadas' => $item->valor_pagadas,
                     'total_descontadas' => $item->total_descontadas,
                     'valor_descontadas' => $item->valor_descontadas,
                     'total_rechazadas' => $item->total_rechazadas,
@@ -108,7 +112,11 @@ class DashboardMetricasController extends Controller
         $valorCredito = $solicitudesCredito->sum('monto_total');
         $totalCredito = $solicitudesCredito->count();
 
-        // 7. Descontadas (aplicada + stock_descontado)
+        // 7. Total Pagadas (contado + crédito)
+        $totalPagadas = $totalContado + $totalCredito;
+        $valorPagadas = $valorContado + $valorCredito;
+
+        // 8. Despachadas (aplicada + stock_descontado)
         $solicitudesDescontadas = (clone $querySolicitudes)->where('estado', 'aplicada')->where('stock_descontado', 1);
         $valorDescontadas = $solicitudesDescontadas->sum('monto_total');
         $totalDescontadas = $solicitudesDescontadas->count();
@@ -123,6 +131,7 @@ class DashboardMetricasController extends Controller
         $porcentajeAplicadas = $totalSolicitudes > 0 ? ($totalAplicadas / $totalSolicitudes) * 100 : 0;
         $porcentajeContado = $totalSolicitudes > 0 ? ($totalContado / $totalSolicitudes) * 100 : 0;
         $porcentajeCredito = $totalSolicitudes > 0 ? ($totalCredito / $totalSolicitudes) * 100 : 0;
+        $porcentajePagadas = $totalSolicitudes > 0 ? ($totalPagadas / $totalSolicitudes) * 100 : 0;
         $porcentajeDescontadas = $totalSolicitudes > 0 ? ($totalDescontadas / $totalSolicitudes) * 100 : 0;
         $porcentajeRechazadas = $totalSolicitudes > 0 ? ($totalRechazadas / $totalSolicitudes) * 100 : 0;
 
@@ -142,6 +151,9 @@ class DashboardMetricasController extends Controller
             'valorCredito',
             'totalCredito',
             'porcentajeCredito',
+            'valorPagadas',
+            'totalPagadas',
+            'porcentajePagadas',
             'valorDescontadas',
             'totalDescontadas',
             'porcentajeDescontadas',
