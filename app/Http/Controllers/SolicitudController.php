@@ -967,6 +967,14 @@ class SolicitudController extends Controller
                 throw new \Exception($errorMsg);
             }
 
+            // Liberar reservas activas de esta cotización (ya se descontó el stock real)
+            $solicitud->reservas()
+                ->where('estado', 'activa')
+                ->update([
+                    'estado' => 'aplicada',
+                    'updated_at' => now(),
+                ]);
+
             // Marcar stock como descontado
             $solicitud->update([
                 'stock_descontado' => true,
