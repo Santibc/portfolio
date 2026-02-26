@@ -591,6 +591,12 @@
       // Eliminar variante
       $(document).on('click', '.removeVariante', function() {
         $(this).closest('.variante-row').remove();
+
+        // Si no quedan variantes, desmarcar tiene_variantes automáticamente
+        if ($('#variantesContainer .variante-row').length === 0) {
+          $('#tiene_variantes').prop('checked', false).trigger('change');
+        }
+
         actualizarVariantesEnImagenes();
       });
 
@@ -814,13 +820,11 @@
       $('#productoForm').submit(function(e) {
         let isValid = true;
         
-        // Validar que si tiene variantes, al menos tenga una
+        // Si tiene_variantes está marcado pero no hay variantes, desmarcar automáticamente
         if ($('#tiene_variantes').is(':checked')) {
           const variantes = $('#variantesContainer .variante-row');
           if (variantes.length === 0) {
-            e.preventDefault();
-            alert('Debe agregar al menos una variante si el producto tiene variantes.');
-            isValid = false;
+            $('#tiene_variantes').prop('checked', false);
           }
         }
         
