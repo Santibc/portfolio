@@ -592,9 +592,15 @@
       $(document).on('click', '.removeVariante', function() {
         $(this).closest('.variante-row').remove();
 
-        // Si no quedan variantes, desmarcar tiene_variantes automáticamente
+        // Si no quedan variantes, desmarcar tiene_variantes y ocultar sección
         if ($('#variantesContainer .variante-row').length === 0) {
-          $('#tiene_variantes').prop('checked', false).trigger('change');
+          $('#tiene_variantes').prop('checked', false);
+          $('#variantesSection').hide();
+          // Actualizar visibilidad de stock (inline porque toggleStockFields está en otro scope)
+          if ($('#controlar_stock').is(':checked')) {
+            $('#stockSimpleSection').show();
+            $('#stockVariantesInfo').hide();
+          }
         }
 
         actualizarVariantesEnImagenes();

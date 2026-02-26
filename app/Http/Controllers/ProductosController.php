@@ -200,6 +200,25 @@ class ProductosController extends Controller
             $esNuevo = !$producto->exists;  // NUEVO
             $producto->fill($data)->save();
             
+            // Si el producto dejó de tener variantes, eliminar las existentes
+            if (!$producto->tiene_variantes && $request->id) {
+                $variantesExistentes = $producto->variantes()->pluck('id');
+                if ($variantesExistentes->isNotEmpty()) {
+                    // Desasociar imágenes de las variantes
+                    ImagenProducto::where('producto_id', $producto->id)
+                        ->whereIn('variante_producto_id', $variantesExistentes)
+                        ->update(['variante_producto_id' => null]);
+
+                    // Eliminar stock de variantes
+                    StockProducto::whereIn('variante_producto_id', $variantesExistentes)
+                        ->where('producto_id', $producto->id)
+                        ->delete();
+
+                    // Eliminar las variantes
+                    VarianteProducto::whereIn('id', $variantesExistentes)->delete();
+                }
+            }
+
             // Guardar variantes
             if ($producto->tiene_variantes && $request->has('variantes')) {
                 // Recoger IDs de variantes enviadas desde el formulario
