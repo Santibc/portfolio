@@ -3,6 +3,11 @@
     Confirmar Pago - {{ $solicitud->numero_solicitud }}
   </x-slot>
 
+  @php
+    $esCredito = $solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito');
+    $formaPagoYaDefinida = (bool) $solicitud->forma_pago_factura;
+  @endphp
+
   <div class="py-6">
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
       {{-- Información de la cotización --}}
@@ -90,12 +95,16 @@
       {{-- Formulario de pago --}}
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-4 border-bottom">
-          <h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Registrar Pago</h5>
+          <h5 class="mb-0" id="tituloFormulario">
+            <i class="bi bi-credit-card me-2"></i>Registrar Pago
+          </h5>
         </div>
 
         <form id="formPago" enctype="multipart/form-data">
           @csrf
-          <div class="p-4">
+
+          {{-- Sección de campos de pago real (se oculta cuando se selecciona crédito por primera vez) --}}
+          <div class="p-4" id="seccionPagoReal">
             <div class="row g-3">
               {{-- Monto --}}
               @php
@@ -120,6 +129,10 @@
                 <select class="form-select" id="metodo_pago" name="metodo_pago" required>
                   <option value="">Seleccione...</option>
                   @foreach($metodosPago as $valor => $etiqueta)
+                    {{-- Ocultar opción "crédito" si ya es cotización a crédito --}}
+                    @if($valor === 'credito' && $esCredito)
+                      @continue
+                    @endif
                     <option value="{{ $valor }}">{{ $etiqueta }}</option>
                   @endforeach
                 </select>
@@ -139,6 +152,15 @@
                 <textarea class="form-control" id="notas_pago" name="notas_pago" rows="3"
                           placeholder="Información adicional sobre el pago..."></textarea>
               </div>
+            </div>
+          </div>
+
+          {{-- Mensaje informativo cuando se selecciona crédito por primera vez --}}
+          <div class="p-4" id="seccionInfoCredito" style="display:none;">
+            <div class="alert alert-info mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              Al registrar la forma de pago como <strong>crédito</strong>, la cotización quedará pendiente de pago.
+              Podrá adjuntar los pagos reales cuando el cliente pague (transferencia, efectivo, etc.).
             </div>
           </div>
 
@@ -222,11 +244,16 @@
 
   @push('scripts')
   <script>
-    // Mostrar/ocultar días de vencimiento y pre-seleccionar método según forma de pago
     const formaPagoSelect = document.getElementById('forma_pago');
     const metodoPagoSelect = document.getElementById('metodo_pago');
+    const seccionPagoReal = document.getElementById('seccionPagoReal');
+    const seccionInfoCredito = document.getElementById('seccionInfoCredito');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const tituloFormulario = document.getElementById('tituloFormulario');
+    const montoInput = document.getElementById('monto');
 
-    const creditoOption = metodoPagoSelect ? metodoPagoSelect.querySelector('option[value="credito"]') : null;
+    // Estado: si la forma de pago ya fue guardada
+    const formaPagoYaDefinida = {{ $formaPagoYaDefinida ? 'true' : 'false' }};
 
     function actualizarFormaPago(valor) {
       const container = document.getElementById('diasVencimientoContainer');
@@ -234,44 +261,59 @@
       const esCredito = valor !== 'Contado';
 
       if (esCredito) {
-        container.style.display = 'block';
-        const match = valor.match(/(\d+)/);
-        if (match) diasInput.value = match[1];
-        // Seleccionar crédito, mostrar opción y bloquear
-        if (creditoOption) creditoOption.style.display = '';
-        if (metodoPagoSelect) {
-          metodoPagoSelect.value = 'credito';
-          metodoPagoSelect.disabled = true;
+        // Mostrar días de vencimiento
+        if (container) container.style.display = 'block';
+        if (diasInput) {
+          const match = valor.match(/(\d+)/);
+          if (match) diasInput.value = match[1];
         }
+
+        // Ocultar campos de pago, mostrar info de crédito
+        seccionPagoReal.style.display = 'none';
+        seccionInfoCredito.style.display = 'block';
+        tituloFormulario.innerHTML = '<i class="bi bi-credit-card me-2"></i>Configurar Crédito';
+        btnGuardar.innerHTML = '<i class="bi bi-check-circle me-1"></i> Registrar Crédito';
+
+        // Quitar required de campos ocultos
+        if (montoInput) montoInput.removeAttribute('required');
+        if (metodoPagoSelect) metodoPagoSelect.removeAttribute('required');
       } else {
-        container.style.display = 'none';
-        diasInput.value = 0;
-        // Ocultar opción crédito y desbloquear
-        if (creditoOption) creditoOption.style.display = 'none';
-        if (metodoPagoSelect) {
-          metodoPagoSelect.disabled = false;
-          metodoPagoSelect.value = '';
-        }
+        // Mostrar campos de pago normal
+        if (container) container.style.display = 'none';
+        if (diasInput) diasInput.value = 0;
+
+        seccionPagoReal.style.display = 'block';
+        seccionInfoCredito.style.display = 'none';
+        tituloFormulario.innerHTML = '<i class="bi bi-credit-card me-2"></i>Registrar Pago';
+        btnGuardar.innerHTML = '<i class="bi bi-check-circle me-1"></i> Registrar Pago';
+
+        // Restaurar required
+        if (montoInput) montoInput.setAttribute('required', '');
+        if (metodoPagoSelect) metodoPagoSelect.setAttribute('required', '');
       }
     }
 
-    if (formaPagoSelect) {
+    // Solo aplicar lógica de toggle si forma_pago NO está definida (primera vez)
+    if (formaPagoSelect && !formaPagoYaDefinida) {
       formaPagoSelect.addEventListener('change', function() {
         actualizarFormaPago(this.value);
       });
-      // Ejecutar al cargar para estado inicial
+      // Estado inicial
       actualizarFormaPago(formaPagoSelect.value);
     }
 
-    // Si la forma de pago ya es crédito (guardada previamente), bloquear método
-    @if($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito'))
-      if (creditoOption) creditoOption.style.display = '';
+    // Si ya es crédito guardado: NO bloquear método_pago, ocultar opción "crédito" del dropdown
+    @if($esCredito)
       if (metodoPagoSelect) {
-        metodoPagoSelect.value = 'credito';
-        metodoPagoSelect.disabled = true;
+        const creditoOpt = metodoPagoSelect.querySelector('option[value="credito"]');
+        if (creditoOpt) creditoOpt.remove();
       }
     @elseif($solicitud->forma_pago_factura === 'Contado')
-      if (creditoOption) creditoOption.style.display = 'none';
+      // Si es contado guardado: ocultar opción crédito
+      if (metodoPagoSelect) {
+        const creditoOpt = metodoPagoSelect.querySelector('option[value="credito"]');
+        if (creditoOpt) creditoOpt.style.display = 'none';
+      }
     @endif
 
     document.getElementById('formPago').addEventListener('submit', function(e) {
@@ -283,10 +325,6 @@
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
 
       const formData = new FormData(this);
-      // Si método de pago está bloqueado (crédito), agregar manualmente al form
-      if (metodoPagoSelect && metodoPagoSelect.disabled) {
-        formData.set('metodo_pago', metodoPagoSelect.value);
-      }
 
       fetch('{{ route("pagos.store", $solicitud) }}', {
         method: 'POST',
@@ -300,7 +338,7 @@
         if (data.success) {
           Swal.fire({
             icon: 'success',
-            title: 'Pago Registrado',
+            title: 'Registrado',
             text: data.mensaje,
             confirmButtonColor: '#BCA9F5'
           }).then(() => {

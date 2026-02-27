@@ -45,7 +45,7 @@ class PagosController extends Controller
     }
 
     /**
-     * Registrar pago de cotización
+     * Registrar pago de cotización (o configurar forma de pago crédito)
      */
     public function store(Request $request, SolicitudCotizacion $solicitud)
     {
@@ -58,6 +58,37 @@ class PagosController extends Controller
                 'mensaje' => 'No tiene permisos para registrar pagos'
             ], 403);
         }
+
+        // Detectar si es solo configuración de crédito (sin pago real)
+        $formaPago = $request->input('forma_pago');
+        $esSoloCredito = !$solicitud->forma_pago_factura
+            && $formaPago
+            && str_contains($formaPago, 'Crédito');
+
+        if ($esSoloCredito) {
+            // Solo guardar forma de pago y fecha de vencimiento
+            $validated = $request->validate([
+                'forma_pago' => 'required|string|max:50',
+                'dias_vencimiento' => 'nullable|integer|min:0|max:365',
+            ]);
+
+            $solicitud->forma_pago_factura = $validated['forma_pago'];
+            $diasVencimiento = $validated['dias_vencimiento'] ?? 0;
+            if ($diasVencimiento > 0) {
+                $solicitud->fecha_vencimiento = now()->addDays($diasVencimiento);
+            }
+            $solicitud->save();
+
+            Log::info("Forma de pago crédito configurada para cotización {$solicitud->numero_solicitud} por usuario {$user->id}");
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Forma de pago a crédito registrada. Podrá adjuntar los pagos cuando el cliente pague.',
+                'estado_pago' => $solicitud->estado_pago,
+            ]);
+        }
+
+        // --- Flujo normal: registrar pago real ---
 
         // Verificar que pueda recibir pagos
         if (!$solicitud->puedeRegistrarPago()) {
@@ -78,7 +109,7 @@ class PagosController extends Controller
             ], 400);
         }
 
-        // Validar datos
+        // Validar datos del pago real
         $validated = $request->validate([
             'monto' => 'required|numeric|min:0.01|max:' . $maxPermitido,
             'metodo_pago' => 'required|in:' . implode(',', array_keys(SolicitudCotizacion::METODOS_PAGO)),
@@ -108,14 +139,9 @@ class PagosController extends Controller
                 }
             }
 
-            // Guardar forma de pago si se proporcionó y no existe
+            // Guardar forma de pago si se proporcionó y no existe (contado)
             if (!$solicitud->forma_pago_factura && !empty($validated['forma_pago'])) {
-                $formaPago = $validated['forma_pago'];
-                $diasVencimiento = $validated['dias_vencimiento'] ?? 0;
-                $solicitud->forma_pago_factura = $formaPago;
-                if ($diasVencimiento > 0) {
-                    $solicitud->fecha_vencimiento = now()->addDays($diasVencimiento);
-                }
+                $solicitud->forma_pago_factura = $validated['forma_pago'];
                 $solicitud->save();
             }
 
@@ -128,29 +154,11 @@ class PagosController extends Controller
                 $user->id
             );
 
-            // Si es crédito, auto-aprobar el pago
-            $mensaje = 'Pago registrado exitosamente. Está pendiente de aprobación por el área de facturación.';
-            if (
-                ($solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Crédito'))
-                || $validated['metodo_pago'] === 'credito'
-            ) {
-                $ultimoPago = $solicitud->pagos()->latest()->first();
-                if ($ultimoPago && $ultimoPago->estaPendiente()) {
-                    $ultimoPago->update([
-                        'estado' => PagoSolicitud::ESTADO_APROBADO,
-                        'aprobado_por' => $user->id,
-                        'aprobado_en' => now(),
-                    ]);
-                    $solicitud->recalcularPagos();
-                    $mensaje = 'Pago a crédito registrado y aprobado automáticamente.';
-                }
-            }
-
             Log::info("Pago registrado para cotización {$solicitud->numero_solicitud} por usuario {$user->id}");
 
             return response()->json([
                 'success' => true,
-                'mensaje' => $mensaje,
+                'mensaje' => 'Pago registrado exitosamente. Está pendiente de aprobación por el área de facturación.',
                 'estado_pago' => $solicitud->fresh()->estado_pago,
             ]);
 
