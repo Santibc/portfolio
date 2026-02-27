@@ -66,25 +66,71 @@
                     />
                 </div>
 
-                {{-- Cotizaciones Pendientes --}}
+                {{-- Aplicadas --}}
                 <div class="col-md-6 col-lg-3">
                     <x-card-metric
-                        title="Cotizaciones Pendientes"
-                        :value="($metricas['cotizaciones']['pendientes']['cantidad'] ?? 0)"
-                        icon="bi-clock-history"
-                        color="warning"
-                        :subtitle="'$' . number_format($metricas['cotizaciones']['pendientes']['monto'] ?? 0, 0, ',', '.')"
+                        title="Aplicadas"
+                        :value="($metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0)"
+                        icon="bi-check-circle"
+                        color="success"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['aplicadas']['monto'] ?? 0, 0, ',', '.')"
                     />
                 </div>
 
-                {{-- Cotizaciones Aplicadas --}}
+                {{-- Contado --}}
                 <div class="col-md-6 col-lg-3">
                     <x-card-metric
-                        title="Cotizaciones Aplicadas"
-                        :value="($metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0)"
-                        icon="bi-check-circle"
-                        color="pink"
-                        :subtitle="'$' . number_format($metricas['cotizaciones']['aplicadas']['monto'] ?? 0, 0, ',', '.')"
+                        title="Contado"
+                        :value="($metricas['cotizaciones']['contado']['cantidad'] ?? 0)"
+                        icon="bi-cash-stack"
+                        color="success"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['contado']['monto'] ?? 0, 0, ',', '.')"
+                    />
+                </div>
+
+                {{-- Crédito --}}
+                <div class="col-md-6 col-lg-3">
+                    <x-card-metric
+                        title="Crédito"
+                        :value="($metricas['cotizaciones']['credito']['cantidad'] ?? 0)"
+                        icon="bi-credit-card"
+                        color="primary"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['credito']['monto'] ?? 0, 0, ',', '.')"
+                    />
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                {{-- Total Pagadas --}}
+                <div class="col-md-6 col-lg-3">
+                    <x-card-metric
+                        title="Total Pagadas"
+                        :value="($metricas['cotizaciones']['pagadas']['cantidad'] ?? 0)"
+                        icon="bi-wallet2"
+                        color="purple"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['pagadas']['monto'] ?? 0, 0, ',', '.')"
+                    />
+                </div>
+
+                {{-- Despachadas --}}
+                <div class="col-md-6 col-lg-3">
+                    <x-card-metric
+                        title="Despachadas"
+                        :value="($metricas['cotizaciones']['despachadas']['cantidad'] ?? 0)"
+                        icon="bi-truck"
+                        color="info"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['despachadas']['monto'] ?? 0, 0, ',', '.')"
+                    />
+                </div>
+
+                {{-- Rechazadas --}}
+                <div class="col-md-6 col-lg-3">
+                    <x-card-metric
+                        title="Rechazadas"
+                        :value="($metricas['cotizaciones']['rechazadas']['cantidad'] ?? 0)"
+                        icon="bi-x-circle"
+                        color="danger"
+                        :subtitle="'$' . number_format($metricas['cotizaciones']['rechazadas']['monto'] ?? 0, 0, ',', '.')"
                     />
                 </div>
 
@@ -374,8 +420,9 @@
 
             // Datos de estados
             const estadosData = {
-                pendientes: {{ $metricas['cotizaciones']['pendientes']['cantidad'] ?? 0 }},
-                aplicadas: {{ $metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0 }},
+                contado: {{ $metricas['cotizaciones']['contado']['cantidad'] ?? 0 }},
+                credito: {{ $metricas['cotizaciones']['credito']['cantidad'] ?? 0 }},
+                despachadas: {{ $metricas['cotizaciones']['despachadas']['cantidad'] ?? 0 }},
                 rechazadas: {{ $metricas['cotizaciones']['rechazadas']['cantidad'] ?? 0 }}
             };
 
@@ -385,12 +432,13 @@
                 new Chart(ctxEstados, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Pendientes', 'Aplicadas', 'Rechazadas'],
+                        labels: ['Contado', 'Crédito', 'Despachadas', 'Rechazadas'],
                         datasets: [{
-                            data: [estadosData.pendientes, estadosData.aplicadas, estadosData.rechazadas],
+                            data: [estadosData.contado, estadosData.credito, estadosData.despachadas, estadosData.rechazadas],
                             backgroundColor: [
-                                '#ffc107', // warning - pendientes
-                                '#28a745', // success - aplicadas
+                                '#28a745', // success - contado
+                                '#0d6efd', // primary - crédito
+                                '#0dcaf0', // info - despachadas
                                 '#dc3545'  // danger - rechazadas
                             ],
                             borderWidth: 0

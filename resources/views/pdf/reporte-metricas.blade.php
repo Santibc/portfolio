@@ -204,7 +204,7 @@
 
         .estado-item {
             display: table-cell;
-            width: 33.33%;
+            width: 25%;
             padding: 10px;
             text-align: center;
         }
@@ -214,14 +214,19 @@
             border-radius: 8px;
         }
 
-        .estado-box.pendiente {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-        }
-
-        .estado-box.aplicada {
+        .estado-box.contado {
             background: #d4edda;
             border: 2px solid #28a745;
+        }
+
+        .estado-box.credito {
+            background: #d0e4ff;
+            border: 2px solid #0d6efd;
+        }
+
+        .estado-box.despachada {
+            background: #d1ecf1;
+            border: 2px solid #0dcaf0;
         }
 
         .estado-box.rechazada {
@@ -291,17 +296,17 @@
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-card-inner warning">
-                        <div class="kpi-title">Pendientes</div>
-                        <div class="kpi-value">{{ $metricas['cotizaciones']['pendientes']['cantidad'] ?? 0 }}</div>
-                        <div class="kpi-subtitle">${{ number_format($metricas['cotizaciones']['pendientes']['monto'] ?? 0, 0, ',', '.') }}</div>
+                    <div class="kpi-card-inner success">
+                        <div class="kpi-title">Aplicadas</div>
+                        <div class="kpi-value">{{ $metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0 }}</div>
+                        <div class="kpi-subtitle">${{ number_format($metricas['cotizaciones']['aplicadas']['monto'] ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-card-inner">
-                        <div class="kpi-title">Aplicadas</div>
-                        <div class="kpi-value">{{ $metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0 }}</div>
-                        <div class="kpi-subtitle">${{ number_format($metricas['cotizaciones']['aplicadas']['monto'] ?? 0, 0, ',', '.') }}</div>
+                        <div class="kpi-title">Total Pagadas</div>
+                        <div class="kpi-value">{{ $metricas['cotizaciones']['pagadas']['cantidad'] ?? 0 }}</div>
+                        <div class="kpi-subtitle">${{ number_format($metricas['cotizaciones']['pagadas']['monto'] ?? 0, 0, ',', '.') }}</div>
                     </div>
                 </div>
                 <div class="kpi-card">
@@ -320,26 +325,30 @@
             <div class="section-content">
                 <div class="estado-grid">
                     <div class="estado-item">
-                        <div class="estado-box pendiente">
-                            <div class="estado-cantidad">{{ $metricas['cotizaciones']['pendientes']['cantidad'] ?? 0 }}</div>
-                            <div class="estado-monto">${{ number_format($metricas['cotizaciones']['pendientes']['monto'] ?? 0, 0, ',', '.') }}</div>
-                            <div class="estado-porcentaje">{{ $metricas['cotizaciones']['pendientes']['porcentaje'] ?? 0 }}% del total</div>
-                            <strong>Pendientes</strong>
+                        <div class="estado-box contado">
+                            <div class="estado-cantidad">{{ $metricas['cotizaciones']['contado']['cantidad'] ?? 0 }}</div>
+                            <div class="estado-monto">${{ number_format($metricas['cotizaciones']['contado']['monto'] ?? 0, 0, ',', '.') }}</div>
+                            <strong>Contado</strong>
                         </div>
                     </div>
                     <div class="estado-item">
-                        <div class="estado-box aplicada">
-                            <div class="estado-cantidad">{{ $metricas['cotizaciones']['aplicadas']['cantidad'] ?? 0 }}</div>
-                            <div class="estado-monto">${{ number_format($metricas['cotizaciones']['aplicadas']['monto'] ?? 0, 0, ',', '.') }}</div>
-                            <div class="estado-porcentaje">{{ $metricas['cotizaciones']['aplicadas']['porcentaje'] ?? 0 }}% del total</div>
-                            <strong>Aplicadas</strong>
+                        <div class="estado-box credito">
+                            <div class="estado-cantidad">{{ $metricas['cotizaciones']['credito']['cantidad'] ?? 0 }}</div>
+                            <div class="estado-monto">${{ number_format($metricas['cotizaciones']['credito']['monto'] ?? 0, 0, ',', '.') }}</div>
+                            <strong>Crédito</strong>
+                        </div>
+                    </div>
+                    <div class="estado-item">
+                        <div class="estado-box despachada">
+                            <div class="estado-cantidad">{{ $metricas['cotizaciones']['despachadas']['cantidad'] ?? 0 }}</div>
+                            <div class="estado-monto">${{ number_format($metricas['cotizaciones']['despachadas']['monto'] ?? 0, 0, ',', '.') }}</div>
+                            <strong>Despachadas</strong>
                         </div>
                     </div>
                     <div class="estado-item">
                         <div class="estado-box rechazada">
                             <div class="estado-cantidad">{{ $metricas['cotizaciones']['rechazadas']['cantidad'] ?? 0 }}</div>
                             <div class="estado-monto">${{ number_format($metricas['cotizaciones']['rechazadas']['monto'] ?? 0, 0, ',', '.') }}</div>
-                            <div class="estado-porcentaje">{{ $metricas['cotizaciones']['rechazadas']['porcentaje'] ?? 0 }}% del total</div>
                             <strong>Rechazadas</strong>
                         </div>
                     </div>

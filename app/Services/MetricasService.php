@@ -66,45 +66,60 @@ class MetricasService
         $fechaInicio = $fechaInicio ?? Carbon::now()->startOfMonth();
         $fechaFin = $fechaFin ?? Carbon::now()->endOfMonth();
 
-        $cotizaciones = SolicitudCotizacion::whereBetween('created_at', [$fechaInicio, $fechaFin])
+        $row = SolicitudCotizacion::whereBetween('created_at', [$fechaInicio, $fechaFin])
             ->selectRaw('
-                estado,
-                COUNT(*) as cantidad,
-                COALESCE(SUM(monto_total), 0) as monto
+                COUNT(*) as total_cantidad,
+                COALESCE(SUM(monto_total), 0) as total_monto,
+                SUM(CASE WHEN estado = "aplicada" THEN 1 ELSE 0 END) as aplicadas_cantidad,
+                COALESCE(SUM(CASE WHEN estado = "aplicada" THEN monto_total ELSE 0 END), 0) as aplicadas_monto,
+                SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND (forma_pago_factura IS NULL OR forma_pago_factura NOT LIKE "%Crédito%") THEN 1 ELSE 0 END) as contado_cantidad,
+                COALESCE(SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND (forma_pago_factura IS NULL OR forma_pago_factura NOT LIKE "%Crédito%") THEN monto_total ELSE 0 END), 0) as contado_monto,
+                SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND forma_pago_factura LIKE "%Crédito%" THEN 1 ELSE 0 END) as credito_cantidad,
+                COALESCE(SUM(CASE WHEN estado = "aplicada" AND estado_pago = "pagado" AND forma_pago_factura LIKE "%Crédito%" THEN monto_total ELSE 0 END), 0) as credito_monto,
+                SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN 1 ELSE 0 END) as despachadas_cantidad,
+                COALESCE(SUM(CASE WHEN estado = "aplicada" AND stock_descontado = 1 THEN monto_total ELSE 0 END), 0) as despachadas_monto,
+                SUM(CASE WHEN estado = "rechazada" THEN 1 ELSE 0 END) as rechazadas_cantidad,
+                COALESCE(SUM(CASE WHEN estado = "rechazada" THEN monto_total ELSE 0 END), 0) as rechazadas_monto
             ')
-            ->groupBy('estado')
-            ->get()
-            ->keyBy('estado');
+            ->first();
 
-        $totalCantidad = $cotizaciones->sum('cantidad');
-        $totalMonto = $cotizaciones->sum('monto');
-
-        $pendientes = $cotizaciones->get('pendiente');
-        $aplicadas = $cotizaciones->get('aplicada');
-        $rechazadas = $cotizaciones->get('rechazada');
+        $totalCantidad = $row->total_cantidad ?? 0;
+        $pagadasCantidad = ($row->contado_cantidad ?? 0) + ($row->credito_cantidad ?? 0);
+        $pagadasMonto = ($row->contado_monto ?? 0) + ($row->credito_monto ?? 0);
 
         return [
-            'pendientes' => [
-                'cantidad' => $pendientes->cantidad ?? 0,
-                'monto' => $pendientes->monto ?? 0,
-                'porcentaje' => $totalCantidad > 0 ? round((($pendientes->cantidad ?? 0) / $totalCantidad) * 100, 1) : 0,
-            ],
             'aplicadas' => [
-                'cantidad' => $aplicadas->cantidad ?? 0,
-                'monto' => $aplicadas->monto ?? 0,
-                'porcentaje' => $totalCantidad > 0 ? round((($aplicadas->cantidad ?? 0) / $totalCantidad) * 100, 1) : 0,
+                'cantidad' => $row->aplicadas_cantidad ?? 0,
+                'monto' => $row->aplicadas_monto ?? 0,
+                'porcentaje' => $totalCantidad > 0 ? round((($row->aplicadas_cantidad ?? 0) / $totalCantidad) * 100, 1) : 0,
+            ],
+            'contado' => [
+                'cantidad' => $row->contado_cantidad ?? 0,
+                'monto' => $row->contado_monto ?? 0,
+            ],
+            'credito' => [
+                'cantidad' => $row->credito_cantidad ?? 0,
+                'monto' => $row->credito_monto ?? 0,
+            ],
+            'pagadas' => [
+                'cantidad' => $pagadasCantidad,
+                'monto' => $pagadasMonto,
+            ],
+            'despachadas' => [
+                'cantidad' => $row->despachadas_cantidad ?? 0,
+                'monto' => $row->despachadas_monto ?? 0,
             ],
             'rechazadas' => [
-                'cantidad' => $rechazadas->cantidad ?? 0,
-                'monto' => $rechazadas->monto ?? 0,
-                'porcentaje' => $totalCantidad > 0 ? round((($rechazadas->cantidad ?? 0) / $totalCantidad) * 100, 1) : 0,
+                'cantidad' => $row->rechazadas_cantidad ?? 0,
+                'monto' => $row->rechazadas_monto ?? 0,
+                'porcentaje' => $totalCantidad > 0 ? round((($row->rechazadas_cantidad ?? 0) / $totalCantidad) * 100, 1) : 0,
             ],
             'total' => [
                 'cantidad' => $totalCantidad,
-                'monto' => $totalMonto,
+                'monto' => $row->total_monto ?? 0,
             ],
             'tasa_conversion' => $totalCantidad > 0
-                ? round((($aplicadas->cantidad ?? 0) / $totalCantidad) * 100, 1)
+                ? round((($row->aplicadas_cantidad ?? 0) / $totalCantidad) * 100, 1)
                 : 0,
         ];
     }
