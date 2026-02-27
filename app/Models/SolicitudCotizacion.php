@@ -685,7 +685,7 @@ class SolicitudCotizacion extends Model
     public function getColorEstadoPagoAttribute(): string
     {
         if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
-            return 'danger';
+            return 'pink';
         }
 
         return match($this->estado_pago) {

@@ -19,9 +19,11 @@
               <p class="mb-0 opacity-75">{{ $solicitud->cliente->nombre_contacto }}</p>
             </div>
             <div class="col-md-4 text-end">
-              <span class="badge bg-{{ $solicitud->color_estado_pago }} fs-6">
-                {{ $solicitud->etiqueta_estado_pago }}
-              </span>
+              @if($solicitud->color_estado_pago === 'pink')
+                <span class="badge fs-6" style="background-color:#FF84D5;color:#fff;">{{ $solicitud->etiqueta_estado_pago }}</span>
+              @else
+                <span class="badge bg-{{ $solicitud->color_estado_pago }} fs-6">{{ $solicitud->etiqueta_estado_pago }}</span>
+              @endif
             </div>
           </div>
         </div>

@@ -140,6 +140,9 @@ class SolicitudController extends Controller
                             </button>';
                 })
                 ->addColumn('estado_pago_badge', function($s) {
+                    if ($s->color_estado_pago === 'pink') {
+                        return '<span class="badge" style="background-color:#FF84D5;color:#fff;">' . $s->etiqueta_estado_pago . '</span>';
+                    }
                     return '<span class="badge bg-' . $s->color_estado_pago . '">' . $s->etiqueta_estado_pago . '</span>';
                 })
                 ->addColumn('descargue_badge', function($s) {
@@ -652,7 +655,11 @@ class SolicitudController extends Controller
 
             // Badge de estado de pago
             $html .= '<div class="text-end">';
-            $html .= '<span class="badge bg-' . $solicitud->color_estado_pago . ' fs-6">';
+            if ($solicitud->color_estado_pago === 'pink') {
+                $html .= '<span class="badge fs-6" style="background-color:#FF84D5;color:#fff;">';
+            } else {
+                $html .= '<span class="badge bg-' . $solicitud->color_estado_pago . ' fs-6">';
+            }
             $html .= 'Estado de Pago: ' . $solicitud->etiqueta_estado_pago;
             $html .= '</span>';
             $html .= '</div>';
