@@ -553,7 +553,16 @@ class SolicitudCotizacion extends Model
      */
     public function puedeRegistrarPago(): bool
     {
-        return $this->estado_pago !== self::PAGO_PAGADO;
+        if ($this->estado_pago !== self::PAGO_PAGADO) {
+            return true;
+        }
+
+        // Permitir registrar pagos reales en cotizaciones a crédito
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -630,12 +639,18 @@ class SolicitudCotizacion extends Model
 
     /**
      * Recalcular totales de pago basado solo en pagos aprobados
+     * Para crédito, excluye pagos con método 'credito' (placeholder antiguo)
      */
     public function recalcularPagos(): void
     {
-        $totalAprobado = $this->pagos()
-            ->where('estado', PagoSolicitud::ESTADO_APROBADO)
-            ->sum('monto');
+        $query = $this->pagos()->where('estado', PagoSolicitud::ESTADO_APROBADO);
+
+        // Excluir pagos placeholder de crédito para cotizaciones a crédito
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
+            $query = $query->where('metodo_pago', '!=', 'credito');
+        }
+
+        $totalAprobado = $query->sum('monto');
 
         $montoTotal = $this->monto_total_con_iva;
         $totalAprobado = min($totalAprobado, $montoTotal);
@@ -649,6 +664,7 @@ class SolicitudCotizacion extends Model
 
         $ultimoPago = $this->pagos()
             ->where('estado', PagoSolicitud::ESTADO_APROBADO)
+            ->where('metodo_pago', '!=', 'credito')
             ->latest()
             ->first();
 
@@ -711,9 +727,18 @@ class SolicitudCotizacion extends Model
 
     /**
      * Obtener saldo pendiente (incluye IVA)
+     * Para crédito, solo cuenta pagos reales (excluye pagos con método 'credito')
      */
     public function getSaldoPendienteAttribute(): float
     {
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
+            $pagosReales = $this->pagos()
+                ->where('estado', PagoSolicitud::ESTADO_APROBADO)
+                ->where('metodo_pago', '!=', 'credito')
+                ->sum('monto');
+            return max(0, $this->monto_total_con_iva - $pagosReales);
+        }
+
         return max(0, $this->monto_total_con_iva - $this->monto_pagado);
     }
 

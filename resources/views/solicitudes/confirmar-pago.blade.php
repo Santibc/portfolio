@@ -37,7 +37,10 @@
             </div>
             <div class="col-md-4 text-center border-end">
               <small class="text-muted d-block">Pagado (aprobado)</small>
-              <h4 class="text-success mb-0">$ {{ number_format($solicitud->monto_pagado, 0, ',', '.') }}</h4>
+              @php
+                $montoPagadoReal = $solicitud->monto_total_con_iva - $solicitud->saldo_pendiente;
+              @endphp
+              <h4 class="text-success mb-0">$ {{ number_format($montoPagadoReal, 0, ',', '.') }}</h4>
             </div>
             <div class="col-md-4 text-center">
               <small class="text-muted d-block">Saldo Pendiente</small>

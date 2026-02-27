@@ -288,7 +288,7 @@ class PagosController extends Controller
                 'estado' => $solicitud->estado_pago,
                 'etiqueta' => $solicitud->etiqueta_estado_pago,
                 'monto_total' => $solicitud->monto_total,
-                'monto_pagado' => $solicitud->monto_pagado,
+                'monto_pagado' => $solicitud->monto_total_con_iva - $solicitud->saldo_pendiente,
                 'saldo_pendiente' => $solicitud->saldo_pendiente,
                 'metodo_pago' => $solicitud->metodo_pago ? $metodosPago[$solicitud->metodo_pago] : null,
                 'comprobante' => $solicitud->comprobante_pago ? url('/solicitudes/' . $solicitud->id . '/comprobante') : null,
