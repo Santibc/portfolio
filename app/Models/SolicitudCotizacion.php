@@ -684,10 +684,8 @@ class SolicitudCotizacion extends Model
      */
     public function getColorEstadoPagoAttribute(): string
     {
-        if ($this->estado_pago === self::PAGO_PAGADO
-            && $this->forma_pago_factura
-            && str_contains($this->forma_pago_factura, 'Crédito')) {
-            return 'primary';
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
+            return 'danger';
         }
 
         return match($this->estado_pago) {
@@ -703,9 +701,7 @@ class SolicitudCotizacion extends Model
      */
     public function getEtiquetaEstadoPagoAttribute(): string
     {
-        if ($this->estado_pago === self::PAGO_PAGADO
-            && $this->forma_pago_factura
-            && str_contains($this->forma_pago_factura, 'Crédito')) {
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
             return 'Crédito';
         }
 

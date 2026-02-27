@@ -40,9 +40,9 @@
             @endif
           </div>
 
-          {{-- Filtro de Vendedor (para admin, auxiliar_administrativo e inventarios) --}}
-          @if(auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios']))
           <div class="row mb-3">
+            {{-- Filtro de Vendedor (para admin, auxiliar_administrativo e inventarios) --}}
+            @if(auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios']))
             <div class="col-md-4">
               <label class="form-label">Filtrar por Vendedor:</label>
               <select id="filtroVendedor" class="form-select">
@@ -52,8 +52,20 @@
                 @endforeach
               </select>
             </div>
+            @endif
+
+            {{-- Filtro de Estado de Pago --}}
+            <div class="col-md-3">
+              <label class="form-label">Filtrar por Pago:</label>
+              <select id="filtroEstadoPago" class="form-select">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="parcial">Parcial</option>
+                <option value="pagado">Pagado</option>
+                <option value="credito">Crédito</option>
+              </select>
+            </div>
           </div>
-          @endif
 
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
@@ -111,10 +123,10 @@
       ajax: {
         url: "{{ route('solicitudes') }}",
         data: function(d) {
-          // Solo enviar filtro de vendedor si existe (es decir, si es admin)
           if ($('#filtroVendedor').length) {
             d.vendedor_id = $('#filtroVendedor').val();
           }
+          d.estado_pago = $('#filtroEstadoPago').val();
         }
       },
       columns: [
@@ -208,6 +220,11 @@
         table.ajax.reload();
       });
     }
+
+    // Filtro de estado de pago
+    $('#filtroEstadoPago').on('change', function() {
+      table.ajax.reload();
+    });
   });
 
   // Funciones para los modales

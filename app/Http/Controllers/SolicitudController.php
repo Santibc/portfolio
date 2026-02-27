@@ -77,7 +77,19 @@ class SolicitudController extends Controller
                 });
             }
 
-            // Admin ve todas las solicitudes (si no hay filtro), vendedor ve solo las suyas
+            // Filtrar por estado de pago
+            if ($request->filled('estado_pago')) {
+                $estadoPago = $request->estado_pago;
+                if ($estadoPago === 'credito') {
+                    $query->where('forma_pago_factura', 'like', '%Crédito%');
+                } else {
+                    $query->where('estado_pago', $estadoPago)
+                          ->where(function($q) {
+                              $q->whereNull('forma_pago_factura')
+                                ->orWhere('forma_pago_factura', 'not like', '%Crédito%');
+                          });
+                }
+            }
 
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function($s) {
