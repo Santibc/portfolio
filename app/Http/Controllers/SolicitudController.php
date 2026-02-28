@@ -86,11 +86,19 @@ class SolicitudController extends Controller
                 if ($estadoPago === 'credito') {
                     $query->where('forma_pago_factura', 'like', '%Crédito%');
                 } else {
-                    $query->where('estado_pago', $estadoPago)
-                          ->where(function($q) {
-                              $q->whereNull('forma_pago_factura')
-                                ->orWhere('forma_pago_factura', 'not like', '%Crédito%');
-                          });
+                    // Para inventarios: no excluir cotizaciones con forma de pago Crédito
+                    if ($user->hasRole('inventarios') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
+                        $query->where(function($q) use ($estadoPago) {
+                            $q->where('estado_pago', $estadoPago)
+                              ->orWhere('forma_pago_factura', 'like', '%Crédito%');
+                        });
+                    } else {
+                        $query->where('estado_pago', $estadoPago)
+                              ->where(function($q) {
+                                  $q->whereNull('forma_pago_factura')
+                                    ->orWhere('forma_pago_factura', 'not like', '%Crédito%');
+                              });
+                    }
                 }
             }
 
