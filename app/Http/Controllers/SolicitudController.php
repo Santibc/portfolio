@@ -60,10 +60,13 @@ class SolicitudController extends Controller
             }
 
 
-            // Filtro para rol inventarios: solo aplicadas con pago != pendiente
+            // Filtro para rol inventarios: solo aplicadas con pago != pendiente O con forma de pago Crédito
             if ($user->hasRole('inventarios') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
                 $query->where('estado', 'aplicada')
-                      ->where('estado_pago', '!=', 'pendiente');
+                      ->where(function($q) {
+                          $q->where('estado_pago', '!=', 'pendiente')
+                            ->orWhere('forma_pago_factura', 'like', '%Crédito%');
+                      });
             }
 
             // Filtrar por vendedor si se proporciona (solo admin puede usar este filtro)
