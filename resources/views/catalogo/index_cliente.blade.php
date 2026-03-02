@@ -475,6 +475,31 @@
           <textarea class="form-control" id="notasSolicitud" rows="3"
                     placeholder="Ingrese cualquier observación sobre esta cotización..."></textarea>
         </div>
+        @if($cliente->aplica_flete && $cliente->valor_flete > 0)
+        <div class="mb-3 p-3 border rounded bg-light">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="chkFlete" checked>
+            <label class="form-check-label fw-bold" for="chkFlete">
+              <i class="bi bi-truck me-1 text-success"></i>Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
+            </label>
+          </div>
+        </div>
+        @endif
+        @if($cliente->sucursalesActivas && $cliente->sucursalesActivas->count() > 0)
+        <div class="mb-3">
+          <label class="form-label fw-bold">
+            <i class="bi bi-building me-1"></i>Sucursal de entrega
+          </label>
+          <select class="form-select" id="selectSucursal">
+            <option value="">-- Seleccionar sucursal --</option>
+            @foreach($cliente->sucursalesActivas as $sucursal)
+              <option value="{{ $sucursal->id }}" {{ $sucursal->es_principal ? 'selected' : '' }}>
+                {{ $sucursal->nombre }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+        @endif
         <div class="alert alert-info">
           <i class="bi bi-info-circle"></i> Al confirmar, se enviará la solicitud de cotización con los productos seleccionados.
         </div>
@@ -1214,7 +1239,9 @@ $(function(){
     const items = carrito.map(i=>({producto_id:i.producto_id,variante_id:i.variante_id,cantidad:i.cantidad,observacion:i.observacion||''}));
     $.post('{{route("catalogo.solicitud.guardar")}}',{
       _token:'{{csrf_token()}}',cliente_id:clienteId,
-      enlace_token:enlaceToken,items,observaciones_vendedor:notas
+      enlace_token:enlaceToken,items,observaciones_vendedor:notas,
+      sucursal_id: $('#selectSucursal').val() || null,
+      incluir_flete: $('#chkFlete').is(':checked') ? 1 : 0
     },r=>{
       $('#loadingOverlay').hide();
       $('#modalConfirmarSolicitud').modal('hide');

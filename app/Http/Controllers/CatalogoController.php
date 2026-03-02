@@ -32,9 +32,9 @@ class CatalogoController extends Controller
         // Registrar acceso
         $enlace->registrarAcceso();
         
-        $cliente = $enlace->cliente;
+        $cliente = $enlace->cliente->load('sucursalesActivas');
         $categorias = Categoria::activas()->get();
-        
+
         return view('catalogo.index_cliente', compact('enlace', 'cliente', 'categorias'));
     }
     
