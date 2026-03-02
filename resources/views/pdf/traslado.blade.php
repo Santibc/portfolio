@@ -10,12 +10,13 @@
             color: #333;
             margin: 0;
             padding: 20px;
+            line-height: 1.0;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #0d6efd;
-            padding-bottom: 15px;
+            padding-bottom: 8px;
         }
         .header h1 {
             color: #0d6efd;
@@ -23,15 +24,15 @@
             font-size: 24px;
         }
         .header p {
-            margin: 5px 0 0;
+            margin: 1px 0 0;
             color: #666;
         }
         .info-box {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 5px 15px;
+            margin-bottom: 10px;
         }
         .info-label {
             font-weight: bold;
@@ -43,7 +44,7 @@
             display: inline;
         }
         .info-row {
-            margin-bottom: 6px;
+            margin-bottom: 1px;
         }
         .badge {
             display: inline-block;
@@ -67,12 +68,12 @@
         .detail-table th {
             background-color: #0d6efd;
             color: white;
-            padding: 10px;
+            padding: 3px 10px;
             text-align: left;
             font-weight: bold;
         }
         .detail-table td {
-            padding: 10px;
+            padding: 2px 10px;
             border-bottom: 1px solid #dee2e6;
         }
         .detail-table tr:nth-child(even) {
@@ -83,19 +84,19 @@
             background-color: #e9ecef !important;
         }
         .footer {
-            margin-top: 40px;
+            margin-top: 25px;
             border-top: 1px solid #dee2e6;
-            padding-top: 20px;
+            padding-top: 10px;
         }
         .signature-box {
             display: inline-block;
             width: 45%;
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
         }
         .signature-line {
             border-top: 1px solid #333;
-            margin-top: 50px;
+            margin-top: 40px;
             padding-top: 5px;
         }
     </style>
