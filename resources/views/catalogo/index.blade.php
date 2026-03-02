@@ -353,43 +353,10 @@
     </div>
   </div>
   <div class="p-4 border-top flex-shrink-0">
-    @if($cliente->aplica_flete && $cliente->valor_flete > 0)
-    <div class="mb-2 p-2 border rounded bg-light">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="chkFlete" checked onchange="actualizarCarrito()">
-        <label class="form-check-label fw-bold" for="chkFlete">
-          <i class="bi bi-truck me-1 text-success"></i>Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
-        </label>
-      </div>
-    </div>
-    <div class="d-flex justify-content-between mb-1">
-      <span>Subtotal:</span>
-      <span id="cartSubtotal">$0.00</span>
-    </div>
-    <div class="d-flex justify-content-between mb-1" id="fleteRow">
-      <span class="text-success"><i class="bi bi-truck me-1"></i>Flete:</span>
-      <span class="text-success">${{ number_format($cliente->valor_flete, 0, ',', '.') }}</span>
-    </div>
-    @endif
     <div class="d-flex justify-content-between mb-3">
       <strong>Total:</strong>
       <strong id="cartTotal">$0.00</strong>
     </div>
-    @if($cliente->sucursalesActivas && $cliente->sucursalesActivas->count() > 0)
-    <div class="mb-3">
-      <label class="form-label small fw-bold mb-1">
-        <i class="bi bi-building me-1"></i>Sucursal de entrega
-      </label>
-      <select class="form-select form-select-sm" id="selectSucursal">
-        <option value="">-- Seleccionar sucursal --</option>
-        @foreach($cliente->sucursalesActivas as $sucursal)
-          <option value="{{ $sucursal->id }}" {{ $sucursal->es_principal ? 'selected' : '' }}>
-            {{ $sucursal->nombre }}
-          </option>
-        @endforeach
-      </select>
-    </div>
-    @endif
     <button class="btn btn-success w-100" id="btnFinalizarSolicitud" disabled>
       <i class="bi bi-check-circle"></i> Finalizar Cotización
     </button>
@@ -426,6 +393,31 @@
                       placeholder="Ingrese cualquier observación sobre esta cotización..."></textarea>
             <div class="invalid-feedback">Las observaciones son obligatorias.</div>
           </div>
+          @if($cliente->aplica_flete && $cliente->valor_flete > 0)
+          <div class="mb-3 p-3 border rounded bg-light">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="chkFlete" checked>
+              <label class="form-check-label fw-bold" for="chkFlete">
+                <i class="bi bi-truck me-1 text-success"></i>Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
+              </label>
+            </div>
+          </div>
+          @endif
+          @if($cliente->sucursalesActivas && $cliente->sucursalesActivas->count() > 0)
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="bi bi-building me-1"></i>Sucursal de entrega
+            </label>
+            <select class="form-select" id="selectSucursal">
+              <option value="">-- Seleccionar sucursal --</option>
+              @foreach($cliente->sucursalesActivas as $sucursal)
+                <option value="{{ $sucursal->id }}" {{ $sucursal->es_principal ? 'selected' : '' }}>
+                  {{ $sucursal->nombre }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+          @endif
           <div class="alert alert-info">
             <i class="bi bi-info-circle"></i> Al confirmar, se enviará la solicitud de cotización con los productos seleccionados.
           </div>
@@ -514,16 +506,7 @@
         $('#btnFinalizarSolicitud').prop('disabled',false);
       }
       $('#cartItems').html(itemsHtml);
-      @if($cliente->aplica_flete && $cliente->valor_flete > 0)
-      const valorFlete = {{ $cliente->valor_flete }};
-      const fleteActivo = $('#chkFlete').is(':checked');
-      const fmt = v => '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(v);
-      $('#cartSubtotal').text(mostrarPrecios ? fmt(total) : 'N/A');
-      $('#fleteRow').toggle(fleteActivo);
-      $('#cartTotal').text(mostrarPrecios ? fmt(total + (fleteActivo ? valorFlete : 0)) : 'N/A');
-      @else
       $('#cartTotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total) : 'N/A');
-      @endif
       $('#cartCount').text(carrito.reduce((s,i)=>s+i.cantidad,0))
                     .toggle(!!carrito.length);
       localStorage.setItem('carrito_'+clienteId, JSON.stringify(carrito));
