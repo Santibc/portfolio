@@ -1,0 +1,525 @@
+/**
+ * SINDEN - Modulo Contabilidad JS
+ * Maneja DataTables, aprobaciones AJAX, pagos inline y seleccion masiva.
+ */
+
+var ordenesPendientesTable = null;
+var pagosPendientesTable = null;
+
+// ============================================================
+// ORDENES PENDIENTES
+// ============================================================
+
+function initOrdenesPendientesTable(config) {
+    ordenesPendientesTable = $('#ordenesPendientesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: config.ajaxUrl,
+            data: function(d) {
+                d.numero_orden = $('#filtroNumeroOrden').val();
+                d.cliente = $('#filtroCliente').val();
+                d.fecha_desde = $('#filtroFechaDesde').val();
+                d.fecha_hasta = $('#filtroFechaHasta').val();
+            }
+        },
+        columns: [
+            { data: 'numero_orden', name: 'numero_orden', width: '90px' },
+            { data: 'cliente_nombre', name: 'cliente.nombre' },
+            { data: 'total_formatted', name: 'total', className: 'text-end', width: '100px' },
+            { data: 'pagado_formatted', name: 'total_pagado', className: 'text-end', width: '100px' },
+            { data: 'saldo_formatted', name: 'saldo', className: 'text-end', width: '110px' },
+            { data: 'porcentaje_pagado', name: 'porcentaje_pagado', orderable: false, searchable: false, className: 'text-center', width: '80px' },
+            { data: 'estado_trabajo_badge', name: 'estado_trabajo', className: 'text-center', width: '100px' },
+            { data: 'pagos_pendientes', name: 'pagos_pendientes', orderable: false, searchable: false, className: 'text-center', width: '70px' },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '100px' }
+        ],
+        order: [[4, 'desc']], // Ordenar por saldo descendente
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        drawCallback: function(settings) {
+            var total = settings._iRecordsTotal || 0;
+            $('#totalRegistros').text(total + ' registro' + (total !== 1 ? 's' : ''));
+        }
+    });
+
+    // Filtros
+    $('#btnFiltrar').on('click', function() {
+        ordenesPendientesTable.draw();
+    });
+
+    $('#btnLimpiar').on('click', function() {
+        $('#filtroNumeroOrden, #filtroCliente, #filtroFechaDesde, #filtroFechaHasta').val('');
+        ordenesPendientesTable.draw();
+    });
+
+    // Enter para filtrar
+    $('#filtroNumeroOrden, #filtroCliente').on('keypress', function(e) {
+        if (e.which === 13) ordenesPendientesTable.draw();
+    });
+
+    // Abrir modal agregar pago
+    $(document).on('click', '.btn-agregar-pago', function() {
+        var btn = $(this);
+        $('#pagoOrdenId').val(btn.data('orden-id'));
+
+        // Build info HTML dynamically (Tailwind CDN strips empty divs)
+        $('#infoPagoOrdenContainer').html(
+            '<div class="alert alert-light border">' +
+            '<div class="fw-semibold">Orden ' + btn.data('orden-numero') + '</div>' +
+            '<div class="small text-muted">' + btn.data('orden-cliente') + '</div>' +
+            '<div class="mt-1">Saldo: <span class="fw-bold text-danger">$' + btn.data('orden-saldo') + '</span></div>' +
+            '</div>'
+        );
+
+        $('#pagoMonto').val('');
+        $('#pagoMetodo').val('efectivo');
+        $('#pagoReferencia').val('');
+        $('#modalAgregarPago').modal('show');
+
+        // Focus monto despues de abrir
+        setTimeout(function() { $('#pagoMonto').focus(); }, 500);
+    });
+
+    // Registrar pago
+    $('#btnRegistrarPago').on('click', function() {
+        var ordenId = $('#pagoOrdenId').val();
+        var monto = $('#pagoMonto').val();
+        var metodo = $('#pagoMetodo').val();
+        var referencia = $('#pagoReferencia').val();
+
+        if (!monto || parseFloat(monto) <= 0) {
+            Swal.fire({ icon: 'warning', title: 'Monto requerido', text: 'Ingrese un monto valido mayor a 0.' });
+            return;
+        }
+
+        var btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Registrando...');
+
+        $.ajax({
+            url: config.pagoStoreUrl + '/' + ordenId + '/pagos',
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': config.csrfToken },
+            data: { monto: monto, metodo_pago: metodo, referencia_pago: referencia },
+            success: function(res) {
+                $('#modalAgregarPago').modal('hide');
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success',
+                    title: res.message || 'Pago registrado',
+                    showConfirmButton: false, timer: 3000
+                });
+                ordenesPendientesTable.draw(false);
+            },
+            error: function(xhr) {
+                var msg = xhr.responseJSON?.message || 'Error al registrar el pago.';
+                Swal.fire({ icon: 'error', title: 'Error', text: msg });
+            },
+            complete: function() {
+                btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Registrar Pago');
+            }
+        });
+    });
+}
+
+// ============================================================
+// PAGOS PENDIENTES
+// ============================================================
+
+var selectedPagos = {};
+
+function initPagosPendientesTable(config) {
+    pagosPendientesTable = $('#pagosPendientesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: config.ajaxUrl,
+        columns: [
+            { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false, className: 'text-center', width: '40px' },
+            { data: 'fecha_formatted', name: 'fecha_formatted', width: '130px' },
+            { data: 'numero_orden', name: 'numero_orden', width: '90px' },
+            { data: 'cliente_nombre', name: 'cliente.nombre' },
+            { data: 'monto_formatted', name: 'monto', className: 'text-end', width: '120px' },
+            { data: 'metodo_badge', name: 'metodo_pago', className: 'text-center', width: '120px' },
+            { data: 'referencia_pago', name: 'referencia_pago', defaultContent: '-' },
+            { data: 'registrado_por_nombre', name: 'registrado_por_nombre' },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '110px' }
+        ],
+        order: [[1, 'desc']],
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        drawCallback: function(settings) {
+            var total = settings._iRecordsTotal || 0;
+            $('#totalRegistros').text(total + ' registro' + (total !== 1 ? 's' : ''));
+            // Restaurar checkboxes seleccionados
+            restoreCheckboxes();
+        }
+    });
+
+    // Select All
+    $('#selectAllPagos').on('change', function() {
+        var checked = $(this).is(':checked');
+        $('.pago-checkbox').each(function() {
+            $(this).prop('checked', checked);
+            var id = $(this).val();
+            var monto = parseFloat($(this).data('monto'));
+            if (checked) {
+                selectedPagos[id] = monto;
+            } else {
+                delete selectedPagos[id];
+            }
+        });
+        updateBulkBar();
+    });
+
+    // Individual checkbox
+    $(document).on('change', '.pago-checkbox', function() {
+        var id = $(this).val();
+        var monto = parseFloat($(this).data('monto'));
+        if ($(this).is(':checked')) {
+            selectedPagos[id] = monto;
+        } else {
+            delete selectedPagos[id];
+        }
+        updateBulkBar();
+
+        // Update select all state
+        var total = $('.pago-checkbox').length;
+        var checked = $('.pago-checkbox:checked').length;
+        $('#selectAllPagos').prop('checked', total > 0 && total === checked);
+    });
+
+    // Aprobar individual
+    $(document).on('click', '.btn-aprobar-pago', function() {
+        var btn = $(this);
+        var pagoId = btn.data('pago-id');
+        var monto = btn.data('pago-monto');
+        var metodo = btn.data('pago-metodo');
+        var orden = btn.data('orden-numero');
+
+        Swal.fire({
+            title: 'Aprobar pago?',
+            html: '<div class="text-start">'
+                + '<div class="mb-2"><strong>Monto:</strong> $' + monto + '</div>'
+                + '<div class="mb-2"><strong>Metodo:</strong> ' + metodo + '</div>'
+                + '<div><strong>Orden:</strong> ' + orden + '</div>'
+                + '</div>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bi bi-check-lg me-1"></i>Aprobar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: config.aprobarUrl + '/' + pagoId + '/aprobar',
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': config.csrfToken },
+                    success: function(res) {
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'success',
+                            title: res.message || 'Pago aprobado',
+                            showConfirmButton: false, timer: 3000
+                        });
+                        delete selectedPagos[pagoId];
+                        updateBulkBar();
+                        pagosPendientesTable.draw(false);
+                    },
+                    error: function(xhr) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al aprobar.' });
+                    }
+                });
+            }
+        });
+    });
+
+    // Rechazar individual
+    $(document).on('click', '.btn-rechazar-pago', function() {
+        var btn = $(this);
+        var pagoId = btn.data('pago-id');
+        var monto = btn.data('pago-monto');
+        var orden = btn.data('orden-numero');
+
+        Swal.fire({
+            title: 'Rechazar pago?',
+            html: 'Se eliminara el pago de <strong>$' + monto + '</strong> de la orden <strong>' + orden + '</strong>.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bi bi-x-lg me-1"></i>Rechazar',
+            cancelButtonText: 'Cancelar'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: config.rechazarUrl + '/' + pagoId + '/rechazar',
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': config.csrfToken },
+                    success: function(res) {
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'success',
+                            title: res.message || 'Pago rechazado',
+                            showConfirmButton: false, timer: 3000
+                        });
+                        delete selectedPagos[pagoId];
+                        updateBulkBar();
+                        pagosPendientesTable.draw(false);
+                    },
+                    error: function(xhr) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al rechazar.' });
+                    }
+                });
+            }
+        });
+    });
+
+    // Aprobar seleccionados (bulk)
+    $('#btnAprobarSeleccionados').on('click', function() {
+        aprobarMasivo(config);
+    });
+
+    // Aprobar todos
+    $('#btnAprobarTodos').on('click', function() {
+        // Seleccionar todos los visibles primero
+        $('.pago-checkbox').each(function() {
+            $(this).prop('checked', true);
+            selectedPagos[$(this).val()] = parseFloat($(this).data('monto'));
+        });
+        updateBulkBar();
+        aprobarMasivo(config);
+    });
+}
+
+function aprobarMasivo(config) {
+    var ids = Object.keys(selectedPagos);
+    if (ids.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Sin seleccion', text: 'Seleccione al menos un pago para aprobar.' });
+        return;
+    }
+
+    var montoTotal = 0;
+    ids.forEach(function(id) { montoTotal += selectedPagos[id]; });
+
+    Swal.fire({
+        title: 'Aprobar ' + ids.length + ' pago(s)?',
+        html: 'Monto total: <strong>$' + formatNumber(montoTotal) + '</strong>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-check-all me-1"></i>Aprobar Todos',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: config.aprobarMasivoUrl,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': config.csrfToken },
+                data: { pago_ids: ids },
+                success: function(res) {
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success',
+                        title: res.message || 'Pagos aprobados',
+                        showConfirmButton: false, timer: 4000
+                    });
+                    selectedPagos = {};
+                    updateBulkBar();
+                    pagosPendientesTable.draw();
+                },
+                error: function(xhr) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al aprobar pagos.' });
+                }
+            });
+        }
+    });
+}
+
+function updateBulkBar() {
+    var ids = Object.keys(selectedPagos);
+    var count = ids.length;
+
+    if (count > 0) {
+        var montoTotal = 0;
+        ids.forEach(function(id) { montoTotal += selectedPagos[id]; });
+        $('#bulkCount').text(count);
+        $('#bulkMonto').text('$' + formatNumber(montoTotal));
+        $('#bulkBar').slideDown(200);
+    } else {
+        $('#bulkBar').slideUp(200);
+    }
+}
+
+function restoreCheckboxes() {
+    $('.pago-checkbox').each(function() {
+        var id = $(this).val();
+        if (selectedPagos[id] !== undefined) {
+            $(this).prop('checked', true);
+        }
+    });
+}
+
+// ============================================================
+// HISTORIAL FINANCIERO
+// ============================================================
+
+var historialFinancieroTable = null;
+
+function initHistorialFinancieroTable(config) {
+    historialFinancieroTable = $('#historialFinancieroTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: config.ajaxUrl,
+            data: function(d) {
+                d.numero_orden = $('#filtroNumeroOrden').val();
+                d.cliente = $('#filtroCliente').val();
+                d.estado_pago = $('#filtroEstadoPago').val();
+                d.fecha_desde = $('#filtroFechaDesde').val();
+                d.fecha_hasta = $('#filtroFechaHasta').val();
+            }
+        },
+        columns: [
+            { data: 'numero_orden', name: 'numero_orden', width: '80px' },
+            { data: 'cliente_nombre', name: 'cliente.nombre' },
+            { data: 'fecha_creacion', name: 'created_at', width: '95px' },
+            { data: 'total_formatted', name: 'total', className: 'text-end', width: '100px' },
+            { data: 'pagado_formatted', name: 'total_pagado', className: 'text-end', width: '100px' },
+            { data: 'saldo_formatted', name: 'saldo', className: 'text-end', width: '100px' },
+            { data: 'porcentaje_pagado', name: 'porcentaje_pagado', orderable: false, searchable: false, className: 'text-center', width: '70px' },
+            { data: 'estado_pago_badge', name: 'estado_pago', className: 'text-center', width: '110px' },
+            { data: 'num_pagos', name: 'pagos_count', orderable: false, searchable: false, className: 'text-center', width: '60px' },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '90px' }
+        ],
+        order: [[2, 'desc']],
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        drawCallback: function(settings) {
+            var total = settings._iRecordsTotal || 0;
+            $('#totalRegistros').text(total + ' registro' + (total !== 1 ? 's' : ''));
+        }
+    });
+
+    // Filtros
+    $('#btnFiltrarHistorial').on('click', function() {
+        historialFinancieroTable.draw();
+    });
+
+    $('#btnLimpiarHistorial').on('click', function() {
+        $('#filtroNumeroOrden, #filtroCliente, #filtroFechaDesde, #filtroFechaHasta').val('');
+        $('#filtroEstadoPago').val('todos');
+        historialFinancieroTable.draw();
+    });
+
+    // Enter para filtrar
+    $('#filtroNumeroOrden, #filtroCliente').on('keypress', function(e) {
+        if (e.which === 13) historialFinancieroTable.draw();
+    });
+
+    // Ver pagos de una orden (modal)
+    $(document).on('click', '.btn-ver-pagos', function() {
+        var btn = $(this);
+        var ordenId = btn.data('orden-id');
+        var ordenNumero = btn.data('orden-numero');
+
+        $('#modalOrdenNumero').text(ordenNumero);
+        $('#modalResumenContainer').html('');
+        $('#modalPagosContainer').html(
+            '<div class="text-center py-4">' +
+            '<div class="spinner-border text-primary" role="status"></div>' +
+            '<div class="mt-2 text-muted">Cargando pagos...</div>' +
+            '</div>'
+        );
+        $('#modalHistorialPagos').modal('show');
+
+        $.ajax({
+            url: config.pagosUrl + '/' + ordenId + '/pagos',
+            method: 'GET',
+            headers: { 'X-CSRF-TOKEN': config.csrfToken },
+            success: function(res) {
+                // Resumen
+                var estadoBadge = '';
+                if (res.orden.estado_pago === 'pagada') {
+                    estadoBadge = '<span class="badge bg-success">PAGADA</span>';
+                } else if (res.pagos.length > 0) {
+                    estadoBadge = '<span class="badge bg-danger">SALDO PEND.</span>';
+                } else {
+                    estadoBadge = '<span class="badge bg-secondary">SIN PAGOS</span>';
+                }
+
+                $('#modalResumenContainer').html(
+                    '<div class="alert alert-light border mb-3">' +
+                    '<div class="d-flex justify-content-between align-items-center mb-2">' +
+                    '<span class="fw-semibold">' + res.orden.cliente + '</span>' +
+                    estadoBadge +
+                    '</div>' +
+                    '<div class="d-flex gap-3 flex-wrap">' +
+                    '<span class="small"><strong>Total:</strong> ' + res.orden.total + '</span>' +
+                    '<span class="small text-success"><strong>Pagado:</strong> ' + res.orden.total_pagado + '</span>' +
+                    '<span class="small text-danger"><strong>Saldo:</strong> ' + res.orden.saldo + '</span>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                // Tabla de pagos
+                if (res.pagos.length === 0) {
+                    $('#modalPagosContainer').html(
+                        '<div class="text-center py-4 text-muted">' +
+                        '<i class="bi bi-inbox fs-1 d-block mb-2"></i>' +
+                        'Esta orden no tiene pagos registrados.' +
+                        '</div>'
+                    );
+                    return;
+                }
+
+                var html = '<div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">';
+                html += '<thead class="table-light"><tr>';
+                html += '<th>#</th><th>Fecha</th><th class="text-end">Monto</th><th class="text-center">Metodo</th>';
+                html += '<th>Referencia</th><th>Registrado Por</th><th class="text-center">Estado</th>';
+                html += '</tr></thead><tbody>';
+
+                for (var i = 0; i < res.pagos.length; i++) {
+                    var p = res.pagos[i];
+                    var estadoPago = p.aprobado
+                        ? '<span class="badge bg-success bg-opacity-10 text-success border">Aprobado</span>'
+                        : '<span class="badge bg-warning bg-opacity-10 text-dark border">Pendiente</span>';
+
+                    if (p.aprobado && p.aprobado_por) {
+                        estadoPago += '<br><small class="text-muted">por ' + p.aprobado_por + '</small>';
+                    }
+
+                    html += '<tr>';
+                    html += '<td class="text-muted">' + (i + 1) + '</td>';
+                    html += '<td>' + p.fecha + '</td>';
+                    html += '<td class="text-end fw-semibold">' + p.monto + '</td>';
+                    html += '<td class="text-center">' + p.metodo_badge + '</td>';
+                    html += '<td class="small">' + p.referencia_pago + '</td>';
+                    html += '<td class="small">' + p.registrado_por + '</td>';
+                    html += '<td class="text-center">' + estadoPago + '</td>';
+                    html += '</tr>';
+                }
+
+                html += '</tbody></table></div>';
+                $('#modalPagosContainer').html(html);
+            },
+            error: function() {
+                $('#modalPagosContainer').html(
+                    '<div class="alert alert-danger">' +
+                    '<i class="bi bi-exclamation-triangle me-2"></i>Error al cargar los pagos.' +
+                    '</div>'
+                );
+            }
+        });
+    });
+}
+
+function formatNumber(num) {
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}

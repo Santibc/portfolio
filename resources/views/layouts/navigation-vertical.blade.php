@@ -25,10 +25,17 @@
             </a>
         </div>
 
-        <div class="nav-item disabled-nav">
-            <a href="#" class="nav-link text-muted" title="Disponible en Fase 8">
+        <div class="nav-item {{ request()->routeIs('recepcion.entregas-pendientes') || (request()->routeIs('recepcion.entregas.*') && !request()->routeIs('recepcion.entregas.historial')) ? 'active' : '' }}">
+            <a href="{{ route('recepcion.entregas-pendientes') }}" class="nav-link">
                 <i class="bi bi-box-seam"></i>
                 <span>Entregas Pendientes</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('recepcion.entregas.historial') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.entregas.historial') }}" class="nav-link">
+                <i class="bi bi-clock-history"></i>
+                <span>Historial Entregas</span>
             </a>
         </div>
 
@@ -106,10 +113,24 @@
         {{-- SECCION FINANZAS --}}
         <div class="nav-section-title">Finanzas</div>
 
-        <div class="nav-item disabled-nav">
-            <a href="#" class="nav-link text-muted" title="Disponible en Fase 9">
+        <div class="nav-item {{ request()->routeIs('contabilidad.ordenes-pendientes') ? 'active' : '' }}">
+            <a href="{{ route('contabilidad.ordenes-pendientes') }}" class="nav-link">
                 <i class="bi bi-cash-coin"></i>
                 <span>Ordenes Pendientes</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('contabilidad.historial-financiero') ? 'active' : '' }}">
+            <a href="{{ route('contabilidad.historial-financiero') }}" class="nav-link">
+                <i class="bi bi-journal-text"></i>
+                <span>Historial Financiero</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('contabilidad.pagos-pendientes') ? 'active' : '' }}">
+            <a href="{{ route('contabilidad.pagos-pendientes') }}" class="nav-link">
+                <i class="bi bi-hourglass-split"></i>
+                <span>Pagos por Aprobar</span>
             </a>
         </div>
 

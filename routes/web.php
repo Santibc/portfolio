@@ -6,6 +6,8 @@ use App\Http\Controllers\CatalogoItemController;
 use App\Http\Controllers\BosquejoMatrizController;
 use App\Http\Controllers\OrdenController;
 use App\Http\Controllers\OperarioController;
+use App\Http\Controllers\EntregaController;
+use App\Http\Controllers\ContabilidadController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\RoleRedirectController;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +83,16 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::post('/ordenes/{orden}/anular', [OrdenController::class, 'anular'])->name('ordenes.anular');
         Route::post('/ordenes/{orden}/comentarios', [OrdenController::class, 'agregarComentario'])->name('ordenes.comentarios.store');
         Route::post('/ordenes/{orden}/pagos', [OrdenController::class, 'agregarPago'])->name('ordenes.pagos.store');
+
+        // Entregas Pendientes
+        Route::get('/entregas-pendientes', [EntregaController::class, 'pendientes'])->name('entregas-pendientes');
+        Route::get('/entregas-pendientes/{orden}/flujo', [EntregaController::class, 'flujo'])->name('entregas.flujo');
+        Route::post('/entregas-pendientes/{orden}/entregar', [EntregaController::class, 'entregarPiezas'])->name('entregas.entregar');
+        Route::post('/entregas-pendientes/{orden}/entrega-rapida', [EntregaController::class, 'entregaRapida'])->name('entregas.entrega-rapida');
+        Route::post('/entregas-pendientes/{orden}/foto-entrega', [EntregaController::class, 'subirFotoEntrega'])->name('entregas.foto-entrega');
+
+        // Historial de Entregas
+        Route::get('/entregas-historial', [EntregaController::class, 'historial'])->name('entregas.historial');
     });
 
 // ==========================================
@@ -147,9 +159,35 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
     ->prefix('contabilidad')->name('contabilidad.')->group(function () {
-        Route::get('/panel', function () {
-            return view('contabilidad.panel');
-        })->name('panel');
+        // Panel
+        Route::get('/panel', [ContabilidadController::class, 'panel'])->name('panel');
+
+        // Ordenes con saldo pendiente
+        Route::get('/ordenes-pendientes', [ContabilidadController::class, 'ordenesPendientes'])->name('ordenes-pendientes');
+
+        // Historial financiero (todas las ordenes)
+        Route::get('/historial-financiero', [ContabilidadController::class, 'historialFinanciero'])->name('historial-financiero');
+
+        // Ver orden (solo lectura, reutiliza vista de recepcion)
+        Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
+
+        // Pagos de una orden (JSON para modal)
+        Route::get('/ordenes/{orden}/pagos', [ContabilidadController::class, 'pagosOrden'])->name('ordenes.pagos.index');
+
+        // Agregar pago a orden (auto-aprobado)
+        Route::post('/ordenes/{orden}/pagos', [ContabilidadController::class, 'agregarPago'])->name('ordenes.pagos.store');
+
+        // Pagos pendientes de aprobacion
+        Route::get('/pagos-pendientes', [ContabilidadController::class, 'pagosPendientes'])->name('pagos-pendientes');
+
+        // Aprobar pagos masivo (ANTES de ruta con parametro)
+        Route::post('/pagos/aprobar-masivo', [ContabilidadController::class, 'aprobarPagosMasivo'])->name('pagos.aprobar-masivo');
+
+        // Aprobar pago individual
+        Route::post('/pagos/{pago}/aprobar', [ContabilidadController::class, 'aprobarPago'])->name('pagos.aprobar');
+
+        // Rechazar pago pendiente
+        Route::delete('/pagos/{pago}/rechazar', [ContabilidadController::class, 'rechazarPago'])->name('pagos.rechazar');
 
         // Catalogo Items (solo lectura)
         Route::get('/items', [CatalogoItemController::class, 'index'])->name('items.index');

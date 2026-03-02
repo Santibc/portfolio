@@ -67,6 +67,11 @@ class OrdenService
             $orden->update(['ruta_firma_cliente' => $ruta]);
         }
 
+        // Preservar/crear asignacion de operario para ordenes ya generadas
+        if ($orden->estado_trabajo !== 'borrador' && !empty($data['operario_id'])) {
+            $this->actualizarAsignacionOperario($orden, (int) $data['operario_id'], $user);
+        }
+
         // Recalcular totales
         $this->estadoService->recalcularTotales($orden);
         $orden->save();
@@ -478,6 +483,31 @@ class OrdenService
         file_put_contents("{$firmaPath}/{$fileName}", $imageData);
 
         return "uploads/ordenes/{$orden->id}/firma/{$fileName}";
+    }
+
+    /**
+     * Actualiza la asignacion de operario en piezas de una orden ya generada.
+     * Se usa al editar ordenes que ya pasaron de borrador.
+     */
+    protected function actualizarAsignacionOperario(Orden $orden, int $operarioId, User $asignadoPor): void
+    {
+        $piezas = $orden->piezas()->get();
+
+        foreach ($piezas as $pieza) {
+            $pieza->update(['operario_actual_id' => $operarioId]);
+
+            // Recrear asignacion (las anteriores se eliminaron por CASCADE al sincronizar piezas)
+            AsignacionPieza::create([
+                'orden_pieza_id' => $pieza->id,
+                'orden_id' => $orden->id,
+                'asignado_desde_id' => null,
+                'asignado_a_id' => $operarioId,
+                'asignado_por_id' => $asignadoPor->id,
+                'tipo_asignacion' => 'inicial',
+                'porcentaje_al_asignar' => $pieza->porcentaje_avance ?? 0,
+                'activa' => true,
+            ]);
+        }
     }
 
     /**

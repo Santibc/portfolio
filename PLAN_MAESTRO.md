@@ -807,9 +807,9 @@ tabla_precios_servicios (independiente)
 | 4 | FASE 4 | Bosquejos Matriz | **Completado** | Mod 4 |
 | 5 | FASE 5 | Ordenes - Creacion (Wizard) | **Completado** | Mod 5, 6 |
 | 6 | FASE 6 | Ordenes - Busqueda y Gestion | **Completado** | Mod 7 |
-| 7 | FASE 7 | Flujo del Operario | Pendiente | Mod 9 |
-| 8 | FASE 8 | Entregas | Pendiente | Mod 8 |
-| 9 | FASE 9 | Contabilidad | Pendiente | Mod 10 |
+| 7 | FASE 7 | Flujo del Operario | **Completado** | Mod 9 |
+| 8 | FASE 8 | Entregas | **Completado** | Mod 8 |
+| 9 | FASE 9 | Contabilidad | **Completado** | Mod 10 |
 | 10 | FASE 10 | PDF Imprimible (3 hojas) | Pendiente | Mod 11 |
 | 11 | FASE 11 | Garantias | Pendiente | Mod 5.11 |
 | 12 | FASE 12 | Tabla de Precios Parametrica | Pendiente | Mod 12 |
@@ -1251,83 +1251,149 @@ Se realizo reunion con el cliente quien reviso los modulos completados (Fases 0-
 
 ---
 
-### FASE 7: Flujo del Operario
+### FASE 7: Flujo del Operario ✅
 
 > **Objetivo:** Dashboard, vista de trabajo por pieza, transferencias, complementar ordenes.
 
-**Archivos a crear:**
-- `app/Http/Controllers/Operario/PanelController.php`
-- `app/Http/Controllers/Operario/OrdenTrabajoController.php`
-- `app/Services/PiezaService.php`
-- `resources/views/operario/panel.blade.php`
-- `resources/views/operario/ordenes-asignadas.blade.php`
-- `resources/views/operario/orden-trabajo.blade.php`
-- `resources/views/operario/buscar.blade.php`
-- `resources/views/operario/complementar.blade.php`
-- `public/js/operario-trabajo.js`
+**Archivos creados/modificados:**
+- `app/Http/Controllers/OperarioController.php` (17 metodos: panel, ordenes, trabajo, AJAX, bloqueo)
+- `app/Services/OperarioPiezaService.php` (actualizarAvances, transferir, dejarEnCola, tomar, subirFoto, stats)
+- `app/Services/BloqueoService.php` (bloquear, desbloquear, heartbeat, forzarCierre, verificar)
+- `resources/views/operario/panel.blade.php` (reescrito con stats reales + quick-actions)
+- `resources/views/operario/ordenes-asignadas.blade.php` (DataTable server-side)
+- `resources/views/operario/trabajar.blade.php` (piezas, sliders, fotos, transferir, historial)
+- `resources/views/operario/buscar.blade.php` (busqueda por numero, solo lectura)
+- `resources/views/operario/complementar.blade.php` (DataTable cola general, boton tomar)
+- `public/js/operario-trabajo.js` (sliders, fotos, heartbeat, inactividad, force-close)
+- `public/css/sinden-components.css` (estilos pieza-trabajo, lock-banner, progress-multi, quick-actions)
+- `resources/views/layouts/navigation-vertical.blade.php` (3 links activos: Ordenes Asignadas, Buscar, Complementar)
+- `routes/web.php` (17 rutas operario: GET paginas + POST AJAX)
+- `app/Http/Controllers/OrdenController.php` (bloqueo integrado en edit())
+
+**Notas de implementacion:**
+- Se uso un unico OperarioController en vez de dos controllers separados
+- Bloqueo permite multiples operarios simultaneos en la misma orden (cada uno edita sus propias piezas)
+- lockForUpdate() en tomarPieza() para prevenir race conditions
+- navigator.sendBeacon para liberar bloqueo al cerrar pestana
+- Heartbeat cada 30s, force-close check cada 10s
+- Inactividad: warning al 80% del timeout, auto-cierre al 100%
 
 **Checklist:**
-- [ ] Dashboard: 5 widgets (ordenes asignadas, piezas en proceso, pendientes complementar, usuario, fecha)
-- [ ] Menu operario (6 opciones segun spec)
-- [ ] Vista ordenes asignadas (solo con asignaciones activas del operario)
-- [ ] Vista trabajo por pieza: nombre, especificacion, historial visual, barra progreso multi-color por operario, campo actualizar %
-- [ ] Porcentaje puede SUBIR y BAJAR libremente. Si baja: notificacion + registro `pieza.avance_disminuido`
-- [ ] Adjuntar foto con preview: "Esta bien la foto?" -> Aceptar/Repetir
-- [ ] Boton ACTUALIZAR ORDEN con 3 tipos de confirmacion segun caso
-- [ ] Transferir pieza a otro operario (dropdown + notas opcionales)
-- [ ] Dejar pieza en cola general (operario_actual_id = NULL)
-- [ ] Buscar orden por numero (vista solo lectura)
-- [ ] Complementar: tabla piezas sin operario, boton TOMAR PIEZA
-- [ ] Bloqueo: registrar bloqueada_por/bloqueada_en al abrir
-- [ ] Cierre por inactividad (polling, 10 min configurable)
-- [ ] Forzar cierre por rango mayor (temporizador 60s, guarda progreso)
-- [ ] Rutas: `/operario/*`
-- [ ] Agregar al menu lateral
+- [x] Dashboard: 4 stat-cards (ordenes asignadas, piezas en proceso, para complementar, completadas hoy) + fecha/usuario
+- [x] Menu operario (Ordenes Asignadas, Buscar Orden, Complementar Ordenes + Mis Actividades deshabilitado)
+- [x] Vista ordenes asignadas (DataTable server-side, solo ordenes con piezas del operario)
+- [x] Vista trabajo por pieza: bosquejo thumbnail, nombre/spec/material/calibre, barra progreso multi-color, slider+input sincronizados
+- [x] Porcentaje puede SUBIR y BAJAR libremente. Si baja: notificacion + registro `pieza.avance_disminuido`
+- [x] Adjuntar foto con preview: "Esta bien la foto?" -> Aceptar/Repetir (SweetAlert)
+- [x] Boton ACTUALIZAR ORDEN con 3 tipos de confirmacion (sin cambios / algunas al 100% / todas al 100% = Orden Ejecutada)
+- [x] Transferir pieza a otro operario (modal con dropdown + notas opcionales)
+- [x] Dejar pieza en cola general (operario_actual_id = NULL, SweetAlert confirmacion)
+- [x] Buscar orden por numero (vista solo lectura con piezas, progreso, historial)
+- [x] Complementar: DataTable piezas sin operario, boton TOMAR PIEZA con confirmacion
+- [x] Bloqueo: registrar bloqueada_por/bloqueada_en al abrir (shared entre operarios)
+- [x] Cierre por inactividad (polling, configurable via timeout_inactividad_operario)
+- [x] Forzar cierre por rango mayor (temporizador configurable, countdown SweetAlert, auto-save)
+- [x] Rutas: `/operario/*` (17 rutas con middleware role:Administrador|Operario)
+- [x] Agregar al menu lateral (3 links activos con highlight condicional)
 
 ---
 
-### FASE 8: Entregas
+### FASE 8: Entregas ✅ COMPLETADO (2026-02-24, mejorado 2026-02-25)
 
-> **Objetivo:** Flujo de entrega de piezas completadas al cliente.
+> **Objetivo:** Flujo de entrega de piezas completadas al cliente + historial de entregas.
 
-**Archivos a crear:**
-- `app/Http/Controllers/EntregaController.php`
-- `resources/views/entregas/pendientes.blade.php`
-- `resources/views/entregas/flujo.blade.php`
+**Archivos creados:**
+- `app/Http/Controllers/EntregaController.php` - 6 metodos (pendientes, flujo, entregarPiezas, entregaRapida, subirFotoEntrega, historial) + 2 badge helpers
+- `resources/views/entregas/pendientes.blade.php` - DataTable server-side Yajra, 4 stat-cards, boton entrega rapida
+- `resources/views/entregas/flujo.blade.php` - Vista unica 2 columnas con Alpine.js (tabla piezas + foto/boton inline)
+- `resources/views/entregas/historial.blade.php` - DataTable server-side historial de piezas entregadas, 3 stat-cards
+
+**Archivos modificados:**
+- `routes/web.php` - 6 rutas nuevas bajo grupo recepcion (entregas-pendientes, flujo, entregar, entrega-rapida, foto-entrega, entregas-historial)
+- `resources/views/layouts/navigation-vertical.blade.php` - Links "Entregas Pendientes" y "Historial Entregas" activos
+
+**Rutas creadas:**
+- `GET /recepcion/entregas-pendientes` → pendientes (DataTable server-side via AJAX)
+- `GET /recepcion/entregas-pendientes/{orden}/flujo` → flujo (vista unica 2 columnas)
+- `POST /recepcion/entregas-pendientes/{orden}/entregar` → entregarPiezas (AJAX, recibe pieza_ids[])
+- `POST /recepcion/entregas-pendientes/{orden}/entrega-rapida` → entregaRapida (AJAX, todas las piezas al 100%)
+- `POST /recepcion/entregas-pendientes/{orden}/foto-entrega` → subirFotoEntrega (AJAX, FormData)
+- `GET /recepcion/entregas-historial` → historial (DataTable server-side via AJAX)
+
+**Notas tecnicas:**
+- Stat cards pendientes: Total Pendientes (primary), Piezas Listas (success), Entregadas Hoy (success, entregada_en = hoy), Entregas Vencidas (danger, fecha_entrega < hoy)
+- Stat cards historial: Total Entregadas (primary), Entregadas Hoy (success), Ultimos 7 Dias (info)
+- "Entregadas Hoy" cuenta piezas realmente entregadas hoy (entregada_en = today), NO la fecha pronosticada (fecha_entrega)
+- "Entregas Vencidas" cuenta ordenes cuya fecha pronosticada (fecha_entrega) ya paso y aun tienen piezas sin entregar
+- DataTable query pendientes: `Orden::whereHas('piezas', fn => porcentaje>=100 AND !entregada)->whereNotIn(borrador, anulada)`
+- DataTable query historial: `OrdenPieza::where('entregada', true)->with(['orden.cliente', 'entregadaPorUsuario'])`
+- Flujo simplificado: vista unica con layout 2 columnas (col-lg-8 tabla piezas | col-lg-4 foto + boton entregar)
+- Flujo reducido de 4-6 clicks (wizard 3 pasos) a 2-3 clicks (seleccionar + entregar + confirmar SweetAlert)
+- Foto de entrega: sube a `public/uploads/ordenes/{id}/fotos/entrega_{timestamp}_{rand}.{ext}`, tipo_foto='entrega', orden_pieza_id=null
+- `entregarPiezas()` usa DB::beginTransaction, valida pieza pertenece a la orden, porcentaje >= 100, no entregada
+- Recalculo via `$estadoService->recalcularTodo($orden)` actualiza estado_entrega, estado_trabajo, estado_pago
+- Badge helpers copiados de OrdenController (badgeEstadoTrabajo, badgeEstadoEntrega) para independencia
+- Fechas vencidas se muestran en rojo (text-danger fw-semibold), entregas hoy en amarillo (text-warning fw-semibold)
+- Historial: columnas Fecha Entrega, Orden# (link a detalle), Cliente, Pieza, Cantidad, Material, Calibre, Entregado Por
+- Historial: filterable por numero_orden y cliente_nombre, ordenable por fecha_entrega_formatted
 
 **Checklist:**
-- [ ] Lista ordenes pendientes (piezas al 100% no entregadas)
-- [ ] Tabla: Orden#, Cliente, Fecha Entrega, Piezas Listas (X de Y), Estados, Acciones
-- [ ] Flujo normal: Paso 1 (checkboxes piezas) -> Paso 2 (foto entrega) -> Paso 3 (confirmar)
-- [ ] Entrega rapida: 1 click confirma todas las completadas
-- [ ] Marcar piezas como entregadas (entregada=true, entregada_en, entregada_por)
-- [ ] Recalcular estado_entrega de la orden
-- [ ] Registrar actividad `pieza.entregada`
-- [ ] Rutas: `/recepcion/entregas-pendientes`
-- [ ] Agregar al menu lateral
+- [x] Lista ordenes pendientes (piezas al 100% no entregadas)
+- [x] Tabla: Orden#, Cliente, Fecha Entrega, Piezas Listas (X de Y), Estados, Acciones
+- [x] Flujo simplificado: vista unica 2 columnas (tabla piezas + foto/boton inline), 2-3 clicks
+- [x] Boton "Entregar Todas" visible cuando hay mas de 1 pieza sin seleccionar
+- [x] Entrega rapida desde listado: 1 click confirma todas las completadas
+- [x] Marcar piezas como entregadas (entregada=true, entregada_en, entregada_por, estado='entregada')
+- [x] Recalcular estado_entrega de la orden (via OrdenEstadoService::recalcularTodo)
+- [x] Registrar actividad `pieza.entregada` (una por cada pieza entregada)
+- [x] Historial de entregas: DataTable con piezas entregadas, 3 stat cards, busqueda por orden/cliente
+- [x] Rutas: `/recepcion/entregas-pendientes` (5 rutas) + `/recepcion/entregas-historial` (1 ruta)
+- [x] Agregar al menu lateral: "Entregas Pendientes" y "Historial Entregas" con highlights independientes
+
+**Verificacion realizada (2026-02-25):**
+- [x] Login como recepcion@sinden.com - links "Entregas Pendientes" y "Historial Entregas" activos en menu lateral
+- [x] Stat cards pendientes pre-entrega: Pendientes=1, Piezas=1, Entregadas Hoy=0, Vencidas=1 (fecha_entrega=20/02 < hoy)
+- [x] Stat cards pendientes post-entrega: Pendientes=0, Piezas=0, Entregadas Hoy=1, Vencidas=0
+- [x] DataTable pendientes: #0004, Cliente Mostrador, 20/02/2026 (rojo por vencida), 1 de 1, EJECUTADA, botones Entregar y Entrega Rapida
+- [x] Flujo simplificado: vista unica 2 columnas, tabla con Pieza A (1, INOX, #18), checkbox funcional, contador "0 de 1"
+- [x] Seleccionar pieza: fila resaltada verde, contador "1 de 1", boton "Entregar 1 Pieza(s)" habilitado
+- [x] Area foto inline visible sin cambiar de paso, boton "Entregar Todas" visible
+- [x] Click Entregar -> SweetAlert confirmacion "Se entregaran 1 pieza(s) al cliente"
+- [x] Confirmar -> SweetAlert exito "1 pieza(s) entregada(s) exitosamente" -> redirect a pendientes
+- [x] Historial: DataTable con 1 registro - 24/02/2026 18:31, #0004 (link), Cliente Mostrador, Pieza A, 1, INOX, #18, Usuario Recepcion
+- [x] Stat cards historial: Total Entregadas=1, Entregadas Hoy=1, Ultimos 7 Dias=1
+- [x] Navegacion: highlight independiente para cada vista (Entregas Pendientes vs Historial Entregas)
 
 ---
 
-### FASE 9: Contabilidad
+### FASE 9: Contabilidad ✅ COMPLETADO (2026-02-25)
 
 > **Objetivo:** Dashboard contable, aprobar pagos, gestionar saldos.
 
-**Archivos a crear:**
-- `app/Http/Controllers/Contabilidad/PanelController.php`
-- `app/Http/Controllers/Contabilidad/PagoController.php`
-- `resources/views/contabilidad/panel.blade.php`
-- `resources/views/contabilidad/ordenes-pendientes.blade.php`
+**Archivos creados:**
+- `app/Http/Controllers/ContabilidadController.php` (8 metodos: panel, ordenesPendientes, pagosPendientes, aprobarPago, aprobarPagosMasivo, agregarPago, rechazarPago + badge helpers)
+- `resources/views/contabilidad/panel.blade.php` (dashboard con stat-cards clickeables, ultimos pagos, recaudo por metodo, acciones rapidas)
+- `resources/views/contabilidad/ordenes-pendientes.blade.php` (DataTable server-side con filtros, modal agregar pago)
+- `resources/views/contabilidad/pagos-pendientes.blade.php` (DataTable con checkboxes, aprobacion individual/masiva, rechazo, barra sticky)
+- `public/js/contabilidad.js` (DataTables, AJAX aprobaciones, pagos inline, seleccion masiva)
+
+**Archivos modificados:**
+- `routes/web.php` (8 rutas contabilidad: panel, ordenes-pendientes, pagos CRUD, aprobar-masivo)
+- `resources/views/layouts/navigation-vertical.blade.php` (seccion Finanzas con Ordenes Pendientes + Pagos por Aprobar)
 
 **Checklist:**
-- [ ] Dashboard: 3 widgets (ordenes con saldo pendiente, abonos por aprobar, total pendiente por cobrar)
-- [ ] Vista ordenes pendientes con filtros
-- [ ] Aprobar pagos: boton por cada pago no aprobado
-- [ ] Agregar abono inline (monto + metodo + referencia, se auto-aprueba)
-- [ ] Al aprobar: recalcular total_pagado, saldo, estado_pago
-- [ ] Resumen por categoria al pie
-- [ ] Acceso a catalogo items (`/contabilidad/items`)
-- [ ] Rutas: `/contabilidad/*`
-- [ ] Agregar al menu lateral
+- [x] Dashboard: 4 stat-cards clickeables + recaudo por metodo + ultimos pagos aprobados + acciones rapidas
+- [x] Vista ordenes pendientes con filtros (numero, cliente, fechas) + DataTable server-side
+- [x] Aprobar pagos: individual (1 click + confirmacion) y masivo (checkboxes + barra sticky)
+- [x] Rechazar pagos pendientes (elimina pago incorrecto de Recepcion)
+- [x] Agregar abono via modal (monto + metodo + referencia, auto-aprobado por Contabilidad)
+- [x] Al aprobar/agregar: recalcular total_pagado, saldo, estado_pago via OrdenEstadoService
+- [x] Progress bar % pagado en DataTable ordenes
+- [x] Badges metodo de pago con colores (efectivo=verde, nequi=morado, transferencia=azul, tarjeta=amarillo)
+- [x] Acceso a catalogo items (`/contabilidad/items`) - solo lectura
+- [x] Rutas: `/contabilidad/*` (8 rutas)
+- [x] Menu lateral actualizado (Finanzas: Ordenes Pendientes, Pagos por Aprobar, Items)
+- [x] Optimizado para tablet: botones min 44px, targets touch-friendly, operaciones AJAX sin recarga
 
 ---
 
