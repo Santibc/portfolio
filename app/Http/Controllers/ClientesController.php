@@ -155,7 +155,7 @@ HTML;
             'pais_id' => ['required', 'exists:paises,id'],
             'departamento_id' => ['required', 'exists:departamentos,id'],
             'ciudad_id' => ['required', 'exists:ciudades,id'],
-            'vendedor_id' => ['nullable', 'exists:users,id'],
+            'vendedor_id' => ['required', 'exists:users,id'],
             'lista_precio_id' => ['required', 'exists:listas_precios,id'],
             'valor_flete' => ['nullable', 'numeric', 'min:0'],
             'aplica_flete' => ['nullable', 'boolean'],
