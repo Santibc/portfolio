@@ -10,7 +10,7 @@
             color: #333;
             margin: 0;
             padding: 20px;
-            line-height: 1.0;
+            line-height: 1.2;
         }
         .header {
             text-align: center;
@@ -24,14 +24,14 @@
             font-size: 24px;
         }
         .header p {
-            margin: 1px 0 0;
+            margin: 2px 0 0;
             color: #666;
         }
         .info-box {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 5px;
-            padding: 5px 15px;
+            padding: 8px 15px;
             margin-bottom: 10px;
         }
         .info-label {
@@ -44,7 +44,7 @@
             display: inline;
         }
         .info-row {
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
         .badge {
             display: inline-block;
@@ -68,12 +68,12 @@
         .detail-table th {
             background-color: #0d6efd;
             color: white;
-            padding: 3px 10px;
+            padding: 5px 10px;
             text-align: left;
             font-weight: bold;
         }
         .detail-table td {
-            padding: 2px 10px;
+            padding: 4px 10px;
             border-bottom: 1px solid #dee2e6;
         }
         .detail-table tr:nth-child(even) {
