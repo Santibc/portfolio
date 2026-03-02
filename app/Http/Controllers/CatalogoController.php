@@ -77,7 +77,7 @@ class CatalogoController extends Controller
             'cliente_id' => 'required|exists:clientes,id'
         ]);
 
-        $cliente = Cliente::findOrFail($request->cliente_id);
+        $cliente = Cliente::with('sucursalesActivas')->findOrFail($request->cliente_id);
 
         $categorias = Categoria::activas()->get();
         $enlace = null; // No hay enlace en el flujo B
@@ -427,7 +427,8 @@ class CatalogoController extends Controller
             'items.*.variante_id' => 'nullable|exists:variantes_productos,id',
             'items.*.observacion' => 'nullable|string|max:500',
             'notas_cliente' => 'nullable|string|max:1000',
-            'observaciones_vendedor' => 'nullable|string|max:1000'
+            'observaciones_vendedor' => 'nullable|string|max:1000',
+            'sucursal_id' => 'nullable|exists:sucursales,id'
         ]);
         
         DB::beginTransaction();
@@ -498,6 +499,7 @@ class CatalogoController extends Controller
             // Crear solicitud
             $solicitud = new SolicitudCotizacion([
                 'cliente_id' => $cliente->id,
+                'sucursal_id' => $request->sucursal_id,
                 'enlace_acceso_id' => $enlace ? $enlace->id : null,
                 'created_by' => Auth::check() ? Auth::id() : null,
                 'estado' => 'aplicada',

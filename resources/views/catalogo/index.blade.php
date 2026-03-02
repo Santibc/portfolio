@@ -353,10 +353,37 @@
     </div>
   </div>
   <div class="p-4 border-top flex-shrink-0">
+    @if($cliente->aplica_flete && $cliente->valor_flete > 0)
+    <div class="mb-2">
+      <div class="d-flex justify-content-between">
+        <span>Subtotal:</span>
+        <span id="cartSubtotal">$0.00</span>
+      </div>
+      <div class="d-flex justify-content-between text-success">
+        <span><i class="bi bi-truck me-1"></i>Flete:</span>
+        <span>${{ number_format($cliente->valor_flete, 0, ',', '.') }}</span>
+      </div>
+    </div>
+    @endif
     <div class="d-flex justify-content-between mb-3">
       <strong>Total:</strong>
       <strong id="cartTotal">$0.00</strong>
     </div>
+    @if($cliente->sucursalesActivas && $cliente->sucursalesActivas->count() > 0)
+    <div class="mb-3">
+      <label class="form-label small fw-bold mb-1">
+        <i class="bi bi-building me-1"></i>Sucursal de entrega
+      </label>
+      <select class="form-select form-select-sm" id="selectSucursal">
+        <option value="">-- Seleccionar sucursal --</option>
+        @foreach($cliente->sucursalesActivas as $sucursal)
+          <option value="{{ $sucursal->id }}" {{ $sucursal->es_principal ? 'selected' : '' }}>
+            {{ $sucursal->nombre }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+    @endif
     <button class="btn btn-success w-100" id="btnFinalizarSolicitud" disabled>
       <i class="bi bi-check-circle"></i> Finalizar Cotización
     </button>
@@ -481,7 +508,13 @@
         $('#btnFinalizarSolicitud').prop('disabled',false);
       }
       $('#cartItems').html(itemsHtml);
-      $('#cartTotal').text(mostrarPrecios? total.toFixed(2):'N/A');
+      @if($cliente->aplica_flete && $cliente->valor_flete > 0)
+      const valorFlete = {{ $cliente->valor_flete }};
+      $('#cartSubtotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total) : 'N/A');
+      $('#cartTotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total + valorFlete) : 'N/A');
+      @else
+      $('#cartTotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total) : 'N/A');
+      @endif
       $('#cartCount').text(carrito.reduce((s,i)=>s+i.cantidad,0))
                     .toggle(!!carrito.length);
       localStorage.setItem('carrito_'+clienteId, JSON.stringify(carrito));
@@ -1182,7 +1215,8 @@ window.cargarProductos = function(page=1){
       }));
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,
-        enlace_token:enlaceToken,items,observaciones_vendedor:notas
+        enlace_token:enlaceToken,items,observaciones_vendedor:notas,
+        sucursal_id: $('#selectSucursal').val() || null
       },r=>{
         $('#loadingOverlay').hide();
         $('#modalConfirmarSolicitud').modal('hide');

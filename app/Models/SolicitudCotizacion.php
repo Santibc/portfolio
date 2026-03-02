@@ -16,6 +16,7 @@ class SolicitudCotizacion extends Model
     protected $fillable = [
         'numero_solicitud',
         'cliente_id',
+        'sucursal_id',
         'enlace_acceso_id',
         'created_by',
         'estado',
@@ -154,6 +155,11 @@ class SolicitudCotizacion extends Model
     public function enlaceAcceso()
     {
         return $this->belongsTo(EnlaceAcceso::class, 'enlace_acceso_id');
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
     }
 
     public function items()
