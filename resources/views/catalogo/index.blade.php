@@ -354,15 +354,21 @@
   </div>
   <div class="p-4 border-top flex-shrink-0">
     @if($cliente->aplica_flete && $cliente->valor_flete > 0)
-    <div class="mb-2">
-      <div class="d-flex justify-content-between">
-        <span>Subtotal:</span>
-        <span id="cartSubtotal">$0.00</span>
+    <div class="mb-2 p-2 border rounded bg-light">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="chkFlete" checked onchange="actualizarCarrito()">
+        <label class="form-check-label fw-bold" for="chkFlete">
+          <i class="bi bi-truck me-1 text-success"></i>Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
+        </label>
       </div>
-      <div class="d-flex justify-content-between text-success">
-        <span><i class="bi bi-truck me-1"></i>Flete:</span>
-        <span>${{ number_format($cliente->valor_flete, 0, ',', '.') }}</span>
-      </div>
+    </div>
+    <div class="d-flex justify-content-between mb-1">
+      <span>Subtotal:</span>
+      <span id="cartSubtotal">$0.00</span>
+    </div>
+    <div class="d-flex justify-content-between mb-1" id="fleteRow">
+      <span class="text-success"><i class="bi bi-truck me-1"></i>Flete:</span>
+      <span class="text-success">${{ number_format($cliente->valor_flete, 0, ',', '.') }}</span>
     </div>
     @endif
     <div class="d-flex justify-content-between mb-3">
@@ -510,8 +516,11 @@
       $('#cartItems').html(itemsHtml);
       @if($cliente->aplica_flete && $cliente->valor_flete > 0)
       const valorFlete = {{ $cliente->valor_flete }};
-      $('#cartSubtotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total) : 'N/A');
-      $('#cartTotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total + valorFlete) : 'N/A');
+      const fleteActivo = $('#chkFlete').is(':checked');
+      const fmt = v => '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(v);
+      $('#cartSubtotal').text(mostrarPrecios ? fmt(total) : 'N/A');
+      $('#fleteRow').toggle(fleteActivo);
+      $('#cartTotal').text(mostrarPrecios ? fmt(total + (fleteActivo ? valorFlete : 0)) : 'N/A');
       @else
       $('#cartTotal').text(mostrarPrecios ? '$' + new Intl.NumberFormat('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 0}).format(total) : 'N/A');
       @endif
@@ -1216,7 +1225,8 @@ window.cargarProductos = function(page=1){
       $.post('{{route("catalogo.solicitud.guardar")}}',{
         _token:'{{csrf_token()}}',cliente_id:clienteId,
         enlace_token:enlaceToken,items,observaciones_vendedor:notas,
-        sucursal_id: $('#selectSucursal').val() || null
+        sucursal_id: $('#selectSucursal').val() || null,
+        incluir_flete: $('#chkFlete').is(':checked') ? 1 : 0
       },r=>{
         $('#loadingOverlay').hide();
         $('#modalConfirmarSolicitud').modal('hide');

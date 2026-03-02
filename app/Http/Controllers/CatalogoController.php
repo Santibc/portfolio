@@ -491,10 +491,11 @@ class CatalogoController extends Controller
                 }
             }
 
-            // Determinar flete del cliente
-            $valorFlete = ($cliente->aplica_flete && $cliente->valor_flete > 0)
-                ? $cliente->valor_flete
-                : 0;
+            // Determinar flete del cliente (solo si el vendedor lo incluyó)
+            $valorFlete = 0;
+            if ($cliente->aplica_flete && $cliente->valor_flete > 0 && $request->input('incluir_flete', 1)) {
+                $valorFlete = $cliente->valor_flete;
+            }
 
             // Crear solicitud
             $solicitud = new SolicitudCotizacion([
