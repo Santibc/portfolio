@@ -49,6 +49,14 @@ class StockController extends Controller
             // Filtrar por ubicación
             if ($request->has('ubicacion_id') && $request->ubicacion_id) {
                 $query->where('ubicacion_id', $request->ubicacion_id);
+            } else {
+                // Por defecto excluir stock de ubicaciones tipo tienda
+                $query->where(function($q) {
+                    $q->whereNull('ubicacion_id')
+                      ->orWhereHas('ubicacionRelacion', function($sub) {
+                          $sub->where('tipo', '!=', 'tienda');
+                      });
+                });
             }
 
             return DataTables::of($query)
