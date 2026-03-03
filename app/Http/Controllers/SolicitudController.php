@@ -832,6 +832,7 @@ class SolicitudController extends Controller
             $mensajeEmail = '';
             try {
                 Mail::to($solicitud->cliente->email)
+                    ->cc($solicitud->cliente->emails_adicionales_array)
                     ->send(new SolicitudAplicada($solicitud, $pdf));
 
                 $mensajeEmail = ' Se ha enviado el PDF por correo electrónico al cliente.';
@@ -924,6 +925,7 @@ class SolicitudController extends Controller
                 $pdf->setPaper('letter', 'portrait');
 
                 Mail::to($solicitud->cliente->email)
+                    ->cc($solicitud->cliente->emails_adicionales_array)
                     ->send(new \App\Mail\SolicitudRechazada($solicitud, $pdf));
 
                 $mensajeEmail = ' Se ha enviado notificación por correo electrónico al cliente.';

@@ -150,6 +150,8 @@ HTML;
                 'required', 'email', 'max:255',
                 Rule::unique('clientes')->ignore($cliente->id)
             ],
+            'emails_adicionales' => ['nullable', 'array'],
+            'emails_adicionales.*' => ['nullable', 'email', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:100'],
             'direccion' => ['nullable', 'string', 'max:500'],
             'pais_id' => ['required', 'exists:paises,id'],
@@ -204,6 +206,16 @@ HTML;
             // Restaurar valores originales que no puede modificar
             $data['vendedor_id'] = $cliente->vendedor_id;
             $data['lista_precio_id'] = $cliente->lista_precio_id;
+        }
+
+        // Limpiar emails adicionales: quitar vacíos
+        if (isset($data['emails_adicionales'])) {
+            $data['emails_adicionales'] = array_values(
+                array_filter(array_map('trim', $data['emails_adicionales']), fn($e) => !empty($e))
+            );
+            if (empty($data['emails_adicionales'])) {
+                $data['emails_adicionales'] = null;
+            }
         }
 
         // Remover datos de documentos y sucursales antes de guardar cliente

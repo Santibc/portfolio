@@ -157,7 +157,9 @@ class STOrdenServicioController extends Controller
         // Enviar correo al cliente
         try {
             if ($orden->cliente && $orden->cliente->email) {
-                Mail::to($orden->cliente->email)->send(new OrdenServicioCreada($orden));
+                Mail::to($orden->cliente->email)
+                    ->cc($orden->cliente->emails_adicionales_array)
+                    ->send(new OrdenServicioCreada($orden));
             }
         } catch (\Exception $e) {
             // Log error pero no interrumpir el flujo
@@ -247,8 +249,9 @@ class STOrdenServicioController extends Controller
         // Enviar correo al cliente notificando el cambio de estado
         try {
             if ($orden->cliente && $orden->cliente->email) {
-                Mail::to($orden->cliente->email)->send(
-                    new OrdenServicioEstadoCambiado(
+                Mail::to($orden->cliente->email)
+                    ->cc($orden->cliente->emails_adicionales_array)
+                    ->send(new OrdenServicioEstadoCambiado(
                         $orden,
                         $estadoAnterior,
                         $request->nuevo_estado,

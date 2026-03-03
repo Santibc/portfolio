@@ -194,6 +194,7 @@ class EnlacesController extends Controller
             // Enviar email al cliente
             try {
                 Mail::to($enlace->cliente->email)
+                    ->cc($enlace->cliente->emails_adicionales_array)
                     ->send(new EnlaceCreado($enlace));
                     
                 $mensajeEmail = ' Se ha enviado el enlace por correo electrónico al cliente.';

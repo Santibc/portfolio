@@ -66,9 +66,9 @@ class CrearCuentaCliente
             $cliente->save();
 
             // Enviar email con credenciales
-            Mail::to($cliente->email)->send(
-                new CuentaClienteCreada($cliente, $usuario, $passwordTemporal)
-            );
+            Mail::to($cliente->email)
+                ->cc($cliente->emails_adicionales_array)
+                ->send(new CuentaClienteCreada($cliente, $usuario, $passwordTemporal));
 
             Log::info("Cuenta de cliente creada automáticamente para: {$cliente->email}");
 

@@ -106,9 +106,10 @@ class SolicitudCotizacionObserver
             // Recargar relaciones necesarias para el email
             $solicitud->loadMissing(['cliente', 'items']);
 
-            Mail::to($email)->queue(
-                new EstadoPedidoCambiado($solicitud, $tipoEstado, $estadoAnterior, $estadoNuevo)
-            );
+            $ccEmails = $solicitud->cliente ? $solicitud->cliente->emails_adicionales_array : [];
+            Mail::to($email)
+                ->cc($ccEmails)
+                ->queue(new EstadoPedidoCambiado($solicitud, $tipoEstado, $estadoAnterior, $estadoNuevo));
         } catch (\Exception $e) {
             // Log el error pero no interrumpir la operación
             \Log::error("Error enviando notificación de estado de pedido: " . $e->getMessage(), [

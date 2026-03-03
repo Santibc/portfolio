@@ -158,10 +158,33 @@
                             @error('telefono') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <label class="form-label">Email Principal <span class="text-danger">*</span></label>
                             <input name="email" type="email" class="form-control"
                                    value="{{ old('email', $cliente->email) }}">
                             @error('email') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Emails Adicionales (CC)</label>
+                            <div id="emailsAdicionalesContainer">
+                                @php $emailsAdicionales = old('emails_adicionales', $cliente->emails_adicionales ?? []); @endphp
+                                @if($emailsAdicionales)
+                                    @foreach($emailsAdicionales as $emailAdicional)
+                                    <div class="input-group mb-2 email-adicional-row">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" name="emails_adicionales[]" class="form-control"
+                                               value="{{ $emailAdicional }}" placeholder="correo@ejemplo.com">
+                                        <button type="button" class="btn btn-outline-danger" onclick="eliminarEmailAdicional(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="agregarEmailAdicional()">
+                                <i class="bi bi-plus-circle me-1"></i>Agregar Email
+                            </button>
+                            @error('emails_adicionales.*') <small class="text-danger d-block">{{ $message }}</small> @enderror
+                            <small class="text-muted d-block mt-1">Estos emails recibirán copia (CC) de las notificaciones.</small>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Direccion</label>
@@ -547,6 +570,28 @@
             subirDocumento();
         });
     });
+
+    // =========================================
+    // Funciones Emails Adicionales
+    // =========================================
+    function agregarEmailAdicional() {
+        const container = document.getElementById('emailsAdicionalesContainer');
+        const row = document.createElement('div');
+        row.className = 'input-group mb-2 email-adicional-row';
+        row.innerHTML = `
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="emails_adicionales[]" class="form-control"
+                   placeholder="correo@ejemplo.com">
+            <button type="button" class="btn btn-outline-danger" onclick="eliminarEmailAdicional(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+        container.appendChild(row);
+    }
+
+    function eliminarEmailAdicional(button) {
+        button.closest('.email-adicional-row').remove();
+    }
 
     // Funciones Tipo Cliente
     function seleccionarTipoCliente(tipo) {

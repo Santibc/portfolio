@@ -19,6 +19,7 @@ class Cliente extends Model
         'representante_legal',
         'nombre_contacto',
         'email',
+        'emails_adicionales',
         'telefono',
         'direccion',
         'ciudad_id',
@@ -36,6 +37,7 @@ class Cliente extends Model
         'activo' => 'boolean',
         'aplica_flete' => 'boolean',
         'valor_flete' => 'decimal:2',
+        'emails_adicionales' => 'array',
     ];
 
     // =========================================
@@ -66,6 +68,11 @@ class Cliente extends Model
             return $this->razon_social ?? $this->nombre_contacto;
         }
         return $this->nombre_contacto;
+    }
+
+    public function getEmailsAdicionalesArrayAttribute(): array
+    {
+        return is_array($this->emails_adicionales) ? $this->emails_adicionales : [];
     }
     public function pais()
     {
