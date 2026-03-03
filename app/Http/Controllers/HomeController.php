@@ -73,11 +73,20 @@ class HomeController extends Controller
                 $metricas['top_productos'] = $this->metricasService->getTopProductos($fechaInicio, $fechaFin);
             }
 
+            // Cotizaciones paginadas del período seleccionado
+            $cotizacionesPaginadas = $this->metricasService->getCotizacionesPaginadas(
+                $fechaInicio,
+                $fechaFin,
+                12
+            );
+            $cotizacionesPaginadas->appends(['periodo' => $periodo]);
+
             return view('dashboard', [
                 'metricas' => $metricas,
                 'periodo' => $periodo,
                 'fechaInicio' => $fechaInicio,
                 'fechaFin' => $fechaFin,
+                'cotizacionesPaginadas' => $cotizacionesPaginadas,
             ]);
         }
 

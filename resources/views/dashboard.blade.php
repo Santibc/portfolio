@@ -289,12 +289,24 @@
                 </div>
             </div>
 
-            {{-- Últimas cotizaciones --}}
+            {{-- Cotizaciones del período --}}
+            @php
+                $periodoLabels = [
+                    'hoy' => 'Hoy',
+                    'semana' => 'Esta Semana',
+                    'mes' => 'Este Mes',
+                    'año' => 'Este Año',
+                ];
+                $periodoLabel = $periodoLabels[$periodo] ?? 'Este Mes';
+            @endphp
             <div class="row">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Últimas 10 Cotizaciones</h6>
+                            <h6 class="mb-0">
+                                <i class="bi bi-file-earmark-text me-2"></i>Cotizaciones - {{ $periodoLabel }}
+                                <span class="badge bg-secondary ms-2">{{ $cotizacionesPaginadas->total() }}</span>
+                            </h6>
                             <a href="{{ route('solicitudes') }}" class="btn btn-sm btn-outline-primary">
                                 Ver todas <i class="bi bi-arrow-right"></i>
                             </a>
@@ -309,35 +321,57 @@
                                             <th>Vendedor</th>
                                             <th class="text-end">Monto</th>
                                             <th class="text-center">Estado</th>
+                                            <th class="text-center">Forma Pago</th>
+                                            <th class="text-center">Estado Pago</th>
+                                            <th class="text-center">Envío</th>
                                             <th>Fecha</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($metricas['ultimas_cotizaciones'] ?? [] as $cotizacion)
+                                        @forelse($cotizacionesPaginadas as $cotizacion)
                                             <tr>
                                                 <td>
-                                                    <a href="{{ route('solicitudes.detalle', $cotizacion['id']) }}" class="text-decoration-none">
-                                                        {{ $cotizacion['numero'] }}
+                                                    <a href="{{ route('solicitudes.detalle', $cotizacion->id) }}" class="text-decoration-none">
+                                                        {{ $cotizacion->numero_solicitud }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $cotizacion['cliente'] }}</td>
-                                                <td>{{ $cotizacion['vendedor'] }}</td>
-                                                <td class="text-end">${{ number_format($cotizacion['monto'], 0, ',', '.') }}</td>
+                                                <td>{{ $cotizacion->cliente->nombre_contacto ?? 'N/A' }}</td>
+                                                <td>{{ $cotizacion->createdBy->name ?? 'N/A' }}</td>
+                                                <td class="text-end">{{ $cotizacion->monto_total_formateado }}</td>
                                                 <td class="text-center">
-                                                    <span class="badge bg-{{ $cotizacion['color_estado'] }}">
-                                                        {{ ucfirst($cotizacion['estado']) }}
+                                                    <span class="badge bg-{{ $cotizacion->color_estado }}">
+                                                        {{ ucfirst($cotizacion->estado) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small>{{ $cotizacion->forma_pago_factura ?? '-' }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if($cotizacion->color_estado_pago === 'pink')
+                                                        <span class="badge" style="background-color:#FF84D5;color:#fff;">
+                                                            {{ $cotizacion->etiqueta_estado_pago }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-{{ $cotizacion->color_estado_pago }}">
+                                                            {{ $cotizacion->etiqueta_estado_pago }}
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-{{ $cotizacion->color_estado_envio }}">
+                                                        <i class="{{ $cotizacion->icono_estado_envio }} me-1"></i>{{ $cotizacion->etiqueta_estado_envio }}
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <small class="text-muted" title="{{ $cotizacion['fecha'] }}">
-                                                        {{ $cotizacion['hace'] }}
+                                                    <small class="text-muted" title="{{ $cotizacion->created_at->format('d/m/Y H:i') }}">
+                                                        {{ $cotizacion->created_at->diffForHumans() }}
                                                     </small>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-3">
-                                                    No hay cotizaciones recientes
+                                                <td colspan="9" class="text-center text-muted py-3">
+                                                    No hay cotizaciones en este período
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -345,6 +379,17 @@
                                 </table>
                             </div>
                         </div>
+                        @if($cotizacionesPaginadas->hasPages())
+                            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Mostrando {{ $cotizacionesPaginadas->firstItem() }} - {{ $cotizacionesPaginadas->lastItem() }}
+                                    de {{ $cotizacionesPaginadas->total() }} cotizaciones
+                                </small>
+                                <div>
+                                    {{ $cotizacionesPaginadas->links('pagination::bootstrap-5') }}
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

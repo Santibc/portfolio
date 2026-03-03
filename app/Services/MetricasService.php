@@ -326,6 +326,20 @@ class MetricasService
     }
 
     /**
+     * Obtener cotizaciones del período, paginadas
+     */
+    public function getCotizacionesPaginadas(
+        Carbon $fechaInicio,
+        Carbon $fechaFin,
+        int $perPage = 12
+    ): \Illuminate\Contracts\Pagination\LengthAwarePaginator {
+        return SolicitudCotizacion::with(['cliente:id,nombre_contacto', 'createdBy:id,name'])
+            ->whereBetween('created_at', [$fechaInicio, $fechaFin])
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+    }
+
+    /**
      * Obtener métricas del mes actual con comparativa
      */
     public function getMetricasMesActual(): array
@@ -346,7 +360,6 @@ class MetricasService
         $topVendedores = $this->getTopVendedores($inicioMesActual, $finMesActual);
         $topProductos = $this->getTopProductos($inicioMesActual, $finMesActual);
         $tendencia = $this->getTendenciaDiaria(30);
-        $ultimasCotizaciones = $this->getUltimasCotizaciones(10);
 
         return [
             'resumen' => $comparativa['actual'],
@@ -355,7 +368,6 @@ class MetricasService
             'top_vendedores' => $topVendedores,
             'top_productos' => $topProductos,
             'tendencia' => $tendencia,
-            'ultimas_cotizaciones' => $ultimasCotizaciones,
             'mes_actual' => Carbon::now()->isoFormat('MMMM YYYY'),
             'mes_anterior' => Carbon::now()->subMonth()->isoFormat('MMMM YYYY'),
         ];
