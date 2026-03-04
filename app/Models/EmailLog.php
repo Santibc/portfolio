@@ -37,6 +37,7 @@ class EmailLog extends Model
     const TIPO_DOCUMENTO = 'documento';
     const TIPO_FICHAJE = 'fichaje';
     const TIPO_BIENVENIDA = 'bienvenida';
+    const TIPO_CUMPLEANOS = 'cumpleanos';
 
     /**
      * Estados del email

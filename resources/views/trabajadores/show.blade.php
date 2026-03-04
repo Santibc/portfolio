@@ -121,6 +121,10 @@
                         <span class="info-label">Nacimiento</span>
                         <span class="info-value">{{ $trabajador->fecha_nacimiento?->format('d/m/Y') ?? '-' }}</span>
                     </div>
+                    <div class="info-item">
+                        <span class="info-label">IBAN / Cuenta</span>
+                        <span class="info-value">{{ $trabajador->iban ?? '-' }}</span>
+                    </div>
                 </div>
             </div>
         </div>

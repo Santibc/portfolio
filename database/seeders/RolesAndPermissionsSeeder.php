@@ -61,6 +61,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'gestionar_configuracion',
             // Documentos
             'subir_documentos_maquinaria',
+            // Tableros (Organización y Tareas)
+            'ver_tableros', 'crear_tableros', 'editar_tableros', 'eliminar_tableros',
+            'ver_tarjetas', 'crear_tarjetas', 'editar_tarjetas', 'eliminar_tarjetas', 'comentar_tarjetas',
         ];
 
         foreach ($permisos as $permiso) {
@@ -80,6 +83,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver_finanzas', 'crear_finanzas', 'editar_finanzas',
                 'ver_epis', 'ver_formaciones', 'ver_primas',
                 'ver_alertas', 'ver_auditoria',
+                'ver_tableros', 'crear_tableros', 'editar_tableros',
+                'ver_tarjetas', 'crear_tarjetas', 'editar_tarjetas', 'comentar_tarjetas',
             ],
             'Encargado' => [
                 'ver_trabajadores', 'ver_cuadrillas', 'editar_cuadrillas',
@@ -93,6 +98,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver_finanzas', 'crear_finanzas', 'editar_finanzas', 'eliminar_finanzas', // Acceso completo a Gastos
                 'ver_alertas', 'ver_dashboard_encargado',
                 'subir_documentos_maquinaria', // Puede subir documentos de maquinaria
+                'ver_tableros', 'crear_tableros', 'editar_tableros',
+                'ver_tarjetas', 'crear_tarjetas', 'editar_tarjetas', 'comentar_tarjetas',
             ],
             'RRHH' => [
                 'ver_usuarios', 'ver_trabajadores', 'crear_trabajadores', 'editar_trabajadores', 'eliminar_trabajadores',
@@ -104,6 +111,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver_subcontratas', 'ver_contratos',
                 'ver_alertas', 'gestionar_alertas',
                 'ver_auditoria',
+                'ver_tableros', 'crear_tableros', 'editar_tableros',
+                'ver_tarjetas', 'crear_tarjetas', 'editar_tarjetas', 'comentar_tarjetas',
             ],
             'Auditor' => [
                 'ver_usuarios', 'ver_trabajadores', 'ver_cuadrillas', 'ver_obras', 'ver_rentabilidad_obras',
@@ -111,11 +120,13 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver_maquinaria', 'ver_vehiculos', 'ver_subcontratas', 'ver_contratos',
                 'ver_facturas', 'ver_finanzas', 'ver_epis', 'ver_formaciones', 'ver_primas',
                 'ver_alertas', 'ver_auditoria', 'ver_dashboard_admin',
+                'ver_tableros', 'ver_tarjetas',
             ],
             'Trabajador' => [
                 'ver_fichajes', 'crear_fichajes', // Solo los propios
                 'ver_epis', 'ver_formaciones', 'ver_primas',
                 'ver_alertas', 'ver_dashboard_trabajador',
+                'ver_tableros', 'ver_tarjetas', 'comentar_tarjetas',
             ],
         ];
 

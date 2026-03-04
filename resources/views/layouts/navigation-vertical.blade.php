@@ -191,6 +191,18 @@
         @endrole
     @endrole
 
+    {{-- SECCIÓN ORGANIZACIÓN - Todos los usuarios con permiso --}}
+    @can('ver_tableros')
+        <div class="nav-section-title">Organizacion</div>
+
+        <div class="nav-item {{ request()->routeIs('tableros.*') ? 'active' : '' }}">
+            <a href="{{ route('tableros.index') }}" class="nav-link">
+                <i class="bi bi-kanban"></i>
+                <span>Tableros</span>
+            </a>
+        </div>
+    @endcan
+
     {{-- SECCIÓN ALERTAS - Todos los usuarios autenticados --}}
     <div class="nav-section-title">Alertas</div>
 
@@ -218,6 +230,13 @@
         <a href="{{ route('alertas.configuracion.index') }}" class="nav-link">
             <i class="bi bi-sliders"></i>
             <span>Config. Alertas</span>
+        </a>
+    </div>
+
+    <div class="nav-item {{ request()->routeIs('cumpleanos.configuracion.*') ? 'active' : '' }}">
+        <a href="{{ route('cumpleanos.configuracion.index') }}" class="nav-link">
+            <i class="bi bi-envelope-heart"></i>
+            <span>Emails Cumpleaños</span>
         </a>
     </div>
     @endrole

@@ -24,6 +24,7 @@ class Trabajador extends Model
         'email',
         'telefono',
         'direccion',
+        'iban',
         'fecha_nacimiento',
         'fecha_alta',
         'fecha_baja',

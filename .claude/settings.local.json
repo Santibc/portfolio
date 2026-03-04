@@ -76,7 +76,11 @@
       "Bash(cmd /c \"if not exist f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails mkdir f:\\\\xamppPro80\\\\htdocs\\\\manzer\\\\resources\\\\views\\\\emails\")",
       "Bash(del:*)",
       "Bash(php check_users.php:*)",
-      "Bash(php verify_cleanup.php:*)"
+      "Bash(php verify_cleanup.php:*)",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data[0][''text''][:15000]\\)\")",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); t=data[0][''text'']; print\\(t[15000:30000]\\)\")",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); t=data[0][''text'']; print\\(t[30000:45000]\\)\")",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); t=data[0][''text'']; print\\(t[45000:]\\)\")"
     ],
     "deny": [],
     "ask": []

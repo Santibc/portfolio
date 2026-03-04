@@ -25,6 +25,13 @@ use App\Http\Controllers\EpiInventarioController;
 use App\Http\Controllers\DocumentoEmpresaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\TableroController;
+use App\Http\Controllers\TableroColumnaController;
+use App\Http\Controllers\TableroEtiquetaController;
+use App\Http\Controllers\TarjetaController;
+use App\Http\Controllers\TarjetaChecklistController;
+use App\Http\Controllers\TarjetaComentarioController;
+use App\Http\Controllers\TarjetaAdjuntoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -625,6 +632,7 @@ use App\Http\Controllers\AlertaController;
 use App\Http\Controllers\AlertaConfiguracionController;
 use App\Http\Controllers\CaducidadGeneralController;
 use App\Http\Controllers\AuditoriaController;
+use App\Http\Controllers\CumpleanosConfiguracionController;
 
 Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->group(function () {
     Route::resource('formacion-tipos', FormacionTipoController::class);
@@ -639,6 +647,16 @@ Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->prefix('aler
     Route::get('/', [AlertaConfiguracionController::class, 'index'])->name('index');
     Route::put('/{configuracion}', [AlertaConfiguracionController::class, 'update'])->name('update');
     Route::post('/{configuracion}/toggle', [AlertaConfiguracionController::class, 'toggleActiva'])->name('toggle');
+});
+
+// Configuración de Emails de Cumpleaños (Admin, RRHH)
+Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->prefix('cumpleanos/configuracion')->name('cumpleanos.configuracion.')->group(function () {
+    Route::get('/', [CumpleanosConfiguracionController::class, 'index'])->name('index');
+    Route::put('/', [CumpleanosConfiguracionController::class, 'update'])->name('update');
+    Route::post('/toggle', [CumpleanosConfiguracionController::class, 'toggleActiva'])->name('toggle');
+    Route::post('/adjunto', [CumpleanosConfiguracionController::class, 'subirAdjunto'])->name('adjunto.subir');
+    Route::delete('/adjunto', [CumpleanosConfiguracionController::class, 'eliminarAdjunto'])->name('adjunto.eliminar');
+    Route::post('/prueba', [CumpleanosConfiguracionController::class, 'enviarPrueba'])->name('prueba');
 });
 
 // Alertas - Todos los usuarios autenticados
@@ -751,6 +769,87 @@ Route::middleware(['auth', 'verified', 'role:Trabajador'])->prefix('trabajador')
         Route::get('/alertas', [TrabajadorDashboardController::class, 'getMisAlertas'])->name('alertas');
         Route::get('/produccion-diaria', [TrabajadorDashboardController::class, 'getProduccionDiaria'])->name('produccion-diaria');
     });
+});
+
+// ==========================================
+// RUTAS DE TABLEROS (Organización y Tareas)
+// ==========================================
+
+// Ver tableros - Todos los roles con permiso
+Route::middleware(['auth', 'verified', 'permission:ver_tableros'])->group(function () {
+    Route::get('tableros', [TableroController::class, 'index'])->name('tableros.index');
+    Route::get('tableros/usuarios-por-rol', [TableroController::class, 'usuariosPorRol'])->name('tableros.usuarios.por-rol');
+    Route::get('tableros/usuarios-por-obra/{obra}', [TableroController::class, 'usuariosPorObra'])->name('tableros.usuarios.por-obra');
+    Route::get('tableros/{tablero}', [TableroController::class, 'show'])->name('tableros.show');
+    Route::get('tableros/{tablero}/miembros', [TableroController::class, 'miembros'])->name('tableros.miembros');
+    Route::get('tableros/{tablero}/etiquetas', [TableroEtiquetaController::class, 'index'])->name('tableros.etiquetas.index');
+    Route::get('tarjetas/{tarjeta}', [TarjetaController::class, 'show'])->name('tarjetas.show');
+    Route::get('tarjetas/{tarjeta}/comentarios', [TarjetaComentarioController::class, 'index'])->name('tarjetas.comentarios.index');
+    Route::get('tarjeta-adjuntos/{adjunto}/descargar', [TarjetaAdjuntoController::class, 'descargar'])->name('tarjeta-adjuntos.descargar');
+});
+
+// Crear tableros
+Route::middleware(['auth', 'verified', 'permission:crear_tableros'])->group(function () {
+    Route::get('tableros-crear', [TableroController::class, 'create'])->name('tableros.create');
+    Route::post('tableros', [TableroController::class, 'store'])->name('tableros.store');
+});
+
+// Editar tableros + AJAX de escritura
+Route::middleware(['auth', 'verified', 'permission:editar_tableros'])->group(function () {
+    Route::get('tableros/{tablero}/edit', [TableroController::class, 'edit'])->name('tableros.edit');
+    Route::put('tableros/{tablero}', [TableroController::class, 'update'])->name('tableros.update');
+    Route::post('tableros/{tablero}/archivar', [TableroController::class, 'archivar'])->name('tableros.archivar');
+
+    // Miembros
+    Route::post('tableros/{tablero}/miembros', [TableroController::class, 'agregarMiembro'])->name('tableros.miembros.agregar');
+    Route::delete('tableros/{tablero}/miembros/{user}', [TableroController::class, 'removerMiembro'])->name('tableros.miembros.remover');
+
+    // Columnas
+    Route::post('tableros/{tablero}/columnas', [TableroColumnaController::class, 'store'])->name('tableros.columnas.store');
+    Route::put('tablero-columnas/{columna}', [TableroColumnaController::class, 'update'])->name('tablero-columnas.update');
+    Route::delete('tablero-columnas/{columna}', [TableroColumnaController::class, 'destroy'])->name('tablero-columnas.destroy');
+    Route::post('tableros/{tablero}/columnas/reordenar', [TableroColumnaController::class, 'reordenar'])->name('tableros.columnas.reordenar');
+
+    // Etiquetas
+    Route::post('tableros/{tablero}/etiquetas', [TableroEtiquetaController::class, 'store'])->name('tableros.etiquetas.store');
+    Route::put('tablero-etiquetas/{etiqueta}', [TableroEtiquetaController::class, 'update'])->name('tablero-etiquetas.update');
+    Route::delete('tablero-etiquetas/{etiqueta}', [TableroEtiquetaController::class, 'destroy'])->name('tablero-etiquetas.destroy');
+
+    // Tarjetas CRUD
+    Route::post('tarjetas', [TarjetaController::class, 'store'])->name('tarjetas.store');
+    Route::put('tarjetas/{tarjeta}', [TarjetaController::class, 'update'])->name('tarjetas.update');
+    Route::post('tarjetas/{tarjeta}/mover', [TarjetaController::class, 'mover'])->name('tarjetas.mover');
+    Route::post('tarjetas/reordenar', [TarjetaController::class, 'reordenar'])->name('tarjetas.reordenar');
+    Route::post('tarjetas/{tarjeta}/archivar', [TarjetaController::class, 'archivar'])->name('tarjetas.archivar');
+
+    // Asignaciones
+    Route::post('tarjetas/{tarjeta}/usuarios', [TarjetaController::class, 'asignarUsuario'])->name('tarjetas.usuarios.asignar');
+    Route::delete('tarjetas/{tarjeta}/usuarios/{user}', [TarjetaController::class, 'desasignarUsuario'])->name('tarjetas.usuarios.desasignar');
+    Route::post('tarjetas/{tarjeta}/etiquetas', [TarjetaController::class, 'toggleEtiqueta'])->name('tarjetas.etiquetas.toggle');
+
+    // Checklists
+    Route::post('tarjetas/{tarjeta}/checklists', [TarjetaChecklistController::class, 'store'])->name('tarjetas.checklists.store');
+    Route::put('tarjeta-checklists/{checklist}', [TarjetaChecklistController::class, 'update'])->name('tarjeta-checklists.update');
+    Route::delete('tarjeta-checklists/{checklist}', [TarjetaChecklistController::class, 'destroy'])->name('tarjeta-checklists.destroy');
+    Route::post('tarjeta-checklists/{checklist}/items', [TarjetaChecklistController::class, 'storeItem'])->name('tarjeta-checklists.items.store');
+    Route::post('tarjeta-checklist-items/{item}/toggle', [TarjetaChecklistController::class, 'toggleItem'])->name('tarjeta-checklist-items.toggle');
+    Route::delete('tarjeta-checklist-items/{item}', [TarjetaChecklistController::class, 'destroyItem'])->name('tarjeta-checklist-items.destroy');
+
+    // Adjuntos
+    Route::post('tarjetas/{tarjeta}/adjuntos', [TarjetaAdjuntoController::class, 'store'])->name('tarjetas.adjuntos.store');
+    Route::delete('tarjeta-adjuntos/{adjunto}', [TarjetaAdjuntoController::class, 'destroy'])->name('tarjeta-adjuntos.destroy');
+});
+
+// Eliminar tableros (solo permisos de eliminacion)
+Route::middleware(['auth', 'verified', 'permission:eliminar_tableros'])->group(function () {
+    Route::delete('tableros/{tablero}', [TableroController::class, 'destroy'])->name('tableros.destroy');
+    Route::delete('tarjetas/{tarjeta}', [TarjetaController::class, 'destroy'])->name('tarjetas.destroy');
+});
+
+// Comentar tarjetas (permiso separado para Trabajador)
+Route::middleware(['auth', 'verified', 'permission:comentar_tarjetas'])->group(function () {
+    Route::post('tarjetas/{tarjeta}/comentarios', [TarjetaComentarioController::class, 'store'])->name('tarjetas.comentarios.store');
+    Route::delete('tarjeta-comentarios/{comentario}', [TarjetaComentarioController::class, 'destroy'])->name('tarjeta-comentarios.destroy');
 });
 
 require __DIR__.'/auth.php';

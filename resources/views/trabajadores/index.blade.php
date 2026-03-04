@@ -334,6 +334,11 @@
                             <input type="text" name="direccion" class="form-control">
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label">IBAN / Cuenta Bancaria</label>
+                            <input type="text" name="iban" class="form-control" placeholder="ES00 0000 0000 0000 0000 0000" maxlength="34">
+                        </div>
+
                         <!-- Datos laborales -->
                         <div class="col-12">
                             <hr class="my-2">
@@ -486,6 +491,11 @@
                         <div class="col-md-12">
                             <label class="form-label">Dirección</label>
                             <input type="text" name="direccion" id="editDireccion" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">IBAN / Cuenta Bancaria</label>
+                            <input type="text" name="iban" id="editIban" class="form-control" placeholder="ES00 0000 0000 0000 0000 0000" maxlength="34">
                         </div>
 
                         <!-- Datos laborales -->
@@ -659,6 +669,7 @@ function editTrabajador(trabajadorId) {
         document.getElementById('editTelefono').value = data.telefono || '';
         document.getElementById('editFechaNacimiento').value = data.fecha_nacimiento || '';
         document.getElementById('editDireccion').value = data.direccion || '';
+        document.getElementById('editIban').value = data.iban || '';
         document.getElementById('editFechaAlta').value = data.fecha_alta || '';
         document.getElementById('editCategoriaConvenio').value = data.categoria_convenio || '';
         document.getElementById('editCuadrillaId').value = data.cuadrilla_id || '';
