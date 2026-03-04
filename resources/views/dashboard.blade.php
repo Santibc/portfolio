@@ -321,9 +321,8 @@
                                             <th>Vendedor</th>
                                             <th class="text-end">Monto</th>
                                             <th class="text-center">Estado</th>
-                                            <th class="text-center">Forma Pago</th>
-                                            <th class="text-center">Estado Pago</th>
-                                            <th class="text-center">Envío</th>
+                                            <th class="text-center">Pago</th>
+                                            <th class="text-center">Descontada</th>
                                             <th>Fecha</th>
                                         </tr>
                                     </thead>
@@ -344,23 +343,26 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <small>{{ $cotizacion->forma_pago_factura ?? '-' }}</small>
-                                                </td>
-                                                <td class="text-center">
-                                                    @if($cotizacion->color_estado_pago === 'pink')
-                                                        <span class="badge" style="background-color:#FF84D5;color:#fff;">
-                                                            {{ $cotizacion->etiqueta_estado_pago }}
-                                                        </span>
+                                                    @if($cotizacion->estado === 'aplicada' && $cotizacion->estado_pago === 'pagado')
+                                                        @if($cotizacion->forma_pago_factura && str_contains($cotizacion->forma_pago_factura, 'Crédito'))
+                                                            <span class="badge bg-primary">Crédito</span>
+                                                        @else
+                                                            <span class="badge bg-success">Contado</span>
+                                                        @endif
+                                                    @elseif($cotizacion->estado_pago === 'parcial')
+                                                        <span class="badge bg-info">Parcial</span>
                                                     @else
-                                                        <span class="badge bg-{{ $cotizacion->color_estado_pago }}">
-                                                            {{ $cotizacion->etiqueta_estado_pago }}
-                                                        </span>
+                                                        <span class="badge bg-warning text-dark">Pendiente</span>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="badge bg-{{ $cotizacion->color_estado_envio }}">
-                                                        <i class="{{ $cotizacion->icono_estado_envio }} me-1"></i>{{ $cotizacion->etiqueta_estado_envio }}
-                                                    </span>
+                                                    @if($cotizacion->stock_descontado)
+                                                        <span class="badge" style="background-color:#FF84D5;color:#fff;">
+                                                            <i class="bi bi-check-circle me-1"></i>Sí
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary">No</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <small class="text-muted" title="{{ $cotizacion->created_at->format('d/m/Y H:i') }}">
@@ -370,7 +372,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="9" class="text-center text-muted py-3">
+                                                <td colspan="8" class="text-center text-muted py-3">
                                                     No hay cotizaciones en este período
                                                 </td>
                                             </tr>
