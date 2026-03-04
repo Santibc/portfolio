@@ -317,7 +317,7 @@ class SolicitudController extends Controller
         return view('solicitudes.solicitudes_index', compact('totalAntiguas', 'vendedores'));
     }
     
-    public function detalle(SolicitudCotizacion $solicitud)
+    public function detalle(Request $request, SolicitudCotizacion $solicitud)
     {
         $user = Auth::user();
 
@@ -717,7 +717,13 @@ class SolicitudController extends Controller
 
         $html .= '</div>';
 
-        return response($html);
+        // Si es AJAX (modal del index), retornar HTML raw
+        if ($request->ajax()) {
+            return response($html);
+        }
+
+        // Si es acceso directo (desde dashboard), retornar vista Blade con estilo Miracle
+        return view('solicitudes.detalle', compact('solicitud'));
     }
 
     /**
