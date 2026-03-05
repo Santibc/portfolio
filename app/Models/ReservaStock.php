@@ -198,6 +198,9 @@ class ReservaStock extends Model
             'estado' => self::ESTADO_APLICADA,
         ]);
 
+        // Liberar la reserva del conteo de stock reservado
+        $this->stockProducto->decrement('cantidad_reservada', $this->cantidad_reservada);
+
         return true;
     }
 
