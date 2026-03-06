@@ -139,7 +139,9 @@ class StockController extends Controller
                         $q->where('referencia', 'like', "%{$keyword}%")
                           ->orWhere('nombre', 'like', "%{$keyword}%");
                     })->orWhereHas('variante', function($q) use ($keyword) {
-                        $q->where('nombre_variante', 'like', "%{$keyword}%");
+                        $q->where('referencia_variante', 'like', "%{$keyword}%")
+                          ->orWhere('color', 'like', "%{$keyword}%")
+                          ->orWhere('sku', 'like', "%{$keyword}%");
                     });
                 })
                 ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'ubicacion', 'ubicacion_especifica', 'action'])
