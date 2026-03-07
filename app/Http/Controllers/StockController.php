@@ -134,7 +134,7 @@ class StockController extends Controller
                     $buttons .= '</div>';
                     return $buttons;
                 })
-                ->filterColumn('producto_info', function($query, $keyword) {
+                ->filterColumn('producto_id', function($query, $keyword) {
                     $query->whereHas('producto', function($q) use ($keyword) {
                         $q->where('referencia', 'like', "%{$keyword}%")
                           ->orWhere('nombre', 'like', "%{$keyword}%");
