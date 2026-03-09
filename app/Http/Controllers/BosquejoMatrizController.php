@@ -8,6 +8,7 @@ use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Helpers\ImageHelper;
 use Intervention\Image\Facades\Image;
 
 class BosquejoMatrizController extends Controller
@@ -182,12 +183,8 @@ class BosquejoMatrizController extends Controller
         $rutaMiniatura = "uploads/bosquejos-matriz/{$uploadSubDir}/{$thumbName}";
 
         try {
-            $img = Image::make("{$uploadPath}/{$originalName}");
-            $img->resize(300, 300, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $img->save($thumbFullPath, 80);
+            ImageHelper::makeSquare("{$uploadPath}/{$originalName}");
+            ImageHelper::makeSquareThumbnail("{$uploadPath}/{$originalName}", $thumbFullPath);
         } catch (\Exception $e) {
             $rutaMiniatura = $rutaArchivo;
         }

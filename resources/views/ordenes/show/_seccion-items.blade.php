@@ -1,7 +1,7 @@
 {{-- Seccion 4: Items y Totales --}}
 <div class="card border-0 shadow-sm mt-3">
     <div class="card-header bg-white border-0 px-4 pt-3 pb-0">
-        <h6 class="mb-0 fw-semibold"><i class="bi bi-receipt me-2 text-primary"></i>Items / Servicios</h6>
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-receipt me-2 text-primary"></i>Items (Productos y servicios)</h6>
     </div>
     <div class="card-body px-4 pb-3 pt-2">
         @if($orden->items->count() > 0)

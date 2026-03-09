@@ -386,8 +386,9 @@ class OrdenController extends Controller
             'piezas.operarioActual',
             'piezas.asignaciones.asignadoA',
             'piezas.historialAvances.operario',
-            'pagos.registradoPorUsuario',
-            'pagos.aprobadoPorUsuario',
+            'pagos' => function ($q) {
+                $q->withTrashed()->with(['registradoPorUsuario', 'aprobadoPorUsuario', 'rechazadoPorUsuario']);
+            },
             'fotos.subidoPorUsuario',
             'comentarios.usuario',
             'garantias.pieza',
@@ -482,6 +483,7 @@ class OrdenController extends Controller
                 'calibre' => $p->calibre,
                 'notas' => $p->notas,
                 'orden_bosquejo_id' => $p->orden_bosquejo_id,
+                'requiere_operario' => $p->requiere_operario,
             ])->values(),
             'pagos' => $orden->pagos->map(fn ($p) => [
                 'monto' => $p->monto,

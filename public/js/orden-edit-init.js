@@ -53,6 +53,12 @@ function cargarItems() {
         $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
         $row.find('.item-categoria').val(item.categoria || 'servicio');
 
+        if (item.catalogo_item_id) {
+            $row.find('.item-codigo').prop('readonly', true).addClass('item-readonly');
+            $row.find('.item-descripcion').prop('readonly', true).addClass('item-readonly');
+            $row.find('.btn-desvincular-item').show();
+        }
+
         calcularTotalFila(idx);
     });
 
@@ -118,8 +124,15 @@ function cargarPiezas() {
             }
         }
 
+        // Restore requiere_operario checkbox state
+        if (pieza.requiere_operario === false || pieza.requiere_operario === 0) {
+            $row.find('.pieza-requiere-operario').prop('checked', false);
+        }
+
         generarEspecificacion(idx);
     });
+
+    actualizarVisibilidadOperario();
 }
 
 // ==========================================
@@ -127,6 +140,9 @@ function cargarPiezas() {
 // ==========================================
 function cargarPagos() {
     if (!ORDEN_DATA.pagos || ORDEN_DATA.pagos.length === 0) return;
+
+    var bloquearPagos = (typeof IS_GENERATED !== 'undefined' && IS_GENERATED)
+                     && (typeof IS_ADMIN !== 'undefined' && !IS_ADMIN);
 
     ORDEN_DATA.pagos.forEach(function(pago) {
         agregarFilaPago();
@@ -136,7 +152,19 @@ function cargarPagos() {
         $row.find('.pago-monto').val(pago.monto || 0);
         $row.find('.pago-metodo').val(pago.metodo_pago || 'efectivo');
         $row.find('.pago-referencia').val(pago.referencia_pago || '');
+
+        if (bloquearPagos) {
+            $row.find('.pago-monto').prop('disabled', true);
+            $row.find('.pago-metodo').prop('disabled', true);
+            $row.find('.pago-referencia').prop('disabled', true);
+            $row.find('.btn-outline-danger').remove();
+        }
     });
+
+    // Si no es admin y la orden ya fue generada, ocultar boton de agregar pago
+    if (bloquearPagos) {
+        $('#seccionPagos .card-header .btn-primary').hide();
+    }
 
     recalcularSaldo();
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Entrega;
+use App\Models\EntregaPieza;
 use App\Models\Orden;
 use App\Models\OrdenFoto;
 use App\Models\OrdenPieza;
@@ -23,13 +25,13 @@ class EntregaController extends Controller
     }
 
     /**
-     * GET /recepcion/entregas-pendientes - Listado de ordenes con piezas listas para entregar.
+     * GET /recepcion/entregas-pendientes - Listado de ordenes con piezas pendientes de entregar.
      */
     public function pendientes(Request $request)
     {
         if ($request->ajax()) {
             $query = Orden::whereHas('piezas', function ($q) {
-                $q->where('porcentaje_avance', '>=', 100)->where('entregada', false);
+                $q->whereColumn('cantidad_entregada', '<', 'cantidad');
             })
                 ->whereNotIn('estado_trabajo', ['borrador', 'anulada'])
                 ->with('cliente')
@@ -39,10 +41,10 @@ class EntregaController extends Controller
                 ->addColumn('cliente_nombre', function ($o) {
                     return $o->cliente->nombre ?? '-';
                 })
-                ->addColumn('piezas_listas', function ($o) {
+                ->addColumn('piezas_pendientes', function ($o) {
                     $total = $o->piezas->count();
-                    $listas = $o->piezas->where('porcentaje_avance', '>=', 100)->where('entregada', false)->count();
-                    return '<span class="fw-semibold text-success">' . $listas . '</span> de ' . $total;
+                    $pendientes = $o->piezas->filter(fn($p) => $p->cantidad_entregada < $p->cantidad)->count();
+                    return '<span class="fw-semibold text-warning">' . $pendientes . '</span> de ' . $total;
                 })
                 ->addColumn('estado_trabajo_badge', function ($o) {
                     return $this->badgeEstadoTrabajo($o->estado_trabajo);
@@ -73,32 +75,29 @@ class EntregaController extends Controller
                     }
                     return '<span class="' . $class . '">' . $fecha->format('d/m/Y') . '</span>';
                 })
-                ->rawColumns(['numero_orden', 'piezas_listas', 'estado_trabajo_badge', 'estado_entrega_badge', 'fecha_entrega', 'acciones'])
+                ->rawColumns(['numero_orden', 'piezas_pendientes', 'estado_trabajo_badge', 'estado_entrega_badge', 'fecha_entrega', 'acciones'])
                 ->make(true);
         }
 
         // Stats para cards
         $baseQuery = fn() => Orden::whereHas('piezas', function ($q) {
-            $q->where('porcentaje_avance', '>=', 100)->where('entregada', false);
+            $q->whereColumn('cantidad_entregada', '<', 'cantidad');
         })->whereNotIn('estado_trabajo', ['borrador', 'anulada']);
 
         $totalPendientes = $baseQuery()->count();
 
-        $piezasListas = OrdenPieza::where('porcentaje_avance', '>=', 100)
-            ->where('entregada', false)
+        $piezasPendientes = OrdenPieza::whereColumn('cantidad_entregada', '<', 'cantidad')
             ->whereHas('orden', function ($q) {
                 $q->whereNotIn('estado_trabajo', ['borrador', 'anulada']);
             })
             ->count();
 
-        $entregasHoy = OrdenPieza::where('entregada', true)
-            ->whereDate('entregada_en', today())
-            ->count();
+        $entregasHoy = Entrega::whereDate('created_at', today())->count();
 
         $entregasVencidas = $baseQuery()->whereDate('fecha_entrega', '<', today())->count();
 
         return view('entregas.pendientes', compact(
-            'totalPendientes', 'piezasListas', 'entregasHoy', 'entregasVencidas'
+            'totalPendientes', 'piezasPendientes', 'entregasHoy', 'entregasVencidas'
         ));
     }
 
@@ -113,15 +112,18 @@ class EntregaController extends Controller
         }
 
         $piezasEntregables = $orden->piezas()
-            ->where('porcentaje_avance', '>=', 100)
-            ->where('entregada', false)
+            ->whereColumn('cantidad_entregada', '<', 'cantidad')
             ->with('bosquejo')
             ->orderBy('orden_visual')
-            ->get();
+            ->get()
+            ->map(function ($p) {
+                $p->cantidad_pendiente = $p->cantidad - $p->cantidad_entregada;
+                return $p;
+            });
 
         if ($piezasEntregables->isEmpty()) {
             return redirect()->route('recepcion.entregas-pendientes')
-                ->with('info', 'No hay piezas listas para entregar en esta orden.');
+                ->with('info', 'No hay piezas pendientes para entregar en esta orden.');
         }
 
         $orden->load('cliente');
@@ -130,13 +132,14 @@ class EntregaController extends Controller
     }
 
     /**
-     * POST /recepcion/entregas-pendientes/{orden}/entregar - Marca piezas como entregadas.
+     * POST /recepcion/entregas-pendientes/{orden}/entregar - Entrega parcial/total de piezas.
      */
     public function entregarPiezas(Request $request, Orden $orden)
     {
         $request->validate([
-            'pieza_ids' => 'required|array|min:1',
-            'pieza_ids.*' => 'required|integer',
+            'piezas' => 'required|array|min:1',
+            'piezas.*.pieza_id' => 'required|integer',
+            'piezas.*.cantidad' => 'required|integer|min:1',
         ]);
 
         $user = $request->user();
@@ -144,30 +147,60 @@ class EntregaController extends Controller
 
         DB::beginTransaction();
         try {
-            foreach ($request->input('pieza_ids') as $piezaId) {
-                $pieza = OrdenPieza::where('id', $piezaId)
+            // Crear evento de entrega
+            $entrega = Entrega::create([
+                'orden_id' => $orden->id,
+                'entregada_por' => $user->id,
+            ]);
+
+            foreach ($request->input('piezas') as $item) {
+                $pieza = OrdenPieza::where('id', $item['pieza_id'])
                     ->where('orden_id', $orden->id)
-                    ->where('porcentaje_avance', '>=', 100)
-                    ->where('entregada', false)
+                    ->whereColumn('cantidad_entregada', '<', 'cantidad')
                     ->first();
 
                 if (!$pieza) continue;
 
-                $pieza->update([
-                    'entregada' => true,
-                    'entregada_en' => now(),
-                    'entregada_por' => $user->id,
-                    'estado' => 'entregada',
+                $cantidadPendiente = $pieza->cantidad - $pieza->cantidad_entregada;
+                $cantidadAEntregar = min($item['cantidad'], $cantidadPendiente);
+
+                if ($cantidadAEntregar <= 0) continue;
+
+                // Registrar detalle de entrega
+                EntregaPieza::create([
+                    'entrega_id' => $entrega->id,
+                    'orden_pieza_id' => $pieza->id,
+                    'cantidad' => $cantidadAEntregar,
                 ]);
 
-                $entregadas[] = $pieza->nombre;
+                // Actualizar pieza
+                $nuevaCantidadEntregada = $pieza->cantidad_entregada + $cantidadAEntregar;
+                $updateData = ['cantidad_entregada' => $nuevaCantidadEntregada];
+
+                if ($nuevaCantidadEntregada >= $pieza->cantidad) {
+                    $updateData['entregada'] = true;
+                    $updateData['entregada_en'] = now();
+                    $updateData['entregada_por'] = $user->id;
+                    $updateData['estado'] = 'entregada';
+                }
+
+                $pieza->update($updateData);
+
+                $entregadas[] = $pieza->nombre . " ({$cantidadAEntregar}/{$pieza->cantidad})";
 
                 $this->registrarActividad(
                     'pieza.entregada',
-                    "Pieza '{$pieza->nombre}' entregada al cliente (Orden {$orden->numero_orden})",
+                    "Entrega de {$cantidadAEntregar} unidad(es) de '{$pieza->nombre}' (Orden {$orden->numero_orden})",
                     $orden->id,
-                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre]
+                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
                 );
+            }
+
+            // Vincular foto si fue subida previamente
+            if ($request->input('foto_id')) {
+                OrdenFoto::where('id', $request->input('foto_id'))
+                    ->where('orden_id', $orden->id)
+                    ->update(['entrega_id' => $entrega->id]);
             }
 
             $orden->load('piezas');
@@ -179,6 +212,7 @@ class EntregaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $count . ' pieza(s) entregada(s) exitosamente.',
+                'entrega_id' => $entrega->id,
                 'piezas_entregadas' => $count,
                 'estado_entrega' => $orden->estado_entrega,
             ]);
@@ -192,7 +226,7 @@ class EntregaController extends Controller
     }
 
     /**
-     * POST /recepcion/entregas-pendientes/{orden}/entrega-rapida - Entrega todas las piezas listas.
+     * POST /recepcion/entregas-pendientes/{orden}/entrega-rapida - Entrega todo lo pendiente.
      */
     public function entregaRapida(Orden $orden)
     {
@@ -203,15 +237,14 @@ class EntregaController extends Controller
             ], 422);
         }
 
-        $piezasListas = $orden->piezas()
-            ->where('porcentaje_avance', '>=', 100)
-            ->where('entregada', false)
+        $piezasPendientes = $orden->piezas()
+            ->whereColumn('cantidad_entregada', '<', 'cantidad')
             ->get();
 
-        if ($piezasListas->isEmpty()) {
+        if ($piezasPendientes->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No hay piezas listas para entrega rapida.',
+                'message' => 'No hay piezas pendientes para entrega rapida.',
             ], 422);
         }
 
@@ -220,8 +253,22 @@ class EntregaController extends Controller
 
         DB::beginTransaction();
         try {
-            foreach ($piezasListas as $pieza) {
+            $entrega = Entrega::create([
+                'orden_id' => $orden->id,
+                'entregada_por' => $user->id,
+            ]);
+
+            foreach ($piezasPendientes as $pieza) {
+                $cantidadAEntregar = $pieza->cantidad - $pieza->cantidad_entregada;
+
+                EntregaPieza::create([
+                    'entrega_id' => $entrega->id,
+                    'orden_pieza_id' => $pieza->id,
+                    'cantidad' => $cantidadAEntregar,
+                ]);
+
                 $pieza->update([
+                    'cantidad_entregada' => $pieza->cantidad,
                     'entregada' => true,
                     'entregada_en' => now(),
                     'entregada_por' => $user->id,
@@ -232,9 +279,9 @@ class EntregaController extends Controller
 
                 $this->registrarActividad(
                     'pieza.entregada',
-                    "Pieza '{$pieza->nombre}' entregada al cliente (Orden {$orden->numero_orden})",
+                    "Entrega rapida de {$cantidadAEntregar} unidad(es) de '{$pieza->nombre}' (Orden {$orden->numero_orden})",
                     $orden->id,
-                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre]
+                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
                 );
             }
 
@@ -282,6 +329,7 @@ class EntregaController extends Controller
         $foto = OrdenFoto::create([
             'orden_id' => $orden->id,
             'orden_pieza_id' => null,
+            'entrega_id' => $request->input('entrega_id'),
             'tipo_foto' => 'entrega',
             'ruta_archivo' => $rutaRelativa,
             'ruta_miniatura' => null,
@@ -299,65 +347,119 @@ class EntregaController extends Controller
     }
 
     /**
-     * GET /recepcion/entregas-historial - Historial de piezas entregadas.
+     * GET /recepcion/entregas-historial - Historial de entregas realizadas.
      */
     public function historial(Request $request)
     {
         if ($request->ajax()) {
-            $query = OrdenPieza::where('entregada', true)
-                ->with(['orden.cliente', 'entregadaPorUsuario'])
-                ->select('orden_piezas.*');
+            $query = EntregaPieza::with([
+                'entrega.entregadaPorUsuario',
+                'entrega.orden.cliente',
+                'ordenPieza',
+            ])->select('entrega_piezas.*');
 
             return DataTables::of($query)
-                ->addColumn('fecha_entrega_formatted', function ($p) {
-                    return $p->entregada_en ? $p->entregada_en->format('d/m/Y H:i') : '-';
+                ->addColumn('fecha_entrega_formatted', function ($ep) {
+                    return $ep->created_at ? $ep->created_at->format('d/m/Y H:i') : '-';
                 })
-                ->addColumn('numero_orden', function ($p) {
-                    $url = route('recepcion.ordenes.show', $p->orden_id);
-                    return '<a href="' . $url . '" class="fw-semibold text-decoration-none">' . ($p->orden->numero_orden ?? '-') . '</a>';
+                ->addColumn('numero_orden', function ($ep) {
+                    $orden = $ep->entrega->orden ?? null;
+                    if (!$orden) return '-';
+                    $url = route('recepcion.ordenes.show', $orden->id);
+                    return '<a href="' . $url . '" class="fw-semibold text-decoration-none">' . ($orden->numero_orden ?? '-') . '</a>';
                 })
-                ->addColumn('cliente_nombre', function ($p) {
-                    return $p->orden->cliente->nombre ?? '-';
+                ->addColumn('cliente_nombre', function ($ep) {
+                    return $ep->entrega->orden->cliente->nombre ?? '-';
                 })
-                ->addColumn('entregado_por_nombre', function ($p) {
-                    return $p->entregadaPorUsuario->name ?? '-';
+                ->addColumn('pieza_nombre', function ($ep) {
+                    return $ep->ordenPieza->nombre ?? '-';
                 })
-                ->editColumn('cantidad', function ($p) {
-                    return '<span class="text-center d-block">' . $p->cantidad . '</span>';
+                ->addColumn('cantidad_entregada', function ($ep) {
+                    $pieza = $ep->ordenPieza;
+                    return '<span class="text-center d-block">' . $ep->cantidad . ' / ' . ($pieza->cantidad ?? '-') . '</span>';
+                })
+                ->addColumn('material', function ($ep) {
+                    return $ep->ordenPieza->material ?? '-';
+                })
+                ->addColumn('calibre', function ($ep) {
+                    return $ep->ordenPieza->calibre ?? '-';
+                })
+                ->addColumn('entregado_por_nombre', function ($ep) {
+                    return $ep->entrega->entregadaPorUsuario->name ?? '-';
                 })
                 ->filterColumn('numero_orden', function ($query, $keyword) {
-                    $query->whereHas('orden', function ($q) use ($keyword) {
+                    $query->whereHas('entrega.orden', function ($q) use ($keyword) {
                         $q->where('numero_orden', 'like', "%{$keyword}%");
                     });
                 })
                 ->filterColumn('cliente_nombre', function ($query, $keyword) {
-                    $query->whereHas('orden.cliente', function ($q) use ($keyword) {
+                    $query->whereHas('entrega.orden.cliente', function ($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('pieza_nombre', function ($query, $keyword) {
+                    $query->whereHas('ordenPieza', function ($q) use ($keyword) {
                         $q->where('nombre', 'like', "%{$keyword}%");
                     });
                 })
                 ->orderColumn('fecha_entrega_formatted', function ($query, $order) {
-                    $query->orderBy('entregada_en', $order);
+                    $query->orderBy('created_at', $order);
                 })
-                ->rawColumns(['numero_orden', 'cantidad'])
+                ->rawColumns(['numero_orden', 'cantidad_entregada'])
                 ->make(true);
         }
 
-        $totalEntregadas = OrdenPieza::where('entregada', true)->count();
+        $totalEntregadas = EntregaPieza::count();
 
-        $entregadasHoy = OrdenPieza::where('entregada', true)
-            ->whereDate('entregada_en', today())
-            ->count();
+        $entregadasHoy = EntregaPieza::whereDate('created_at', today())->count();
 
-        $entregadasSemana = OrdenPieza::where('entregada', true)
-            ->where('entregada_en', '>=', now()->subDays(7))
-            ->count();
+        $entregadasSemana = EntregaPieza::where('created_at', '>=', now()->subDays(7))->count();
 
         return view('entregas.historial', compact(
             'totalEntregadas', 'entregadasHoy', 'entregadasSemana'
         ));
     }
 
-    // ---- Badge helpers (copiados de OrdenController) ----
+    /**
+     * GET /recepcion/entregas-pendientes/pieza/{pieza}/historial - Historial de entregas de una pieza.
+     */
+    public function historialPieza($piezaId)
+    {
+        $pieza = OrdenPieza::findOrFail($piezaId);
+
+        $entregas = EntregaPieza::where('orden_pieza_id', $pieza->id)
+            ->with(['entrega.entregadaPorUsuario', 'entrega.fotos'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($ep) {
+                $fotos = $ep->entrega->fotos->map(function ($f) {
+                    return [
+                        'id' => $f->id,
+                        'url' => asset($f->ruta_archivo),
+                    ];
+                });
+
+                return [
+                    'id' => $ep->id,
+                    'fecha' => $ep->created_at ? $ep->created_at->format('d/m/Y H:i') : '-',
+                    'cantidad' => $ep->cantidad,
+                    'entregado_por' => $ep->entrega->entregadaPorUsuario->name ?? '-',
+                    'fotos' => $fotos,
+                ];
+            });
+
+        return response()->json([
+            'pieza' => [
+                'id' => $pieza->id,
+                'nombre' => $pieza->nombre,
+                'cantidad' => $pieza->cantidad,
+                'cantidad_entregada' => $pieza->cantidad_entregada,
+            ],
+            'entregas' => $entregas,
+        ]);
+    }
+
+    // ---- Badge helpers ----
 
     protected function badgeEstadoTrabajo(string $estado): string
     {

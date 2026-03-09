@@ -92,6 +92,11 @@ class Orden extends Model
         return $this->hasMany(DevolucionGarantia::class, 'orden_id');
     }
 
+    public function entregas()
+    {
+        return $this->hasMany(Entrega::class, 'orden_id');
+    }
+
     // === Scopes ===
 
     public function scopeBorradores($query)

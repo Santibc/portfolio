@@ -10,6 +10,7 @@ use App\Models\OrdenPieza;
 use App\Models\Pago;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
+use App\Helpers\ImageHelper;
 use Intervention\Image\Facades\Image;
 
 class OrdenService
@@ -106,11 +107,20 @@ class OrdenService
             $orden->estado_trabajo = 'ejecutada';
             $orden->estado_entrega = 'entregada';
         } else {
-            $orden->estado_trabajo = 'generada';
+            // Piezas sin operario -> completada inmediatamente
+            foreach ($piezas->where('requiere_operario', false) as $pieza) {
+                $pieza->update(['estado' => 'completada', 'porcentaje_avance' => 100]);
+            }
 
-            // Crear asignaciones iniciales
-            $operarioId = $data['operario_id'];
-            $this->crearAsignacionesIniciales($orden, (int) $operarioId, $user);
+            // Piezas con operario -> asignar
+            $piezasConOperario = $piezas->where('requiere_operario', true);
+            if ($piezasConOperario->isNotEmpty()) {
+                $operarioId = $data['operario_id'];
+                $this->crearAsignacionesIniciales($orden, (int) $operarioId, $user, $piezasConOperario);
+            }
+
+            // Recalcular estado basado en piezas actualizadas
+            $orden->estado_trabajo = $this->estadoService->recalcularEstadoTrabajo($orden->fresh());
         }
 
         // Recalcular estado de pago
@@ -150,15 +160,11 @@ class OrdenService
             ? "uploads/ordenes/{$ordenId}/bosquejos/{$fileName}"
             : "uploads/ordenes/temp_" . session()->getId() . "/{$fileName}";
 
-        // Generar miniatura
+        // Hacer cuadrada y generar miniatura
         $thumbRelative = $relativePath;
         try {
-            $img = Image::make("{$uploadPath}/{$fileName}");
-            $img->resize(300, 300, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $img->save("{$uploadPath}/{$thumbName}", 80);
+            ImageHelper::makeSquare("{$uploadPath}/{$fileName}");
+            ImageHelper::makeSquareThumbnail("{$uploadPath}/{$fileName}", "{$uploadPath}/{$thumbName}");
             $thumbRelative = $ordenId
                 ? "uploads/ordenes/{$ordenId}/bosquejos/{$thumbName}"
                 : "uploads/ordenes/temp_" . session()->getId() . "/{$thumbName}";
@@ -207,15 +213,11 @@ class OrdenService
             ? "uploads/ordenes/{$ordenId}/bosquejos/{$fileName}"
             : "uploads/ordenes/temp_" . session()->getId() . "/{$fileName}";
 
-        // Generar miniatura
+        // Hacer cuadrada y generar miniatura
         $thumbRelative = $relativePath;
         try {
-            $img = Image::make("{$uploadPath}/{$fileName}");
-            $img->resize(300, 300, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $img->save("{$uploadPath}/{$thumbName}", 80);
+            ImageHelper::makeSquare("{$uploadPath}/{$fileName}");
+            ImageHelper::makeSquareThumbnail("{$uploadPath}/{$fileName}", "{$uploadPath}/{$thumbName}");
             $thumbRelative = $ordenId
                 ? "uploads/ordenes/{$ordenId}/bosquejos/{$thumbName}"
                 : "uploads/ordenes/temp_" . session()->getId() . "/{$thumbName}";
@@ -261,8 +263,9 @@ class OrdenService
         }
 
         $piezas = $data['piezas'] ?? [];
-        if (!empty($piezas) && empty($data['operario_id'])) {
-            $errores[] = 'Debe seleccionar un operario cuando hay piezas.';
+        $algunaRequiereOperario = collect($piezas)->contains(fn($p) => ($p['requiere_operario'] ?? true));
+        if ($algunaRequiereOperario && empty($data['operario_id'])) {
+            $errores[] = 'Debe seleccionar un operario cuando hay piezas que lo requieren.';
         }
 
         return $errores;
@@ -436,6 +439,7 @@ class OrdenService
                 'notas' => $notas,
                 'porcentaje_avance' => 0,
                 'estado' => 'pendiente',
+                'requiere_operario' => (bool) ($pieza['requiere_operario'] ?? true),
                 'orden_visual' => $index,
             ]);
         }
@@ -491,7 +495,7 @@ class OrdenService
      */
     protected function actualizarAsignacionOperario(Orden $orden, int $operarioId, User $asignadoPor): void
     {
-        $piezas = $orden->piezas()->get();
+        $piezas = $orden->piezas()->where('requiere_operario', true)->get();
 
         foreach ($piezas as $pieza) {
             $pieza->update(['operario_actual_id' => $operarioId]);
@@ -508,14 +512,21 @@ class OrdenService
                 'activa' => true,
             ]);
         }
+
+        // Piezas sin operario -> asegurar estado completada
+        $orden->piezas()->where('requiere_operario', false)->update([
+            'estado' => 'completada',
+            'porcentaje_avance' => 100,
+            'operario_actual_id' => null,
+        ]);
     }
 
     /**
      * Crea asignaciones iniciales al generar orden.
      */
-    protected function crearAsignacionesIniciales(Orden $orden, int $operarioId, User $asignadoPor): void
+    protected function crearAsignacionesIniciales(Orden $orden, int $operarioId, User $asignadoPor, $piezas = null): void
     {
-        $piezas = $orden->piezas()->get();
+        $piezas = $piezas ?? $orden->piezas()->get();
 
         foreach ($piezas as $pieza) {
             AsignacionPieza::create([

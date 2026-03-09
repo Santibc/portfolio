@@ -15,7 +15,7 @@
                     <i class="bi bi-puzzle"></i> <span class="d-none d-md-inline">Piezas</span>
                 </div>
                 <div class="wizard-step" data-step="3" onclick="irASeccion(3)">
-                    <i class="bi bi-cart3"></i> <span class="d-none d-md-inline">Items</span>
+                    <i class="bi bi-cart3"></i> <span class="d-none d-md-inline">Items (Productos y servicios)</span>
                 </div>
                 <div class="wizard-step" data-step="4" onclick="irASeccion(4)">
                     <i class="bi bi-pen"></i> <span class="d-none d-md-inline">Firma</span>
@@ -189,17 +189,13 @@
 <div class="modal fade" id="modalDibujoTablet" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-semibold"><i class="bi bi-pencil-square me-2 text-primary"></i>Dibujar Bosquejo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body pt-3 pb-0 px-0">
-                <div class="d-flex gap-2 mb-2 flex-wrap px-3">
+            <div class="modal-header border-0 py-1 px-3">
+                <div class="d-flex gap-2 flex-wrap align-items-center w-100">
                     <button type="button" class="btn btn-sm btn-dark" onclick="cambiarColorDibujo('#000000')">Negro</button>
                     <button type="button" class="btn btn-sm btn-danger" onclick="cambiarColorDibujo('#dc3545')">Rojo</button>
                     <button type="button" class="btn btn-sm btn-primary" onclick="cambiarColorDibujo('#0d6efd')">Azul</button>
                     <button type="button" class="btn btn-sm btn-success" onclick="cambiarColorDibujo('#198754')">Verde</button>
-                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="cambiarColorDibujo('#ffffff')" style="background: #ffffff;">Blanco</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarColorDibujo('#ffffff')" title="Borrador"><i class="bi bi-eraser-fill"></i></button>
                     <span class="vr mx-1"></span>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(1)">Ultra Fino</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(2)">Fino</button>
@@ -209,13 +205,39 @@
                     <span class="vr mx-1"></span>
                     <button type="button" class="btn btn-sm btn-outline-warning" onclick="deshacerDibujo()"><i class="bi bi-arrow-counterclockwise"></i> Deshacer</button>
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="limpiarDibujo()"><i class="bi bi-eraser"></i> Limpiar</button>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
                 </div>
-                <canvas id="dibujoCanvas" width="900" height="500" style="border: 1px solid #dee2e6; background: white; cursor: crosshair; width: 100%; display: block;"></canvas>
             </div>
-            <div class="modal-footer border-0 pt-0">
+            <div class="modal-body py-0 px-0">
+                <canvas id="dibujoCanvas" width="700" height="700" style="border: 1px solid #dee2e6; background: white; cursor: crosshair; width: 100%; max-width: 700px; aspect-ratio: 1/1; display: block; margin: 0 auto;"></canvas>
+            </div>
+            <div class="modal-footer border-0 py-2">
+                <h6 class="modal-title fw-semibold me-auto mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Dibujar Bosquejo</h6>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarDibujo" onclick="guardarDibujoComoImagen()">
                     <i class="bi bi-save me-1"></i> Guardar Dibujo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Camara para Piezas --}}
+<div class="modal fade" id="modalCamaraPieza" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 py-2 px-3">
+                <h6 class="modal-title fw-semibold"><i class="bi bi-camera me-2 text-primary"></i>Tomar Foto</h6>
+                <button type="button" class="btn-close" onclick="camaraPiezaCerrar()"></button>
+            </div>
+            <div class="modal-body text-center py-2">
+                <video id="camaraPiezaVideo" autoplay playsinline class="img-fluid rounded" style="max-height: 400px;"></video>
+                <canvas id="camaraPiezaCanvas" style="display: none;"></canvas>
+            </div>
+            <div class="modal-footer border-0 py-2">
+                <button type="button" class="btn btn-secondary" onclick="camaraPiezaCerrar()">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="camaraPiezaCapturar()">
+                    <i class="bi bi-camera-fill me-1"></i>Capturar
                 </button>
             </div>
         </div>

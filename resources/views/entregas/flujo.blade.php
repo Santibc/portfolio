@@ -29,8 +29,8 @@
                     <strong>{{ $orden->fecha_entrega ? $orden->fecha_entrega->format('d/m/Y') : '-' }}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small class="text-muted d-block">Piezas para Entregar</small>
-                    <strong class="text-success">{{ $piezasEntregables->count() }}</strong>
+                    <small class="text-muted d-block">Piezas Pendientes</small>
+                    <strong class="text-warning">{{ $piezasEntregables->count() }}</strong>
                 </div>
             </div>
         </div>
@@ -43,7 +43,7 @@
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
                     <div class="d-flex align-items-center justify-content-between">
                         <h6 class="mb-0 fw-semibold text-dark">
-                            <i class="bi bi-check2-square me-2 text-primary"></i>Piezas Listas
+                            <i class="bi bi-check2-square me-2 text-primary"></i>Piezas Pendientes
                         </h6>
                         <span class="text-muted small">
                             <span x-text="selectedIds.length"></span> de <span x-text="piezas.length"></span> seleccionada(s)
@@ -58,21 +58,39 @@
                                     <th style="width: 40px;">
                                         <input type="checkbox" class="form-check-input" @click="toggleAll()" :checked="allSelected">
                                     </th>
-                                    <th>Nombre</th>
-                                    <th class="text-center">Cant.</th>
+                                    <th>Identificador</th>
+                                    <th class="text-center">Pendiente</th>
+                                    <th class="text-center" style="width: 100px;">Entregar</th>
                                     <th>Material</th>
                                     <th>Calibre</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template x-for="pieza in piezas" :key="pieza.id">
-                                    <tr :class="selectedIds.includes(pieza.id) ? 'table-success' : ''" style="cursor: pointer;" @click="togglePieza(pieza.id)">
-                                        <td @click.stop>
+                                    <tr :class="selectedIds.includes(pieza.id) ? 'table-success' : ''">
+                                        <td>
                                             <input type="checkbox" class="form-check-input" :value="pieza.id"
                                                 :checked="selectedIds.includes(pieza.id)" @change="togglePieza(pieza.id)">
                                         </td>
-                                        <td class="fw-semibold" x-text="pieza.nombre"></td>
-                                        <td class="text-center" x-text="pieza.cantidad"></td>
+                                        <td>
+                                            <span class="fw-semibold" x-text="pieza.nombre"></span>
+                                            <div class="small text-muted">
+                                                <span x-text="pieza.cantidad_entregada"></span> / <span x-text="pieza.cantidad"></span> entregadas
+                                            </div>
+                                            <div class="progress mt-1" style="height: 4px; width: 100px;">
+                                                <div class="progress-bar bg-info" :style="'width:' + (pieza.cantidad > 0 ? (pieza.cantidad_entregada / pieza.cantidad * 100) : 0) + '%'"></div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-warning text-dark" x-text="pieza.cantidad_pendiente"></span>
+                                        </td>
+                                        <td class="text-center" @click.stop>
+                                            <input type="number" class="form-control form-control-sm text-center"
+                                                :min="1" :max="pieza.cantidad_pendiente"
+                                                x-model.number="cantidades[pieza.id]"
+                                                @focus="if(!selectedIds.includes(pieza.id)) togglePieza(pieza.id)"
+                                                style="width: 70px; margin: 0 auto;">
+                                        </td>
                                         <td x-text="pieza.material || '-'"></td>
                                         <td x-text="pieza.calibre || '-'"></td>
                                     </tr>
@@ -95,40 +113,73 @@
                     </h6>
                 </div>
                 <div class="card-body px-4 pb-4 pt-3">
-                    <template x-if="!fotoSubida">
-                        <div class="text-center p-4 border border-2 border-dashed rounded-3"
-                            style="cursor: pointer; border-color: #dee2e6 !important;"
-                            @click="$refs.fileInput.click()"
-                            @drop.prevent="handleDrop($event)"
-                            @dragover.prevent
-                            @dragenter.prevent>
-                            <template x-if="!uploading">
-                                <div>
-                                    <i class="bi bi-cloud-arrow-up" style="font-size: 2rem; color: #adb5bd;"></i>
-                                    <p class="mt-1 mb-0 text-muted small">Clic o arrastra imagen</p>
-                                </div>
-                            </template>
-                            <template x-if="uploading">
-                                <div>
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                    <p class="mt-1 mb-0 text-muted small">Subiendo...</p>
-                                </div>
-                            </template>
+                    {{-- Sin foto y sin camara activa: boton para abrir camara --}}
+                    <template x-if="!fotoSubida && !cameraActive && !uploading">
+                        <div class="text-center">
+                            <button type="button" class="btn btn-outline-primary" @click="abrirCamara()">
+                                <i class="bi bi-camera me-2"></i>Tomar Foto
+                            </button>
                         </div>
                     </template>
 
-                    <template x-if="fotoSubida">
+                    {{-- Subiendo foto --}}
+                    <template x-if="uploading">
+                        <div class="text-center p-4">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <p class="mt-1 mb-0 text-muted small">Subiendo...</p>
+                        </div>
+                    </template>
+
+                    {{-- Camara activa: video preview --}}
+                    <template x-if="cameraActive && !fotoSubida">
                         <div class="text-center">
-                            <img :src="fotoSubida.url" class="img-fluid rounded shadow-sm" style="max-height: 180px;">
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-sm btn-outline-danger" @click="fotoSubida = null">
-                                    <i class="bi bi-trash me-1"></i>Quitar
+                            <video x-ref="cameraVideo" autoplay playsinline
+                                class="img-fluid rounded shadow-sm" style="max-height: 250px; transform: scaleX(1);"></video>
+                            <div class="mt-2 d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-success btn-sm" @click="capturarFoto()">
+                                    <i class="bi bi-camera-fill me-1"></i>Capturar
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" @click="cerrarCamara()">
+                                    <i class="bi bi-x-lg me-1"></i>Cancelar
                                 </button>
                             </div>
                         </div>
                     </template>
 
-                    <input type="file" x-ref="fileInput" accept="image/*" class="d-none" @change="subirFoto($event)">
+                    {{-- Foto tomada: preview --}}
+                    <template x-if="fotoSubida">
+                        <div class="text-center">
+                            <img :src="fotoSubida.url" class="img-fluid rounded shadow-sm" style="max-height: 180px;">
+                            <div class="mt-2 d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger" @click="quitarFoto()">
+                                    <i class="bi bi-trash me-1"></i>Quitar
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" @click="quitarFoto(); $nextTick(() => abrirCamara())">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Retomar
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <canvas x-ref="cameraCanvas" class="d-none"></canvas>
+                </div>
+            </div>
+
+            {{-- Resumen de entrega --}}
+            <div class="card border-0 shadow-sm mt-3" x-show="selectedIds.length > 0">
+                <div class="card-body px-4 py-3">
+                    <h6 class="fw-semibold mb-2"><i class="bi bi-receipt me-2 text-primary"></i>Resumen</h6>
+                    <template x-for="pieza in piezasSeleccionadas" :key="pieza.id">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span x-text="pieza.nombre"></span>
+                            <span class="fw-semibold" x-text="cantidades[pieza.id] + ' ud.'"></span>
+                        </div>
+                    </template>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between small fw-bold">
+                        <span>Total unidades</span>
+                        <span x-text="totalUnidades"></span>
+                    </div>
                 </div>
             </div>
 
@@ -136,15 +187,15 @@
             <div class="d-grid mt-3">
                 <button class="btn btn-success btn-lg" :disabled="noneSelected || submitting" @click="confirmarEntrega()">
                     <i class="bi bi-box-arrow-right me-2"></i>
-                    <span x-show="!submitting">Entregar <span x-text="selectedIds.length"></span> Pieza(s)</span>
+                    <span x-show="!submitting">Entregar <span x-text="totalUnidades"></span> Unidad(es)</span>
                     <span x-show="submitting">Procesando...</span>
                 </button>
             </div>
 
-            {{-- Boton rapida: entregar todas --}}
+            {{-- Boton rapida: seleccionar todas --}}
             <div class="d-grid mt-2" x-show="piezas.length > 1 && !allSelected">
-                <button class="btn btn-outline-primary btn-sm" @click="toggleAll(); $nextTick(() => confirmarEntrega())">
-                    <i class="bi bi-lightning me-1"></i>Entregar Todas
+                <button class="btn btn-outline-primary btn-sm" @click="seleccionarTodas()">
+                    <i class="bi bi-lightning me-1"></i>Seleccionar Todas
                 </button>
             </div>
         </div>
@@ -155,12 +206,21 @@
 @push('scripts')
 <script>
 function entregaFlujo() {
+    var piezasData = @json($piezasEntregables);
+    var cantidadesInit = {};
+    piezasData.forEach(function(p) {
+        cantidadesInit[p.id] = p.cantidad_pendiente;
+    });
+
     return {
-        piezas: @json($piezasEntregables),
+        piezas: piezasData,
         selectedIds: [],
+        cantidades: cantidadesInit,
         fotoSubida: null,
         uploading: false,
         submitting: false,
+        cameraActive: false,
+        stream: null,
 
         get allSelected() {
             return this.selectedIds.length === this.piezas.length && this.piezas.length > 0;
@@ -170,12 +230,30 @@ function entregaFlujo() {
             return this.selectedIds.length === 0;
         },
 
+        get piezasSeleccionadas() {
+            var self = this;
+            return this.piezas.filter(function(p) { return self.selectedIds.includes(p.id); });
+        },
+
+        get totalUnidades() {
+            var self = this;
+            var total = 0;
+            this.selectedIds.forEach(function(id) {
+                total += (self.cantidades[id] || 0);
+            });
+            return total;
+        },
+
         toggleAll() {
             if (this.allSelected) {
                 this.selectedIds = [];
             } else {
-                this.selectedIds = this.piezas.map(p => p.id);
+                this.selectedIds = this.piezas.map(function(p) { return p.id; });
             }
+        },
+
+        seleccionarTodas() {
+            this.selectedIds = this.piezas.map(function(p) { return p.id; });
         },
 
         togglePieza(id) {
@@ -187,30 +265,64 @@ function entregaFlujo() {
             }
         },
 
-        handleDrop(event) {
-            var file = event.dataTransfer.files[0];
-            if (file) this.processFile(file);
-        },
-
-        subirFoto(event) {
-            var file = event.target.files[0];
-            if (file) this.processFile(file);
-            event.target.value = '';
-        },
-
-        processFile(file) {
-            if (!file.type.startsWith('image/')) {
-                Swal.fire('Error', 'Solo se permiten imagenes.', 'error');
+        abrirCamara() {
+            var self = this;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                Swal.fire('Error', 'Tu navegador no soporta acceso a la camara.', 'error');
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                Swal.fire('Error', 'La imagen no puede superar 5MB.', 'error');
-                return;
-            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(mediaStream) {
+                    self.stream = mediaStream;
+                    self.cameraActive = true;
+                    self.$nextTick(function() {
+                        var video = self.$refs.cameraVideo;
+                        if (video) {
+                            video.srcObject = mediaStream;
+                        }
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Error al acceder a la camara:', err);
+                    Swal.fire('Error', 'No se pudo acceder a la camara. Verifica los permisos.', 'error');
+                });
+        },
 
+        capturarFoto() {
+            var video = this.$refs.cameraVideo;
+            var canvas = this.$refs.cameraCanvas;
+            if (!video || !canvas) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            this.cerrarCamara();
+
+            var self = this;
+            canvas.toBlob(function(blob) {
+                if (blob) {
+                    self.subirBlob(blob);
+                }
+            }, 'image/jpeg', 0.85);
+        },
+
+        cerrarCamara() {
+            if (this.stream) {
+                this.stream.getTracks().forEach(function(track) { track.stop(); });
+                this.stream = null;
+            }
+            this.cameraActive = false;
+        },
+
+        quitarFoto() {
+            this.fotoSubida = null;
+        },
+
+        subirBlob(blob) {
             this.uploading = true;
             var formData = new FormData();
-            formData.append('foto', file);
+            formData.append('foto', blob, 'foto_entrega.jpg');
 
             var self = this;
             $.ajax({
@@ -237,11 +349,25 @@ function entregaFlujo() {
         confirmarEntrega() {
             if (this.noneSelected) return;
             var self = this;
-            var count = this.selectedIds.length;
+
+            // Construir detalle de piezas
+            var piezasPayload = [];
+            var detalleHtml = '<ul class="text-start list-unstyled mb-0">';
+            this.selectedIds.forEach(function(id) {
+                var pieza = self.piezas.find(function(p) { return p.id === id; });
+                var cant = self.cantidades[id] || 0;
+                if (pieza && cant > 0) {
+                    piezasPayload.push({ pieza_id: id, cantidad: cant });
+                    detalleHtml += '<li><b>' + pieza.nombre + '</b>: ' + cant + ' de ' + pieza.cantidad + '</li>';
+                }
+            });
+            detalleHtml += '</ul>';
+
+            if (piezasPayload.length === 0) return;
 
             Swal.fire({
                 title: 'Confirmar Entrega',
-                html: 'Se entregaran <b>' + count + '</b> pieza(s) al cliente.',
+                html: detalleHtml,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#4A7C59',
@@ -251,6 +377,11 @@ function entregaFlujo() {
                 if (result.isConfirmed) {
                     self.submitting = true;
 
+                    var payload = { piezas: piezasPayload };
+                    if (self.fotoSubida) {
+                        payload.foto_id = self.fotoSubida.id;
+                    }
+
                     $.ajax({
                         url: '{{ route("recepcion.entregas.entregar", $orden) }}',
                         method: 'POST',
@@ -259,7 +390,7 @@ function entregaFlujo() {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        data: JSON.stringify({ pieza_ids: self.selectedIds }),
+                        data: JSON.stringify(payload),
                         success: function(data) {
                             if (data.success) {
                                 Swal.fire({

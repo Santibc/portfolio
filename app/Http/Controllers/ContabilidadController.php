@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReporteItemsExport;
 use App\Models\Orden;
+use App\Models\OrdenItem;
 use App\Models\Pago;
 use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class ContabilidadController extends Controller
@@ -275,6 +278,7 @@ class ContabilidadController extends Controller
                 'total_pagado' => '$' . number_format($ordenFresh->total_pagado, 0, ',', '.'),
                 'estado_pago' => $ordenFresh->estado_pago,
             ],
+            'stats' => $this->statsPagosPendientes(),
         ]);
     }
 
@@ -335,6 +339,7 @@ class ContabilidadController extends Controller
                 'message' => $aprobados . ' pago(s) aprobado(s) por un total de $' . number_format($montoTotal, 0, ',', '.'),
                 'aprobados' => $aprobados,
                 'monto_total' => '$' . number_format($montoTotal, 0, ',', '.'),
+                'stats' => $this->statsPagosPendientes(),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -401,7 +406,7 @@ class ContabilidadController extends Controller
     /**
      * DELETE /contabilidad/pagos/{pago}/rechazar - Rechazar pago pendiente.
      */
-    public function rechazarPago(Pago $pago)
+    public function rechazarPago(Request $request, Pago $pago)
     {
         if ($pago->aprobado) {
             return response()->json(['success' => false, 'message' => 'No se puede rechazar un pago ya aprobado.'], 422);
@@ -412,7 +417,12 @@ class ContabilidadController extends Controller
         $metodo = $pago->metodo_pago;
         $ordenNumero = $pago->orden->numero_orden ?? 'ID:' . $ordenId;
 
-        $pago->delete();
+        $pago->update([
+            'rechazado_por' => auth()->id(),
+            'motivo_rechazo' => $request->input('motivo_rechazo'),
+        ]);
+
+        $pago->delete(); // Soft delete: marca deleted_at
 
         $orden = Orden::find($ordenId);
         if ($orden) {
@@ -428,7 +438,8 @@ class ContabilidadController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pago rechazado y eliminado.',
+            'message' => 'Pago rechazado.',
+            'stats' => $this->statsPagosPendientes(),
         ]);
     }
 
@@ -469,6 +480,12 @@ class ContabilidadController extends Controller
             }
 
             return DataTables::of($query)
+                ->addColumn('checkbox', function ($o) {
+                    return '<input type="checkbox" class="form-check-input fila-check" checked'
+                        . ' data-total="' . $o->total . '"'
+                        . ' data-pagado="' . $o->total_pagado . '"'
+                        . ' data-saldo="' . $o->saldo . '">';
+                })
                 ->addColumn('cliente_nombre', fn($o) => $o->cliente->nombre ?? '-')
                 ->addColumn('fecha_creacion', fn($o) => $o->created_at->format('d/m/Y'))
                 ->addColumn('total_formatted', fn($o) => '$' . number_format($o->total, 0, ',', '.'))
@@ -520,7 +537,7 @@ class ContabilidadController extends Controller
                     $url = route('contabilidad.ordenes.show', $o);
                     return '<a href="' . $url . '" class="fw-semibold text-decoration-none">' . ($o->numero_orden ?? '-') . '</a>';
                 })
-                ->rawColumns(['numero_orden', 'pagado_formatted', 'saldo_formatted', 'porcentaje_pagado', 'estado_pago_badge', 'num_pagos', 'acciones'])
+                ->rawColumns(['checkbox', 'numero_orden', 'pagado_formatted', 'saldo_formatted', 'porcentaje_pagado', 'estado_pago_badge', 'num_pagos', 'acciones'])
                 ->make(true);
         }
 
@@ -543,7 +560,8 @@ class ContabilidadController extends Controller
     public function pagosOrden(Orden $orden)
     {
         $pagos = $orden->pagos()
-            ->with(['registradoPorUsuario', 'aprobadoPorUsuario'])
+            ->withTrashed()
+            ->with(['registradoPorUsuario', 'aprobadoPorUsuario', 'rechazadoPorUsuario'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($p) {
@@ -558,6 +576,10 @@ class ContabilidadController extends Controller
                     'registrado_por' => $p->registradoPorUsuario->name ?? '-',
                     'aprobado' => $p->aprobado,
                     'aprobado_por' => $p->aprobadoPorUsuario->name ?? null,
+                    'rechazado' => $p->trashed(),
+                    'rechazado_por' => $p->rechazadoPorUsuario->name ?? null,
+                    'motivo_rechazo' => $p->motivo_rechazo,
+                    'fecha_rechazo' => $p->deleted_at ? $p->deleted_at->format('d/m/Y H:i') : null,
                 ];
             });
 
@@ -575,7 +597,151 @@ class ContabilidadController extends Controller
         ]);
     }
 
+    /**
+     * GET /contabilidad/reporte-items - Reporte de ventas por items (ordenes pagadas).
+     */
+    public function reporteItems(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = OrdenItem::query()
+                ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
+                ->where('ordenes.estado_pago', 'pagado')
+                ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada'])
+                ->select('orden_items.*', 'ordenes.numero_orden', 'ordenes.created_at as fecha_orden');
+
+            // Filtros
+            if ($request->filled('busqueda')) {
+                $busqueda = $request->busqueda;
+                $query->where(function ($q) use ($busqueda) {
+                    $q->where('orden_items.codigo', 'like', "%{$busqueda}%")
+                      ->orWhere('orden_items.descripcion', 'like', "%{$busqueda}%");
+                });
+            }
+
+            if ($request->filled('categoria') && $request->categoria !== 'todas') {
+                $query->where('orden_items.categoria', $request->categoria);
+            }
+
+            if ($request->filled('fecha_desde')) {
+                $query->whereDate('ordenes.created_at', '>=', $request->fecha_desde);
+            }
+
+            if ($request->filled('fecha_hasta')) {
+                $query->whereDate('ordenes.created_at', '<=', $request->fecha_hasta);
+            }
+
+            // Calcular totales con los filtros aplicados
+            $totalesQuery = clone $query;
+            $totales = $totalesQuery->selectRaw('
+                SUM(orden_items.subtotal) as sum_subtotal,
+                SUM(orden_items.monto_iva) as sum_iva,
+                SUM(orden_items.total) as sum_total
+            ')->first();
+
+            return DataTables::of($query)
+                ->with([
+                    'totales' => [
+                        'subtotal' => '$' . number_format($totales->sum_subtotal ?? 0, 0, ',', '.'),
+                        'iva' => '$' . number_format($totales->sum_iva ?? 0, 0, ',', '.'),
+                        'total' => '$' . number_format($totales->sum_total ?? 0, 0, ',', '.'),
+                    ]
+                ])
+                ->addColumn('numero_orden_link', function ($item) {
+                    $url = route('contabilidad.ordenes.show', $item->orden_id);
+                    return '<a href="' . $url . '" class="text-decoration-none fw-semibold">' . e($item->numero_orden) . '</a>';
+                })
+                ->addColumn('fecha_orden_formatted', function ($item) {
+                    return \Carbon\Carbon::parse($item->fecha_orden)->format('d/m/Y');
+                })
+                ->addColumn('categoria_badge', function ($item) {
+                    return $this->badgeCategoria($item->categoria);
+                })
+                ->addColumn('cantidad_formatted', function ($item) {
+                    return number_format($item->cantidad, 2);
+                })
+                ->addColumn('precio_formatted', function ($item) {
+                    return '$' . number_format($item->precio_unitario, 0, ',', '.');
+                })
+                ->addColumn('subtotal_formatted', function ($item) {
+                    return '$' . number_format($item->subtotal, 0, ',', '.');
+                })
+                ->addColumn('iva_formatted', function ($item) {
+                    return '$' . number_format($item->monto_iva, 0, ',', '.');
+                })
+                ->addColumn('total_formatted', function ($item) {
+                    return '<span class="fw-bold">$' . number_format($item->total, 0, ',', '.') . '</span>';
+                })
+                ->rawColumns(['numero_orden_link', 'categoria_badge', 'total_formatted'])
+                ->make(true);
+        }
+
+        // Stats para la vista
+        $baseQuery = fn() => OrdenItem::query()
+            ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
+            ->where('ordenes.estado_pago', 'pagado')
+            ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada']);
+
+        $totalServicios = $baseQuery()->where('orden_items.categoria', 'servicio')->sum('orden_items.total');
+        $totalMateriales = $baseQuery()->where('orden_items.categoria', 'material')->sum('orden_items.total');
+        $totalProductos = $baseQuery()->where('orden_items.categoria', 'producto_terminado')->sum('orden_items.total');
+        $granTotal = $baseQuery()->sum('orden_items.total');
+        $totalItems = $baseQuery()->count();
+
+        return view('contabilidad.reporte-items', compact(
+            'totalServicios', 'totalMateriales', 'totalProductos', 'granTotal', 'totalItems'
+        ));
+    }
+
+    /**
+     * GET /contabilidad/reporte-items/export - Exportar reporte a Excel.
+     */
+    public function reporteItemsExport(Request $request)
+    {
+        $query = OrdenItem::query()
+            ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
+            ->where('ordenes.estado_pago', 'pagado')
+            ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada'])
+            ->select('orden_items.*', 'ordenes.numero_orden', 'ordenes.created_at as fecha_orden')
+            ->orderBy('ordenes.created_at', 'desc');
+
+        if ($request->filled('busqueda')) {
+            $busqueda = $request->busqueda;
+            $query->where(function ($q) use ($busqueda) {
+                $q->where('orden_items.codigo', 'like', "%{$busqueda}%")
+                  ->orWhere('orden_items.descripcion', 'like', "%{$busqueda}%");
+            });
+        }
+
+        if ($request->filled('categoria') && $request->categoria !== 'todas') {
+            $query->where('orden_items.categoria', $request->categoria);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('ordenes.created_at', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('ordenes.created_at', '<=', $request->fecha_hasta);
+        }
+
+        $items = $query->get();
+
+        return Excel::download(
+            new ReporteItemsExport($items),
+            'reporte-ventas-items-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
     // ---- Badge helpers ----
+
+    protected function statsPagosPendientes(): array
+    {
+        return [
+            'por_aprobar' => Pago::where('aprobado', false)->count(),
+            'monto_pendiente' => '$' . number_format(Pago::where('aprobado', false)->sum('monto'), 0, ',', '.'),
+            'aprobados_hoy' => Pago::where('aprobado', true)->whereDate('updated_at', today())->count(),
+        ];
+    }
 
     protected function badgeEstadoTrabajo(string $estado): string
     {
@@ -599,6 +765,17 @@ class ContabilidadController extends Controller
             'pagado' => ['success', 'PAGADO'],
         ];
         $cfg = $map[$estado] ?? ['secondary', strtoupper($estado)];
+        return '<span class="status-badge ' . $cfg[0] . '">' . $cfg[1] . '</span>';
+    }
+
+    protected function badgeCategoria(string $categoria): string
+    {
+        $map = [
+            'servicio' => ['info', 'SERVICIO'],
+            'material' => ['warning', 'MATERIAL'],
+            'producto_terminado' => ['success', 'PROD. TERMINADO'],
+        ];
+        $cfg = $map[$categoria] ?? ['secondary', strtoupper($categoria)];
         return '<span class="status-badge ' . $cfg[0] . '">' . $cfg[1] . '</span>';
     }
 

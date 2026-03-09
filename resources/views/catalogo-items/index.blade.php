@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Catalogo de Items')
+@section('title', 'Catalogo de Items (Productos y servicios)')
 
 @section('content')
 <div class="container-fluid py-4">
     {{-- Page Header --}}
-    <x-sinden.page-header title="Catalogo de Items" description="Gestion de productos y servicios del catalogo">
+    <x-sinden.page-header title="Catalogo de Items (Productos y servicios)" description="Gestion de productos y servicios del catalogo">
         <x-slot name="actions">
             @can('editar_catalogo_items')
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
@@ -22,7 +22,7 @@
 
     {{-- Summary Cards --}}
     <div class="summary-cards">
-        <x-sinden.stat-card icon="bi bi-tags" :value="$totalItems" title="Total Items" color="primary" />
+        <x-sinden.stat-card icon="bi bi-tags" :value="$totalItems" title="Total Items (Productos y servicios)" color="primary" />
         <x-sinden.stat-card icon="bi bi-check-circle" :value="$itemsActivos" title="Activos" color="success" />
         <x-sinden.stat-card icon="bi bi-gear" :value="$itemsServicios" title="Servicios" color="info" />
         <x-sinden.stat-card icon="bi bi-box" :value="$itemsMateriales" title="Materiales" color="warning" />
@@ -33,7 +33,7 @@
         <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
             <div class="d-flex align-items-center justify-content-between">
                 <h6 class="mb-0 fw-semibold text-dark">
-                    <i class="bi bi-list-ul me-2 text-primary"></i>Listado de Items
+                    <i class="bi bi-list-ul me-2 text-primary"></i>Listado de Items (Productos y servicios)
                 </h6>
                 <span class="badge bg-light text-muted border" id="totalRegistros"></span>
             </div>

@@ -73,6 +73,9 @@
                 <table class="table table-hover align-middle mb-0 sinden-datatable" id="historialFinancieroTable" style="width:100%">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width:40px">
+                                <input type="checkbox" class="form-check-input" id="checkAll" checked>
+                            </th>
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Fecha</th>
@@ -85,6 +88,15 @@
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="4" class="text-end">Totales seleccionados:</td>
+                            <td class="text-end" id="sumaTotal">$0</td>
+                            <td class="text-end" id="sumaPagado">$0</td>
+                            <td class="text-end" id="sumaSaldo">$0</td>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

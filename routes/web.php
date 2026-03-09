@@ -84,6 +84,13 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::post('/ordenes/{orden}/comentarios', [OrdenController::class, 'agregarComentario'])->name('ordenes.comentarios.store');
         Route::post('/ordenes/{orden}/pagos', [OrdenController::class, 'agregarPago'])->name('ordenes.pagos.store');
 
+    });
+
+// ==========================================
+// RUTAS DE ENTREGAS (todos los roles)
+// ==========================================
+Route::middleware(['auth', 'verified'])
+    ->prefix('recepcion')->name('recepcion.')->group(function () {
         // Entregas Pendientes
         Route::get('/entregas-pendientes', [EntregaController::class, 'pendientes'])->name('entregas-pendientes');
         Route::get('/entregas-pendientes/{orden}/flujo', [EntregaController::class, 'flujo'])->name('entregas.flujo');
@@ -93,6 +100,9 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
 
         // Historial de Entregas
         Route::get('/entregas-historial', [EntregaController::class, 'historial'])->name('entregas.historial');
+
+        // Historial de entregas por pieza (AJAX)
+        Route::get('/entregas-pendientes/pieza/{pieza}/historial', [EntregaController::class, 'historialPieza'])->name('entregas.historial-pieza');
     });
 
 // ==========================================
@@ -189,6 +199,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
         // Rechazar pago pendiente
         Route::delete('/pagos/{pago}/rechazar', [ContabilidadController::class, 'rechazarPago'])->name('pagos.rechazar');
 
+        // Reporte de ventas por items
+        Route::get('/reporte-items', [ContabilidadController::class, 'reporteItems'])->name('reporte-items');
+        Route::get('/reporte-items/export', [ContabilidadController::class, 'reporteItemsExport'])->name('reporte-items.export');
+
         // Catalogo Items (solo lectura)
         Route::get('/items', [CatalogoItemController::class, 'index'])->name('items.index');
     });
@@ -204,6 +218,15 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::get('/configuracion', function () {
         return view('admin.configuracion.index');
     })->name('configuracion');
+});
+
+// ==========================================
+// NOTIFICACIONES (todos los usuarios autenticados)
+// ==========================================
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::delete('/notificaciones/{id}', [\App\Http\Controllers\NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
+    Route::post('/notificaciones/marcar-leidas', [\App\Http\Controllers\NotificacionController::class, 'marcarLeidas'])->name('notificaciones.marcar-leidas');
 });
 
 require __DIR__.'/auth.php';

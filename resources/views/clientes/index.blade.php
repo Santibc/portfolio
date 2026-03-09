@@ -106,7 +106,10 @@ function toggleActivo(clienteId, nombre) {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(function(r) { return r.json(); })
+            .then(function(r) {
+                if (!r.ok) return r.json().then(function(d) { throw d; });
+                return r.json();
+            })
             .then(function(data) {
                 if (data.success) {
                     Swal.fire({
@@ -120,8 +123,9 @@ function toggleActivo(clienteId, nombre) {
                     $('#clientesTable').DataTable().ajax.reload(null, false);
                 }
             })
-            .catch(function() {
-                Swal.fire('Error', 'No se pudo cambiar el estado', 'error');
+            .catch(function(err) {
+                var msg = (err && err.message) ? err.message : 'No se pudo cambiar el estado';
+                Swal.fire('Error', msg, 'error');
             });
         }
     });

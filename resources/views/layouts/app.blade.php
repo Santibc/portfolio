@@ -56,6 +56,26 @@
             </div>
 
             <div class="header-right">
+                {{-- Campana de notificaciones --}}
+                <div class="notif-bell-wrapper" id="notifBellWrapper">
+                    <button class="notif-bell-btn" id="notifBellBtn" title="Notificaciones">
+                        <i class="bi bi-bell"></i>
+                        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                    </button>
+                    <div class="notif-panel" id="notifPanel" style="display:none;">
+                        <div class="notif-panel-header">
+                            <span class="notif-panel-title">Notificaciones</span>
+                            <button class="notif-panel-close" id="notifPanelClose"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                        <div class="notif-panel-body" id="notifPanelBody">
+                            <div class="notif-empty">Sin notificaciones</div>
+                        </div>
+                        <div class="notif-panel-footer">
+                            <button class="notif-mark-all" id="notifMarkAll">Marcar todas como leidas</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="user-menu">
                     <div class="user-avatar">
                         @if(Auth::user()->hasProfilePhoto())
@@ -146,6 +166,10 @@
 
     {{-- Main JS --}}
     <script src="{{ asset('js/gva-main.js') }}"></script>
+
+    {{-- Notificaciones --}}
+    <div id="notifToastContainer"></div>
+    <script src="{{ asset('js/notificaciones.js') }}"></script>
 
     @stack('scripts')
 </body>

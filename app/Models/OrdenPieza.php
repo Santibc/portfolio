@@ -10,12 +10,14 @@ class OrdenPieza extends Model
 
     protected $fillable = [
         'orden_id', 'orden_bosquejo_id', 'nombre', 'nombre_automatico', 'cantidad',
-        'material', 'calibre', 'especificacion', 'notas', 'porcentaje_avance', 'operario_actual_id',
-        'estado', 'entregada', 'entregada_en', 'entregada_por', 'orden_visual',
+        'cantidad_entregada', 'material', 'calibre', 'especificacion', 'notas',
+        'porcentaje_avance', 'operario_actual_id', 'estado', 'requiere_operario',
+        'entregada', 'entregada_en', 'entregada_por', 'orden_visual',
     ];
 
     protected $casts = [
         'porcentaje_avance' => 'decimal:2',
+        'requiere_operario' => 'boolean',
         'entregada' => 'boolean',
         'entregada_en' => 'datetime',
     ];
@@ -58,5 +60,10 @@ class OrdenPieza extends Model
     public function garantias()
     {
         return $this->hasMany(DevolucionGarantia::class, 'orden_pieza_id');
+    }
+
+    public function entregasPieza()
+    {
+        return $this->hasMany(EntregaPieza::class, 'orden_pieza_id');
     }
 }

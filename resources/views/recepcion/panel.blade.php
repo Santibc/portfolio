@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Panel de Recepcion')
+@section('title', 'Panel de Recepcion (ventas)')
 
 @section('content')
 <div class="container-fluid py-4">
-    <x-sinden.page-header title="Panel de Recepcion" description="Gestion de ordenes, clientes y entregas">
+    <x-sinden.page-header title="Panel de Recepcion (ventas)" description="Gestion de ordenes, clientes y entregas">
     </x-sinden.page-header>
 
     {{-- Summary Cards --}}
@@ -20,7 +20,7 @@
         <div class="col-md-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <h5 class="mb-3">Bienvenido al Panel de Recepcion</h5>
+                    <h5 class="mb-3">Bienvenido al Panel de Recepcion (ventas)</h5>
                     <p class="text-muted">Desde aqui podras gestionar las ordenes de trabajo, clientes y entregas.</p>
                     <p class="text-muted mb-0">Los modulos estaran disponibles a medida que se implementen.</p>
                 </div>

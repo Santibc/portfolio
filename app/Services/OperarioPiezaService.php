@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\AsignacionPieza;
-use App\Models\ConfiguracionSistema;
 use App\Models\HistorialAvance;
 use App\Models\Notificacion;
 use App\Models\Orden;
@@ -357,11 +356,11 @@ class OperarioPiezaService
      */
     protected function notificarAvanceDisminuido(OrdenPieza $pieza, User $operario, float $desde, float $hasta): void
     {
-        $usuarioNotificar = ConfiguracionSistema::get('usuario_notificar_baja_porcentaje');
+        $usuarios = User::role(['Administrador', 'Contabilidad'])->get();
 
-        if ($usuarioNotificar) {
+        foreach ($usuarios as $usuario) {
             Notificacion::create([
-                'usuario_id' => $usuarioNotificar,
+                'usuario_id' => $usuario->id,
                 'tipo' => 'avance_disminuido',
                 'titulo' => 'Avance disminuido',
                 'contenido' => "{$operario->name} bajo el avance de '{$pieza->nombre}' (Orden #{$pieza->orden->numero_orden}) de {$desde}% a {$hasta}%",

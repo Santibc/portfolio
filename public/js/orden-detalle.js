@@ -228,9 +228,9 @@ function abrirLightbox(rutaArchivo, titulo) {
     if (src && !src.startsWith('http') && !src.startsWith('/')) {
         src = '/' + src;
     }
-    $('#lightboxImagen').attr('src', src);
-    $('#lightboxTitulo').text(titulo || 'Imagen');
-    $('#modalLightbox').modal('show');
+    $('#lightboxImage').attr('src', src);
+    $('#lightboxTitle').text(titulo || 'Imagen');
+    $('#lightboxModal').modal('show');
 }
 
 // ==========================================

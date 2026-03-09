@@ -11,7 +11,7 @@ class OrdenFoto extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'orden_id', 'orden_pieza_id', 'tipo_foto', 'ruta_archivo',
+        'orden_id', 'orden_pieza_id', 'entrega_id', 'tipo_foto', 'ruta_archivo',
         'ruta_miniatura', 'subido_por', 'aprobada', 'aprobada_por',
     ];
 
@@ -27,6 +27,11 @@ class OrdenFoto extends Model
     public function pieza()
     {
         return $this->belongsTo(OrdenPieza::class, 'orden_pieza_id');
+    }
+
+    public function entrega()
+    {
+        return $this->belongsTo(Entrega::class, 'entrega_id');
     }
 
     public function subidoPorUsuario()

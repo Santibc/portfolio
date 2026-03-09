@@ -28,12 +28,13 @@
                     <tr class="table-light">
                         <th style="width:150px" class="text-center">Bosquejo</th>
                         <th style="width:50px" class="text-center">#</th>
-                        <th style="width:150px">Nombre</th>
+                        <th style="width:150px">Identificador</th>
                         <th style="width:80px" class="text-center">Cantidad</th>
                         <th style="width:180px">Material</th>
                         <th style="width:110px">Calibre</th>
                         <th style="width:180px">Especificacion</th>
                         <th>Notas</th>
+                        <th style="width:70px" class="text-center">Operario</th>
                         <th style="width:45px"></th>
                     </tr>
                 </thead>

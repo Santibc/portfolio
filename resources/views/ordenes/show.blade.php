@@ -151,13 +151,69 @@
 <script>
 var ORDEN_ID = {{ $orden->id }};
 var CSRF_TOKEN = '{{ csrf_token() }}';
+@php
+    $esContabilidad = request()->is('contabilidad/*');
+@endphp
 var ROUTES_DETALLE = {
     copiar: '{{ route("recepcion.ordenes.copiar", $orden) }}',
     anular: '{{ route("recepcion.ordenes.anular", $orden) }}',
     comentarios: '{{ route("recepcion.ordenes.comentarios.store", $orden) }}',
-    pagos: '{{ route("recepcion.ordenes.pagos.store", $orden) }}',
+    pagos: '{{ $esContabilidad ? route("contabilidad.ordenes.pagos.store", $orden) : route("recepcion.ordenes.pagos.store", $orden) }}',
     index: '{{ route("recepcion.ordenes.index") }}',
     edit: '{{ route("recepcion.ordenes.edit", $orden) }}',
 };
+
+// Historial de entregas por pieza
+$(document).on('click', '.btn-historial-entregas', function(e) {
+    e.preventDefault();
+    var piezaId = $(this).data('pieza-id');
+    var piezaNombre = $(this).data('pieza-nombre');
+    $('#modalEntregaPiezaNombre').text(piezaNombre);
+    $('#modalEntregaLoading').removeClass('d-none');
+    $('#modalEntregaContenido').addClass('d-none');
+    $('#modalEntregaVacio').addClass('d-none');
+    $('#modalEntregaResumen').text('');
+    $('#modalEntregaTabla').empty();
+    $('#modalHistorialEntregas').modal('show');
+
+    $.ajax({
+        url: '{{ url("recepcion/entregas-pendientes/pieza") }}/' + piezaId + '/historial',
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        success: function(data) {
+            $('#modalEntregaLoading').addClass('d-none');
+            $('#modalEntregaResumen').text(data.pieza.cantidad_entregada + ' de ' + data.pieza.cantidad + ' entregadas');
+
+            if (data.entregas.length === 0) {
+                $('#modalEntregaVacio').removeClass('d-none');
+                return;
+            }
+
+            var html = '';
+            data.entregas.forEach(function(ent) {
+                html += '<tr>';
+                html += '<td>' + ent.fecha + '</td>';
+                html += '<td class="text-center"><span class="badge bg-primary">' + ent.cantidad + '</span></td>';
+                html += '<td>' + ent.entregado_por + '</td>';
+                html += '<td>';
+                if (ent.fotos && ent.fotos.length > 0) {
+                    ent.fotos.forEach(function(f) {
+                        html += '<img src="' + f.url + '" class="border rounded me-1" style="width:40px;height:40px;object-fit:cover;cursor:pointer;" onclick="abrirLightbox(\'' + f.url.replace('{{ url("/") }}/', '') + '\', \'Foto Entrega\')" title="Ver foto">';
+                    });
+                } else {
+                    html += '<span class="text-muted small">-</span>';
+                }
+                html += '</td>';
+                html += '</tr>';
+            });
+            $('#modalEntregaTabla').html(html);
+            $('#modalEntregaContenido').removeClass('d-none');
+        },
+        error: function() {
+            $('#modalEntregaLoading').addClass('d-none');
+            $('#modalEntregaVacio').removeClass('d-none').text('Error al cargar el historial.');
+        }
+    });
+});
 </script>
 @endpush

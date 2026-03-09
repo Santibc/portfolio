@@ -79,17 +79,18 @@ class OrdenEstadoService
         }
 
         $totalPiezas = $piezas->count();
-        $entregadas = $piezas->where('entregada', true)->count();
+        $totalmenteEntregadas = $piezas->filter(fn($p) => $p->cantidad_entregada >= $p->cantidad)->count();
+        $conEntregaParcial = $piezas->filter(fn($p) => $p->cantidad_entregada > 0)->count();
 
-        if ($entregadas === 0) {
-            return null;
-        }
-
-        if ($entregadas === $totalPiezas) {
+        if ($totalmenteEntregadas === $totalPiezas) {
             return 'entregada';
         }
 
-        return 'entregada_parcialmente';
+        if ($conEntregaParcial > 0) {
+            return 'entregada_parcialmente';
+        }
+
+        return null;
     }
 
     /**

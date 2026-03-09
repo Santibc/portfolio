@@ -135,9 +135,17 @@ class OperarioController extends Controller
             '#00BCD4', '#795548', '#607D8B', '#FF5722', '#3F51B5',
         ];
 
+        // Info de piezas de otros operarios para determinar si la orden se completa
+        $totalPiezasOrden = $orden->piezas()->count();
+        $piezasOtros100 = $orden->piezas()
+            ->where('operario_actual_id', '!=', $user->id)
+            ->where('porcentaje_avance', '>=', 100)
+            ->count();
+
         return view('operario.trabajar', compact(
             'orden', 'piezas', 'operarios', 'lockResult',
-            'timeoutInactividad', 'coloresOperarios'
+            'timeoutInactividad', 'coloresOperarios',
+            'totalPiezasOrden', 'piezasOtros100'
         ));
     }
 

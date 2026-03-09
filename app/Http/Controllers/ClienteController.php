@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Models\ConfiguracionSistema;
 use App\Exports\ClientesExport;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class ClienteController extends Controller
     {
         if ($request->ajax()) {
             $query = Cliente::query();
+            $predeterminadoId = (int) ConfiguracionSistema::get('cliente_predeterminado_id', 0);
 
             return DataTables::of($query)
                 ->addColumn('estado', function ($cliente) {
@@ -25,15 +27,16 @@ class ClienteController extends Controller
                     $text = $cliente->activo ? 'ACTIVO' : 'INACTIVO';
                     return '<span class="status-badge ' . $variant . '">' . $text . '</span>';
                 })
-                ->addColumn('acciones', function ($cliente) {
+                ->addColumn('acciones', function ($cliente) use ($predeterminadoId) {
                     $viewUrl = route('recepcion.clientes.show', $cliente);
                     $editUrl = route('recepcion.clientes.edit', $cliente);
+                    $esMostrador = $predeterminadoId && $cliente->id === $predeterminadoId;
 
                     $html = '<div class="action-buttons justify-content-end">'
                         . '<a href="' . $viewUrl . '" class="action-btn view" title="Ver" data-tooltip="Ver"><i class="bi bi-eye"></i></a>'
                         . '<a href="' . $editUrl . '" class="action-btn edit" title="Editar" data-tooltip="Editar"><i class="bi bi-pencil"></i></a>';
 
-                    if (auth()->user()->hasRole('Administrador')) {
+                    if (!$esMostrador) {
                         $toggleIcon = $cliente->activo ? 'toggle-on' : 'toggle-off';
                         $toggleTitle = $cliente->activo ? 'Desactivar' : 'Activar';
                         $html .= '<button type="button" class="action-btn" title="' . $toggleTitle . '" data-tooltip="' . $toggleTitle . '"'
@@ -136,6 +139,17 @@ class ClienteController extends Controller
 
     public function toggleActivo(Cliente $cliente)
     {
+        $predeterminadoId = ConfiguracionSistema::get('cliente_predeterminado_id');
+        if ($predeterminadoId && (int) $predeterminadoId === $cliente->id) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El cliente mostrador no se puede desactivar.',
+                ], 422);
+            }
+            return redirect()->back()->with('error', 'El cliente mostrador no se puede desactivar.');
+        }
+
         $cliente->activo = !$cliente->activo;
         $cliente->save();
 

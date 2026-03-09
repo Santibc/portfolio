@@ -97,8 +97,7 @@ $(function() {
                     data: { _token: CSRF_TOKEN },
                     success: function(data) {
                         if (data.success) {
-                            showToast('success', 'Pieza tomada', 'La pieza "' + data.pieza + '" fue asignada a ti.');
-                            table.ajax.reload(null, false);
+                            window.location.href = '/operario/ordenes/' + data.orden_id;
                         } else {
                             Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo tomar la pieza.' });
                             btn.prop('disabled', false).html('<i class="bi bi-hand-index me-1"></i>Tomar');

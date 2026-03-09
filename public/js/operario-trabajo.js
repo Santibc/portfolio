@@ -39,6 +39,11 @@
     // SLIDER <-> INPUT SYNC
     // ==========================================
     function initSliders() {
+        // Set initial color on all sliders
+        $('.pieza-slider').each(function() {
+            updateSliderColor($(this), parseInt($(this).val()));
+        });
+
         // Slider change -> update input
         $(document).on('input', '.pieza-slider', function() {
             var piezaId = $(this).data('pieza-id');
@@ -58,17 +63,35 @@
         });
     }
 
+    function getSliderColor(val) {
+        if (val >= 100) return '#198754'; // green
+        if (val >= 75) return '#20c997';  // teal
+        if (val >= 50) return '#ffc107';  // yellow
+        if (val >= 25) return '#fd7e14';  // orange
+        if (val > 0) return '#0dcaf0';    // cyan
+        return '#adb5bd';                 // gray
+    }
+
+    function updateSliderColor(slider, val) {
+        slider.css('--slider-color', getSliderColor(val));
+        slider.css('--slider-pct', val + '%');
+    }
+
     function updatePorcentajeDisplay(piezaId, val) {
         var card = $('#pieza-' + piezaId);
         var display = card.find('.pieza-porcentaje-display');
         display.text(val + '%');
 
-        // Update color
+        // Update text color
         display.removeClass('text-success text-warning text-info text-muted');
         if (val >= 100) display.addClass('text-success');
         else if (val >= 50) display.addClass('text-warning');
         else if (val > 0) display.addClass('text-info');
         else display.addClass('text-muted');
+
+        // Update slider color
+        var slider = card.find('.pieza-slider');
+        updateSliderColor(slider, val);
     }
 
     function trackCambio(piezaId, porcentaje) {
@@ -174,14 +197,15 @@
             var btn = $(this);
             btn.prop('disabled', true);
 
-            $.ajax({
-                url: '/operario/piezas/' + piezaId + '/transferir',
-                method: 'POST',
-                data: {
-                    _token: CSRF_TOKEN,
-                    nuevo_operario_id: operarioId,
-                    notas: notas
-                },
+            function ejecutarTransferencia() {
+                $.ajax({
+                    url: '/operario/piezas/' + piezaId + '/transferir',
+                    method: 'POST',
+                    data: {
+                        _token: CSRF_TOKEN,
+                        nuevo_operario_id: operarioId,
+                        notas: notas
+                    },
                 success: function(data) {
                     bootstrap.Modal.getInstance(document.getElementById('modalTransferir')).hide();
                     btn.prop('disabled', false);
@@ -199,7 +223,20 @@
                     btn.prop('disabled', false);
                     Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo completar la transferencia.' });
                 }
-            });
+                });
+            }
+
+            // Si hay cambios pendientes en esta pieza, guardar primero
+            if (piezasCambios[piezaId] !== undefined) {
+                var cambios = [{ pieza_id: parseInt(piezaId), porcentaje: piezasCambios[piezaId] }];
+                enviarActualizacionSilenciosa(cambios, function() {
+                    $('#pieza-' + piezaId).data('porcentaje-original', piezasCambios[piezaId]);
+                    delete piezasCambios[piezaId];
+                    ejecutarTransferencia();
+                });
+            } else {
+                ejecutarTransferencia();
+            }
         });
     }
 
@@ -212,32 +249,45 @@
             var piezaNombre = $(this).data('pieza-nombre');
 
             Swal.fire({
-                title: 'Dejar en cola general?',
+                title: 'Dejar en pendiente por terminar?',
                 html: 'La pieza <b>' + piezaNombre + '</b> quedara disponible para que otro operario la tome.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Si, dejar en cola',
+                confirmButtonText: 'Si, dejar en pendiente',
                 cancelButtonText: 'Cancelar'
             }).then(function(result) {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/operario/piezas/' + piezaId + '/dejar-cola',
-                        method: 'POST',
-                        data: { _token: CSRF_TOKEN },
-                        success: function(data) {
-                            if (data.success) {
-                                showToast('success', 'Pieza liberada', 'La pieza fue dejada en la cola general.');
-                                $('#pieza-' + piezaId).fadeOut(400, function() { $(this).remove(); });
-                                delete piezasCambios[piezaId];
-                                checkPiezasRestantes();
-                            } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo liberar la pieza.' });
+                    function ejecutarDejarCola() {
+                        $.ajax({
+                            url: '/operario/piezas/' + piezaId + '/dejar-cola',
+                            method: 'POST',
+                            data: { _token: CSRF_TOKEN },
+                            success: function(data) {
+                                if (data.success) {
+                                    showToast('success', 'Pieza liberada', 'La pieza fue dejada en pendiente por terminar.');
+                                    $('#pieza-' + piezaId).fadeOut(400, function() { $(this).remove(); });
+                                    delete piezasCambios[piezaId];
+                                    checkPiezasRestantes();
+                                } else {
+                                    Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'No se pudo liberar la pieza.' });
+                                }
+                            },
+                            error: function() {
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo completar la operacion.' });
                             }
-                        },
-                        error: function() {
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo completar la operacion.' });
-                        }
-                    });
+                        });
+                    }
+
+                    // Si hay cambios pendientes en esta pieza, guardar primero
+                    if (piezasCambios[piezaId] !== undefined) {
+                        var cambios = [{ pieza_id: parseInt(piezaId), porcentaje: piezasCambios[piezaId] }];
+                        enviarActualizacionSilenciosa(cambios, function() {
+                            delete piezasCambios[piezaId];
+                            ejecutarDejarCola();
+                        });
+                    } else {
+                        ejecutarDejarCola();
+                    }
                 }
             });
         });
@@ -262,29 +312,70 @@
                 return;
             }
 
-            // Check for pieces at 100%
+            // Check for pieces at 100% or decreased
             var piezasTerminadas = [];
-            var todasPiezas100 = true;
-
-            $('.pieza-trabajo').each(function() {
-                var piezaId = $(this).data('pieza-id');
-                var slider = $(this).find('.pieza-slider');
-                var val = parseInt(slider.val());
-
-                if (val < 100) {
-                    todasPiezas100 = false;
-                }
-            });
+            var piezasDisminuidas = [];
 
             cambios.forEach(function(c) {
+                var original = parseFloat($('#pieza-' + c.pieza_id).data('porcentaje-original'));
                 if (c.porcentaje >= 100) {
                     var nombre = $('#pieza-' + c.pieza_id).find('.fw-bold').first().text().trim();
                     piezasTerminadas.push(nombre);
                 }
+                if (c.porcentaje < original) {
+                    var nombre = $('#pieza-' + c.pieza_id).find('.fw-bold').first().text().trim();
+                    piezasDisminuidas.push(nombre + ' (' + Math.round(original) + '% → ' + c.porcentaje + '%)');
+                }
             });
 
-            if (todasPiezas100 && piezasTerminadas.length > 0) {
-                // Case 3: ALL pieces at 100%
+            // Verificar si TODAS las piezas de la orden quedarian al 100%
+            var misPiezasAl100 = 0;
+            $('.pieza-trabajo').each(function() {
+                var pId = $(this).data('pieza-id');
+                // Usar el valor del cambio si existe, sino el del slider actual
+                var val = piezasCambios[pId] !== undefined ? piezasCambios[pId] : parseInt($(this).find('.pieza-slider').val());
+                if (val >= 100) misPiezasAl100++;
+            });
+            var totalAl100 = PIEZAS_OTROS_100 + misPiezasAl100;
+            var ordenCompleta = totalAl100 >= TOTAL_PIEZAS_ORDEN;
+
+            if (piezasDisminuidas.length > 0) {
+                Swal.fire({
+                    title: 'Disminuir porcentaje?',
+                    html: 'Esta seguro de bajar el avance de:<br><b>' + piezasDisminuidas.join('<br>') + '</b>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Si, disminuir',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#dc3545'
+                }).then(function(r) {
+                    if (!r.isConfirmed) return;
+
+                    if (ordenCompleta && piezasTerminadas.length > 0) {
+                        Swal.fire({
+                            title: 'Orden Completada?',
+                            html: 'Esta seguro de colocar la Orden <b>' + NUMERO_ORDEN + '</b> como EJECUTADA?<br><br>Todas las piezas quedaran al 100%.',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Si, Ejecutar Orden',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#28a745'
+                        }).then(function(r2) { if (r2.isConfirmed) enviarActualizacion(cambios); });
+                    } else if (piezasTerminadas.length > 0) {
+                        Swal.fire({
+                            title: 'Piezas Terminadas',
+                            html: 'Esta seguro de colocar terminada(s) esta(s) pieza(s)?<br><b>' + piezasTerminadas.join(', ') + '</b>',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Si, Actualizar',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#4A7C59'
+                        }).then(function(r2) { if (r2.isConfirmed) enviarActualizacion(cambios); });
+                    } else {
+                        enviarActualizacion(cambios);
+                    }
+                });
+            } else if (ordenCompleta && piezasTerminadas.length > 0) {
                 Swal.fire({
                     title: 'Orden Completada?',
                     html: 'Esta seguro de colocar la Orden <b>' + NUMERO_ORDEN + '</b> como EJECUTADA?<br><br>Todas las piezas quedaran al 100%.',
@@ -295,7 +386,6 @@
                     confirmButtonColor: '#28a745'
                 }).then(function(r) { if (r.isConfirmed) enviarActualizacion(cambios); });
             } else if (piezasTerminadas.length > 0) {
-                // Case 2: Some pieces at 100%
                 Swal.fire({
                     title: 'Piezas Terminadas',
                     html: 'Esta seguro de colocar terminada(s) esta(s) pieza(s)?<br><b>' + piezasTerminadas.join(', ') + '</b>',
@@ -390,42 +480,7 @@
     // INACTIVITY TIMER
     // ==========================================
     function startInactivityTimer() {
-        var warningShown = false;
-
-        function resetTimer() {
-            if (warningShown) return; // Don't reset if warning is showing
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(showInactivityWarning, TIMEOUT_INACTIVIDAD * 0.8);
-        }
-
-        function showInactivityWarning() {
-            warningShown = true;
-            var timerMs = Math.round(TIMEOUT_INACTIVIDAD * 0.2);
-
-            Swal.fire({
-                title: 'Inactividad detectada',
-                html: 'Se cerrara la sesion de trabajo por inactividad...',
-                icon: 'warning',
-                timer: timerMs,
-                timerProgressBar: true,
-                showConfirmButton: true,
-                confirmButtonText: 'Seguir trabajando',
-                allowOutsideClick: false
-            }).then(function(result) {
-                warningShown = false;
-                if (result.dismiss === Swal.DismissReason.timer) {
-                    // Timeout reached - release lock and redirect
-                    cerrarSesionTrabajo('La sesion de esta orden se cerro por inactividad.');
-                } else {
-                    // User clicked "Seguir trabajando"
-                    $.post(OPERARIO_ROUTES.heartbeat, { _token: CSRF_TOKEN });
-                    resetTimer();
-                }
-            });
-        }
-
-        $(document).on('mousemove keydown click touchstart', debounce(resetTimer, 1000));
-        resetTimer();
+        // Desactivado - sesion infinita
     }
 
     // ==========================================

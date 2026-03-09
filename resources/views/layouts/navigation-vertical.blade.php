@@ -7,6 +7,23 @@
         </a>
     </div>
 
+    {{-- SECCION ENTREGAS (todos los roles) --}}
+    <div class="nav-section-title">Entregas</div>
+
+    <div class="nav-item {{ request()->routeIs('recepcion.entregas-pendientes') || (request()->routeIs('recepcion.entregas.*') && !request()->routeIs('recepcion.entregas.historial')) ? 'active' : '' }}">
+        <a href="{{ route('recepcion.entregas-pendientes') }}" class="nav-link">
+            <i class="bi bi-box-seam"></i>
+            <span>Entregas Pendientes</span>
+        </a>
+    </div>
+
+    <div class="nav-item {{ request()->routeIs('recepcion.entregas.historial') ? 'active' : '' }}">
+        <a href="{{ route('recepcion.entregas.historial') }}" class="nav-link">
+            <i class="bi bi-clock-history"></i>
+            <span>Historial Entregas</span>
+        </a>
+    </div>
+
     @hasanyrole('Administrador|Recepcion')
         {{-- SECCION ORDENES --}}
         <div class="nav-section-title">Ordenes</div>
@@ -22,20 +39,6 @@
             <a href="{{ route('recepcion.ordenes.index') }}" class="nav-link">
                 <i class="bi bi-search"></i>
                 <span>Buscar Ordenes</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('recepcion.entregas-pendientes') || (request()->routeIs('recepcion.entregas.*') && !request()->routeIs('recepcion.entregas.historial')) ? 'active' : '' }}">
-            <a href="{{ route('recepcion.entregas-pendientes') }}" class="nav-link">
-                <i class="bi bi-box-seam"></i>
-                <span>Entregas Pendientes</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('recepcion.entregas.historial') ? 'active' : '' }}">
-            <a href="{{ route('recepcion.entregas.historial') }}" class="nav-link">
-                <i class="bi bi-clock-history"></i>
-                <span>Historial Entregas</span>
             </a>
         </div>
 
@@ -104,7 +107,7 @@
         <div class="nav-item {{ request()->routeIs('operario.complementar') ? 'active' : '' }}">
             <a href="{{ route('operario.complementar') }}" class="nav-link">
                 <i class="bi bi-plus-circle"></i>
-                <span>Complementar Ordenes</span>
+                <span>Pendiente por Terminar</span>
             </a>
         </div>
     @endrole
@@ -116,7 +119,7 @@
         <div class="nav-item {{ request()->routeIs('contabilidad.ordenes-pendientes') ? 'active' : '' }}">
             <a href="{{ route('contabilidad.ordenes-pendientes') }}" class="nav-link">
                 <i class="bi bi-cash-coin"></i>
-                <span>Ordenes Pendientes</span>
+                <span>O. Pendientes Pagar</span>
             </a>
         </div>
 
@@ -131,6 +134,13 @@
             <a href="{{ route('contabilidad.pagos-pendientes') }}" class="nav-link">
                 <i class="bi bi-hourglass-split"></i>
                 <span>Pagos por Aprobar</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('contabilidad.reporte-items') ? 'active' : '' }}">
+            <a href="{{ route('contabilidad.reporte-items') }}" class="nav-link">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Reporte Ventas Items</span>
             </a>
         </div>
 

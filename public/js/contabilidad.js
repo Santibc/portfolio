@@ -128,6 +128,13 @@ function initOrdenesPendientesTable(config) {
 // PAGOS PENDIENTES
 // ============================================================
 
+function actualizarStatsPendientes(stats) {
+    if (!stats) return;
+    $('#statPorAprobar .card-value').text(stats.por_aprobar);
+    $('#statMontoPendiente .card-value').text(stats.monto_pendiente);
+    $('#statAprobadosHoy .card-value').text(stats.aprobados_hoy);
+}
+
 var selectedPagos = {};
 
 function initPagosPendientesTable(config) {
@@ -228,6 +235,7 @@ function initPagosPendientesTable(config) {
                         });
                         delete selectedPagos[pagoId];
                         updateBulkBar();
+                        actualizarStatsPendientes(res.stats);
                         pagosPendientesTable.draw(false);
                     },
                     error: function(xhr) {
@@ -268,6 +276,7 @@ function initPagosPendientesTable(config) {
                         });
                         delete selectedPagos[pagoId];
                         updateBulkBar();
+                        actualizarStatsPendientes(res.stats);
                         pagosPendientesTable.draw(false);
                     },
                     error: function(xhr) {
@@ -329,6 +338,7 @@ function aprobarMasivo(config) {
                     });
                     selectedPagos = {};
                     updateBulkBar();
+                    actualizarStatsPendientes(res.stats);
                     pagosPendientesTable.draw();
                 },
                 error: function(xhr) {
@@ -384,6 +394,7 @@ function initHistorialFinancieroTable(config) {
             }
         },
         columns: [
+            { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false, className: 'text-center', width: '40px' },
             { data: 'numero_orden', name: 'numero_orden', width: '80px' },
             { data: 'cliente_nombre', name: 'cliente.nombre' },
             { data: 'fecha_creacion', name: 'created_at', width: '95px' },
@@ -395,7 +406,7 @@ function initHistorialFinancieroTable(config) {
             { data: 'num_pagos', name: 'pagos_count', orderable: false, searchable: false, className: 'text-center', width: '60px' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '90px' }
         ],
-        order: [[2, 'desc']],
+        order: [[3, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
         language: {
@@ -404,7 +415,24 @@ function initHistorialFinancieroTable(config) {
         drawCallback: function(settings) {
             var total = settings._iRecordsTotal || 0;
             $('#totalRegistros').text(total + ' registro' + (total !== 1 ? 's' : ''));
+            $('#checkAll').prop('checked', true);
+            recalcularTotalesHistorial();
         }
+    });
+
+    // Checkbox select all
+    $('#checkAll').on('change', function() {
+        var checked = $(this).is(':checked');
+        $('#historialFinancieroTable tbody .fila-check').prop('checked', checked);
+        recalcularTotalesHistorial();
+    });
+
+    // Checkbox individual
+    $(document).on('change', '#historialFinancieroTable tbody .fila-check', function() {
+        var allChecked = $('#historialFinancieroTable tbody .fila-check').length ===
+            $('#historialFinancieroTable tbody .fila-check:checked').length;
+        $('#checkAll').prop('checked', allChecked);
+        recalcularTotalesHistorial();
     });
 
     // Filtros
@@ -487,18 +515,32 @@ function initHistorialFinancieroTable(config) {
 
                 for (var i = 0; i < res.pagos.length; i++) {
                     var p = res.pagos[i];
-                    var estadoPago = p.aprobado
-                        ? '<span class="badge bg-success bg-opacity-10 text-success border">Aprobado</span>'
-                        : '<span class="badge bg-warning bg-opacity-10 text-dark border">Pendiente</span>';
+                    var estadoPago;
 
-                    if (p.aprobado && p.aprobado_por) {
-                        estadoPago += '<br><small class="text-muted">por ' + p.aprobado_por + '</small>';
+                    if (p.rechazado) {
+                        estadoPago = '<span class="badge bg-danger bg-opacity-10 text-danger border">Rechazado</span>';
+                        if (p.rechazado_por) {
+                            estadoPago += '<br><small class="text-muted">por ' + p.rechazado_por + '</small>';
+                        }
+                        if (p.fecha_rechazo) {
+                            estadoPago += '<br><small class="text-muted">' + p.fecha_rechazo + '</small>';
+                        }
+                    } else if (p.aprobado) {
+                        estadoPago = '<span class="badge bg-success bg-opacity-10 text-success border">Aprobado</span>';
+                        if (p.aprobado_por) {
+                            estadoPago += '<br><small class="text-muted">por ' + p.aprobado_por + '</small>';
+                        }
+                    } else {
+                        estadoPago = '<span class="badge bg-warning bg-opacity-10 text-dark border">Pendiente</span>';
                     }
 
-                    html += '<tr>';
+                    var rowStyle = p.rechazado ? ' style="opacity:0.55;"' : '';
+                    var montoStyle = p.rechazado ? ' style="text-decoration:line-through;"' : '';
+
+                    html += '<tr' + rowStyle + '>';
                     html += '<td class="text-muted">' + (i + 1) + '</td>';
                     html += '<td>' + p.fecha + '</td>';
-                    html += '<td class="text-end fw-semibold">' + p.monto + '</td>';
+                    html += '<td class="text-end fw-semibold"' + montoStyle + '>' + p.monto + '</td>';
                     html += '<td class="text-center">' + p.metodo_badge + '</td>';
                     html += '<td class="small">' + p.referencia_pago + '</td>';
                     html += '<td class="small">' + p.registrado_por + '</td>';
@@ -520,6 +562,107 @@ function initHistorialFinancieroTable(config) {
     });
 }
 
+function recalcularTotalesHistorial() {
+    var total = 0, pagado = 0, saldo = 0;
+    $('#historialFinancieroTable tbody .fila-check:checked').each(function() {
+        total += parseFloat($(this).data('total')) || 0;
+        pagado += parseFloat($(this).data('pagado')) || 0;
+        saldo += parseFloat($(this).data('saldo')) || 0;
+    });
+    $('#sumaTotal').text('$' + formatNumber(total));
+    $('#sumaPagado').html('<span class="text-success">$' + formatNumber(pagado) + '</span>');
+    $('#sumaSaldo').html('<span class="text-danger">$' + formatNumber(saldo) + '</span>');
+}
+
 function formatNumber(num) {
     return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// ============================================================
+// REPORTE VENTAS POR ITEMS
+// ============================================================
+
+var reporteItemsTable = null;
+
+function initReporteItemsTable(config) {
+    reporteItemsTable = $('#reporteItemsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: config.ajaxUrl,
+            data: function(d) {
+                d.busqueda = $('#filtroBusqueda').val();
+                d.categoria = $('#filtroCategoria').val();
+                d.fecha_desde = $('#filtroFechaDesde').val();
+                d.fecha_hasta = $('#filtroFechaHasta').val();
+            }
+        },
+        columns: [
+            { data: 'numero_orden_link', name: 'ordenes.numero_orden', width: '80px' },
+            { data: 'fecha_orden_formatted', name: 'ordenes.created_at', width: '90px' },
+            { data: 'codigo', name: 'orden_items.codigo', width: '100px' },
+            { data: 'descripcion', name: 'orden_items.descripcion' },
+            { data: 'categoria_badge', name: 'orden_items.categoria', className: 'text-center', width: '120px' },
+            { data: 'cantidad_formatted', name: 'orden_items.cantidad', className: 'text-center', width: '80px' },
+            { data: 'precio_formatted', name: 'orden_items.precio_unitario', className: 'text-end', width: '100px' },
+            { data: 'subtotal_formatted', name: 'orden_items.subtotal', className: 'text-end', width: '100px' },
+            { data: 'iva_formatted', name: 'orden_items.monto_iva', className: 'text-end', width: '80px' },
+            { data: 'total_formatted', name: 'orden_items.total', className: 'text-end', width: '100px' }
+        ],
+        order: [[1, 'desc']],
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        drawCallback: function(settings) {
+            var info = reporteItemsTable.page.info();
+            $('#totalRegistros').text(info.recordsTotal + ' registro' + (info.recordsTotal !== 1 ? 's' : ''));
+            // Actualizar totales del footer
+            var json = settings.json;
+            if (json && json.totales) {
+                $('#sumaSubtotal').text(json.totales.subtotal);
+                $('#sumaIva').text(json.totales.iva);
+                $('#sumaTotal').text(json.totales.total);
+            }
+        }
+    });
+
+    // Filtrar
+    $('#btnFiltrarReporte').on('click', function() {
+        reporteItemsTable.draw();
+        actualizarExportUrl(config.exportUrl);
+    });
+
+    // Limpiar
+    $('#btnLimpiarReporte').on('click', function() {
+        $('#filtroBusqueda').val('');
+        $('#filtroCategoria').val('todas');
+        $('#filtroFechaDesde').val('');
+        $('#filtroFechaHasta').val('');
+        reporteItemsTable.draw();
+        actualizarExportUrl(config.exportUrl);
+    });
+
+    // Enter en busqueda
+    $('#filtroBusqueda').on('keypress', function(e) {
+        if (e.which === 13) {
+            reporteItemsTable.draw();
+            actualizarExportUrl(config.exportUrl);
+        }
+    });
+}
+
+function actualizarExportUrl(baseUrl) {
+    var params = new URLSearchParams();
+    var busqueda = $('#filtroBusqueda').val();
+    var categoria = $('#filtroCategoria').val();
+    var desde = $('#filtroFechaDesde').val();
+    var hasta = $('#filtroFechaHasta').val();
+    if (busqueda) params.set('busqueda', busqueda);
+    if (categoria && categoria !== 'todas') params.set('categoria', categoria);
+    if (desde) params.set('fecha_desde', desde);
+    if (hasta) params.set('fecha_hasta', hasta);
+    var qs = params.toString();
+    $('#btnExportar').attr('href', baseUrl + (qs ? '?' + qs : ''));
 }

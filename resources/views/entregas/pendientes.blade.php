@@ -5,14 +5,14 @@
 @section('content')
 <div class="container-fluid py-4">
     {{-- Page Header --}}
-    <x-sinden.page-header title="Entregas Pendientes" description="Ordenes con piezas listas para entregar al cliente">
+    <x-sinden.page-header title="Entregas Pendientes" description="Ordenes con piezas pendientes de entregar al cliente">
     </x-sinden.page-header>
 
     {{-- Summary Cards --}}
     <div class="summary-cards">
         <x-sinden.stat-card icon="bi bi-box-seam" :value="$totalPendientes" title="Ordenes Pendientes" color="primary" />
-        <x-sinden.stat-card icon="bi bi-check2-square" :value="$piezasListas" title="Piezas Listas" color="success" />
-        <x-sinden.stat-card icon="bi bi-check-circle" :value="$entregasHoy" title="Entregadas Hoy" color="warning" />
+        <x-sinden.stat-card icon="bi bi-check2-square" :value="$piezasPendientes" title="Piezas Pendientes" color="warning" />
+        <x-sinden.stat-card icon="bi bi-check-circle" :value="$entregasHoy" title="Entregas Hoy" color="success" />
         <x-sinden.stat-card icon="bi bi-exclamation-triangle" :value="$entregasVencidas" title="Entregas Vencidas" color="danger" />
     </div>
 
@@ -34,7 +34,7 @@
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Fecha Entrega</th>
-                            <th>Piezas Listas</th>
+                            <th>Piezas Pendientes</th>
                             <th>Estado Trabajo</th>
                             <th>Estado Entrega</th>
                             <th class="text-end">Acciones</th>
@@ -60,7 +60,7 @@ $(function() {
             { data: 'numero_orden', name: 'numero_orden', width: '90px' },
             { data: 'cliente_nombre', name: 'cliente.nombre' },
             { data: 'fecha_entrega', name: 'fecha_entrega', width: '110px', className: 'text-center' },
-            { data: 'piezas_listas', name: 'piezas_listas', className: 'text-center', orderable: false, searchable: false },
+            { data: 'piezas_pendientes', name: 'piezas_pendientes', className: 'text-center', orderable: false, searchable: false },
             { data: 'estado_trabajo_badge', name: 'estado_trabajo', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_entrega_badge', name: 'estado_entrega', className: 'text-center', orderable: true, searchable: false },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '120px' }
@@ -83,7 +83,7 @@ $(function() {
 
         Swal.fire({
             title: 'Entrega Rapida',
-            text: 'Se entregaran TODAS las piezas completadas de esta orden al cliente.',
+            text: 'Se entregaran TODAS las piezas pendientes de esta orden al cliente.',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#4A7C59',

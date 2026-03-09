@@ -144,7 +144,7 @@
                         <i class="bi bi-hourglass-split"></i> Pagos por Aprobar
                     </a>
                     <a href="{{ route('contabilidad.items.index') }}" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-2" style="min-height:48px">
-                        <i class="bi bi-tags"></i> Catalogo de Items
+                        <i class="bi bi-tags"></i> Catalogo de Items (Productos y servicios)
                     </a>
                 </div>
             </div>

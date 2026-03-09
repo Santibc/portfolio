@@ -182,7 +182,7 @@
                        data-pieza-id="{{ $pieza->id }}"
                        min="0" max="100" step="5"
                        value="{{ intval($pieza->porcentaje_avance) }}">
-                <div class="input-group" style="width: 110px;">
+                <div class="input-group" style="width: 130px; flex-shrink: 0;">
                     <input type="number" class="form-control text-center fw-bold pieza-porcentaje-input"
                            data-pieza-id="{{ $pieza->id }}"
                            min="0" max="100"
@@ -209,7 +209,7 @@
                 </button>
                 <button class="btn btn-sm btn-outline-secondary btn-dejar-cola"
                         data-pieza-id="{{ $pieza->id }}" data-pieza-nombre="{{ e($pieza->nombre) }}">
-                    <i class="bi bi-box-seam me-1"></i>Dejar en Cola General
+                    <i class="bi bi-box-seam me-1"></i>Dejar en Pendiente por Terminar
                 </button>
             </div>
         </div>
@@ -262,16 +262,37 @@
     </div>
 </div>
 
-{{-- Modal Lightbox --}}
+{{-- Modal Lightbox Fullscreen --}}
 <div class="modal fade" id="modalLightbox" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-fullscreen">
         <div class="modal-content bg-dark">
             <div class="modal-header border-0">
                 <h6 class="modal-title text-white" id="lightboxTitulo"></h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center p-0">
-                <img id="lightboxImagen" src="" class="img-fluid" style="max-height:80vh;">
+            <div class="modal-body d-flex align-items-center justify-content-center p-0" style="overflow:hidden;position:relative;">
+                <div id="lightboxZoomContainer" style="overflow:auto;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <img id="lightboxImagen" src="" style="max-height:90vh;max-width:90vw;object-fit:contain;transition:transform 0.2s;cursor:zoom-in;" onclick="toggleZoomLightbox()">
+                </div>
+                {{-- Contador visual --}}
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3 d-flex align-items-center gap-4 bg-dark bg-opacity-75 rounded-pill px-4 py-3">
+                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.5rem;" onclick="cambiarContador(-1)">
+                        <i class="bi bi-dash-lg"></i>
+                    </button>
+                    <span id="contadorValor" class="text-white fw-bold" style="font-size:2.1rem;min-width:48px;text-align:center;">0</span>
+                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.5rem;" onclick="cambiarContador(1)">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+                {{-- Controles zoom --}}
+                <div class="position-absolute top-0 end-0 me-5 mt-2 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;" onclick="zoomLightbox(-1)" title="Alejar">
+                        <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;" onclick="zoomLightbox(1)" title="Acercar">
+                        <i class="bi bi-zoom-in"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -285,6 +306,8 @@ var NUMERO_ORDEN = '{{ $orden->numero_orden }}';
 var CSRF_TOKEN = '{{ csrf_token() }}';
 var LOCK_ACQUIRED = {{ ($lockResult['success'] ?? false) ? 'true' : 'false' }};
 var TIMEOUT_INACTIVIDAD = {{ $timeoutInactividad * 60 * 1000 }};
+var TOTAL_PIEZAS_ORDEN = {{ $totalPiezasOrden }};
+var PIEZAS_OTROS_100 = {{ $piezasOtros100 }};
 var OPERARIO_ROUTES = {
     actualizarAvances: '{{ route("operario.ordenes.actualizar-avances", $orden) }}',
     heartbeat: '{{ route("operario.ordenes.heartbeat", $orden) }}',
@@ -293,10 +316,38 @@ var OPERARIO_ROUTES = {
     ordenesAsignadas: '{{ route("operario.ordenes-asignadas") }}'
 };
 
+let contadorLightbox = 0;
+let zoomLevel = 1;
+
 function abrirLightbox(ruta, titulo) {
-    $('#lightboxImagen').attr('src', ruta);
+    contadorLightbox = 0;
+    zoomLevel = 1;
+    document.getElementById('contadorValor').textContent = '0';
+    const img = document.getElementById('lightboxImagen');
+    img.src = ruta;
+    img.style.transform = 'scale(1)';
+    img.style.cursor = 'zoom-in';
     $('#lightboxTitulo').text(titulo || 'Bosquejo');
     new bootstrap.Modal(document.getElementById('modalLightbox')).show();
+}
+
+function cambiarContador(delta) {
+    contadorLightbox += delta;
+    document.getElementById('contadorValor').textContent = contadorLightbox;
+}
+
+function zoomLightbox(direction) {
+    zoomLevel = Math.max(0.5, Math.min(5, zoomLevel + direction * 0.5));
+    const img = document.getElementById('lightboxImagen');
+    img.style.transform = 'scale(' + zoomLevel + ')';
+    img.style.cursor = zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+}
+
+function toggleZoomLightbox() {
+    zoomLevel = zoomLevel > 1 ? 1 : 2;
+    const img = document.getElementById('lightboxImagen');
+    img.style.transform = 'scale(' + zoomLevel + ')';
+    img.style.cursor = zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
 }
 </script>
 <script src="{{ asset('js/operario-trabajo.js') }}"></script>

@@ -29,8 +29,10 @@
                                 <div>
                                     <strong>{{ $pieza->nombre }}</strong>
                                     <span class="text-muted ms-2 small">x{{ $pieza->cantidad }}</span>
-                                    @if($pieza->entregada)
+                                    @if($pieza->cantidad_entregada >= $pieza->cantidad)
                                         <span class="status-badge success ms-2">ENTREGADA</span>
+                                    @elseif($pieza->cantidad_entregada > 0)
+                                        <span class="status-badge info ms-2">ENTREGADA {{ $pieza->cantidad_entregada }}/{{ $pieza->cantidad }}</span>
                                     @endif
                                 </div>
                                 <div class="text-end">
@@ -50,7 +52,7 @@
                                 </div>
                             @endif
 
-                            {{-- Progress bar --}}
+                            {{-- Progress bar de avance --}}
                             @php
                                 $pct = min(100, max(0, $pieza->porcentaje_avance));
                                 $barColor = $pct >= 100 ? 'bg-success' : ($pct >= 50 ? 'bg-warning' : ($pct > 0 ? 'bg-info' : 'bg-secondary'));
@@ -59,6 +61,19 @@
                                 <div class="progress-bar {{ $barColor }}" style="width: {{ $pct }}%"></div>
                             </div>
 
+                            {{-- Progress bar de entrega --}}
+                            @if($pieza->cantidad > 0)
+                                @php
+                                    $pctEntrega = min(100, ($pieza->cantidad_entregada / $pieza->cantidad) * 100);
+                                @endphp
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    <div class="progress flex-grow-1" style="height: 5px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ $pctEntrega }}%"></div>
+                                    </div>
+                                    <small class="text-muted" style="white-space:nowrap;">{{ $pieza->cantidad_entregada }}/{{ $pieza->cantidad }} entregadas</small>
+                                </div>
+                            @endif
+
                             <div class="d-flex justify-content-between mt-2">
                                 <small class="text-muted">
                                     @if($pieza->material || $pieza->calibre)
@@ -66,38 +81,51 @@
                                     @endif
                                 </small>
                                 <small class="text-muted">
-                                    @if($pieza->operarioActual)
+                                    @if(!$pieza->requiere_operario)
+                                        <x-sinden.badge variant="secondary">Sin operario</x-sinden.badge>
+                                    @elseif($pieza->operarioActual)
                                         <i class="bi bi-person me-1"></i>{{ $pieza->operarioActual->name }}
                                     @else
-                                        <span class="fst-italic">Sin operario</span>
+                                        <span class="fst-italic">Sin operario asignado</span>
                                     @endif
                                 </small>
                             </div>
 
-                            {{-- Historial de avances (colapsable) --}}
-                            @if($pieza->historialAvances->count() > 0)
-                                <div class="mt-2">
+                            <div class="mt-2 d-flex gap-3">
+                                {{-- Historial de avances (colapsable) --}}
+                                @if($pieza->historialAvances->count() > 0)
                                     <a class="small text-primary" data-bs-toggle="collapse" href="#historial{{ $pieza->id }}">
-                                        <i class="bi bi-clock-history me-1"></i>Ver historial ({{ $pieza->historialAvances->count() }})
+                                        <i class="bi bi-clock-history me-1"></i>Ver avances ({{ $pieza->historialAvances->count() }})
                                     </a>
-                                    <div class="collapse mt-2" id="historial{{ $pieza->id }}">
-                                        <div class="historial-timeline">
-                                            @foreach($pieza->historialAvances->sortByDesc('created_at') as $avance)
-                                                <div class="historial-entry">
-                                                    <div class="d-flex justify-content-between">
-                                                        <span class="fw-medium small">{{ $avance->operario->name ?? '-' }}</span>
-                                                        <span class="text-muted small">{{ $avance->created_at->format('d/m/Y H:i') }}</span>
-                                                    </div>
-                                                    <span class="small">
-                                                        {{ number_format($avance->porcentaje_desde, 0) }}% &rarr; {{ number_format($avance->porcentaje_hasta, 0) }}%
-                                                        <span class="text-muted">(+{{ number_format($avance->contribucion, 0) }}%)</span>
-                                                    </span>
-                                                    @if($avance->notas)
-                                                        <div class="text-muted small fst-italic">{{ $avance->notas }}</div>
-                                                    @endif
+                                @endif
+
+                                {{-- Boton historial de entregas --}}
+                                @if($pieza->cantidad_entregada > 0)
+                                    <a href="#" class="small text-info btn-historial-entregas" data-pieza-id="{{ $pieza->id }}" data-pieza-nombre="{{ $pieza->nombre }}">
+                                        <i class="bi bi-box-arrow-right me-1"></i>Ver entregas
+                                    </a>
+                                @endif
+                            </div>
+
+                            {{-- Historial de avances colapsable --}}
+                            @if($pieza->historialAvances->count() > 0)
+                                <div class="collapse mt-2" id="historial{{ $pieza->id }}">
+                                    <div class="historial-timeline">
+                                        @foreach($pieza->historialAvances->sortByDesc('created_at') as $avance)
+                                            <div class="historial-entry">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="fw-medium small">{{ $avance->operario->name ?? '-' }}</span>
+                                                    <span class="text-muted small">{{ $avance->created_at->format('d/m/Y H:i') }}</span>
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                                <span class="small">
+                                                    {{ number_format($avance->porcentaje_desde, 0) }}% &rarr; {{ number_format($avance->porcentaje_hasta, 0) }}%
+                                                    <span class="text-muted">(+{{ number_format($avance->contribucion, 0) }}%)</span>
+                                                </span>
+                                                @if($avance->notas)
+                                                    <div class="text-muted small fst-italic">{{ $avance->notas }}</div>
+                                                @endif
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endif
@@ -135,5 +163,51 @@
                 </div>
             </div>
         @endif
+    </div>
+</div>
+
+{{-- Modal Historial de Entregas por Pieza --}}
+<div class="modal fade" id="modalHistorialEntregas" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-box-arrow-right me-2 text-primary"></i>Historial de Entregas - <span id="modalEntregaPiezaNombre"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="d-flex gap-3">
+                        <span class="badge bg-light text-dark border" id="modalEntregaResumen"></span>
+                    </div>
+                </div>
+                <div id="modalEntregaLoading" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <p class="mt-1 mb-0 text-muted small">Cargando historial...</p>
+                </div>
+                <div id="modalEntregaContenido" class="d-none">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th>Entregado Por</th>
+                                    <th>Foto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalEntregaTabla"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="modalEntregaVacio" class="d-none text-center text-muted py-3">
+                    No hay entregas registradas.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>

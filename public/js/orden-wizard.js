@@ -228,7 +228,10 @@ function agregarFilaItem() {
     var html = '<tr id="itemRow_' + idx + '" data-idx="' + idx + '">'
         + '<td class="text-center text-muted"><span class="item-num">' + contarFilasItems() + '</span></td>'
         + '<td class="position-relative">'
-        + '  <input type="text" class="form-control form-control-sm item-codigo" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarItemCatalogo(this)">'
+        + '  <div class="d-flex gap-1 align-items-center">'
+        + '    <input type="text" class="form-control form-control-sm item-codigo" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarItemCatalogo(this)">'
+        + '    <button type="button" class="btn btn-sm btn-outline-secondary border-0 btn-desvincular-item p-0" onclick="desvincularItemCatalogo(' + idx + ')" style="display:none;min-width:24px" title="Desvincular del catalogo"><i class="bi bi-x-lg"></i></button>'
+        + '  </div>'
         + '  <div class="item-autocomplete-results list-group shadow-sm" id="itemResults_' + idx + '" style="display:none; position:absolute; z-index:1050; width:100%;"></div>'
         + '  <input type="hidden" class="item-catalogo-id" value="">'
         + '  <input type="hidden" class="item-categoria" value="servicio">'
@@ -271,6 +274,7 @@ function renumerarFilasItems() {
 
 var itemSearchTimers = {};
 function buscarItemCatalogo(input) {
+    if ($(input).prop('readonly')) return;
     var idx = $(input).data('idx');
     var q = $(input).val().trim();
     var $results = $('#itemResults_' + idx);
@@ -302,14 +306,24 @@ function buscarItemCatalogo(input) {
 
 function seleccionarItemCatalogo(idx, item) {
     var $row = $('#itemRow_' + idx);
-    $row.find('.item-codigo').val(item.codigo);
+    $row.find('.item-codigo').val(item.codigo).prop('readonly', true).addClass('item-readonly');
     $row.find('.item-catalogo-id').val(item.id);
-    $row.find('.item-descripcion').val(item.descripcion);
+    $row.find('.item-descripcion').val(item.descripcion).prop('readonly', true).addClass('item-readonly');
     $row.find('.item-precio').val(item.precio_unitario);
     $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
     $row.find('.item-categoria').val(item.categoria);
+    $row.find('.btn-desvincular-item').show();
     $('#itemResults_' + idx).hide();
     calcularTotalFila(idx);
+}
+
+function desvincularItemCatalogo(idx) {
+    var $row = $('#itemRow_' + idx);
+    $row.find('.item-catalogo-id').val('');
+    $row.find('.item-codigo').prop('readonly', false).removeClass('item-readonly').val('').focus();
+    $row.find('.item-descripcion').prop('readonly', false).removeClass('item-readonly').val('');
+    $row.find('.item-categoria').val('servicio');
+    $row.find('.btn-desvincular-item').hide();
 }
 
 function calcularTotalFila(idx) {
@@ -369,16 +383,96 @@ function piezaSubirArchivo(piezaIdx) {
 }
 
 function piezaAbrirCamara(piezaIdx) {
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');
-    input.style.display = 'none';
-    input.onchange = function() { subirBosquejoParaPieza(input, 'camara', piezaIdx); };
-    document.body.appendChild(input);
-    input.click();
-    setTimeout(function() { if (input.parentNode) document.body.removeChild(input); }, 60000);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        Swal.fire('Error', 'Tu navegador no soporta acceso a la camara.', 'error');
+        return;
+    }
+    window._camaraPiezaIdx = piezaIdx;
+    var modal = document.getElementById('modalCamaraPieza');
+    if (!modal) return;
+    var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+    bsModal.show();
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+            window._camaraStream = stream;
+            var video = document.getElementById('camaraPiezaVideo');
+            if (video) {
+                video.srcObject = stream;
+            }
+        })
+        .catch(function(err) {
+            console.error('Error al acceder a la camara:', err);
+            bsModal.hide();
+            Swal.fire('Error', 'No se pudo acceder a la camara. Verifica los permisos.', 'error');
+        });
 }
+
+function camaraPiezaCapturar() {
+    var video = document.getElementById('camaraPiezaVideo');
+    var canvas = document.getElementById('camaraPiezaCanvas');
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    camaraPiezaCerrar();
+
+    var piezaIdx = window._camaraPiezaIdx;
+    canvas.toBlob(function(blob) {
+        if (!blob) return;
+        var formData = new FormData();
+        formData.append('archivo', blob, 'foto_camara.jpg');
+        formData.append('tipo_origen', 'camara');
+        formData.append('nombre', 'Foto camara');
+        if (wizardState.ordenId) formData.append('orden_id', wizardState.ordenId);
+
+        $.ajax({
+            url: ROUTES.subirBosquejo,
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': WIZARD_CONFIG.csrfToken },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    var bosquejoIndex = wizardState.bosquejos.length;
+                    wizardState.bosquejos.push(response.bosquejo);
+                    vincularBosquejoAPieza(piezaIdx, bosquejoIndex);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success',
+                        title: 'Bosquejo agregado', showConfirmButton: false, timer: 2000 });
+                }
+            },
+            error: function(xhr) { handleAjaxError(xhr, 'subir el bosquejo'); }
+        });
+    }, 'image/jpeg', 0.85);
+}
+
+function camaraPiezaCerrar() {
+    if (window._camaraStream) {
+        window._camaraStream.getTracks().forEach(function(track) { track.stop(); });
+        window._camaraStream = null;
+    }
+    var modal = document.getElementById('modalCamaraPieza');
+    if (modal) {
+        var bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) bsModal.hide();
+    }
+}
+
+// Limpiar stream de camara cuando se cierra el modal por cualquier medio
+$(function() {
+    var modalCamara = document.getElementById('modalCamaraPieza');
+    if (modalCamara) {
+        modalCamara.addEventListener('hidden.bs.modal', function() {
+            if (window._camaraStream) {
+                window._camaraStream.getTracks().forEach(function(track) { track.stop(); });
+                window._camaraStream = null;
+            }
+        });
+    }
+});
 
 function piezaAbrirDibujo(piezaIdx) {
     window._targetPiezaForDibujo = piezaIdx;
@@ -576,32 +670,28 @@ function abrirSelectorArchivo() {
 }
 
 function abrirCamara() {
-    // Funcion legacy
-    var input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');
-    input.style.display = 'none';
-    input.onchange = function() {
-        var files = input.files;
-        if (!files || files.length === 0) return;
-        var formData = new FormData();
-        formData.append('archivo', files[0]);
-        formData.append('tipo_origen', 'camara');
-        formData.append('nombre', files[0].name.replace(/\.[^/.]+$/, ''));
-        if (wizardState.ordenId) formData.append('orden_id', wizardState.ordenId);
-        $.ajax({
-            url: ROUTES.subirBosquejo, method: 'POST',
-            headers: { 'X-CSRF-TOKEN': WIZARD_CONFIG.csrfToken },
-            data: formData, processData: false, contentType: false,
-            success: function(r) { if (r.success) wizardState.bosquejos.push(r.bosquejo); },
-            error: function(xhr) { handleAjaxError(xhr, 'subir el bosquejo'); }
+    // Legacy: redirige a modal de camara sin pieza asociada
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        Swal.fire('Error', 'Tu navegador no soporta acceso a la camara.', 'error');
+        return;
+    }
+    window._camaraPiezaIdx = null;
+    var modal = document.getElementById('modalCamaraPieza');
+    if (!modal) return;
+    var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+    bsModal.show();
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+            window._camaraStream = stream;
+            var video = document.getElementById('camaraPiezaVideo');
+            if (video) video.srcObject = stream;
+        })
+        .catch(function(err) {
+            console.error('Error al acceder a la camara:', err);
+            bsModal.hide();
+            Swal.fire('Error', 'No se pudo acceder a la camara. Verifica los permisos.', 'error');
         });
-        input.value = '';
-    };
-    document.body.appendChild(input);
-    input.click();
-    setTimeout(function() { if (input.parentNode) document.body.removeChild(input); }, 60000);
 }
 
 // --- Funciones de pieza (tabla) ---
@@ -648,7 +738,8 @@ function agregarFilaPieza() {
         + '</td>'
         + '<td><select class="form-select form-select-sm pieza-calibre" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
         + '<td class="small text-muted pieza-especificacion">1 - ' + nombre + '</td>'
-        + '<td><input type="text" class="form-control form-control-sm pieza-notas" placeholder="Notas..."></td>'
+        + '<td><textarea class="form-control form-control-sm pieza-notas" placeholder="Notas..." rows="2" style="resize:vertical;"></textarea></td>'
+        + '<td class="text-center"><input type="checkbox" class="form-check-input pieza-requiere-operario" checked onchange="actualizarVisibilidadOperario()"></td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaPieza(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
         + '</tr>';
 
@@ -674,6 +765,11 @@ function eliminarFilaPieza(idx) {
 function renumerarFilasPiezas() {
     $('#tbodyPiezas tr').each(function(i) {
         $(this).find('.pieza-num').text(i + 1);
+        var letra = obtenerLetraPieza(i);
+        var nuevoNombre = 'Pieza ' + letra;
+        $(this).find('.pieza-nombre').val(nuevoNombre);
+        var idx = $(this).data('idx');
+        generarEspecificacion(idx);
     });
 }
 
@@ -739,13 +835,14 @@ function seleccionarMaterialPieza(idx, material) {
 
 function actualizarVisibilidadOperario() {
     var tienePiezas = $('#tbodyPiezas tr').length > 0;
-    if (tienePiezas) {
+    var algunaRequiereOperario = $('#tbodyPiezas .pieza-requiere-operario:checked').length > 0;
+    if (tienePiezas && algunaRequiereOperario) {
         $('#operarioInfo').hide();
         $('#operarioSelector').show();
     } else {
         $('#operarioInfo').show();
         $('#operarioSelector').hide();
-        $('#operario_id').val('');
+        if (!algunaRequiereOperario) $('#operario_id').val('');
     }
 }
 
@@ -877,7 +974,8 @@ function recopilarDatosFormulario() {
             material: $(this).find('.pieza-material').val() || null,
             calibre: $(this).find('.pieza-calibre').val() || null,
             notas: $(this).find('.pieza-notas').val() || null,
-            bosquejo_index: (bosquejoIdx !== '' && bosquejoIdx !== undefined) ? parseInt(bosquejoIdx) : null
+            bosquejo_index: (bosquejoIdx !== '' && bosquejoIdx !== undefined) ? parseInt(bosquejoIdx) : null,
+            requiere_operario: $(this).find('.pieza-requiere-operario').is(':checked') ? 1 : 0
         });
     });
 
@@ -1058,8 +1156,9 @@ function validarParaGenerar(data) {
             if (item.precio_unitario < 0) errores.push('Item ' + num + ': precio no valido.');
         });
     }
-    if (data.piezas && data.piezas.length > 0 && !data.operario_id) {
-        errores.push('Debe seleccionar un operario cuando hay piezas.');
+    var algunaRequiereOperario = data.piezas && data.piezas.some(function(p) { return p.requiere_operario; });
+    if (algunaRequiereOperario && !data.operario_id) {
+        errores.push('Debe seleccionar un operario cuando hay piezas que lo requieren.');
     }
     return errores;
 }

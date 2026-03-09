@@ -14,11 +14,13 @@
         <div id="listaPagos">
             @if($orden->pagos->count() > 0)
                 @foreach($orden->pagos->sortByDesc('created_at') as $pago)
-                    <div class="d-flex justify-content-between align-items-start py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="d-flex justify-content-between align-items-start py-2 {{ !$loop->last ? 'border-bottom' : '' }}" @if($pago->trashed()) style="opacity: 0.55;" @endif>
                         <div>
-                            <span class="fw-semibold">${{ number_format($pago->monto, 0, ',', '.') }}</span>
+                            <span class="fw-semibold" @if($pago->trashed()) style="text-decoration: line-through;" @endif>${{ number_format($pago->monto, 0, ',', '.') }}</span>
                             <span class="badge bg-light text-dark border ms-1 small">{{ ucfirst($pago->metodo_pago) }}</span>
-                            @if(!$pago->aprobado)
+                            @if($pago->trashed())
+                                <span class="badge bg-danger ms-1 small">Rechazado</span>
+                            @elseif(!$pago->aprobado)
                                 <span class="badge bg-warning text-dark ms-1 small">Pendiente</span>
                             @else
                                 <span class="badge bg-success ms-1 small">Aprobado</span>
@@ -28,6 +30,14 @@
                             </div>
                             @if($pago->referencia_pago)
                                 <div class="text-muted small">Ref: {{ $pago->referencia_pago }}</div>
+                            @endif
+                            @if($pago->trashed())
+                                <div class="text-danger small">
+                                    <i class="bi bi-x-circle me-1"></i>Rechazado por {{ $pago->rechazadoPorUsuario->name ?? '-' }} el {{ $pago->deleted_at->format('d/m/Y H:i') }}
+                                    @if($pago->motivo_rechazo)
+                                        - {{ $pago->motivo_rechazo }}
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     </div>

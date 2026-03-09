@@ -1,8 +1,15 @@
+<style>
+    .item-readonly {
+        background-color: #f0f0f0 !important;
+        cursor: not-allowed;
+        color: #555;
+    }
+</style>
 {{-- Seccion 2: Items --}}
 <div class="card border-0 shadow-sm mb-4 wizard-section" data-section="3" id="seccionItems">
     <div class="card-header bg-white border-0 px-4 pt-4 pb-2 d-flex align-items-center justify-content-between">
         <h6 class="mb-0 fw-semibold">
-            <i class="bi bi-cart3 me-2 text-primary"></i>3. Items / Servicios
+            <i class="bi bi-cart3 me-2 text-primary"></i>3. Items (Productos y servicios)
         </h6>
         <button type="button" class="btn btn-sm btn-primary" onclick="agregarFilaItem()">
             <i class="bi bi-plus-lg me-1"></i> Agregar Item
