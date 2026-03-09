@@ -1,0 +1,19 @@
+[     363ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   52280ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   52280ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   52281ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   52281ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   52281ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   52288ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   58629ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   58633ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   60380ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   60384ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61103ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61108ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61371ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61375ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61979ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   61983ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   62736ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   62740ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0

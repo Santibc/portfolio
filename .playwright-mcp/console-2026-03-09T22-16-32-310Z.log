@@ -1,0 +1,11 @@
+[     284ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   67329ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   67329ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   67329ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   67329ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   67329ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   67331ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   95580ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   95581ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   96548ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0
+[   96549ms] [WARNING] The provided value 'alphabetical' is not a valid enum value of type CanvasTextBaseline. @ https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js:0

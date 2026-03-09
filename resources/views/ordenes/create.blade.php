@@ -185,34 +185,77 @@
     </div>
 </div>
 
-{{-- Modal: Dibujo Tablet --}}
-<div class="modal fade" id="modalDibujoTablet" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header border-0 py-1 px-3">
-                <div class="d-flex gap-2 flex-wrap align-items-center w-100">
-                    <button type="button" class="btn btn-sm btn-dark" onclick="cambiarColorDibujo('#000000')">Negro</button>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="cambiarColorDibujo('#dc3545')">Rojo</button>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="cambiarColorDibujo('#0d6efd')">Azul</button>
-                    <button type="button" class="btn btn-sm btn-success" onclick="cambiarColorDibujo('#198754')">Verde</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarColorDibujo('#ffffff')" title="Borrador"><i class="bi bi-eraser-fill"></i></button>
+{{-- Modal: Dibujo Tablet (Fabric.js Profesional) --}}
+<div class="modal fade" id="modalDibujoTablet" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen-lg-down modal-xl">
+        <div class="modal-content" style="height:100%; display:flex; flex-direction:column;">
+            {{-- Toolbar --}}
+            <div class="modal-header border-0 py-1 px-2" style="min-height:auto;">
+                <div class="d-flex gap-1 flex-wrap align-items-center w-100" id="dibujoToolbar">
+                    {{-- Herramientas de dibujo --}}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool active" data-tool="pencil" title="Dibujo libre"><i class="bi bi-pencil-fill"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="line" title="Linea"><i class="bi bi-slash-lg"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="rect" title="Rectangulo"><i class="bi bi-square"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="ellipse" title="Elipse"><i class="bi bi-circle"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="arrow" title="Flecha"><i class="bi bi-arrow-up-right"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="text" title="Texto/Medidas"><i class="bi bi-fonts"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="select" title="Seleccionar/Mover"><i class="bi bi-cursor"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="eraser" title="Borrador (eliminar objeto)"><i class="bi bi-eraser-fill"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="white-brush" title="Borrador blanco (borrar fondo)"><i class="bi bi-eraser"></i></button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-tool" data-tool="pan" title="Mover lienzo"><i class="bi bi-arrows-move"></i></button>
+                    </div>
                     <span class="vr mx-1"></span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(1)">Ultra Fino</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(2)">Fino</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(4)">Medio</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(8)">Grueso</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cambiarGrosorDibujo(20)">Ultra Grueso</button>
+                    {{-- Colores --}}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-dark dibujo-color active" data-color="#000000" title="Negro" style="min-width:30px;">&nbsp;</button>
+                        <button type="button" class="btn btn-danger dibujo-color" data-color="#dc3545" title="Rojo" style="min-width:30px;">&nbsp;</button>
+                        <button type="button" class="btn btn-primary dibujo-color" data-color="#0d6efd" title="Azul" style="min-width:30px;">&nbsp;</button>
+                        <button type="button" class="btn btn-success dibujo-color" data-color="#198754" title="Verde" style="min-width:30px;">&nbsp;</button>
+                    </div>
                     <span class="vr mx-1"></span>
-                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="deshacerDibujo()"><i class="bi bi-arrow-counterclockwise"></i> Deshacer</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="limpiarDibujo()"><i class="bi bi-eraser"></i> Limpiar</button>
+                    {{-- Grosor --}}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary dibujo-width" data-width="1" title="Ultra Fino">
+                            <span style="display:inline-block;width:14px;height:1px;background:currentColor;vertical-align:middle;"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-width active" data-width="3" title="Fino">
+                            <span style="display:inline-block;width:14px;height:2px;background:currentColor;vertical-align:middle;"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-width" data-width="6" title="Medio">
+                            <span style="display:inline-block;width:14px;height:4px;background:currentColor;vertical-align:middle;"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-width" data-width="10" title="Grueso">
+                            <span style="display:inline-block;width:14px;height:6px;background:currentColor;vertical-align:middle;"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-width" data-width="20" title="Ultra Grueso">
+                            <span style="display:inline-block;width:14px;height:10px;background:currentColor;vertical-align:middle;"></span>
+                        </button>
+                    </div>
+                    <span class="vr mx-1"></span>
+                    {{-- Acciones --}}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-warning" onclick="deshacerDibujo()" title="Deshacer (Ctrl+Z)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        <button type="button" class="btn btn-outline-info" onclick="rehacerDibujo()" title="Rehacer (Ctrl+Y)"><i class="bi bi-arrow-clockwise"></i></button>
+                        <button type="button" class="btn btn-outline-danger" onclick="limpiarDibujo()" title="Limpiar todo"><i class="bi bi-trash"></i></button>
+                    </div>
+                    <span class="vr mx-1"></span>
+                    {{-- Zoom --}}
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="zoomDibujo(1)" title="Zoom +"><i class="bi bi-zoom-in"></i></button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="zoomDibujo(-1)" title="Zoom -"><i class="bi bi-zoom-out"></i></button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="zoomDibujo(0)" title="Ajustar 100%"><i class="bi bi-fullscreen"></i></button>
+                    </div>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
                 </div>
             </div>
-            <div class="modal-body py-0 px-0">
-                <canvas id="dibujoCanvas" width="700" height="700" style="border: 1px solid #dee2e6; background: white; cursor: crosshair; width: 100%; max-width: 700px; aspect-ratio: 1/1; display: block; margin: 0 auto;"></canvas>
+            {{-- Canvas --}}
+            <div class="modal-body py-0 px-0 overflow-hidden" id="dibujoCanvasWrapper" style="flex:1; min-height:0; touch-action:none; position:relative;">
+                <canvas id="dibujoCanvas"></canvas>
             </div>
+            {{-- Footer --}}
             <div class="modal-footer border-0 py-2">
-                <h6 class="modal-title fw-semibold me-auto mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Dibujar Bosquejo</h6>
+                <span class="text-muted small me-auto" id="dibujoZoomLabel">100%</span>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarDibujo" onclick="guardarDibujoComoImagen()">
                     <i class="bi bi-save me-1"></i> Guardar Dibujo
