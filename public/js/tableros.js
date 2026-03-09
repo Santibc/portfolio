@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ghostClass: 'sortable-ghost',
                 dragClass: 'sortable-drag',
                 filter: '.tablero-columna-nueva',
+                preventOnFilter: false,
                 onEnd: function () {
                     const columnas = columnasContainer.querySelectorAll('.tablero-columna');
                     const posiciones = {};
@@ -344,6 +345,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
     // ATTACHMENTS
     // =====================================================
+    function esImagen(mimeType) {
+        return mimeType && mimeType.startsWith('image/');
+    }
+
     function renderAdjuntos(adjuntos) {
         const container = document.getElementById('modalAdjuntos');
         const section = document.getElementById('seccionAdjuntos');
@@ -356,13 +361,31 @@ document.addEventListener('DOMContentLoaded', function () {
         section.style.display = 'block';
         container.innerHTML = adjuntos.map(a => {
             const size = a.tamano > 1048576 ? (a.tamano / 1048576).toFixed(1) + ' MB' : (a.tamano / 1024).toFixed(0) + ' KB';
+            const fecha = new Date(a.created_at).toLocaleDateString('es-ES');
+            const deleteBtn = PUEDE_EDITAR ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarAdjunto(${a.id})"><i class="bi bi-trash"></i></button>` : '';
+
+            if (esImagen(a.mime_type) && a.url) {
+                return `<div class="adjunto-imagen-card">
+                    <a href="${a.url}" target="_blank" class="adjunto-imagen-preview">
+                        <img src="${a.url}" alt="${escapeHtml(a.nombre_original)}" loading="lazy">
+                    </a>
+                    <div class="adjunto-imagen-footer">
+                        <div class="adjunto-info">
+                            <a href="${a.url}" target="_blank" class="adjunto-nombre">${escapeHtml(a.nombre_original)}</a>
+                            <div class="adjunto-meta">${size} - ${fecha}</div>
+                        </div>
+                        ${deleteBtn}
+                    </div>
+                </div>`;
+            }
+
             return `<div class="adjunto-item">
                 <div class="adjunto-icono"><i class="bi bi-file-earmark"></i></div>
                 <div class="adjunto-info">
                     <a href="/tarjeta-adjuntos/${a.id}/descargar" class="adjunto-nombre">${escapeHtml(a.nombre_original)}</a>
-                    <div class="adjunto-meta">${size} - ${new Date(a.created_at).toLocaleDateString('es-ES')}</div>
+                    <div class="adjunto-meta">${size} - ${fecha}</div>
                 </div>
-                ${PUEDE_EDITAR ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarAdjunto(${a.id})"><i class="bi bi-trash"></i></button>` : ''}
+                ${deleteBtn}
             </div>`;
         }).join('');
     }

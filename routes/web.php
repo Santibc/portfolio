@@ -199,6 +199,7 @@ Route::middleware(['auth', 'verified', 'permission:crear_obras'])->group(functio
 Route::middleware(['auth', 'verified', 'permission:ver_obras'])->group(function () {
     Route::get('obras', [ObraController::class, 'index'])->name('obras.index');
     Route::get('obras/{obra}', [ObraController::class, 'show'])->name('obras.show');
+    Route::get('obras/{obra}/export-equipo', [ObraController::class, 'exportEquipo'])->name('obras.equipo.export');
 });
 
 Route::middleware(['auth', 'verified', 'permission:editar_obras'])->group(function () {

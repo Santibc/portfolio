@@ -12,8 +12,12 @@ use App\Models\Trabajador;
 use App\Models\Cuadrilla;
 use App\Models\User;
 use App\Models\Auditoria;
+use App\Exports\ObraEquipoExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class ObraController extends Controller
 {
@@ -635,6 +639,155 @@ class ObraController extends Controller
 
         return redirect()->route('obras.show', $obra)
             ->with('success', 'Cuadrilla desasignada de la obra.');
+    }
+
+    // =============================================
+    // EXPORTAR EQUIPO
+    // =============================================
+
+    public function exportEquipo(Request $request, Obra $obra)
+    {
+        $validated = $request->validate([
+            'fecha_desde' => 'required|date',
+            'fecha_hasta' => 'required|date|after_or_equal:fecha_desde',
+        ]);
+
+        $fechaDesde = $validated['fecha_desde'];
+        $fechaHasta = $validated['fecha_hasta'];
+
+        // A) Trabajadores asignados directamente
+        $directWorkers = DB::table('obra_trabajadores')
+            ->where('obra_id', $obra->id)
+            ->where('fecha_inicio', '<=', $fechaHasta)
+            ->where(function ($q) use ($fechaDesde) {
+                $q->whereNull('fecha_fin')
+                  ->orWhere('fecha_fin', '>=', $fechaDesde);
+            })
+            ->get(['trabajador_id', 'fecha_inicio', 'fecha_fin', 'rol']);
+
+        // B) Trabajadores via cuadrillas
+        $cuadrillaWorkers = DB::table('obra_cuadrillas')
+            ->join('cuadrilla_trabajadores', 'obra_cuadrillas.cuadrilla_id', '=', 'cuadrilla_trabajadores.cuadrilla_id')
+            ->join('cuadrillas', 'cuadrillas.id', '=', 'obra_cuadrillas.cuadrilla_id')
+            ->where('obra_cuadrillas.obra_id', $obra->id)
+            ->where('obra_cuadrillas.fecha_inicio', '<=', $fechaHasta)
+            ->where(function ($q) use ($fechaDesde) {
+                $q->whereNull('obra_cuadrillas.fecha_fin')
+                  ->orWhere('obra_cuadrillas.fecha_fin', '>=', $fechaDesde);
+            })
+            ->where('cuadrilla_trabajadores.fecha_incorporacion', '<=', $fechaHasta)
+            ->where(function ($q) use ($fechaDesde) {
+                $q->whereNull('cuadrilla_trabajadores.fecha_salida')
+                  ->orWhere('cuadrilla_trabajadores.fecha_salida', '>=', $fechaDesde);
+            })
+            ->get([
+                'cuadrilla_trabajadores.trabajador_id',
+                'obra_cuadrillas.fecha_inicio as oc_fecha_inicio',
+                'obra_cuadrillas.fecha_fin as oc_fecha_fin',
+                'cuadrilla_trabajadores.fecha_incorporacion',
+                'cuadrilla_trabajadores.fecha_salida',
+                'cuadrillas.nombre as cuadrilla_nombre',
+            ]);
+
+        // Construir mapa de trabajadores con metadata
+        $workerMap = [];
+
+        foreach ($directWorkers as $dw) {
+            $id = $dw->trabajador_id;
+            $workerMap[$id] = [
+                'asignacion' => 'Directa',
+                'rol' => $dw->rol ?? 'Operario',
+                'fecha_inicio' => $dw->fecha_inicio,
+                'fecha_fin' => $dw->fecha_fin,
+            ];
+        }
+
+        foreach ($cuadrillaWorkers as $cw) {
+            $id = $cw->trabajador_id;
+            // Fecha efectiva = interseccion de cuadrilla-obra y trabajador-cuadrilla
+            $effectiveStart = max($cw->oc_fecha_inicio, $cw->fecha_incorporacion);
+            $effectiveEnd = $cw->oc_fecha_fin && $cw->fecha_salida
+                ? min($cw->oc_fecha_fin, $cw->fecha_salida)
+                : ($cw->oc_fecha_fin ?? $cw->fecha_salida);
+
+            if (isset($workerMap[$id])) {
+                // Ya existe por asignacion directa, agregar cuadrilla al label
+                $current = $workerMap[$id]['asignacion'];
+                if (strpos($current, $cw->cuadrilla_nombre) === false) {
+                    $workerMap[$id]['asignacion'] = $current . ' + ' . $cw->cuadrilla_nombre;
+                }
+            } else {
+                $workerMap[$id] = [
+                    'asignacion' => $cw->cuadrilla_nombre,
+                    'rol' => 'Operario',
+                    'fecha_inicio' => $effectiveStart,
+                    'fecha_fin' => $effectiveEnd,
+                ];
+            }
+        }
+
+        if (empty($workerMap)) {
+            // Retornar excel vacio con solo headers
+            $rows = collect();
+            $filename = 'equipo_' . Str::slug($obra->codigo) . '_' . $fechaDesde . '_' . $fechaHasta . '.xlsx';
+            return Excel::download(new ObraEquipoExport($rows, $obra->nombre), $filename);
+        }
+
+        $allWorkerIds = array_keys($workerMap);
+
+        // C) Horas de fichajes
+        $horasData = DB::table('fichajes')
+            ->where('obra_id', $obra->id)
+            ->whereIn('trabajador_id', $allWorkerIds)
+            ->whereBetween('fecha', [$fechaDesde, $fechaHasta])
+            ->groupBy('trabajador_id')
+            ->selectRaw('trabajador_id, COALESCE(SUM(horas_trabajadas), 0) as total_horas, COALESCE(SUM(horas_extra), 0) as total_extra, COUNT(*) as total_fichajes')
+            ->get()
+            ->keyBy('trabajador_id');
+
+        // D) Cargar datos de trabajadores
+        $trabajadores = Trabajador::withTrashed()
+            ->whereIn('id', $allWorkerIds)
+            ->get()
+            ->keyBy('id');
+
+        // E) Construir filas del excel
+        $rows = collect();
+        foreach ($workerMap as $trabajadorId => $meta) {
+            $trabajador = $trabajadores->get($trabajadorId);
+            if (!$trabajador) continue;
+
+            $horas = $horasData->get($trabajadorId);
+
+            // Calcular dias en obra dentro del periodo filtrado
+            $assignStart = $meta['fecha_inicio'] ? Carbon::parse($meta['fecha_inicio']) : Carbon::parse($fechaDesde);
+            $assignEnd = $meta['fecha_fin'] ? Carbon::parse($meta['fecha_fin']) : Carbon::parse($fechaHasta);
+            $effectiveStart = Carbon::parse(max($assignStart->format('Y-m-d'), $fechaDesde));
+            $effectiveEnd = Carbon::parse(min($assignEnd->format('Y-m-d'), $fechaHasta));
+            $dias = max(1, $effectiveStart->diffInDays($effectiveEnd) + 1);
+
+            $rows->push([
+                'dni' => $trabajador->dni,
+                'nombre_completo' => $trabajador->nombre . ' ' . $trabajador->apellidos,
+                'categoria' => $trabajador->categoria_convenio,
+                'asignacion' => $meta['asignacion'],
+                'rol' => $meta['rol'],
+                'fecha_inicio' => $meta['fecha_inicio'] ? Carbon::parse($meta['fecha_inicio'])->format('d/m/Y') : '-',
+                'fecha_fin' => $meta['fecha_fin'] ? Carbon::parse($meta['fecha_fin'])->format('d/m/Y') : null,
+                'dias_en_obra' => $dias,
+                'horas_trabajadas' => $horas->total_horas ?? 0,
+                'horas_extra' => $horas->total_extra ?? 0,
+                'total_fichajes' => $horas->total_fichajes ?? 0,
+            ]);
+        }
+
+        // Ordenar por nombre
+        $rows = $rows->sortBy('nombre_completo')->values();
+
+        $periodo = Carbon::parse($fechaDesde)->format('d-m-Y') . '_' . Carbon::parse($fechaHasta)->format('d-m-Y');
+        $filename = 'equipo_' . Str::slug($obra->codigo) . '_' . $periodo . '.xlsx';
+
+        return Excel::download(new ObraEquipoExport($rows, $obra->nombre, $periodo), $filename);
     }
 
     // =============================================

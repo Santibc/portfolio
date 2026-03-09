@@ -67,6 +67,14 @@ MySQL database "agro" on 127.0.0.1:3306 (no password for local XAMPP).
 
 Core tables: users, roles, permissions, model_has_roles, model_has_permissions, role_has_permissions
 
+### File Uploads
+**NEVER use Laravel Storage (storage/ or storage_path()).** All file uploads go directly to `public/uploads/` using `public_path()`. Files are served via `asset('uploads/...')`. No symlinks needed.
+
+- Upload path: `public_path("uploads/{subdirectory}")`
+- Public URL: `asset("uploads/{subdirectory}/{filename}")`
+- Use `Illuminate\Support\Facades\File` for file operations (not Storage facade)
+- Example: Tablero attachments → `public/uploads/tableros/{tablero_id}/{tarjeta_id}/`
+
 ## Adding Features
 
 1. Model in `app/Models/`

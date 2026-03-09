@@ -78,9 +78,19 @@
     @else
         <div class="tablero-grid">
             @foreach($tableros as $tablero)
+            @php
+                $hex = ltrim($tablero->color_fondo ?? '#3B5998', '#');
+                if(strlen($hex) === 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+                $r = hexdec(substr($hex, 0, 2));
+                $g = hexdec(substr($hex, 2, 2));
+                $b = hexdec(substr($hex, 4, 2));
+                $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+                $cardTextColor = $luminance > 0.6 ? '#172b4d' : 'white';
+                $cardTextShadow = $luminance > 0.6 ? 'none' : '0 1px 3px rgba(0,0,0,0.4)';
+            @endphp
             <a href="{{ route('tableros.show', $tablero) }}" class="tablero-card">
                 <div class="tablero-card-header" style="background: {{ $tablero->color_fondo }};">
-                    <span class="tablero-card-nombre">{{ $tablero->nombre }}</span>
+                    <span class="tablero-card-nombre" style="color: {{ $cardTextColor }}; text-shadow: {{ $cardTextShadow }};">{{ $tablero->nombre }}</span>
                 </div>
                 <div class="tablero-card-body">
                     <div class="tablero-card-meta">

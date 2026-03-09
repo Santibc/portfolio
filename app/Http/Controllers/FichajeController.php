@@ -68,6 +68,23 @@ class FichajeController extends Controller
             $query->where('obra_id', $request->obra_id);
         }
 
+        // Filtro por cuadrilla (solo admin/encargados)
+        if (!$esTrabajador && $request->filled('cuadrilla_id')) {
+            $trabajadorIdsCuadrilla = \DB::table('cuadrilla_trabajadores')
+                ->where('cuadrilla_id', $request->cuadrilla_id)
+                ->where('activo', true)
+                ->pluck('trabajador_id')
+                ->toArray();
+
+            // Incluir también al capataz de la cuadrilla
+            $capatazId = \App\Models\Cuadrilla::where('id', $request->cuadrilla_id)->value('capataz_id');
+            if ($capatazId) {
+                $trabajadorIdsCuadrilla[] = $capatazId;
+            }
+
+            $query->whereIn('trabajador_id', array_unique($trabajadorIdsCuadrilla));
+        }
+
         if ($request->filled('validado')) {
             $query->where('validado', $request->validado === '1');
         }
@@ -109,6 +126,8 @@ class FichajeController extends Controller
                                    ->orderBy('nombre')
                                    ->get();
 
+        $cuadrillas = \App\Models\Cuadrilla::where('activa', true)->orderBy('nombre')->get();
+
         // Filtrar obras según rol
         if ($esTrabajador && $trabajadorActual) {
             $obras = $trabajadorActual->obrasAsignadas();
@@ -119,7 +138,7 @@ class FichajeController extends Controller
         }
 
         return view('fichajes.index', compact(
-            'fichajes', 'trabajadores', 'obras', 'stats',
+            'fichajes', 'trabajadores', 'obras', 'cuadrillas', 'stats',
             'esTrabajador', 'trabajadorActual', 'fichajeHoy'
         ));
     }
@@ -189,6 +208,22 @@ class FichajeController extends Controller
 
         if ($request->filled('obra_id')) {
             $query->where('obra_id', $request->obra_id);
+        }
+
+        // Filtro por cuadrilla
+        if (!$esTrabajador && $request->filled('cuadrilla_id')) {
+            $trabajadorIdsCuadrilla = \DB::table('cuadrilla_trabajadores')
+                ->where('cuadrilla_id', $request->cuadrilla_id)
+                ->where('activo', true)
+                ->pluck('trabajador_id')
+                ->toArray();
+
+            $capatazId = \App\Models\Cuadrilla::where('id', $request->cuadrilla_id)->value('capataz_id');
+            if ($capatazId) {
+                $trabajadorIdsCuadrilla[] = $capatazId;
+            }
+
+            $query->whereIn('trabajador_id', array_unique($trabajadorIdsCuadrilla));
         }
 
         if ($request->filled('validado')) {

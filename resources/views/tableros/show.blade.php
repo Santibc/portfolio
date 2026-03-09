@@ -4,17 +4,32 @@
 <link href="{{ asset('css/tableros.css') }}" rel="stylesheet">
 @endpush
 
+@php
+    $hex = ltrim($tablero->color_fondo ?? '#3B5998', '#');
+    if(strlen($hex) === 3) $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+    $boardLuminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+    $headerTextColor = $boardLuminance > 0.6 ? '#172b4d' : 'white';
+    $headerBadgeBg = $boardLuminance > 0.6 ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.25)';
+    $headerBtnBg = $boardLuminance > 0.6 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.2)';
+    $headerOverlay = $boardLuminance > 0.6 ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)';
+    $headerTextShadow = $boardLuminance > 0.6 ? 'none' : '0 1px 3px rgba(0,0,0,0.3)';
+    $scrollbarColor = $boardLuminance > 0.6 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)';
+@endphp
+
 @section('content')
-<div class="tablero-wrapper" style="background-color: {{ $tablero->color_fondo }};" id="tableroWrapper">
+<div class="tablero-wrapper {{ $boardLuminance > 0.6 ? 'light-board' : '' }}" style="background-color: {{ $tablero->color_fondo }}; --header-text: {{ $headerTextColor }}; --header-badge-bg: {{ $headerBadgeBg }}; --header-btn-bg: {{ $headerBtnBg }}; --header-overlay: {{ $headerOverlay }}; --header-text-shadow: {{ $headerTextShadow }}; --scrollbar-color: {{ $scrollbarColor }};" id="tableroWrapper">
 
     {{-- Board Header --}}
-    <div class="tablero-header">
+    <div class="tablero-header" style="background: {{ $headerOverlay }};">
         <div class="tablero-header-left">
-            <a href="{{ route('tableros.index') }}" class="btn-tablero" style="padding:4px 10px;">
+            <a href="{{ route('tableros.index') }}" class="btn-tablero" style="padding:4px 10px; background: {{ $headerBtnBg }}; color: {{ $headerTextColor }};">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <h1 class="tablero-titulo">{{ $tablero->nombre }}</h1>
-            <span class="badge" style="background:rgba(255,255,255,0.25);color:white;font-size:0.7rem;">
+            <h1 class="tablero-titulo" style="color: {{ $headerTextColor }}; text-shadow: {{ $headerTextShadow }};">{{ $tablero->nombre }}</h1>
+            <span class="badge" style="background:{{ $headerBadgeBg }};color:{{ $headerTextColor }};font-size:0.7rem;">
                 @if($tablero->visibilidad === 'todos')
                     <i class="bi bi-globe2"></i> Publico
                 @elseif($tablero->visibilidad === 'roles')
@@ -24,21 +39,21 @@
                 @endif
             </span>
             @if($tablero->obra)
-            <span class="badge" style="background:rgba(255,255,255,0.25);color:white;font-size:0.7rem;">
+            <span class="badge" style="background:{{ $headerBadgeBg }};color:{{ $headerTextColor }};font-size:0.7rem;">
                 <i class="bi bi-building"></i> {{ $tablero->obra->codigo }} - {{ $tablero->obra->nombre }}
             </span>
             @endif
         </div>
         <div class="tablero-header-right">
-            <button class="btn-tablero" id="btnFiltros" onclick="toggleFiltros()">
+            <button class="btn-tablero" id="btnFiltros" onclick="toggleFiltros()" style="background: {{ $headerBtnBg }}; color: {{ $headerTextColor }};">
                 <i class="bi bi-funnel"></i> Filtrar
             </button>
-            <button class="btn-tablero" data-bs-toggle="modal" data-bs-target="#miembrosModal">
+            <button class="btn-tablero" data-bs-toggle="modal" data-bs-target="#miembrosModal" style="background: {{ $headerBtnBg }}; color: {{ $headerTextColor }};">
                 <i class="bi bi-people"></i>
                 <span class="d-none d-md-inline">{{ $tablero->miembros->count() }}</span>
             </button>
             @if($puedeEditar)
-            <a href="{{ route('tableros.edit', $tablero) }}" class="btn-tablero">
+            <a href="{{ route('tableros.edit', $tablero) }}" class="btn-tablero" style="background: {{ $headerBtnBg }}; color: {{ $headerTextColor }};">
                 <i class="bi bi-gear"></i>
             </a>
             @endif
@@ -73,7 +88,7 @@
         </select>
         <input type="text" class="form-control form-control-sm" id="filtroBusqueda"
                placeholder="Buscar tarjeta..." oninput="aplicarFiltros()" style="max-width:200px;">
-        <button class="btn btn-sm" style="background:rgba(255,255,255,0.3);color:white;" onclick="limpiarFiltros()">
+        <button class="btn btn-sm" style="background:{{ $headerBtnBg }};color:{{ $headerTextColor }};" onclick="limpiarFiltros()">
             <i class="bi bi-x-lg"></i> Limpiar
         </button>
     </div>

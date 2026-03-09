@@ -296,6 +296,12 @@
                     <div class="tab-content" id="obraTabsContent">
                         <!-- Tab Equipo -->
                         <div class="tab-pane fade show active" id="equipo" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span></span>
+                                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#exportEquipoModal">
+                                    <i class="bi bi-file-earmark-excel me-1"></i>Exportar Equipo
+                                </button>
+                            </div>
                             <!-- Cuadrillas -->
                             <h6 class="text-muted mb-3">Cuadrillas Asignadas</h6>
                             @if($obra->cuadrillas->count() > 0)
@@ -867,6 +873,41 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Cambiar Estado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Exportar Equipo -->
+<div class="modal fade" id="exportEquipoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('obras.equipo.export', $obra) }}" method="GET">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Exportar Equipo Histórico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Exporta todos los trabajadores que formaron parte de esta obra en el periodo seleccionado, incluyendo trabajadores ya desasignados y horas trabajadas desde fichajes.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Desde</label>
+                            <input type="date" name="fecha_desde" class="form-control" required
+                                   value="{{ $obra->fecha_inicio_real?->format('Y-m-d') ?? $obra->fecha_inicio_prevista?->format('Y-m-d') ?? now()->startOfMonth()->format('Y-m-d') }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Hasta</label>
+                            <input type="date" name="fecha_hasta" class="form-control" required
+                                   value="{{ now()->format('Y-m-d') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-download me-1"></i>Descargar Excel
+                    </button>
                 </div>
             </form>
         </div>

@@ -11,6 +11,8 @@ class TarjetaAdjunto extends Model
 
     protected $fillable = ['tarjeta_id', 'user_id', 'nombre_original', 'ruta_archivo', 'mime_type', 'tamano'];
 
+    protected $appends = ['url'];
+
     public function tarjeta(): BelongsTo
     {
         return $this->belongsTo(Tarjeta::class);
@@ -23,6 +25,6 @@ class TarjetaAdjunto extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('uploads/tableros/' . $this->ruta_archivo);
+        return asset('uploads/' . $this->ruta_archivo);
     }
 }

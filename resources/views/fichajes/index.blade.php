@@ -268,6 +268,17 @@
                         </select>
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">Cuadrilla</label>
+                        <select name="cuadrilla_id" class="form-select">
+                            <option value="">Todas</option>
+                            @foreach($cuadrillas as $cuadrilla)
+                                <option value="{{ $cuadrilla->id }}" {{ request('cuadrilla_id') == $cuadrilla->id ? 'selected' : '' }}>
+                                    {{ $cuadrilla->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label">Obra</label>
                         <select name="obra_id" class="form-select">
                             <option value="">Todas</option>
