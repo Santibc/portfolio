@@ -194,7 +194,7 @@ class CatalogoController extends Controller
             'variantes' => function($q) {
                 $q->activas()->with([
                     'stock' => function($sq) {
-                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'ubicacion_id')
+                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo', 'ubicacion_id')
                           ->where(function($sub) {
                               $sub->whereNull('ubicacion_id')
                                   ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
