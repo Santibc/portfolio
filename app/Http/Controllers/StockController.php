@@ -347,7 +347,18 @@ class StockController extends Controller
             ->limit(50)
             ->get();
 
-        $html = view('stock.reservas', compact('reservas'))->render();
+        // Agrupar reservas activas por cotizacion
+        $reservasActivas = $reservas->where('estado', 'activa');
+        $cotizacionesActivas = $reservasActivas->groupBy('solicitud_cotizacion_id')->map(function ($grupo) {
+            $solicitud = $grupo->first()->solicitudCotizacion;
+            return [
+                'solicitud' => $solicitud,
+                'total_reservado' => $grupo->sum('cantidad_reservada'),
+                'reservas' => $grupo,
+            ];
+        });
+
+        $html = view('stock.reservas', compact('reservas', 'cotizacionesActivas'))->render();
 
         return response()->json(['html' => $html]);
     }
