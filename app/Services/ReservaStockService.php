@@ -464,7 +464,11 @@ class ReservaStockService
      */
     private function obtenerStock(int $productoId, ?int $varianteId = null): ?StockProducto
     {
-        $query = StockProducto::where('producto_id', $productoId);
+        $query = StockProducto::where('producto_id', $productoId)
+            ->where(function($q) {
+                $q->whereNull('ubicacion_id')
+                  ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+            });
 
         if ($varianteId) {
             $query->where('variante_producto_id', $varianteId);
