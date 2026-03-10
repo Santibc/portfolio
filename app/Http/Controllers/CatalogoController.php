@@ -96,11 +96,19 @@ class CatalogoController extends Controller
                 'todasImagenes',
                 'categoria',
                 'stock' => function($q) {
-                    $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
+                    $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo', 'ubicacion_id')
+                      ->where(function($sub) {
+                          $sub->whereNull('ubicacion_id')
+                              ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                      });
                 },
                 'variantes' => function($q) {
                     $q->activas()->with(['stock' => function($sq) {
-                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
+                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo', 'ubicacion_id')
+                          ->where(function($sub) {
+                              $sub->whereNull('ubicacion_id')
+                                  ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                          });
                     }]);
                 }
             ])
@@ -186,7 +194,11 @@ class CatalogoController extends Controller
             'variantes' => function($q) {
                 $q->activas()->with([
                     'stock' => function($sq) {
-                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada');
+                        $sq->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo', 'ubicacion_id')
+                          ->where(function($sub) {
+                              $sub->whereNull('ubicacion_id')
+                                  ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                          });
                     },
                     'imagenes' => function($iq) {
                         $iq->orderBy('orden');
@@ -197,7 +209,11 @@ class CatalogoController extends Controller
                 $q->orderBy('orden');
             },
             'stock' => function($q) {
-                $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo');
+                $q->select('producto_id', 'variante_producto_id', 'cantidad_disponible', 'cantidad_reservada', 'stock_maximo', 'ubicacion_id')
+                  ->where(function($sub) {
+                      $sub->whereNull('ubicacion_id')
+                          ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                  });
             }
         ]);
 
@@ -465,8 +481,12 @@ class CatalogoController extends Controller
                     );
                 }
 
-                // Bloqueo pesimista para evitar race conditions
-                $stockQuery = StockProducto::where('producto_id', $item['producto_id']);
+                // Bloqueo pesimista para evitar race conditions (excluir stock de tienda)
+                $stockQuery = StockProducto::where('producto_id', $item['producto_id'])
+                    ->where(function($q) {
+                        $q->whereNull('ubicacion_id')
+                          ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                    });
 
                 if (!empty($item['variante_id'])) {
                     $stockQuery->where('variante_producto_id', $item['variante_id']);
