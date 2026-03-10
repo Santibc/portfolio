@@ -601,10 +601,22 @@ $(function(){
   };
   window.cambiarCantidad = (i,delta)=>{
     const n = carrito[i].cantidad+delta;
+    const max = carrito[i].stock_maximo || 0;
+    if(max && n > max) {
+      mostrarNotificacion(`Máximo permitido por pedido: ${max} unidades`, 'warning');
+      return;
+    }
     if(n>0){ carrito[i].cantidad=n; actualizarCarrito(); }
   };
   window.actualizarCantidad = (i,val)=>{
     val = parseInt(val)||0;
+    const max = carrito[i].stock_maximo || 0;
+    if(max && val > max) {
+      mostrarNotificacion(`Máximo permitido por pedido: ${max} unidades`, 'warning');
+      carrito[i].cantidad = max;
+      actualizarCarrito();
+      return;
+    }
     if(val>0){ carrito[i].cantidad=val; actualizarCarrito(); }
   };
   window.actualizarObservacion = (i,val)=>{
@@ -619,8 +631,18 @@ $(function(){
       it.producto_id===producto.id &&
       it.variante_id === (variante?.id||null)
     );
+    // Obtener stock_maximo
+    const stockMaximo = variante
+      ? (variante.stock_info?.stock_maximo || 0)
+      : (producto.stock_info?.stock_maximo || 0);
+
     if(idx > -1){
-      carrito[idx].cantidad += cantidad;
+      const nuevaCantidad = carrito[idx].cantidad + cantidad;
+      if(stockMaximo && nuevaCantidad > stockMaximo) {
+        mostrarNotificacion(`No puede agregar más de ${stockMaximo} unidades de este producto por pedido`, 'warning');
+        return;
+      }
+      carrito[idx].cantidad = nuevaCantidad;
     } else {
       carrito.push({
         producto_id: producto.id,
@@ -631,6 +653,7 @@ $(function(){
         precio: precioUnit,
         unidad_venta: producto.unidad_venta || '',
         cantidad,
+        stock_maximo: stockMaximo,
         observacion: ''
       });
     }
