@@ -366,28 +366,59 @@ class ReservaStockService
     {
         $liberadas = 0;
 
+        // 1. Liberar reservas expiradas por tiempo
         $reservasExpiradas = ReservaStock::where('estado', ReservaStock::ESTADO_ACTIVA)
             ->where('expira_en', '<', now())
             ->get();
 
         foreach ($reservasExpiradas as $reserva) {
-            DB::beginTransaction();
+            $liberadas += $this->liberarReservaIndividual($reserva, 'Expiración automática');
+        }
 
-            try {
-                $reserva->update([
-                    'estado' => ReservaStock::ESTADO_EXPIRADA,
-                    'liberada_en' => now(),
-                    'motivo_liberacion' => 'Expiración automática',
+        // 2. Liberar reservas huérfanas (activas pero cotización ya aplicada o rechazada)
+        $reservasHuerfanas = ReservaStock::where('estado', ReservaStock::ESTADO_ACTIVA)
+            ->whereHas('solicitudCotizacion', function ($q) {
+                $q->whereIn('estado', [
+                    SolicitudCotizacion::ESTADO_APLICADA ?? 'aplicada',
+                    SolicitudCotizacion::ESTADO_RECHAZADA ?? 'rechazada',
                 ]);
+            })->get();
 
-                // Liberar en el stock
-                $stock = $reserva->stockProducto;
-                if ($stock) {
-                    $stock->decrement('cantidad_reservada', $reserva->cantidad_reservada);
-                }
+        foreach ($reservasHuerfanas as $reserva) {
+            $liberadas += $this->liberarReservaIndividual($reserva, 'Limpieza automática - cotización ya procesada');
+        }
 
-                // Actualizar solicitud si todas sus reservas están liberadas
-                $solicitud = $reserva->solicitudCotizacion;
+        if ($liberadas > 0) {
+            Log::info("Liberadas {$liberadas} reservas de stock (expiradas + huérfanas)");
+        }
+
+        return $liberadas;
+    }
+
+    /**
+     * Liberar una reserva individual y actualizar stock y solicitud
+     */
+    private function liberarReservaIndividual(ReservaStock $reserva, string $motivo): int
+    {
+        DB::beginTransaction();
+
+        try {
+            $reserva->update([
+                'estado' => ReservaStock::ESTADO_EXPIRADA,
+                'liberada_en' => now(),
+                'motivo_liberacion' => $motivo,
+            ]);
+
+            // Liberar en el stock
+            $stock = $reserva->stockProducto;
+            if ($stock && $stock->cantidad_reservada > 0) {
+                $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                $stock->decrement('cantidad_reservada', $cantidadALiberar);
+            }
+
+            // Actualizar solicitud si todas sus reservas están liberadas
+            $solicitud = $reserva->solicitudCotizacion;
+            if ($solicitud) {
                 $reservasActivasRestantes = $solicitud->reservas()
                     ->where('estado', ReservaStock::ESTADO_ACTIVA)
                     ->count();
@@ -398,21 +429,16 @@ class ReservaStockService
                         'reserva_liberada_en' => now(),
                     ]);
                 }
-
-                DB::commit();
-                $liberadas++;
-
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::error("Error al liberar reserva expirada {$reserva->id}: " . $e->getMessage());
             }
-        }
 
-        if ($liberadas > 0) {
-            Log::info("Liberadas {$liberadas} reservas expiradas de stock");
-        }
+            DB::commit();
+            return 1;
 
-        return $liberadas;
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error al liberar reserva {$reserva->id}: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -464,7 +490,8 @@ class ReservaStockService
      */
     private function obtenerStock(int $productoId, ?int $varianteId = null): ?StockProducto
     {
-        $query = StockProducto::where('producto_id', $productoId);
+        $query = StockProducto::where('producto_id', $productoId)
+            ->whereNull('ubicacion_id'); // Solo ubicación principal (bodega)
 
         if ($varianteId) {
             $query->where('variante_producto_id', $varianteId);
@@ -533,6 +560,9 @@ class ReservaStockService
         // NO usar DB::beginTransaction() - ya estamos en una transacción
 
         try {
+            $expiraEn = now()->addHours(self::HORAS_EXPIRACION_DEFAULT);
+            $reservasCreadas = 0;
+
             foreach ($solicitud->items as $item) {
                 $stock = $this->obtenerStock($item->producto_id, $item->variante_producto_id);
 
@@ -555,11 +585,31 @@ class ReservaStockService
                 $cantidadAReservar = min($item->cantidad, $disponibleReal);
 
                 if ($cantidadAReservar > 0) {
+                    // Crear registro de reserva para tracking
+                    ReservaStock::create([
+                        'solicitud_cotizacion_id' => $solicitud->id,
+                        'item_solicitud_id' => $item->id,
+                        'stock_producto_id' => $stock->id,
+                        'cantidad_reservada' => $cantidadAReservar,
+                        'expira_en' => $expiraEn,
+                        'estado' => ReservaStock::ESTADO_ACTIVA,
+                    ]);
+
                     $stock->cantidad_reservada += $cantidadAReservar;
                     $stock->save();
+                    $reservasCreadas++;
 
                     Log::info("Reservado en transacción: Producto {$item->producto_id}, Cantidad {$cantidadAReservar}");
                 }
+            }
+
+            // Actualizar la solicitud con info de reserva
+            if ($reservasCreadas > 0) {
+                $solicitud->update([
+                    'tiene_reserva_stock' => true,
+                    'reserva_expira_en' => $expiraEn,
+                    'reserva_liberada_en' => null,
+                ]);
             }
 
             return true;

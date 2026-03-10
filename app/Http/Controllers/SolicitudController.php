@@ -811,12 +811,8 @@ class SolicitudController extends Controller
             $observaciones = $request->observaciones;
             $solicitud->marcarComoAplicada($user->id, $observaciones);
 
-            // Liberar/aplicar reservas de stock
+            // Aplicar reservas de stock (descuenta disponible y libera reservado)
             $this->reservaService->aplicarReservas($solicitud);
-
-            // NUEVO: Liberar reservas directamente como failsafe
-            // Esto asegura que se liberen reservas incluso si no hay registros en reservas_stock
-            $this->reservaService->liberarReservasDirectamente($solicitud);
 
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
