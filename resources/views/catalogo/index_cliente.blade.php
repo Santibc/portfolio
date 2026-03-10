@@ -1138,6 +1138,7 @@ $(function(){
                         style="width:65px" ${inputDisabled}>
                     </div>
                   </div>
+                  ${(v.stock_info && v.stock_info.stock_maximo) ? `<small class="text-warning mt-1 d-block"><i class="bi bi-exclamation-triangle"></i> Máx. por pedido: <strong>${v.stock_info.stock_maximo}</strong></small>` : ''}
                 </div>
               </div>
             </div>
@@ -1169,8 +1170,11 @@ $(function(){
         }
         
         html+=`<input type="number" class="form-control" id="cantidadProducto" min="1" max="${maxCantidad}" value="1" ${inputDisabled}>`;
+        if(p.stock_info && p.stock_info.stock_maximo) {
+          html+=`<small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle"></i> Máximo permitido por pedido: <strong>${p.stock_info.stock_maximo}</strong> unidades</small>`;
+        }
         html+='</div>';
-        
+
         // Botón agregar - determinar si deshabilitar
         let btnDisabled = '';
         let btnText = 'Agregar al Carrito';
