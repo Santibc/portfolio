@@ -45,7 +45,12 @@
       "Bash(del:*)",
       "Bash(if not exist \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\" mkdir \"f:\\\\xamppPro80\\\\htdocs\\\\miracle\\\\public\\\\documentos\\\\clientes\")",
       "Bash(powershell:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(tasklist)",
+      "Read(//f/xamppPro80/mysql/data/**)",
+      "Read(//f/xamppPro80/mysql/data//**)",
+      "Bash(mv /f/xamppPro80/mysql/data/ib_logfile0 /f/xamppPro80/mysql/data/ib_logfile0.bak)",
+      "Bash(mv /f/xamppPro80/mysql/data/ib_logfile1 /f/xamppPro80/mysql/data/ib_logfile1.bak)"
     ],
     "deny": [],
     "ask": []

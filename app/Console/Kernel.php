@@ -20,6 +20,12 @@ class Kernel extends ConsoleKernel
                  ->hourly()
                  ->appendOutputTo(storage_path('logs/reservas.log'))
                  ->description('Liberar reservas de stock expiradas');
+
+        // Reparar cantidad_reservada inconsistente diariamente a las 3 AM
+        $schedule->command('stock:reparar-reservado')
+                 ->dailyAt('03:00')
+                 ->appendOutputTo(storage_path('logs/stock-reparacion.log'))
+                 ->description('Reparar stock reservado inconsistente');
     }
 
     /**
