@@ -39,9 +39,14 @@ class RepararStockReservado extends Command
         $this->info('--- Paso 2: Limpiar reservas expiradas ---');
         $this->limpiarReservasExpiradas($dryRun);
 
-        // Paso 3: Recalcular cantidad_reservada en stock_productos
+        // Paso 3: Re-crear reservas para cotizaciones aplicadas no despachadas sin reservas
         $this->info('');
-        $this->info('--- Paso 3: Recalcular cantidad_reservada ---');
+        $this->info('--- Paso 3: Re-crear reservas faltantes ---');
+        $this->reCrearReservasFaltantes($dryRun);
+
+        // Paso 4: Recalcular cantidad_reservada en stock_productos
+        $this->info('');
+        $this->info('--- Paso 4: Recalcular cantidad_reservada ---');
         $this->recalcularCantidadReservada($dryRun, $productoId);
 
         $this->info('');
@@ -58,7 +63,9 @@ class RepararStockReservado extends Command
     {
         $reservasHuerfanas = ReservaStock::where('estado', ReservaStock::ESTADO_ACTIVA)
             ->whereHas('solicitudCotizacion', function ($q) {
-                $q->whereIn('estado', ['aplicada', 'rechazada']);
+                // Solo liberar si: rechazada O ya despachada
+                $q->where('estado', 'rechazada')
+                  ->orWhere('stock_descontado', 1);
             })
             ->with(['solicitudCotizacion:id,numero_solicitud,estado', 'stockProducto:id,producto_id'])
             ->get();
@@ -138,6 +145,68 @@ class RepararStockReservado extends Command
                 }
             }
         }
+    }
+
+    private function reCrearReservasFaltantes(bool $dryRun): void
+    {
+        // Cotizaciones aplicadas, no despachadas, sin reservas activas
+        $cotizacionesSinReserva = SolicitudCotizacion::where('estado', 'aplicada')
+            ->where('stock_descontado', 0)
+            ->whereDoesntHave('reservas', function($q) {
+                $q->where('estado', ReservaStock::ESTADO_ACTIVA);
+            })
+            ->with(['items'])
+            ->get();
+
+        if ($cotizacionesSinReserva->isEmpty()) {
+            $this->info('Todas las cotizaciones pendientes tienen sus reservas');
+            return;
+        }
+
+        $this->warn("Encontradas {$cotizacionesSinReserva->count()} cotizaciones sin reservas:");
+        $reservasCreadas = 0;
+
+        foreach ($cotizacionesSinReserva as $solicitud) {
+            $this->line("  SC: {$solicitud->numero_solicitud} | Items: {$solicitud->items->count()}");
+
+            foreach ($solicitud->items as $item) {
+                // Buscar stock de bodega (no tienda)
+                $stockQuery = StockProducto::where('producto_id', $item->producto_id)
+                    ->where(function($q) {
+                        $q->whereNull('ubicacion_id')
+                          ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+                    });
+
+                if ($item->variante_producto_id) {
+                    $stockQuery->where('variante_producto_id', $item->variante_producto_id);
+                } else {
+                    $stockQuery->whereNull('variante_producto_id');
+                }
+
+                $stock = $stockQuery->first();
+
+                if (!$stock) {
+                    $this->line("    Item #{$item->id} - Sin registro de stock, omitido");
+                    continue;
+                }
+
+                if (!$dryRun) {
+                    ReservaStock::create([
+                        'solicitud_cotizacion_id' => $solicitud->id,
+                        'item_solicitud_id' => $item->id,
+                        'stock_producto_id' => $stock->id,
+                        'cantidad_reservada' => $item->cantidad,
+                        'estado' => ReservaStock::ESTADO_ACTIVA,
+                        'expira_en' => now()->addHours(720), // 30 días
+                    ]);
+                }
+
+                $reservasCreadas++;
+                $this->line("    Item #{$item->id} | Stock #{$stock->id} | Qty: {$item->cantidad} → Reserva creada");
+            }
+        }
+
+        $this->warn("Total reservas a crear: {$reservasCreadas}");
     }
 
     private function recalcularCantidadReservada(bool $dryRun, ?string $productoId): void
