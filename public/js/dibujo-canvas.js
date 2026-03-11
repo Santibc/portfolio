@@ -16,6 +16,7 @@
     var currentTool = 'pencil';
     var currentColor = '#000000';
     var currentWidth = 3;
+    var currentFontSize = 28;
 
     // Undo/Redo
     var undoStack = [];
@@ -178,6 +179,11 @@
         document.querySelectorAll('.dibujo-tool').forEach(function(btn) {
             btn.classList.toggle('active', btn.dataset.tool === tool);
         });
+
+        // Mostrar/ocultar selector de tamano de texto
+        document.querySelectorAll('.dibujo-text-size-group').forEach(function(el) {
+            el.classList.toggle('d-none', tool !== 'text');
+        });
     }
 
     // =============================================
@@ -219,7 +225,7 @@
                 var itext = new fabric.IText('', {
                     left: ptr.x,
                     top: ptr.y,
-                    fontSize: Math.max(currentWidth * 5, 18),
+                    fontSize: currentFontSize,
                     fill: currentColor,
                     fontFamily: 'Arial, sans-serif',
                     editable: true,
@@ -867,6 +873,23 @@
 
     $(document).on('click', '.dibujo-width', function() {
         cambiarGrosorDibujo(parseInt($(this).data('width')));
+    });
+
+    $(document).on('click', '.dibujo-fontsize', function() {
+        currentFontSize = parseInt($(this).data('fontsize'));
+        // Actualizar botones activos
+        document.querySelectorAll('.dibujo-fontsize').forEach(function(btn) {
+            btn.classList.toggle('active', parseInt(btn.dataset.fontsize) === currentFontSize);
+        });
+        // Si hay un texto seleccionado, cambiarle el tamano
+        if (fabricCanvas) {
+            var activeObj = fabricCanvas.getActiveObject();
+            if (activeObj && activeObj.type === 'i-text') {
+                activeObj.set('fontSize', currentFontSize);
+                fabricCanvas.renderAll();
+                saveState();
+            }
+        }
     });
 
     // =============================================

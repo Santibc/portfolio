@@ -232,6 +232,15 @@
                             <span style="display:inline-block;width:14px;height:10px;background:currentColor;vertical-align:middle;"></span>
                         </button>
                     </div>
+                    {{-- Tamano de texto (visible solo con herramienta texto) --}}
+                    <span class="vr mx-1 dibujo-text-size-group d-none"></span>
+                    <div class="btn-group btn-group-sm dibujo-text-size-group d-none" role="group" title="Tamano de texto">
+                        <button type="button" class="btn btn-outline-secondary dibujo-fontsize" data-fontsize="14" title="Pequeno" style="font-size:10px;font-weight:bold;">A</button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-fontsize" data-fontsize="20" title="Mediano" style="font-size:13px;font-weight:bold;">A</button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-fontsize active" data-fontsize="28" title="Grande" style="font-size:16px;font-weight:bold;">A</button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-fontsize" data-fontsize="40" title="Muy Grande" style="font-size:20px;font-weight:bold;">A</button>
+                        <button type="button" class="btn btn-outline-secondary dibujo-fontsize" data-fontsize="60" title="Enorme" style="font-size:24px;font-weight:bold;">A</button>
+                    </div>
                     <span class="vr mx-1"></span>
                     {{-- Acciones --}}
                     <div class="btn-group btn-group-sm" role="group">
