@@ -197,7 +197,7 @@ class RepararStockReservado extends Command
                         'stock_producto_id' => $stock->id,
                         'cantidad_reservada' => $item->cantidad,
                         'estado' => ReservaStock::ESTADO_ACTIVA,
-                        'expira_en' => now()->addHours(720), // 30 días
+                        'expira_en' => now()->addHours(72), // Expira en 72 horas
                     ]);
                 }
 
