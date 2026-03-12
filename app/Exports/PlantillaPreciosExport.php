@@ -3,10 +3,10 @@
 namespace App\Exports;
 
 use App\Models\Producto;
+use App\Models\ListaPrecio;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
@@ -14,8 +14,15 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths, WithTitle, ShouldAutoSize
+class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles, WithTitle, ShouldAutoSize
 {
+    private $listas;
+
+    public function __construct()
+    {
+        $this->listas = ListaPrecio::activas()->get();
+    }
+
     public function collection()
     {
         $productos = Producto::where('activo', true)
@@ -26,14 +33,11 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
         $data = collect();
 
         foreach ($productos as $producto) {
-            $row = [
-                'nombre' => $producto->nombre,
-            ];
+            $row = ['nombre' => $producto->nombre];
 
-            $nombresListas = ['COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'];
-            for ($i = 1; $i <= 5; $i++) {
-                $precio = $producto->precios()->where('lista_precio_id', $i)->first();
-                $row[$nombresListas[$i - 1]] = $precio ? $precio->precio : null;
+            foreach ($this->listas as $lista) {
+                $precio = $producto->precios()->where('lista_precio_id', $lista->id)->first();
+                $row[$lista->nombre] = $precio ? $precio->precio : null;
             }
 
             $data->push($row);
@@ -41,23 +45,25 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
 
         return $data;
     }
-    
+
     public function headings(): array
     {
-        return [
-            'Nombre',
-            'COSTO',
-            'PRECIO VENTA ORO',
-            'PRECIO VENTA INSTALADOR ESPECIAL',
-            'PRECIO VENTA INSTALADOR',
-            'PRECIO VENTA FINAL'
-        ];
+        $headings = ['Nombre'];
+
+        foreach ($this->listas as $lista) {
+            $headings[] = strtoupper($lista->nombre);
+        }
+
+        return $headings;
     }
-    
+
     public function styles(Worksheet $sheet)
     {
-        // Estilo para los encabezados (6 columnas: A-F)
-        $sheet->getStyle('A1:F1')->applyFromArray([
+        $lastCol = $sheet->getHighestColumn();
+        $highestRow = $sheet->getHighestRow();
+
+        // Estilo para encabezados
+        $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -77,13 +83,11 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
                 ],
             ],
         ]);
-        
-        // Altura de la fila de encabezados
+
         $sheet->getRowDimension(1)->setRowHeight(30);
-        
-        // Aplicar bordes a todas las celdas con datos
-        $highestRow = $sheet->getHighestRow();
-        $sheet->getStyle("A2:F{$highestRow}")->applyFromArray([
+
+        // Bordes en datos
+        $sheet->getStyle("A2:{$lastCol}{$highestRow}")->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -92,33 +96,14 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
             ],
         ]);
 
-        // Formato de moneda para las columnas de precios
-        $sheet->getStyle("B2:F{$highestRow}")
+        // Formato moneda en columnas de precios (B en adelante)
+        $sheet->getStyle("B2:{$lastCol}{$highestRow}")
             ->getNumberFormat()
             ->setFormatCode('#,##0.00');
-        
-        // Centrar la columna de referencia
-        $sheet->getStyle("A2:A{$highestRow}")->applyFromArray([
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-            ],
-        ]);
-        
+
         return [];
     }
-    
-    public function columnWidths(): array
-    {
-        return [
-            'A' => 50,  // Nombre
-            'B' => 18,  // COSTO
-            'C' => 22,  // PRECIO VENTA ORO
-            'D' => 35,  // PRECIO VENTA INSTALADOR ESPECIAL
-            'E' => 28,  // PRECIO VENTA INSTALADOR
-            'F' => 25,  // PRECIO VENTA FINAL
-        ];
-    }
-    
+
     public function title(): string
     {
         return 'Plantilla Precios';

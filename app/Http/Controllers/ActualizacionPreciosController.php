@@ -91,30 +91,29 @@ if ($a->ruta_archivo && file_exists(public_path($a->ruta_archivo))) {
             // Agregar BOM para UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Encabezados con punto y coma (nombres reales de listas de precios)
-            fputcsv($file, ['Nombre', 'COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'], ';');
+            // Listas de precios activas desde la BD
+            $listas = ListaPrecio::activas()->get();
 
-            // Obtener todos los productos activos
+            // Encabezados dinámicos
+            $headings = ['Nombre'];
+            foreach ($listas as $lista) {
+                $headings[] = strtoupper($lista->nombre);
+            }
+            fputcsv($file, $headings, ';');
+
+            // Todos los productos activos
             $productos = Producto::where('activo', true)
                 ->where('eliminado', false)
                 ->orderBy('nombre')
                 ->get();
 
             foreach ($productos as $producto) {
-                $precios = [];
-                for ($i = 1; $i <= 5; $i++) {
-                    $precio = $producto->precios()->where('lista_precio_id', $i)->first();
-                    $precios[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
+                $row = [$producto->nombre];
+                foreach ($listas as $lista) {
+                    $precio = $producto->precios()->where('lista_precio_id', $lista->id)->first();
+                    $row[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
                 }
-
-                fputcsv($file, [
-                    $producto->nombre,
-                    $precios[0], // COSTO
-                    $precios[1], // PRECIO VENTA ORO
-                    $precios[2], // PRECIO VENTA INSTALADOR ESPECIAL
-                    $precios[3], // PRECIO VENTA INSTALADOR
-                    $precios[4], // PRECIO VENTA FINAL
-                ], ';');
+                fputcsv($file, $row, ';');
             }
 
             fclose($file);
