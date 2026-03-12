@@ -17,6 +17,7 @@
     var currentColor = '#000000';
     var currentWidth = 3;
     var currentFontSize = 28;
+    var canvasSize = 0; // Fixed square size
 
     // Undo/Redo
     var undoStack = [];
@@ -36,6 +37,10 @@
     // Pan state
     var isPanning = false;
     var lastPanPoint = null;
+    var spaceHeld = false; // Spacebar held for temporary pan
+    var tempPanTimer = null; // Long-press timer for temporary pan
+    var tempPanActive = false; // Long-press pan active
+    var tempPanStartPoint = null;
 
     // Pinch state
     var pinchActive = false;
@@ -65,20 +70,32 @@
         editandoBosquejoIndex = null;
         imagenFondoOriginal = null;
 
-        // Tamano inicial del canvas
+        // Tamano inicial del canvas - SIEMPRE cuadrado
         var wrapper = document.getElementById('dibujoCanvasWrapper');
-        var w = wrapper ? wrapper.clientWidth : 800;
-        var h = wrapper ? wrapper.clientHeight : 600;
-        if (w < 100) w = 800;
-        if (h < 100) h = 600;
+        var wW = wrapper ? wrapper.clientWidth : 800;
+        var wH = wrapper ? wrapper.clientHeight : 600;
+        if (wW < 100) wW = 800;
+        if (wH < 100) wH = 600;
+        canvasSize = Math.min(wW, wH);
 
         fabricCanvas = new fabric.Canvas('dibujoCanvas', {
             isDrawingMode: true,
-            width: w,
-            height: h,
+            width: canvasSize,
+            height: canvasSize,
             backgroundColor: '#ffffff',
             enableRetinaScaling: true,
             allowTouchScrolling: false
+        });
+
+        // ClipPath para restringir dibujo al area cuadrada
+        fabricCanvas.clipPath = new fabric.Rect({
+            left: 0,
+            top: 0,
+            width: canvasSize,
+            height: canvasSize,
+            originX: 'left',
+            originY: 'top',
+            absolutePositioned: true
         });
 
         // Brush por defecto
@@ -108,11 +125,19 @@
         if (!fabricCanvas) return;
         var wrapper = document.getElementById('dibujoCanvasWrapper');
         if (!wrapper) return;
-        var w = wrapper.clientWidth;
-        var h = wrapper.clientHeight;
-        if (w < 100 || h < 100) return;
+        var wW = wrapper.clientWidth;
+        var wH = wrapper.clientHeight;
+        if (wW < 100 || wH < 100) return;
 
-        fabricCanvas.setDimensions({ width: w, height: h });
+        // Siempre cuadrado
+        canvasSize = Math.min(wW, wH);
+        fabricCanvas.setDimensions({ width: canvasSize, height: canvasSize });
+
+        // Actualizar clipPath
+        if (fabricCanvas.clipPath) {
+            fabricCanvas.clipPath.set({ width: canvasSize, height: canvasSize });
+        }
+
         fabricCanvas.renderAll();
     }
 
@@ -187,20 +212,46 @@
     }
 
     // =============================================
+    // HELPER: obtener coordenadas del evento (mouse o touch)
+    // =============================================
+    function getEventPoint(e) {
+        if (e.touches && e.touches.length > 0) {
+            return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+    }
+
+    // =============================================
     // BINDEO DE EVENTOS DEL CANVAS
     // =============================================
     function bindCanvasEvents() {
         // --- MOUSE DOWN ---
         fabricCanvas.on('mouse:down', function(opt) {
             var e = opt.e;
+            var pt = getEventPoint(e);
 
-            // Pan con Alt+click o boton medio
-            if (e.altKey || e.button === 1 || currentTool === 'pan') {
+            // Pan con Alt+click, boton medio, herramienta pan, o spacebar
+            if (e.altKey || e.button === 1 || currentTool === 'pan' || spaceHeld) {
                 isPanning = true;
-                lastPanPoint = { x: e.clientX, y: e.clientY };
+                lastPanPoint = pt;
                 fabricCanvas.selection = false;
                 fabricCanvas.defaultCursor = 'grabbing';
+                if (fabricCanvas.upperCanvasEl) fabricCanvas.upperCanvasEl.style.cursor = 'grabbing';
                 return;
+            }
+
+            // Long-press para pan temporal: si zoom > 1 y no es pan tool
+            if (fabricCanvas.getZoom() > 1.01 && currentTool !== 'pan') {
+                tempPanStartPoint = pt;
+                clearTimeout(tempPanTimer);
+                tempPanTimer = setTimeout(function() {
+                    tempPanActive = true;
+                    isPanning = true;
+                    lastPanPoint = tempPanStartPoint;
+                    fabricCanvas.isDrawingMode = false;
+                    fabricCanvas.defaultCursor = 'grabbing';
+                    if (fabricCanvas.upperCanvasEl) fabricCanvas.upperCanvasEl.style.cursor = 'grabbing';
+                }, 300);
             }
 
             // Borrador: eliminar objeto
@@ -303,15 +354,27 @@
         // --- MOUSE MOVE ---
         fabricCanvas.on('mouse:move', function(opt) {
             var e = opt.e;
+            var pt = getEventPoint(e);
+
+            // Cancelar long-press si el usuario se movio mas de 5px
+            if (tempPanTimer && tempPanStartPoint) {
+                var dist = Math.hypot(pt.x - tempPanStartPoint.x, pt.y - tempPanStartPoint.y);
+                if (dist > 5) {
+                    clearTimeout(tempPanTimer);
+                    tempPanTimer = null;
+                    tempPanStartPoint = null;
+                }
+            }
 
             // Pan
             if (isPanning && lastPanPoint) {
-                var dx = e.clientX - lastPanPoint.x;
-                var dy = e.clientY - lastPanPoint.y;
-                lastPanPoint = { x: e.clientX, y: e.clientY };
+                var dx = pt.x - lastPanPoint.x;
+                var dy = pt.y - lastPanPoint.y;
+                lastPanPoint = pt;
                 var vpt = fabricCanvas.viewportTransform;
                 vpt[4] += dx;
                 vpt[5] += dy;
+                clampViewport();
                 fabricCanvas.requestRenderAll();
                 return;
             }
@@ -344,12 +407,25 @@
 
         // --- MOUSE UP ---
         fabricCanvas.on('mouse:up', function(opt) {
+            // Cancelar long-press timer
+            if (tempPanTimer) {
+                clearTimeout(tempPanTimer);
+                tempPanTimer = null;
+                tempPanStartPoint = null;
+            }
+
             // End pan
             if (isPanning) {
                 isPanning = false;
                 lastPanPoint = null;
-                if (currentTool === 'pan') {
+
+                // Si fue pan temporal (long-press o spacebar), restaurar herramienta
+                if (tempPanActive) {
+                    tempPanActive = false;
+                    setTool(currentTool); // restaura cursor y drawing mode
+                } else if (currentTool === 'pan') {
                     fabricCanvas.defaultCursor = 'grab';
+                    if (fabricCanvas.upperCanvasEl) fabricCanvas.upperCanvasEl.style.cursor = 'grab';
                 } else {
                     fabricCanvas.selection = (currentTool === 'select' || currentTool === 'text');
                 }
@@ -424,6 +500,7 @@
             zoom = Math.min(Math.max(zoom, 0.25), 10);
             var point = new fabric.Point(opt.e.offsetX, opt.e.offsetY);
             fabricCanvas.zoomToPoint(point, zoom);
+            clampViewport();
             updateZoomLabel();
             opt.e.preventDefault();
             opt.e.stopPropagation();
@@ -435,20 +512,26 @@
     // =============================================
     function createArrowHead(line) {
         if (!line) return null;
-        var x1 = line.x1, y1 = line.y1, x2 = line.x2, y2 = line.y2;
+        // Obtener coordenadas absolutas del canvas (no relativas al objeto)
+        var points = line.calcLinePoints();
+        var center = line.getCenterPoint();
+        var x1 = center.x + points.x1;
+        var y1 = center.y + points.y1;
+        var x2 = center.x + points.x2;
+        var y2 = center.y + points.y2;
         var lineLen = Math.hypot(x2 - x1, y2 - y1);
         // No crear punta si la linea es muy corta
         if (lineLen < 5) return null;
 
         var angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-        // Tamano proporcional a la linea, con limites razonables
-        var headW = Math.min(Math.max(currentWidth * 2.5, 10), 30);
-        var headH = Math.min(Math.max(currentWidth * 3.5, 14), 40);
+        // Tamano proporcional al grosor de la linea
+        var headW = Math.max(currentWidth * 3, 10);
+        var headH = Math.max(currentWidth * 4, 14);
         return new fabric.Triangle({
             left: x2,
             top: y2,
             originX: 'center',
-            originY: 'bottom',
+            originY: 'center',
             width: headW,
             height: headH,
             fill: currentColor,
@@ -507,6 +590,7 @@
         else {
             // Reset: zoom 1, centrar viewport
             fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+            clampViewport();
             updateZoomLabel();
             fabricCanvas.renderAll();
             return;
@@ -514,6 +598,7 @@
         zoom = Math.min(Math.max(zoom, 0.25), 10);
         var center = { x: fabricCanvas.width / 2, y: fabricCanvas.height / 2 };
         fabricCanvas.zoomToPoint(new fabric.Point(center.x, center.y), zoom);
+        clampViewport();
         updateZoomLabel();
     };
 
@@ -522,6 +607,32 @@
         if (label && fabricCanvas) {
             label.textContent = Math.round(fabricCanvas.getZoom() * 100) + '%';
         }
+    }
+
+    // Restringir viewport para no salir del area cuadrada
+    function clampViewport() {
+        if (!fabricCanvas || !canvasSize) return;
+        var zoom = fabricCanvas.getZoom();
+        var vpt = fabricCanvas.viewportTransform;
+
+        if (zoom < 1) {
+            // Centrar cuando esta en zoom out
+            vpt[4] = (canvasSize - canvasSize * zoom) / 2;
+            vpt[5] = (canvasSize - canvasSize * zoom) / 2;
+        } else {
+            // Limitar pan cuando esta en zoom in
+            var maxPanX = 0;
+            var minPanX = canvasSize * (1 - zoom);
+            var maxPanY = 0;
+            var minPanY = canvasSize * (1 - zoom);
+
+            if (vpt[4] > maxPanX) vpt[4] = maxPanX;
+            if (vpt[4] < minPanX) vpt[4] = minPanX;
+            if (vpt[5] > maxPanY) vpt[5] = maxPanY;
+            if (vpt[5] < minPanY) vpt[5] = minPanY;
+        }
+
+        fabricCanvas.setViewportTransform(vpt);
     }
 
     // =============================================
@@ -574,6 +685,7 @@
                 }
 
                 pinchLastCenter = center;
+                clampViewport();
                 fabricCanvas.requestRenderAll();
                 updateZoomLabel();
             }
@@ -644,6 +756,30 @@
                     fabricCanvas.remove(activeObj);
                     fabricCanvas.renderAll();
                 }
+            }
+            // Spacebar = Pan temporal (como Photoshop/Figma)
+            else if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                if (!spaceHeld) {
+                    spaceHeld = true;
+                    fabricCanvas.isDrawingMode = false;
+                    fabricCanvas.defaultCursor = 'grab';
+                    if (fabricCanvas.upperCanvasEl) fabricCanvas.upperCanvasEl.style.cursor = 'grab';
+                }
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            var modal = document.getElementById('modalDibujoTablet');
+            if (!modal || !modal.classList.contains('show')) return;
+
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                spaceHeld = false;
+                isPanning = false;
+                lastPanPoint = null;
+                // Restaurar herramienta actual
+                setTool(currentTool);
             }
         });
     }

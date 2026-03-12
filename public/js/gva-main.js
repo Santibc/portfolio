@@ -90,11 +90,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ====================================================== */
     const alerts = document.querySelectorAll(".alert");
     alerts.forEach(function (alert) {
+        var delay = alert.classList.contains("alert-warning") ? 60000 : 5000;
         setTimeout(() => {
             alert.style.opacity = "0";
             alert.style.transform = "translateY(-10px)";
             setTimeout(() => alert.remove(), 300);
-        }, 5000);
+        }, delay);
     });
 
     /* =====================================================

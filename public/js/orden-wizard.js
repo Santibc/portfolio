@@ -28,6 +28,32 @@ $(function() {
     initAutoSave();
     initStepWatchers();
 
+    // Recuperar borrador no guardado (corte de luz, cierre inesperado)
+    if (window.SindenConexion) {
+        var wizardKey = wizardState.ordenId || 'new';
+        var rw = SindenConexion.loadModuleData('wizard', wizardKey);
+        if (rw && rw.formData) {
+            var fecha = new Date(rw.timestamp).toLocaleString('es-CO', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            Swal.fire({
+                title: 'Borrador recuperado',
+                html: 'Se encontro un borrador no guardado del <b>' + fecha + '</b>. ¿Desea restaurarlo?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Restaurar',
+                cancelButtonText: 'Descartar',
+                confirmButtonColor: '#4A7C59'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    guardarOrden(true);
+                }
+                SindenConexion.clearModuleData('wizard', wizardKey);
+            });
+        }
+    }
+
     // Cerrar dropdown de autocomplete al hacer clic fuera
     $(document).on('click', function(e) {
         if (!$(e.target).closest('#clienteSearch, #clienteResults').length) {
@@ -41,6 +67,11 @@ $(function() {
         if (!$(e.target).closest('.pieza-material, .material-autocomplete-results').length) {
             $('.material-autocomplete-results').hide();
         }
+    });
+
+    // Cerrar dropdowns de material al hacer scroll en table-responsive
+    $(document).on('scroll', '.table-responsive', function() {
+        $('.material-autocomplete-results').hide();
     });
 
     // Focus en campo codigo de items -> mostrar todas las opciones
@@ -734,7 +765,7 @@ function agregarFilaPieza() {
         + '<td><input type="number" class="form-control form-control-sm text-center pieza-cantidad" value="1" min="1" onchange="generarEspecificacion(' + idx + ')"></td>'
         + '<td class="position-relative">'
         + '  <input type="text" class="form-control form-control-sm pieza-material" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarMaterialPieza(this)" onchange="generarEspecificacion(' + idx + ')">'
-        + '  <div class="material-autocomplete-results list-group shadow-sm" id="materialResults_' + idx + '" style="display:none; position:absolute; z-index:1050; width:100%; max-height:200px; overflow-y:auto;"></div>'
+        + '  <div class="material-autocomplete-results list-group shadow-sm" id="materialResults_' + idx + '" style="display:none; position:fixed; z-index:1050; max-height:200px; overflow-y:auto;"></div>'
         + '</td>'
         + '<td><select class="form-select form-select-sm pieza-calibre" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
         + '<td class="small text-muted pieza-especificacion">1 - ' + nombre + '</td>'
@@ -823,6 +854,14 @@ function buscarMaterialPieza(input) {
             );
         });
     }
+    // Posicionar con fixed para que no se corte por overflow del table-responsive
+    var inputRect = input.getBoundingClientRect();
+    $results.css({
+        position: 'fixed',
+        top: inputRect.bottom + 'px',
+        left: inputRect.left + 'px',
+        width: inputRect.width + 'px'
+    });
     $results.show();
 }
 
@@ -1045,6 +1084,14 @@ function guardarOrden(isAutoSave) {
         $('#btnGuardar').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Guardando...');
     }
 
+    // Backup en localStorage antes de enviar (proteccion contra corte de luz)
+    if (window.SindenConexion) {
+        SindenConexion.saveModuleData('wizard', wizardState.ordenId || 'new', {
+            formData: data,
+            timestamp: Date.now()
+        });
+    }
+
     // Determinar metodo segun modo edicion
     var ajaxMethod = (typeof EDIT_MODE !== 'undefined' && EDIT_MODE) ? 'PUT' : 'POST';
 
@@ -1059,6 +1106,11 @@ function guardarOrden(isAutoSave) {
                 wizardState.ordenId = response.orden_id;
                 $('#orden_id').val(response.orden_id);
                 wizardState.lastSavedHash = JSON.stringify(recopilarDatosFormulario());
+
+                // Limpiar backup de localStorage (datos guardados exitosamente)
+                if (window.SindenConexion) {
+                    SindenConexion.clearModuleData('wizard', wizardState.ordenId || 'new');
+                }
 
                 if (isAutoSave) {
                     var ahora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });

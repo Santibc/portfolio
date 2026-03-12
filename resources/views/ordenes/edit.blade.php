@@ -222,7 +222,7 @@
                         <button type="button" class="btn btn-dark dibujo-color active" data-color="#000000" title="Negro" style="min-width:30px;">&nbsp;</button>
                         <button type="button" class="btn btn-danger dibujo-color" data-color="#dc3545" title="Rojo" style="min-width:30px;">&nbsp;</button>
                         <button type="button" class="btn btn-primary dibujo-color" data-color="#0d6efd" title="Azul" style="min-width:30px;">&nbsp;</button>
-                        <button type="button" class="btn btn-success dibujo-color" data-color="#198754" title="Verde" style="min-width:30px;">&nbsp;</button>
+                        <button type="button" class="btn dibujo-color" data-color="#198754" title="Verde" style="min-width:30px;background-color:#198754;color:white;">&nbsp;</button>
                     </div>
                     <span class="vr mx-1"></span>
                     {{-- Grosor --}}
@@ -270,7 +270,7 @@
                 </div>
             </div>
             {{-- Canvas --}}
-            <div class="modal-body py-0 px-0 overflow-hidden" id="dibujoCanvasWrapper" style="flex:1; min-height:0; touch-action:none; position:relative;">
+            <div class="modal-body py-0 px-0 overflow-hidden" id="dibujoCanvasWrapper" style="flex:1; min-height:0; touch-action:none; position:relative; background-color:#e0e0e0; display:flex; align-items:center; justify-content:center;">
                 <canvas id="dibujoCanvas"></canvas>
             </div>
             {{-- Footer --}}

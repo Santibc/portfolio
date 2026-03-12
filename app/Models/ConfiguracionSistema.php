@@ -12,19 +12,21 @@ class ConfiguracionSistema extends Model
 
     public static function get(string $clave, $default = null)
     {
-        $config = static::where('clave', $clave)->first();
+        return cache()->remember("config_sistema.{$clave}", 300, function () use ($clave, $default) {
+            $config = static::where('clave', $clave)->first();
 
-        if (!$config) {
-            return $default;
-        }
+            if (!$config) {
+                return $default;
+            }
 
-        return match ($config->tipo) {
-            'entero' => (int) $config->valor,
-            'decimal' => (float) $config->valor,
-            'booleano' => filter_var($config->valor, FILTER_VALIDATE_BOOLEAN),
-            'json' => json_decode($config->valor, true),
-            default => $config->valor,
-        };
+            return match ($config->tipo) {
+                'entero' => (int) $config->valor,
+                'decimal' => (float) $config->valor,
+                'booleano' => filter_var($config->valor, FILTER_VALIDATE_BOOLEAN),
+                'json' => json_decode($config->valor, true),
+                default => $config->valor,
+            };
+        });
     }
 
     public static function set(string $clave, $valor): void
@@ -34,6 +36,7 @@ class ConfiguracionSistema extends Model
         if ($config) {
             $valor = is_array($valor) ? json_encode($valor) : (string) $valor;
             $config->update(['valor' => $valor]);
+            cache()->forget("config_sistema.{$clave}");
         }
     }
 }

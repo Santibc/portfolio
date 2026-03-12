@@ -79,7 +79,8 @@
       "Bash(php verify_cleanup.php:*)",
       "mcp__playwright__browser_resize",
       "mcp__playwright__browser_hover",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "Bash(find f:/xamppPro80/htdocs/sinden -type f \\\\\\(-name *.css -o -name *.scss \\\\\\))"
     ],
     "deny": [],
     "ask": []

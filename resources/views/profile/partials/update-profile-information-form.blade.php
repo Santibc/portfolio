@@ -39,7 +39,7 @@
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                        <p class="mt-2 font-medium text-sm text-slate-600 dark:text-slate-400">
                             {{ __('Se ha enviado un nuevo enlace de verificación a tu dirección de correo electrónico.') }}
                         </p>
                     @endif
@@ -49,8 +49,8 @@
 
         <div class="flex items-center gap-4">
             <button
-                class="px-4 py-1.5 bg-[#10b981] hover:bg-[#0ea972]
-                      text-white font-semibold rounded-xl shadow-md border border-[#10b981]
+                class="px-4 py-1.5 bg-[#64748b] hover:bg-[#475569]
+                      text-white font-semibold rounded-xl shadow-md border border-[#64748b]
                       transition duration-300 ease-in-out transform hover:-translate-y-0.5">
                 Guardar
             </button>

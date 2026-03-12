@@ -34,6 +34,10 @@ function initOrdenesPendientesTable(config) {
             { data: 'pagos_pendientes', name: 'pagos_pendientes', orderable: false, searchable: false, className: 'text-center', width: '70px' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '100px' }
         ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
+        ],
         order: [[4, 'desc']], // Ordenar por saldo descendente
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
@@ -152,6 +156,10 @@ function initPagosPendientesTable(config) {
             { data: 'referencia_pago', name: 'referencia_pago', defaultContent: '-' },
             { data: 'registrado_por_nombre', name: 'registrado_por_nombre' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '110px' }
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
         ],
         order: [[1, 'desc']],
         pageLength: 15,
@@ -406,6 +414,10 @@ function initHistorialFinancieroTable(config) {
             { data: 'num_pagos', name: 'pagos_count', orderable: false, searchable: false, className: 'text-center', width: '60px' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '90px' }
         ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
+        ],
         order: [[3, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
@@ -608,6 +620,10 @@ function initReporteItemsTable(config) {
             { data: 'subtotal_formatted', name: 'orden_items.subtotal', className: 'text-end', width: '100px' },
             { data: 'iva_formatted', name: 'orden_items.monto_iva', className: 'text-end', width: '80px' },
             { data: 'total_formatted', name: 'orden_items.total', className: 'text-end', width: '100px' }
+        ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
         ],
         order: [[1, 'desc']],
         pageLength: 15,

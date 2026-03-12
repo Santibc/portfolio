@@ -7395,12 +7395,12 @@ section,
 }
 
 .account .content-area .orders-grid .order-card .tracking-info .tracking-timeline .timeline-item.completed .timeline-icon {
-  background-color: #f0fdf4;
-  border-color: #22c55e;
+  background-color: #f8fafc;
+  border-color: #64748b;
 }
 
 .account .content-area .orders-grid .order-card .tracking-info .tracking-timeline .timeline-item.completed .timeline-icon i {
-  color: #22c55e;
+  color: #64748b;
 }
 
 .account .content-area .orders-grid .order-card .tracking-info .tracking-timeline .timeline-item.active .timeline-icon {
@@ -7615,8 +7615,8 @@ section,
 }
 
 .account .content-area .orders-grid .order-card .order-content .order-info .info-row .status.delivered {
-  background-color: #f0fdf4;
-  color: #22c55e;
+  background-color: #f8fafc;
+  color: #64748b;
 }
 
 .account .content-area .orders-grid .order-card .order-content .order-info .info-row .status.cancelled {
@@ -7664,13 +7664,13 @@ section,
 }
 
 .account .content-area .orders-grid .order-card .order-footer button.btn-review {
-  background-color: #f0fdf4;
-  color: #22c55e;
+  background-color: #f8fafc;
+  color: #64748b;
   border: none;
 }
 
 .account .content-area .orders-grid .order-card .order-footer button.btn-review:hover {
-  background-color: #dcfce7;
+  background-color: #f1f5f9;
 }
 
 .account .content-area .orders-grid .order-card .order-footer button.btn-reorder {

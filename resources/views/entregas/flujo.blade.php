@@ -113,55 +113,31 @@
                     </h6>
                 </div>
                 <div class="card-body px-4 pb-4 pt-3">
-                    {{-- Sin foto y sin camara activa: boton para abrir camara --}}
-                    <template x-if="!fotoSubida && !cameraActive && !uploading">
-                        <div class="text-center">
-                            <button type="button" class="btn btn-outline-primary" @click="abrirCamara()">
-                                <i class="bi bi-camera me-2"></i>Tomar Foto
-                            </button>
-                        </div>
-                    </template>
+                    {{-- Sin foto: boton para abrir camara --}}
+                    <div class="text-center" x-show="!fotoSubida && !uploading">
+                        <button type="button" class="btn btn-outline-primary" @click="abrirCamara()">
+                            <i class="bi bi-camera me-2"></i>Tomar Foto
+                        </button>
+                    </div>
 
                     {{-- Subiendo foto --}}
-                    <template x-if="uploading">
-                        <div class="text-center p-4">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <p class="mt-1 mb-0 text-muted small">Subiendo...</p>
-                        </div>
-                    </template>
-
-                    {{-- Camara activa: video preview --}}
-                    <template x-if="cameraActive && !fotoSubida">
-                        <div class="text-center">
-                            <video x-ref="cameraVideo" autoplay playsinline
-                                class="img-fluid rounded shadow-sm" style="max-height: 250px; transform: scaleX(1);"></video>
-                            <div class="mt-2 d-flex justify-content-center gap-2">
-                                <button type="button" class="btn btn-success btn-sm" @click="capturarFoto()">
-                                    <i class="bi bi-camera-fill me-1"></i>Capturar
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" @click="cerrarCamara()">
-                                    <i class="bi bi-x-lg me-1"></i>Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    </template>
+                    <div class="text-center p-4" x-show="uploading" x-cloak>
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <p class="mt-1 mb-0 text-muted small">Subiendo...</p>
+                    </div>
 
                     {{-- Foto tomada: preview --}}
-                    <template x-if="fotoSubida">
-                        <div class="text-center">
-                            <img :src="fotoSubida.url" class="img-fluid rounded shadow-sm" style="max-height: 180px;">
-                            <div class="mt-2 d-flex justify-content-center gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-danger" @click="quitarFoto()">
-                                    <i class="bi bi-trash me-1"></i>Quitar
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" @click="quitarFoto(); $nextTick(() => abrirCamara())">
-                                    <i class="bi bi-arrow-repeat me-1"></i>Retomar
-                                </button>
-                            </div>
+                    <div class="text-center" x-show="fotoSubida" x-cloak>
+                        <img :src="fotoSubida ? fotoSubida.url : ''" class="img-fluid rounded shadow-sm" style="max-height: 180px;">
+                        <div class="mt-2 d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-danger" @click="quitarFoto()">
+                                <i class="bi bi-trash me-1"></i>Quitar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" @click="quitarFoto(); $nextTick(() => abrirCamara())">
+                                <i class="bi bi-arrow-repeat me-1"></i>Retomar
+                            </button>
                         </div>
-                    </template>
-
-                    <canvas x-ref="cameraCanvas" class="d-none"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -201,6 +177,30 @@
         </div>
     </div>
 </div>
+{{-- Modal Camara Entrega --}}
+<div class="modal fade" id="modalCamaraEntrega" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-semibold"><i class="bi bi-camera me-2"></i>Tomar Foto de Entrega</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center p-3">
+                <video id="camaraEntregaVideo" autoplay playsinline
+                    class="img-fluid rounded shadow-sm" style="max-height: 350px; width: 100%;"></video>
+                <canvas id="camaraEntregaCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success" onclick="camaraEntregaCapturar()">
+                    <i class="bi bi-camera-fill me-1"></i>Capturar
+                </button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -219,8 +219,6 @@ function entregaFlujo() {
         fotoSubida: null,
         uploading: false,
         submitting: false,
-        cameraActive: false,
-        stream: null,
 
         get allSelected() {
             return this.selectedIds.length === this.piezas.length && this.piezas.length > 0;
@@ -271,48 +269,37 @@ function entregaFlujo() {
                 Swal.fire('Error', 'Tu navegador no soporta acceso a la camara.', 'error');
                 return;
             }
+
+            var modal = document.getElementById('modalCamaraEntrega');
+            if (!modal) return;
+            var bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+            bsModal.show();
+
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(function(mediaStream) {
-                    self.stream = mediaStream;
-                    self.cameraActive = true;
-                    self.$nextTick(function() {
-                        var video = self.$refs.cameraVideo;
-                        if (video) {
-                            video.srcObject = mediaStream;
-                        }
-                    });
+                    window._entregaCamaraStream = mediaStream;
+                    var video = document.getElementById('camaraEntregaVideo');
+                    if (video) {
+                        video.srcObject = mediaStream;
+                    }
                 })
                 .catch(function(err) {
                     console.error('Error al acceder a la camara:', err);
+                    bsModal.hide();
                     Swal.fire('Error', 'No se pudo acceder a la camara. Verifica los permisos.', 'error');
                 });
         },
 
-        capturarFoto() {
-            var video = this.$refs.cameraVideo;
-            var canvas = this.$refs.cameraCanvas;
-            if (!video || !canvas) return;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-
-            this.cerrarCamara();
-
-            var self = this;
-            canvas.toBlob(function(blob) {
-                if (blob) {
-                    self.subirBlob(blob);
-                }
-            }, 'image/jpeg', 0.85);
-        },
-
         cerrarCamara() {
-            if (this.stream) {
-                this.stream.getTracks().forEach(function(track) { track.stop(); });
-                this.stream = null;
+            if (window._entregaCamaraStream) {
+                window._entregaCamaraStream.getTracks().forEach(function(track) { track.stop(); });
+                window._entregaCamaraStream = null;
             }
-            this.cameraActive = false;
+            var modal = document.getElementById('modalCamaraEntrega');
+            if (modal) {
+                var bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            }
         },
 
         quitarFoto() {
@@ -370,7 +357,7 @@ function entregaFlujo() {
                 html: detalleHtml,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#4A7C59',
+                confirmButtonColor: '#475569',
                 confirmButtonText: 'Si, entregar',
                 cancelButtonText: 'Cancelar'
             }).then(function(result) {
@@ -397,7 +384,7 @@ function entregaFlujo() {
                                     icon: 'success',
                                     title: 'Entrega Exitosa',
                                     text: data.message,
-                                    confirmButtonColor: '#4A7C59'
+                                    confirmButtonColor: '#475569'
                                 }).then(function() {
                                     window.location.href = '{{ route("recepcion.entregas-pendientes") }}';
                                 });
@@ -414,5 +401,50 @@ function entregaFlujo() {
         }
     };
 }
+
+// Captura foto desde el modal de camara
+function camaraEntregaCapturar() {
+    var video = document.getElementById('camaraEntregaVideo');
+    var canvas = document.getElementById('camaraEntregaCanvas');
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    // Cerrar camara y modal
+    if (window._entregaCamaraStream) {
+        window._entregaCamaraStream.getTracks().forEach(function(track) { track.stop(); });
+        window._entregaCamaraStream = null;
+    }
+    var modal = document.getElementById('modalCamaraEntrega');
+    if (modal) {
+        var bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) bsModal.hide();
+    }
+
+    // Obtener el componente Alpine y subir la foto
+    var alpineEl = document.querySelector('[x-data]');
+    var alpineData = Alpine.$data(alpineEl);
+
+    canvas.toBlob(function(blob) {
+        if (blob) {
+            alpineData.subirBlob(blob);
+        }
+    }, 'image/jpeg', 0.85);
+}
+
+// Limpiar stream cuando se cierra el modal por cualquier medio
+$(function() {
+    var modalCamara = document.getElementById('modalCamaraEntrega');
+    if (modalCamara) {
+        modalCamara.addEventListener('hidden.bs.modal', function() {
+            if (window._entregaCamaraStream) {
+                window._entregaCamaraStream.getTracks().forEach(function(track) { track.stop(); });
+                window._entregaCamaraStream = null;
+            }
+        });
+    }
+});
 </script>
 @endpush

@@ -41,7 +41,7 @@
                                 $mapPago = ['saldo_pendiente' => 'danger', 'pagado' => 'success'];
                                 $labelPago = ['saldo_pendiente' => 'SALDO PEND.', 'pagado' => 'PAGADO'];
                             @endphp
-                            <span class="status-badge {{ $mapPago[$orden->estado_pago] ?? 'secondary' }}">
+                            <span class="status-badge {{ $mapPago[$orden->estado_pago] ?? 'secondary' }}" id="headerBadgePago">
                                 {{ $labelPago[$orden->estado_pago] ?? strtoupper($orden->estado_pago) }}
                             </span>
                         @else
@@ -68,11 +68,11 @@
                     </div>
                     <div>
                         <span class="order-status-label">PAGADO</span><br>
-                        <span class="fs-5 fw-semibold text-success">${{ number_format($orden->total_pagado, 0, ',', '.') }}</span>
+                        <span class="fs-5 fw-semibold text-success" id="headerPagado">${{ number_format($orden->total_pagado, 0, ',', '.') }}</span>
                     </div>
                     <div>
                         <span class="order-status-label">SALDO</span><br>
-                        <span class="fs-5 fw-bold {{ $orden->saldo > 0 ? 'text-danger' : 'text-success' }}">
+                        <span class="fs-5 fw-bold {{ $orden->saldo > 0 ? 'text-danger' : 'text-success' }}" id="headerSaldo">
                             ${{ number_format($orden->saldo, 0, ',', '.') }}
                         </span>
                     </div>

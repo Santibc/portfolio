@@ -810,15 +810,15 @@ tabla_precios_servicios (independiente)
 | 7 | FASE 7 | Flujo del Operario | **Completado** | Mod 9 |
 | 8 | FASE 8 | Entregas | **Completado** | Mod 8 |
 | 9 | FASE 9 | Contabilidad | **Completado** | Mod 10 |
-| 10 | FASE 10 | PDF Imprimible (3 hojas) | Pendiente | Mod 11 |
-| 11 | FASE 11 | Garantias | Pendiente | Mod 5.11 |
-| 12 | FASE 12 | Tabla de Precios Parametrica | Pendiente | Mod 12 |
-| 13 | FASE 13 | Administracion y Configuracion | Pendiente | Mod 16 |
-| 14 | FASE 14 | Dashboards por Rol | Pendiente | Mod 17 |
-| 15 | FASE 15 | Notificaciones | Pendiente | Mod 13 |
-| 16 | FASE 16 | Registro de Actividades (Vistas) | Pendiente | Mod 18 |
-| 17 | FASE 17 | Manejo de Conexion | Pendiente | Mod 14 |
-| 18 | FASE 18 | Limpieza de Borradores | Pendiente | Mod 15 |
+| 10 | FASE 10 | PDF Imprimible (3 hojas) | **Completado** | Mod 11 |
+| 11 | FASE 11 | Garantias | **Completado** | Mod 5.11 |
+| 12 | FASE 12 | Tabla de Precios Parametrica | **Completado** | Mod 12 |
+| 13 | FASE 13 | Administracion y Configuracion | **Completado** | Mod 16 |
+| 14 | FASE 14 | Dashboards por Rol | **Completado** | Mod 17 |
+| 15 | FASE 15 | Notificaciones | **Completado** | Mod 13 |
+| 16 | FASE 16 | Registro de Actividades (Vistas) | **Completado** | Mod 18 |
+| 17 | FASE 17 | Manejo de Conexion | **Completado** | Mod 14 |
+| 18 | FASE 18 | Limpieza de Borradores | **Completado** | Mod 15 |
 | - | BASE | Base, Usuarios y Permisos (esqueleto) | Completado | - |
 
 ### Retroalimentacion del Cliente (2026-02-21)
@@ -1198,10 +1198,10 @@ Se realizo reunion con el cliente quien reviso los modulos completados (Fases 0-
 - `resources/views/ordenes/show/_seccion-firma.blade.php` - Imagen firma o placeholder
 - `resources/views/ordenes/show/_seccion-fotos.blade.php` - Galeria fotos con lightbox
 - `resources/views/ordenes/show/_seccion-comentarios.blade.php` - Timeline comentarios + formulario agregar AJAX
-- `resources/views/ordenes/show/_seccion-garantias.blade.php` - Lista garantias (placeholder FASE 11)
+- `resources/views/ordenes/show/_seccion-garantias.blade.php` - Lista garantias con acciones por estado (FASE 11)
 - `resources/views/ordenes/edit.blade.php` - Wizard precargado (reutiliza 7 partials de create)
 - `app/Exports/OrdenesExport.php` - Excel header verde, 13 columnas, auto-size
-- `public/js/orden-detalle.js` - JS vista show (copiar, anular, pagos AJAX, comentarios AJAX, lightbox)
+- `public/js/orden-detalle.js` - JS vista show (copiar, anular, pagos AJAX, comentarios AJAX, lightbox, garantias AJAX)
 - `public/js/orden-edit-init.js` - JS precargar wizard con datos existentes de ORDEN_DATA
 
 **Archivos modificados:**
@@ -1245,9 +1245,9 @@ Se realizo reunion con el cliente quien reviso los modulos completados (Fases 0-
 - [x] Exportar Excel (OrdenesExport con header verde)
 - [x] Exportar PDF listado (DomPDF landscape)
 - [x] Rutas: `/recepcion/ordenes`, `/recepcion/ordenes/{id}`, `/recepcion/ordenes/{id}/editar`
-- [ ] Exportar PDF individual por orden (diferido a FASE 10)
-- [ ] Exportar PDF separados en ZIP (diferido a FASE 10)
-- [ ] Exportar PDF unido con salto de pagina (diferido a FASE 10)
+- [x] Exportar PDF individual por orden (FASE 10)
+- [x] Exportar PDF separados en ZIP (FASE 10)
+- [x] Exportar PDF unido con salto de pagina (FASE 10)
 
 ---
 
@@ -1397,177 +1397,326 @@ Se realizo reunion con el cliente quien reviso los modulos completados (Fases 0-
 
 ---
 
-### FASE 10: PDF Imprimible (3 hojas)
+### FASE 10: PDF Imprimible (3 hojas) ✅ COMPLETADO (2026-03-11)
 
 > **Objetivo:** Generacion de PDF imprimible por orden usando DomPDF.
 
-**Archivos a crear:**
+**Archivos creados:**
 - `app/Http/Controllers/OrdenPdfController.php`
 - `resources/views/ordenes/pdf/orden.blade.php`
+- `resources/views/ordenes/pdf/orden-multiple.blade.php`
+- `resources/views/ordenes/pdf/_styles.blade.php`
+- `resources/views/ordenes/pdf/_page-info.blade.php`
+- `resources/views/ordenes/pdf/_page-bosquejos.blade.php`
+- `resources/views/ordenes/pdf/_page-piezas.blade.php`
+
+**Archivos modificados:**
+- `routes/web.php` (3 rutas: `{orden}/pdf`, `pdf-multiple`, `pdf-zip`)
+- `resources/views/ordenes/show.blade.php` (boton dropdown PDF con opciones 1/2/3/4 bosquejos por fila)
+- `resources/views/ordenes/index.blade.php` (checkboxes + boton PDF Masivo unido/zip)
+- `app/Http/Controllers/OrdenController.php` (icono PDF en acciones DataTable)
 
 **Checklist:**
-- [ ] Hoja 1: Logo, numero orden, fechas, datos cliente, tabla items con totales, tabla abonos, saldo, persona que genero
-- [ ] Hoja 2: Bosquejos (imagenes), lista piezas con especificacion y estado
-- [ ] Hoja 3: Firma cliente, espacio firma entrega, observaciones, espacio firma recibido
-- [ ] PDF individual por orden
-- [ ] PDF multiples separados en ZIP
-- [ ] PDF unido con salto de pagina
-- [ ] Ruta: `/ordenes/{id}/pdf`
+- [x] Pagina 1: Logo, numero orden, fechas, datos cliente, tabla items con totales, tabla abonos, saldo, firma cliente, persona que genero
+- [x] Pagina 2: Lista piezas con especificacion, estado, operario, avance, entregadas + historial entregas
+- [x] Pagina 3: Bosquejos (imagenes cuadradas) con grid configurable (1/2/3/4 por fila, default 2)
+- [x] PDF individual por orden
+- [x] PDF multiples separados en ZIP
+- [x] PDF unido con salto de pagina
+- [x] Ruta: `/ordenes/{id}/pdf`
+- [x] Margenes en paginas de info y piezas, sin margenes en bosquejos
+- [x] Imagenes convertidas a base64 para compatibilidad DomPDF
 
 ---
 
-### FASE 11: Garantias
+### FASE 11: Garantias ✅
 
 > **Objetivo:** Flujo de devoluciones por garantia sobre piezas entregadas.
+> **Completado:** 2026-03-11
 
-**Archivos a crear:**
-- `app/Http/Controllers/GarantiaController.php`
-- `resources/views/garantias/create.blade.php`
-- `resources/views/garantias/show.blade.php`
+**Archivos creados:**
+- `app/Http/Controllers/GarantiaController.php` - 7 metodos: index, store, cambiarEstado, asignarOperario, completarTrabajo, piezasEntregadas, misGarantias
+- `resources/views/garantias/index.blade.php` - Lista DataTable con stats (Abiertas, En Proceso, Listas Re-entrega, Total Cobrable) + filtro estado
+- `resources/views/operario/garantias.blade.php` - DataTable garantias asignadas al operario con boton Completar
+
+**Archivos modificados:**
+- `app/Providers/RouteServiceProvider.php` - Binding explicito: Route::model('garantia', DevolucionGarantia::class)
+- `routes/web.php` - 7 rutas (5 Recepcion + 2 Operario) para garantias
+- `resources/views/ordenes/show/_seccion-garantias.blade.php` - Reescrito: lista garantias con badges estado, cobrable, acciones por estado y rol
+- `resources/views/ordenes/show.blade.php` - Modal #modalRegistrarGarantia (Alpine.js x-data cobrable), rutas JS garantias
+- `public/js/orden-detalle.js` - 4 funciones: abrirModalGarantia, registrarGarantia, cambiarEstadoGarantia, asignarOperarioGarantia
+- `resources/views/layouts/navigation-vertical.blade.php` - Menu: "Garantias" (Admin|Recepcion), "Garantias Asignadas" (Operario)
+- `app/Http/Controllers/OrdenController.php` - Eager loading garantias.registradoPorUsuario en show()
 
 **Checklist:**
-- [ ] Boton GARANTIA en detalle de orden (solo si hay piezas entregadas)
-- [ ] Formulario: seleccionar pieza, cantidad devuelta, motivo, cobrable?, monto cobro, operario asignado
-- [ ] Estados: abierta -> en_proceso -> completada -> reentregada
-- [ ] Vista de garantias en detalle de orden
-- [ ] Operario trabaja garantia y reporta
-- [ ] Re-entrega de pieza
-- [ ] Registrar actividad `garantia.registrada`
+- [x] Boton "Registrar Garantia" en detalle de orden (solo Admin/Recepcion, solo si hay piezas entregadas)
+- [x] Modal formulario: seleccionar pieza (AJAX), cantidad devuelta (max dinamico), motivo, cobrable + monto (Alpine x-show), operario (opcional)
+- [x] Validacion cantidad: no excede cantidad_entregada - garantias activas (no reentregadas)
+- [x] Estados maquina: abierta -> en_proceso -> completada -> reentregada (transiciones estrictas)
+- [x] Vista garantias en detalle de orden con badges estado, cobrable, operario, fechas, botones accion por estado
+- [x] Asignar operario via SweetAlert select (pasa automaticamente a en_proceso si estaba abierta)
+- [x] Operario ve "Garantias Asignadas" con DataTable y boton Completar (solo sus garantias)
+- [x] Admin/Recepcion marcan reentregada (estado terminal, sin acciones)
+- [x] Pagina /recepcion/garantias con DataTable server-side, 4 stat cards, filtro por estado
+- [x] Registrar actividad para cada transicion de estado
+- [x] Menu lateral actualizado para ambos roles
+- [x] Layout responsive (flex-wrap en badges y acciones)
+
+**Nota:** El monto cobrable es solo informativo en esta fase. No afecta el saldo financiero de la orden. Pendiente definir si en futuro se suma al total de la orden o se maneja por separado.
 
 ---
 
-### FASE 12: Tabla de Precios Parametrica
+### FASE 12: Tabla de Precios Parametrica ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Administracion y consulta de precios por servicio/calibre/largo/cantidad.
+> **Completado:** 2026-03-12
 
-**Archivos a crear:**
-- `app/Http/Controllers/Admin/TablaPreciosController.php`
-- `app/Http/Controllers/ConsultaPrecioController.php`
-- `resources/views/admin/tabla-precios/index.blade.php`
-- `resources/views/consulta-precios/index.blade.php`
-- `app/Imports/TablaPreciosImport.php`
-- `app/Exports/TablaPreciosExport.php`
+**Archivos creados:**
+- `app/Http/Controllers/Admin/TablaPreciosController.php` - 8 metodos: index (vista+AJAX grid), updatePrecios, servicios, storeServicio, updateServicio, destroyServicio, exportExcel, importExcel
+- `app/Http/Controllers/ConsultaPrecioController.php` - 2 metodos: index, consultar (AJAX lookup)
+- `resources/views/admin/tabla-precios/index.blade.php` - Vista spreadsheet con Alpine.js, grid 13x6 editable, modales Import/Gestionar Servicios, stat cards
+- `resources/views/consulta-precios/index.blade.php` - Vista consulta rapida con Alpine.js, resultado en formato COP grande
+- `app/Exports/TablaPreciosExport.php` - Export Excel con filtro opcional por tipo_servicio, header verde #4A7C59
+- `app/Imports/TablaPreciosImport.php` - Import Excel con upsert por clave compuesta (tipo_servicio+calibre+largo+cantidad)
+
+**Archivos modificados:**
+- `app/Models/TablaPrecioServicio.php` - Agregados 2 scopes (forServicio, forLargoRange) + 5 static helpers (getDistinctServicios, getDistinctLargoRangos, getDistinctCantidadRangos, getDistinctCalibres, lookup)
+- `routes/web.php` - 10 rutas nuevas (8 admin tabla-precios + 2 recepcion consulta-precios), 2 use statements
+- `resources/views/layouts/navigation-vertical.blade.php` - Activados links "Consulta Precios" (Catalogos) y "Tabla de Precios" (Administracion)
 
 **Checklist:**
-- [ ] Vista tipo spreadsheet para editar precios masivamente
-- [ ] CRUD de tipos de servicio
-- [ ] Seeder con 1,872 registros (6 tablas precargadas)
-- [ ] Importar Excel
-- [ ] Exportar Excel
-- [ ] Consulta de precios: seleccionar tipo servicio, material, calibre, largo, cantidad -> muestra precio
-- [ ] Registrar cambios en registro_actividades
-- [ ] Rutas: `/admin/tabla-precios`, `/recepcion/consulta-precios`
-- [ ] Agregar al menu lateral
+- [x] Vista tipo spreadsheet para editar precios masivamente (grid 13 calibres x 6 rangos cantidad, inputs editables, badge cambios sin guardar)
+- [x] CRUD de tipos de servicio (crear genera 312 registros automaticos, editar etiqueta/precio_minimo, eliminar con SweetAlert)
+- [x] Seeder con 1,872 registros (6 tablas precargadas) - ya existia de Fase 0
+- [x] Importar Excel (primer import del proyecto, app/Imports/ creado, upsert por clave compuesta)
+- [x] Exportar Excel (filtrable por tipo_servicio, formato plano compatible con import)
+- [x] Consulta de precios: seleccionar tipo servicio, calibre, largo, cantidad -> muestra precio en formato COP grande
+- [x] Registrar cambios en registro_actividades (5 tipos: precios_actualizados, servicio_creado/actualizado/eliminado, importacion)
+- [x] Rutas: `/admin/tabla-precios` (8 rutas), `/recepcion/consulta-precios` (2 rutas)
+- [x] Agregar al menu lateral (ambos links activados, antes eran placeholders disabled)
+
+**Nota:** La tabla de precios es una herramienta de referencia/cotizacion. No se conecta automaticamente con los precios de las ordenes. Recepcion consulta la tabla para saber el precio por calibre/largo/cantidad, y luego usa ese valor como referencia al crear la orden con items del catalogo.
 
 ---
 
-### FASE 13: Administracion y Configuracion
+### FASE 13: Administracion y Configuracion ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Pantalla de configuracion del sistema (parametros clave-valor).
 
-**Archivos a crear:**
+**Archivos creados:**
 - `app/Http/Controllers/Admin/ConfiguracionController.php`
-- `resources/views/admin/configuracion/index.blade.php`
+
+**Archivos modificados:**
+- `resources/views/admin/configuracion/index.blade.php` (reemplazo de placeholder)
+- `app/Models/ConfiguracionSistema.php` (cache 5min en get(), clear en set())
+- `routes/web.php` (rutas controller reemplazando closure)
+- `app/Services/BloqueoService.php` (desactivado haExpirado(), bloqueos no expiran)
+- `public/js/gva-main.js` (alerts warning duran 60s en vez de 5s)
 
 **Checklist:**
-- [ ] Formulario de configuracion con todos los parametros
-- [ ] Secciones: Empresa (nombre, logo, direccion, telefono, NIT), Financiero (IVA, Nequi), Timeouts (inactividad operario, autoguardado, forzar cierre), Borradores (dias expiracion, dias recientes), Catalogos (materiales JSON, calibres JSON), Notificaciones (usuario a notificar)
-- [ ] Guardar/cargar desde tabla configuracion_sistema
-- [ ] Helper o facade para acceder: `Configuracion::get('clave', 'default')`
-- [ ] Cache para rendimiento
-- [ ] Ruta: `/admin/configuracion`
+- [x] Formulario de configuracion con todos los parametros
+- [x] 6 Secciones colapsables: Empresa (nombre, logo upload/delete, direccion, telefono, NIT), Financiero (IVA, Nequi tags), Sistema/Operario (autoguardado, forzar cierre), Borradores (dias expiracion, dias recientes), Catalogos (materiales tags, calibres tabla editable), Otros (cliente predeterminado)
+- [x] Guardar/cargar desde tabla configuracion_sistema via AJAX + SweetAlert2
+- [x] ConfiguracionSistema::get('clave', 'default') con auto-casting por tipo
+- [x] Cache de 5 minutos en get(), invalidacion automatica en set()
+- [x] Rutas: GET/POST `/admin/configuracion`, POST/DELETE `/admin/configuracion/logo`
+- [x] Logo empresa: upload separado via FormData, preview, eliminar con confirmacion
+- [x] Registro de actividad al guardar configuraciones
+
+**Decisiones tomadas:**
+- `timeout_inactividad_operario`: Removido de la UI y desactivado server-side (haExpirado() retorna false). Los bloqueos solo se liberan por desbloqueo manual, forzar cierre o cierre de sesion
+- `usuario_notificar_baja_porcentaje`: Removido de la UI. La notificacion ya esta hardcodeada a roles Administrador+Contabilidad en OperarioPiezaService
+- Alerts tipo warning (amarillos) ahora duran 60 segundos en vez de 5
 
 ---
 
-### FASE 14: Dashboards por Rol
+### FASE 14: Dashboards por Rol ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Dashboards especificos con widgets clickeables.
 
-**Archivos a crear:**
-- `app/Http/Controllers/Recepcion/PanelController.php`
-- `resources/views/recepcion/panel.blade.php`
-- `app/Services/DashboardService.php`
+**Archivos creados:**
+- `app/Services/DashboardService.php` — Servicio centralizado de metricas para los 4 roles
+- `app/Http/Controllers/Recepcion/PanelController.php` — Controller invocable para recepcion
+- `app/Http/Controllers/Admin/PanelController.php` — Controller invocable para admin
+- `resources/views/admin/panel.blade.php` — Vista dashboard admin (7 stats + acciones + admin links)
+
+**Archivos modificados:**
+- `resources/views/recepcion/panel.blade.php` — Reconstruida: 6 widgets reales + acciones rapidas + garantias + catalogos
+- `resources/views/operario/panel.blade.php` — Agregado stat-card y quick-action de garantias
+- `resources/views/contabilidad/panel.blade.php` — Agregada card de garantias cobrables (condicional)
+- `app/Http/Controllers/OperarioController.php` — Inyecta DashboardService para garantias operario
+- `app/Http/Controllers/ContabilidadController.php` — Inyecta DashboardService para garantias cobrables
+- `app/Services/Auth/RoleService.php` — Admin redirige a `admin.panel` en vez de `admin.configuracion`
+- `routes/web.php` — Ruta recepcion usa controller, nueva ruta `admin/panel`, imports agregados
+- `resources/views/layouts/navigation-vertical.blade.php` — Active state incluye `admin.panel`
 
 **Checklist:**
-- [ ] Dashboard Recepcion (6 widgets): Entregas pendientes hoy (amarillo), Hoy/manana (naranja), Vencidas (rojo), Ordenes abiertas (azul), Saldo pendiente (rojo), Para complementar (info)
-- [ ] Cada widget clickeable lleva a listado filtrado
-- [ ] Refinar Dashboard Operario (Fase 7)
-- [ ] Refinar Dashboard Contabilidad (Fase 9)
-- [ ] Dashboard general `/dashboard` redirige segun rol
+- [x] Dashboard Recepcion (6 widgets): Entregas pendientes hoy (warning), Hoy/manana (warning), Vencidas (danger), Ordenes abiertas (primary), Saldo pendiente (danger), Para complementar (info)
+- [x] Cada widget clickeable lleva a listado filtrado
+- [x] Refinar Dashboard Operario: agregado stat-card garantias pendientes + quick-action "Mis Garantias" con badge
+- [x] Refinar Dashboard Contabilidad: agregada card garantias cobrables con count y monto
+- [x] Dashboard Admin creado: 7 stats (ordenes activas, entregas vencidas, saldo, recaudado hoy, garantias, pagos por aprobar, ordenes nuevas) + acciones rapidas + panel admin
+- [x] Dashboard general `/dashboard` redirige segun rol (Admin→admin/panel, Recepcion→recepcion/panel, Contabilidad→contabilidad/panel, Operario→operario/panel)
+- [x] Garantias integradas en los 4 dashboards via DashboardService
 
 ---
 
-### FASE 15: Notificaciones
+### FASE 15: Notificaciones ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Sistema de notificaciones internas con icono campana.
+> **Completado:** 2026-03-12
 
-**Archivos a crear:**
-- `app/Http/Controllers/NotificacionController.php`
-- `app/Services/NotificacionService.php`
-- `resources/views/partials/_campana-notificaciones.blade.php`
+**Archivos creados:**
+- `app/Http/Controllers/NotificacionController.php` — 3 metodos: index (JSON ultimas 50), destroy, marcarLeidas
+- `app/Services/NotificacionService.php` — Servicio centralizado con 2 metodos genericos (notificar, notificarRoles) + 9 helpers por evento
+- `public/js/notificaciones.js` — Polling cada 10s, toasts, panel dropdown, marcar leidas, eliminar individual
+- `public/css/sinden-components.css` (seccion notificaciones) — Bell, badge, panel, toast, responsive
+
+**Archivos modificados:**
+- `resources/views/layouts/app.blade.php` — Campana con badge en header + toast container
+- `app/Http/Controllers/GarantiaController.php` — 4 llamadas: garantiaRegistrada, garantiaAsignada, garantiaCompletada, garantiaReentregada
+- `app/Http/Controllers/OrdenController.php` — 1 llamada: abonoPendienteAprobacion (solo si Recepcion registra pago)
+- `app/Http/Controllers/ContabilidadController.php` — 3 llamadas: pagoAprobado (individual+masivo), pagoRechazado
+- `app/Services/OrdenService.php` — 1 llamada: ordenGenerada (notifica operario asignado)
+- `app/Services/OperarioPiezaService.php` — 1 llamada: piezaCompletada (al llegar a 100%)
+- `app/Services/BloqueoService.php` — Notificacion forzar_cierre (pre-existente)
+- `app/Http/Controllers/EntregaController.php` — Notificacion entrega_sin_avance (pre-existente)
+- `routes/web.php` — 3 rutas: GET /notificaciones, DELETE /notificaciones/{id}, POST /notificaciones/marcar-leidas
 
 **Checklist:**
-- [ ] Icono campana en header con badge de no leidas
-- [ ] Dropdown con listado de notificaciones recientes
-- [ ] Marcar como leida al click
-- [ ] Marcar todas como leidas
-- [ ] Polling AJAX cada 30 segundos
-- [ ] Eventos que generan notificacion: baja porcentaje, orden bloqueada, garantia registrada, borrador expirando, abono pendiente aprobacion
-- [ ] Vista de todas las notificaciones
-- [ ] Agregar campana al layout `app.blade.php`
+- [x] Icono campana en header con badge de no leidas
+- [x] Dropdown con listado de notificaciones recientes (ultimas 50)
+- [x] Marcar como leida al click
+- [x] Marcar todas como leidas
+- [x] Polling AJAX cada 10 segundos con toasts para nuevas notificaciones
+- [x] Eliminar notificacion individual
+- [x] Agregar campana al layout `app.blade.php`
+- [x] Eventos que generan notificacion (13 tipos totales):
+
+| Tipo | Evento | Destinatarios | Origen |
+|------|--------|---------------|--------|
+| `forzar_cierre` | Cierre de orden requerido | Operario bloqueador | BloqueoService |
+| `avance_disminuido` | Operario baja porcentaje | Admin + Contabilidad | OperarioPiezaService |
+| `entrega_sin_avance` | Entrega con 0% avance | Admin + Contabilidad | EntregaController |
+| `garantia_registrada` | Nueva garantia creada | Administrador | GarantiaController::store |
+| `garantia_asignada` | Operario asignado a garantia | Operario asignado | GarantiaController::store/asignarOperario |
+| `garantia_completada` | Trabajo garantia completado | Admin + Recepcion | GarantiaController::completarTrabajo/cambiarEstado |
+| `garantia_reentregada` | Garantia cobrable reentregada | Contabilidad | GarantiaController::cambiarEstado |
+| `abono_pendiente_aprobacion` | Pago registrado por Recepcion | Admin + Contabilidad | OrdenController::agregarPago |
+| `pago_aprobado` | Pago aprobado | Quien registro el pago | ContabilidadController::aprobarPago/Masivo |
+| `pago_rechazado` | Pago rechazado | Quien registro el pago | ContabilidadController::rechazarPago |
+| `orden_generada` | Orden generada con operario | Operario asignado | OrdenService::generarOrden |
+| `pieza_completada` | Pieza llega al 100% | Admin + Recepcion | OperarioPiezaService::actualizarAvances |
+
+**Nota:** `borrador_expirando` se implementara en FASE 18 (Limpieza de Borradores) ya que requiere comando programado.
 
 ---
 
-### FASE 16: Registro de Actividades (Vistas)
+### FASE 16: Registro de Actividades (Vistas) ✅ COMPLETADO (2026-03-12)
 
-> **Objetivo:** Vistas de auditoria por usuario y global.
+> **Objetivo:** Vistas de auditoria por usuario y global + completar logging de TODAS las acciones del sistema.
 
-**Archivos a crear:**
-- `app/Http/Controllers/ActividadController.php`
-- `resources/views/actividades/index.blade.php`
-- `resources/views/actividades/global.blade.php`
+**Archivos creados:**
+- `app/Http/Controllers/ActividadController.php` (metodos personal() y global() con Yajra DataTables server-side)
+- `resources/views/actividades/index.blade.php` (vista personal: 4 stat cards, filtros, DataTable 4 columnas)
+- `resources/views/actividades/global.blade.php` (vista global: 4 stat cards, filtros + usuario, DataTable 6 columnas)
+- `public/js/actividades.js` (initActividadesTable() con config personal/global)
+
+**Archivos modificados (logging faltante agregado):**
+- `app/Http/Controllers/Admin/UserController.php` - +trait RegistraActividad, +3 logs: usuario.creado/actualizado/eliminado
+- `app/Http/Controllers/Admin/ConfiguracionController.php` - +2 logs: configuracion.logo_actualizado/logo_eliminado
+- `app/Http/Controllers/OrdenController.php` - +1 log: orden.comentario_agregado
+- `app/Http/Controllers/EntregaController.php` - +1 log: entrega.foto_subida
+- `app/Http/Controllers/OperarioController.php` - +1 log: pieza.foto_subida
+- `app/Http/Controllers/Auth/AuthenticatedSessionController.php` - +1 log: usuario.cierre_sesion (antes de logout)
+- `app/Models/RegistroActividad.php` - +constante TIPOS_ACCION (41 tipos), +COLORES_CATEGORIA, +badgeAccion()
+- `routes/web.php` - +import ActividadController, +6 rutas (4 personal + 2 global)
+- `resources/views/layouts/navigation-vertical.blade.php` - placeholders reemplazados por links activos
 
 **Checklist:**
-- [ ] Vista particular: filtrada por usuario actual, DataTable con Fecha/Hora, Accion, Orden (link), Detalle
-- [ ] Filtros por fecha y tipo de accion
-- [ ] Vista global (Recepcion + Admin): misma tabla sin filtro usuario, columnas extra: Usuario, Rol
-- [ ] Rutas: `/[rol]/actividades`, `/recepcion/actividades-globales`
-- [ ] Agregar al menu lateral
+- [x] Vista particular: filtrada por usuario actual, DataTable con Fecha/Hora, Accion (badge color), Orden (link), Detalle
+- [x] Filtros por fecha (desde/hasta) y tipo de accion (dropdown con 41 tipos)
+- [x] Vista global (Recepcion + Admin): columnas extra Usuario y Rol (con badges de color por rol)
+- [x] Filtro adicional por usuario en vista global
+- [x] Rutas: `/recepcion/actividades`, `/operario/actividades`, `/contabilidad/actividades`, `/admin/actividades`, `/recepcion/actividades-globales`, `/admin/actividades-globales`
+- [x] Menu lateral actualizado con links activos y highlight de ruta actual
+- [x] Completado logging de 9 acciones faltantes (usuarios CRUD, logo, comentarios, fotos, logout)
+- [x] 41 tipos de accion registrados cubriendo TODAS las mutaciones de BD del sistema
+
+**Acciones intencionalmente NO registradas:**
+- Notificaciones (marcar leidas/eliminar): operaciones de UI sin impacto en datos de negocio
+- Bloqueos/heartbeats: operaciones transitorias de alta frecuencia (cada 30s)
 
 ---
 
-### FASE 17: Manejo de Conexion
+### FASE 17: Manejo de Conexion ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Indicador online/offline, backup en localStorage, sincronizacion.
 
-**Archivos a crear:**
-- `public/js/conexion-handler.js`
+**Archivos creados:**
+- `public/js/conexion-handler.js` - Modulo global SindenConexion (~350 lineas): deteccion dual (navigator.onLine + ping activo), intercepcion AJAX via $.ajaxPrefilter, cola localStorage, sincronizacion al reconectar
+- `public/css/conexion-handler.css` - Estilos banner offline, indicador de conexion, botones disabled
+
+**Archivos modificados:**
+- `resources/views/layouts/app.blade.php` - Banner offline, indicador verde/rojo en header, carga CSS/JS
+- `routes/web.php` - 2 rutas: GET /api/ping (verificacion conectividad), GET /api/csrf-refresh (token fresco)
+- `public/js/operario-trabajo.js` - 3 hooks: backup piezasCambios en trackCambio(), limpiar en save exitoso, recuperar en init con SweetAlert
+- `public/js/orden-wizard.js` - 3 hooks: backup formData antes de AJAX, limpiar en save exitoso, recuperar borrador en init con SweetAlert
+
+**Arquitectura:**
+- Deteccion: navigator.onLine (instantanea) + ping activo GET /api/ping cada 15s (online) / 5s (offline)
+- Intercepcion: $.ajaxPrefilter global - encola POST/PUT/DELETE JSON, bloquea FormData (fotos), aborta GETs
+- localStorage: prefijo `sinden_cx_`, keys: queue (cola FIFO), operario_{ordenId} (porcentajes), wizard_{ordenId} (formulario)
+- Sincronizacion: 1) Refrescar CSRF, 2) Procesar cola FIFO, 3) Resumen toast
+- Recuperacion: Al cargar pagina detecta datos huerfanos, muestra dialogo "Datos recuperados / Descartar"
+- Excepciones: Ignora heartbeat, DataTables y notificaciones en deteccion de errores
+- Garantias: cubiertas automaticamente por interceptor global (POST JSON se encola)
 
 **Checklist:**
-- [ ] Indicador visual en header (verde=online, rojo=offline)
-- [ ] Banner "Sin conexion" cuando se pierde
-- [ ] Guardar datos de formularios en localStorage cuando offline
-- [ ] Deshabilitar botones guardar/generar sin conexion
-- [ ] Auto-envio de datos pendientes al reconectar
-- [ ] Manejo de conflictos: "Se encontraron datos no guardados. Desea recuperarlos?"
-- [ ] Guardar porcentajes del operario localmente y sincronizar
+- [x] Indicador visual en header (verde=online, rojo=offline con pulso CSS)
+- [x] Banner "Sin conexion a internet. Los cambios se guardaran localmente."
+- [x] Guardar datos de formularios en localStorage cuando offline (operario + wizard)
+- [x] Deshabilitar botones guardar/generar sin conexion (data-offline-disabled)
+- [x] Auto-envio de datos pendientes al reconectar (con refresh CSRF previo)
+- [x] Manejo de conflictos: "Se encontraron datos no guardados. Desea recuperarlos?"
+- [x] Guardar porcentajes del operario localmente y sincronizar
+- [x] Manejo de CSRF expirado (auto-refresh en 419)
+- [x] Manejo de sesion expirada (redirect a login en 401)
+- [x] Fotos: mensaje claro "intente de nuevo" (no se encolan binarios)
 
 ---
 
-### FASE 18: Limpieza de Borradores
+### FASE 18: Limpieza de Borradores ✅ COMPLETADO (2026-03-12)
 
 > **Objetivo:** Tarea programada para eliminar borradores expirados.
 
-**Archivos a crear:**
-- `app/Console/Commands/LimpiarBorradores.php`
+**Archivos creados:**
+- `app/Console/Commands/LimpiarBorradores.php` - Comando artisan con opciones --dry-run y --force
+
+**Archivos modificados:**
+- `app/Console/Kernel.php` - Schedule diario a medianoche
+- `app/Services/NotificacionService.php` - Helper borradorExpirando()
+- `app/Models/RegistroActividad.php` - Tipo `sistema.borradores_eliminados` + color categoria `sistema`
+- `app/Http/Controllers/OrdenController.php` - Badge expiracion en DataTable para borradores
+
+**Funcionalidades:**
+- Comando `ordenes:limpiar-borradores` con opciones `--dry-run` (solo listar) y `--force` (sin confirmacion)
+- Lee `dias_expiracion_borradores` de ConfiguracionSistema (default 30 dias)
+- Eliminacion en cascada: items, bosquejos, piezas (con historial/asignaciones/fotos/garantias), pagos, comentarios, actividades, entregas, archivos fisicos
+- Notificacion `borrador_expirando` al creador 3 dias antes de expirar
+- Registro `sistema.borradores_eliminados` con IDs y conteo en datos_extra
+- Badge en DataTable ordenes: rojo "Expira en Xd" (<=3 dias), amarillo (<=7 dias)
+- Programado diariamente a las 00:00 en Kernel.php
 
 **Checklist:**
-- [ ] Comando artisan `ordenes:limpiar-borradores`
-- [ ] Eliminar ordenes con estado_trabajo='borrador' y updated_at < ahora - dias_configurados
-- [ ] Eliminar en cascada: orden_items, orden_piezas, orden_bosquejos
-- [ ] Registrar en registro_actividades: `sistema.borradores_eliminados`
-- [ ] Programar en `app/Console/Kernel.php` (diario a medianoche)
-- [ ] En UI: badge "Expira en X dias" para borradores proximos, toggle "Ver todos"
+- [x] Comando artisan `ordenes:limpiar-borradores`
+- [x] Eliminar ordenes con estado_trabajo='borrador' y updated_at < ahora - dias_configurados
+- [x] Eliminar en cascada: orden_items, orden_piezas, orden_bosquejos, pagos, comentarios, fotos, actividades, entregas
+- [x] Eliminar archivos fisicos en public/uploads/ordenes/{id}/
+- [x] Registrar en registro_actividades: `sistema.borradores_eliminados`
+- [x] Programar en `app/Console/Kernel.php` (diario a medianoche)
+- [x] Notificacion `borrador_expirando` al creador (3 dias antes)
+- [x] En UI: badge "Expira en X dias" para borradores proximos (rojo <= 3d, amarillo <= 7d)
 
 ---
 

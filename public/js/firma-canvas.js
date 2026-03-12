@@ -44,13 +44,17 @@
 
     function getMousePos(e) {
         var rect = canvas.getBoundingClientRect();
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
+        return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
     }
 
     function getTouchPos(e) {
         var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
         var touch = e.touches[0];
-        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY };
     }
 
     function startDraw(pos) {

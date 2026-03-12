@@ -11,19 +11,19 @@
     --sinden-primary-100: #dbeafe;
     --sinden-primary-200: #bfdbfe;
 
-    /* Colores Secundarios - Verde */
-    --sinden-secondary: #059669;
-    --sinden-secondary-dark: #047857;
-    --sinden-secondary-light: #10b981;
+    /* Colores Secundarios - Gris Acero */
+    --sinden-secondary: #64748b;
+    --sinden-secondary-dark: #475569;
+    --sinden-secondary-light: #94a3b8;
 
-    /* Verde Header - natural/suave */
-    --sinden-header-green: #4a7c59;
-    --sinden-header-green-light: #5a9367;
-    --sinden-secondary-50: #ecfdf5;
-    --sinden-secondary-100: #d1fae5;
+    /* Header Accent - Acero */
+    --sinden-header-green: #475569;
+    --sinden-header-green-light: #64748b;
+    --sinden-secondary-50: #f8fafc;
+    --sinden-secondary-100: #f1f5f9;
 
     /* Estados */
-    --sinden-success: #10b981;
+    --sinden-success: #64748b;
     --sinden-warning: #f59e0b;
     --sinden-danger: #ef4444;
     --sinden-info: #3b82f6;

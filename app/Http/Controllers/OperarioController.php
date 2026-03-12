@@ -7,6 +7,7 @@ use App\Models\Orden;
 use App\Models\OrdenPieza;
 use App\Models\User;
 use App\Services\BloqueoService;
+use App\Services\DashboardService;
 use App\Services\OperarioPiezaService;
 use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
@@ -20,15 +21,18 @@ class OperarioController extends Controller
     protected OperarioPiezaService $piezaService;
     protected BloqueoService $bloqueoService;
     protected OrdenEstadoService $estadoService;
+    protected DashboardService $dashboardService;
 
     public function __construct(
         OperarioPiezaService $piezaService,
         BloqueoService $bloqueoService,
-        OrdenEstadoService $estadoService
+        OrdenEstadoService $estadoService,
+        DashboardService $dashboardService
     ) {
         $this->piezaService = $piezaService;
         $this->bloqueoService = $bloqueoService;
         $this->estadoService = $estadoService;
+        $this->dashboardService = $dashboardService;
     }
 
     // ==========================================
@@ -42,6 +46,7 @@ class OperarioController extends Controller
     {
         $user = auth()->user();
         $stats = $this->piezaService->getStatsOperario($user);
+        $stats['garantias_pendientes'] = $this->dashboardService->getGarantiasOperario($user);
 
         return view('operario.panel', compact('stats'));
     }
@@ -411,6 +416,8 @@ class OperarioController extends Controller
 
         $user = auth()->user();
         $foto = $this->piezaService->subirFoto($pieza, $request->file('foto'), $user);
+
+        $this->registrarActividad('pieza.foto_subida', "Foto subida para pieza de orden {$pieza->orden->numero_orden}", $pieza->orden_id);
 
         return response()->json([
             'success' => true,

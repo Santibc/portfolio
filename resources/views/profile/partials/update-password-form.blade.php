@@ -33,8 +33,8 @@
 
         <div class="flex items-center gap-4">
             <button
-                class="px-4 py-1.5 bg-[#10b981] hover:bg-[#0ea972]
-                      text-white font-semibold rounded-xl shadow-md border border-[#10b981]
+                class="px-4 py-1.5 bg-[#64748b] hover:bg-[#475569]
+                      text-white font-semibold rounded-xl shadow-md border border-[#64748b]
                       transition duration-300 ease-in-out transform hover:-translate-y-0.5">
                 Guardar
             </button>

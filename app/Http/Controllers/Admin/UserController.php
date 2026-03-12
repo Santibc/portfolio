@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -11,6 +12,7 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    use RegistraActividad;
     public function index(Request $request)
     {
         $query = User::with(['roles']);
@@ -76,6 +78,12 @@ class UserController extends Controller
 
         $user->assignRole($validated['role']);
 
+        $this->registrarActividad('usuario.creado', "Usuario creado: {$user->name} ({$validated['role']})", null, [
+            'usuario_id' => $user->id,
+            'email' => $user->email,
+            'rol' => $validated['role'],
+        ]);
+
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario creado exitosamente.');
     }
@@ -126,6 +134,12 @@ class UserController extends Controller
         // Sincronizar rol
         $user->syncRoles([$validated['role']]);
 
+        $this->registrarActividad('usuario.actualizado', "Usuario actualizado: {$user->name}", null, [
+            'usuario_id' => $user->id,
+            'email' => $user->email,
+            'rol' => $validated['role'],
+        ]);
+
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario actualizado exitosamente.');
     }
@@ -138,7 +152,16 @@ class UserController extends Controller
                 ->with('error', 'No puedes eliminar tu propio usuario.');
         }
 
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $userRol = $user->roles->first()->name ?? '-';
+
         $user->delete();
+
+        $this->registrarActividad('usuario.eliminado', "Usuario eliminado: {$userName}", null, [
+            'email' => $userEmail,
+            'rol' => $userRol,
+        ]);
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario eliminado exitosamente.');

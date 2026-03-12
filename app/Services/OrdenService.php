@@ -9,6 +9,7 @@ use App\Models\OrdenItem;
 use App\Models\OrdenPieza;
 use App\Models\Pago;
 use App\Models\User;
+use App\Services\NotificacionService;
 use Illuminate\Support\Facades\File;
 use App\Helpers\ImageHelper;
 use Intervention\Image\Facades\Image;
@@ -97,8 +98,10 @@ class OrdenService
         // Guardar borrador primero (persiste todos los datos)
         $orden = $this->guardarBorrador($data, $user, $orden);
 
-        // Asignar numero consecutivo
+        // Asignar numero consecutivo y marcar como generada
         $orden->numero_orden = $this->estadoService->generarNumeroConsecutivo();
+        $orden->estado_trabajo = 'generada';
+        $orden->save();
 
         $piezas = $orden->piezas()->get();
 
@@ -117,6 +120,7 @@ class OrdenService
             if ($piezasConOperario->isNotEmpty()) {
                 $operarioId = $data['operario_id'];
                 $this->crearAsignacionesIniciales($orden, (int) $operarioId, $user, $piezasConOperario);
+                NotificacionService::ordenGenerada($orden, (int) $operarioId);
             }
 
             // Recalcular estado basado en piezas actualizadas

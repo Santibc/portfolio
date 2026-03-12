@@ -19,6 +19,46 @@
     {{-- Bootstrap 5 CSS --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    {{-- Override Bootstrap success (verde → gris acero) --}}
+    <style>
+        :root {
+            --bs-success: #64748b;
+            --bs-success-rgb: 100, 116, 139;
+        }
+        .btn-success {
+            --bs-btn-bg: #64748b;
+            --bs-btn-border-color: #64748b;
+            --bs-btn-hover-bg: #475569;
+            --bs-btn-hover-border-color: #475569;
+            --bs-btn-active-bg: #334155;
+            --bs-btn-active-border-color: #334155;
+            --bs-btn-disabled-bg: #64748b;
+            --bs-btn-disabled-border-color: #64748b;
+        }
+        .btn-outline-success {
+            --bs-btn-color: #64748b;
+            --bs-btn-border-color: #64748b;
+            --bs-btn-hover-bg: #64748b;
+            --bs-btn-hover-border-color: #64748b;
+            --bs-btn-active-bg: #475569;
+            --bs-btn-active-border-color: #475569;
+        }
+        .text-success { color: #64748b !important; }
+        .bg-success { background-color: #64748b !important; }
+        .bg-success-subtle { background-color: #f1f5f9 !important; }
+        .badge.bg-success { background-color: #64748b !important; }
+        .table-success {
+            --bs-table-bg: #f1f5f9;
+            --bs-table-border-color: #e2e8f0;
+            --bs-table-striped-bg: #f1f5f9;
+        }
+        .alert-success {
+            --bs-alert-bg: #f8fafc;
+            --bs-alert-border-color: #e2e8f0;
+            --bs-alert-color: #475569;
+        }
+    </style>
+
     {{-- Tailwind CSS (para componentes Blade - con preflight deshabilitado) --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -35,6 +75,9 @@
     <link href="{{ asset('css/gva-components.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sinden-components.css') }}" rel="stylesheet">
 
+    {{-- Conexion Handler CSS --}}
+    <link href="{{ asset('css/conexion-handler.css') }}" rel="stylesheet">
+
     {{-- DataTables CSS --}}
     <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" rel="stylesheet">
@@ -42,6 +85,12 @@
     @stack('styles')
 </head>
 <body>
+    {{-- Banner Offline (oculto por defecto, se muestra via JS) --}}
+    <div id="sindenOfflineBanner" class="sinden-offline-banner">
+        <i class="bi bi-wifi-off me-2"></i>
+        <span>Sin conexion a internet. Los cambios se guardaran localmente.</span>
+    </div>
+
     {{-- Header --}}
     <header class="dashboard-header">
         <div class="header-container" style="position: relative;">
@@ -56,6 +105,9 @@
             </div>
 
             <div class="header-right">
+                {{-- Indicador de conexion --}}
+                <span class="sinden-conexion-dot online" id="conexionDot" title="Conectado"></span>
+
                 {{-- Campana de notificaciones --}}
                 <div class="notif-bell-wrapper" id="notifBellWrapper">
                     <button class="notif-bell-btn" id="notifBellBtn" title="Notificaciones">
@@ -154,6 +206,7 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
@@ -173,6 +226,9 @@
     {{-- Notificaciones --}}
     <div id="notifToastContainer"></div>
     <script src="{{ asset('js/notificaciones.js') }}"></script>
+
+    {{-- Conexion Handler (debe ir despues de jQuery y SweetAlert2) --}}
+    <script src="{{ asset('js/conexion-handler.js') }}"></script>
 
     @stack('scripts')
 </body>

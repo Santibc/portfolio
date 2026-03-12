@@ -1,0 +1,3 @@
+[    1015ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[    1115ms] [ERROR] Access to XMLHttpRequest at 'http://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:8000/recepcion/ordenes:0
+[    1141ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json:0

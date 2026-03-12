@@ -73,6 +73,10 @@ $(function() {
             { data: 'created_at', name: 'created_at', width: '100px', className: 'text-center' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '120px' }
         ],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
+        ],
         order: [[0, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
@@ -92,7 +96,7 @@ function toggleActivo(clienteId, nombre) {
         text: 'Desea cambiar el estado del cliente "' + nombre + '"?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#4A7C59',
+        confirmButtonColor: '#475569',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Si, cambiar',
         cancelButtonText: 'Cancelar'

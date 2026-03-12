@@ -26,6 +26,33 @@
         startInactivityTimer();
         startForceCloseCheck();
 
+        // Recuperar datos no guardados (corte de luz, cierre inesperado)
+        if (window.SindenConexion) {
+            var recovered = SindenConexion.loadModuleData('operario', ORDEN_ID);
+            if (recovered && recovered.cambios && Object.keys(recovered.cambios).length > 0) {
+                Swal.fire({
+                    title: 'Datos recuperados',
+                    html: 'Se encontraron <b>' + Object.keys(recovered.cambios).length + '</b> avance(s) no guardados de una sesion anterior.',
+                    icon: 'info',
+                    confirmButtonText: 'Aplicar',
+                    showCancelButton: true,
+                    cancelButtonText: 'Descartar',
+                    confirmButtonColor: '#4A7C59'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        for (var pid in recovered.cambios) {
+                            var val = recovered.cambios[pid];
+                            piezasCambios[pid] = val;
+                            $('input.pieza-slider[data-pieza-id="' + pid + '"]').val(val);
+                            $('input.pieza-porcentaje-input[data-pieza-id="' + pid + '"]').val(val);
+                            updatePorcentajeDisplay(pid, val);
+                        }
+                    }
+                    SindenConexion.clearModuleData('operario', ORDEN_ID);
+                });
+            }
+        }
+
         // Release lock on page unload
         $(window).on('beforeunload', function() {
             if (navigator.sendBeacon) {
@@ -100,6 +127,14 @@
             delete piezasCambios[piezaId];
         } else {
             piezasCambios[piezaId] = porcentaje;
+        }
+
+        // Backup en localStorage para recuperacion ante corte de luz
+        if (window.SindenConexion) {
+            SindenConexion.saveModuleData('operario', ORDEN_ID, {
+                cambios: piezasCambios,
+                timestamp: Date.now()
+            });
         }
     }
 
@@ -431,6 +466,11 @@
                         $('#pieza-' + c.pieza_id).data('porcentaje-original', c.porcentaje);
                     });
                     piezasCambios = {};
+
+                    // Limpiar backup de localStorage (datos guardados exitosamente)
+                    if (window.SindenConexion) {
+                        SindenConexion.clearModuleData('operario', ORDEN_ID);
+                    }
 
                     var msg = data.piezas_actualizadas + ' pieza(s) actualizada(s).';
                     if (data.piezas_terminadas && data.piezas_terminadas.length > 0) {

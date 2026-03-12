@@ -6,6 +6,8 @@ use App\Exports\ReporteItemsExport;
 use App\Models\Orden;
 use App\Models\OrdenItem;
 use App\Models\Pago;
+use App\Services\DashboardService;
+use App\Services\NotificacionService;
 use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
@@ -18,10 +20,12 @@ class ContabilidadController extends Controller
     use RegistraActividad;
 
     protected OrdenEstadoService $estadoService;
+    protected DashboardService $dashboardService;
 
-    public function __construct(OrdenEstadoService $estadoService)
+    public function __construct(OrdenEstadoService $estadoService, DashboardService $dashboardService)
     {
         $this->estadoService = $estadoService;
+        $this->dashboardService = $dashboardService;
     }
 
     /**
@@ -59,6 +63,8 @@ class ContabilidadController extends Controller
             ->limit(10)
             ->get();
 
+        $garantiasCobrables = $this->dashboardService->getGarantiasCobrables();
+
         return view('contabilidad.panel', compact(
             'ordenesConSaldo',
             'abonosPorAprobar',
@@ -66,7 +72,8 @@ class ContabilidadController extends Controller
             'recaudadoHoy',
             'recaudadoSemana',
             'porMetodoPago',
-            'ultimosPagos'
+            'ultimosPagos',
+            'garantiasCobrables'
         ));
     }
 
@@ -268,6 +275,8 @@ class ContabilidadController extends Controller
             ['pago_id' => $pago->id, 'monto' => $pago->monto, 'metodo_pago' => $pago->metodo_pago]
         );
 
+        NotificacionService::pagoAprobado($pago);
+
         $ordenFresh = $pago->orden->fresh();
 
         return response()->json([
@@ -322,6 +331,8 @@ class ContabilidadController extends Controller
                     $pago->orden_id,
                     ['pago_id' => $pago->id, 'monto' => $pago->monto, 'metodo_pago' => $pago->metodo_pago, 'masivo' => true]
                 );
+
+                NotificacionService::pagoAprobado($pago);
             }
 
             // Recalcular cada orden afectada
@@ -435,6 +446,8 @@ class ContabilidadController extends Controller
             $ordenId,
             ['monto' => $monto, 'metodo_pago' => $metodo]
         );
+
+        NotificacionService::pagoRechazado($pago, $ordenNumero, $ordenId);
 
         return response()->json([
             'success' => true,
@@ -631,7 +644,28 @@ class ContabilidadController extends Controller
             }
 
             // Calcular totales con los filtros aplicados
-            $totalesQuery = clone $query;
+            $totalesQuery = OrdenItem::query()
+                ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
+                ->where('ordenes.estado_pago', 'pagado')
+                ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada']);
+
+            if ($request->filled('busqueda')) {
+                $busqueda2 = $request->busqueda;
+                $totalesQuery->where(function ($q) use ($busqueda2) {
+                    $q->where('orden_items.codigo', 'like', "%{$busqueda2}%")
+                      ->orWhere('orden_items.descripcion', 'like', "%{$busqueda2}%");
+                });
+            }
+            if ($request->filled('categoria') && $request->categoria !== 'todas') {
+                $totalesQuery->where('orden_items.categoria', $request->categoria);
+            }
+            if ($request->filled('fecha_desde')) {
+                $totalesQuery->whereDate('ordenes.created_at', '>=', $request->fecha_desde);
+            }
+            if ($request->filled('fecha_hasta')) {
+                $totalesQuery->whereDate('ordenes.created_at', '<=', $request->fecha_hasta);
+            }
+
             $totales = $totalesQuery->selectRaw('
                 SUM(orden_items.subtotal) as sum_subtotal,
                 SUM(orden_items.monto_iva) as sum_iva,

@@ -218,15 +218,12 @@ class BloqueoService
 
     /**
      * Verifica si el bloqueo ha expirado por inactividad.
+     * Desactivado: los bloqueos no expiran automaticamente.
+     * Solo se liberan por: desbloqueo manual, forzar cierre, o cierre de sesion de trabajo.
      */
     protected function haExpirado(Orden $orden): bool
     {
-        if (!$orden->bloqueada_en) {
-            return true;
-        }
-
-        $timeoutMinutos = ConfiguracionSistema::get('timeout_inactividad_operario', 10);
-        return now()->diffInMinutes($orden->bloqueada_en) >= $timeoutMinutos;
+        return false;
     }
 
     /**

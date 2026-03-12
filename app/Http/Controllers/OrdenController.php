@@ -14,6 +14,7 @@ use App\Models\OrdenItem;
 use App\Models\OrdenPieza;
 use App\Models\Pago;
 use App\Models\User;
+use App\Services\NotificacionService;
 use App\Services\OrdenEstadoService;
 use App\Services\OrdenService;
 use App\Traits\RegistraActividad;
@@ -341,6 +342,8 @@ class OrdenController extends Controller
                     $html .= '<button type="button" class="action-btn" title="Copiar" onclick="copiarOrden(' . $o->id . ')"><i class="bi bi-copy"></i></button>';
 
                     if (!in_array($o->estado_trabajo, ['anulada', 'borrador'])) {
+                        $pdfUrl = route('recepcion.ordenes.pdf', $o);
+                        $html .= '<a href="' . $pdfUrl . '" class="action-btn" title="PDF" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>';
                         $html .= '<button type="button" class="action-btn delete" title="Anular" onclick="anularOrden(' . $o->id . ', \'' . addslashes($o->numero_orden) . '\')"><i class="bi bi-x-circle"></i></button>';
                     }
 
@@ -348,7 +351,22 @@ class OrdenController extends Controller
                     return $html;
                 })
                 ->editColumn('numero_orden', function ($o) {
-                    return $o->numero_orden ?? '<span class="text-muted fst-italic">Borrador</span>';
+                    if ($o->numero_orden) {
+                        return $o->numero_orden;
+                    }
+
+                    $html = '<span class="text-muted fst-italic">Borrador</span>';
+                    $diasExpiracion = \App\Models\ConfiguracionSistema::get('dias_expiracion_borradores', 30);
+                    $diasTranscurridos = $o->updated_at->diffInDays(now());
+                    $diasRestantes = $diasExpiracion - $diasTranscurridos;
+
+                    if ($diasRestantes <= 3) {
+                        $html .= ' <span class="badge bg-danger ms-1" title="Se eliminara por inactividad">Expira en ' . max(0, $diasRestantes) . 'd</span>';
+                    } elseif ($diasRestantes <= 7) {
+                        $html .= ' <span class="badge bg-warning text-dark ms-1" title="Se eliminara por inactividad">Expira en ' . $diasRestantes . 'd</span>';
+                    }
+
+                    return $html;
                 })
                 ->editColumn('created_at', function ($o) {
                     return $o->created_at ? $o->created_at->format('d/m/Y') : '-';
@@ -390,9 +408,13 @@ class OrdenController extends Controller
                 $q->withTrashed()->with(['registradoPorUsuario', 'aprobadoPorUsuario', 'rechazadoPorUsuario']);
             },
             'fotos.subidoPorUsuario',
+            'entregas.piezas.ordenPieza',
+            'entregas.entregadaPorUsuario',
+            'entregas.fotos',
             'comentarios.usuario',
             'garantias.pieza',
             'garantias.operarioAsignado',
+            'garantias.registradoPorUsuario',
             'ordenOriginal',
         ]);
 
@@ -699,6 +721,8 @@ class OrdenController extends Controller
             'contenido' => $request->contenido,
         ]);
 
+        $this->registrarActividad('orden.comentario_agregado', "Comentario agregado a orden {$orden->numero_orden}", $orden->id);
+
         return response()->json([
             'success' => true,
             'message' => 'Comentario agregado.',
@@ -746,6 +770,10 @@ class OrdenController extends Controller
             $orden->id,
             ['monto' => $request->monto, 'metodo_pago' => $request->metodo_pago, 'aprobado' => $autoAprueba]
         );
+
+        if (!$autoAprueba) {
+            NotificacionService::abonoPendienteAprobacion($pago, $orden);
+        }
 
         $ordenFresh = $orden->fresh();
 

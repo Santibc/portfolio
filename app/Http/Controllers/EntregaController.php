@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Entrega;
 use App\Models\EntregaPieza;
+use App\Models\Notificacion;
 use App\Models\Orden;
 use App\Models\OrdenFoto;
 use App\Models\OrdenPieza;
+use App\Models\User;
 use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
@@ -194,6 +196,10 @@ class EntregaController extends Controller
                     $orden->id,
                     ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
                 );
+
+                if ($pieza->porcentaje_avance == 0) {
+                    $this->notificarEntregaSinAvance($orden, $pieza);
+                }
             }
 
             // Vincular foto si fue subida previamente
@@ -283,6 +289,10 @@ class EntregaController extends Controller
                     $orden->id,
                     ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
                 );
+
+                if ($pieza->porcentaje_avance == 0) {
+                    $this->notificarEntregaSinAvance($orden, $pieza);
+                }
             }
 
             $orden->load('piezas');
@@ -336,6 +346,8 @@ class EntregaController extends Controller
             'subido_por' => auth()->id(),
             'aprobada' => false,
         ]);
+
+        $this->registrarActividad('entrega.foto_subida', "Foto de entrega subida para orden {$orden->numero_orden}", $orden->id);
 
         return response()->json([
             'success' => true,
@@ -457,6 +469,24 @@ class EntregaController extends Controller
             ],
             'entregas' => $entregas,
         ]);
+    }
+
+    // ---- Notificaciones ----
+
+    protected function notificarEntregaSinAvance(Orden $orden, OrdenPieza $pieza): void
+    {
+        $usuarios = User::role(['Administrador', 'Contabilidad'])->get();
+
+        foreach ($usuarios as $usuario) {
+            Notificacion::create([
+                'usuario_id' => $usuario->id,
+                'tipo' => 'entrega_sin_avance',
+                'titulo' => 'Entrega sin avance de trabajo',
+                'contenido' => "Se entrego '{$pieza->nombre}' de la Orden #{$orden->numero_orden} con 0% de avance de trabajo",
+                'url' => "/recepcion/ordenes/{$orden->id}",
+                'leida' => false,
+            ]);
+        }
     }
 
     // ---- Badge helpers ----

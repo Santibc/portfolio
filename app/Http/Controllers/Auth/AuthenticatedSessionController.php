@@ -59,6 +59,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if ($user) {
+            $this->registrarActividad('usuario.cierre_sesion', "Cierre de sesion: {$user->name}");
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

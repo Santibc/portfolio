@@ -23,7 +23,7 @@
             :root {
                 --sinden-primary: #1E40AF;
                 --sinden-primary-dark: #1E3A8A;
-                --sinden-secondary: #059669;
+                --sinden-secondary: #64748b;
             }
 
             .sinden-auth-container {
@@ -33,7 +33,7 @@
                 align-items: center;
                 justify-content: center;
                 padding: 1.5rem;
-                background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #059669 100%);
+                background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #475569 100%);
             }
 
             .sinden-logo {

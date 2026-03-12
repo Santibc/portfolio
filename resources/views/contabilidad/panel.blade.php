@@ -129,6 +129,30 @@
                 </div>
             </div>
 
+            {{-- Garantias cobrables --}}
+            @if($garantiasCobrables['count'] > 0)
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                    <h6 class="mb-0 fw-semibold text-dark">
+                        <i class="bi bi-shield-check me-2 text-danger"></i>Garantias Cobrables
+                    </h6>
+                </div>
+                <div class="card-body px-4 pb-4 pt-3">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span>Garantias activas</span>
+                        <span class="fw-bold">{{ $garantiasCobrables['count'] }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span>Monto cobrable</span>
+                        <span class="fw-bold text-danger">${{ number_format($garantiasCobrables['monto'], 0, ',', '.') }}</span>
+                    </div>
+                    <a href="{{ route('recepcion.garantias.index') }}" class="btn btn-outline-danger btn-sm w-100 mt-2">
+                        <i class="bi bi-arrow-right me-1"></i>Ver Garantias
+                    </a>
+                </div>
+            </div>
+            @endif
+
             {{-- Acciones rapidas --}}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">

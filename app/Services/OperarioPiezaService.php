@@ -6,6 +6,7 @@ use App\Models\AsignacionPieza;
 use App\Models\HistorialAvance;
 use App\Models\Notificacion;
 use App\Models\Orden;
+use App\Services\NotificacionService;
 use App\Models\OrdenFoto;
 use App\Models\OrdenPieza;
 use App\Models\User;
@@ -103,6 +104,7 @@ class OperarioPiezaService
                 // Pieza terminada
                 if ($nuevoPorcentaje >= 100) {
                     $resultado['piezas_terminadas'][] = $pieza->nombre;
+                    NotificacionService::piezaCompletada($pieza, $operario);
                 }
 
                 // Avance disminuido

@@ -13,6 +13,7 @@
         <x-sinden.stat-card icon="bi bi-gear-wide-connected" :value="$stats['piezas_en_proceso']" title="Piezas en Proceso" color="warning" />
         <x-sinden.stat-card icon="bi bi-plus-circle" :value="$stats['para_complementar']" title="Para Complementar" color="info" />
         <x-sinden.stat-card icon="bi bi-check-circle" :value="$stats['completadas_hoy']" title="Completadas Hoy" color="success" />
+        <x-sinden.stat-card icon="bi bi-shield-check" :value="$stats['garantias_pendientes']" title="Garantias Pendientes" color="danger" />
     </div>
 
     {{-- Quick Actions --}}
@@ -35,10 +36,12 @@
                 <span class="badge bg-info">{{ $stats['para_complementar'] }}</span>
             @endif
         </a>
-        <a href="#" class="quick-action-btn" style="opacity: 0.5; pointer-events: none;">
-            <i class="bi bi-clock-history"></i>
-            <span>Mis Actividades</span>
-            <small class="text-muted">Proximamente</small>
+        <a href="{{ route('operario.garantias') }}" class="quick-action-btn">
+            <i class="bi bi-shield-check"></i>
+            <span>Mis Garantias</span>
+            @if($stats['garantias_pendientes'] > 0)
+                <span class="badge bg-danger">{{ $stats['garantias_pendientes'] }}</span>
+            @endif
         </a>
     </div>
 </div>

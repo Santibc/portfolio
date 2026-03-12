@@ -11,6 +11,27 @@
                 href="{{ route('recepcion.ordenes.export-excel') }}">Excel</x-sinden.button>
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-pdf"
                 href="{{ route('recepcion.ordenes.export-pdf') }}">PDF</x-sinden.button>
+            <div class="dropdown d-inline-block">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-files me-1"></i>PDF Masivo
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="pdfMasivoUnido(); return false;"><i class="bi bi-file-earmark-pdf me-2"></i>PDF Unido</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="pdfMasivoZip(); return false;"><i class="bi bi-file-zip me-2"></i>PDF en ZIP</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li class="dropdown-header">Bosquejos por fila</li>
+                    <li>
+                        <div class="px-3 py-1">
+                            <select class="form-select form-select-sm" id="pdfMasivoCols">
+                                <option value="1">1 por fila</option>
+                                <option value="2" selected>2 por fila</option>
+                                <option value="3">3 por fila</option>
+                                <option value="4">4 por fila</option>
+                            </select>
+                        </div>
+                    </li>
+                </ul>
+            </div>
             <x-sinden.button variant="primary" icon="bi bi-plus-lg"
                 href="{{ route('recepcion.ordenes.crear') }}">Nueva Orden</x-sinden.button>
         </x-slot>
@@ -100,6 +121,7 @@
                 <table class="table table-hover align-middle mb-0 sinden-datatable" id="ordenesTable" style="width:100%">
                     <thead>
                         <tr>
+                            <th style="width: 30px;"><input type="checkbox" id="selectAll" class="form-check-input"></th>
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Creacion</th>
@@ -169,6 +191,13 @@ $(function() {
             }
         },
         columns: [
+            {
+                data: 'id', name: 'id', orderable: false, searchable: false, width: '30px', className: 'text-center',
+                render: function(data, type, row) {
+                    if (row.estado_trabajo === 'borrador' || row.estado_trabajo === 'anulada') return '';
+                    return '<input type="checkbox" class="form-check-input row-select" value="' + data + '">';
+                }
+            },
             { data: 'numero_orden', name: 'numero_orden', width: '90px', className: 'fw-semibold' },
             { data: 'cliente_nombre', name: 'cliente.nombre' },
             { data: 'created_at', name: 'created_at', width: '95px', className: 'text-center' },
@@ -178,9 +207,13 @@ $(function() {
             { data: 'estado_pago_badge', name: 'estado_pago', className: 'text-center', orderable: true, searchable: false },
             { data: 'total_formatted', name: 'total', className: 'text-end', orderable: true, searchable: false },
             { data: 'saldo_formatted', name: 'saldo', className: 'text-end', orderable: true, searchable: false },
-            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '140px' }
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '160px' }
         ],
-        order: [[0, 'desc']],
+        dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
+        buttons: [
+            { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
+        ],
+        order: [[1, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
         language: {
@@ -237,7 +270,7 @@ function copiarOrden(ordenId) {
         text: 'Se creara un nuevo borrador con los mismos items, bosquejos y piezas.',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#4A7C59',
+        confirmButtonColor: '#475569',
         confirmButtonText: 'Si, copiar',
         cancelButtonText: 'Cancelar'
     }).then(function(result) {
@@ -249,7 +282,7 @@ function copiarOrden(ordenId) {
                 headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
                 success: function(data) {
                     if (data.success) {
-                        Swal.fire({ icon: 'success', title: 'Orden copiada', text: data.message, confirmButtonColor: '#4A7C59' }).then(function() {
+                        Swal.fire({ icon: 'success', title: 'Orden copiada', text: data.message, confirmButtonColor: '#475569' }).then(function() {
                             window.location.href = data.redirect;
                         });
                     }
@@ -268,6 +301,43 @@ function anularOrden(ordenId, numeroOrden) {
     $('#anularOrdenNumero').text(numeroOrden || '#' + ordenId);
     $('#motivoAnulacion').val('');
     $('#modalAnularOrden').modal('show');
+}
+
+// Select All checkbox
+$('#selectAll').on('change', function() {
+    var checked = $(this).is(':checked');
+    $('.row-select').prop('checked', checked);
+});
+$(document).on('change', '.row-select', function() {
+    var total = $('.row-select').length;
+    var selected = $('.row-select:checked').length;
+    $('#selectAll').prop('checked', total > 0 && total === selected);
+});
+
+function getSelectedIds() {
+    var ids = [];
+    $('.row-select:checked').each(function() { ids.push($(this).val()); });
+    return ids;
+}
+
+function pdfMasivoUnido() {
+    var ids = getSelectedIds();
+    if (ids.length === 0) {
+        Swal.fire('Sin seleccion', 'Seleccione al menos una orden usando los checkboxes.', 'warning');
+        return;
+    }
+    var cols = $('#pdfMasivoCols').val() || 2;
+    window.open('{{ route("recepcion.ordenes.pdf-multiple") }}?ids=' + ids.join(',') + '&bosquejos_cols=' + cols, '_blank');
+}
+
+function pdfMasivoZip() {
+    var ids = getSelectedIds();
+    if (ids.length === 0) {
+        Swal.fire('Sin seleccion', 'Seleccione al menos una orden usando los checkboxes.', 'warning');
+        return;
+    }
+    var cols = $('#pdfMasivoCols').val() || 2;
+    window.location.href = '{{ route("recepcion.ordenes.pdf-zip") }}?ids=' + ids.join(',') + '&bosquejos_cols=' + cols;
 }
 </script>
 @endpush

@@ -122,7 +122,7 @@ class RoleService
      * Rutas de dashboard por rol.
      */
     protected const ROLE_DASHBOARD_ROUTES = [
-        'Administrador' => 'admin.configuracion',
+        'Administrador' => 'admin.panel',
         'Recepcion' => 'recepcion.panel',
         'Contabilidad' => 'contabilidad.panel',
         'Operario' => 'operario.panel',

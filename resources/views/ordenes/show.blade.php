@@ -17,6 +17,24 @@
                 </button>
             @endif
             @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', $orden) }}">
+                                <i class="bi bi-download me-2"></i>Descargar PDF
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header">Bosquejos por fila</li>
+                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 1]) }}">1 por fila</a></li>
+                        <li><a class="dropdown-item active" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 2]) }}">2 por fila (defecto)</a></li>
+                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 3]) }}">3 por fila</a></li>
+                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 4]) }}">4 por fila</a></li>
+                    </ul>
+                </div>
                 <button type="button" class="btn btn-outline-danger" onclick="$('#modalAnularOrden').modal('show')">
                     <i class="bi bi-x-circle me-1"></i>Anular
                 </button>
@@ -51,6 +69,9 @@
 
             {{-- Seccion 9: Fotos --}}
             @include('ordenes.show._seccion-fotos')
+
+            {{-- Seccion 9b: Entregas --}}
+            @include('ordenes.show._seccion-entregas')
 
             {{-- Seccion 10: Comentarios --}}
             @include('ordenes.show._seccion-comentarios')
@@ -130,6 +151,70 @@
     </div>
 </div>
 
+{{-- Modal Registrar Garantia --}}
+@hasanyrole('Administrador|Recepcion')
+<div class="modal fade" id="modalRegistrarGarantia" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" x-data="{ cobrable: false }">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-shield-plus me-2"></i>Registrar Garantia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="garantiaLoading" class="text-center py-3 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2 small">Cargando piezas...</p>
+                </div>
+                <div id="garantiaForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Pieza <span class="text-danger">*</span></label>
+                        <select class="form-select" id="garantiaPiezaId">
+                            <option value="">Seleccione una pieza...</option>
+                        </select>
+                        <small class="text-muted" id="garantiaPiezaInfo"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Cantidad Devuelta <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="garantiaCantidad" min="1" value="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Motivo <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="garantiaMotivo" rows="3" placeholder="Describa el motivo de la devolucion..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="garantiaCobrable"
+                                   x-model="cobrable">
+                            <label class="form-check-label" for="garantiaCobrable">Cobrable al cliente</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" x-show="cobrable" x-cloak>
+                        <label class="form-label fw-medium">Monto a Cobrar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="garantiaMontoCobro" min="0" step="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Operario Asignado <span class="text-muted">(opcional)</span></label>
+                        <select class="form-select" id="garantiaOperarioId">
+                            <option value="">Sin asignar por ahora</option>
+                        </select>
+                        <small class="text-muted">Si asigna operario, la garantia pasara directamente a "En Proceso".</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="registrarGarantia()">
+                    <i class="bi bi-shield-plus me-1"></i>Registrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endhasanyrole
+
 {{-- Lightbox --}}
 <div class="modal fade" id="lightboxModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -161,6 +246,13 @@ var ROUTES_DETALLE = {
     pagos: '{{ $esContabilidad ? route("contabilidad.ordenes.pagos.store", $orden) : route("recepcion.ordenes.pagos.store", $orden) }}',
     index: '{{ route("recepcion.ordenes.index") }}',
     edit: '{{ route("recepcion.ordenes.edit", $orden) }}',
+    @hasanyrole('Administrador|Recepcion')
+    garantiasPiezas: '{{ route("recepcion.garantias.piezas-entregadas", $orden) }}',
+    garantiasStore: '{{ route("recepcion.garantias.store", $orden) }}',
+    garantiasCambiarEstado: '{{ url("recepcion/garantias") }}',
+    garantiasAsignarOperario: '{{ url("recepcion/garantias") }}',
+    operarios: '{{ route("recepcion.ordenes.operarios") }}',
+    @endhasanyrole
 };
 
 // Historial de entregas por pieza

@@ -145,12 +145,24 @@ function registrarPago() {
                 $('#sinPagos').hide();
                 $('#listaPagos').prepend(pagoHtml);
 
-                // Update totals
+                // Update totals (seccion pagos + header)
                 if (response.nuevo_total_pagado !== undefined) {
                     $('#totalPagadoDisplay').text(response.nuevo_total_pagado);
                     $('#saldoDisplay').text(response.nuevo_saldo || '$0');
                     var saldoClass = (response.estado_pago === 'saldo_pendiente') ? 'text-danger' : 'text-success';
                     $('#saldoDisplay').removeClass('text-danger text-success').addClass(saldoClass);
+
+                    // Actualizar header superior
+                    $('#headerPagado').text(response.nuevo_total_pagado);
+                    $('#headerSaldo').text(response.nuevo_saldo || '$0');
+                    $('#headerSaldo').removeClass('text-danger text-success').addClass(saldoClass);
+
+                    // Actualizar badge de estado pago
+                    if (response.estado_pago === 'pagado') {
+                        $('#headerBadgePago').attr('class', 'status-badge success').text('PAGADO');
+                    } else if (response.estado_pago === 'saldo_pendiente') {
+                        $('#headerBadgePago').attr('class', 'status-badge danger').text('SALDO PEND.');
+                    }
                 }
 
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success',
@@ -231,6 +243,238 @@ function abrirLightbox(rutaArchivo, titulo) {
     $('#lightboxImage').attr('src', src);
     $('#lightboxTitle').text(titulo || 'Imagen');
     $('#lightboxModal').modal('show');
+}
+
+// ==========================================
+// Garantias
+// ==========================================
+function abrirModalGarantia() {
+    var $select = $('#garantiaPiezaId');
+    var $operarioSelect = $('#garantiaOperarioId');
+    $select.html('<option value="">Cargando piezas...</option>');
+    $('#garantiaCantidad').val(1).attr('max', 1);
+    $('#garantiaMotivo').val('');
+    $('#garantiaCobrable').prop('checked', false);
+    $('#garantiaMontoCobro').val('');
+    $('#garantiaPiezaInfo').text('');
+    $('#garantiaLoading').removeClass('d-none');
+    $('#garantiaForm').addClass('d-none');
+    $('#modalRegistrarGarantia').modal('show');
+
+    // Cargar piezas y operarios en paralelo
+    var piezasReq = $.ajax({
+        url: ROUTES_DETALLE.garantiasPiezas,
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+    });
+
+    var operariosReq = $.ajax({
+        url: ROUTES_DETALLE.operarios,
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+    });
+
+    $.when(piezasReq, operariosReq).done(function(piezasRes, operariosRes) {
+        var piezas = piezasRes[0];
+        var operariosData = operariosRes[0];
+        var operarios = operariosData.operarios || operariosData;
+
+        $select.html('<option value="">Seleccione una pieza...</option>');
+        if (Array.isArray(piezas)) {
+            piezas.forEach(function(p) {
+                $select.append('<option value="' + p.id + '" data-disponible="' + p.disponible_garantia + '">'
+                    + p.nombre + ' (Entregadas: ' + p.cantidad_entregada + ', Disponible: ' + p.disponible_garantia + ')'
+                    + '</option>');
+            });
+        }
+
+        $operarioSelect.html('<option value="">Sin asignar por ahora</option>');
+        if (Array.isArray(operarios)) {
+            operarios.forEach(function(op) {
+                $operarioSelect.append('<option value="' + op.id + '">' + op.name + '</option>');
+            });
+        }
+
+        $('#garantiaLoading').addClass('d-none');
+        $('#garantiaForm').removeClass('d-none');
+    }).fail(function() {
+        $('#garantiaLoading').addClass('d-none');
+        $('#garantiaForm').removeClass('d-none');
+        $select.html('<option value="">Error al cargar piezas</option>');
+    });
+
+    // Actualizar max al cambiar pieza
+    $select.off('change.garantia').on('change.garantia', function() {
+        var $opt = $(this).find(':selected');
+        var disponible = parseInt($opt.data('disponible')) || 0;
+        $('#garantiaCantidad').attr('max', disponible).val(Math.min(1, disponible));
+        if (disponible > 0) {
+            $('#garantiaPiezaInfo').text('Maximo: ' + disponible + ' unidad(es)');
+        } else {
+            $('#garantiaPiezaInfo').text('');
+        }
+    });
+}
+
+function registrarGarantia() {
+    var piezaId = $('#garantiaPiezaId').val();
+    var cantidad = parseInt($('#garantiaCantidad').val()) || 0;
+    var motivo = $('#garantiaMotivo').val().trim();
+    var cobrable = $('#garantiaCobrable').is(':checked');
+    var montoCobro = parseFloat($('#garantiaMontoCobro').val()) || 0;
+    var operarioId = $('#garantiaOperarioId').val();
+
+    if (!piezaId) {
+        Swal.fire('Error', 'Seleccione una pieza.', 'error');
+        return;
+    }
+    if (cantidad <= 0) {
+        Swal.fire('Error', 'La cantidad debe ser mayor a 0.', 'error');
+        return;
+    }
+    if (!motivo) {
+        Swal.fire('Error', 'Debe ingresar el motivo de la devolucion.', 'error');
+        return;
+    }
+
+    var data = {
+        orden_pieza_id: piezaId,
+        cantidad_devuelta: cantidad,
+        motivo: motivo,
+        cobrable: cobrable ? 1 : 0,
+        monto_cobro: cobrable ? montoCobro : null,
+        operario_asignado_id: operarioId || null
+    };
+
+    Swal.fire({ title: 'Registrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+    $.ajax({
+        url: ROUTES_DETALLE.garantiasStore,
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            if (response.success) {
+                $('#modalRegistrarGarantia').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Garantia Registrada',
+                    text: response.message,
+                    confirmButtonColor: '#4A7C59'
+                }).then(function() {
+                    window.location.reload();
+                });
+            }
+        },
+        error: function(xhr) {
+            var msg = 'Error al registrar la garantia.';
+            if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+            Swal.fire({ icon: 'error', title: 'Error', text: msg });
+        }
+    });
+}
+
+function cambiarEstadoGarantia(garantiaId, nuevoEstado) {
+    var etiquetas = {
+        'en_proceso': 'En Proceso',
+        'completada': 'Completada',
+        'reentregada': 'Reentregada'
+    };
+
+    Swal.fire({
+        title: 'Cambiar Estado?',
+        text: 'La garantia pasara a "' + (etiquetas[nuevoEstado] || nuevoEstado) + '".',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4A7C59',
+        confirmButtonText: 'Si, Cambiar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        $.ajax({
+            url: ROUTES_DETALLE.garantiasCambiarEstado + '/' + garantiaId + '/estado',
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
+            contentType: 'application/json',
+            data: JSON.stringify({ estado: nuevoEstado }),
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success',
+                        title: response.message, showConfirmButton: false, timer: 2000
+                    });
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Error al cambiar el estado.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                Swal.fire({ icon: 'error', title: 'Error', text: msg });
+            }
+        });
+    });
+}
+
+function asignarOperarioGarantia(garantiaId) {
+    // Cargar operarios y mostrar select
+    $.ajax({
+        url: ROUTES_DETALLE.operarios,
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        success: function(response) {
+            var operarios = response.operarios || response;
+            var options = {};
+            if (Array.isArray(operarios)) {
+                operarios.forEach(function(op) {
+                    options[op.id] = op.name;
+                });
+            }
+
+            Swal.fire({
+                title: 'Asignar Operario',
+                text: 'Seleccione el operario para esta garantia:',
+                input: 'select',
+                inputOptions: options,
+                inputPlaceholder: 'Seleccione...',
+                showCancelButton: true,
+                confirmButtonColor: '#4A7C59',
+                confirmButtonText: 'Asignar',
+                cancelButtonText: 'Cancelar',
+                inputValidator: function(value) {
+                    if (!value) return 'Debe seleccionar un operario.';
+                }
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: ROUTES_DETALLE.garantiasAsignarOperario + '/' + garantiaId + '/asignar-operario',
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
+                    contentType: 'application/json',
+                    data: JSON.stringify({ operario_asignado_id: result.value }),
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                toast: true, position: 'top-end', icon: 'success',
+                                title: response.message, showConfirmButton: false, timer: 2000
+                            });
+                            setTimeout(function() { window.location.reload(); }, 1500);
+                        }
+                    },
+                    error: function(xhr) {
+                        var msg = 'Error al asignar operario.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                        Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                    }
+                });
+            });
+        },
+        error: function() {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los operarios.' });
+        }
+    });
 }
 
 // ==========================================

@@ -84,7 +84,7 @@
         left: 0;
         right: 0;
         background: #fff;
-        border-top: 2px solid var(--sinden-primary, #4A7C59);
+        border-top: 2px solid var(--sinden-primary, #475569);
         padding: 12px 0;
         box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
         z-index: 1050;

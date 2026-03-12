@@ -8,7 +8,15 @@ use App\Http\Controllers\OrdenController;
 use App\Http\Controllers\OperarioController;
 use App\Http\Controllers\EntregaController;
 use App\Http\Controllers\ContabilidadController;
+use App\Http\Controllers\OrdenPdfController;
+use App\Http\Controllers\GarantiaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ConfiguracionController;
+use App\Http\Controllers\Admin\TablaPreciosController;
+use App\Http\Controllers\ConsultaPrecioController;
+use App\Http\Controllers\Recepcion\PanelController as RecepcionPanelController;
+use App\Http\Controllers\Admin\PanelController as AdminPanelController;
+use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\Auth\RoleRedirectController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +36,14 @@ Route::get('/dashboard', [RoleRedirectController::class, 'redirect'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
 // ==========================================
+// API: Conexion Handler (ping + CSRF refresh)
+// ==========================================
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/ping', fn() => response()->json(['pong' => true, 'time' => now()->timestamp]))->name('api.ping');
+    Route::get('/api/csrf-refresh', fn() => response()->json(['token' => csrf_token()]))->name('api.csrf-refresh');
+});
+
+// ==========================================
 // RUTAS DE PERFIL (autenticadas)
 // ==========================================
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -43,9 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
-        Route::get('/panel', function () {
-            return view('recepcion.panel');
-        })->name('panel');
+        Route::get('/panel', RecepcionPanelController::class)->name('panel');
 
         // Clientes
         Route::get('/clientes/autocomplete', [ClienteController::class, 'autocomplete'])->name('clientes.autocomplete');
@@ -65,6 +79,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/ordenes', [OrdenController::class, 'index'])->name('ordenes.index');
         Route::get('/ordenes/export-excel', [OrdenController::class, 'exportExcel'])->name('ordenes.export-excel');
         Route::get('/ordenes/export-pdf', [OrdenController::class, 'exportPdf'])->name('ordenes.export-pdf');
+        Route::get('/ordenes/pdf-multiple', [OrdenPdfController::class, 'multiple'])->name('ordenes.pdf-multiple');
+        Route::get('/ordenes/pdf-zip', [OrdenPdfController::class, 'zip'])->name('ordenes.pdf-zip');
 
         // Ordenes - Creacion (Wizard)
         Route::get('/ordenes/crear', [OrdenController::class, 'create'])->name('ordenes.crear');
@@ -76,6 +92,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/ordenes/grupos-bosquejos', [OrdenController::class, 'listarGruposBosquejos'])->name('ordenes.grupos-bosquejos');
 
         // Ordenes - Detalle y Gestion (rutas con parametro {orden})
+        Route::get('/ordenes/{orden}/pdf', [OrdenPdfController::class, 'show'])->name('ordenes.pdf');
         Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
         Route::get('/ordenes/{orden}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit');
         Route::put('/ordenes/{orden}', [OrdenController::class, 'update'])->name('ordenes.update');
@@ -83,6 +100,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::post('/ordenes/{orden}/anular', [OrdenController::class, 'anular'])->name('ordenes.anular');
         Route::post('/ordenes/{orden}/comentarios', [OrdenController::class, 'agregarComentario'])->name('ordenes.comentarios.store');
         Route::post('/ordenes/{orden}/pagos', [OrdenController::class, 'agregarPago'])->name('ordenes.pagos.store');
+
+        // Actividades
+        Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
+        Route::get('/actividades-globales', [ActividadController::class, 'global'])->name('actividades-globales');
 
     });
 
@@ -103,6 +124,22 @@ Route::middleware(['auth', 'verified'])
 
         // Historial de entregas por pieza (AJAX)
         Route::get('/entregas-pendientes/pieza/{pieza}/historial', [EntregaController::class, 'historialPieza'])->name('entregas.historial-pieza');
+    });
+
+// ==========================================
+// RUTAS DE GARANTIAS (Admin/Recepcion)
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
+    ->prefix('recepcion')->name('recepcion.')->group(function () {
+        Route::get('/garantias', [GarantiaController::class, 'index'])->name('garantias.index');
+        Route::get('/ordenes/{orden}/piezas-entregadas', [GarantiaController::class, 'piezasEntregadas'])->name('garantias.piezas-entregadas');
+        Route::post('/ordenes/{orden}/garantias', [GarantiaController::class, 'store'])->name('garantias.store');
+        Route::post('/garantias/{garantia}/estado', [GarantiaController::class, 'cambiarEstado'])->name('garantias.cambiar-estado');
+        Route::post('/garantias/{garantia}/asignar-operario', [GarantiaController::class, 'asignarOperario'])->name('garantias.asignar-operario');
+
+        // Consulta de Precios
+        Route::get('/consulta-precios', [ConsultaPrecioController::class, 'index'])->name('consulta-precios.index');
+        Route::post('/consulta-precios/buscar', [ConsultaPrecioController::class, 'consultar'])->name('consulta-precios.buscar');
     });
 
 // ==========================================
@@ -147,6 +184,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
         // Complementar
         Route::get('/complementar', [OperarioController::class, 'complementar'])->name('complementar');
 
+        // Garantias asignadas
+        Route::get('/garantias', [GarantiaController::class, 'misGarantias'])->name('garantias');
+        Route::post('/garantias/{garantia}/completar', [GarantiaController::class, 'completarTrabajo'])->name('garantias.completar');
+
         // AJAX: Trabajo con piezas
         Route::post('/ordenes/{orden}/actualizar-avances', [OperarioController::class, 'actualizarAvances'])->name('ordenes.actualizar-avances');
         Route::post('/piezas/{pieza}/transferir', [OperarioController::class, 'transferirPieza'])->name('piezas.transferir');
@@ -162,6 +203,9 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
 
         // AJAX: Operarios disponibles
         Route::get('/operarios-disponibles', [OperarioController::class, 'operariosDisponibles'])->name('operarios-disponibles');
+
+        // Actividades
+        Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
     });
 
 // ==========================================
@@ -205,19 +249,40 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
 
         // Catalogo Items (solo lectura)
         Route::get('/items', [CatalogoItemController::class, 'index'])->name('items.index');
+
+        // Actividades
+        Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
     });
 
 // ==========================================
 // RUTAS DE ADMINISTRACION
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
+    // Panel de Administracion
+    Route::get('/panel', AdminPanelController::class)->name('panel');
+
     // Gestion de Usuarios
     Route::resource('usuarios', AdminUserController::class)->parameters(['usuarios' => 'user']);
 
-    // Configuracion del Sistema (placeholder)
-    Route::get('/configuracion', function () {
-        return view('admin.configuracion.index');
-    })->name('configuracion');
+    // Configuracion del Sistema
+    Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');
+    Route::post('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
+    Route::post('/configuracion/logo', [ConfiguracionController::class, 'uploadLogo'])->name('configuracion.upload-logo');
+    Route::delete('/configuracion/logo', [ConfiguracionController::class, 'deleteLogo'])->name('configuracion.delete-logo');
+
+    // Tabla de Precios
+    Route::get('/tabla-precios', [TablaPreciosController::class, 'index'])->name('tabla-precios.index');
+    Route::post('/tabla-precios/actualizar', [TablaPreciosController::class, 'updatePrecios'])->name('tabla-precios.update');
+    Route::get('/tabla-precios/servicios', [TablaPreciosController::class, 'servicios'])->name('tabla-precios.servicios');
+    Route::post('/tabla-precios/servicios', [TablaPreciosController::class, 'storeServicio'])->name('tabla-precios.servicios.store');
+    Route::put('/tabla-precios/servicios/{tipo_servicio}', [TablaPreciosController::class, 'updateServicio'])->name('tabla-precios.servicios.update');
+    Route::delete('/tabla-precios/servicios/{tipo_servicio}', [TablaPreciosController::class, 'destroyServicio'])->name('tabla-precios.servicios.destroy');
+    Route::get('/tabla-precios/export-excel', [TablaPreciosController::class, 'exportExcel'])->name('tabla-precios.export');
+    Route::post('/tabla-precios/import-excel', [TablaPreciosController::class, 'importExcel'])->name('tabla-precios.import');
+
+    // Actividades
+    Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
+    Route::get('/actividades-globales', [ActividadController::class, 'global'])->name('actividades-globales');
 });
 
 // ==========================================

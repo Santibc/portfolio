@@ -28,6 +28,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
+        Route::model('garantia', \App\Models\DevolucionGarantia::class);
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

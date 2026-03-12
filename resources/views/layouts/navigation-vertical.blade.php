@@ -1,6 +1,6 @@
 <nav class="sidebar-nav">
     {{-- Dashboard (todos) --}}
-    <div class="nav-item {{ request()->routeIs('dashboard') || request()->routeIs('recepcion.panel') || request()->routeIs('operario.panel') || request()->routeIs('contabilidad.panel') || request()->routeIs('admin.configuracion') ? 'active' : '' }}">
+    <div class="nav-item {{ request()->routeIs('dashboard') || request()->routeIs('recepcion.panel') || request()->routeIs('operario.panel') || request()->routeIs('contabilidad.panel') || request()->routeIs('admin.panel') ? 'active' : '' }}">
         <a href="{{ route('dashboard') }}" class="nav-link">
             <i class="bi bi-house-door"></i>
             <span>Inicio</span>
@@ -42,6 +42,13 @@
             </a>
         </div>
 
+        <div class="nav-item {{ request()->routeIs('recepcion.garantias.*') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.garantias.index') }}" class="nav-link">
+                <i class="bi bi-shield-check"></i>
+                <span>Garantias</span>
+            </a>
+        </div>
+
         {{-- SECCION CATALOGOS --}}
         <div class="nav-section-title">Catalogos</div>
 
@@ -66,8 +73,8 @@
             </a>
         </div>
 
-        <div class="nav-item disabled-nav">
-            <a href="#" class="nav-link text-muted" title="Disponible en Fase 12">
+        <div class="nav-item {{ request()->routeIs('recepcion.consulta-precios.*') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.consulta-precios.index') }}" class="nav-link">
                 <i class="bi bi-calculator"></i>
                 <span>Consulta Precios</span>
             </a>
@@ -108,6 +115,13 @@
             <a href="{{ route('operario.complementar') }}" class="nav-link">
                 <i class="bi bi-plus-circle"></i>
                 <span>Pendiente por Terminar</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('operario.garantias') ? 'active' : '' }}">
+            <a href="{{ route('operario.garantias') }}" class="nav-link">
+                <i class="bi bi-shield-exclamation"></i>
+                <span>Garantias Asignadas</span>
             </a>
         </div>
     @endrole
@@ -172,8 +186,8 @@
             </a>
         </div>
 
-        <div class="nav-item disabled-nav">
-            <a href="#" class="nav-link text-muted" title="Disponible en Fase 12">
+        <div class="nav-item {{ request()->routeIs('admin.tabla-precios.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.tabla-precios.index') }}" class="nav-link">
                 <i class="bi bi-table"></i>
                 <span>Tabla de Precios</span>
             </a>
@@ -183,16 +197,27 @@
     {{-- SECCION SISTEMA (todos) --}}
     <div class="nav-section-title">Sistema</div>
 
-    <div class="nav-item disabled-nav">
-        <a href="#" class="nav-link text-muted" title="Disponible en Fase 16">
+    @php
+        $actRoute = auth()->user()->hasRole('Administrador') ? 'admin.actividades'
+            : (auth()->user()->hasRole('Recepcion') ? 'recepcion.actividades'
+            : (auth()->user()->hasRole('Contabilidad') ? 'contabilidad.actividades'
+            : 'operario.actividades'));
+    @endphp
+
+    <div class="nav-item {{ request()->routeIs('*.actividades') ? 'active' : '' }}">
+        <a href="{{ route($actRoute) }}" class="nav-link">
             <i class="bi bi-clock-history"></i>
             <span>Mis Actividades</span>
         </a>
     </div>
 
     @hasanyrole('Administrador|Recepcion')
-    <div class="nav-item disabled-nav">
-        <a href="#" class="nav-link text-muted" title="Disponible en Fase 16">
+    @php
+        $actGlobalRoute = auth()->user()->hasRole('Administrador')
+            ? 'admin.actividades-globales' : 'recepcion.actividades-globales';
+    @endphp
+    <div class="nav-item {{ request()->routeIs('*.actividades-globales') ? 'active' : '' }}">
+        <a href="{{ route($actGlobalRoute) }}" class="nav-link">
             <i class="bi bi-activity"></i>
             <span>Actividades Globales</span>
         </a>
