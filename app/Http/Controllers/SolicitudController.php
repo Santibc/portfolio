@@ -185,6 +185,19 @@ class SolicitudController extends Controller
                                    </button>';
                     }
 
+                    // Botón para vendedor: solo ver/descargar guía si existe
+                    if (auth()->user()->hasRole('vendedor') && !auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
+                        if ($s->archivo_guia) {
+                            $badge .= ' <a href="' . asset($s->archivo_guia) . '" target="_blank" class="btn btn-sm btn-link p-0"
+                                           title="Ver Guía de Envío">
+                                          <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                       </a>';
+                        }
+                        if ($s->numero_guia) {
+                            $badge .= ' <small class="text-muted ms-1" title="Nº Guía">' . e($s->numero_guia) . '</small>';
+                        }
+                    }
+
                     return $badge;
                 })
                 ->addColumn('factura', function($s) {
