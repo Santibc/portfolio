@@ -18,16 +18,18 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
 {
     public function collection()
     {
-        $productos = Producto::limit(2)->get();
+        $productos = Producto::where('activo', true)
+            ->where('eliminado', false)
+            ->orderBy('nombre')
+            ->get();
+
         $data = collect();
 
         foreach ($productos as $producto) {
-            // Obtener precios actuales
             $row = [
                 'nombre' => $producto->nombre,
             ];
 
-            // Agregar precios de cada lista con nombres reales
             $nombresListas = ['COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'];
             for ($i = 1; $i <= 5; $i++) {
                 $precio = $producto->precios()->where('lista_precio_id', $i)->first();
@@ -35,26 +37,6 @@ class PlantillaPreciosExport implements FromCollection, WithHeadings, WithStyles
             }
 
             $data->push($row);
-        }
-
-        // Si no hay productos, agregar ejemplos
-        if ($data->isEmpty()) {
-            $data->push([
-                'nombre' => 'Producto Ejemplo 1',
-                'COSTO' => 100.00,
-                'PRECIO VENTA ORO' => 110.00,
-                'PRECIO VENTA INSTALADOR ESPECIAL' => 90.00,
-                'PRECIO VENTA INSTALADOR' => 95.00,
-                'PRECIO VENTA FINAL' => 92.00,
-            ]);
-            $data->push([
-                'nombre' => 'Producto Ejemplo 2',
-                'COSTO' => 200.00,
-                'PRECIO VENTA ORO' => 220.00,
-                'PRECIO VENTA INSTALADOR ESPECIAL' => 180.00,
-                'PRECIO VENTA INSTALADOR' => 190.00,
-                'PRECIO VENTA FINAL' => 185.00,
-            ]);
         }
 
         return $data;

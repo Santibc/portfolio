@@ -94,31 +94,27 @@ if ($a->ruta_archivo && file_exists(public_path($a->ruta_archivo))) {
             // Encabezados con punto y coma (nombres reales de listas de precios)
             fputcsv($file, ['Nombre', 'COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'], ';');
 
-            // Obtener algunos productos de ejemplo (solo 2)
-            $productos = Producto::limit(2)->get();
+            // Obtener todos los productos activos
+            $productos = Producto::where('activo', true)
+                ->where('eliminado', false)
+                ->orderBy('nombre')
+                ->get();
 
-            if ($productos->count() > 0) {
-                foreach ($productos as $producto) {
-                    // Obtener precios actuales si existen (solo 5 listas)
-                    $precios = [];
-                    for ($i = 1; $i <= 5; $i++) {
-                        $precio = $producto->precios()->where('lista_precio_id', $i)->first();
-                        $precios[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
-                    }
-
-                    fputcsv($file, [
-                        $producto->nombre,
-                        $precios[0], // COSTO
-                        $precios[1], // PRECIO VENTA ORO
-                        $precios[2], // PRECIO VENTA INSTALADOR ESPECIAL
-                        $precios[3], // PRECIO VENTA INSTALADOR
-                        $precios[4], // PRECIO VENTA FINAL
-                    ], ';');
+            foreach ($productos as $producto) {
+                $precios = [];
+                for ($i = 1; $i <= 5; $i++) {
+                    $precio = $producto->precios()->where('lista_precio_id', $i)->first();
+                    $precios[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
                 }
-            } else {
-                // Ejemplos genéricos si no hay productos
-                fputcsv($file, ['Producto Ejemplo 1', '100.00', '110.00', '90.00', '95.00', '92.00'], ';');
-                fputcsv($file, ['Producto Ejemplo 2', '200.00', '220.00', '180.00', '190.00', '185.00'], ';');
+
+                fputcsv($file, [
+                    $producto->nombre,
+                    $precios[0], // COSTO
+                    $precios[1], // PRECIO VENTA ORO
+                    $precios[2], // PRECIO VENTA INSTALADOR ESPECIAL
+                    $precios[3], // PRECIO VENTA INSTALADOR
+                    $precios[4], // PRECIO VENTA FINAL
+                ], ';');
             }
 
             fclose($file);
