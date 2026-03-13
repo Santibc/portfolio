@@ -91,34 +91,29 @@ if ($a->ruta_archivo && file_exists(public_path($a->ruta_archivo))) {
             // Agregar BOM para UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Encabezados con punto y coma (nombres reales de listas de precios)
-            fputcsv($file, ['Nombre', 'COSTO', 'PRECIO VENTA ORO', 'PRECIO VENTA INSTALADOR ESPECIAL', 'PRECIO VENTA INSTALADOR', 'PRECIO VENTA FINAL'], ';');
+            // Listas de precios activas desde la BD
+            $listas = ListaPrecio::activas()->get();
 
-            // Obtener algunos productos de ejemplo (solo 2)
-            $productos = Producto::limit(2)->get();
+            // Encabezados dinámicos
+            $headings = ['Nombre'];
+            foreach ($listas as $lista) {
+                $headings[] = strtoupper($lista->nombre);
+            }
+            fputcsv($file, $headings, ';');
 
-            if ($productos->count() > 0) {
-                foreach ($productos as $producto) {
-                    // Obtener precios actuales si existen (solo 5 listas)
-                    $precios = [];
-                    for ($i = 1; $i <= 5; $i++) {
-                        $precio = $producto->precios()->where('lista_precio_id', $i)->first();
-                        $precios[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
-                    }
+            // Todos los productos activos
+            $productos = Producto::where('activo', true)
+                ->where('eliminado', false)
+                ->orderBy('nombre')
+                ->get();
 
-                    fputcsv($file, [
-                        $producto->nombre,
-                        $precios[0], // COSTO
-                        $precios[1], // PRECIO VENTA ORO
-                        $precios[2], // PRECIO VENTA INSTALADOR ESPECIAL
-                        $precios[3], // PRECIO VENTA INSTALADOR
-                        $precios[4], // PRECIO VENTA FINAL
-                    ], ';');
+            foreach ($productos as $producto) {
+                $row = [$producto->nombre];
+                foreach ($listas as $lista) {
+                    $precio = $producto->precios()->where('lista_precio_id', $lista->id)->first();
+                    $row[] = $precio ? number_format($precio->precio, 2, '.', '') : '';
                 }
-            } else {
-                // Ejemplos genéricos si no hay productos
-                fputcsv($file, ['Producto Ejemplo 1', '100.00', '110.00', '90.00', '95.00', '92.00'], ';');
-                fputcsv($file, ['Producto Ejemplo 2', '200.00', '220.00', '180.00', '190.00', '185.00'], ';');
+                fputcsv($file, $row, ';');
             }
 
             fclose($file);
