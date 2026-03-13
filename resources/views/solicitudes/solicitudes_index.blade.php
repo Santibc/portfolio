@@ -570,8 +570,8 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Archivo de Guía (PDF)</label>
-            <input type="file" id="swal-archivo-guia" class="form-control" accept=".pdf">
-            <small class="text-muted">Opcional: Subir archivo PDF de la guía</small>
+            <input type="file" id="swal-archivo-guia" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
+            <small class="text-muted">Opcional: Subir PDF o imagen de la guía</small>
           </div>
         </div>
       `,

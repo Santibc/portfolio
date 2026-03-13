@@ -188,9 +188,11 @@ class SolicitudController extends Controller
                     // Botón para vendedor: solo ver/descargar guía si existe
                     if (auth()->user()->hasRole('vendedor') && !auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
                         if ($s->archivo_guia) {
+                            $esImagen = preg_match('/\.(jpg|jpeg|png|webp)$/i', $s->archivo_guia);
+                            $icono = $esImagen ? 'bi-file-earmark-image text-primary' : 'bi-file-earmark-pdf text-danger';
                             $badge .= ' <a href="' . asset($s->archivo_guia) . '" target="_blank" class="btn btn-sm btn-link p-0"
                                            title="Ver Guía de Envío">
-                                          <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                          <i class="bi ' . $icono . '"></i>
                                        </a>';
                         }
                         if ($s->numero_guia) {
@@ -1671,7 +1673,7 @@ class SolicitudController extends Controller
             'estado_envio' => 'required|in:pendiente,preparando,despachado,en_transito,entregado',
             'numero_guia' => 'nullable|string|max:100',
             'transportadora' => 'nullable|string|max:100',
-            'archivo_guia' => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
+            'archivo_guia' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:5120', // Max 5MB
         ]);
 
         try {
@@ -1679,7 +1681,8 @@ class SolicitudController extends Controller
             $archivoGuia = null;
             if ($request->hasFile('archivo_guia')) {
                 $archivo = $request->file('archivo_guia');
-                $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
+                $extension = $archivo->getClientOriginalExtension();
+                $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.' . $extension;
 
                 // Crear directorio si no existe
                 $directorioGuias = public_path('uploads/guias');
@@ -1732,13 +1735,14 @@ class SolicitudController extends Controller
 
         // Validar archivo
         $request->validate([
-            'archivo_guia' => 'required|file|mimes:pdf|max:5120', // Max 5MB
+            'archivo_guia' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:5120', // Max 5MB
         ]);
 
         try {
             // Guardar archivo directamente en public/uploads/guias/
             $archivo = $request->file('archivo_guia');
-            $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.pdf';
+            $extension = $archivo->getClientOriginalExtension();
+            $nombreArchivo = 'guia-' . $solicitud->numero_solicitud . '-' . time() . '.' . $extension;
 
             // Crear directorio si no existe
             $directorioGuias = public_path('uploads/guias');
