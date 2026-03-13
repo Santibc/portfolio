@@ -279,7 +279,14 @@
         const res = await fetch(`/traslados/stock-disponible?${params}`);
         const data = await res.json();
 
-        const stockReal = data.stock_disponible;
+        let stockReal = data.stock_disponible;
+
+        // Restar items ya agregados en la lista para el mismo producto+variante
+        const yaAgregado = items
+          .filter(it => it.producto_id == productoId && (it.variante_producto_id || null) == (varianteId || null))
+          .reduce((sum, it) => sum + parseInt(it.cantidad), 0);
+        stockReal = Math.max(0, stockReal - yaAgregado);
+
         selStock.textContent = stockReal;
         selCantidad.max = stockReal;
         if (parseInt(selCantidad.value) > stockReal) selCantidad.value = stockReal;
@@ -358,11 +365,45 @@
       renderItems();
     };
 
-    window.actualizarCantidadItem = function(idx, nuevaCantidad) {
+    window.actualizarCantidadItem = async function(idx, nuevaCantidad) {
       const item = items.find(i => i.idx === idx);
-      if (item) {
-        item.cantidad = parseInt(nuevaCantidad) || 1;
+      if (!item) return;
+
+      const cantidad = parseInt(nuevaCantidad) || 1;
+      const ubicacionId = ubicacionOrigenSelect.value;
+      if (!ubicacionId) { item.cantidad = cantidad; return; }
+
+      const params = new URLSearchParams({
+        producto_id: item.producto_id,
+        ubicacion_id: ubicacionId
+      });
+      if (item.variante_producto_id) params.append('variante_producto_id', item.variante_producto_id);
+      @if($traslado->id)
+      params.append('traslado_id', '{{ $traslado->id }}');
+      @endif
+
+      try {
+        const res = await fetch(`/traslados/stock-disponible?${params}`);
+        const data = await res.json();
+        let stockDisp = data.stock_disponible;
+
+        // Restar otros items del mismo producto+variante (excluyendo el actual)
+        const otrosAgregados = items
+          .filter(it => it.idx !== idx && it.producto_id == item.producto_id && (it.variante_producto_id || null) == (item.variante_producto_id || null))
+          .reduce((sum, it) => sum + parseInt(it.cantidad), 0);
+        stockDisp = Math.max(0, stockDisp - otrosAgregados);
+
+        if (cantidad > stockDisp) {
+          alert(`Stock insuficiente. Disponible: ${stockDisp}`);
+          item.cantidad = Math.max(1, stockDisp);
+          renderItems();
+          return;
+        }
+      } catch (e) {
+        console.error('Error validando stock:', e);
       }
+
+      item.cantidad = cantidad;
     };
 
     function resetAddRow() {

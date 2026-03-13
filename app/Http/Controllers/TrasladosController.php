@@ -113,11 +113,17 @@ class TrasladosController extends Controller
      */
     public function getProductosPorUbicacion($ubicacionId)
     {
-        $stockItems = StockProducto::where('cantidad_disponible', '>', 0)->get();
+        $stockItems = StockProducto::where('cantidad_disponible', '>', 0)
+            ->where(function($q) use ($ubicacionId) {
+                $q->where('ubicacion_id', $ubicacionId)
+                  ->orWhereNull('ubicacion_id');
+            })
+            ->get();
 
-        // Obtener ítems en traslados en tránsito
-        $itemsEnTransito = ItemTrasladoStock::whereHas('traslado', function ($q) {
-            $q->where('estado', TrasladoStock::ESTADO_EN_TRANSITO);
+        // Obtener ítems en traslados en tránsito desde esta ubicación
+        $itemsEnTransito = ItemTrasladoStock::whereHas('traslado', function ($q) use ($ubicacionId) {
+            $q->where('estado', TrasladoStock::ESTADO_EN_TRANSITO)
+              ->where('ubicacion_origen_id', $ubicacionId);
         })->get();
 
         $productosIds = $stockItems->pluck('producto_id')->unique();
@@ -173,15 +179,20 @@ class TrasladosController extends Controller
         $stockItems = StockProducto::where('producto_id', $productoId)
             ->whereNotNull('variante_producto_id')
             ->where('cantidad_disponible', '>', 0)
+            ->where(function($q) use ($ubicacionId) {
+                $q->where('ubicacion_id', $ubicacionId)
+                  ->orWhereNull('ubicacion_id');
+            })
             ->get();
 
         $varianteIds = $stockItems->pluck('variante_producto_id')->unique();
 
-        // Ítems en traslados en tránsito para este producto
+        // Ítems en traslados en tránsito para este producto desde esta ubicación
         $itemsEnTransito = ItemTrasladoStock::where('producto_id', $productoId)
             ->whereNotNull('variante_producto_id')
-            ->whereHas('traslado', function ($q) {
-                $q->where('estado', TrasladoStock::ESTADO_EN_TRANSITO);
+            ->whereHas('traslado', function ($q) use ($ubicacionId) {
+                $q->where('estado', TrasladoStock::ESTADO_EN_TRANSITO)
+                  ->where('ubicacion_origen_id', $ubicacionId);
             })->get();
 
         $variantes = $producto->variantes()
@@ -223,6 +234,52 @@ class TrasladosController extends Controller
             'items.*.variante_producto_id' => 'nullable|exists:variantes_productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
         ]);
+
+        // Validar stock disponible agrupando por producto+variante
+        $itemsAgrupados = [];
+        foreach ($request->items as $itemData) {
+            $productoId = (int) $itemData['producto_id'];
+            $varianteId = !empty($itemData['variante_producto_id']) ? (int) $itemData['variante_producto_id'] : null;
+            $clave = $productoId . '_' . ($varianteId ?: 'null');
+
+            if (!isset($itemsAgrupados[$clave])) {
+                $itemsAgrupados[$clave] = [
+                    'producto_id' => $productoId,
+                    'variante_producto_id' => $varianteId,
+                    'cantidad' => 0
+                ];
+            }
+            $itemsAgrupados[$clave]['cantidad'] += (int) $itemData['cantidad'];
+        }
+
+        $ubicacionOrigenId = $request->ubicacion_origen_id;
+
+        foreach ($itemsAgrupados as $clave => $item) {
+            $stockQuery = StockProducto::where('producto_id', $item['producto_id'])
+                ->where(function($q) use ($ubicacionOrigenId) {
+                    $q->where('ubicacion_id', $ubicacionOrigenId)
+                      ->orWhereNull('ubicacion_id');
+                });
+
+            if ($item['variante_producto_id']) {
+                $stockQuery->where('variante_producto_id', $item['variante_producto_id']);
+            } else {
+                $stockQuery->whereNull('variante_producto_id');
+            }
+
+            $stockRecord = $stockQuery->first();
+            $stockDisponible = $stockRecord ? $stockRecord->cantidad_disponible : 0;
+            $stockReservado = $stockRecord ? $stockRecord->cantidad_reservada : 0;
+            $stockReal = $stockDisponible - $stockReservado;
+
+            if ($stockReal < $item['cantidad']) {
+                $producto = Producto::find($item['producto_id']);
+                return back()->withErrors([
+                    'error' => "Stock insuficiente para {$producto->referencia} - {$producto->nombre}. " .
+                              "Disponible: {$stockReal}, Solicitado: {$item['cantidad']}."
+                ])->withInput();
+            }
+        }
 
         DB::beginTransaction();
         try {

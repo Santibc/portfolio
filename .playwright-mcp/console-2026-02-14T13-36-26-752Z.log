@@ -1,0 +1,2 @@
+[   21825ms] ReferenceError: cargarProductos is not defined
+    at HTMLAnchorElement.onclick (http://localhost:8000/catalogo/cliente:1:24)
