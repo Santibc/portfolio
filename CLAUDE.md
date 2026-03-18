@@ -4,107 +4,95 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This is a Laravel 9 multi-tenant e-commerce platform called "Montano" that enables companies to create online stores and manage quotation catalogs. The application supports:
+This is a Laravel 9 website for **Manzer Agroforestal, S.L.** - a professional forestry and agroforestry services company based in Lleida, Spain. The application provides:
 
-- Multi-tenant architecture where multiple companies (`empresas`) operate their own stores
-- Product catalog management with categories, variants, and pricing
-- Quote request system (`solicitudes_cotizacion`) for B2B interactions  
-- E-commerce functionality with shopping cart and payment processing via Wompi
-- Stock management and price tracking
-- Customer management per company
-- User authentication and role-based access control using Spatie Permissions
+- A premium landing page with cutting-edge visual effects (GSAP, Lenis, tsParticles, Splitting.js)
+- Dynamic blog system with categories and tags
+- Service pages with individual SEO
+- Gallery/portfolio management
+- Contact form with email integration
+- Full admin panel for content management
+- Advanced SEO (sitemap, Schema.org, Open Graph)
 
 Key entities:
-- `Empresa` (Company): Core tenant entity
-- `Producto` (Product): Multi-variant products with images and pricing
-- `Cliente` (Customer): Company-specific customers  
-- `SolicitudCotizacion` (Quote Request): B2B quote system
-- `Compra` (Purchase): E-commerce orders
+- `LandingService` - Forestry services with detail pages
+- `BlogPost` / `BlogCategory` / `BlogTag` - Blog system
+- `LandingGalleryImage` - Portfolio gallery
+- `LandingHomeConfig` / `LandingLayoutConfig` / `LandingAbout` / `LandingContactInfo` - Configurable content
+- `Page` / `Seo` - SEO per page system
 
 ## Development Commands
 
 **Backend (Laravel/PHP):**
 ```bash
-# Start development server
 php artisan serve
-
-# Run migrations
 php artisan migrate
-
-# Seed database
 php artisan db:seed
-
-# Run tests
 php artisan test
-# OR
-./vendor/bin/phpunit
-
-# Clear caches
 php artisan cache:clear
 php artisan config:clear
 php artisan view:clear
-
-# Generate application key
-php artisan key:generate
-
-# Link storage
 php artisan storage:link
 ```
 
 **Frontend (Vite + TailwindCSS):**
 ```bash
-# Install dependencies
 npm install
-
-# Development server (with hot reload)
 npm run dev
-
-# Production build
 npm run build
 ```
 
 ## Database Structure
 
-The application uses MySQL with migrations located in `database/migrations/`. Key migration patterns:
-- Companies are created first (`empresas` table)
-- Products belong to companies (`empresa_id` foreign key)
-- Multi-tenant isolation via `empresa_id` scoping
-- Soft deletes are used throughout
+MySQL with migrations in `database/migrations/`. Key tables:
+- `landing_services` - Services with slug, SEO, images
+- `blog_posts`, `blog_categories`, `blog_tags`, `blog_post_tag` - Blog system
+- `landing_gallery_images` - Portfolio gallery
+- `landing_home_configs`, `landing_layout_config`, `landing_about`, `landing_contact_info` - Content config
+- `pages`, `seo` - SEO system with Open Graph and Schema.org
+- `landing_carousel_images`, `landing_hero_values`, `landing_testimonials` - UI elements
 
 ## Key Directories
 
-- `app/Models/`: Eloquent models with multi-tenant relationships
-- `app/Http/Controllers/`: Controllers organized by feature (Productos, Clientes, etc.)
-- `app/Services/`: Business logic including `WompiService` for payments
-- `resources/views/`: Blade templates with component-based structure
-- `resources/js/app.js`: Frontend entry point using Alpine.js and vanilla JS
-- `database/migrations/`: Database schema evolution
-- `routes/web.php`: All web routes with middleware protection
-
-## Multi-Tenancy Implementation
-
-The application uses a single database with `empresa_id` scoping:
-- Middleware `VerificarEmpresa` ensures proper tenant isolation
-- Models include `empresa_id` in fillable arrays and relationships
-- Controllers filter by authenticated user's company
+- `app/Models/` - Eloquent models
+- `app/Http/Controllers/` - HomeController, BlogController, SeoController, AdminLandingPageController
+- `resources/views/landing_page/` - Public Blade templates (home, servicios, nosotros, contacto, blog/)
+- `resources/views/admin/landing/` - Admin panel views
+- `routes/web.php` - All routes
+- `public/images/` - Images organized by section (gallery, services, blog, home, etc.)
 
 ## Frontend Stack
 
-- **CSS Framework**: TailwindCSS 3.4
-- **JavaScript**: Alpine.js 3.4 for reactivity
-- **Components**: Bootstrap 5.3 for some components
-- **Tables**: DataTables.net for advanced table functionality  
-- **Alerts**: SweetAlert2 for user notifications
-- **Build Tool**: Vite 4.0
+- **CSS**: Custom CSS with CSS variables (--manzer-green, --manzer-forest, etc.)
+- **Animations**: GSAP 3.12 + ScrollTrigger (scroll animations, parallax, pinning)
+- **Smooth Scroll**: Lenis
+- **Text Effects**: Splitting.js (character-by-character reveals)
+- **Particles**: tsParticles (falling leaves in hero)
+- **3D Hover**: Vanilla-tilt.js (service cards)
+- **Carousels**: Swiper 11
+- **Gallery**: LightGallery 2.7
+- **Counters**: PureCounter
+- **Typography**: Montserrat (headings) + Inter (body) via Google Fonts
+- **Icons**: Bootstrap Icons
+- All libraries loaded via CDN
 
-## Payment Integration
+## URL Structure
 
-Uses Wompi payment gateway (`WompiService`) for Colombian payments. Configuration stored in `configuracion_pasarela` table per company.
+- `/` - Homepage
+- `/servicios` - Services listing
+- `/servicios/{slug}` - Service detail page
+- `/nosotros` - About page
+- `/contacto` - Contact page
+- `/blog` - Blog listing
+- `/blog/{slug}` - Blog post
+- `/blog/categoria/{slug}` - Blog by category
+- `/blog/etiqueta/{slug}` - Blog by tag
+- `/sitemap.xml` - XML Sitemap
+- `/admin/landing` - Admin panel
 
-## File Storage
+## Deployment
 
-Images and files are stored using Laravel's storage system. Run `php artisan storage:link` to create the public symlink for file access.
-
-## Testing Approach
-
-Uses PHPUnit with Laravel's testing utilities. Test files should be in `tests/` directory following Laravel conventions.
+Hosted on Hostinger shared hosting:
+- Run `npm run build` locally and commit `public/build/`
+- Run `php artisan config:cache && route:cache && view:cache` in production
+- No Node.js server needed

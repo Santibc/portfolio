@@ -11,17 +11,17 @@ use App\Models\LandingContactInfo;
 use App\Models\LandingAbout;
 use App\Models\LandingTeamMember;
 use App\Models\LandingLayoutConfig;
-use App\Models\Page;
-use App\Models\Seo;
-use App\Models\LandingPricingConfig;
-use App\Models\LandingPricingRange;
 use App\Models\LandingHomeConfig;
 use App\Models\LandingHeroValue;
 use App\Models\LandingTestimonial;
-use App\Models\ServiceExtra;
-use App\Models\RoomTypePrice;
-use App\Models\CleanerHourPrice;
+use App\Models\LandingGalleryImage;
+use App\Models\BlogPost;
+use App\Models\BlogCategory;
+use App\Models\BlogTag;
+use App\Models\Page;
+use App\Models\Seo;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Mail\ContactFormMail;
 
@@ -34,28 +34,24 @@ class AdminLandingPageController extends Controller
         $contactInfo = LandingContactInfo::first();
         $about = LandingAbout::first();
         $layoutConfig = LandingLayoutConfig::first();
-        $pricingConfig = LandingPricingConfig::first();
-        $pricingRanges = LandingPricingRange::orderBy('order')->get();
         $homeConfig = LandingHomeConfig::first();
         $heroValues = LandingHeroValue::orderBy('order')->get();
         $testimonials = LandingTestimonial::orderBy('order')->get();
-        $serviceExtras = ServiceExtra::orderBy('order')->get();
-        $roomTypePrices = RoomTypePrice::orderBy('order')->get();
-        $cleanerHourPrices = CleanerHourPrice::orderBy('num_cleaners')->orderBy('num_hours')->get();
+        $galleryImages = LandingGalleryImage::orderBy('order')->get();
+        $blogPosts = BlogPost::with('category', 'author')->latest()->get();
+        $blogCategories = BlogCategory::withCount('posts')->get();
 
-        // Get or create landing pages
         $this->ensureLandingPagesExist();
         $pages = Page::where('page_type', 'landing')->get();
         $seoConfigs = Seo::with('page')->get();
 
         return view('admin.landing.index', compact(
-            'config', 'services', 'contactInfo',
-            'about', 'layoutConfig', 'pages', 'seoConfigs',
-            'pricingConfig', 'pricingRanges', 'homeConfig', 'heroValues', 'testimonials',
-            'serviceExtras', 'roomTypePrices', 'cleanerHourPrices'
+            'config', 'services', 'contactInfo', 'about', 'layoutConfig',
+            'pages', 'seoConfigs', 'homeConfig', 'heroValues', 'testimonials',
+            'galleryImages', 'blogPosts', 'blogCategories'
         ));
     }
-    
+
     public function updateConfig(Request $request)
     {
         $request->validate([
@@ -64,154 +60,179 @@ class AdminLandingPageController extends Controller
             'contact_email' => 'nullable|email',
             'services_button_url' => 'nullable|string'
         ]);
-        
+
         $config = LandingConfiguracion::first();
-        
         if ($config) {
             $config->update($request->all());
         } else {
             LandingConfiguracion::create($request->all());
         }
-        
-        return redirect()->back()->with('success', 'Configuración actualizada correctamente.');
+
+        return redirect()->back()->with('success', 'Configuracion actualizada correctamente.');
     }
-    
+
+    // ========== CAROUSEL ==========
     public function storeCarouselImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'alt_text' => 'nullable|string|max:255'
         ]);
-        
+
         if ($request->hasFile('image')) {
-            // Crear directorio si no existe
             $uploadPath = public_path('images/carousel');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-            
-            // Generar nombre único para la imagen
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+
             $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
-            
-            // Mover la imagen al directorio público
             $request->file('image')->move($uploadPath, $fileName);
-            
+
             $maxOrder = LandingCarouselImage::max('order') ?? 0;
-            
             LandingCarouselImage::create([
                 'image_path' => 'images/carousel/' . $fileName,
                 'alt_text' => $request->alt_text,
                 'order' => $maxOrder + 1
             ]);
         }
-        
+
         return redirect()->back()->with('success', 'Imagen agregada correctamente.');
     }
-    
+
     public function deleteCarouselImage($id)
     {
         $image = LandingCarouselImage::findOrFail($id);
-        
-        // Eliminar archivo físico del directorio público
         $filePath = public_path($image->image_path);
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-        
+        if (file_exists($filePath)) unlink($filePath);
         $image->delete();
-        
+
         return redirect()->back()->with('success', 'Imagen eliminada correctamente.');
     }
-    
+
+    // ========== SERVICES ==========
     public function storeService(Request $request)
     {
         $request->validate([
             'icon_class' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'description' => 'required|string'
+            'description' => 'required|string',
+            'slug' => 'nullable|string|max:255|unique:landing_services,slug',
+            'short_description' => 'nullable|string',
+            'long_description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image_alt' => 'nullable|string|max:255',
         ]);
-        
-        $maxOrder = LandingService::max('order') ?? 0;
-        
-        LandingService::create([
-            'icon_class' => $request->icon_class,
-            'title' => $request->title,
-            'description' => $request->description,
-            'order' => $maxOrder + 1
+
+        $data = $request->except(['image']);
+        $data['slug'] = $request->slug ?: Str::slug($request->title);
+        $data['order'] = (LandingService::max('order') ?? 0) + 1;
+        $data['is_active'] = true;
+
+        if ($request->hasFile('image')) {
+            $uploadPath = public_path('images/services');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+            $request->file('image')->move($uploadPath, $fileName);
+            $data['image_path'] = 'images/services/' . $fileName;
+        }
+
+        // Create associated page for SEO
+        $page = Page::create([
+            'name' => $request->title,
+            'slug' => 'servicio-' . $data['slug'],
+            'url_path' => '/servicios/' . $data['slug'],
+            'page_type' => 'service',
         ]);
-        
+        $data['page_id'] = $page->id;
+
+        LandingService::create($data);
+
         return redirect()->back()->with('success', 'Servicio agregado correctamente.');
     }
-    
+
     public function updateService(Request $request, $id)
     {
+        $service = LandingService::findOrFail($id);
+
         $request->validate([
             'icon_class' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'description' => 'required|string'
+            'description' => 'required|string',
+            'slug' => 'nullable|string|max:255|unique:landing_services,slug,' . $id,
+            'short_description' => 'nullable|string',
+            'long_description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image_alt' => 'nullable|string|max:255',
         ]);
-        
-        $service = LandingService::findOrFail($id);
-        $service->update($request->all());
-        
+
+        $data = $request->except(['image']);
+        if ($request->slug) {
+            $data['slug'] = $request->slug;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($service->image_path) {
+                $oldPath = public_path($service->image_path);
+                if (file_exists($oldPath)) unlink($oldPath);
+            }
+            $uploadPath = public_path('images/services');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+            $request->file('image')->move($uploadPath, $fileName);
+            $data['image_path'] = 'images/services/' . $fileName;
+        }
+
+        $service->update($data);
+
         return redirect()->back()->with('success', 'Servicio actualizado correctamente.');
     }
-    
+
     public function deleteService($id)
     {
         $service = LandingService::findOrFail($id);
+        if ($service->image_path) {
+            $path = public_path($service->image_path);
+            if (file_exists($path)) unlink($path);
+        }
+        if ($service->page_id) {
+            Seo::where('page_id', $service->page_id)->delete();
+            Page::where('id', $service->page_id)->delete();
+        }
         $service->delete();
-        
+
         return redirect()->back()->with('success', 'Servicio eliminado correctamente.');
     }
-    
+
+    // ========== STEPS ==========
     public function storeStep(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string'
-        ]);
-        
+        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
         $maxOrder = LandingStep::max('order') ?? 0;
         $maxStepNumber = LandingStep::max('step_number') ?? 0;
-        
         LandingStep::create([
             'title' => $request->title,
             'description' => $request->description,
             'step_number' => $maxStepNumber + 1,
             'order' => $maxOrder + 1
         ]);
-        
         return redirect()->back()->with('success', 'Paso agregado correctamente.');
     }
-    
+
     public function updateStep(Request $request, $id)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string'
-        ]);
-        
-        $step = LandingStep::findOrFail($id);
-        $step->update($request->all());
-        
+        $request->validate(['title' => 'required|string|max:255', 'description' => 'required|string']);
+        LandingStep::findOrFail($id)->update($request->all());
         return redirect()->back()->with('success', 'Paso actualizado correctamente.');
     }
-    
+
     public function deleteStep($id)
     {
         $step = LandingStep::findOrFail($id);
         $stepNumber = $step->step_number;
-        
         $step->delete();
-        
-        // Reorganizar números de pasos
-        LandingStep::where('step_number', '>', $stepNumber)
-                  ->decrement('step_number');
-        
+        LandingStep::where('step_number', '>', $stepNumber)->decrement('step_number');
         return redirect()->back()->with('success', 'Paso eliminado correctamente.');
     }
-    
+
+    // ========== CONTACT ==========
     public function updateContactInfo(Request $request)
     {
         $request->validate([
@@ -221,18 +242,17 @@ class AdminLandingPageController extends Controller
             'receive_messages_email' => 'required|email',
             'google_maps_embed' => 'nullable|string'
         ]);
-        
+
         $contactInfo = LandingContactInfo::first();
-        
         if ($contactInfo) {
             $contactInfo->update($request->all());
         } else {
             LandingContactInfo::create($request->all());
         }
-        
-        return redirect()->back()->with('success', 'Información de contacto actualizada correctamente.');
+
+        return redirect()->back()->with('success', 'Informacion de contacto actualizada correctamente.');
     }
-    
+
     public function sendContactEmail(Request $request)
     {
         $request->validate([
@@ -241,25 +261,21 @@ class AdminLandingPageController extends Controller
             'subject' => 'required|string|max:255',
             'message' => 'required|string'
         ]);
-        
+
         $contactInfo = LandingContactInfo::first();
-        
         if ($contactInfo && $contactInfo->receive_messages_email) {
             try {
-                Mail::to($contactInfo->receive_messages_email)->send(
-                    new ContactFormMail($request->all())
-                );
-                
+                Mail::to($contactInfo->receive_messages_email)->send(new ContactFormMail($request->all()));
                 return response()->json(['success' => true]);
             } catch (\Exception $e) {
                 return response()->json(['success' => false, 'error' => 'Error al enviar el mensaje']);
             }
         }
-        
+
         return response()->json(['success' => false, 'error' => 'No se pudo enviar el mensaje']);
     }
-    
-    // Métodos para página Nosotros
+
+    // ========== ABOUT ==========
     public function updateAbout(Request $request)
     {
         $request->validate([
@@ -283,150 +299,102 @@ class AdminLandingPageController extends Controller
             'value3_icon' => 'required|string|max:255',
             'value3_title' => 'required|string|max:255',
             'value3_description' => 'nullable|string',
-            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'main_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
         ]);
-        
+
         $about = LandingAbout::first();
         $data = $request->except('main_image');
-        
-        // Manejar subida de imagen
+
         if ($request->hasFile('main_image')) {
-            // Eliminar imagen anterior si existe
             if ($about && $about->main_image_path) {
-                $oldImagePath = public_path($about->main_image_path);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $oldPath = public_path($about->main_image_path);
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-            
-            // Crear directorio si no existe
             $uploadPath = public_path('images/about');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-            
-            // Generar nombre único para la imagen
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = time() . '_' . uniqid() . '.' . $request->file('main_image')->getClientOriginalExtension();
-            
-            // Mover la imagen al directorio público
             $request->file('main_image')->move($uploadPath, $fileName);
-            
             $data['main_image_path'] = 'images/about/' . $fileName;
         }
-        
-        if ($about) {
-            $about->update($data);
-        } else {
-            LandingAbout::create($data);
-        }
-        
-        return redirect()->back()->with('success', 'Página Nosotros actualizada correctamente.');
+
+        if ($about) { $about->update($data); } else { LandingAbout::create($data); }
+
+        return redirect()->back()->with('success', 'Pagina Nosotros actualizada correctamente.');
     }
-    
-    // Métodos para miembros del equipo
+
+    // ========== TEAM ==========
     public function storeTeamMember(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'position' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'twitter_url' => 'nullable|url',
             'facebook_url' => 'nullable|url',
             'instagram_url' => 'nullable|url',
             'linkedin_url' => 'nullable|url'
         ]);
-        
+
         $data = $request->except('image');
-        $maxOrder = LandingTeamMember::max('order') ?? 0;
-        $data['order'] = $maxOrder + 1;
-        
-        // Manejar subida de imagen
+        $data['order'] = (LandingTeamMember::max('order') ?? 0) + 1;
+
         if ($request->hasFile('image')) {
-            // Crear directorio si no existe
             $uploadPath = public_path('images/team');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-            
-            // Generar nombre único para la imagen
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
-            
-            // Mover la imagen al directorio público
             $request->file('image')->move($uploadPath, $fileName);
-            
             $data['image_path'] = 'images/team/' . $fileName;
         }
-        
+
         LandingTeamMember::create($data);
-        
         return redirect()->back()->with('success', 'Miembro del equipo agregado correctamente.');
     }
-    
+
     public function updateTeamMember(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'position' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'twitter_url' => 'nullable|url',
             'facebook_url' => 'nullable|url',
             'instagram_url' => 'nullable|url',
             'linkedin_url' => 'nullable|url'
         ]);
-        
+
         $member = LandingTeamMember::findOrFail($id);
         $data = $request->except('image');
-        
-        // Manejar subida de imagen
+
         if ($request->hasFile('image')) {
-            // Eliminar imagen anterior si existe
             if ($member->image_path) {
-                $oldImagePath = public_path($member->image_path);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $oldPath = public_path($member->image_path);
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-            
-            // Crear directorio si no existe
             $uploadPath = public_path('images/team');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-            
-            // Generar nombre único para la imagen
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
-            
-            // Mover la imagen al directorio público
             $request->file('image')->move($uploadPath, $fileName);
-            
             $data['image_path'] = 'images/team/' . $fileName;
         }
-        
+
         $member->update($data);
-        
         return redirect()->back()->with('success', 'Miembro del equipo actualizado correctamente.');
     }
-    
+
     public function deleteTeamMember($id)
     {
         $member = LandingTeamMember::findOrFail($id);
-        
-        // Eliminar imagen si existe
         if ($member->image_path) {
-            $imagePath = public_path($member->image_path);
-            if (file_exists($imagePath)) {
-                unlink($imagePath);
-            }
+            $path = public_path($member->image_path);
+            if (file_exists($path)) unlink($path);
         }
-        
         $member->delete();
-        
         return redirect()->back()->with('success', 'Miembro del equipo eliminado correctamente.');
     }
-    
-    // Métodos para configuración del layout
+
+    // ========== LAYOUT ==========
     public function updateLayoutConfig(Request $request)
     {
         $request->validate([
@@ -437,168 +405,51 @@ class AdminLandingPageController extends Controller
             'facebook_url' => 'nullable|url',
             'instagram_url' => 'nullable|url',
             'linkedin_url' => 'nullable|url',
+            'whatsapp_url' => 'nullable|string|max:255',
+            'tiktok_url' => 'nullable|url',
             'footer_address' => 'required|string|max:255',
             'footer_city' => 'required|string|max:255',
             'footer_phone' => 'required|string|max:255',
             'footer_email' => 'required|email',
             'copyright_company' => 'required|string|max:255',
             'footer_description' => 'nullable|string',
-            'footer_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'footer_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120'
         ]);
 
         $layoutConfig = LandingLayoutConfig::first();
         $data = $request->except('footer_logo');
 
-        // Manejar subida de imagen del logo del footer
         if ($request->hasFile('footer_logo')) {
-            // Eliminar imagen anterior si existe
             if ($layoutConfig && $layoutConfig->footer_logo_path) {
-                $oldImagePath = public_path($layoutConfig->footer_logo_path);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $oldPath = public_path($layoutConfig->footer_logo_path);
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-
-            // Crear directorio si no existe
             $uploadPath = public_path('images/layout');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
-            // Generar nombre único para la imagen
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = 'footer_logo_' . time() . '.' . $request->file('footer_logo')->getClientOriginalExtension();
-
-            // Mover la imagen al directorio público
             $request->file('footer_logo')->move($uploadPath, $fileName);
-
             $data['footer_logo_path'] = 'images/layout/' . $fileName;
         }
 
-        if ($layoutConfig) {
-            $layoutConfig->update($data);
-        } else {
-            LandingLayoutConfig::create($data);
-        }
+        if ($layoutConfig) { $layoutConfig->update($data); } else { LandingLayoutConfig::create($data); }
 
-        return redirect()->back()->with('success', 'Configuración del sitio actualizada correctamente.');
-    }
-    
-    // SEO Methods
-    private function ensureLandingPagesExist()
-    {
-        $landingPages = [
-            ['name' => 'Inicio', 'slug' => 'home', 'url_path' => '/'],
-            ['name' => 'Nosotros', 'slug' => 'nosotros', 'url_path' => '/nosotros'],
-            ['name' => 'Equipo', 'slug' => 'equipo', 'url_path' => '/equipo'],
-            ['name' => 'Contacto', 'slug' => 'contacto', 'url_path' => '/contacto'],
-        ];
-        
-        foreach ($landingPages as $pageData) {
-            Page::firstOrCreate(
-                ['slug' => $pageData['slug']],
-                array_merge($pageData, ['page_type' => 'landing'])
-            );
-        }
-    }
-    
-    public function updateSeo(Request $request)
-    {
-        $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'meta_title' => 'nullable|string|max:150',
-            'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string|max:500',
-            'canonical_url' => 'nullable|url|max:500',
-            'robots' => ['required', Rule::in(['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'])],
-            'focus_keyword' => 'nullable|string|max:100',
-            'is_active' => 'boolean'
-        ]);
-        
-        $data = $request->only(['page_id', 'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'robots', 'focus_keyword']);
-        $data['is_active'] = $request->has('is_active');
-        
-        $seo = Seo::where('page_id', $request->page_id)->first();
-        
-        if ($seo) {
-            $seo->update($data);
-        } else {
-            Seo::create($data);
-        }
-        
-        return redirect()->back()->with('success', 'Configuración SEO actualizada correctamente.');
-    }
-    
-    public function getSeoData($pageId)
-    {
-        $seo = Seo::where('page_id', $pageId)->first();
-        return response()->json($seo);
-    }
-    
-    public function deleteSeo($id)
-    {
-        $seo = Seo::findOrFail($id);
-        $seo->delete();
-
-        return redirect()->back()->with('success', 'Configuración SEO eliminada correctamente.');
+        return redirect()->back()->with('success', 'Configuracion del sitio actualizada correctamente.');
     }
 
-    public function updatePricingConfig(Request $request)
-    {
-        $request->validate([
-            'extra_heavy_duty' => 'required|numeric|min:0',
-            'inside_fridge_ea' => 'required|numeric|min:0',
-            'inside_oven_ea' => 'required|numeric|min:0',
-            'post_construction_government' => 'required|numeric|min:0',
-            'post_construction_private' => 'required|numeric|min:0',
-            'window_clean_interior' => 'required|numeric|min:0',
-            'window_clean_exterior' => 'required|numeric|min:0',
-            'recurring_weekly_discount' => 'required|integer|min:0|max:100',
-            'recurring_biweekly_discount' => 'required|integer|min:0|max:100',
-        ]);
-
-        $pricingConfig = LandingPricingConfig::first();
-
-        if ($pricingConfig) {
-            $pricingConfig->update($request->all());
-        } else {
-            LandingPricingConfig::create($request->all());
-        }
-
-        return redirect()->back()->with('success', 'Configuración de precios actualizada correctamente.');
-    }
-
-    public function updatePricingRange(Request $request, $id)
-    {
-        $request->validate([
-            'sq_ft_min' => 'required|integer|min:0',
-            'sq_ft_max' => 'required|integer|min:0',
-            'initial_clean' => 'required|numeric|min:0',
-            'weekly' => 'required|numeric|min:0',
-            'biweekly' => 'required|numeric|min:0',
-            'monthly' => 'required|numeric|min:0',
-            'deep_clean' => 'required|numeric|min:0',
-            'move_out_clean' => 'required|numeric|min:0',
-        ]);
-
-        $range = LandingPricingRange::findOrFail($id);
-        $range->update($request->all());
-
-        return redirect()->back()->with('success', 'Rango de precios actualizado correctamente.');
-    }
-
+    // ========== HOME CONFIG ==========
     public function updateHomeConfig(Request $request)
     {
         $request->validate([
             'hero_title' => 'required|string|max:255',
             'hero_subtitle' => 'required|string|max:255',
             'hero_description' => 'nullable|string',
-            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'hero_services_button_url' => 'nullable|string|max:255',
             'hero_estimate_button_url' => 'nullable|string|max:255',
             'about_title' => 'required|string|max:255',
             'about_lead' => 'nullable|string',
             'about_description' => 'nullable|string',
-            'about_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'about_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'about_years_experience' => 'required|integer|min:0',
             'about_happy_clients' => 'required|integer|min:0',
             'about_client_satisfaction' => 'required|integer|min:0|max:100',
@@ -611,95 +462,62 @@ class AdminLandingPageController extends Controller
         $homeConfig = LandingHomeConfig::first();
         $data = $request->except(['hero_image', 'about_image']);
 
-        // Manejar subida de imagen hero
         if ($request->hasFile('hero_image')) {
             if ($homeConfig && $homeConfig->hero_image_path) {
-                $oldImagePath = public_path($homeConfig->hero_image_path);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $oldPath = public_path($homeConfig->hero_image_path);
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-
             $uploadPath = public_path('images/home');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = 'hero_' . time() . '.' . $request->file('hero_image')->getClientOriginalExtension();
             $request->file('hero_image')->move($uploadPath, $fileName);
             $data['hero_image_path'] = 'images/home/' . $fileName;
         }
 
-        // Manejar subida de imagen about
         if ($request->hasFile('about_image')) {
             if ($homeConfig && $homeConfig->about_image_path) {
-                $oldImagePath = public_path($homeConfig->about_image_path);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
+                $oldPath = public_path($homeConfig->about_image_path);
+                if (file_exists($oldPath)) unlink($oldPath);
             }
-
             $uploadPath = public_path('images/home');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
             $fileName = 'about_' . time() . '.' . $request->file('about_image')->getClientOriginalExtension();
             $request->file('about_image')->move($uploadPath, $fileName);
             $data['about_image_path'] = 'images/home/' . $fileName;
         }
 
-        if ($homeConfig) {
-            $homeConfig->update($data);
-        } else {
-            LandingHomeConfig::create($data);
-        }
+        if ($homeConfig) { $homeConfig->update($data); } else { LandingHomeConfig::create($data); }
 
-        return redirect()->back()->with('success', 'Configuración del Home actualizada correctamente.');
+        return redirect()->back()->with('success', 'Configuracion del Home actualizada correctamente.');
     }
 
-    // Hero Values CRUD
+    // ========== HERO VALUES ==========
     public function storeHeroValue(Request $request)
     {
-        $request->validate([
-            'icon_class' => 'required|string|max:255',
-            'title' => 'required|string|max:255',
-        ]);
-
-        $maxOrder = LandingHeroValue::max('order') ?? 0;
-
+        $request->validate(['icon_class' => 'required|string|max:255', 'title' => 'required|string|max:255']);
         LandingHeroValue::create([
             'icon_class' => $request->icon_class,
             'title' => $request->title,
-            'order' => $maxOrder + 1,
+            'order' => (LandingHeroValue::max('order') ?? 0) + 1,
             'is_active' => true
         ]);
-
         return redirect()->back()->with('success', 'Hero value agregado correctamente.');
     }
 
     public function updateHeroValue(Request $request, $id)
     {
-        $request->validate([
-            'icon_class' => 'required|string|max:255',
-            'title' => 'required|string|max:255',
-        ]);
-
-        $heroValue = LandingHeroValue::findOrFail($id);
-        $heroValue->update($request->all());
-
+        $request->validate(['icon_class' => 'required|string|max:255', 'title' => 'required|string|max:255']);
+        LandingHeroValue::findOrFail($id)->update($request->all());
         return redirect()->back()->with('success', 'Hero value actualizado correctamente.');
     }
 
     public function deleteHeroValue($id)
     {
-        $heroValue = LandingHeroValue::findOrFail($id);
-        $heroValue->delete();
-
+        LandingHeroValue::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Hero value eliminado correctamente.');
     }
 
-    // Testimonials CRUD
+    // ========== TESTIMONIALS ==========
     public function storeTestimonial(Request $request)
     {
         $request->validate([
@@ -709,14 +527,12 @@ class AdminLandingPageController extends Controller
             'rating' => 'required|integer|min:1|max:5',
         ]);
 
-        $maxOrder = LandingTestimonial::max('order') ?? 0;
-
         LandingTestimonial::create([
             'client_name' => $request->client_name,
             'client_role' => $request->client_role,
             'testimonial' => $request->testimonial,
             'rating' => $request->rating,
-            'order' => $maxOrder + 1,
+            'order' => (LandingTestimonial::max('order') ?? 0) + 1,
             'is_active' => true
         ]);
 
@@ -732,118 +548,345 @@ class AdminLandingPageController extends Controller
             'rating' => 'required|integer|min:1|max:5',
         ]);
 
-        $testimonial = LandingTestimonial::findOrFail($id);
-        $testimonial->update($request->only(['client_name', 'client_role', 'testimonial', 'rating']));
-
+        LandingTestimonial::findOrFail($id)->update($request->only(['client_name', 'client_role', 'testimonial', 'rating']));
         return redirect()->back()->with('success', 'Testimonio actualizado correctamente.');
     }
 
     public function deleteTestimonial($id)
     {
-        $testimonial = LandingTestimonial::findOrFail($id);
-        $testimonial->delete();
-
+        LandingTestimonial::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Testimonio eliminado correctamente.');
     }
 
-    // Service Extras CRUD
-    public function storeServiceExtra(Request $request)
+    // ========== SEO ==========
+    private function ensureLandingPagesExist()
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'icon_class' => 'nullable|string|max:255',
-            'price' => 'required|numeric|min:0',
-        ]);
+        $landingPages = [
+            ['name' => 'Inicio', 'slug' => 'home', 'url_path' => '/'],
+            ['name' => 'Nosotros', 'slug' => 'nosotros', 'url_path' => '/nosotros'],
+            ['name' => 'Servicios', 'slug' => 'servicios', 'url_path' => '/servicios'],
+            ['name' => 'Contacto', 'slug' => 'contacto', 'url_path' => '/contacto'],
+            ['name' => 'Blog', 'slug' => 'blog', 'url_path' => '/blog'],
+        ];
 
-        $maxOrder = ServiceExtra::max('order') ?? 0;
-
-        ServiceExtra::create([
-            'name' => $request->name,
-            'icon_class' => $request->icon_class,
-            'price' => $request->price,
-            'order' => $maxOrder + 1,
-            'is_active' => true
-        ]);
-
-        return redirect()->back()->with('success', 'Extra agregado correctamente.');
+        foreach ($landingPages as $pageData) {
+            Page::firstOrCreate(
+                ['slug' => $pageData['slug']],
+                array_merge($pageData, ['page_type' => 'landing'])
+            );
+        }
     }
 
-    public function updateServiceExtra(Request $request, $id)
+    public function updateSeo(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'icon_class' => 'nullable|string|max:255',
-            'price' => 'required|numeric|min:0',
+            'page_id' => 'required|exists:pages,id',
+            'meta_title' => 'nullable|string|max:150',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string|max:500',
+            'canonical_url' => 'nullable|url|max:500',
+            'robots' => ['required', Rule::in(['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'])],
+            'focus_keyword' => 'nullable|string|max:100',
+            'is_active' => 'boolean',
+            'og_title' => 'nullable|string|max:150',
+            'og_description' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'og_type' => 'nullable|string|max:50',
         ]);
 
-        $extra = ServiceExtra::findOrFail($id);
-        $extra->update($request->only(['name', 'icon_class', 'price']));
+        $data = $request->only([
+            'page_id', 'meta_title', 'meta_description', 'meta_keywords',
+            'canonical_url', 'robots', 'focus_keyword', 'og_title', 'og_description', 'og_type'
+        ]);
+        $data['is_active'] = $request->has('is_active');
 
-        return redirect()->back()->with('success', 'Extra actualizado correctamente.');
+        if ($request->hasFile('og_image')) {
+            $uploadPath = public_path('images/seo');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = 'og_' . time() . '.' . $request->file('og_image')->getClientOriginalExtension();
+            $request->file('og_image')->move($uploadPath, $fileName);
+            $data['og_image'] = 'images/seo/' . $fileName;
+        }
+
+        $seo = Seo::where('page_id', $request->page_id)->first();
+        if ($seo) { $seo->update($data); } else { Seo::create($data); }
+
+        return redirect()->back()->with('success', 'Configuracion SEO actualizada correctamente.');
     }
 
-    public function deleteServiceExtra($id)
+    public function getSeoData($pageId)
     {
-        $extra = ServiceExtra::findOrFail($id);
-        $extra->delete();
-
-        return redirect()->back()->with('success', 'Extra eliminado correctamente.');
+        return response()->json(Seo::where('page_id', $pageId)->first());
     }
 
-    // Room Type Prices CRUD
-    public function updateRoomTypePrice(Request $request, $id)
+    public function deleteSeo($id)
+    {
+        Seo::findOrFail($id)->delete();
+        return redirect()->back()->with('success', 'Configuracion SEO eliminada correctamente.');
+    }
+
+    // ========== BLOG ==========
+    public function storeBlogPost(Request $request)
     {
         $request->validate([
-            'price' => 'required|numeric|min:0',
+            'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:blog_posts,slug',
+            'excerpt' => 'nullable|string',
+            'body' => 'required|string',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image_alt' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:blog_categories,id',
+            'status' => 'required|in:draft,published,scheduled',
+            'published_at' => 'nullable|date',
+            'tags' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:150',
+            'meta_description' => 'nullable|string',
         ]);
 
-        $roomType = RoomTypePrice::findOrFail($id);
-        $roomType->update(['price' => $request->price]);
+        $data = $request->except(['featured_image', 'tags', 'meta_title', 'meta_description']);
+        $data['slug'] = $request->slug ?: Str::slug($request->title);
+        $data['author_id'] = auth()->id();
 
-        return redirect()->back()->with('success', 'Precio actualizado correctamente.');
-    }
+        if ($request->status === 'published' && !$request->published_at) {
+            $data['published_at'] = now();
+        }
 
-    // Cleaner Hour Prices CRUD
-    public function updateCleanerHourPrice(Request $request, $id)
-    {
-        $request->validate([
-            'price' => 'required|numeric|min:0',
+        // Calculate reading time
+        $data['reading_time'] = max(1, (int) ceil(str_word_count(strip_tags($request->body)) / 200));
+
+        if ($request->hasFile('featured_image')) {
+            $uploadPath = public_path('images/blog');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = time() . '_' . uniqid() . '.' . $request->file('featured_image')->getClientOriginalExtension();
+            $request->file('featured_image')->move($uploadPath, $fileName);
+            $data['featured_image'] = 'images/blog/' . $fileName;
+        }
+
+        // Create page for SEO
+        $page = Page::create([
+            'name' => $request->title,
+            'slug' => 'blog-' . $data['slug'],
+            'url_path' => '/blog/' . $data['slug'],
+            'page_type' => 'blog',
         ]);
+        $data['page_id'] = $page->id;
 
-        $price = CleanerHourPrice::findOrFail($id);
-        $price->update(['price' => $request->price]);
+        $post = BlogPost::create($data);
 
-        return redirect()->back()->with('success', 'Precio actualizado correctamente.');
-    }
-
-    // Base Pricing Configuration
-    public function updateBasePricing(Request $request)
-    {
-        $request->validate([
-            'cleaner_price' => 'required|numeric|min:0',
-            'hour_price' => 'required|numeric|min:0',
-            'normal_service_price' => 'required|numeric|min:0',
-            'deep_service_price' => 'required|numeric|min:0',
-        ]);
-
-        $pricingConfig = LandingPricingConfig::first();
-
-        if ($pricingConfig) {
-            $pricingConfig->update([
-                'cleaner_price' => $request->cleaner_price,
-                'hour_price' => $request->hour_price,
-                'normal_service_price' => $request->normal_service_price,
-                'deep_service_price' => $request->deep_service_price,
-            ]);
-        } else {
-            LandingPricingConfig::create([
-                'cleaner_price' => $request->cleaner_price,
-                'hour_price' => $request->hour_price,
-                'normal_service_price' => $request->normal_service_price,
-                'deep_service_price' => $request->deep_service_price,
+        // Handle SEO
+        if ($request->meta_title || $request->meta_description) {
+            Seo::create([
+                'page_id' => $page->id,
+                'meta_title' => $request->meta_title,
+                'meta_description' => $request->meta_description,
+                'robots' => 'index,follow',
+                'is_active' => true,
             ]);
         }
 
-        return redirect()->back()->with('success', 'Configuración de precios base actualizada correctamente.');
+        // Handle tags
+        if ($request->tags) {
+            $tagNames = array_map('trim', explode(',', $request->tags));
+            $tagIds = [];
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = BlogTag::firstOrCreate(
+                        ['slug' => Str::slug($tagName)],
+                        ['name' => $tagName]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+            $post->tags()->sync($tagIds);
+        }
+
+        return redirect()->back()->with('success', 'Articulo creado correctamente.');
+    }
+
+    public function updateBlogPost(Request $request, $id)
+    {
+        $post = BlogPost::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255|unique:blog_posts,slug,' . $id,
+            'excerpt' => 'nullable|string',
+            'body' => 'required|string',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'featured_image_alt' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:blog_categories,id',
+            'status' => 'required|in:draft,published,scheduled',
+            'published_at' => 'nullable|date',
+            'tags' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:150',
+            'meta_description' => 'nullable|string',
+        ]);
+
+        $data = $request->except(['featured_image', 'tags', 'meta_title', 'meta_description']);
+        if ($request->slug) $data['slug'] = $request->slug;
+
+        if ($request->status === 'published' && !$post->published_at && !$request->published_at) {
+            $data['published_at'] = now();
+        }
+
+        $data['reading_time'] = max(1, (int) ceil(str_word_count(strip_tags($request->body)) / 200));
+
+        if ($request->hasFile('featured_image')) {
+            if ($post->featured_image) {
+                $oldPath = public_path($post->featured_image);
+                if (file_exists($oldPath)) unlink($oldPath);
+            }
+            $uploadPath = public_path('images/blog');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = time() . '_' . uniqid() . '.' . $request->file('featured_image')->getClientOriginalExtension();
+            $request->file('featured_image')->move($uploadPath, $fileName);
+            $data['featured_image'] = 'images/blog/' . $fileName;
+        }
+
+        $post->update($data);
+
+        // Update SEO
+        if ($post->page_id && ($request->meta_title || $request->meta_description)) {
+            Seo::updateOrCreate(
+                ['page_id' => $post->page_id],
+                [
+                    'meta_title' => $request->meta_title,
+                    'meta_description' => $request->meta_description,
+                    'robots' => 'index,follow',
+                    'is_active' => true,
+                ]
+            );
+        }
+
+        // Handle tags
+        if ($request->has('tags')) {
+            $tagNames = array_map('trim', explode(',', $request->tags ?? ''));
+            $tagIds = [];
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = BlogTag::firstOrCreate(
+                        ['slug' => Str::slug($tagName)],
+                        ['name' => $tagName]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+            $post->tags()->sync($tagIds);
+        }
+
+        return redirect()->back()->with('success', 'Articulo actualizado correctamente.');
+    }
+
+    public function deleteBlogPost($id)
+    {
+        $post = BlogPost::findOrFail($id);
+        if ($post->featured_image) {
+            $path = public_path($post->featured_image);
+            if (file_exists($path)) unlink($path);
+        }
+        if ($post->page_id) {
+            Seo::where('page_id', $post->page_id)->delete();
+            Page::where('id', $post->page_id)->delete();
+        }
+        $post->tags()->detach();
+        $post->delete();
+
+        return redirect()->back()->with('success', 'Articulo eliminado correctamente.');
+    }
+
+    public function storeBlogCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        BlogCategory::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'description' => $request->description,
+            'is_active' => true,
+        ]);
+
+        return redirect()->back()->with('success', 'Categoria creada correctamente.');
+    }
+
+    public function updateBlogCategory(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $category = BlogCategory::findOrFail($id);
+        $category->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'Categoria actualizada correctamente.');
+    }
+
+    public function deleteBlogCategory($id)
+    {
+        $category = BlogCategory::findOrFail($id);
+        BlogPost::where('category_id', $id)->update(['category_id' => null]);
+        $category->delete();
+
+        return redirect()->back()->with('success', 'Categoria eliminada correctamente.');
+    }
+
+    // ========== GALLERY ==========
+    public function storeGalleryImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'alt_text' => 'nullable|string|max:255',
+            'caption' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:100',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $uploadPath = public_path('images/gallery');
+            if (!file_exists($uploadPath)) mkdir($uploadPath, 0755, true);
+            $fileName = time() . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
+            $request->file('image')->move($uploadPath, $fileName);
+
+            LandingGalleryImage::create([
+                'image_path' => 'images/gallery/' . $fileName,
+                'alt_text' => $request->alt_text,
+                'caption' => $request->caption,
+                'category' => $request->category,
+                'order' => (LandingGalleryImage::max('order') ?? 0) + 1,
+                'is_active' => true,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Imagen de galeria agregada correctamente.');
+    }
+
+    public function updateGalleryImage(Request $request, $id)
+    {
+        $request->validate([
+            'alt_text' => 'nullable|string|max:255',
+            'caption' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:100',
+        ]);
+
+        $image = LandingGalleryImage::findOrFail($id);
+        $image->update($request->only(['alt_text', 'caption', 'category']));
+
+        return redirect()->back()->with('success', 'Imagen actualizada correctamente.');
+    }
+
+    public function deleteGalleryImage($id)
+    {
+        $image = LandingGalleryImage::findOrFail($id);
+        $path = public_path($image->image_path);
+        if (file_exists($path)) unlink($path);
+        $image->delete();
+
+        return redirect()->back()->with('success', 'Imagen eliminada correctamente.');
     }
 }

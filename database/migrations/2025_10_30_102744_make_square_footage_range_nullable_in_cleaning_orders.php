@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,10 +14,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('cleaning_orders', function (Blueprint $table) {
-            $table->string('square_footage_range')->nullable()->change();
-            $table->string('service_type')->nullable()->change();
-        });
+        DB::statement('ALTER TABLE cleaning_orders MODIFY square_footage_range VARCHAR(255) NULL');
+        DB::statement('ALTER TABLE cleaning_orders MODIFY service_type VARCHAR(255) NULL');
     }
 
     /**
@@ -26,9 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('cleaning_orders', function (Blueprint $table) {
-            $table->string('square_footage_range')->nullable(false)->change();
-            $table->string('service_type')->nullable(false)->change();
-        });
+        DB::statement('ALTER TABLE cleaning_orders MODIFY square_footage_range VARCHAR(255) NOT NULL');
+        DB::statement('ALTER TABLE cleaning_orders MODIFY service_type VARCHAR(255) NOT NULL');
     }
 };

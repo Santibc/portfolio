@@ -39,6 +39,18 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="blog-tab" data-bs-toggle="tab" data-bs-target="#blog"
+                            type="button" role="tab">
+                            <i class="bi bi-journal-text me-1"></i>Blog
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="galeria-tab" data-bs-toggle="tab" data-bs-target="#galeria"
+                            type="button" role="tab">
+                            <i class="bi bi-images me-1"></i>Galeria
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact"
                             type="button" role="tab">
                             <i class="bi bi-envelope me-1"></i>Contacto
@@ -60,12 +72,6 @@
                         <button class="nav-link" id="seo-tab" data-bs-toggle="tab" data-bs-target="#seo"
                             type="button" role="tab">
                             <i class="bi bi-search me-1"></i>SEO
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pricing-tab" data-bs-toggle="tab" data-bs-target="#pricing"
-                            type="button" role="tab">
-                            <i class="bi bi-calculator me-1"></i>Pricing
                         </button>
                     </li>
                 </ul>
@@ -828,6 +834,25 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">WhatsApp URL</label>
+                                                <input type="url" name="whatsapp_url" class="form-control"
+                                                    value="{{ $layoutConfig->whatsapp_url ?? '' }}"
+                                                    placeholder="https://wa.me/1234567890">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">TikTok URL</label>
+                                                <input type="url" name="tiktok_url" class="form-control"
+                                                    value="{{ $layoutConfig->tiktok_url ?? '' }}"
+                                                    placeholder="https://www.tiktok.com/@usuario">
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <h6 class="mt-4 mb-3">Información del Footer</h6>
                                     <div class="row">
                                         <div class="col-md-6">
@@ -1171,206 +1196,225 @@
                         </div>
                     </div>
 
-                    <!-- Pricing Calculator Tab -->
-                    <div class="tab-pane fade" id="pricing" role="tabpanel">
+                    <!-- Blog Tab -->
+                    <div class="tab-pane fade" id="blog" role="tabpanel">
 
-                        <!-- Base Pricing Configuration -->
+                        <!-- Blog Categories -->
                         <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="bi bi-calculator me-2"></i>Configuración de
-                                    Precios Base</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><i class="bi bi-folder me-2"></i>Categorias del Blog</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#addBlogCategoryModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Categoria
+                                </button>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('admin.landing.pricing.update-base') }}" method="POST">
+                                @if ($blogCategories->count() > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Slug</th>
+                                                    <th>Posts</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($blogCategories as $category)
+                                                    <tr>
+                                                        <td>{{ $category->name }}</td>
+                                                        <td><code>{{ $category->slug }}</code></td>
+                                                        <td><span class="badge bg-secondary">{{ $category->posts_count }}</span></td>
+                                                        <td>
+                                                            <button class="btn btn-warning btn-sm"
+                                                                onclick="editBlogCategory({{ $category->id }}, '{{ addslashes($category->name) }}', '{{ addslashes($category->description ?? '') }}')">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <form
+                                                                action="{{ route('admin.landing.blog.categories.delete', $category->id) }}"
+                                                                method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar esta categoria?')">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay categorias registradas. Agrega la primera usando el boton de arriba.</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Blog Posts -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0"><i class="bi bi-journal-text me-2"></i>Posts del Blog</h5>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#addBlogPostModal">
+                                    <i class="bi bi-plus-lg me-1"></i>Agregar Post
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                @if ($blogPosts->count() > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Titulo</th>
+                                                    <th>Categoria</th>
+                                                    <th>Estado</th>
+                                                    <th>Fecha</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($blogPosts as $post)
+                                                    <tr>
+                                                        <td>{{ $post->title }}</td>
+                                                        <td>{{ $post->category->name ?? 'Sin categoria' }}</td>
+                                                        <td>
+                                                            @if ($post->status === 'draft')
+                                                                <span class="badge bg-warning">Borrador</span>
+                                                            @elseif ($post->status === 'published')
+                                                                <span class="badge bg-success">Publicado</span>
+                                                            @elseif ($post->status === 'scheduled')
+                                                                <span class="badge bg-info">Programado</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $post->published_at ? $post->published_at->format('d/m/Y') : '-' }}</td>
+                                                        <td>
+                                                            <button class="btn btn-warning btn-sm"
+                                                                onclick="editBlogPost({{ $post->id }})">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <form
+                                                                action="{{ route('admin.landing.blog.posts.delete', $post->id) }}"
+                                                                method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                                    onclick="return confirm('¿Estás seguro de eliminar este post?')">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay posts registrados. Agrega el primero usando el boton de arriba.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Blog Tab -->
+
+                    <!-- Galeria Tab -->
+                    <div class="tab-pane fade" id="galeria" role="tabpanel">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-upload me-2"></i>Subir Imagen a la Galeria</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ route('admin.landing.gallery.store') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
-                                    @method('PUT')
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">
-                                                <i class="bi bi-people-fill me-1"></i>Precio por Limpiador
-                                                ($/limpiador)
-                                            </label>
-                                            <input type="number" step="0.01" name="cleaner_price"
-                                                class="form-control"
-                                                value="{{ $pricingConfig->cleaner_price ?? 30 }}" min="0"
-                                                required>
-                                            <small class="text-muted">Precio que se multiplica por el número de
-                                                limpiadores</small>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Imagen <span class="text-danger">*</span></label>
+                                                <input type="file" name="image" class="form-control" accept="image/*" required>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">
-                                                <i class="bi bi-clock-fill me-1"></i>Precio por Hora ($/hora)
-                                            </label>
-                                            <input type="number" step="0.01" name="hour_price"
-                                                class="form-control" value="{{ $pricingConfig->hour_price ?? 30 }}"
-                                                min="0" required>
-                                            <small class="text-muted">Se multiplica también por número de
-                                                limpiadores</small>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">
-                                                <i class="bi bi-house-check me-1"></i>Precio Servicio Normal ($)
-                                            </label>
-                                            <input type="number" step="0.01" name="normal_service_price"
-                                                class="form-control"
-                                                value="{{ $pricingConfig->normal_service_price ?? 0 }}"
-                                                min="0" required>
-                                            <small class="text-muted">Precio adicional por seleccionar limpieza
-                                                normal</small>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold">
-                                                <i class="bi bi-stars me-1"></i>Precio Servicio Profundo ($)
-                                            </label>
-                                            <input type="number" step="0.01" name="deep_service_price"
-                                                class="form-control"
-                                                value="{{ $pricingConfig->deep_service_price ?? 50 }}"
-                                                min="0" required>
-                                            <small class="text-muted">Precio adicional por seleccionar limpieza
-                                                profunda</small>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Categoria <span class="text-danger">*</span></label>
+                                                <select name="category" class="form-select" required>
+                                                    <option value="">Seleccionar categoria...</option>
+                                                    <option value="tala">Tala</option>
+                                                    <option value="poda">Poda</option>
+                                                    <option value="desbroce">Desbroce</option>
+                                                    <option value="carreteras">Carreteras</option>
+                                                    <option value="otro">Otro</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="alert alert-info mb-0">
-                                        <strong><i class="bi bi-info-circle me-1"></i>Fórmula de Cálculo:</strong><br>
-                                        <code>Precio Total = (Habitaciones) + (Limpiadores × Horas × Precio Base) +
-                                            (Tipo de Servicio) + (Extras)</code>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Texto Alternativo (alt)</label>
+                                                <input type="text" name="alt_text" class="form-control" placeholder="Descripcion de la imagen para SEO">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Leyenda (caption)</label>
+                                                <input type="text" name="caption" class="form-control" placeholder="Leyenda visible debajo de la imagen">
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-check-circle me-1"></i>Guardar Configuración Base
-                                        </button>
-                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-upload me-1"></i>Subir Imagen
+                                    </button>
                                 </form>
                             </div>
                         </div>
 
-                        <!-- Room Type Prices -->
-                        <div class="card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="bi bi-house-door me-2"></i>Precios por Tipo de
-                                    Habitación</h5>
+                        <!-- Gallery Grid -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0"><i class="bi bi-images me-2"></i>Imagenes de la Galeria</h5>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Tipo de Habitación</th>
-                                                <th>Precio ($)</th>
-                                                <th>Acción</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($roomTypePrices as $roomType)
-                                                <tr>
-                                                    <form
-                                                        action="{{ route('admin.landing.room-type-prices.update', $roomType->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('PUT')
-                                                        <td>
-                                                            @if ($roomType->room_type == 'bathroom')
-                                                                <i class="bi bi-water me-2"></i>Baño
-                                                            @elseif($roomType->room_type == 'bedroom')
-                                                                <i class="bi bi-door-closed me-2"></i>Habitación
-                                                            @elseif($roomType->room_type == 'kitchen')
-                                                                <i class="bi bi-egg-fried me-2"></i>Cocina
-                                                            @else
-                                                                <i class="bi bi-plus-circle me-2"></i>Otro
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" step="0.01" name="price"
-                                                                class="form-control form-control-sm"
-                                                                value="{{ $roomType->price }}" min="0"
-                                                                style="width: 120px;" required>
-                                                        </td>
-                                                        <td>
-                                                            <button type="submit" class="btn btn-sm btn-success">
-                                                                <i class="bi bi-check"></i> Guardar
-                                                            </button>
-                                                        </td>
-                                                    </form>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Service Extras -->
-                        <div class="card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0"><i class="bi bi-plus-square me-2"></i>Servicios Extras
-                                </h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#addServiceExtraModal">
-                                    <i class="bi bi-plus-lg me-1"></i>Agregar Extra
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-info">
-                                    <h6><i class="bi bi-info-circle me-1"></i>Iconos de Bootstrap Icons:</h6>
-                                    <p class="mb-0">Visita <a href="https://icons.getbootstrap.com/"
-                                            target="_blank" class="fw-bold">https://icons.getbootstrap.com/</a> para
-                                        buscar iconos. Copia la clase completa (ej: <code>bi bi-thermometer-half</code>)
-                                    </p>
-                                </div>
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Icono</th>
-                                                <th>Nombre</th>
-                                                <th>Precio ($)</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($serviceExtras as $extra)
-                                                <tr>
-                                                    <td><i class="{{ $extra->icon_class }} fa-2x"></i></td>
-                                                    <td>{{ $extra->name }}</td>
-                                                    <td>${{ number_format($extra->price, 2) }}</td>
-                                                    <td>
-                                                        <button class="btn btn-warning btn-sm"
-                                                            onclick="editServiceExtra({{ $extra->id }}, '{{ addslashes($extra->name) }}', '{{ $extra->icon_class }}', {{ $extra->price }})">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <form
-                                                            action="{{ route('admin.landing.service-extras.delete', $extra->id) }}"
+                                @if ($galleryImages->count() > 0)
+                                    <div class="row">
+                                        @foreach ($galleryImages as $image)
+                                            <div class="col-md-4 col-lg-3 mb-4">
+                                                <div class="card h-100">
+                                                    <img src="{{ asset($image->image_path) }}"
+                                                        class="card-img-top" alt="{{ $image->alt_text ?? '' }}"
+                                                        style="height: 200px; object-fit: cover;">
+                                                    <div class="card-body p-2">
+                                                        @if ($image->alt_text)
+                                                            <small class="d-block text-muted"><strong>Alt:</strong> {{ $image->alt_text }}</small>
+                                                        @endif
+                                                        @if ($image->caption)
+                                                            <small class="d-block text-muted"><strong>Caption:</strong> {{ $image->caption }}</small>
+                                                        @endif
+                                                        <small class="d-block"><span class="badge bg-secondary">{{ $image->category }}</span></small>
+                                                    </div>
+                                                    <div class="card-footer p-2 text-center">
+                                                        <form action="{{ route('admin.landing.gallery.delete', $image->id) }}"
                                                             method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-danger btn-sm"
-                                                                onclick="return confirm('¿Eliminar este extra?')">
-                                                                <i class="bi bi-trash"></i>
+                                                                onclick="return confirm('¿Estás seguro de eliminar esta imagen?')">
+                                                                <i class="bi bi-trash me-1"></i>Eliminar
                                                             </button>
                                                         </form>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="text-muted">No hay imagenes en la galeria. Sube la primera usando el formulario de arriba.</p>
+                                @endif
                             </div>
                         </div>
-
-                        <!-- Cleaner Hour Prices - YA NO SE USA (Precio simplificado arriba) -->
-                        <!-- <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0"><i class="bi bi-people me-2"></i>Precios por Limpiadores y Horas (Obsoleto)</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="alert alert-warning">
-                                    Esta sección ya no se usa. Ahora los precios se configuran en "Configuración de Precios Base" arriba.
-                                </div>
-                            </div>
-                        </div> -->
-
                     </div>
-                    <!-- End Pricing Tab -->
+                    <!-- End Galeria Tab -->
 
 
                 </div>
@@ -1550,34 +1594,25 @@
         </div>
     </div>
 
-    <!-- Add Service Extra Modal -->
-    <div class="modal fade" id="addServiceExtraModal" tabindex="-1">
+    <!-- Add Blog Category Modal -->
+    <div class="modal fade" id="addBlogCategoryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Agregar Servicio Extra</h5>
+                    <h5 class="modal-title">Agregar Categoria de Blog</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ route('admin.landing.service-extras.store') }}" method="POST">
+                <form action="{{ route('admin.landing.blog.categories.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Nombre *</label>
+                            <label class="form-label">Nombre <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control" required
-                                placeholder="Clean Oven">
+                                placeholder="Nombre de la categoria">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Icono (Bootstrap Icons)</label>
-                            <input type="text" name="icon_class" class="form-control"
-                                placeholder="bi bi-thermometer-half">
-                            <small class="form-text text-muted">Opcional. Visita <a
-                                    href="https://icons.getbootstrap.com/" target="_blank">Bootstrap
-                                    Icons</a></small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Precio ($) *</label>
-                            <input type="number" step="0.01" name="price" class="form-control" required
-                                placeholder="50.00" min="0">
+                            <label class="form-label">Descripcion</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Descripcion de la categoria"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1591,42 +1626,250 @@
         </div>
     </div>
 
-    <!-- Edit Service Extra Modal -->
-    <div class="modal fade" id="editServiceExtraModal" tabindex="-1">
+    <!-- Edit Blog Category Modal -->
+    <div class="modal fade" id="editBlogCategoryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Editar Servicio Extra</h5>
+                    <h5 class="modal-title">Editar Categoria de Blog</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form id="editServiceExtraForm" method="POST">
+                <form id="editBlogCategoryForm" method="POST">
                     @csrf
                     @method('PUT')
-                    <input type="hidden" id="editServiceExtraId" name="id">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Nombre *</label>
-                            <input type="text" id="editServiceExtraName" name="name" class="form-control"
-                                required>
+                            <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" id="editBlogCategoryName" name="name" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Icono (Bootstrap Icons)</label>
-                            <input type="text" id="editServiceExtraIconClass" name="icon_class"
-                                class="form-control">
-                            <small class="form-text text-muted">Opcional. Visita <a
-                                    href="https://icons.getbootstrap.com/" target="_blank">Bootstrap
-                                    Icons</a></small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Precio ($) *</label>
-                            <input type="number" step="0.01" id="editServiceExtraPrice" name="price"
-                                class="form-control" required min="0">
+                            <label class="form-label">Descripcion</label>
+                            <textarea id="editBlogCategoryDescription" name="description" class="form-control" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>Actualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Blog Post Modal -->
+    <div class="modal fade" id="addBlogPostModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Post de Blog</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.landing.blog.posts.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Titulo <span class="text-danger">*</span></label>
+                                    <input type="text" name="title" class="form-control" required placeholder="Titulo del post">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Slug</label>
+                                    <input type="text" name="slug" class="form-control" placeholder="titulo-del-post">
+                                    <small class="form-text text-muted">Se genera automaticamente si se deja vacio.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Categoria <span class="text-danger">*</span></label>
+                                    <select name="category_id" class="form-select" required>
+                                        <option value="">Seleccionar categoria...</option>
+                                        @foreach ($blogCategories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Estado <span class="text-danger">*</span></label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="draft">Borrador</option>
+                                        <option value="published">Publicado</option>
+                                        <option value="scheduled">Programado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Publicacion</label>
+                                    <input type="date" name="published_at" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Extracto</label>
+                            <textarea name="excerpt" class="form-control" rows="2" placeholder="Breve resumen del post"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contenido <span class="text-danger">*</span></label>
+                            <textarea name="body" class="form-control" rows="8" placeholder="Contenido completo del post" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Imagen Destacada</label>
+                                    <input type="file" name="featured_image" class="form-control" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Texto Alt de la Imagen</label>
+                                    <input type="text" name="featured_image_alt" class="form-control" placeholder="Texto alternativo para la imagen">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <input type="text" name="tags" class="form-control" placeholder="tag1, tag2, tag3">
+                            <small class="form-text text-muted">Separados por comas.</small>
+                        </div>
+                        <h6 class="border-bottom pb-2 mb-3 mt-3">SEO del Post</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Meta Titulo</label>
+                                    <input type="text" name="meta_title" class="form-control" placeholder="Titulo para motores de busqueda">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Meta Descripcion</label>
+                                    <input type="text" name="meta_description" class="form-control" placeholder="Descripcion para motores de busqueda">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i>Agregar Post
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Blog Post Modal -->
+    <div class="modal fade" id="editBlogPostModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Post de Blog</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editBlogPostForm" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Titulo <span class="text-danger">*</span></label>
+                                    <input type="text" id="editBlogPostTitle" name="title" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Slug</label>
+                                    <input type="text" id="editBlogPostSlug" name="slug" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Categoria <span class="text-danger">*</span></label>
+                                    <select id="editBlogPostCategoryId" name="category_id" class="form-select" required>
+                                        <option value="">Seleccionar categoria...</option>
+                                        @foreach ($blogCategories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Estado <span class="text-danger">*</span></label>
+                                    <select id="editBlogPostStatus" name="status" class="form-select" required>
+                                        <option value="draft">Borrador</option>
+                                        <option value="published">Publicado</option>
+                                        <option value="scheduled">Programado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Publicacion</label>
+                                    <input type="date" id="editBlogPostPublishedAt" name="published_at" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Extracto</label>
+                            <textarea id="editBlogPostExcerpt" name="excerpt" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contenido <span class="text-danger">*</span></label>
+                            <textarea id="editBlogPostBody" name="body" class="form-control" rows="8" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Imagen Destacada</label>
+                                    <input type="file" name="featured_image" class="form-control" accept="image/*">
+                                    <small class="form-text text-muted">Dejar vacio para mantener la imagen actual.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Texto Alt de la Imagen</label>
+                                    <input type="text" id="editBlogPostFeaturedImageAlt" name="featured_image_alt" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tags</label>
+                            <input type="text" id="editBlogPostTags" name="tags" class="form-control">
+                            <small class="form-text text-muted">Separados por comas.</small>
+                        </div>
+                        <h6 class="border-bottom pb-2 mb-3 mt-3">SEO del Post</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Meta Titulo</label>
+                                    <input type="text" id="editBlogPostMetaTitle" name="meta_title" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Meta Descripcion</label>
+                                    <input type="text" id="editBlogPostMetaDescription" name="meta_description" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-pencil me-1"></i>Actualizar Post
                         </button>
                     </div>
                 </form>
@@ -1843,17 +2086,43 @@
                 new bootstrap.Modal(document.getElementById('editTestimonialModal')).show();
             }
 
-            // Service Extras functions
-            function editServiceExtra(id, name, iconClass, price) {
-                document.getElementById('editServiceExtraId').value = id;
-                document.getElementById('editServiceExtraName').value = name;
-                document.getElementById('editServiceExtraIconClass').value = iconClass || '';
-                document.getElementById('editServiceExtraPrice').value = price;
+            // Blog Category functions
+            function editBlogCategory(id, name, description) {
+                document.getElementById('editBlogCategoryName').value = name;
+                document.getElementById('editBlogCategoryDescription').value = description || '';
 
-                const editForm = document.getElementById('editServiceExtraForm');
-                editForm.action = '{{ url('admin/landing/service-extras') }}/' + id;
+                const editForm = document.getElementById('editBlogCategoryForm');
+                editForm.action = '{{ url('admin/landing/blog/categories') }}/' + id;
 
-                new bootstrap.Modal(document.getElementById('editServiceExtraModal')).show();
+                new bootstrap.Modal(document.getElementById('editBlogCategoryModal')).show();
+            }
+
+            // Blog Post functions
+            function editBlogPost(id) {
+                fetch('{{ url('admin/landing/blog/posts') }}/' + id + '/edit')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('editBlogPostTitle').value = data.title || '';
+                        document.getElementById('editBlogPostSlug').value = data.slug || '';
+                        document.getElementById('editBlogPostCategoryId').value = data.category_id || '';
+                        document.getElementById('editBlogPostStatus').value = data.status || 'draft';
+                        document.getElementById('editBlogPostPublishedAt').value = data.published_at ? data.published_at.substring(0, 10) : '';
+                        document.getElementById('editBlogPostExcerpt').value = data.excerpt || '';
+                        document.getElementById('editBlogPostBody').value = data.body || '';
+                        document.getElementById('editBlogPostFeaturedImageAlt').value = data.featured_image_alt || '';
+                        document.getElementById('editBlogPostTags').value = data.tags || '';
+                        document.getElementById('editBlogPostMetaTitle').value = data.meta_title || '';
+                        document.getElementById('editBlogPostMetaDescription').value = data.meta_description || '';
+
+                        const editForm = document.getElementById('editBlogPostForm');
+                        editForm.action = '{{ url('admin/landing/blog/posts') }}/' + id;
+
+                        new bootstrap.Modal(document.getElementById('editBlogPostModal')).show();
+                    })
+                    .catch(error => {
+                        console.error('Error loading blog post data:', error);
+                        alert('Error al cargar los datos del post.');
+                    });
             }
         </script>
     @endpush

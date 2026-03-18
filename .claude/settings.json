@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /f/xamppPro80/htdocs/manzerweb/public/css -type f -name *.css)",
+      "Bash(find /f/xamppPro80/htdocs/manzerweb/public/js -type f -name *.js)",
+      "Bash(git -C /f/xamppPro80/htdocs/manzerweb log --oneline)",
+      "Bash(cp \"paginaweb/WhatsApp Image 2026-03-09 at 2.51.10 AM.jpeg\" public/images/manzer-logo.png)",
+      "Bash(cp \"paginaweb/WhatsApp Image 2026-03-09 at 2.51.10 AM.jpeg\" public/images/manzer-favicon.png)",
+      "Bash(cp \"paginaweb/WhatsApp Image 2026-03-09 at 2.49.07 AM \\(1\\).jpeg\" public/images/hero-forest.jpg)",
+      "Bash(cp \"paginaweb/WhatsApp Image 2026-03-09 at 2.49.08 AM \\(1\\).jpeg\" public/images/about-forest.jpg)",
+      "Bash(cp \"paginaweb/WhatsApp Image 2026-03-09 at 2.49.08 AM.jpeg\" public/images/cta-forest.jpg)",
+      "Bash(cp descargas_manzer/tala-en-altura.jpg public/images/gallery/tala-en-altura.jpg)",
+      "Bash(cp descargas_manzer/poda-en-altura-e1721732004471.jpg public/images/gallery/poda-en-altura.jpg)",
+      "Bash(cp \"descargas_manzer/WhatsApp-Image-2024-07-25-at-09.43.36.jpeg\" public/images/gallery/desbroce-talud.jpg)",
+      "Bash(cp \"descargas_manzer/WhatsApp-Image-2024-07-29-at-10.06.06.jpeg\" public/images/gallery/trabajo-carretera.jpg)",
+      "Bash(cp descargas_manzer/pexels-maumascaro-5171558-scaled.jpg public/images/gallery/bosque-panoramica.jpg)"
+    ]
+  }
+}

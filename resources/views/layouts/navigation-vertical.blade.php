@@ -2,8 +2,8 @@
     {{-- Logo --}}
     <div class="d-flex justify-content-center align-items-center py-3 border-bottom">
         <a href="/" class="text-decoration-none">
-            <img style="width: 80%; margin-left: 5%;" src="{{ asset('images/logo.png') }}" class="logo-full" width="100" alt="Logo">
-            <img src="{{ asset('images/logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
+            <img style="width: 80%; margin-left: 5%;" src="{{ asset('images/manzer-logo.png') }}" class="logo-full" width="100" alt="Logo">
+            <img src="{{ asset('images/manzer-logo.png') }}" class="logo-icon d-none" width="40" alt="Logo Icon">
         </a>
     </div>
 
@@ -25,28 +25,12 @@
             <span>Landing Page</span>
         </a>
 
-        {{-- Districts --}}
-        <a href="{{ route('admin.districts.index') }}"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/districts*') ? 'active' : 'text-dark' }}"
-           title="Districts">
-            <i class="bi bi-geo-alt-fill"></i>
-            <span>Districts</span>
-        </a>
-
-        {{-- Coupons --}}
-        <a href="{{ route('admin.coupons.index') }}"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/coupons*') ? 'active' : 'text-dark' }}"
-           title="Coupons">
-            <i class="bi bi-ticket-perforated-fill"></i>
-            <span>Coupons</span>
-        </a>
-
-        {{-- Cleaning Orders --}}
-        <a href="{{ route('admin.cleaning-orders.index') }}"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/cleaning-orders*') ? 'active' : 'text-dark' }}"
-           title="Cleaning Orders">
-            <i class="bi bi-cart-check-fill"></i>
-            <span>Cleaning Orders</span>
+        {{-- Usuarios --}}
+        <a href="{{ route('usuarios') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('usuarios*') ? 'active' : 'text-dark' }}"
+           title="Usuarios">
+            <i class="bi bi-people-fill"></i>
+            <span>Usuarios</span>
         </a>
     </nav>
 
