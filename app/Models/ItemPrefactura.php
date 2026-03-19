@@ -5,32 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ItemVentaPdv extends Model
+class ItemPrefactura extends Model
 {
     use HasFactory;
 
-    protected $table = 'items_venta_pdv';
+    protected $table = 'items_prefactura';
 
     protected $fillable = [
-        'venta_pdv_id',
+        'prefactura_id',
         'producto_id',
         'variante_producto_id',
         'cantidad',
         'precio_unitario',
         'precio_original',
-        'descuento',
         'descuento_porcentaje',
         'descuento_valor',
         'subtotal',
         'iva',
         'total',
+        'observaciones',
     ];
 
     protected $casts = [
-        'cantidad' => 'integer',
         'precio_unitario' => 'decimal:2',
         'precio_original' => 'decimal:2',
-        'descuento' => 'decimal:2',
         'descuento_porcentaje' => 'decimal:2',
         'descuento_valor' => 'decimal:2',
         'subtotal' => 'decimal:2',
@@ -39,9 +37,9 @@ class ItemVentaPdv extends Model
     ];
 
     // Relaciones
-    public function venta()
+    public function prefactura()
     {
-        return $this->belongsTo(VentaPdv::class, 'venta_pdv_id');
+        return $this->belongsTo(Prefactura::class);
     }
 
     public function producto()
@@ -54,37 +52,18 @@ class ItemVentaPdv extends Model
         return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
     }
 
-    // Métodos
+    // Accessors
     public function getNombreCompletoProductoAttribute()
     {
-        $nombre = $this->producto->nombre;
-
+        $nombre = $this->producto->referencia . ' - ' . $this->producto->nombre;
         if ($this->variante) {
-            $nombre .= ' - ' . $this->variante->referencia_variante;
-            if ($this->variante->color) {
-                $nombre .= ' (' . $this->variante->color . ')';
-            }
+            $nombre .= ' (' . $this->variante->nombre_completo . ')';
         }
-
         return $nombre;
     }
 
     public function getSkuAttribute()
     {
-        if ($this->variante) {
-            return $this->variante->sku;
-        }
-        return $this->producto->referencia;
-    }
-
-    // Calcular totales del item
-    public function calcularTotales()
-    {
-        $this->subtotal = ($this->precio_unitario * $this->cantidad) - $this->descuento;
-        // IVA del 19% si aplica (se puede configurar)
-        $this->iva = 0; // Por defecto sin IVA, ajustar según necesidad
-        $this->total = $this->subtotal + $this->iva;
-
-        return $this;
+        return $this->variante ? $this->variante->sku : $this->producto->referencia;
     }
 }

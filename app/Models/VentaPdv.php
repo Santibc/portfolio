@@ -13,20 +13,31 @@ class VentaPdv extends Model
 
     protected $fillable = [
         'numero_venta',
+        'sesion_caja_id',
+        'caja_id',
+        'prefactura_id',
         'ubicacion_id',
         'cliente_id',
         'nombre_cliente',
+        'lista_precio_id',
         'subtotal',
         'descuento',
+        'descuento_global',
         'iva',
         'total',
         'metodo_pago',
         'monto_efectivo',
         'monto_tarjeta',
         'monto_transferencia',
+        'monto_recibido',
+        'cambio',
+        'tipo_transferencia',
+        'comprobante_pago',
         'estado',
         'notas',
         'usuario_id',
+        'descuento_autorizado_por',
+        'precio_autorizado_por',
         'anulada_por',
         'anulada_en',
         'motivo_anulacion',
@@ -35,15 +46,33 @@ class VentaPdv extends Model
     protected $casts = [
         'subtotal' => 'decimal:2',
         'descuento' => 'decimal:2',
+        'descuento_global' => 'decimal:2',
         'iva' => 'decimal:2',
         'total' => 'decimal:2',
         'monto_efectivo' => 'decimal:2',
         'monto_tarjeta' => 'decimal:2',
         'monto_transferencia' => 'decimal:2',
+        'monto_recibido' => 'decimal:2',
+        'cambio' => 'decimal:2',
         'anulada_en' => 'datetime',
     ];
 
     // Relaciones
+    public function sesionCaja()
+    {
+        return $this->belongsTo(SesionCaja::class);
+    }
+
+    public function caja()
+    {
+        return $this->belongsTo(Caja::class);
+    }
+
+    public function prefactura()
+    {
+        return $this->belongsTo(Prefactura::class);
+    }
+
     public function ubicacion()
     {
         return $this->belongsTo(Ubicacion::class);
@@ -54,6 +83,11 @@ class VentaPdv extends Model
         return $this->belongsTo(Cliente::class);
     }
 
+    public function listaPrecio()
+    {
+        return $this->belongsTo(ListaPrecio::class);
+    }
+
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
@@ -62,6 +96,16 @@ class VentaPdv extends Model
     public function anulador()
     {
         return $this->belongsTo(User::class, 'anulada_por');
+    }
+
+    public function descuentoAutorizadoPor()
+    {
+        return $this->belongsTo(User::class, 'descuento_autorizado_por');
+    }
+
+    public function precioAutorizadoPor()
+    {
+        return $this->belongsTo(User::class, 'precio_autorizado_por');
     }
 
     public function items()

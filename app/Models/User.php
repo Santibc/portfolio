@@ -24,7 +24,8 @@ class User extends Authenticatable
         'password',
         'telefono',
         'activo',
-        'ultimo_login'
+        'ultimo_login',
+        'pin_pdv'
     ];
 
     /**

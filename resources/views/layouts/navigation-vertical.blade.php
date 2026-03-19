@@ -181,35 +181,79 @@
             @endif
         @endif
 
-        {{-- Punto de Venta (para admin, inventarios, punto_venta) - OCULTO TEMPORALMENTE
-        @if(auth()->user()->hasRole(['admin', 'inventarios', 'punto_venta']))
+
+        @if(auth()->user()->hasRole(['admin', 'cajero_principal', 'auxiliar_venta', 'vendedor']))
             <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
             <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
                 <i class="bi bi-shop me-1"></i>
                 <span>Punto de Venta</span>
             </p>
-            <a href="{{ route('punto-venta.dashboard') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.dashboard') ? 'active' : 'text-dark' }}">
+            <a href="{{ route('pdv.dashboard') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.dashboard') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard PdV</span>
             </a>
-            <a href="{{ route('punto-venta.nueva-venta') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.nueva-venta') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-cart-plus"></i>
-                <span>Nueva Venta</span>
-            </a>
-            <a href="{{ route('punto-venta.index') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.index') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-list-ul"></i>
-                <span>Historial Ventas</span>
-            </a>
-            <a href="{{ route('punto-venta.reporte') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('punto-venta.reporte') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-bar-chart"></i>
-                <span>Reportes PdV</span>
-            </a>
+
+            @if(auth()->user()->hasRole(['admin']))
+                <a href="{{ route('pdv.cajas.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.cajas.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>Config. Cajas</span>
+                </a>
+            @endif
+
+            @if(auth()->user()->hasRole(['admin', 'cajero_principal']))
+                <a href="{{ route('pdv.ventas.crear') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.ventas.crear') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>Nueva Venta</span>
+                </a>
+                <a href="{{ route('pdv.ventas.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.ventas.index') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-list-ul"></i>
+                    <span>Historial Ventas</span>
+                </a>
+                <a href="{{ route('pdv.prefacturas.pendientes') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.prefacturas.pendientes') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Prefacturas</span>
+                </a>
+                <a href="{{ route('pdv.vales.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.vales.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <span>Vales</span>
+                </a>
+                <a href="{{ route('pdv.reportes.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.reportes.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reportes PdV</span>
+                </a>
+                <a href="{{ route('pdv.stock.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.stock.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Stock</span>
+                </a>
+                <a href="{{ route('traslados') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('traslados*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Traslados</span>
+                </a>
+            @endif
+
+            @if(auth()->user()->hasRole(['auxiliar_venta', 'vendedor']) && !auth()->user()->hasRole(['admin', 'cajero_principal']))
+                <a href="{{ route('pdv.prefacturas.crear') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.prefacturas.crear') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Crear Prefactura</span>
+                </a>
+                <a href="{{ route('pdv.prefacturas.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.prefacturas.index') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-receipt"></i>
+                    <span>Mis Prefacturas</span>
+                </a>
+            @endif
         @endif
-        --}}
+
 
         {{-- Portal Cliente (solo para rol cliente) --}}
         @if(auth()->user()->hasRole('cliente'))

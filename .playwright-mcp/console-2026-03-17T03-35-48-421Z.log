@@ -1,0 +1,10 @@
+[    1191ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/218/1770950402_698e8f0291ee1_Esmaltes-Semipermanentes.png:0
+[    1369ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/219/1771001344_698f56006e008_Pegante-en-Gel.png:0
+[    1571ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/221/1771001925_698f5845b3943_Ultrabond.png:0
+[    1783ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/222/1771002085_698f58e518673_Base-Rubber.png:0
+[    1971ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/223/1771002201_698f5959e8a22_Painting-Gel-Espejo.png:0
+[    2161ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/224/1771002423_698f5a3747ca5_Painting-Gel-Saturacion.png:0
+[    2353ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/227/1771002996_698f5c74ddb4c_Mototool.Inalambrico-Bicolor-SG702.png:0
+[    2558ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/225/1771002957_698f5c4d27ff1_Spider-Gel.png:0
+[    2750ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/226/1771002849_698f5be1ac524_Lampara-de-Mesa.png:0
+[    2954ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/imagenes/productos/228/1771003071_698f5cbf61ce4_Mototool.Inalambrico-BQ109.png:0

@@ -87,6 +87,11 @@ class TrasladoStock extends Model
         return $this->belongsTo(User::class, 'usuario_receptor_id');
     }
 
+    public function logs()
+    {
+        return $this->hasMany(LogTraslado::class, 'traslado_stock_id');
+    }
+
     // =========================================
     // Accessors
     // =========================================

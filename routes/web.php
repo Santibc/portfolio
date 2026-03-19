@@ -20,6 +20,14 @@ use App\Http\Controllers\TrasladosController;
 use App\Http\Controllers\NovedadesStockController;
 use App\Http\Controllers\PortalClienteController;
 use App\Http\Controllers\PuntoVentaController;
+use App\Http\Controllers\Pdv\PdvDashboardController;
+use App\Http\Controllers\Pdv\CajasController;
+use App\Http\Controllers\Pdv\SesionesCajaController;
+use App\Http\Controllers\Pdv\VentaPdvController;
+use App\Http\Controllers\Pdv\PrefacturasController;
+use App\Http\Controllers\Pdv\ValesCajaController;
+use App\Http\Controllers\Pdv\ReportesPdvController;
+use App\Http\Controllers\Pdv\StockPdvController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -284,16 +292,17 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 // TRASLADOS DE STOCK (Admin, Inventarios y Centro de Experiencia)
 // ============================================================
 // Ver, aprobar (recibir) y rechazar (cancelar) — accesible para admin, inventarios y centro_experiencia
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centro_experiencia'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,centro_experiencia,cajero_principal'])->group(function () {
     Route::get('traslados', [TrasladosController::class, 'index'])->name('traslados');
     Route::get('traslados/{id}/detalle', [TrasladosController::class, 'detalle'])->name('traslados.detalle');
     Route::get('traslados/{id}/pdf', [TrasladosController::class, 'generarPdf'])->name('traslados.pdf');
+    Route::get('traslados/{id}/logs', [TrasladosController::class, 'logs'])->name('traslados.logs');
     Route::post('traslados/{id}/recibir', [TrasladosController::class, 'recibir'])->name('traslados.recibir');
     Route::post('traslados/{id}/cancelar', [TrasladosController::class, 'cancelar'])->name('traslados.cancelar');
 });
 
 // Crear, enviar y AJAX — solo admin e inventarios
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,cajero_principal'])->group(function () {
     Route::get('traslados/form/{id?}', [TrasladosController::class, 'form'])->name('traslados.form');
     Route::post('traslados/guardar', [TrasladosController::class, 'guardar'])->name('traslados.guardar');
     Route::post('traslados/{id}/actualizar', [TrasladosController::class, 'actualizar'])->name('traslados.actualizar');
@@ -307,7 +316,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
 // ============================================================
 // NOVEDADES DE STOCK (Admin e Inventarios)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,cajero_principal'])->group(function () {
     Route::get('novedades-stock', [NovedadesStockController::class, 'index'])->name('novedades-stock');
     Route::get('novedades-stock/form/{id?}', [NovedadesStockController::class, 'form'])->name('novedades-stock.form');
     Route::post('novedades-stock/guardar', [NovedadesStockController::class, 'guardar'])->name('novedades-stock.guardar');
@@ -376,48 +385,126 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inven
 });
 
 // ============================================================
-// PUNTO DE VENTA (Admin, Inventarios, Punto de Venta)
+// PUNTO DE VENTA V2 — Módulo Caja / PdV (Fase 2)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,punto_venta'])->prefix('punto-venta')->name('punto-venta.')->group(function () {
-    // Dashboard
-    Route::get('/', [PuntoVentaController::class, 'dashboard'])->name('dashboard');
 
-    // Cambiar ubicación
-    Route::post('/cambiar-ubicacion', [PuntoVentaController::class, 'cambiarUbicacion'])->name('cambiar-ubicacion');
-
-    // Nueva venta
-    Route::get('/nueva', [PuntoVentaController::class, 'nuevaVenta'])->name('nueva-venta');
-
-    // Buscar productos (AJAX)
-    Route::get('/buscar-productos', [PuntoVentaController::class, 'buscarProductos'])->name('buscar-productos');
-
-    // Obtener producto (AJAX)
-    Route::get('/producto', [PuntoVentaController::class, 'obtenerProducto'])->name('obtener-producto');
-
-    // Verificar stock (AJAX)
-    Route::post('/verificar-stock', [PuntoVentaController::class, 'verificarStock'])->name('verificar-stock');
-
-    // Procesar venta (AJAX)
-    Route::post('/procesar', [PuntoVentaController::class, 'procesarVenta'])->name('procesar');
-
-    // Historial de ventas
-    Route::get('/ventas', [PuntoVentaController::class, 'index'])->name('index');
-
-    // Detalle de venta (AJAX)
-    Route::get('/{id}/detalle', [PuntoVentaController::class, 'detalle'])->name('detalle');
-
-    // Anular venta
-    Route::post('/{id}/anular', [PuntoVentaController::class, 'anular'])->name('anular');
-
-    // Ticket de venta (PDF)
-    Route::get('/{id}/ticket', [PuntoVentaController::class, 'ticket'])->name('ticket');
-
-    // Reporte
-    Route::get('/reportes', [PuntoVentaController::class, 'reporte'])->name('reporte');
-
-    // Exportar
-    Route::get('/exportar', [PuntoVentaController::class, 'exportar'])->name('exportar');
+// Legacy POS redirects
+Route::middleware(['auth'])->prefix('punto-venta')->group(function () {
+    Route::get('/', fn() => redirect()->route('pdv.dashboard'));
+    Route::get('/nueva', fn() => redirect()->route('pdv.ventas.crear'));
+    Route::get('/ventas', fn() => redirect()->route('pdv.ventas.index'));
+    Route::get('/reportes', fn() => redirect()->route('pdv.reportes.index'));
 });
+
+// PdV Dashboard — All PdV roles
+Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'])
+    ->prefix('pdv')->name('pdv.')->group(function () {
+        Route::get('/', [PdvDashboardController::class, 'index'])->name('dashboard');
+    });
+
+// Caja Configuration — Admin only
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('pdv/cajas')->name('pdv.cajas.')->group(function () {
+        Route::get('/', [CajasController::class, 'index'])->name('index');
+        Route::get('/form/{id?}', [CajasController::class, 'form'])->name('form');
+        Route::post('/guardar', [CajasController::class, 'guardar'])->name('guardar');
+        Route::post('/{id}/toggle', [CajasController::class, 'toggleActivo'])->name('toggle');
+        Route::get('/configuracion', [CajasController::class, 'configuracion'])->name('configuracion');
+        Route::post('/configuracion', [CajasController::class, 'guardarConfiguracion'])->name('configuracion.guardar');
+        Route::post('/pin/guardar', [CajasController::class, 'guardarPin'])->name('pin.guardar');
+        Route::post('/pin/eliminar', [CajasController::class, 'eliminarPin'])->name('pin.eliminar');
+    });
+
+// Sesiones de Caja — Cajero Principal + Admin
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/sesiones')->name('pdv.sesiones.')->group(function () {
+        Route::get('/abrir/{cajaId}', [SesionesCajaController::class, 'formAbrir'])->name('abrir.form');
+        Route::post('/abrir', [SesionesCajaController::class, 'abrir'])->name('abrir');
+        Route::get('/cerrar/{sesionId}', [SesionesCajaController::class, 'formCerrar'])->name('cerrar.form');
+        Route::post('/cerrar', [SesionesCajaController::class, 'cerrar'])->name('cerrar');
+        Route::get('/historial', [SesionesCajaController::class, 'historial'])->name('historial');
+        Route::get('/{id}/resumen', [SesionesCajaController::class, 'resumen'])->name('resumen');
+        Route::get('/{id}/pdf', [SesionesCajaController::class, 'pdfCierre'])->name('pdf');
+    });
+
+// Ventas PdV — Cajero Principal + Admin
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/ventas')->name('pdv.ventas.')->group(function () {
+        Route::get('/', [VentaPdvController::class, 'index'])->name('index');
+        Route::get('/crear', [VentaPdvController::class, 'crear'])->name('crear');
+        Route::post('/procesar', [VentaPdvController::class, 'procesarVenta'])->name('procesar');
+        Route::get('/{id}/detalle', [VentaPdvController::class, 'detalle'])->name('detalle');
+        Route::get('/{id}/ticket', [VentaPdvController::class, 'ticket'])->name('ticket');
+        // AJAX
+        Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
+        Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');
+        Route::post('/obtener-precios', [VentaPdvController::class, 'obtenerPrecios'])->name('obtener-precios');
+        Route::post('/verificar-stock', [VentaPdvController::class, 'verificarStock'])->name('verificar-stock');
+        Route::post('/cliente-rapido', [VentaPdvController::class, 'crearClienteRapido'])->name('cliente-rapido');
+        Route::post('/verificar-pin', [VentaPdvController::class, 'verificarPin'])->name('verificar-pin');
+    });
+
+// Anulación de ventas — Admin only
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('pdv/ventas')->name('pdv.ventas.')->group(function () {
+        Route::post('/{id}/anular', [VentaPdvController::class, 'anular'])->name('anular');
+    });
+
+// Prefacturas — Role-based access
+Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'])
+    ->prefix('pdv/prefacturas')->name('pdv.prefacturas.')->group(function () {
+        Route::get('/', [PrefacturasController::class, 'index'])->name('index');
+        Route::get('/{id}/detalle', [PrefacturasController::class, 'detalle'])->name('detalle');
+    });
+
+Route::middleware(['auth', 'role:admin,auxiliar_venta,vendedor'])
+    ->prefix('pdv/prefacturas')->name('pdv.prefacturas.')->group(function () {
+        Route::get('/crear', [PrefacturasController::class, 'crear'])->name('crear');
+        Route::post('/guardar', [PrefacturasController::class, 'guardar'])->name('guardar');
+    });
+
+// AJAX compartido PdV — Todos los roles PdV (buscar productos/clientes)
+Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'])
+    ->prefix('pdv/ajax')->name('pdv.ajax.')->group(function () {
+        Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
+        Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');
+    });
+
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/prefacturas')->name('pdv.prefacturas.')->group(function () {
+        Route::get('/pendientes', [PrefacturasController::class, 'pendientes'])->name('pendientes');
+        Route::post('/{id}/aceptar', [PrefacturasController::class, 'aceptar'])->name('aceptar');
+        Route::post('/{id}/anular', [PrefacturasController::class, 'anular'])->name('anular');
+    });
+
+// Vales — Cajero Principal + Admin
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/vales')->name('pdv.vales.')->group(function () {
+        Route::get('/', [ValesCajaController::class, 'index'])->name('index');
+        Route::post('/guardar', [ValesCajaController::class, 'guardar'])->name('guardar');
+        Route::post('/{id}/redimir', [ValesCajaController::class, 'redimir'])->name('redimir');
+        Route::post('/{id}/anular', [ValesCajaController::class, 'anular'])->name('anular');
+        Route::get('/exportar-excel', [ValesCajaController::class, 'exportarExcel'])->name('exportar-excel');
+        Route::get('/exportar-pdf', [ValesCajaController::class, 'exportarPdf'])->name('exportar-pdf');
+    });
+
+// Reportes PdV — Cajero Principal + Admin
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/reportes')->name('pdv.reportes.')->group(function () {
+        Route::get('/', [ReportesPdvController::class, 'index'])->name('index');
+        Route::get('/ventas-diarias', [ReportesPdvController::class, 'ventasDiarias'])->name('ventas-diarias');
+        Route::get('/cierre-turno', [ReportesPdvController::class, 'cierreTurno'])->name('cierre-turno');
+        Route::get('/top-productos', [ReportesPdvController::class, 'topProductos'])->name('top-productos');
+        Route::get('/comparativa-cajas', [ReportesPdvController::class, 'comparativaCajas'])->name('comparativa-cajas');
+        Route::get('/vales', [ReportesPdvController::class, 'reporteVales'])->name('vales');
+        Route::get('/novedades', [ReportesPdvController::class, 'reporteNovedades'])->name('novedades');
+        Route::get('/prefacturas', [ReportesPdvController::class, 'reportePrefacturas'])->name('prefacturas');
+        Route::get('/exportar', [ReportesPdvController::class, 'exportar'])->name('exportar');
+    });
+
+// Stock visual PdV — Admin + Cajero Principal
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->get('pdv/stock', [StockPdvController::class, 'index'])->name('pdv.stock.index');
 
 // ============================================================
 // MÓDULO DE SERVICIO TÉCNICO (Admin y Técnico)

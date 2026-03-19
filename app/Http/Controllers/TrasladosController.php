@@ -11,6 +11,8 @@ use App\Models\MovimientoStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Caja;
+use App\Models\LogTraslado;
 use Yajra\DataTables\Facades\DataTables;
 
 class TrasladosController extends Controller
@@ -19,6 +21,13 @@ class TrasladosController extends Controller
     {
         if ($request->ajax()) {
             $query = TrasladoStock::with(['ubicacionOrigen', 'ubicacionDestino', 'items.producto', 'items.varianteProducto', 'usuarioCreador']);
+
+            $user = auth()->user();
+            $esCajeroPrincipal = $user->hasRole('cajero_principal') && !$user->hasRole('admin');
+            $ubicacionCajeroId = null;
+            if ($esCajeroPrincipal) {
+                $ubicacionCajeroId = Caja::where('cajero_asignado_id', $user->id)->value('ubicacion_id');
+            }
 
             // Filtro por estado
             if ($request->filled('estado')) {
@@ -31,29 +40,39 @@ class TrasladosController extends Controller
             }
 
             return DataTables::of($query)
-                ->addColumn('action', function ($row) {
+                ->addColumn('action', function ($row) use ($esCajeroPrincipal, $ubicacionCajeroId) {
                     $user = auth()->user();
                     $puedeAprobarRechazar = $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia']);
                     $btns = '<div class="d-flex gap-1">';
 
-                    if (in_array($row->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO]) && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
-                        $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
+                    if (!$esCajeroPrincipal) {
+                        // Edit button
+                        if (in_array($row->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO]) && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
+                            $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
+                        }
+                        // Send button
+                        if ($row->puedeEnviar() && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
+                            $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
+                        }
+                        // Cancel button
+                        if ($row->puedeCancelar() && $puedeAprobarRechazar) {
+                            $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelarTraslado(' . $row->id . ')" title="Cancelar"><i class="bi bi-x-lg"></i></button>';
+                        }
                     }
 
-                    if ($row->puedeEnviar() && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
-                        $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
+                    // Receive button - for non-cajero roles OR for cajero if destination matches their caja
+                    $puedeRecibir = $puedeAprobarRechazar;
+                    if ($esCajeroPrincipal && $ubicacionCajeroId && $row->ubicacion_destino_id == $ubicacionCajeroId) {
+                        $puedeRecibir = true;
                     }
-
-                    if ($row->puedeRecibir() && $puedeAprobarRechazar) {
+                    if ($row->puedeRecibir() && $puedeRecibir) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="recibirTraslado(' . $row->id . ')" title="Recibir"><i class="bi bi-check-lg"></i></button>';
                     }
 
-                    if ($row->puedeCancelar() && $puedeAprobarRechazar) {
-                        $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelarTraslado(' . $row->id . ')" title="Cancelar"><i class="bi bi-x-lg"></i></button>';
-                    }
-
+                    // View, PDF, Logs - always visible
                     $btns .= '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="verDetalleTraslado(' . $row->id . ')" title="Ver detalle"><i class="bi bi-eye"></i></button>';
-                    $btns .= '<a href="/traslados/' . $row->id . '/pdf" target="_blank" class="btn btn-sm btn-outline-info" title="Descargar PDF"><i class="bi bi-file-earmark-pdf"></i></a>';
+                    $btns .= '<a href="/traslados/' . $row->id . '/pdf" target="_blank" class="btn btn-sm btn-outline-info" title="PDF"><i class="bi bi-file-earmark-pdf"></i></a>';
+                    $btns .= '<button type="button" class="btn btn-sm btn-outline-dark" onclick="verLogsTraslado(' . $row->id . ')" title="Historial"><i class="bi bi-clock-history"></i></button>';
                     $btns .= '</div>';
                     return $btns;
                 })
@@ -93,19 +112,30 @@ class TrasladosController extends Controller
     public function form($id = null)
     {
         $traslado = $id ? TrasladoStock::findOrFail($id) : new TrasladoStock();
+        $ubicacionCajeroId = null;
 
-        // Para rol inventarios, origen solo muestra bodegas
-        if (auth()->user()->hasRole('inventarios')) {
+        if (auth()->user()->hasRole('cajero_principal') && !auth()->user()->hasRole('admin')) {
+            $caja = Caja::where('cajero_asignado_id', auth()->id())->first();
+
+            if (!$caja || !$caja->ubicacion_id) {
+                return redirect()->route('traslados')
+                    ->with('error', 'No tiene una caja asignada con ubicación configurada.');
+            }
+
+            $ubicacionCajeroId = $caja->ubicacion_id;
+            $ubicacionesOrigen = Ubicacion::activas()->where('id', '!=', $ubicacionCajeroId)->get();
+            $ubicacionesDestino = Ubicacion::activas()->where('id', $ubicacionCajeroId)->get();
+        } elseif (auth()->user()->hasRole('inventarios')) {
             $ubicacionesOrigen = Ubicacion::activas()->bodegas()->get();
+            $ubicacionesDestino = Ubicacion::activas()->get();
         } else {
             $ubicacionesOrigen = Ubicacion::activas()->get();
+            $ubicacionesDestino = Ubicacion::activas()->get();
         }
-
-        $ubicacionesDestino = Ubicacion::activas()->get();
 
         $items = $id ? $traslado->load('items.producto', 'items.varianteProducto')->items : collect();
 
-        return view('traslados.form', compact('traslado', 'ubicacionesOrigen', 'ubicacionesDestino', 'items'));
+        return view('traslados.form', compact('traslado', 'ubicacionesOrigen', 'ubicacionesDestino', 'items', 'ubicacionCajeroId'));
     }
 
     /**
@@ -135,7 +165,8 @@ class TrasladosController extends Controller
             ->orderBy('nombre')
             ->get()
             ->map(function ($producto) use ($stockItems, $itemsEnTransito) {
-                $stockTotal = $stockItems->where('producto_id', $producto->id)->sum('cantidad_disponible');
+                $stockTotal = $stockItems->where('producto_id', $producto->id)->sum('cantidad_disponible')
+                            - $stockItems->where('producto_id', $producto->id)->sum('cantidad_reservada');
                 $enTransito = $itemsEnTransito->where('producto_id', $producto->id)->sum('cantidad');
                 $stockEfectivo = $stockTotal - $enTransito;
 
@@ -199,7 +230,8 @@ class TrasladosController extends Controller
             ->whereIn('id', $varianteIds)
             ->get()
             ->map(function ($variante) use ($stockItems, $itemsEnTransito) {
-                $stockTotal = $stockItems->where('variante_producto_id', $variante->id)->sum('cantidad_disponible');
+                $stockTotal = $stockItems->where('variante_producto_id', $variante->id)->sum('cantidad_disponible')
+                           - $stockItems->where('variante_producto_id', $variante->id)->sum('cantidad_reservada');
                 $enTransito = $itemsEnTransito->where('variante_producto_id', $variante->id)->sum('cantidad');
                 $stockEfectivo = $stockTotal - $enTransito;
 
@@ -305,6 +337,22 @@ class TrasladosController extends Controller
             }
 
             DB::commit();
+
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_CREACION, [
+                'creado_por' => auth()->user()->name,
+                'numero' => $traslado->numero_traslado,
+                'origen' => Ubicacion::find($request->ubicacion_origen_id)->nombre,
+                'destino' => Ubicacion::find($request->ubicacion_destino_id)->nombre,
+                'tipo_operacion' => $request->tipo_operacion,
+                'cantidad_items' => count($request->items),
+                'items' => collect($request->items)->map(function($item) {
+                    $prod = Producto::find($item['producto_id']);
+                    return [
+                        'producto' => $prod->referencia . ' - ' . $prod->nombre,
+                        'cantidad' => $item['cantidad'],
+                    ];
+                })->values()->toArray(),
+            ]);
 
             return redirect()->route('traslados')
                 ->with('success', 'Traslado creado correctamente. Número: ' . $traslado->numero_traslado);
@@ -435,6 +483,19 @@ class TrasladosController extends Controller
             \Log::info("VALIDADO: {$referenciaProducto} ({$clave}) - {$cantidadOriginal} → {$cantidadEditada}");
         }
 
+        // Capture old state for logging
+        $estadoAnterior = [
+            'origen' => $traslado->ubicacionOrigen->nombre,
+            'destino' => $traslado->ubicacionDestino->nombre,
+            'tipo_operacion' => $traslado->tipo_operacion,
+            'notas' => $traslado->notas,
+            'items' => $traslado->items->map(fn($i) => [
+                'producto' => ($i->producto->referencia ?? '') . ' - ' . ($i->producto->nombre ?? ''),
+                'variante' => $i->varianteProducto->nombre_variante ?? null,
+                'cantidad' => $i->cantidad,
+            ])->toArray(),
+        ];
+
         DB::beginTransaction();
         try {
             // Si estaba en tránsito, devolver el stock de los ítems actuales al origen
@@ -555,6 +616,26 @@ class TrasladosController extends Controller
 
             DB::commit();
 
+            $estadoNuevo = [
+                'origen' => Ubicacion::find($request->ubicacion_origen_id)->nombre,
+                'destino' => Ubicacion::find($request->ubicacion_destino_id)->nombre,
+                'tipo_operacion' => $request->tipo_operacion,
+                'notas' => $request->notas,
+                'items' => collect($request->items)->map(function($item) {
+                    $prod = Producto::find($item['producto_id']);
+                    return [
+                        'producto' => $prod->referencia . ' - ' . $prod->nombre,
+                        'cantidad' => $item['cantidad'],
+                    ];
+                })->values()->toArray(),
+            ];
+
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_EDICION, [
+                'editado_por' => auth()->user()->name,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => $estadoNuevo,
+            ]);
+
             return redirect()->route('traslados')
                 ->with('success', 'Traslado actualizado correctamente.');
 
@@ -624,6 +705,13 @@ class TrasladosController extends Controller
             $traslado->enviar();
             DB::commit();
 
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_ENVIO, [
+                'enviado_por' => auth()->user()->name,
+                'origen' => $traslado->ubicacionOrigen->nombre,
+                'destino' => $traslado->ubicacionDestino->nombre,
+                'items_enviados' => $traslado->items->count(),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Traslado enviado correctamente.'
@@ -640,14 +728,28 @@ class TrasladosController extends Controller
 
     public function recibir($id)
     {
-        if (!auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permisos para aprobar traslados.'
-            ], 403);
+        $user = auth()->user();
+        $traslado = TrasladoStock::with('items')->findOrFail($id);
+
+        $puedeRecibir = false;
+        if ($user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+            $puedeRecibir = true;
+        }
+        if ($user->hasRole('cajero_principal')) {
+            $cajaEnDestino = Caja::where('ubicacion_id', $traslado->ubicacion_destino_id)
+                ->where('cajero_asignado_id', $user->id)
+                ->exists();
+            if ($cajaEnDestino) {
+                $puedeRecibir = true;
+            }
         }
 
-        $traslado = TrasladoStock::with('items')->findOrFail($id);
+        if (!$puedeRecibir) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para recibir este traslado.'
+            ], 403);
+        }
 
         if (!$traslado->puedeRecibir()) {
             return response()->json([
@@ -698,6 +800,12 @@ class TrasladosController extends Controller
             $traslado->completar(auth()->id());
             DB::commit();
 
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_RECEPCION, [
+                'recibido_por' => $user->name,
+                'ubicacion_destino' => $traslado->ubicacionDestino->nombre,
+                'items_recibidos' => $traslado->items->count(),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Traslado recibido correctamente.'
@@ -729,6 +837,8 @@ class TrasladosController extends Controller
                 'message' => 'Este traslado no puede ser cancelado.'
             ], 422);
         }
+
+        $estabEnTransito = $traslado->estado === TrasladoStock::ESTADO_EN_TRANSITO;
 
         DB::beginTransaction();
         try {
@@ -774,6 +884,12 @@ class TrasladosController extends Controller
 
             $traslado->cancelar();
             DB::commit();
+
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_CANCELACION, [
+                'cancelado_por' => auth()->user()->name,
+                'estaba_en_transito' => $estabEnTransito,
+                'stock_devuelto' => $estabEnTransito,
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -900,5 +1016,28 @@ class TrasladosController extends Controller
         $nombreArchivo = 'Traslado_' . $traslado->numero_traslado . '.pdf';
 
         return $pdf->stream($nombreArchivo);
+    }
+
+    public function logs($id)
+    {
+        $logs = LogTraslado::where('traslado_stock_id', $id)
+            ->with('usuario')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'accion' => $log->accion,
+                    'accion_label' => $log->accion_label,
+                    'accion_color' => $log->accion_color,
+                    'accion_icon' => $log->accion_icon,
+                    'usuario' => $log->usuario->name ?? 'Sistema',
+                    'detalle' => $log->detalle,
+                    'fecha' => $log->created_at->format('d/m/Y h:i:s A'),
+                    'fecha_relativa' => $log->created_at->diffForHumans(),
+                ];
+            });
+
+        return response()->json($logs);
     }
 }

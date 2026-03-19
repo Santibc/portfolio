@@ -1,0 +1,340 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\VentaPdv;
+use App\Models\ItemVentaPdv;
+use App\Models\Producto;
+use App\Models\StockProducto;
+use App\Models\MovimientoStock;
+use App\Models\SesionCaja;
+use App\Models\ConfiguracionPdv;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
+class VentaPdvServiceV2
+{
+    public function crearVenta(array $datosVenta, array $items, int $usuarioId, ?int $sesionCajaId = null): array
+    {
+        if (empty($items)) {
+            return ['exito' => false, 'venta' => null, 'mensaje' => 'No se puede crear una venta sin productos'];
+        }
+
+        DB::beginTransaction();
+        try {
+            $ubicacionId = $datosVenta['ubicacion_id'];
+
+            // Verificar stock
+            $verificacion = $this->verificarDisponibilidadItems($items, $ubicacionId);
+            if (!$verificacion['disponible']) {
+                DB::rollBack();
+                return ['exito' => false, 'venta' => null, 'mensaje' => 'Stock insuficiente: ' . implode(', ', $verificacion['errores'])];
+            }
+
+            // Obtener sesion y caja
+            $sesion = $sesionCajaId ? SesionCaja::find($sesionCajaId) : null;
+            $cajaId = $sesion ? $sesion->caja_id : null;
+
+            $numeroVenta = VentaPdv::generarNumeroVenta($ubicacionId);
+
+            // Calcular totales de items
+            $subtotal = 0;
+            $ivaTotal = 0;
+            foreach ($items as $item) {
+                $precioItem = $item['precio_unitario'] * $item['cantidad'];
+                $descuentoItem = $item['descuento_valor'] ?? ($item['descuento'] ?? 0);
+                $subtotal += $precioItem - $descuentoItem;
+                $ivaTotal += $item['iva'] ?? 0;
+            }
+
+            $descuentoGlobal = $datosVenta['descuento_global'] ?? 0;
+            $total = $subtotal - $descuentoGlobal + $ivaTotal;
+
+            $venta = VentaPdv::create([
+                'numero_venta' => $numeroVenta,
+                'sesion_caja_id' => $sesionCajaId,
+                'caja_id' => $cajaId,
+                'prefactura_id' => $datosVenta['prefactura_id'] ?? null,
+                'ubicacion_id' => $ubicacionId,
+                'cliente_id' => $datosVenta['cliente_id'] ?? null,
+                'nombre_cliente' => $datosVenta['nombre_cliente'] ?? 'Consumidor Final',
+                'lista_precio_id' => $datosVenta['lista_precio_id'] ?? null,
+                'subtotal' => round($subtotal, 2),
+                'descuento' => 0,
+                'descuento_global' => round($descuentoGlobal, 2),
+                'iva' => round($ivaTotal, 2),
+                'total' => round($total, 2),
+                'metodo_pago' => $datosVenta['metodo_pago'],
+                'monto_efectivo' => $datosVenta['monto_efectivo'] ?? null,
+                'monto_tarjeta' => $datosVenta['monto_tarjeta'] ?? null,
+                'monto_transferencia' => $datosVenta['monto_transferencia'] ?? null,
+                'monto_recibido' => $datosVenta['monto_recibido'] ?? null,
+                'cambio' => $datosVenta['cambio'] ?? null,
+                'tipo_transferencia' => $datosVenta['tipo_transferencia'] ?? null,
+                'comprobante_pago' => $datosVenta['comprobante_pago'] ?? null,
+                'notas' => $datosVenta['notas'] ?? null,
+                'usuario_id' => $usuarioId,
+                'descuento_autorizado_por' => $datosVenta['descuento_autorizado_por'] ?? null,
+                'precio_autorizado_por' => $datosVenta['precio_autorizado_por'] ?? null,
+                'estado' => 'completada',
+            ]);
+
+            // Crear items y descontar stock
+            foreach ($items as $item) {
+                $this->crearItemYDescontarStock($venta, $item);
+            }
+
+            // Actualizar totales de la sesión
+            if ($sesion) {
+                $sesion->increment('total_ventas', $venta->total);
+                $sesion->increment('cantidad_ventas');
+                if ($venta->monto_efectivo) {
+                    $sesion->increment('total_ventas_efectivo', $venta->monto_efectivo);
+                }
+                if ($venta->monto_transferencia) {
+                    $sesion->increment('total_ventas_transferencia', $venta->monto_transferencia);
+                }
+            }
+
+            DB::commit();
+
+            return [
+                'exito' => true,
+                'venta' => $venta->load('items.producto', 'items.variante'),
+                'mensaje' => "Venta {$numeroVenta} creada exitosamente",
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error al crear venta PdV V2: " . $e->getMessage());
+            return ['exito' => false, 'venta' => null, 'mensaje' => 'Error al procesar la venta: ' . $e->getMessage()];
+        }
+    }
+
+    public function anularVenta(VentaPdv $venta, int $usuarioId, string $motivo): array
+    {
+        if ($venta->estado === 'anulada') {
+            return ['exito' => false, 'mensaje' => 'Esta venta ya está anulada'];
+        }
+
+        // Check if session is closed
+        if ($venta->sesionCaja && !$venta->sesionCaja->estaAbierta()) {
+            return ['exito' => false, 'mensaje' => 'No se puede anular una venta de una sesión cerrada'];
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($venta->items as $item) {
+                $this->restaurarStockItem($venta, $item);
+            }
+
+            $venta->anular($usuarioId, $motivo);
+
+            // Update session totals
+            if ($venta->sesion_caja_id) {
+                $sesion = $venta->sesionCaja;
+                if ($sesion) {
+                    $sesion->increment('total_anulaciones', $venta->total);
+                    $sesion->decrement('total_ventas', $venta->total);
+                    $sesion->decrement('cantidad_ventas');
+                    if ($venta->monto_efectivo) {
+                        $sesion->decrement('total_ventas_efectivo', $venta->monto_efectivo);
+                    }
+                    if ($venta->monto_transferencia) {
+                        $sesion->decrement('total_ventas_transferencia', $venta->monto_transferencia);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return ['exito' => true, 'mensaje' => "Venta {$venta->numero_venta} anulada exitosamente"];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error al anular venta {$venta->numero_venta}: " . $e->getMessage());
+            return ['exito' => false, 'mensaje' => 'Error al anular la venta: ' . $e->getMessage()];
+        }
+    }
+
+    public function verificarDisponibilidadItems(array $items, int $ubicacionId): array
+    {
+        $resultado = ['disponible' => true, 'errores' => [], 'detalles' => []];
+
+        foreach ($items as $index => $item) {
+            $producto = Producto::find($item['producto_id']);
+            if (!$producto) {
+                $resultado['disponible'] = false;
+                $resultado['errores'][] = "Producto no encontrado (ID: {$item['producto_id']})";
+                continue;
+            }
+
+            if (!$producto->controlar_stock || $producto->permitir_venta_sin_stock) {
+                $resultado['detalles'][$index] = ['disponible' => true, 'sin_control_stock' => true];
+                continue;
+            }
+
+            $stock = $this->obtenerStock($item['producto_id'], $item['variante_producto_id'] ?? null, $ubicacionId);
+            $stockDisponible = $stock ? ($stock->cantidad_disponible - $stock->cantidad_reservada) : 0;
+            $cantidadSolicitada = $item['cantidad'];
+
+            if ($stockDisponible < $cantidadSolicitada) {
+                $resultado['disponible'] = false;
+                $nombreProducto = $producto->nombre;
+                if (!empty($item['variante_producto_id'])) {
+                    $variante = $producto->variantes()->find($item['variante_producto_id']);
+                    $nombreProducto .= ' - ' . ($variante->referencia_variante ?? 'Variante');
+                }
+                $resultado['errores'][] = "{$nombreProducto} (Disponible: {$stockDisponible}, Solicitado: {$cantidadSolicitada})";
+            }
+
+            $resultado['detalles'][$index] = [
+                'disponible' => $stockDisponible >= $cantidadSolicitada,
+                'stock_disponible' => $stockDisponible,
+            ];
+        }
+
+        return $resultado;
+    }
+
+    public function buscarProductos(string $termino, int $ubicacionId, ?int $listaPrecioId = null, int $limite = 20): array
+    {
+        $productos = Producto::activos()
+            ->where(function ($query) use ($termino) {
+                $query->where('nombre', 'like', "%{$termino}%")
+                    ->orWhere('referencia', 'like', "%{$termino}%");
+            })
+            ->with(['variantes', 'precios', 'stock' => function ($query) use ($ubicacionId) {
+                $query->where('ubicacion_id', $ubicacionId);
+            }])
+            ->limit($limite)
+            ->get();
+
+        return $productos->map(function ($producto) use ($ubicacionId, $listaPrecioId) {
+            $precio = $listaPrecioId
+                ? $producto->getPrecioPorLista($listaPrecioId)
+                : ($producto->precios->first()->precio ?? 0);
+
+            $stockDisponible = 0;
+            if ($producto->controlar_stock) {
+                $stock = $producto->stock->first();
+                $stockDisponible = $stock ? ($stock->cantidad_disponible - $stock->cantidad_reservada) : 0;
+            }
+
+            return [
+                'id' => $producto->id,
+                'referencia' => $producto->referencia,
+                'nombre' => $producto->nombre,
+                'precio' => $precio,
+                'stock_disponible' => $stockDisponible,
+                'controla_stock' => $producto->controlar_stock,
+                'permite_sin_stock' => $producto->permitir_venta_sin_stock,
+                'tiene_variantes' => $producto->tiene_variantes,
+                'variantes' => $producto->tiene_variantes ? $producto->variantes->map(function ($v) use ($producto, $ubicacionId, $listaPrecioId) {
+                    $stockVariante = StockProducto::where('producto_id', $producto->id)
+                        ->where('variante_producto_id', $v->id)
+                        ->where('ubicacion_id', $ubicacionId)
+                        ->first();
+
+                    $precioVariante = $listaPrecioId ? $v->precios()->where('lista_precio_id', $listaPrecioId)->first() : null;
+
+                    return [
+                        'id' => $v->id,
+                        'sku' => $v->sku,
+                        'referencia_variante' => $v->referencia_variante,
+                        'color' => $v->color,
+                        'precio' => $precioVariante ? $precioVariante->precio : null,
+                        'stock_disponible' => $stockVariante ? ($stockVariante->cantidad_disponible - $stockVariante->cantidad_reservada) : 0,
+                    ];
+                }) : [],
+                'imagen_url' => $producto->url_imagen_principal,
+            ];
+        })->toArray();
+    }
+
+    private function crearItemYDescontarStock(VentaPdv $venta, array $item): ItemVentaPdv
+    {
+        $descuentoValor = $item['descuento_valor'] ?? ($item['descuento'] ?? 0);
+        $subtotalItem = ($item['precio_unitario'] * $item['cantidad']) - $descuentoValor;
+        $ivaItem = $item['iva'] ?? 0;
+        $totalItem = $subtotalItem + $ivaItem;
+
+        $itemVenta = ItemVentaPdv::create([
+            'venta_pdv_id' => $venta->id,
+            'producto_id' => $item['producto_id'],
+            'variante_producto_id' => $item['variante_producto_id'] ?? null,
+            'cantidad' => $item['cantidad'],
+            'precio_unitario' => $item['precio_unitario'],
+            'precio_original' => $item['precio_original'] ?? $item['precio_unitario'],
+            'descuento' => $descuentoValor,
+            'descuento_porcentaje' => $item['descuento_porcentaje'] ?? 0,
+            'descuento_valor' => $descuentoValor,
+            'subtotal' => $subtotalItem,
+            'iva' => $ivaItem,
+            'total' => $totalItem,
+        ]);
+
+        $producto = Producto::find($item['producto_id']);
+        if ($producto && $producto->controlar_stock) {
+            $stock = $this->obtenerStock($item['producto_id'], $item['variante_producto_id'] ?? null, $venta->ubicacion_id);
+
+            if ($stock) {
+                $stockAnterior = $stock->cantidad_disponible;
+                $stock->decrement('cantidad_disponible', $item['cantidad']);
+
+                MovimientoStock::create([
+                    'producto_id' => $item['producto_id'],
+                    'variante_producto_id' => $item['variante_producto_id'] ?? null,
+                    'ubicacion_id' => $venta->ubicacion_id,
+                    'tipo_movimiento' => 'salida',
+                    'cantidad' => $item['cantidad'],
+                    'stock_anterior' => $stockAnterior,
+                    'stock_nuevo' => $stock->cantidad_disponible,
+                    'origen' => 'venta',
+                    'referencia' => $venta->numero_venta,
+                    'motivo' => "Venta PdV - {$venta->numero_venta}",
+                    'usuario_id' => $venta->usuario_id,
+                ]);
+            }
+        }
+
+        return $itemVenta;
+    }
+
+    private function restaurarStockItem(VentaPdv $venta, ItemVentaPdv $item): void
+    {
+        $producto = $item->producto;
+        if (!$producto || !$producto->controlar_stock) return;
+
+        $stock = $this->obtenerStock($item->producto_id, $item->variante_producto_id, $venta->ubicacion_id);
+
+        if ($stock) {
+            $stockAnterior = $stock->cantidad_disponible;
+            $stock->increment('cantidad_disponible', $item->cantidad);
+
+            MovimientoStock::create([
+                'producto_id' => $item->producto_id,
+                'variante_producto_id' => $item->variante_producto_id,
+                'ubicacion_id' => $venta->ubicacion_id,
+                'tipo_movimiento' => 'entrada',
+                'cantidad' => $item->cantidad,
+                'stock_anterior' => $stockAnterior,
+                'stock_nuevo' => $stock->cantidad_disponible,
+                'origen' => 'ajuste_inventario',
+                'referencia' => $venta->numero_venta,
+                'motivo' => "Anulación Venta PdV - {$venta->numero_venta}",
+                'usuario_id' => auth()->id(),
+            ]);
+        }
+    }
+
+    private function obtenerStock(int $productoId, ?int $varianteId, int $ubicacionId): ?StockProducto
+    {
+        $query = StockProducto::where('producto_id', $productoId)->where('ubicacion_id', $ubicacionId);
+        if ($varianteId) {
+            $query->where('variante_producto_id', $varianteId);
+        } else {
+            $query->whereNull('variante_producto_id');
+        }
+        return $query->first();
+    }
+}

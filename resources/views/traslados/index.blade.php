@@ -87,6 +87,24 @@
     </div>
   </div>
 
+  {{-- Modal Logs --}}
+  <div class="modal fade" id="modalLogs" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-clock-history me-2"></i>Historial de Actividad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="logsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Cargando historial...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
   @push('scripts')
   <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -300,6 +318,91 @@
           new bootstrap.Modal(document.getElementById('modalDetalle')).show();
         })
         .catch(() => Swal.fire('Error', 'No se pudo cargar el detalle', 'error'));
+    };
+
+    window.verLogsTraslado = function(id) {
+      const modal = new bootstrap.Modal(document.getElementById('modalLogs'));
+      const content = document.getElementById('logsContent');
+      content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Cargando historial...</p></div>';
+      modal.show();
+
+      fetch('/traslados/' + id + '/logs', {
+          headers: { 'Accept': 'application/json' }
+      })
+      .then(r => r.json())
+      .then(logs => {
+          if (logs.length === 0) {
+              content.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-inbox" style="font-size: 2rem;"></i><p class="mt-2">No hay registros de actividad</p></div>';
+              return;
+          }
+
+          let html = '<div class="timeline">';
+          logs.forEach(log => {
+              html += `
+                  <div class="d-flex mb-3 align-items-start">
+                      <div class="me-3 text-center" style="min-width: 40px;">
+                          <span class="badge bg-${log.accion_color} rounded-circle p-2">
+                              <i class="bi ${log.accion_icon}"></i>
+                          </span>
+                      </div>
+                      <div class="flex-grow-1">
+                          <div class="d-flex justify-content-between align-items-center">
+                              <strong class="text-${log.accion_color}">${log.accion_label}</strong>
+                              <small class="text-muted" title="${log.fecha}">${log.fecha_relativa}</small>
+                          </div>
+                          <div class="text-muted small">Por: <strong>${log.usuario}</strong></div>`;
+
+              if (log.detalle) {
+                  html += '<div class="mt-2 p-2 bg-light rounded small">';
+                  if (log.accion === 'creacion') {
+                      html += '<div><strong>Origen:</strong> ' + (log.detalle.origen || '-') + '</div>';
+                      html += '<div><strong>Destino:</strong> ' + (log.detalle.destino || '-') + '</div>';
+                      html += '<div><strong>Tipo:</strong> ' + (log.detalle.tipo_operacion || '-') + '</div>';
+                      if (log.detalle.items) {
+                          html += '<div class="mt-1"><strong>Items:</strong></div>';
+                          html += '<ul class="mb-0 ps-3">';
+                          log.detalle.items.forEach(item => {
+                              html += '<li>' + item.producto + ' (x' + item.cantidad + ')</li>';
+                          });
+                          html += '</ul>';
+                      }
+                  } else if (log.accion === 'edicion') {
+                      html += '<div><strong>Editado por:</strong> ' + (log.detalle.editado_por || '-') + '</div>';
+                      if (log.detalle.estado_nuevo && log.detalle.estado_nuevo.items) {
+                          html += '<div class="mt-1"><strong>Items actualizados:</strong></div>';
+                          html += '<ul class="mb-0 ps-3">';
+                          log.detalle.estado_nuevo.items.forEach(item => {
+                              html += '<li>' + item.producto + ' (x' + item.cantidad + ')</li>';
+                          });
+                          html += '</ul>';
+                      }
+                  } else if (log.accion === 'envio') {
+                      html += '<div><strong>Enviado por:</strong> ' + (log.detalle.enviado_por || '-') + '</div>';
+                      html += '<div><strong>Ruta:</strong> ' + (log.detalle.origen || '') + ' → ' + (log.detalle.destino || '') + '</div>';
+                  } else if (log.accion === 'recepcion') {
+                      html += '<div><strong>Recibido por:</strong> ' + (log.detalle.recibido_por || '-') + '</div>';
+                  } else if (log.accion === 'cancelacion') {
+                      html += '<div><strong>Cancelado por:</strong> ' + (log.detalle.cancelado_por || '-') + '</div>';
+                      if (log.detalle.stock_devuelto) {
+                          html += '<div class="text-warning"><i class="bi bi-arrow-return-left me-1"></i>Stock devuelto al origen</div>';
+                      }
+                  } else {
+                      // Generic: show all keys
+                      Object.keys(log.detalle).forEach(key => {
+                          html += '<div><strong>' + key + ':</strong> ' + JSON.stringify(log.detalle[key]) + '</div>';
+                      });
+                  }
+                  html += '</div>';
+              }
+
+              html += '</div></div>';
+          });
+          html += '</div>';
+          content.innerHTML = html;
+      })
+      .catch(err => {
+          content.innerHTML = '<div class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i><p class="mt-2">Error al cargar el historial</p></div>';
+      });
     };
   });
   </script>

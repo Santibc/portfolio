@@ -34,16 +34,23 @@
               </div>
               <div class="col-md-6">
                 <label for="ubicacion_destino_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicaci&oacute;n Destino *</label>
-                <select name="ubicacion_destino_id" id="ubicacion_destino_id"
-                  class="w-full px-3 py-2 border rounded-md" required>
-                  <option value="">Seleccione ubicaci&oacute;n de destino</option>
-                  @foreach($ubicacionesDestino as $ubicacion)
-                    <option value="{{ $ubicacion->id }}"
-                      {{ (old('ubicacion_destino_id', $traslado->ubicacion_destino_id)) == $ubicacion->id ? 'selected' : '' }}>
-                      {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
-                    </option>
-                  @endforeach
-                </select>
+                @if(isset($ubicacionCajeroId) && $ubicacionCajeroId)
+                  <select class="form-select bg-light" disabled>
+                    <option selected>{{ $ubicacionesDestino->first()->nombre }} ({{ $ubicacionesDestino->first()->tipo_nombre ?? $ubicacionesDestino->first()->tipo }})</option>
+                  </select>
+                  <input type="hidden" name="ubicacion_destino_id" id="ubicacion_destino_id" value="{{ $ubicacionCajeroId }}">
+                @else
+                  <select name="ubicacion_destino_id" id="ubicacion_destino_id"
+                    class="w-full px-3 py-2 border rounded-md" required>
+                    <option value="">Seleccione ubicaci&oacute;n de destino</option>
+                    @foreach($ubicacionesDestino as $ubicacion)
+                      <option value="{{ $ubicacion->id }}"
+                        {{ (old('ubicacion_destino_id', $traslado->ubicacion_destino_id)) == $ubicacion->id ? 'selected' : '' }}>
+                        {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
+                      </option>
+                    @endforeach
+                  </select>
+                @endif
               </div>
             </div>
 
