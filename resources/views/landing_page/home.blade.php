@@ -485,7 +485,6 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/purecounterjs@1.5.0/dist/purecounter_vanilla.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -568,8 +567,32 @@ document.addEventListener('DOMContentLoaded', () => {
         lightGallery(galleryGrid, { selector: '.gallery-item[data-src]', speed: 500, backdropDuration: 300, download: false, counter: true, plugins: [lgZoom] });
     }
 
-    // ===== PURECOUNTER =====
-    new PureCounter();
+    // ===== ANIMATED COUNTERS =====
+    function animateCounter(el) {
+        const end = parseInt(el.getAttribute('data-purecounter-end')) || 0;
+        const duration = (parseFloat(el.getAttribute('data-purecounter-duration')) || 2) * 1000;
+        const suffix = el.getAttribute('data-purecounter-suffix') || '';
+        const start = 0;
+        const startTime = performance.now();
+        function update(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(start + (end - start) * eased);
+            el.textContent = current + suffix;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+    }
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.purecounter').forEach(el => counterObserver.observe(el));
 });
 </script>
 @endpush

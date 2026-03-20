@@ -560,15 +560,15 @@
     <div class="container">
         <div class="stats-grid">
             <div class="stat-block reveal">
-                <div class="number" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_years_experience ?? 5 }}" data-purecounter-duration="2">0</div>
+                <div class="number purecounter" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_years_experience ?? 5 }}" data-purecounter-duration="2">0</div>
                 <div class="label">Anos de experiencia</div>
             </div>
             <div class="stat-block reveal">
-                <div class="number" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_happy_clients ?? 50 }}" data-purecounter-duration="2">0</div>
+                <div class="number purecounter" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_happy_clients ?? 50 }}" data-purecounter-duration="2">0</div>
                 <div class="label">Clientes satisfechos</div>
             </div>
             <div class="stat-block reveal">
-                <div class="number" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_client_satisfaction ?? 100 }}" data-purecounter-duration="2" data-purecounter-suffix="%">0</div>
+                <div class="number purecounter" data-purecounter-start="0" data-purecounter-end="{{ $about->stats_client_satisfaction ?? 100 }}" data-purecounter-duration="2" data-purecounter-suffix="%">0</div>
                 <div class="label">Satisfaccion cliente</div>
             </div>
         </div>
@@ -689,7 +689,6 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/purecounterjs@1.5.0/dist/purecounter_vanilla.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // Hero parallax
@@ -790,15 +789,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     );
 
-    // PureCounter
-    if (typeof PureCounter !== 'undefined') {
-        new PureCounter({
-            selector: '[data-purecounter-start]',
-            start: 0,
-            once: true,
-            pulse: false
-        });
+    // Animated Counters
+    function animateCounter(el) {
+        const end = parseInt(el.getAttribute('data-purecounter-end')) || 0;
+        const duration = (parseFloat(el.getAttribute('data-purecounter-duration')) || 2) * 1000;
+        const suffix = el.getAttribute('data-purecounter-suffix') || '';
+        const startTime = performance.now();
+        function update(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(end * eased) + suffix;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
     }
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.purecounter').forEach(el => counterObserver.observe(el));
 });
 </script>
 @endpush
