@@ -10,7 +10,7 @@ class CiudadSeeder extends Seeder
 {
     public function run()
     {
-        // Mismo JSON que en DepartamentoSeeder
+        // Mismo JSON que en DepartamentoSeedergf
         $json = json_decode(
             file_get_contents(
                 'https://raw.githubusercontent.com/marcovega/colombia-json/master/colombia.json'
