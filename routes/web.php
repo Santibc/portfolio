@@ -28,6 +28,7 @@ use App\Http\Controllers\Pdv\PrefacturasController;
 use App\Http\Controllers\Pdv\ValesCajaController;
 use App\Http\Controllers\Pdv\ReportesPdvController;
 use App\Http\Controllers\Pdv\StockPdvController;
+use App\Http\Controllers\Pdv\SiigoConfigController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -442,12 +443,28 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::post('/verificar-stock', [VentaPdvController::class, 'verificarStock'])->name('verificar-stock');
         Route::post('/cliente-rapido', [VentaPdvController::class, 'crearClienteRapido'])->name('cliente-rapido');
         Route::post('/verificar-pin', [VentaPdvController::class, 'verificarPin'])->name('verificar-pin');
+        // Facturación electrónica SIIGO
+        Route::post('/{id}/factura/generar', [VentaPdvController::class, 'generarFactura'])->name('factura.generar');
+        Route::post('/{id}/factura/reintentar', [VentaPdvController::class, 'reintentarFactura'])->name('factura.reintentar');
+        Route::get('/{id}/factura/pdf', [VentaPdvController::class, 'descargarFacturaPdf'])->name('factura.pdf');
+        Route::post('/{id}/factura/reenviar', [VentaPdvController::class, 'reenviarFacturaEmail'])->name('factura.reenviar');
+        Route::get('/{id}/factura/estado', [VentaPdvController::class, 'consultarEstadoFactura'])->name('factura.estado');
+        Route::post('/{id}/nota-credito/{ncId}/reintentar', [VentaPdvController::class, 'reintentarNotaCredito'])->name('nota-credito.reintentar');
     });
 
 // Anulación de ventas — Admin only
 Route::middleware(['auth', 'role:admin'])
     ->prefix('pdv/ventas')->name('pdv.ventas.')->group(function () {
         Route::post('/{id}/anular', [VentaPdvController::class, 'anular'])->name('anular');
+    });
+
+// SIIGO Configuración — Admin only
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('pdv/siigo')->name('pdv.siigo.')->group(function () {
+        Route::get('/configuracion', [SiigoConfigController::class, 'index'])->name('config');
+        Route::post('/configuracion', [SiigoConfigController::class, 'guardar'])->name('config.guardar');
+        Route::post('/test-conexion', [SiigoConfigController::class, 'testConexion'])->name('test');
+        Route::get('/catalogos', [SiigoConfigController::class, 'cargarCatalogos'])->name('catalogos');
     });
 
 // Prefacturas — Role-based access

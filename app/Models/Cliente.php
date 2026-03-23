@@ -31,6 +31,8 @@ class Cliente extends Model
         'aplica_flete',
         'observaciones',
         'activo',
+        'tipo_documento',
+        'siigo_id',
     ];
 
     protected $casts = [

@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan tinker --execute=\":*)"
+      "Bash(php artisan tinker --execute=\":*)",
+      "WebSearch",
+      "WebFetch(domain:siigoapi.docs.apiary.io)",
+      "WebFetch(domain:developers.siigo.com)",
+      "WebFetch(domain:saprodcentralassets.blob.core.windows.net)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:siigonube.portaldeclientes.siigo.com)",
+      "WebFetch(domain:www.postman.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

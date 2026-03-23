@@ -68,6 +68,7 @@
                             <th>Método</th>
                             <th>Cajero</th>
                             <th>Estado</th>
+                            <th>Factura</th>
                             <th>Fecha</th>
                             <th width="120">Acciones</th>
                         </tr>
@@ -110,11 +111,12 @@
                     { data: 'metodo_badge', name: 'metodo_pago', orderable: false },
                     { data: 'usuario_nombre', name: 'usuario_nombre', orderable: false },
                     { data: 'estado_badge', name: 'estado', orderable: false },
+                    { data: 'factura_badge', name: 'factura_badge', orderable: false, searchable: false },
                     { data: 'created_at', name: 'created_at' },
                     { data: 'action', orderable: false, searchable: false },
                 ],
                 language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-                order: [[7, 'desc']],
+                order: [[8, 'desc']],
             });
 
             $('#filtroEstado, #filtroCaja, #filtroMetodo, #filtroDesde, #filtroHasta').change(() => tabla.ajax.reload());
@@ -152,6 +154,47 @@
                     });
                 }
             });
+        }
+
+        // SIIGO invoice functions (called from detalle partial)
+        function reenviarEmailFactura(ventaId) {
+            fetch(`/pdv/ventas/${ventaId}/factura/reenviar`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+            }).then(r => r.json()).then(data => {
+                Swal.fire(data.exito ? 'Enviado' : 'Error', data.mensaje, data.exito ? 'success' : 'error');
+                if (data.exito) verDetalle(ventaId);
+            }).catch(() => Swal.fire('Error', 'Error de conexión', 'error'));
+        }
+
+        function consultarEstadoFactura(ventaId) {
+            fetch(`/pdv/ventas/${ventaId}/factura/estado`, { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json()).then(data => {
+                Swal.fire('Estado Actualizado', data.mensaje, 'info');
+                verDetalle(ventaId);
+                tabla.ajax.reload();
+            }).catch(() => Swal.fire('Error', 'Error de conexión', 'error'));
+        }
+
+        function reintentarFactura(ventaId) {
+            fetch(`/pdv/ventas/${ventaId}/factura/reintentar`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+            }).then(r => r.json()).then(data => {
+                Swal.fire(data.exito ? 'Reintento exitoso' : 'Error', data.mensaje, data.exito ? 'success' : 'error');
+                verDetalle(ventaId);
+                tabla.ajax.reload();
+            }).catch(() => Swal.fire('Error', 'Error de conexión', 'error'));
+        }
+
+        function reintentarNotaCredito(ventaId, ncId) {
+            fetch(`/pdv/ventas/${ventaId}/nota-credito/${ncId}/reintentar`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+            }).then(r => r.json()).then(data => {
+                Swal.fire(data.exito ? 'Reintento NC' : 'Error', data.mensaje, data.exito ? 'success' : 'error');
+                verDetalle(ventaId);
+            }).catch(() => Swal.fire('Error', 'Error de conexión', 'error'));
         }
     </script>
     @endpush

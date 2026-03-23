@@ -200,6 +200,11 @@
                     <i class="bi bi-cash-stack"></i>
                     <span>Config. Cajas</span>
                 </a>
+                <a href="{{ route('pdv.siigo.config') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.siigo.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span>Config. SIIGO</span>
+                </a>
             @endif
 
             @if(auth()->user()->hasRole(['admin', 'cajero_principal']))

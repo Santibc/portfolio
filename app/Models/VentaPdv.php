@@ -41,6 +41,8 @@ class VentaPdv extends Model
         'anulada_por',
         'anulada_en',
         'motivo_anulacion',
+        'factura_siigo_id',
+        'requiere_factura',
     ];
 
     protected $casts = [
@@ -55,6 +57,7 @@ class VentaPdv extends Model
         'monto_recibido' => 'decimal:2',
         'cambio' => 'decimal:2',
         'anulada_en' => 'datetime',
+        'requiere_factura' => 'boolean',
     ];
 
     // Relaciones
@@ -111,6 +114,11 @@ class VentaPdv extends Model
     public function items()
     {
         return $this->hasMany(ItemVentaPdv::class, 'venta_pdv_id');
+    }
+
+    public function facturaSiigo()
+    {
+        return $this->hasOne(FacturaSiigo::class, 'venta_pdv_id');
     }
 
     // Scopes

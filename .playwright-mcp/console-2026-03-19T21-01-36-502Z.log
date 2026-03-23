@@ -1,0 +1,4 @@
+[     601ms] [ERROR] Access to XMLHttpRequest at 'http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:8000/pdv/ventas:0
+[     609ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json:0
+[   22379ms] ReferenceError: consultarEstadoFactura is not defined
+    at HTMLButtonElement.onclick (http://127.0.0.1:8000/pdv/ventas:1:1)

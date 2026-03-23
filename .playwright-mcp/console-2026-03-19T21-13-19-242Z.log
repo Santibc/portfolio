@@ -1,0 +1,10 @@
+[     598ms] [ERROR] Access to XMLHttpRequest at 'http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:8000/pdv/ventas:0
+[     607ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json:0
+[  163451ms] [ERROR] Access to XMLHttpRequest at 'http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:8000/pdv/ventas:0
+[  163460ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json:0
+[  168518ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <button.btn-close>
+Ancestor with aria-hidden: <div> @ http://127.0.0.1:8000/pdv/ventas:0
+[  190628ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <div.modal fade#modalDetalle>
+Ancestor with aria-hidden: <div.modal fade#modalDetalle> @ http://127.0.0.1:8000/pdv/ventas:0

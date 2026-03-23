@@ -52,9 +52,17 @@ class StockPdvController extends Controller
                     $query->whereHas('producto', function ($q) use ($keyword) {
                         $q->where('referencia', 'like', "%{$keyword}%")
                           ->orWhere('nombre', 'like', "%{$keyword}%");
-                    })->orWhereHas('variante', function ($q) use ($keyword) {
+                    });
+                })
+                ->filterColumn('variante_nombre', function ($query, $keyword) {
+                    $query->whereHas('variante', function ($q) use ($keyword) {
                         $q->where('nombre_variante', 'like', "%{$keyword}%")
                           ->orWhere('sku', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('ubicacion_nombre', function ($query, $keyword) {
+                    $query->whereHas('ubicacionRelacion', function ($q) use ($keyword) {
+                        $q->where('nombre', 'like', "%{$keyword}%");
                     });
                 })
                 ->rawColumns(['producto_nombre', 'variante_nombre', 'ubicacion_nombre', 'stock_display'])

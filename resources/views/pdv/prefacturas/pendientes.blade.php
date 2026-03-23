@@ -28,8 +28,11 @@
                                 ${{ number_format($pf->total, 2) }}
                             </div>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-success btn-sm flex-fill" onclick="aceptarPrefactura({{ $pf->id }})">
-                                    <i class="bi bi-check-circle me-1"></i>Aceptar
+                                <a href="{{ route('pdv.ventas.crear', ['prefactura_id' => $pf->id]) }}" class="btn btn-sm btn-success flex-fill">
+                                    <i class="bi bi-pencil-square me-1"></i>Editar y Procesar
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" onclick="aceptarPrefactura({{ $pf->id }})" title="Aceptar sin editar">
+                                    <i class="bi bi-check-lg"></i>
                                 </button>
                                 <button class="btn btn-outline-info btn-sm" onclick="verDetalle({{ $pf->id }})">
                                     <i class="bi bi-eye"></i>

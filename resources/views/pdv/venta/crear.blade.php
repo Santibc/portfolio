@@ -12,7 +12,7 @@
         .pos-table .disc-input { width: 80px; text-align: center; }
         .pos-totals { background: #f8f9fa; border-radius: .5rem; }
         .pos-totals .total-final { font-size: 2rem; font-weight: 700; color: var(--miracle-pink); }
-        .search-results { position: absolute; z-index: 1050; width: 100%; max-height: 350px; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,.15); }
+        .search-results { position: absolute; z-index: 1050; width: 100%; max-height: 300px; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,.15); border: 1px solid #dee2e6; border-top: none; }
         .search-result-item { cursor: pointer; transition: background .15s; }
         .search-result-item:hover { background: var(--miracle-pink-light) !important; }
         .stock-badge-ok { background: #d4edda; color: #155724; }
@@ -50,6 +50,20 @@
             </div>
         </div>
 
+        @if(isset($prefactura) && $prefactura)
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-3" role="alert">
+            <div>
+                <i class="bi bi-receipt me-2"></i>
+                Editando Prefactura <strong>{{ $prefactura->numero_prefactura }}</strong>
+                — Creada por <strong>{{ $prefactura->usuarioCreador->name ?? '-' }}</strong>
+                <small class="text-muted ms-2">({{ $prefactura->created_at->diffForHumans() }})</small>
+            </div>
+            <a href="{{ route('pdv.prefacturas.pendientes') }}" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-arrow-left me-1"></i>Volver a Prefacturas
+            </a>
+        </div>
+        @endif
+
         <div class="row g-3">
             {{-- LEFT: Products Table --}}
             <div class="col-lg-8">
@@ -64,15 +78,17 @@
                         <div id="resultadosBusqueda" class="search-results bg-white rounded-bottom d-none"></div>
                     </div>
                     <div class="col-md-5">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
-                            <input type="text" id="buscarCliente" class="form-control"
-                                   placeholder="CC, NIT, Nombre, Tel, Email..." autocomplete="off">
-                            <button class="btn btn-outline-secondary" type="button" onclick="mostrarModalNuevoCliente()">
-                                <i class="bi bi-person-plus"></i>
-                            </button>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                                <input type="text" id="buscarCliente" class="form-control"
+                                       placeholder="CC, NIT, Nombre, Tel, Email..." autocomplete="off">
+                                <button class="btn btn-outline-secondary" type="button" onclick="mostrarModalNuevoCliente()">
+                                    <i class="bi bi-person-plus"></i>
+                                </button>
+                            </div>
+                            <div id="resultadosCliente" class="search-results bg-white rounded-bottom d-none"></div>
                         </div>
-                        <div id="resultadosCliente" class="search-results bg-white rounded-bottom d-none" style="position: absolute; z-index: 1050;"></div>
                     </div>
                 </div>
 
@@ -148,11 +164,12 @@
                             <span class="fw-semibold" id="subtotalDisplay">$0.00</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Descuento global:</span>
-                            <div class="input-group" style="width: 140px;">
+                            <span class="text-muted" style="white-space: nowrap;">Desc. global:</span>
+                            <div class="d-flex align-items-center gap-1 ms-2">
                                 <input type="number" id="descuentoGlobal" class="form-control form-control-sm text-end"
-                                       value="0" min="0" step="0.01">
-                                <select id="descuentoGlobalTipo" class="form-select form-select-sm" style="max-width: 50px;">
+                                       value="0" min="0" step="0.01" style="width: 80px;"
+                                       @if(!($esAdmin ?? false)) data-requiere-pin="{{ $requierePinDescuento ? 'true' : 'false' }}" @endif>
+                                <select id="descuentoGlobalTipo" class="form-select form-select-sm" style="width: 52px; padding: .25rem .3rem;">
                                     <option value="%">%</option>
                                     <option value="$">$</option>
                                 </select>
@@ -273,7 +290,11 @@
 
                 {{-- Process Button --}}
                 <button id="btnProcesar" class="btn btn-miracle btn-lg w-100 py-3" onclick="procesarVenta()" disabled>
-                    <i class="bi bi-check-circle me-2"></i>Procesar Venta
+                    @if(isset($prefactura) && $prefactura)
+                        <i class="bi bi-check-circle me-2"></i>Procesar Prefactura
+                    @else
+                        <i class="bi bi-check-circle me-2"></i>Procesar Venta
+                    @endif
                 </button>
             </div>
         </div>
@@ -331,19 +352,29 @@
     {{-- Modal: PIN Authorization --}}
     <div class="modal fade" id="modalPin" tabindex="-1">
         <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-shield-lock me-2"></i>Autorización</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <p class="text-muted small" id="pinMotivo">Se requiere PIN de administrador</p>
-                    <input type="password" id="inputPin" class="form-control form-control-lg text-center" maxlength="6" placeholder="PIN">
-                    <div class="text-danger small mt-2 d-none" id="pinError">PIN incorrecto</div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-miracle btn-sm" onclick="verificarPinSubmit()">Verificar</button>
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-body text-center px-4 py-4">
+                    <div class="mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light" style="width: 56px; height: 56px;">
+                            <i class="bi bi-shield-lock text-miracle" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold mb-1">PIN de Autorización</h6>
+                    <p class="text-muted small mb-3" id="pinMotivo">Se requiere PIN de administrador</p>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <input type="password" class="pin-digit form-control text-center fw-bold" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width: 52px; height: 52px; font-size: 1.4rem; border-radius: 12px; border: 2px solid #dee2e6;" data-index="0">
+                        <input type="password" class="pin-digit form-control text-center fw-bold" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width: 52px; height: 52px; font-size: 1.4rem; border-radius: 12px; border: 2px solid #dee2e6;" data-index="1">
+                        <input type="password" class="pin-digit form-control text-center fw-bold" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width: 52px; height: 52px; font-size: 1.4rem; border-radius: 12px; border: 2px solid #dee2e6;" data-index="2">
+                        <input type="password" class="pin-digit form-control text-center fw-bold" maxlength="1" inputmode="numeric" pattern="[0-9]" style="width: 52px; height: 52px; font-size: 1.4rem; border-radius: 12px; border: 2px solid #dee2e6;" data-index="3">
+                    </div>
+                    <input type="hidden" id="inputPin" value="">
+                    <div class="text-danger small mb-3 d-none" id="pinError">
+                        <i class="bi bi-exclamation-circle me-1"></i>PIN incorrecto
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" data-bs-dismiss="modal" style="border-radius: 10px;">Cancelar</button>
+                        <button type="button" class="btn btn-miracle btn-sm flex-fill" onclick="verificarPinSubmit()" id="btnVerificarPin" disabled style="border-radius: 10px;">Verificar</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -357,6 +388,17 @@
                     <i class="bi bi-check-circle display-1 text-success mb-3"></i>
                     <h4 class="fw-bold">Venta Exitosa</h4>
                     <p class="text-muted" id="exitoMensaje"></p>
+                    {{-- Factura info display --}}
+                    <div id="exitoFacturaInfo" class="d-none mt-3 p-3 bg-light rounded text-start">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-receipt-cutoff"></i>
+                            <strong>Factura Electrónica:</strong>
+                            <span id="exitoFacturaEstado"></span>
+                        </div>
+                        <div id="exitoFacturaNumero" class="d-none">
+                            <small class="text-muted">N°: </small><span id="exitoFacturaNumeroTexto"></span>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2 justify-content-center mt-4">
                         <a id="btnImprimirTicket" href="#" class="btn btn-outline-danger" target="_blank">
                             <i class="bi bi-printer me-1"></i>Imprimir Ticket
@@ -371,6 +413,11 @@
         </div>
     </div>
 
+    {{-- SIIGO Invoice Modal --}}
+    @if($siigoActivo)
+        @include('pdv.venta.partials.modal-factura')
+    @endif
+
     @push('scripts')
     <script>
         // State
@@ -383,7 +430,10 @@
         const ivaPorcentaje = {{ $ivaPorcentaje }};
         const descuentoMaximo = {{ $descuentoMaximo }};
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const siigoActivo = {{ $siigoActivo ? 'true' : 'false' }};
+        const siigoFacturarSiempre = {{ $siigoFacturarSiempre ? 'true' : 'false' }};
         let searchTimeout;
+        let ultimaVentaResult = null; // Stores last sale result for SIIGO flow
 
         // Product Search
         const buscarInput = document.getElementById('buscarProducto');
@@ -396,7 +446,8 @@
 
             searchTimeout = setTimeout(() => {
                 const listaPrecioId = document.getElementById('listaPrecio').value;
-                fetch(`{{ route('pdv.ventas.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${listaPrecioId}`)
+                const ubicacionId = {{ $ubicacionIdDefault ?? 0 }};
+                fetch(`{{ route('pdv.ventas.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${listaPrecioId}&ubicacion_id=${ubicacionId}`)
                     .then(r => r.json())
                     .then(productos => {
                         if (productos.length === 0) {
@@ -624,7 +675,28 @@
             calcularCambio();
         }
 
-        document.getElementById('descuentoGlobal').addEventListener('input', actualizarTotales);
+        // Descuento Global con validación de PIN
+        let pinDescuentoGlobalAutorizado = {{ ($esAdmin ?? false) ? 'true' : 'false' }};
+        const requierePinDescGlobal = {{ ($requierePinDescuento ?? true) ? 'true' : 'false' }};
+        const descuentoMaxCajero = {{ $descuentoMaximo ?? 15 }};
+
+        document.getElementById('descuentoGlobal').addEventListener('focus', function() {
+            if (requierePinDescGlobal && !pinDescuentoGlobalAutorizado) {
+                this.blur();
+                solicitarPin('Se requiere PIN de administrador para aplicar descuento global', function(autorizadorId) {
+                    pinDescuentoGlobalAutorizado = true;
+                    document.getElementById('descuentoGlobal').focus();
+                });
+            }
+        });
+        document.getElementById('descuentoGlobal').addEventListener('input', function() {
+            const tipo = document.getElementById('descuentoGlobalTipo').value;
+            if (tipo === '%' && parseFloat(this.value) > descuentoMaxCajero && !pinDescuentoGlobalAutorizado) {
+                this.value = descuentoMaxCajero;
+                Swal.fire({ icon: 'warning', title: 'Límite alcanzado', text: `Descuento máximo sin autorización: ${descuentoMaxCajero}%`, timer: 2000, showConfirmButton: false });
+            }
+            actualizarTotales();
+        });
         document.getElementById('descuentoGlobalTipo').addEventListener('change', actualizarTotales);
 
         // Payment Method Toggle
@@ -753,19 +825,64 @@
             .catch(() => Swal.fire('Error', 'No se pudo crear el cliente', 'error'));
         }
 
-        // PIN Authorization
+        // PIN Authorization — 4-digit OTP style
+        const pinDigits = document.querySelectorAll('.pin-digit');
+        const btnVerificarPin = document.getElementById('btnVerificarPin');
+
+        function getFullPin() {
+            return Array.from(pinDigits).map(d => d.value).join('');
+        }
+
+        function updateHiddenPin() {
+            document.getElementById('inputPin').value = getFullPin();
+            btnVerificarPin.disabled = getFullPin().length < 4;
+        }
+
+        pinDigits.forEach((input, idx) => {
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value && idx < 3) {
+                    pinDigits[idx + 1].focus();
+                }
+                updateHiddenPin();
+                // Auto-submit when all 4 digits entered
+                if (getFullPin().length === 4) {
+                    verificarPinSubmit();
+                }
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && idx > 0) {
+                    pinDigits[idx - 1].focus();
+                    pinDigits[idx - 1].value = '';
+                    updateHiddenPin();
+                }
+                if (e.key === 'Enter') verificarPinSubmit();
+            });
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 4);
+                pasted.split('').forEach((ch, i) => { if (pinDigits[i]) pinDigits[i].value = ch; });
+                if (pasted.length > 0) pinDigits[Math.min(pasted.length, 3)].focus();
+                updateHiddenPin();
+                if (getFullPin().length === 4) verificarPinSubmit();
+            });
+        });
+
         function solicitarPin(motivo, callback) {
             pinCallback = callback;
             document.getElementById('pinMotivo').textContent = motivo;
+            pinDigits.forEach(d => { d.value = ''; d.style.borderColor = '#dee2e6'; });
             document.getElementById('inputPin').value = '';
             document.getElementById('pinError').classList.add('d-none');
+            btnVerificarPin.disabled = true;
             new bootstrap.Modal(document.getElementById('modalPin')).show();
-            setTimeout(() => document.getElementById('inputPin').focus(), 500);
+            setTimeout(() => pinDigits[0].focus(), 300);
         }
 
         function verificarPinSubmit() {
-            const pin = document.getElementById('inputPin').value;
+            const pin = getFullPin();
             if (pin.length < 4) return;
+            btnVerificarPin.disabled = true;
 
             fetch('{{ route("pdv.ventas.verificar-pin") }}', {
                 method: 'POST',
@@ -775,18 +892,24 @@
             .then(r => r.json())
             .then(data => {
                 if (data.exito) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalPin')).hide();
-                    if (pinCallback) pinCallback(data.autorizador_id);
+                    pinDigits.forEach(d => d.style.borderColor = '#28a745');
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('modalPin')).hide();
+                        if (pinCallback) pinCallback(data.autorizador_id);
+                    }, 400);
                 } else {
+                    pinDigits.forEach(d => { d.value = ''; d.style.borderColor = '#dc3545'; });
+                    document.getElementById('inputPin').value = '';
                     document.getElementById('pinError').classList.remove('d-none');
+                    btnVerificarPin.disabled = true;
+                    setTimeout(() => pinDigits[0].focus(), 200);
                 }
             })
-            .catch(() => document.getElementById('pinError').classList.remove('d-none'));
+            .catch(() => {
+                document.getElementById('pinError').classList.remove('d-none');
+                btnVerificarPin.disabled = false;
+            });
         }
-
-        document.getElementById('inputPin').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') verificarPinSubmit();
-        });
 
         // Process Sale
         function procesarVenta() {
@@ -861,6 +984,10 @@
             formData.append('descuento_autorizado_por', datos.descuento_autorizado_por || '');
             formData.append('precio_autorizado_por', datos.precio_autorizado_por || '');
 
+            if (window.prefacturaId) {
+                formData.append('prefactura_id', window.prefacturaId);
+            }
+
             // Add file if exists
             const fileInput = metodo === 'transferencia'
                 ? document.getElementById('archivoComprobante')
@@ -877,9 +1004,44 @@
             .then(r => r.json())
             .then(result => {
                 if (result.exito) {
+                    ultimaVentaResult = result;
                     document.getElementById('exitoMensaje').textContent = result.mensaje;
                     document.getElementById('btnImprimirTicket').href = `/pdv/ventas/${result.venta.id}/ticket`;
-                    new bootstrap.Modal(document.getElementById('modalExito')).show();
+
+                    if (siigoActivo) {
+                        // Build client data for pre-filling the invoice form
+                        const clienteData = clienteSeleccionado ? {
+                            documento: clienteSeleccionado.documento || '',
+                            nombre: clienteSeleccionado.nombre || '',
+                            email: clienteSeleccionado.email || '',
+                            telefono: clienteSeleccionado.telefono || '',
+                        } : null;
+
+                        if (siigoFacturarSiempre) {
+                            // Auto-invoice: if client exists, use their data; otherwise consumidor final
+                            ventaIdParaFactura = result.venta.id;
+                            mostrarPasoResultado();
+                            const modal = new bootstrap.Modal(document.getElementById('modalFactura'));
+                            modal.show();
+
+                            if (clienteSeleccionado && clienteSeleccionado.documento) {
+                                enviarFactura({
+                                    tipo_factura: 'con_cliente',
+                                    tipo_documento: '13',
+                                    numero_identificacion: clienteSeleccionado.documento,
+                                    nombre_fiscal: clienteSeleccionado.nombre,
+                                    email_factura: clienteSeleccionado.email || '',
+                                });
+                            } else {
+                                enviarFactura({ tipo_factura: 'consumidor_final' });
+                            }
+                        } else {
+                            // Show the invoice prompt modal
+                            abrirModalFactura(result.venta.id, clienteData);
+                        }
+                    } else {
+                        mostrarExitoVenta();
+                    }
                 } else {
                     Swal.fire('Error', result.mensaje, 'error');
                     document.getElementById('btnProcesar').disabled = false;
@@ -891,6 +1053,30 @@
                 document.getElementById('btnProcesar').disabled = false;
                 document.getElementById('btnProcesar').innerHTML = '<i class="bi bi-check-circle me-2"></i>Procesar Venta';
             });
+        }
+
+        function mostrarExitoVenta() {
+            // Show factura info in success modal if available
+            const facturaInfo = document.getElementById('exitoFacturaInfo');
+            if (ultimaVentaResult && ultimaVentaResult.factura) {
+                facturaInfo.classList.remove('d-none');
+                const f = ultimaVentaResult.factura;
+                const estados = {
+                    aprobada: '<span class="badge bg-success">Aprobada</span>',
+                    pendiente: '<span class="badge bg-warning text-dark">Pendiente</span>',
+                    error: '<span class="badge bg-danger">Error</span>',
+                    rechazada: '<span class="badge bg-danger">Rechazada</span>',
+                };
+                document.getElementById('exitoFacturaEstado').innerHTML = estados[f.estado_dian] || '';
+                if (f.numero_factura) {
+                    document.getElementById('exitoFacturaNumero').classList.remove('d-none');
+                    document.getElementById('exitoFacturaNumeroTexto').textContent = f.numero_factura;
+                }
+            } else {
+                facturaInfo.classList.add('d-none');
+            }
+
+            new bootstrap.Modal(document.getElementById('modalExito')).show();
         }
 
         function nuevaVenta() {
@@ -976,6 +1162,42 @@
         }
         setInterval(pollPrefacturas, 15000);
         pollPrefacturas();
+
+        // Pre-load prefactura data
+        @if(isset($prefactura) && $prefactura)
+            window.prefacturaId = {{ $prefactura->id }};
+
+            // Pre-load items
+            items = @json($prefacturaItems ?? []);
+
+            @if($prefactura->cliente_id && $prefactura->cliente)
+                // Pre-load client
+                clienteSeleccionado = {
+                    id: {{ $prefactura->cliente_id }},
+                    nombre: @json($prefactura->cliente->razon_social ?: $prefactura->cliente->nombre_contacto ?? 'Consumidor Final'),
+                    documento: @json($prefactura->cliente->numero_identificacion ?? ''),
+                    telefono: @json($prefactura->cliente->telefono ?? ''),
+                    lista_precio_id: {{ $prefactura->lista_precio_id ?? 'null' }},
+                    lista_precio_nombre: @json($prefactura->listaPrecio->nombre ?? ''),
+                };
+                // Show client info in UI
+                document.getElementById('clienteNombre').textContent = clienteSeleccionado.nombre;
+                document.getElementById('clienteDocumento').textContent = clienteSeleccionado.documento || '';
+                document.getElementById('clienteTelefono').textContent = clienteSeleccionado.telefono || '';
+                document.getElementById('clienteListaPrecio').textContent = clienteSeleccionado.lista_precio_nombre || '';
+                document.getElementById('clienteInfo').classList.remove('d-none');
+                document.getElementById('buscarCliente').parentElement.classList.add('d-none');
+            @endif
+
+            // Set lista de precios
+            @if($prefactura->lista_precio_id)
+                document.getElementById('listaPrecio').value = '{{ $prefactura->lista_precio_id }}';
+            @endif
+
+            renderItems();
+        @else
+            window.prefacturaId = null;
+        @endif
 
         // Focus search on load
         buscarInput.focus();
