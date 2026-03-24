@@ -8,7 +8,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold mb-0"><i class="bi bi-receipt me-2"></i>Prefacturas</h4>
             <div>
-                @if(auth()->user()->hasRole(['auxiliar_venta', 'vendedor', 'admin']))
+                @if(auth()->user()->hasRole(['auxiliar_venta', 'admin']))
                     <a href="{{ route('pdv.prefacturas.crear') }}" class="btn text-white" style="background: var(--miracle-pink);">
                         <i class="bi bi-plus-lg me-1"></i>Nueva Prefactura
                     </a>

@@ -468,20 +468,20 @@ Route::middleware(['auth', 'role:admin'])
     });
 
 // Prefacturas — Role-based access
-Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'])
+Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta'])
     ->prefix('pdv/prefacturas')->name('pdv.prefacturas.')->group(function () {
         Route::get('/', [PrefacturasController::class, 'index'])->name('index');
         Route::get('/{id}/detalle', [PrefacturasController::class, 'detalle'])->name('detalle');
     });
 
-Route::middleware(['auth', 'role:admin,auxiliar_venta,vendedor'])
+Route::middleware(['auth', 'role:admin,auxiliar_venta'])
     ->prefix('pdv/prefacturas')->name('pdv.prefacturas.')->group(function () {
         Route::get('/crear', [PrefacturasController::class, 'crear'])->name('crear');
         Route::post('/guardar', [PrefacturasController::class, 'guardar'])->name('guardar');
     });
 
 // AJAX compartido PdV — Todos los roles PdV (buscar productos/clientes)
-Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'])
+Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta'])
     ->prefix('pdv/ajax')->name('pdv.ajax.')->group(function () {
         Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
         Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');

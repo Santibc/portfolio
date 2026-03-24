@@ -28,10 +28,20 @@ class RepararStockReservado extends Command
             $this->warn('MODO DRY-RUN - No se realizarán cambios');
         }
 
+        // Paso 0: Limpiar reservas sin solicitud (solicitud eliminada)
+        $this->info('');
+        $this->info('--- Paso 0: Limpiar reservas sin solicitud ---');
+        $this->limpiarReservasSinSolicitud($dryRun);
+
         // Paso 1: Limpiar reservas huérfanas (activas pero cotización ya procesada)
         $this->info('');
         $this->info('--- Paso 1: Limpiar reservas huérfanas ---');
         $this->limpiarReservasHuerfanas($dryRun);
+
+        // Paso 1.5: Limpiar reservas duplicadas (misma cotización + item + stock)
+        $this->info('');
+        $this->info('--- Paso 1.5: Limpiar reservas duplicadas ---');
+        $this->limpiarReservasDuplicadas($dryRun);
 
         // Paso 2: Limpiar reservas expiradas que nunca se liberaron
         $this->info('');
@@ -51,6 +61,108 @@ class RepararStockReservado extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function limpiarReservasSinSolicitud(bool $dryRun): void
+    {
+        $reservasSinSolicitud = ReservaStock::where('estado', ReservaStock::ESTADO_ACTIVA)
+            ->whereDoesntHave('solicitudCotizacion')
+            ->with(['stockProducto:id,producto_id'])
+            ->get();
+
+        if ($reservasSinSolicitud->isEmpty()) {
+            $this->info('No hay reservas sin solicitud');
+            return;
+        }
+
+        $this->warn("Encontradas {$reservasSinSolicitud->count()} reservas sin solicitud:");
+
+        foreach ($reservasSinSolicitud as $reserva) {
+            $productoId = $reserva->stockProducto ? $reserva->stockProducto->producto_id : 'N/A';
+            $this->line("  Reserva #{$reserva->id} | Producto: {$productoId} | Qty: {$reserva->cantidad_reservada}");
+
+            if (!$dryRun) {
+                DB::beginTransaction();
+                try {
+                    $reserva->update([
+                        'estado' => ReservaStock::ESTADO_EXPIRADA,
+                        'liberada_en' => now(),
+                        'motivo_liberacion' => 'Reparación automática - solicitud eliminada',
+                    ]);
+
+                    $stock = $reserva->stockProducto;
+                    if ($stock && $stock->cantidad_reservada > 0) {
+                        $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                        $stock->decrement('cantidad_reservada', $cantidadALiberar);
+                    }
+
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->error("  Error: {$e->getMessage()}");
+                }
+            }
+        }
+    }
+
+    private function limpiarReservasDuplicadas(bool $dryRun): void
+    {
+        // Buscar grupos de reservas activas duplicadas (mismo item + mismo stock)
+        $duplicados = ReservaStock::where('estado', ReservaStock::ESTADO_ACTIVA)
+            ->select('solicitud_cotizacion_id', 'item_solicitud_id', 'stock_producto_id', DB::raw('COUNT(*) as total'), DB::raw('GROUP_CONCAT(id ORDER BY id ASC) as ids'))
+            ->groupBy('solicitud_cotizacion_id', 'item_solicitud_id', 'stock_producto_id')
+            ->having('total', '>', 1)
+            ->get();
+
+        if ($duplicados->isEmpty()) {
+            $this->info('No hay reservas duplicadas');
+            return;
+        }
+
+        $this->warn("Encontrados {$duplicados->count()} grupos de reservas duplicadas:");
+        $eliminadas = 0;
+
+        foreach ($duplicados as $grupo) {
+            $ids = explode(',', $grupo->ids);
+            $idOriginal = array_shift($ids); // Conservar la primera (más antigua)
+            $idsAEliminar = $ids; // Eliminar las demás
+
+            $sc = \App\Models\SolicitudCotizacion::find($grupo->solicitud_cotizacion_id);
+            $scNumero = $sc ? $sc->numero_solicitud : 'N/A';
+            $this->line("  SC: {$scNumero} | Item: {$grupo->item_solicitud_id} | Stock: {$grupo->stock_producto_id} | Repetidas: {$grupo->total} | Conservar: #{$idOriginal} | Eliminar: #" . implode(', #', $idsAEliminar));
+
+            if (!$dryRun) {
+                foreach ($idsAEliminar as $idDuplicado) {
+                    DB::beginTransaction();
+                    try {
+                        $reserva = ReservaStock::find($idDuplicado);
+                        if (!$reserva) continue;
+
+                        $reserva->update([
+                            'estado' => ReservaStock::ESTADO_EXPIRADA,
+                            'liberada_en' => now(),
+                            'motivo_liberacion' => "Reparación automática - reserva duplicada (original: #{$idOriginal})",
+                        ]);
+
+                        $stock = $reserva->stockProducto;
+                        if ($stock && $stock->cantidad_reservada > 0) {
+                            $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                            $stock->decrement('cantidad_reservada', $cantidadALiberar);
+                        }
+
+                        DB::commit();
+                        $eliminadas++;
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        $this->error("  Error eliminando reserva #{$idDuplicado}: {$e->getMessage()}");
+                    }
+                }
+            } else {
+                $eliminadas += count($idsAEliminar);
+            }
+        }
+
+        $this->warn("Total reservas duplicadas a eliminar: {$eliminadas}");
     }
 
     private function limpiarReservasHuerfanas(bool $dryRun): void
@@ -74,7 +186,9 @@ class RepararStockReservado extends Command
 
         foreach ($reservasHuerfanas as $reserva) {
             $sc = $reserva->solicitudCotizacion;
-            $this->line("  Reserva #{$reserva->id} | SC: {$sc->numero_solicitud} (estado: {$sc->estado}) | Producto: {$reserva->stockProducto->producto_id} | Qty: {$reserva->cantidad_reservada}");
+            $scInfo = $sc ? "{$sc->numero_solicitud} (estado: {$sc->estado})" : 'SIN SOLICITUD';
+            $productoId = $reserva->stockProducto ? $reserva->stockProducto->producto_id : 'N/A';
+            $this->line("  Reserva #{$reserva->id} | SC: {$scInfo} | Producto: {$productoId} | Qty: {$reserva->cantidad_reservada}");
 
             if (!$dryRun) {
                 DB::beginTransaction();
@@ -116,7 +230,8 @@ class RepararStockReservado extends Command
 
         foreach ($reservasExpiradas as $reserva) {
             $sc = $reserva->solicitudCotizacion;
-            $this->line("  Reserva #{$reserva->id} | SC: {$sc->numero_solicitud} | Expiró: {$reserva->expira_en} | Qty: {$reserva->cantidad_reservada}");
+            $scNumero = $sc ? $sc->numero_solicitud : 'SIN SOLICITUD';
+            $this->line("  Reserva #{$reserva->id} | SC: {$scNumero} | Expiró: {$reserva->expira_en} | Qty: {$reserva->cantidad_reservada}");
 
             if (!$dryRun) {
                 DB::beginTransaction();

@@ -143,6 +143,18 @@ class ReservaStockService
                     continue;
                 }
 
+                // Verificar que no exista ya una reserva activa para este item (prevenir duplicados)
+                $reservaExistente = ReservaStock::where('solicitud_cotizacion_id', $solicitud->id)
+                    ->where('item_solicitud_id', $item->id)
+                    ->where('stock_producto_id', $stock->id)
+                    ->where('estado', ReservaStock::ESTADO_ACTIVA)
+                    ->exists();
+
+                if ($reservaExistente) {
+                    Log::warning("Reserva duplicada prevenida: solicitud={$solicitud->id}, item={$item->id}, stock={$stock->id}");
+                    continue;
+                }
+
                 // Crear la reserva
                 $reserva = ReservaStock::create([
                     'solicitud_cotizacion_id' => $solicitud->id,
@@ -219,10 +231,11 @@ class ReservaStockService
                     'liberada_por' => $usuarioId,
                 ]);
 
-                // Liberar en el stock
-                $stock = $reserva->stockProducto;
-                if ($stock) {
-                    $stock->decrement('cantidad_reservada', $reserva->cantidad_reservada);
+                // Liberar en el stock - con bloqueo pesimista y guardia contra negativos
+                $stock = StockProducto::where('id', $reserva->stock_producto_id)->lockForUpdate()->first();
+                if ($stock && $stock->cantidad_reservada > 0) {
+                    $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                    $stock->decrement('cantidad_reservada', $cantidadALiberar);
                 }
 
                 $liberadas++;
@@ -266,7 +279,8 @@ class ReservaStockService
                 ->get();
 
             foreach ($reservasActivas as $reserva) {
-                $stock = $reserva->stockProducto;
+                // Obtener stock con bloqueo pesimista para evitar race condition
+                $stock = StockProducto::where('id', $reserva->stock_producto_id)->lockForUpdate()->first();
 
                 if (!$stock) {
                     continue;
@@ -277,8 +291,11 @@ class ReservaStockService
                 // Descontar del stock disponible
                 $stock->decrement('cantidad_disponible', $reserva->cantidad_reservada);
 
-                // Liberar de reservado (ya se aplicó)
-                $stock->decrement('cantidad_reservada', $reserva->cantidad_reservada);
+                // Liberar de reservado (ya se aplicó) - con guardia contra negativos
+                if ($stock->cantidad_reservada > 0) {
+                    $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                    $stock->decrement('cantidad_reservada', $cantidadALiberar);
+                }
 
                 // Crear movimiento de stock
                 MovimientoStock::create([
@@ -585,6 +602,18 @@ class ReservaStockService
                 $cantidadAReservar = min($item->cantidad, $disponibleReal);
 
                 if ($cantidadAReservar > 0) {
+                    // Verificar que no exista ya una reserva activa para este item (prevenir duplicados)
+                    $reservaExistente = ReservaStock::where('solicitud_cotizacion_id', $solicitud->id)
+                        ->where('item_solicitud_id', $item->id)
+                        ->where('stock_producto_id', $stock->id)
+                        ->where('estado', ReservaStock::ESTADO_ACTIVA)
+                        ->exists();
+
+                    if ($reservaExistente) {
+                        Log::warning("Reserva duplicada prevenida: solicitud={$solicitud->id}, item={$item->id}, stock={$stock->id}");
+                        continue;
+                    }
+
                     // Crear registro de reserva para tracking
                     ReservaStock::create([
                         'solicitud_cotizacion_id' => $solicitud->id,

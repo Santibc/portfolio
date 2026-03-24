@@ -41,6 +41,7 @@ class SolicitudCotizacion extends Model
         'metodo_pago',
         'comprobante_pago',
         'monto_pagado',
+        'monto_credito',
         'pagado_en',
         'verificado_por',
         'verificado_en',
@@ -690,6 +691,10 @@ class SolicitudCotizacion extends Model
      */
     public function getColorEstadoPagoAttribute(): string
     {
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Mixto')) {
+            return 'info';
+        }
+
         if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
             return 'pink';
         }
@@ -707,6 +712,10 @@ class SolicitudCotizacion extends Model
      */
     public function getEtiquetaEstadoPagoAttribute(): string
     {
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Mixto')) {
+            return 'Mixto';
+        }
+
         if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
             return 'Crédito';
         }

@@ -70,12 +70,6 @@ return new class extends Migration
             'pdv.prefacturas.crear',
         ]);
 
-        // Add pdv.prefacturas.crear to vendedor role if it exists
-        $vendedor = Role::where('name', 'vendedor')->first();
-        if ($vendedor) {
-            $vendedor->givePermissionTo('pdv.prefacturas.crear');
-        }
-
         // Add all pdv permissions to admin role
         $admin = Role::where('name', 'admin')->first();
         if ($admin) {

@@ -298,19 +298,26 @@
                         @if($solicitud->forma_pago_factura)
                             @php
                                 $esCredito = str_contains($solicitud->forma_pago_factura, 'Crédito');
+                                $esMixto = str_contains($solicitud->forma_pago_factura, 'Mixto');
                             @endphp
                             <div class="alert {{ $esCredito ? 'alert-info' : 'alert-light' }} py-2 mb-3">
                                 <div class="row text-center">
-                                    <div class="col-md-{{ $solicitud->fecha_vencimiento ? '6' : '12' }}">
+                                    <div class="col-md-{{ $solicitud->fecha_vencimiento ? '4' : '12' }}">
                                         <small class="text-muted d-block">Forma de Pago</small>
                                         <strong>{{ $solicitud->forma_pago_factura }}</strong>
                                     </div>
+                                    @if($esMixto && $solicitud->monto_credito)
+                                        <div class="col-md-4">
+                                            <small class="text-muted d-block">Valor a Crédito</small>
+                                            <strong class="text-info">$ {{ number_format($solicitud->monto_credito, 0, ',', '.') }}</strong>
+                                        </div>
+                                    @endif
                                     @if($solicitud->fecha_vencimiento)
                                         @php
                                             $diasRestantes = now()->diffInDays($solicitud->fecha_vencimiento, false);
                                             $colorDias = $diasRestantes < 0 ? 'text-danger' : ($diasRestantes <= 7 ? 'text-warning' : 'text-success');
                                         @endphp
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <small class="text-muted d-block">Fecha de Vencimiento</small>
                                             <strong>{{ $solicitud->fecha_vencimiento->format('d/m/Y') }}</strong>
                                             <span class="{{ $colorDias }} small">

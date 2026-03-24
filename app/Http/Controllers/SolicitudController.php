@@ -561,17 +561,25 @@ class SolicitudController extends Controller
             // Información de forma de pago / crédito
             if ($solicitud->forma_pago_factura) {
                 $esCredito = str_contains($solicitud->forma_pago_factura, 'Crédito');
+                $esMixto = str_contains($solicitud->forma_pago_factura, 'Mixto');
                 $bgClass = $esCredito ? 'alert-info' : 'alert-light';
+                $colSize = $esMixto ? '4' : ($solicitud->fecha_vencimiento ? '6' : '12');
                 $html .= '<div class="alert ' . $bgClass . ' py-2 mb-3">';
                 $html .= '<div class="row text-center">';
-                $html .= '<div class="col-md-' . ($solicitud->fecha_vencimiento ? '6' : '12') . '">';
+                $html .= '<div class="col-md-' . $colSize . '">';
                 $html .= '<small class="text-muted d-block">Forma de Pago</small>';
                 $html .= '<strong>' . e($solicitud->forma_pago_factura) . '</strong>';
                 $html .= '</div>';
+                if ($esMixto && $solicitud->monto_credito) {
+                    $html .= '<div class="col-md-4">';
+                    $html .= '<small class="text-muted d-block">Valor a Crédito</small>';
+                    $html .= '<strong class="text-info">$ ' . number_format($solicitud->monto_credito, 0, ',', '.') . '</strong>';
+                    $html .= '</div>';
+                }
                 if ($solicitud->fecha_vencimiento) {
                     $diasRestantes = now()->diffInDays($solicitud->fecha_vencimiento, false);
                     $colorDias = $diasRestantes < 0 ? 'text-danger' : ($diasRestantes <= 7 ? 'text-warning' : 'text-success');
-                    $html .= '<div class="col-md-6">';
+                    $html .= '<div class="col-md-' . ($esMixto ? '4' : '6') . '">';
                     $html .= '<small class="text-muted d-block">Fecha de Vencimiento</small>';
                     $html .= '<strong>' . $solicitud->fecha_vencimiento->format('d/m/Y') . '</strong>';
                     $html .= ' <span class="' . $colorDias . ' small">';
@@ -822,12 +830,31 @@ class SolicitudController extends Controller
         DB::beginTransaction();
 
         try {
+            // Re-obtener con bloqueo pesimista para evitar race condition (doble-click)
+            $solicitud = SolicitudCotizacion::where('id', $solicitud->id)->lockForUpdate()->first();
+
+            if ($solicitud->estado !== 'pendiente') {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'Esta solicitud ya fue procesada'
+                ], 400);
+            }
+
             // Marcar como aplicada
             $observaciones = $request->observaciones;
             $solicitud->marcarComoAplicada($user->id, $observaciones);
 
             // Aplicar reservas de stock (descuenta disponible y libera reservado)
             $this->reservaService->aplicarReservas($solicitud);
+
+            // Marcar stock como descontado (aplicarReservas ya descontó stock)
+            // Esto previene que descontarStock() lo descuente de nuevo
+            $solicitud->update([
+                'stock_descontado' => true,
+                'stock_descontado_en' => now(),
+                'stock_descontado_por' => $user->id,
+            ]);
 
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
@@ -921,6 +948,17 @@ class SolicitudController extends Controller
         DB::beginTransaction();
 
         try {
+            // Re-obtener con bloqueo pesimista para evitar race condition (doble-click)
+            $solicitud = SolicitudCotizacion::where('id', $solicitud->id)->lockForUpdate()->first();
+
+            if ($solicitud->estado !== 'pendiente') {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'Esta solicitud ya fue procesada'
+                ], 400);
+            }
+
             // Marcar como rechazada
             $solicitud->marcarComoRechazada($user->id, $request->motivo_rechazo);
 
@@ -1003,6 +1041,25 @@ class SolicitudController extends Controller
         DB::beginTransaction();
 
         try {
+            // Re-obtener con bloqueo pesimista para evitar race condition (doble-click)
+            $solicitud = SolicitudCotizacion::where('id', $solicitud->id)->lockForUpdate()->first();
+
+            if ($solicitud->estado !== 'aplicada') {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'La cotización debe estar aplicada para descontar stock'
+                ], 400);
+            }
+
+            if ($solicitud->stock_descontado) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'El stock ya fue descontado para esta cotización'
+                ], 400);
+            }
+
             $stockProcesado = [];
             $stockInsuficiente = [];
 
@@ -1022,12 +1079,24 @@ class SolicitudController extends Controller
             }
 
             // Liberar reservas activas de esta cotización (ya se descontó el stock real)
-            $solicitud->reservas()
+            // Decrementar cantidad_reservada correctamente para cada reserva
+            $reservasActivas = $solicitud->reservas()
                 ->where('estado', 'activa')
-                ->update([
+                ->get();
+
+            foreach ($reservasActivas as $reserva) {
+                $reserva->update([
                     'estado' => 'aplicada',
                     'updated_at' => now(),
                 ]);
+
+                // Decrementar la cantidad reservada del stock con guardia contra negativos
+                $stock = StockProducto::where('id', $reserva->stock_producto_id)->lockForUpdate()->first();
+                if ($stock && $stock->cantidad_reservada > 0) {
+                    $cantidadALiberar = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                    $stock->decrement('cantidad_reservada', $cantidadALiberar);
+                }
+            }
 
             // Marcar stock como descontado
             $solicitud->update([

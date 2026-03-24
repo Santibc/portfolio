@@ -50,7 +50,8 @@
       "Read(//f/xamppPro80/mysql/data/**)",
       "Read(//f/xamppPro80/mysql/data//**)",
       "Bash(mv /f/xamppPro80/mysql/data/ib_logfile0 /f/xamppPro80/mysql/data/ib_logfile0.bak)",
-      "Bash(mv /f/xamppPro80/mysql/data/ib_logfile1 /f/xamppPro80/mysql/data/ib_logfile1.bak)"
+      "Bash(mv /f/xamppPro80/mysql/data/ib_logfile1 /f/xamppPro80/mysql/data/ib_logfile1.bak)",
+      "Bash(xargs ls:*)"
     ],
     "deny": [],
     "ask": []

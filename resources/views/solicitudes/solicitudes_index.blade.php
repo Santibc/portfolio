@@ -250,6 +250,9 @@
   function confirmarAplicar(solicitudId) {
     const observaciones = $('#observacionesAdmin').val();
 
+    // Desactivar todos los botones de acción para prevenir doble-click
+    $('#modalDetalle .modal-footer button, #modalDetalle .btn-aplicar, #modalDetalle .btn-rechazar').prop('disabled', true);
+
     // Mostrar loading
     $('#modalDetalleContent').append(
       '<div class="loading-overlay" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;z-index:1000;">' +
@@ -277,6 +280,8 @@
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
+      // Re-activar botones en caso de error para permitir reintento
+      $('#modalDetalle .modal-footer button, #modalDetalle .btn-aplicar, #modalDetalle .btn-rechazar').prop('disabled', false);
       alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al aplicar la cotización'));
     });
   }
@@ -292,6 +297,9 @@
     if (!confirm('¿Está seguro de rechazar esta cotización?')) {
       return;
     }
+
+    // Desactivar todos los botones de acción para prevenir doble-click
+    $('#modalDetalle .modal-footer button, #modalDetalle .btn-aplicar, #modalDetalle .btn-rechazar').prop('disabled', true);
 
     // Mostrar loading
     $('#modalDetalleContent').append(
@@ -320,6 +328,8 @@
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
+      // Re-activar botones en caso de error para permitir reintento
+      $('#modalDetalle .modal-footer button, #modalDetalle .btn-aplicar, #modalDetalle .btn-rechazar').prop('disabled', false);
       alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al rechazar la cotización'));
     });
   }
@@ -328,6 +338,9 @@
     if (!confirm('¿Está seguro de descontar el stock del inventario para esta cotización?')) {
       return;
     }
+
+    // Desactivar todos los botones de acción para prevenir doble-click
+    $('#modalDetalle .modal-footer button, #modalDetalle .btn-descontar-stock').prop('disabled', true);
 
     // Mostrar loading
     $('#modalDetalleContent').append(
@@ -355,6 +368,8 @@
       }
     }).fail(function(xhr) {
       $('.loading-overlay').remove();
+      // Re-activar botones en caso de error para permitir reintento
+      $('#modalDetalle .modal-footer button, #modalDetalle .btn-descontar-stock').prop('disabled', false);
       alert('Error: ' + (xhr.responseJSON?.mensaje || 'Error al descontar stock'));
     });
   }

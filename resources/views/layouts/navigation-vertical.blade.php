@@ -182,7 +182,7 @@
         @endif
 
 
-        @if(auth()->user()->hasRole(['admin', 'cajero_principal', 'auxiliar_venta', 'vendedor']))
+        @if(auth()->user()->hasRole(['admin', 'cajero_principal', 'auxiliar_venta']))
             <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
             <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
                 <i class="bi bi-shop me-1"></i>
@@ -245,7 +245,7 @@
                 </a>
             @endif
 
-            @if(auth()->user()->hasRole(['auxiliar_venta', 'vendedor']) && !auth()->user()->hasRole(['admin', 'cajero_principal']))
+            @if(auth()->user()->hasRole(['auxiliar_venta']) && !auth()->user()->hasRole(['admin', 'cajero_principal']))
                 <a href="{{ route('pdv.prefacturas.crear') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.prefacturas.crear') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-plus-circle"></i>

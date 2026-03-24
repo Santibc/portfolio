@@ -60,19 +60,76 @@
           </div>
 
           @if($solicitud->forma_pago_factura || $solicitud->fecha_vencimiento)
+          @php
+            $esMixto = $solicitud->forma_pago_factura && str_contains($solicitud->forma_pago_factura, 'Mixto');
+          @endphp
           <div class="row mt-3 pt-3 border-top">
             @if($solicitud->forma_pago_factura)
-            <div class="col-md-6 text-center">
+            <div class="col-md-{{ $esMixto ? '4' : '6' }} text-center">
               <small class="text-muted d-block">Forma de Pago</small>
               <strong>{{ $solicitud->forma_pago_factura }}</strong>
             </div>
             @endif
+            @if($esMixto && $solicitud->monto_credito)
+            <div class="col-md-4 text-center">
+              <small class="text-muted d-block">Valor a Crédito</small>
+              <strong class="text-info">$ {{ number_format($solicitud->monto_credito, 0, ',', '.') }}</strong>
+            </div>
+            @endif
             @if($solicitud->fecha_vencimiento)
-            <div class="col-md-6 text-center">
+            <div class="col-md-{{ $esMixto ? '4' : '6' }} text-center">
               <small class="text-muted d-block">Fecha de Vencimiento</small>
               <strong>{{ $solicitud->fecha_vencimiento->format('d/m/Y') }}</strong>
             </div>
             @endif
+          </div>
+          @endif
+
+          {{-- Opción para convertir saldo restante a crédito (pago mixto) --}}
+          @if($solicitud->forma_pago_factura === 'Contado' && $solicitud->saldo_pendiente > 0)
+          <div class="row mt-3 pt-3 border-top">
+            <div class="col-12">
+              <div id="btnConvertirCredito">
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="mostrarOpcionesCredito()">
+                  <i class="bi bi-credit-card me-1"></i> Registrar saldo restante a crédito
+                </button>
+              </div>
+              <div id="opcionesCredito" style="display:none;">
+                @php
+                  $montoPendAprobacion = $solicitud->pagosPendientes()->sum('monto');
+                  $maxCredito = max(0.01, $solicitud->saldo_pendiente - $montoPendAprobacion);
+                @endphp
+                <div class="row align-items-end g-3">
+                  <div class="col-md-4">
+                    <label for="monto_credito" class="form-label">Monto a crédito <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" id="monto_credito"
+                             value="{{ $maxCredito }}"
+                             max="{{ $maxCredito }}"
+                             min="0.01" step="0.01" required>
+                    </div>
+                    <small class="text-muted">Máximo: $ {{ number_format($maxCredito, 0, ',', '.') }}</small>
+                  </div>
+                  <div class="col-md-3">
+                    <label for="dias_credito" class="form-label">Plazo de crédito</label>
+                    <select class="form-select" id="dias_credito">
+                      <option value="30">30 días</option>
+                      <option value="60">60 días</option>
+                      <option value="90">90 días</option>
+                    </select>
+                  </div>
+                  <div class="col-md-5">
+                    <button type="button" class="btn btn-info text-white" id="btnConfirmarCredito" onclick="convertirACredito()">
+                      <i class="bi bi-check-circle me-1"></i> Confirmar crédito
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="cancelarConversion()">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           @endif
 
@@ -313,13 +370,88 @@
         const creditoOpt = metodoPagoSelect.querySelector('option[value="credito"]');
         if (creditoOpt) creditoOpt.remove();
       }
-    @elseif($solicitud->forma_pago_factura === 'Contado')
-      // Si es contado guardado: ocultar opción crédito
-      if (metodoPagoSelect) {
-        const creditoOpt = metodoPagoSelect.querySelector('option[value="credito"]');
-        if (creditoOpt) creditoOpt.style.display = 'none';
-      }
     @endif
+
+    // Funciones para conversión a pago mixto (contado + crédito)
+    function mostrarOpcionesCredito() {
+      const btn = document.getElementById('btnConvertirCredito');
+      const opciones = document.getElementById('opcionesCredito');
+      if (btn) btn.style.display = 'none';
+      if (opciones) opciones.style.display = 'block';
+    }
+
+    function cancelarConversion() {
+      const btn = document.getElementById('btnConvertirCredito');
+      const opciones = document.getElementById('opcionesCredito');
+      if (btn) btn.style.display = 'block';
+      if (opciones) opciones.style.display = 'none';
+    }
+
+    function convertirACredito() {
+      const montoCredito = document.getElementById('monto_credito');
+      if (!montoCredito.value || parseFloat(montoCredito.value) <= 0) {
+        Swal.fire({ icon: 'warning', title: 'Monto requerido', text: 'Ingrese el monto a registrar a crédito', confirmButtonColor: '#BCA9F5' });
+        return;
+      }
+      if (parseFloat(montoCredito.value) > parseFloat(montoCredito.max)) {
+        Swal.fire({ icon: 'warning', title: 'Monto excedido', text: 'El monto no puede superar $ ' + parseFloat(montoCredito.max).toLocaleString('es-CO'), confirmButtonColor: '#BCA9F5' });
+        return;
+      }
+
+      const btnConfirmar = document.getElementById('btnConfirmarCredito');
+      const originalText = btnConfirmar.innerHTML;
+      btnConfirmar.disabled = true;
+      btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+
+      const diasCredito = document.getElementById('dias_credito').value;
+
+      const formData = new FormData();
+      formData.append('_token', '{{ csrf_token() }}');
+      formData.append('convertir_credito', '1');
+      formData.append('dias_credito', diasCredito);
+      formData.append('monto_credito', montoCredito.value);
+
+      fetch('{{ route("pagos.store", $solicitud) }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Registrado',
+            text: data.mensaje,
+            confirmButtonColor: '#BCA9F5'
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.mensaje,
+            confirmButtonColor: '#BCA9F5'
+          });
+          btnConfirmar.disabled = false;
+          btnConfirmar.innerHTML = originalText;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Ocurrió un error al procesar la conversión',
+          confirmButtonColor: '#BCA9F5'
+        });
+        btnConfirmar.disabled = false;
+        btnConfirmar.innerHTML = originalText;
+      });
+    }
 
     document.getElementById('formPago').addEventListener('submit', function(e) {
       e.preventDefault();

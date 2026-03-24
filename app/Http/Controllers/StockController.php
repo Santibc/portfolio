@@ -118,11 +118,13 @@ class StockController extends Controller
                                     </button>';
                     }
 
-                    // Botón reservas (solo si hay reservas)
-                    if ($stock->cantidad_reservada > 0) {
-                        $buttons .= '<button type="button" class="btn btn-outline-primary" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
+                    // Botón reservas (si hay reservas o valor incorrecto negativo)
+                    if ($stock->cantidad_reservada != 0) {
+                        $badgeClass = $stock->cantidad_reservada < 0 ? 'bg-danger' : 'bg-primary';
+                        $btnClass = $stock->cantidad_reservada < 0 ? 'btn btn-outline-danger' : 'btn btn-outline-primary';
+                        $buttons .= '<button type="button" class="'.$btnClass.'" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
                                         <i class="bi bi-bookmark-check"></i>
-                                        <span class="badge bg-primary">'.$stock->cantidad_reservada.'</span>
+                                        <span class="badge '.$badgeClass.'">'.$stock->cantidad_reservada.'</span>
                                     </button>';
                     }
 

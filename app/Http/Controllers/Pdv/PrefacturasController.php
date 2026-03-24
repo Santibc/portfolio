@@ -29,7 +29,7 @@ class PrefacturasController extends Controller
             $query = Prefactura::with('usuarioCreador', 'usuarioCajero', 'cliente');
 
             $user = auth()->user();
-            if ($user->hasRole(['auxiliar_venta', 'vendedor']) && !$user->hasRole(['admin', 'cajero_principal'])) {
+            if ($user->hasRole(['auxiliar_venta']) && !$user->hasRole(['admin', 'cajero_principal'])) {
                 $query->where('usuario_creador_id', $user->id);
             }
 

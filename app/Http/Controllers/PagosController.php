@@ -59,6 +59,32 @@ class PagosController extends Controller
             ], 403);
         }
 
+        // Detectar si es conversión de contado parcial a mixto (crédito para saldo restante)
+        if ($request->input('convertir_credito') && $solicitud->forma_pago_factura === 'Contado' && $solicitud->saldo_pendiente > 0) {
+            $montoPendienteAprobacion = $solicitud->pagosPendientes()->sum('monto');
+            $maxCredito = $solicitud->saldo_pendiente - $montoPendienteAprobacion;
+
+            $validated = $request->validate([
+                'dias_credito' => 'required|integer|in:30,60,90',
+                'monto_credito' => 'required|numeric|min:0.01|max:' . $maxCredito,
+            ]);
+
+            $dias = $validated['dias_credito'];
+            $montoCredito = $validated['monto_credito'];
+            $solicitud->forma_pago_factura = "Mixto (Contado/Crédito {$dias} días)";
+            $solicitud->fecha_vencimiento = now()->addDays($dias);
+            $solicitud->monto_credito = $montoCredito;
+            $solicitud->save();
+
+            Log::info("Cotización {$solicitud->numero_solicitud} convertida a pago mixto (Contado/Crédito {$dias} días) por usuario {$user->id}");
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => "Saldo restante registrado a crédito ({$dias} días). Podrá adjuntar los pagos cuando el cliente pague.",
+                'estado_pago' => $solicitud->estado_pago,
+            ]);
+        }
+
         // Detectar si es solo configuración de crédito (sin pago real)
         $formaPago = $request->input('forma_pago');
         $esSoloCredito = !$solicitud->forma_pago_factura

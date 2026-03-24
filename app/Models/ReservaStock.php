@@ -176,9 +176,12 @@ class ReservaStock extends Model
             'liberada_por' => $usuarioId,
         ]);
 
-        // Actualizar el stock del producto
-        $this->stockProducto->increment('cantidad_disponible', 0); // No cambiar disponible
-        $this->stockProducto->decrement('cantidad_reservada', $this->cantidad_reservada);
+        // Actualizar el stock del producto - con guardia contra negativos
+        $stock = $this->stockProducto;
+        if ($stock && $stock->cantidad_reservada > 0) {
+            $cantidadALiberar = min($this->cantidad_reservada, $stock->cantidad_reservada);
+            $stock->decrement('cantidad_reservada', $cantidadALiberar);
+        }
 
         return true;
     }
@@ -198,8 +201,12 @@ class ReservaStock extends Model
             'estado' => self::ESTADO_APLICADA,
         ]);
 
-        // Liberar la reserva del conteo de stock reservado
-        $this->stockProducto->decrement('cantidad_reservada', $this->cantidad_reservada);
+        // Liberar la reserva del conteo de stock reservado - con guardia contra negativos
+        $stock = $this->stockProducto;
+        if ($stock && $stock->cantidad_reservada > 0) {
+            $cantidadALiberar = min($this->cantidad_reservada, $stock->cantidad_reservada);
+            $stock->decrement('cantidad_reservada', $cantidadALiberar);
+        }
 
         return true;
     }
