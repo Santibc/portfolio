@@ -26,7 +26,7 @@ class LiberarReservasExpiradas extends Command
      *
      * @var string
      */
-    protected $description = 'Libera las reservas de stock que han expirado (más de 24h sin aplicar)';
+    protected $description = 'Libera las reservas de stock que han expirado (más de 72h sin aplicar)';
 
     protected ReservaStockService $reservaService;
 

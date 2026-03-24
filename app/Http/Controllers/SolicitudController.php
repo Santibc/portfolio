@@ -392,6 +392,16 @@ class SolicitudController extends Controller
             $html .= '<tr><td><strong>Fecha rechazo:</strong></td><td>' . $solicitud->rechazada_en->format('d/m/Y H:i') . '</td></tr>';
         }
 
+        // Reserva de stock
+        if ($solicitud->tiene_reserva_stock && $solicitud->reserva_expira_en) {
+            $expirada = $solicitud->reserva_expira_en->isPast();
+            $badgeClass = $expirada ? 'bg-danger' : 'bg-info';
+            $texto = $expirada ? 'Expirada' : 'Activa';
+            $html .= '<tr><td><strong>Reserva Stock:</strong></td><td><span class="badge ' . $badgeClass . '">' . $texto . '</span> — Expira: ' . $solicitud->reserva_expira_en->format('d/m/Y H:i') . '</td></tr>';
+        } elseif ($solicitud->reserva_liberada_en) {
+            $html .= '<tr><td><strong>Reserva Stock:</strong></td><td><span class="badge bg-secondary">Liberada</span> — ' . $solicitud->reserva_liberada_en->format('d/m/Y H:i') . '</td></tr>';
+        }
+
         // Forma de pago y fecha de vencimiento
         if ($solicitud->forma_pago_factura) {
             $html .= '<tr><td><strong>Forma de Pago:</strong></td><td>' . e($solicitud->forma_pago_factura) . '</td></tr>';

@@ -118,15 +118,13 @@ class StockController extends Controller
                                     </button>';
                     }
 
-                    // Botón reservas (si hay reservas o valor incorrecto negativo)
-                    if ($stock->cantidad_reservada != 0) {
-                        $badgeClass = $stock->cantidad_reservada < 0 ? 'bg-danger' : 'bg-primary';
-                        $btnClass = $stock->cantidad_reservada < 0 ? 'btn btn-outline-danger' : 'btn btn-outline-primary';
-                        $buttons .= '<button type="button" class="'.$btnClass.'" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
-                                        <i class="bi bi-bookmark-check"></i>
-                                        <span class="badge '.$badgeClass.'">'.$stock->cantidad_reservada.'</span>
-                                    </button>';
-                    }
+                    // Botón reservas (siempre visible para ver historial)
+                    $badgeClass = $stock->cantidad_reservada < 0 ? 'bg-danger' : ($stock->cantidad_reservada > 0 ? 'bg-primary' : 'bg-secondary');
+                    $btnClass = $stock->cantidad_reservada < 0 ? 'btn btn-outline-danger' : ($stock->cantidad_reservada > 0 ? 'btn btn-outline-primary' : 'btn btn-outline-secondary');
+                    $buttons .= '<button type="button" class="'.$btnClass.'" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
+                                    <i class="bi bi-bookmark-check"></i>
+                                    <span class="badge '.$badgeClass.'">'.$stock->cantidad_reservada.'</span>
+                                </button>';
 
                     // Botón historial
                     $buttons .= '<button type="button" class="btn btn-secondary" onclick="verHistorial('.$stock->producto_id.', '.($stock->variante_producto_id ?: 'null').')" title="Historial">

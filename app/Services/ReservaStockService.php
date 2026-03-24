@@ -21,7 +21,7 @@ class ReservaStockService
     /**
      * Horas por defecto para expiración de reservas
      */
-    const HORAS_EXPIRACION_DEFAULT = 24;
+    const HORAS_EXPIRACION_DEFAULT = 72;
 
     /**
      * Verificar disponibilidad de stock para los items
@@ -508,7 +508,10 @@ class ReservaStockService
     private function obtenerStock(int $productoId, ?int $varianteId = null): ?StockProducto
     {
         $query = StockProducto::where('producto_id', $productoId)
-            ->whereNull('ubicacion_id'); // Solo ubicación principal (bodega)
+            ->where(function($q) {
+                $q->whereNull('ubicacion_id')
+                  ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
+            });
 
         if ($varianteId) {
             $query->where('variante_producto_id', $varianteId);
