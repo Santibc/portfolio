@@ -89,8 +89,8 @@
                 $cardTextShadow = $luminance > 0.6 ? 'none' : '0 1px 3px rgba(0,0,0,0.4)';
             @endphp
             <a href="{{ route('tableros.show', $tablero) }}" class="tablero-card">
-                <div class="tablero-card-header" style="background: {{ $tablero->color_fondo }};">
-                    <span class="tablero-card-nombre" style="color: {{ $cardTextColor }}; text-shadow: {{ $cardTextShadow }};">{{ $tablero->nombre }}</span>
+                <div class="tablero-card-header" style="background: {{ $tablero->color_fondo }};@if($tablero->imagen_fondo) background-image: url('{{ asset('uploads/' . $tablero->imagen_fondo) }}'); background-size: cover; background-position: center;@endif">
+                    <span class="tablero-card-nombre" style="color: {{ $cardTextColor }}; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">{{ $tablero->nombre }}</span>
                 </div>
                 <div class="tablero-card-body">
                     <div class="tablero-card-meta">

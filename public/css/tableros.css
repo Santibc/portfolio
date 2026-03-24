@@ -227,6 +227,21 @@
     background: #f7f8f9;
 }
 
+/* Card image preview */
+.tarjeta-imagen-preview {
+    margin: -8px -12px 8px;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+    max-height: 160px;
+}
+
+.tarjeta-imagen-preview img {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    display: block;
+}
+
 /* Card cover color */
 .tarjeta-portada {
     height: 32px;
