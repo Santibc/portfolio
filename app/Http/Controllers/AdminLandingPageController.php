@@ -255,24 +255,57 @@ class AdminLandingPageController extends Controller
 
     public function sendContactEmail(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string'
-        ]);
+        \Log::info('=== CONTACT FORM: Inicio de envío ===');
+        \Log::info('Datos recibidos:', $request->only(['name', 'email', 'subject', 'message']));
 
-        $contactInfo = LandingContactInfo::first();
-        if ($contactInfo && $contactInfo->receive_messages_email) {
-            try {
-                Mail::to($contactInfo->receive_messages_email)->send(new ContactFormMail($request->all()));
-                return response()->json(['success' => true]);
-            } catch (\Exception $e) {
-                return response()->json(['success' => false, 'error' => 'Error al enviar el mensaje']);
-            }
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email',
+                'subject' => 'nullable|string|max:255',
+                'message' => 'required|string'
+            ]);
+            \Log::info('Validación pasada correctamente.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validación fallida:', $e->errors());
+            return response()->json(['success' => false, 'error' => 'Datos inválidos: ' . implode(', ', array_map(fn($msgs) => implode(', ', $msgs), $e->errors()))], 422);
         }
 
-        return response()->json(['success' => false, 'error' => 'No se pudo enviar el mensaje']);
+        $contactInfo = LandingContactInfo::first();
+        \Log::info('ContactInfo encontrado:', [
+            'exists' => $contactInfo ? true : false,
+            'receive_messages_email' => $contactInfo->receive_messages_email ?? 'NO CONFIGURADO',
+        ]);
+
+        if (!$contactInfo || !$contactInfo->receive_messages_email) {
+            \Log::error('No hay email de destino configurado en landing_contact_info.receive_messages_email');
+            return response()->json(['success' => false, 'error' => 'No hay email de destino configurado. Configure receive_messages_email en el panel de administración.']);
+        }
+
+        \Log::info('Configuración de correo:', [
+            'MAIL_MAILER' => config('mail.default'),
+            'MAIL_HOST' => config('mail.mailers.smtp.host'),
+            'MAIL_PORT' => config('mail.mailers.smtp.port'),
+            'MAIL_USERNAME' => config('mail.mailers.smtp.username') ? 'CONFIGURADO' : 'NO CONFIGURADO',
+            'MAIL_PASSWORD' => config('mail.mailers.smtp.password') ? 'CONFIGURADO' : 'NO CONFIGURADO',
+            'MAIL_ENCRYPTION' => config('mail.mailers.smtp.encryption'),
+            'MAIL_FROM_ADDRESS' => config('mail.from.address'),
+            'MAIL_FROM_NAME' => config('mail.from.name'),
+        ]);
+
+        try {
+            \Log::info('Intentando enviar email a: ' . $contactInfo->receive_messages_email);
+            Mail::to($contactInfo->receive_messages_email)->send(new ContactFormMail($request->all()));
+            \Log::info('=== CONTACT FORM: Email enviado exitosamente ===');
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('=== CONTACT FORM: Error al enviar email ===');
+            \Log::error('Excepción: ' . get_class($e));
+            \Log::error('Mensaje: ' . $e->getMessage());
+            \Log::error('Archivo: ' . $e->getFile() . ':' . $e->getLine());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            return response()->json(['success' => false, 'error' => 'Error al enviar: ' . $e->getMessage()]);
+        }
     }
 
     // ========== ABOUT ==========

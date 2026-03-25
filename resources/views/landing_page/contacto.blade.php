@@ -490,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const result = await response.json();
+                console.log('Response status:', response.status, 'Body:', result);
 
                 if (result.success) {
                     msg.className = 'form-message success';
@@ -501,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         msg.style.display = 'none';
                     }, 8000);
                 } else {
-                    throw new Error(result.error || result.message || 'Error al enviar');
+                    throw new Error(result.error || result.message || 'Error al enviar (status: ' + response.status + ')');
                 }
             } catch (error) {
                 msg.className = 'form-message error';
