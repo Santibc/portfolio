@@ -30,7 +30,8 @@ class SiigoConfigController extends Controller
             'siigo_partner_id' => 'nullable|string|max:100',
             'siigo_document_type_id' => 'nullable|integer',
             'siigo_credit_note_type_id' => 'nullable|integer',
-            'siigo_payment_type_id' => 'nullable|integer',
+            'siigo_payment_type_efectivo_id' => 'nullable|integer',
+            'siigo_payment_type_transferencia_id' => 'nullable|integer',
             'siigo_tax_id' => 'nullable|integer',
             'siigo_seller_id' => 'nullable|integer',
             'siigo_consumidor_final_nit' => 'nullable|string|max:20',
@@ -40,7 +41,8 @@ class SiigoConfigController extends Controller
         $data = $request->only([
             'siigo_username', 'siigo_access_key', 'siigo_partner_id',
             'siigo_document_type_id', 'siigo_credit_note_type_id',
-            'siigo_payment_type_id', 'siigo_tax_id', 'siigo_seller_id',
+            'siigo_payment_type_efectivo_id', 'siigo_payment_type_transferencia_id',
+            'siigo_tax_id', 'siigo_seller_id',
             'siigo_consumidor_final_nit', 'siigo_max_reintentos',
         ]);
 

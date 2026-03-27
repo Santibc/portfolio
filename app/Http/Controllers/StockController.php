@@ -358,7 +358,7 @@ class StockController extends Controller
             ];
         });
 
-        $html = view('stock.reservas', compact('reservas', 'cotizacionesActivas'))->render();
+        $html = view('stock.reservas', compact('reservas', 'cotizacionesActivas', 'stockId'))->render();
 
         return response()->json(['html' => $html]);
     }

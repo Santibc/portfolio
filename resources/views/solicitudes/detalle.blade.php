@@ -116,6 +116,31 @@
                                         <span>{{ $solicitud->fecha_vencimiento->format('d/m/Y') }}</span>
                                     </div>
                                 @endif
+
+                                {{-- Reserva de Stock --}}
+                                @if($solicitud->tiene_reserva_stock && $solicitud->reserva_expira_en)
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted d-block">Reserva Stock</small>
+                                        @if($solicitud->reserva_expira_en->isPast())
+                                            <span class="badge bg-danger">Expirada</span>
+                                        @else
+                                            <span class="badge bg-info">Activa</span>
+                                        @endif
+                                        — Expira: {{ $solicitud->reserva_expira_en->format('d/m/Y H:i') }}
+                                    </div>
+                                @elseif($solicitud->reserva_liberada_en)
+                                    <div class="col-12 mb-2">
+                                        <small class="text-muted d-block">Reserva Stock</small>
+                                        <span class="badge bg-secondary">Liberada</span>
+                                        — {{ $solicitud->reserva_liberada_en->format('d/m/Y H:i') }}
+                                        @php
+                                            $reservaLiberada = $solicitud->reservas->first(fn($r) => $r->liberada_por !== null);
+                                        @endphp
+                                        @if($reservaLiberada && $reservaLiberada->liberadaPor)
+                                            por <strong>{{ $reservaLiberada->liberadaPor->name }}</strong>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -333,6 +358,18 @@
                             </div>
                         @endif
 
+                        {{-- Alerta de pagos pendientes de aprobación --}}
+                        @php
+                            $pagosPendientesAprobacion = $solicitud->pagos->where('estado', 'pendiente');
+                        @endphp
+                        @if($pagosPendientesAprobacion->count() > 0)
+                            <div class="alert alert-warning py-2 text-center small mb-3">
+                                <i class="bi bi-clock me-1"></i>
+                                {{ $pagosPendientesAprobacion->count() }} pago(s) pendiente(s) de aprobación por
+                                <strong>$ {{ number_format($pagosPendientesAprobacion->sum('monto'), 0, ',', '.') }}</strong>
+                            </div>
+                        @endif
+
                         {{-- Tabla de pagos --}}
                         <div class="table-responsive">
                             <table class="table table-sm table-striped table-hover">
@@ -427,6 +464,142 @@
                                 <span class="text-muted">El stock de los productos no ha sido descontado del inventario.</span>
                             </div>
                         @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Información de Envío --}}
+            @if($solicitud->estado === 'aplicada')
+                <div class="card shadow mb-4">
+                    <div class="card-header" style="background-color: var(--miracle-lilac-light); border-bottom: 2px solid var(--miracle-pink);">
+                        <h6 class="mb-0" style="font-family: 'Comfortaa', cursive; color: var(--miracle-dark);">
+                            <i class="bi bi-truck me-2"></i>Información de Envío
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Estado de Envío</small>
+                                <span class="badge bg-{{ $solicitud->color_estado_envio }}">
+                                    <i class="bi {{ $solicitud->icono_estado_envio }} me-1"></i>{{ $solicitud->etiqueta_estado_envio }}
+                                </span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Transportadora</small>
+                                <span>{{ $solicitud->transportadora ? e($solicitud->transportadora) : '-' }}</span>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted d-block">Número de Guía</small>
+                                @if($solicitud->numero_guia)
+                                    <code>{{ $solicitud->numero_guia }}</code>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </div>
+                            @if($solicitud->despachado_en)
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted d-block">Despachado</small>
+                                    @php
+                                        $despachadoPor = $solicitud->despachado_por ? \App\Models\User::find($solicitud->despachado_por)?->name : null;
+                                    @endphp
+                                    <span>{{ $despachadoPor ? $despachadoPor . ' — ' : '' }}{{ $solicitud->despachado_en->format('d/m/Y H:i') }}</span>
+                                </div>
+                            @endif
+                            @if($solicitud->entregado_en)
+                                <div class="col-md-3 mb-2">
+                                    <small class="text-muted d-block">Entregado</small>
+                                    <span>{{ $solicitud->entregado_en->format('d/m/Y H:i') }}</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($solicitud->archivo_guia)
+                            @php
+                                $esImagen = preg_match('/\.(jpg|jpeg|png|webp)$/i', $solicitud->archivo_guia);
+                            @endphp
+                            <div class="mt-2">
+                                <small class="text-muted d-block mb-1">Archivo de Guía:</small>
+                                @if($esImagen)
+                                    <img src="/{{ e($solicitud->archivo_guia) }}" class="img-thumbnail" style="max-height: 200px;">
+                                    <a href="/{{ e($solicitud->archivo_guia) }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                        <i class="bi bi-eye me-1"></i>Ver completa
+                                    </a>
+                                @else
+                                    <a href="/{{ e($solicitud->archivo_guia) }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF de guía
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Historial de Cambios --}}
+            @if($solicitud->historialEstados && $solicitud->historialEstados->count() > 0)
+                @php
+                    $iconosTipo = [
+                        'estado' => 'bi-flag-fill text-warning',
+                        'envio' => 'bi-truck text-info',
+                        'pago' => 'bi-credit-card text-success',
+                    ];
+                    $etiquetasTipo = [
+                        'estado' => 'Estado',
+                        'envio' => 'Envío',
+                        'pago' => 'Pago',
+                    ];
+                @endphp
+                <div class="card shadow mb-4">
+                    <div class="card-header" style="background-color: var(--miracle-lilac-light); border-bottom: 2px solid var(--miracle-pink);">
+                        <h6 class="mb-0" style="font-family: 'Comfortaa', cursive; color: var(--miracle-dark);">
+                            <i class="bi bi-clock-history me-2"></i>Historial de Cambios
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            @foreach($solicitud->historialEstados as $h)
+                                @php
+                                    $icono = $iconosTipo[$h->tipo_cambio] ?? 'bi-circle text-secondary';
+                                    $etiquetaTipo = $etiquetasTipo[$h->tipo_cambio] ?? $h->tipo_cambio;
+                                    $usuario = $h->usuario?->name ?? 'Sistema';
+                                @endphp
+                                <div class="d-flex align-items-start mb-2 small border-start border-2 ps-3">
+                                    <div class="flex-grow-1">
+                                        <i class="bi {{ $icono }} me-1"></i>
+                                        <span class="badge bg-light text-dark me-1">{{ $etiquetaTipo }}</span>
+                                        <strong>{{ e($usuario) }}</strong> cambió de
+                                        <span class="badge bg-secondary">{{ $h->estado_anterior ?? '-' }}</span>
+                                        a <span class="badge bg-primary">{{ $h->estado_nuevo }}</span>
+
+                                        @php $datos = $h->datos_adicionales; @endphp
+                                        @if(!empty($datos))
+                                            @php
+                                                $detalles = [];
+                                                if (!empty($datos['transportadora'])) $detalles[] = 'Transportadora: ' . e($datos['transportadora']);
+                                                if (!empty($datos['numero_guia'])) $detalles[] = 'Guía: ' . e($datos['numero_guia']);
+                                                if (!empty($datos['archivo_guia'])) {
+                                                    $esImg = preg_match('/\.(jpg|jpeg|png|webp)$/i', $datos['archivo_guia']);
+                                                    if ($esImg) {
+                                                        $detalles[] = '<a href="/' . e($datos['archivo_guia']) . '" target="_blank"><i class="bi bi-image me-1"></i>Ver imagen</a>';
+                                                    } else {
+                                                        $detalles[] = '<a href="/' . e($datos['archivo_guia']) . '" target="_blank"><i class="bi bi-file-pdf me-1"></i>Ver PDF</a>';
+                                                    }
+                                                }
+                                            @endphp
+                                            @if(!empty($detalles))
+                                                <br><small class="text-muted">{!! implode(' | ', $detalles) !!}</small>
+                                            @endif
+                                        @endif
+
+                                        @if($h->observaciones)
+                                            <br><small class="text-muted"><i class="bi bi-chat-text me-1"></i>{{ e($h->observaciones) }}</small>
+                                        @endif
+
+                                        <br><small class="text-muted">{{ $h->created_at->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             @endif

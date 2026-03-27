@@ -8,6 +8,7 @@ use App\Models\EnlaceAcceso;
 use App\Models\ItemSolicitudCotizacion;
 use App\Models\Producto;
 use App\Models\SolicitudCotizacion;
+use App\Models\HistorialEstadoSolicitud;
 use App\Models\VarianteProducto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -271,6 +272,16 @@ class CotizacionService
             }
 
             if ($resultado['exito']) {
+                // Registrar en historial de estados
+                HistorialEstadoSolicitud::create([
+                    'solicitud_cotizacion_id' => $solicitud->id,
+                    'tipo_cambio' => HistorialEstadoSolicitud::TIPO_ESTADO,
+                    'estado_anterior' => SolicitudCotizacion::ESTADO_PENDIENTE,
+                    'estado_nuevo' => $nuevoEstado,
+                    'observaciones' => $datos['observaciones_admin'] ?? $datos['motivo_rechazo'] ?? null,
+                    'user_id' => $usuarioId,
+                ]);
+
                 DB::commit();
             } else {
                 DB::rollBack();

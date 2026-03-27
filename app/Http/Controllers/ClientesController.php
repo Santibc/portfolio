@@ -146,10 +146,7 @@ HTML;
             ],
             'tipo_cliente' => ['required', 'in:natural,juridica'],
             'nombre_contacto' => [$request->tipo_cliente === 'juridica' ? 'nullable' : 'required', 'string', 'max:255'],
-            'email' => [
-                'required', 'email', 'max:255',
-                Rule::unique('clientes')->ignore($cliente->id)
-            ],
+            'email' => ['required', 'email', 'max:255'],
             'emails_adicionales' => ['nullable', 'array'],
             'emails_adicionales.*' => ['nullable', 'email', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:100'],

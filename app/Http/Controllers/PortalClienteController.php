@@ -23,13 +23,21 @@ class PortalClienteController extends Controller
     }
 
     /**
+     * Obtener todos los IDs de cliente asociados al usuario autenticado
+     */
+    private function getClienteIds(): array
+    {
+        return Cliente::where('user_id', Auth::id())->pluck('id')->toArray();
+    }
+
+    /**
      * Verificar que el cliente autenticado es propietario de la solicitud
      */
     private function verificarPropietario(SolicitudCotizacion $solicitud): void
     {
-        $cliente = $this->getClienteAutenticado();
+        $clienteIds = $this->getClienteIds();
 
-        if (!$cliente || $solicitud->cliente_id !== $cliente->id) {
+        if (empty($clienteIds) || !in_array($solicitud->cliente_id, $clienteIds)) {
             abort(403, 'No tiene acceso a este pedido');
         }
     }
@@ -40,6 +48,7 @@ class PortalClienteController extends Controller
     public function dashboard()
     {
         $cliente = $this->getClienteAutenticado();
+        $clienteIds = $this->getClienteIds();
 
         if (!$cliente) {
             // En lugar de redirigir a login (causa loop), mostrar vista informativa
@@ -48,30 +57,30 @@ class PortalClienteController extends Controller
             ]);
         }
 
-        // Métricas del cliente
-        $totalCotizaciones = SolicitudCotizacion::where('cliente_id', $cliente->id)->count();
-        $cotizacionesPendientes = SolicitudCotizacion::where('cliente_id', $cliente->id)
+        // Métricas del cliente (incluye todos los clientes vinculados al usuario)
+        $totalCotizaciones = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)->count();
+        $cotizacionesPendientes = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
             ->where('estado', SolicitudCotizacion::ESTADO_PENDIENTE)
             ->count();
-        $pedidosEnCamino = SolicitudCotizacion::where('cliente_id', $cliente->id)
+        $pedidosEnCamino = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
             ->where('estado', SolicitudCotizacion::ESTADO_APLICADA)
             ->whereIn('estado_envio', [
                 SolicitudCotizacion::ENVIO_DESPACHADO,
                 SolicitudCotizacion::ENVIO_EN_TRANSITO
             ])
             ->count();
-        $totalComprado = SolicitudCotizacion::where('cliente_id', $cliente->id)
+        $totalComprado = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
             ->where('estado', SolicitudCotizacion::ESTADO_APLICADA)
             ->sum('monto_total');
 
         // Últimos 5 pedidos
-        $ultimosPedidos = SolicitudCotizacion::where('cliente_id', $cliente->id)
+        $ultimosPedidos = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
 
         // Alertas: pedidos despachados recientes (últimos 7 días)
-        $pedidosDespachados = SolicitudCotizacion::where('cliente_id', $cliente->id)
+        $pedidosDespachados = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
             ->where('estado_envio', SolicitudCotizacion::ENVIO_DESPACHADO)
             ->where('despachado_en', '>=', now()->subDays(7))
             ->get();
@@ -93,6 +102,7 @@ class PortalClienteController extends Controller
     public function historial(Request $request)
     {
         $cliente = $this->getClienteAutenticado();
+        $clienteIds = $this->getClienteIds();
 
         if (!$cliente) {
             // En lugar de redirigir a login (causa loop), mostrar vista informativa
@@ -102,7 +112,7 @@ class PortalClienteController extends Controller
         }
 
         if ($request->ajax()) {
-            $query = SolicitudCotizacion::where('cliente_id', $cliente->id)
+            $query = SolicitudCotizacion::whereIn('cliente_id', $clienteIds)
                 ->orderBy('created_at', 'desc');
 
             return DataTables::of($query)

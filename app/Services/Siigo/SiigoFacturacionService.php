@@ -598,10 +598,16 @@ class SiigoFacturacionService
      */
     private function construirPayments(VentaPdv $venta): array
     {
-        $paymentTypeId = (int) ConfiguracionPdv::obtener('siigo_payment_type_id');
+        // Seleccionar tipo de pago según el método de pago de la venta
+        if ($venta->metodo_pago === 'efectivo') {
+            $paymentTypeId = (int) ConfiguracionPdv::obtener('siigo_payment_type_efectivo_id');
+        } else {
+            // 'transferencia' y 'mixto' usan el tipo de pago de transferencia
+            $paymentTypeId = (int) ConfiguracionPdv::obtener('siigo_payment_type_transferencia_id');
+        }
 
         if (!$paymentTypeId) {
-            throw new Exception('No se ha configurado el tipo de pago en SIIGO.');
+            throw new Exception('No se ha configurado el tipo de pago en SIIGO para el método: ' . ($venta->metodo_pago ?? 'desconocido'));
         }
 
         // Calculate total from items (as SIIGO sees them) - includes item discounts but NOT global discount

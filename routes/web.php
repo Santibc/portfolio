@@ -383,6 +383,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inven
 
     // Subir guía de envío
     Route::post('/solicitudes/{solicitud}/guia', [SolicitudController::class, 'subirGuia'])->name('solicitudes.guia.upload');
+
+    // Historial de envío
+    Route::get('/solicitudes/{solicitud}/envio/historial', [SolicitudController::class, 'historialEnvio'])->name('solicitudes.envio.historial');
 });
 
 // ============================================================

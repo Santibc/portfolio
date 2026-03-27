@@ -548,7 +548,7 @@
   }
 
   // Función para gestionar envío
-  function gestionarEnvio(solicitudId, estadoActual, numeroGuia, transportadora) {
+  function gestionarEnvio(solicitudId, estadoActual, numeroGuia, transportadora, archivoGuia) {
     const estadosEnvio = {
       'pendiente': 'Pendiente',
       'preparando': 'Preparando',
@@ -563,8 +563,33 @@
       estadoOptions += `<option value="${value}" ${selected}>${label}</option>`;
     }
 
+    // Preview de guía existente
+    let previewGuia = '';
+    if (archivoGuia) {
+      const esImagen = /\.(jpg|jpeg|png|webp)$/i.test(archivoGuia);
+      if (esImagen) {
+        previewGuia = `
+          <div class="mt-2 mb-2" id="preview-guia-actual">
+            <small class="text-muted d-block mb-1">Guía actual:</small>
+            <img src="/${archivoGuia}" class="img-thumbnail" style="max-height: 150px;">
+            <a href="/${archivoGuia}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+              <i class="bi bi-eye"></i> Ver completa
+            </a>
+          </div>`;
+      } else {
+        previewGuia = `
+          <div class="mt-2 mb-2" id="preview-guia-actual">
+            <small class="text-muted d-block mb-1">Guía actual:</small>
+            <a href="/${archivoGuia}" target="_blank" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-file-earmark-pdf"></i> Ver PDF de guía
+            </a>
+          </div>`;
+      }
+    }
+
     Swal.fire({
       title: 'Gestionar Envío',
+      width: '600px',
       html: `
         <div class="text-start">
           <div class="mb-3">
@@ -584,10 +609,12 @@
                    value="${numeroGuia || ''}" placeholder="Número de seguimiento">
           </div>
           <div class="mb-3">
-            <label class="form-label">Archivo de Guía (PDF)</label>
+            <label class="form-label">Archivo de Guía</label>
             <input type="file" id="swal-archivo-guia" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
-            <small class="text-muted">Opcional: Subir PDF o imagen de la guía</small>
+            <small class="text-muted">Opcional: Subir PDF o imagen de la guía (máx 5MB)</small>
+            ${previewGuia}
           </div>
+          <div id="historial-envio-container"></div>
         </div>
       `,
       showCancelButton: true,
@@ -595,6 +622,49 @@
       cancelButtonColor: '#6c757d',
       confirmButtonText: '<i class="bi bi-check"></i> Actualizar Envío',
       cancelButtonText: 'Cancelar',
+      didOpen: () => {
+        // Cargar historial de envío
+        fetch(`/solicitudes/${solicitudId}/envio/historial`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.historial && data.historial.length > 0) {
+              const estadoLabels = {
+                'pendiente': 'Pendiente', 'preparando': 'Preparando',
+                'despachado': 'Despachado', 'en_transito': 'En Tránsito', 'entregado': 'Entregado'
+              };
+              let html = '<hr><h6 class="mb-2"><i class="bi bi-clock-history me-1"></i>Historial de Envío</h6>';
+              html += '<div style="max-height: 200px; overflow-y: auto;">';
+              data.historial.forEach(h => {
+                const anterior = estadoLabels[h.estado_anterior] || h.estado_anterior || '-';
+                const nuevo = estadoLabels[h.estado_nuevo] || h.estado_nuevo;
+                let detalle = '';
+                if (h.datos_adicionales) {
+                  const partes = [];
+                  if (h.datos_adicionales.transportadora) partes.push('Transp: ' + h.datos_adicionales.transportadora);
+                  if (h.datos_adicionales.numero_guia) partes.push('Guía: ' + h.datos_adicionales.numero_guia);
+                  if (h.datos_adicionales.archivo_guia) {
+                    const esImg = /\.(jpg|jpeg|png|webp)$/i.test(h.datos_adicionales.archivo_guia);
+                    const icono = esImg ? 'bi-image' : 'bi-file-pdf';
+                    partes.push(`<a href="/${h.datos_adicionales.archivo_guia}" target="_blank"><i class="bi ${icono} me-1"></i>Ver archivo</a>`);
+                  }
+                  if (partes.length > 0) detalle = '<br><small class="text-muted">' + partes.join(' | ') + '</small>';
+                }
+                html += `<div class="d-flex align-items-start mb-2 small border-start border-2 border-info ps-2">
+                  <div>
+                    <strong>${h.usuario}</strong> cambió de
+                    <span class="badge bg-secondary">${anterior}</span> a
+                    <span class="badge bg-primary">${nuevo}</span>
+                    ${detalle}
+                    <br><small class="text-muted">${h.fecha}</small>
+                  </div>
+                </div>`;
+              });
+              html += '</div>';
+              document.getElementById('historial-envio-container').innerHTML = html;
+            }
+          })
+          .catch(() => {});
+      },
       preConfirm: () => {
         return {
           estado_envio: document.getElementById('swal-estado-envio').value,

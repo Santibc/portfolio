@@ -243,6 +243,12 @@ class SolicitudCotizacion extends Model
         return $this->belongsTo(User::class, 'stock_descontado_por');
     }
 
+    public function historialEstados()
+    {
+        return $this->hasMany(HistorialEstadoSolicitud::class, 'solicitud_cotizacion_id')
+                    ->orderBy('created_at', 'desc');
+    }
+
     /**
      * Reservas de stock asociadas a esta cotización
      */
@@ -933,7 +939,7 @@ class SolicitudCotizacion extends Model
      */
     public function scopeDelClienteAutenticado($query)
     {
-        $cliente = Cliente::where('user_id', auth()->id())->first();
-        return $query->where('cliente_id', $cliente?->id);
+        $clienteIds = Cliente::where('user_id', auth()->id())->pluck('id');
+        return $query->whereIn('cliente_id', $clienteIds);
     }
 }

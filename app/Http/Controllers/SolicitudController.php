@@ -19,6 +19,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SolicitudesExport;
 use Illuminate\Support\Facades\Log;
+use App\Models\HistorialEstadoSolicitud;
 use App\Services\CotizacionService;
 use App\Services\ReservaStockService;
 use App\Services\FacturacionService;
@@ -179,8 +180,9 @@ class SolicitudController extends Controller
 
                     // Agregar botón de gestión de envío si el usuario tiene permisos
                     if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
+                        $archivoGuiaJs = addslashes($s->archivo_guia ?? '');
                         $badge .= ' <button type="button" class="btn btn-sm btn-link p-0"
-                                           title="Gestionar Envío" onclick="gestionarEnvio(' . $s->id . ', \'' . $s->estado_envio . '\', \'' . ($s->numero_guia ?? '') . '\', \'' . ($s->transportadora ?? '') . '\')">
+                                           title="Gestionar Envío" onclick="gestionarEnvio(' . $s->id . ', \'' . $s->estado_envio . '\', \'' . addslashes($s->numero_guia ?? '') . '\', \'' . addslashes($s->transportadora ?? '') . '\', \'' . $archivoGuiaJs . '\')">
                                       <i class="bi bi-pencil-square text-info"></i>
                                    </button>';
                     }
@@ -272,7 +274,8 @@ class SolicitudController extends Controller
                 })
                 ->filterColumn('cliente_nombre', function($query, $keyword) {
                     $query->whereHas('cliente', function($q) use ($keyword) {
-                        $q->where('nombre_contacto', 'like', "%{$keyword}%");
+                        $q->where('nombre_contacto', 'like', "%{$keyword}%")
+                          ->orWhere('razon_social', 'like', "%{$keyword}%");
                     });
                 })
                 ->filterColumn('vendedor', function($query, $keyword) {
@@ -345,7 +348,7 @@ class SolicitudController extends Controller
 
         $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
-        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor']);
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor', 'historialEstados.usuario', 'reservas.liberadaPor']);
 
         $html = '<div class="row">';
 
@@ -399,7 +402,12 @@ class SolicitudController extends Controller
             $texto = $expirada ? 'Expirada' : 'Activa';
             $html .= '<tr><td><strong>Reserva Stock:</strong></td><td><span class="badge ' . $badgeClass . '">' . $texto . '</span> — Expira: ' . $solicitud->reserva_expira_en->format('d/m/Y H:i') . '</td></tr>';
         } elseif ($solicitud->reserva_liberada_en) {
-            $html .= '<tr><td><strong>Reserva Stock:</strong></td><td><span class="badge bg-secondary">Liberada</span> — ' . $solicitud->reserva_liberada_en->format('d/m/Y H:i') . '</td></tr>';
+            $liberadaPorNombre = '';
+            $reservaLiberada = $solicitud->reservas->first(fn($r) => $r->liberada_por !== null);
+            if ($reservaLiberada && $reservaLiberada->liberadaPor) {
+                $liberadaPorNombre = ' por <strong>' . e($reservaLiberada->liberadaPor->name) . '</strong>';
+            }
+            $html .= '<tr><td><strong>Reserva Stock:</strong></td><td><span class="badge bg-secondary">Liberada</span> — ' . $solicitud->reserva_liberada_en->format('d/m/Y H:i') . $liberadaPorNombre . '</td></tr>';
         }
 
         // Forma de pago y fecha de vencimiento
@@ -745,6 +753,137 @@ class SolicitudController extends Controller
                 $html .= '</div>';
             }
 
+            $html .= '</div>';
+        }
+
+        // Sección de Información de Envío (solo para cotizaciones aplicadas)
+        if ($solicitud->estado === 'aplicada') {
+            $estadosEnvio = SolicitudCotizacion::estadosEnvio();
+            $html .= '<div class="col-12 mt-3">';
+            $html .= '<hr>';
+            $html .= '<h6><i class="bi bi-truck me-1"></i> Información de Envío</h6>';
+            $html .= '<div class="row">';
+
+            // Estado de envío
+            $html .= '<div class="col-md-3 mb-2">';
+            $html .= '<small class="text-muted d-block">Estado de Envío</small>';
+            $html .= '<span class="badge bg-' . $solicitud->color_estado_envio . '">';
+            $html .= '<i class="bi ' . $solicitud->icono_estado_envio . ' me-1"></i>';
+            $html .= $solicitud->etiqueta_estado_envio . '</span>';
+            $html .= '</div>';
+
+            // Transportadora
+            $html .= '<div class="col-md-3 mb-2">';
+            $html .= '<small class="text-muted d-block">Transportadora</small>';
+            $html .= '<span>' . ($solicitud->transportadora ? e($solicitud->transportadora) : '<span class="text-muted">-</span>') . '</span>';
+            $html .= '</div>';
+
+            // Número de guía
+            $html .= '<div class="col-md-3 mb-2">';
+            $html .= '<small class="text-muted d-block">Número de Guía</small>';
+            $html .= '<span>' . ($solicitud->numero_guia ? '<code>' . e($solicitud->numero_guia) . '</code>' : '<span class="text-muted">-</span>') . '</span>';
+            $html .= '</div>';
+
+            // Despachado por/cuando
+            if ($solicitud->despachado_en) {
+                $html .= '<div class="col-md-3 mb-2">';
+                $html .= '<small class="text-muted d-block">Despachado</small>';
+                $despachadoPor = $solicitud->despachado_por ? User::find($solicitud->despachado_por)?->name : null;
+                $html .= '<span>' . ($despachadoPor ? e($despachadoPor) . ' — ' : '') . $solicitud->despachado_en->format('d/m/Y H:i') . '</span>';
+                $html .= '</div>';
+            }
+
+            // Entregado cuando
+            if ($solicitud->entregado_en) {
+                $html .= '<div class="col-md-3 mb-2">';
+                $html .= '<small class="text-muted d-block">Entregado</small>';
+                $html .= '<span>' . $solicitud->entregado_en->format('d/m/Y H:i') . '</span>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div>';
+
+            // Preview de archivo de guía
+            if ($solicitud->archivo_guia) {
+                $esImagen = preg_match('/\.(jpg|jpeg|png|webp)$/i', $solicitud->archivo_guia);
+                $html .= '<div class="mt-2 mb-3">';
+                $html .= '<small class="text-muted d-block mb-1">Archivo de Guía:</small>';
+                if ($esImagen) {
+                    $html .= '<img src="/' . e($solicitud->archivo_guia) . '" class="img-thumbnail" style="max-height: 200px;">';
+                    $html .= ' <a href="/' . e($solicitud->archivo_guia) . '" target="_blank" class="btn btn-sm btn-outline-primary ms-2">';
+                    $html .= '<i class="bi bi-eye me-1"></i>Ver completa</a>';
+                } else {
+                    $html .= '<a href="/' . e($solicitud->archivo_guia) . '" target="_blank" class="btn btn-sm btn-outline-danger">';
+                    $html .= '<i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF de guía</a>';
+                }
+                $html .= '</div>';
+            }
+
+            $html .= '</div>';
+        }
+
+        // Historial completo de cambios de estado
+        $historial = $solicitud->historialEstados;
+        if ($historial->count() > 0) {
+            $html .= '<div class="col-12 mt-3">';
+            $html .= '<hr>';
+            $html .= '<h6><i class="bi bi-clock-history me-1"></i> Historial de Cambios</h6>';
+            $html .= '<div style="max-height: 300px; overflow-y: auto;">';
+
+            $iconosTipo = [
+                'estado' => 'bi-flag-fill text-warning',
+                'envio' => 'bi-truck text-info',
+                'pago' => 'bi-credit-card text-success',
+            ];
+            $etiquetasTipo = [
+                'estado' => 'Estado',
+                'envio' => 'Envío',
+                'pago' => 'Pago',
+            ];
+
+            foreach ($historial as $h) {
+                $icono = $iconosTipo[$h->tipo_cambio] ?? 'bi-circle text-secondary';
+                $etiquetaTipo = $etiquetasTipo[$h->tipo_cambio] ?? $h->tipo_cambio;
+                $usuario = $h->usuario?->name ?? 'Sistema';
+                $fecha = $h->created_at->format('d/m/Y H:i');
+
+                $html .= '<div class="d-flex align-items-start mb-2 small border-start border-2 ps-3">';
+                $html .= '<div class="flex-grow-1">';
+                $html .= '<i class="bi ' . $icono . ' me-1"></i>';
+                $html .= '<span class="badge bg-light text-dark me-1">' . $etiquetaTipo . '</span>';
+                $html .= '<strong>' . e($usuario) . '</strong> cambió de ';
+                $html .= '<span class="badge bg-secondary">' . ($h->estado_anterior ?? '-') . '</span>';
+                $html .= ' a <span class="badge bg-primary">' . $h->estado_nuevo . '</span>';
+
+                // Mostrar datos adicionales
+                $datos = $h->datos_adicionales;
+                if (!empty($datos)) {
+                    $detalles = [];
+                    if (!empty($datos['transportadora'])) $detalles[] = 'Transportadora: ' . e($datos['transportadora']);
+                    if (!empty($datos['numero_guia'])) $detalles[] = 'Guía: ' . e($datos['numero_guia']);
+                    if (!empty($datos['archivo_guia'])) {
+                        $esImg = preg_match('/\.(jpg|jpeg|png|webp)$/i', $datos['archivo_guia']);
+                        if ($esImg) {
+                            $detalles[] = '<a href="/' . e($datos['archivo_guia']) . '" target="_blank"><i class="bi bi-image me-1"></i>Ver imagen</a>';
+                        } else {
+                            $detalles[] = '<a href="/' . e($datos['archivo_guia']) . '" target="_blank"><i class="bi bi-file-pdf me-1"></i>Ver PDF</a>';
+                        }
+                    }
+                    if (!empty($detalles)) {
+                        $html .= '<br><small class="text-muted">' . implode(' | ', $detalles) . '</small>';
+                    }
+                }
+
+                if ($h->observaciones) {
+                    $html .= '<br><small class="text-muted"><i class="bi bi-chat-text me-1"></i>' . e($h->observaciones) . '</small>';
+                }
+
+                $html .= '<br><small class="text-muted">' . $fecha . '</small>';
+                $html .= '</div>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div>';
             $html .= '</div>';
         }
 
@@ -1774,6 +1913,8 @@ class SolicitudController extends Controller
                 $archivoGuia = 'uploads/guias/' . $nombreArchivo;
             }
 
+            $estadoAnterior = $solicitud->estado_envio;
+
             $solicitud->actualizarEstadoEnvio(
                 $validated['estado_envio'],
                 $validated['numero_guia'] ?? null,
@@ -1781,6 +1922,20 @@ class SolicitudController extends Controller
                 $archivoGuia,
                 $user->id
             );
+
+            // Registrar en historial
+            HistorialEstadoSolicitud::create([
+                'solicitud_cotizacion_id' => $solicitud->id,
+                'tipo_cambio' => HistorialEstadoSolicitud::TIPO_ENVIO,
+                'estado_anterior' => $estadoAnterior,
+                'estado_nuevo' => $validated['estado_envio'],
+                'datos_adicionales' => array_filter([
+                    'numero_guia' => $validated['numero_guia'] ?? null,
+                    'transportadora' => $validated['transportadora'] ?? null,
+                    'archivo_guia' => $archivoGuia,
+                ]),
+                'user_id' => $user->id,
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -1849,6 +2004,29 @@ class SolicitudController extends Controller
                 'mensaje' => 'Error al subir la guía de envío'
             ], 500);
         }
+    }
+
+    /**
+     * Obtener historial de envío para una solicitud (JSON)
+     */
+    public function historialEnvio(SolicitudCotizacion $solicitud)
+    {
+        $historial = $solicitud->historialEstados()
+            ->where('tipo_cambio', HistorialEstadoSolicitud::TIPO_ENVIO)
+            ->with('usuario')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'historial' => $historial->map(fn($h) => [
+                'estado_anterior' => $h->estado_anterior,
+                'estado_nuevo' => $h->estado_nuevo,
+                'datos_adicionales' => $h->datos_adicionales,
+                'usuario' => $h->usuario?->name ?? 'Sistema',
+                'fecha' => $h->created_at->format('d/m/Y H:i'),
+            ]),
+        ]);
     }
 
     /**

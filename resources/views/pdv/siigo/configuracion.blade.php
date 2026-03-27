@@ -155,15 +155,29 @@
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">Método de Pago</label>
-                                        <select name="siigo_payment_type_id" class="form-select" id="selectPaymentType">
+                                        <label class="form-label fw-semibold">Método de Pago - Efectivo</label>
+                                        <select name="siigo_payment_type_efectivo_id" class="form-select" id="selectPaymentTypeEfectivo">
                                             <option value="">-- Seleccione --</option>
-                                            @if($config['siigo_payment_type_id'])
-                                                <option value="{{ $config['siigo_payment_type_id'] }}" selected>
-                                                    ID: {{ $config['siigo_payment_type_id'] }} (guardado)
+                                            @if($config['siigo_payment_type_efectivo_id'])
+                                                <option value="{{ $config['siigo_payment_type_efectivo_id'] }}" selected>
+                                                    ID: {{ $config['siigo_payment_type_efectivo_id'] }} (guardado)
                                                 </option>
                                             @endif
                                         </select>
+                                        <small class="text-muted">Para ventas pagadas en efectivo</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Método de Pago - Transferencia</label>
+                                        <select name="siigo_payment_type_transferencia_id" class="form-select" id="selectPaymentTypeTransferencia">
+                                            <option value="">-- Seleccione --</option>
+                                            @if($config['siigo_payment_type_transferencia_id'])
+                                                <option value="{{ $config['siigo_payment_type_transferencia_id'] }}" selected>
+                                                    ID: {{ $config['siigo_payment_type_transferencia_id'] }} (guardado)
+                                                </option>
+                                            @endif
+                                        </select>
+                                        <small class="text-muted">Para ventas por transferencia o pago mixto</small>
                                     </div>
 
                                     <div class="mb-3">
@@ -296,15 +310,27 @@
                     });
                 }
 
-                // Populate Payment Types
-                const selectPay = document.getElementById('selectPaymentType');
-                const currentPay = selectPay.value;
-                selectPay.innerHTML = '<option value="">-- Seleccione --</option>';
+                // Populate Payment Types - Efectivo
+                const selectPayEfectivo = document.getElementById('selectPaymentTypeEfectivo');
+                const currentPayEfectivo = selectPayEfectivo.value;
+                selectPayEfectivo.innerHTML = '<option value="">-- Seleccione --</option>';
                 if (Array.isArray(data.payment_types)) {
                     data.payment_types.forEach(pt => {
                         const opt = new Option(pt.id + ' - ' + (pt.name || ''), pt.id);
-                        if (pt.id == currentPay) opt.selected = true;
-                        selectPay.add(opt);
+                        if (pt.id == currentPayEfectivo) opt.selected = true;
+                        selectPayEfectivo.add(opt);
+                    });
+                }
+
+                // Populate Payment Types - Transferencia
+                const selectPayTransferencia = document.getElementById('selectPaymentTypeTransferencia');
+                const currentPayTransferencia = selectPayTransferencia.value;
+                selectPayTransferencia.innerHTML = '<option value="">-- Seleccione --</option>';
+                if (Array.isArray(data.payment_types)) {
+                    data.payment_types.forEach(pt => {
+                        const opt = new Option(pt.id + ' - ' + (pt.name || ''), pt.id);
+                        if (pt.id == currentPayTransferencia) opt.selected = true;
+                        selectPayTransferencia.add(opt);
                     });
                 }
 

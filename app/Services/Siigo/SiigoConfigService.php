@@ -77,7 +77,8 @@ class SiigoConfigService
         $claves = [
             'siigo_activo', 'siigo_modo', 'siigo_username', 'siigo_access_key',
             'siigo_partner_id', 'siigo_document_type_id', 'siigo_credit_note_type_id',
-            'siigo_payment_type_id', 'siigo_tax_id', 'siigo_seller_id',
+            'siigo_payment_type_efectivo_id', 'siigo_payment_type_transferencia_id',
+            'siigo_tax_id', 'siigo_seller_id',
             'siigo_consumidor_final_nit', 'siigo_facturar_siempre', 'siigo_max_reintentos',
         ];
 
@@ -104,7 +105,8 @@ class SiigoConfigService
             'siigo_partner_id' => ConfiguracionPdv::obtener('siigo_partner_id', 'MiraclePdV'),
             'siigo_document_type_id' => ConfiguracionPdv::obtener('siigo_document_type_id', ''),
             'siigo_credit_note_type_id' => ConfiguracionPdv::obtener('siigo_credit_note_type_id', ''),
-            'siigo_payment_type_id' => ConfiguracionPdv::obtener('siigo_payment_type_id', ''),
+            'siigo_payment_type_efectivo_id' => ConfiguracionPdv::obtener('siigo_payment_type_efectivo_id', ''),
+            'siigo_payment_type_transferencia_id' => ConfiguracionPdv::obtener('siigo_payment_type_transferencia_id', ''),
             'siigo_tax_id' => ConfiguracionPdv::obtener('siigo_tax_id', ''),
             'siigo_seller_id' => ConfiguracionPdv::obtener('siigo_seller_id', ''),
             'siigo_consumidor_final_nit' => ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222'),

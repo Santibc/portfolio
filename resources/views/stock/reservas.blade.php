@@ -63,6 +63,10 @@
                   <a href="{{ route('solicitudes.detalle', $sc->id) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver cotizacion">
                     <i class="bi bi-eye"></i>
                   </a>
+                  <button type="button" class="btn btn-sm btn-outline-danger" title="Quitar reserva"
+                          onclick="liberarReservaDesdeStock({{ $sc->id }}, {{ $stockId }})">
+                    <i class="bi bi-unlock"></i>
+                  </button>
                 @endif
               </td>
             </tr>

@@ -640,6 +640,41 @@
       });
     };
 
+    window.liberarReservaDesdeStock = function(solicitudId, stockId) {
+      Swal.fire({
+        title: '¿Quitar reserva de stock?',
+        text: 'Se liberará la reserva de stock de esta cotización. El stock reservado volverá a estar disponible.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, quitar reserva',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Liberando reserva...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+          });
+
+          $.post('/solicitudes/' + solicitudId + '/liberar-reserva', {
+            _token: $('meta[name="csrf-token"]').attr('content')
+          }, function(response) {
+            if (response.success) {
+              Swal.fire('Reserva liberada', response.mensaje, 'success');
+              verReservas(stockId);
+              if (typeof table !== 'undefined') {
+                table.ajax.reload(null, false);
+              }
+            }
+          }).fail(function(xhr) {
+            Swal.fire('Error', xhr.responseJSON ? xhr.responseJSON.mensaje : 'Error al liberar la reserva', 'error');
+          });
+        }
+      });
+    };
+
     // Formulario de entrada
     $('#formEntrada').on('submit', function(e) {
       e.preventDefault();
