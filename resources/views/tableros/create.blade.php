@@ -13,7 +13,7 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('tableros.store') }}">
+                    <form method="POST" action="{{ route('tableros.store') }}" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -46,6 +46,16 @@
                                     @endforeach
                                 </div>
                                 <input type="hidden" name="color_fondo" id="colorFondo" value="{{ old('color_fondo', '#1e40af') }}">
+
+                                <label class="form-label fw-semibold mt-3">Imagen de fondo</label>
+                                <input type="file" name="imagen_fondo" class="form-control form-control-sm @error('imagen_fondo') is-invalid @enderror"
+                                       accept="image/*" id="imagenFondoInput">
+                                @error('imagen_fondo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div id="imagenFondoPreview" class="mt-2" style="display:none;">
+                                    <img src="" alt="Preview" style="max-width:100%;max-height:120px;border-radius:6px;object-fit:cover;">
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Visibilidad</label>
@@ -219,6 +229,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial count
     updateMiembrosCount();
+
+    // Image preview
+    document.getElementById('imagenFondoInput').addEventListener('change', function() {
+        const preview = document.getElementById('imagenFondoPreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.querySelector('img').src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
 });
 </script>
 @endsection

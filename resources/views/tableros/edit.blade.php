@@ -13,7 +13,7 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('tableros.update', $tablero) }}">
+                    <form method="POST" action="{{ route('tableros.update', $tablero) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -46,6 +46,23 @@
                                     @endforeach
                                 </div>
                                 <input type="hidden" name="color_fondo" id="colorFondo" value="{{ old('color_fondo', $tablero->color_fondo) }}">
+
+                                <label class="form-label fw-semibold mt-3">Imagen de fondo</label>
+                                <input type="file" name="imagen_fondo" class="form-control form-control-sm @error('imagen_fondo') is-invalid @enderror"
+                                       accept="image/*" id="imagenFondoInput">
+                                @error('imagen_fondo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div id="imagenFondoPreview" class="mt-2" @if(!$tablero->imagen_fondo) style="display:none;" @endif>
+                                    <img src="{{ $tablero->imagen_fondo ? asset('uploads/' . $tablero->imagen_fondo) : '' }}" alt="Preview"
+                                         style="max-width:100%;max-height:120px;border-radius:6px;object-fit:cover;">
+                                    @if($tablero->imagen_fondo)
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" name="eliminar_imagen" id="eliminarImagen" value="1">
+                                        <label class="form-check-label small text-danger" for="eliminarImagen">Eliminar imagen</label>
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Visibilidad</label>
@@ -152,6 +169,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('visibilidadSelect').addEventListener('change', function() {
         document.getElementById('rolesContainer').style.display = this.value === 'roles' ? 'block' : 'none';
+    });
+
+    // Image preview
+    document.getElementById('imagenFondoInput').addEventListener('change', function() {
+        const preview = document.getElementById('imagenFondoPreview');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.querySelector('img').src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
     });
 
     // Add single member

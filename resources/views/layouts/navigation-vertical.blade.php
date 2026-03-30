@@ -65,6 +65,18 @@
         @endcan
     @endif
 
+    {{-- SECCIÓN ORGANIZACIÓN - Todos los usuarios con permiso --}}
+    @can('ver_tableros')
+        <div class="nav-section-title">Organizacion</div>
+
+        <div class="nav-item {{ request()->routeIs('tableros.*') ? 'active' : '' }}">
+            <a href="{{ route('tableros.index') }}" class="nav-link">
+                <i class="bi bi-kanban"></i>
+                <span>Tableros</span>
+            </a>
+        </div>
+    @endcan
+
     {{-- SECCIÓN OPERACIONES - Solo si tiene permiso de obras, partes, maquinaria, vehiculos o subcontratas --}}
     @if($canVerObras || $canVerPartesDiarios || $canVerMaquinaria || $canVerVehiculos || $canVerSubcontratas)
         <div class="nav-section-title">Operaciones</div>
@@ -190,18 +202,6 @@
         </div>
         @endrole
     @endrole
-
-    {{-- SECCIÓN ORGANIZACIÓN - Todos los usuarios con permiso --}}
-    @can('ver_tableros')
-        <div class="nav-section-title">Organizacion</div>
-
-        <div class="nav-item {{ request()->routeIs('tableros.*') ? 'active' : '' }}">
-            <a href="{{ route('tableros.index') }}" class="nav-link">
-                <i class="bi bi-kanban"></i>
-                <span>Tableros</span>
-            </a>
-        </div>
-    @endcan
 
     {{-- SECCIÓN ALERTAS - Todos los usuarios autenticados --}}
     <div class="nav-section-title">Alertas</div>

@@ -20,7 +20,7 @@
 @endphp
 
 @section('content')
-<div class="tablero-wrapper {{ $boardLuminance > 0.6 ? 'light-board' : '' }}" style="background-color: {{ $tablero->color_fondo }}; --header-text: {{ $headerTextColor }}; --header-badge-bg: {{ $headerBadgeBg }}; --header-btn-bg: {{ $headerBtnBg }}; --header-overlay: {{ $headerOverlay }}; --header-text-shadow: {{ $headerTextShadow }}; --scrollbar-color: {{ $scrollbarColor }};" id="tableroWrapper">
+<div class="tablero-wrapper {{ $boardLuminance > 0.6 ? 'light-board' : '' }}" style="background-color: {{ $tablero->color_fondo }};@if($tablero->imagen_fondo) background-image: url('{{ asset('uploads/' . $tablero->imagen_fondo) }}'); background-size: cover; background-position: center;@endif --header-text: {{ $headerTextColor }}; --header-badge-bg: {{ $headerBadgeBg }}; --header-btn-bg: {{ $headerBtnBg }}; --header-overlay: {{ $headerOverlay }}; --header-text-shadow: {{ $headerTextShadow }}; --scrollbar-color: {{ $scrollbarColor }};" id="tableroWrapper">
 
     {{-- Board Header --}}
     <div class="tablero-header" style="background: {{ $headerOverlay }};">

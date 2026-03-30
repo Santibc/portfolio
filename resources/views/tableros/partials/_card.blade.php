@@ -7,6 +7,16 @@
      data-etiquetas="{{ $tarjeta->etiquetas->pluck('id')->join(',') }}"
      onclick="abrirTarjetaModal({{ $tarjeta->id }})">
 
+    {{-- Image preview --}}
+    @php
+        $previewImage = $tarjeta->adjuntos->first(fn($a) => str_starts_with($a->mime_type ?? '', 'image/'));
+    @endphp
+    @if($previewImage)
+    <div class="tarjeta-imagen-preview">
+        <img src="{{ $previewImage->url }}" alt="" loading="lazy">
+    </div>
+    @endif
+
     {{-- Cover color --}}
     @if($tarjeta->color_portada)
     <div class="tarjeta-portada" style="background-color: {{ $tarjeta->color_portada }}"></div>

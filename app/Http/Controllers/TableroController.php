@@ -7,6 +7,7 @@ use App\Models\Tablero;
 use App\Models\User;
 use App\Services\TableroService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class TableroController extends Controller
 {
@@ -80,12 +81,26 @@ class TableroController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'color_fondo' => 'nullable|string|max:7',
+            'imagen_fondo' => 'nullable|image|max:2048',
             'visibilidad' => 'required|in:todos,roles,miembros',
             'roles_visibles' => 'nullable|array',
             'obra_id' => 'nullable|exists:obras,id',
             'miembros' => 'nullable|array',
             'miembros.*' => 'exists:users,id',
         ]);
+
+        if ($request->hasFile('imagen_fondo')) {
+            $dir = public_path('uploads/tableros/fondos');
+            if (!File::isDirectory($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
+            $file = $request->file('imagen_fondo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move($dir, $filename);
+            $validated['imagen_fondo'] = 'tableros/fondos/' . $filename;
+        } else {
+            unset($validated['imagen_fondo']);
+        }
 
         $miembros = $request->input('miembros', []);
         $tablero = $this->service->crearTablero($validated, auth()->user(), $miembros);
@@ -118,10 +133,41 @@ class TableroController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'color_fondo' => 'nullable|string|max:7',
+            'imagen_fondo' => 'nullable|image|max:2048',
             'visibilidad' => 'required|in:todos,roles,miembros',
             'roles_visibles' => 'nullable|array',
             'obra_id' => 'nullable|exists:obras,id',
         ]);
+
+        // Remove background image
+        if ($request->has('eliminar_imagen') && $tablero->imagen_fondo) {
+            $oldPath = public_path('uploads/' . $tablero->imagen_fondo);
+            if (File::exists($oldPath)) {
+                File::delete($oldPath);
+            }
+            $validated['imagen_fondo'] = null;
+        }
+
+        // Upload new background image
+        if ($request->hasFile('imagen_fondo')) {
+            // Delete old image if exists
+            if ($tablero->imagen_fondo) {
+                $oldPath = public_path('uploads/' . $tablero->imagen_fondo);
+                if (File::exists($oldPath)) {
+                    File::delete($oldPath);
+                }
+            }
+            $dir = public_path('uploads/tableros/fondos');
+            if (!File::isDirectory($dir)) {
+                File::makeDirectory($dir, 0755, true);
+            }
+            $file = $request->file('imagen_fondo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move($dir, $filename);
+            $validated['imagen_fondo'] = 'tableros/fondos/' . $filename;
+        } else {
+            unset($validated['imagen_fondo']);
+        }
 
         $tablero->update($validated);
 
