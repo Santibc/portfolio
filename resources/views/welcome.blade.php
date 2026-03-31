@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Sinden') }}</title>
+    <title>{{ config('app.name', 'SINDEN') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -15,14 +15,14 @@
     <div class="flex flex-col items-center justify-center min-h-screen p-6">
         <!-- Logo -->
         <div class="mb-8 text-center">
-            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sinden') }}" class="mx-auto mb-4" style="width: 150px; height: auto;">
-            <h1 class="text-5xl font-bold text-gray-800">{{ config('app.name', 'Sinden') }}</h1>
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'SINDEN') }}" class="mx-auto mb-4" style="width: 150px; height: auto;">
+            <h1 class="text-5xl font-bold text-gray-800">{{ config('app.name', 'SINDEN') }}</h1>
         </div>
 
         <!-- Mensaje principal -->
         <div class="text-center mb-8">
             <h2 class="text-4xl font-semibold text-gray-700 mb-4">
-                Bienvenido a {{ config('app.name', 'Sinden') }}
+                Bienvenido a {{ config('app.name', 'SINDEN') }}
             </h2>
         </div>
 
@@ -49,7 +49,7 @@
 
         <!-- Footer -->
         <div class="mt-16 text-center text-gray-500 text-sm">
-            <p>&copy; {{ date('Y') }} {{ config('app.name', 'Sinden') }}. Todos los derechos reservados.</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name', 'SINDEN') }}. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>

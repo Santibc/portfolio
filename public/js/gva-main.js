@@ -1,5 +1,5 @@
 /**
- * Sinden - Main JavaScript
+ * SINDEN - Main JavaScript
  */
 
 document.addEventListener("DOMContentLoaded", function () {

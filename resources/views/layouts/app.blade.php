@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sinden') }}</title>
+    <title>{{ config('app.name', 'SINDEN') }}</title>
 
     {{-- Fuentes --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
         }
     </script>
 
-    {{-- Sinden CSS --}}
+    {{-- SINDEN CSS --}}
     <link href="{{ asset('css/gva-global.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/gva-components.css') }}" rel="stylesheet">
@@ -101,7 +101,7 @@
             </div>
 
             <div class="nav-logo" style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center;">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 32px; margin-right: 8px;"> {{ config('app.name', 'Sinden') }}
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height: 32px; margin-right: 8px;"> {{ config('app.name', 'SINDEN') }}
             </div>
 
             <div class="header-right">

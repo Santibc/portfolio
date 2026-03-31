@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Sinden') }}</title>
+        <title>{{ config('app.name', 'SINDEN') }}</title>
         <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
 
         <!-- Fonts -->
@@ -78,8 +78,8 @@
     <body class="font-sans text-gray-900 antialiased">
         <div class="sinden-auth-container">
             <div class="sinden-logo">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sinden') }}" style="height: 50px; margin-right: 12px;">
-                <span>{{ config('app.name', 'Sinden') }}</span>
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'SINDEN') }}" style="height: 50px; margin-right: 12px;">
+                <span>{{ config('app.name', 'SINDEN') }}</span>
             </div>
 
             <div class="sinden-auth-card">
@@ -87,7 +87,7 @@
             </div>
 
             <div class="sinden-footer">
-                <p>&copy; {{ date('Y') }} {{ config('app.name', 'Sinden') }}</p>
+                <p>&copy; {{ date('Y') }} {{ config('app.name', 'SINDEN') }}</p>
             </div>
         </div>
     </body>
