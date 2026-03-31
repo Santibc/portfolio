@@ -15,24 +15,42 @@
           @endif
 
           <!-- Filtros -->
-          <div class="row mb-4">
-            <div class="col-md-3">
-              <label class="form-label">Tipo</label>
-              <select id="filtro-tipo" class="form-select">
+          <div class="row mb-4 g-2">
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Tipo</label>
+              <select id="filtro-tipo" class="form-select form-select-sm">
                 <option value="">Todos</option>
                 @foreach($tipos as $valor => $nombre)
                   <option value="{{ $valor }}">{{ $nombre }}</option>
                 @endforeach
               </select>
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Estado</label>
-              <select id="filtro-estado" class="form-select">
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Estado</label>
+              <select id="filtro-estado" class="form-select form-select-sm">
                 <option value="">Todos</option>
                 @foreach($estados as $valor => $nombre)
                   <option value="{{ $valor }}">{{ $nombre }}</option>
                 @endforeach
               </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Producto</label>
+              <input type="text" id="filtro-producto" class="form-control form-control-sm" placeholder="Buscar por nombre o ref...">
+              <input type="hidden" id="filtro-producto-id" value="">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Desde</label>
+              <input type="date" id="filtro-fecha-desde" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Hasta</label>
+              <input type="date" id="filtro-fecha-hasta" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button class="btn btn-sm btn-outline-secondary w-100" onclick="limpiarFiltros()" title="Limpiar filtros">
+                <i class="bi bi-x-lg"></i>
+              </button>
             </div>
           </div>
 
@@ -125,6 +143,9 @@
         data: function(d) {
           d.tipo = $('#filtro-tipo').val();
           d.estado = $('#filtro-estado').val();
+          d.producto_id = $('#filtro-producto-id').val();
+          d.fecha_desde = $('#filtro-fecha-desde').val();
+          d.fecha_hasta = $('#filtro-fecha-hasta').val();
         }
       },
       columns: [
@@ -157,6 +178,49 @@
     $('#filtro-tipo, #filtro-estado').on('change', function() {
       table.ajax.reload();
     });
+    $('#filtro-fecha-desde, #filtro-fecha-hasta').on('change', function() {
+      table.ajax.reload();
+    });
+
+    // Búsqueda de producto con autocompletado simple
+    let productoTimeout;
+    document.getElementById('filtro-producto').addEventListener('input', function() {
+      clearTimeout(productoTimeout);
+      const q = this.value.trim();
+      if (q.length < 2) {
+        document.getElementById('filtro-producto-id').value = '';
+        table.ajax.reload();
+        return;
+      }
+      productoTimeout = setTimeout(() => {
+        fetch(`/stock/productos-json?q=${encodeURIComponent(q)}`)
+          .then(r => r.json())
+          .then(data => {
+            const items = data.results || data;
+            if (items.length === 1) {
+              document.getElementById('filtro-producto-id').value = items[0].id;
+              table.ajax.reload();
+            } else if (items.length > 1) {
+              // Buscar coincidencia exacta por referencia
+              const exacto = items.find(p => p.text && p.text.toLowerCase().includes(q.toLowerCase()));
+              if (exacto) {
+                document.getElementById('filtro-producto-id').value = exacto.id;
+                table.ajax.reload();
+              }
+            }
+          });
+      }, 400);
+    });
+
+    window.limpiarFiltros = function() {
+      document.getElementById('filtro-tipo').value = '';
+      document.getElementById('filtro-estado').value = '';
+      document.getElementById('filtro-producto').value = '';
+      document.getElementById('filtro-producto-id').value = '';
+      document.getElementById('filtro-fecha-desde').value = '';
+      document.getElementById('filtro-fecha-hasta').value = '';
+      table.ajax.reload();
+    };
 
     table.on('buttons-action', () => {
       setTimeout(() => {

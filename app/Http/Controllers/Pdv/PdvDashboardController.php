@@ -28,7 +28,13 @@ class PdvDashboardController extends Controller
         $sesionActiva = $this->cajaService->obtenerSesionActivaDeUsuario($user->id);
 
         // Get cajas accessible to this user
-        $cajas = Caja::activas()->with('ubicacion', 'cajeroAsignado')->get();
+        $cajasQuery = Caja::activas()->with('ubicacion', 'cajeroAsignado');
+
+        if (!$user->hasRole('admin')) {
+            $cajasQuery->where('cajero_asignado_id', $user->id);
+        }
+
+        $cajas = $cajasQuery->get();
 
         // Dashboard data
         $data = [

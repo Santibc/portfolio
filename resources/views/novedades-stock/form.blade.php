@@ -35,14 +35,19 @@
             <div class="mb-4">
               <label for="ubicacion_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicación *</label>
               <select name="ubicacion_id" id="ubicacion_id"
-                class="w-full px-3 py-2 border rounded-md @error('ubicacion_id') border-red-500 @enderror" required>
+                class="w-full px-3 py-2 border rounded-md @error('ubicacion_id') border-red-500 @enderror"
+                required {{ isset($ubicacionCajeroId) && $ubicacionCajeroId ? 'disabled' : '' }}>
                 <option value="">Seleccione ubicación</option>
                 @foreach($ubicaciones as $ubicacion)
-                  <option value="{{ $ubicacion->id }}" {{ old('ubicacion_id') == $ubicacion->id ? 'selected' : '' }}>
+                  <option value="{{ $ubicacion->id }}"
+                    {{ (isset($ubicacionCajeroId) && $ubicacionCajeroId == $ubicacion->id) || old('ubicacion_id') == $ubicacion->id ? 'selected' : '' }}>
                     {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                   </option>
                 @endforeach
               </select>
+              @if(isset($ubicacionCajeroId) && $ubicacionCajeroId)
+                <input type="hidden" name="ubicacion_id" value="{{ $ubicacionCajeroId }}">
+              @endif
               @error('ubicacion_id')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
               @enderror

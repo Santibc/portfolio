@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NovedadStock;
 use App\Models\Ubicacion;
 use App\Models\Producto;
+use App\Models\Caja;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use Illuminate\Http\Request;
@@ -18,14 +19,33 @@ class NovedadesStockController extends Controller
         if ($request->ajax()) {
             $query = NovedadStock::with(['producto', 'varianteProducto', 'ubicacion', 'usuario']);
 
-            // Filtrar por tipo si se especifica
+            // Cajero principal: solo ve novedades de su ubicación
+            $user = auth()->user();
+            if ($user->hasRole('cajero_principal') && !$user->hasRole('admin')) {
+                $caja = Caja::where('cajero_asignado_id', $user->id)->first();
+                if ($caja) {
+                    $query->where('ubicacion_id', $caja->ubicacion_id);
+                }
+            }
+
             if ($request->tipo) {
                 $query->where('tipo', $request->tipo);
             }
 
-            // Filtrar por estado si se especifica
             if ($request->estado) {
                 $query->where('estado', $request->estado);
+            }
+
+            if ($request->producto_id) {
+                $query->where('producto_id', $request->producto_id);
+            }
+
+            if ($request->fecha_desde) {
+                $query->whereDate('created_at', '>=', $request->fecha_desde);
+            }
+
+            if ($request->fecha_hasta) {
+                $query->whereDate('created_at', '<=', $request->fecha_hasta);
             }
 
             return DataTables::of($query)
@@ -90,7 +110,17 @@ class NovedadesStockController extends Controller
             ->get();
         $tipos = NovedadStock::tipos();
 
-        return view('novedades-stock.form', compact('novedad', 'ubicaciones', 'productos', 'tipos'));
+        // Cajero: preseleccionar ubicación de su caja
+        $ubicacionCajeroId = null;
+        $user = auth()->user();
+        if ($user->hasRole('cajero_principal') && !$user->hasRole('admin')) {
+            $caja = Caja::where('cajero_asignado_id', $user->id)->first();
+            if ($caja) {
+                $ubicacionCajeroId = $caja->ubicacion_id;
+            }
+        }
+
+        return view('novedades-stock.form', compact('novedad', 'ubicaciones', 'productos', 'tipos', 'ubicacionCajeroId'));
     }
 
     public function guardar(Request $request)

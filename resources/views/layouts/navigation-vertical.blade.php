@@ -233,6 +233,11 @@
                     <i class="bi bi-bar-chart"></i>
                     <span>Reportes PdV</span>
                 </a>
+                <a href="{{ route('novedades-stock') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('novedades-stock*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Novedades</span>
+                </a>
                 <a href="{{ route('pdv.stock.index') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.stock.*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-box-seam"></i>
