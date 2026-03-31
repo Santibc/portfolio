@@ -40,10 +40,10 @@ class FichajeController extends Controller
 
             $query->where('trabajador_id', $trabajadorActual->id);
 
-            // Verificar si tiene fichaje ABIERTO hoy (sin hora de salida)
-            // Esto permite múltiples fichajes por día
+            // Verificar si tiene fichaje ABIERTO (sin hora de salida)
+            // Busca hoy y ayer para soportar turnos que cruzan medianoche
             $fichajeHoy = Fichaje::where('trabajador_id', $trabajadorActual->id)
-                                 ->where('fecha', now()->toDateString())
+                                 ->where('fecha', '>=', now()->subDay()->toDateString())
                                  ->whereNull('hora_salida')
                                  ->orderBy('id', 'desc')
                                  ->first();
@@ -562,9 +562,9 @@ class FichajeController extends Controller
 
         $hoy = now()->toDateString();
 
-        // Verificar si hay un fichaje de hoy SIN hora de salida (fichaje abierto)
+        // Verificar si hay un fichaje abierto (hoy o ayer para turnos nocturnos)
         $fichajeAbierto = Fichaje::where('trabajador_id', $validated['trabajador_id'])
-                          ->where('fecha', $hoy)
+                          ->where('fecha', '>=', now()->subDay()->toDateString())
                           ->whereNull('hora_salida')
                           ->first();
 
@@ -617,9 +617,9 @@ class FichajeController extends Controller
 
         $hoy = now()->toDateString();
 
-        // Buscar fichaje abierto (con entrada pero sin salida)
+        // Buscar fichaje abierto (hoy o ayer para turnos nocturnos)
         $fichaje = Fichaje::where('trabajador_id', $validated['trabajador_id'])
-                          ->where('fecha', $hoy)
+                          ->where('fecha', '>=', now()->subDay()->toDateString())
                           ->whereNotNull('hora_entrada')
                           ->whereNull('hora_salida')
                           ->orderBy('id', 'desc')

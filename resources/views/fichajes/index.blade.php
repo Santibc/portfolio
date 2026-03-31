@@ -919,7 +919,36 @@ function enviarFichajeSalida(lat, lng) {
             longitud: lng
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.status === 419) {
+            hideLoading();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sesión expirada',
+                text: 'Tu sesión ha expirado. La página se recargará para que puedas intentarlo de nuevo.',
+                confirmButtonText: 'Aceptar'
+            }).then(() => {
+                window.location.reload();
+            });
+            throw new Error('CSRF token expired');
+        }
+        if (response.status === 401 || response.redirected) {
+            hideLoading();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sesión expirada',
+                text: 'Tu sesión ha expirado. Serás redirigido para iniciar sesión.',
+                confirmButtonText: 'Aceptar'
+            }).then(() => {
+                window.location.reload();
+            });
+            throw new Error('Unauthenticated');
+        }
+        if (!response.ok) {
+            throw new Error('Server error: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         hideLoading();
         if (data.success) {
@@ -940,9 +969,11 @@ function enviarFichajeSalida(lat, lng) {
     })
     .catch(error => {
         hideLoading();
-        Swal.fire('Error', 'Error al registrar la salida', 'error');
-        document.getElementById('btnFicharSalida').disabled = false;
-        document.getElementById('btnFicharSalida').innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>Fichar Salida';
+        if (error.message !== 'CSRF token expired' && error.message !== 'Unauthenticated') {
+            Swal.fire('Error', 'Error al registrar la salida. Recarga la página e inténtalo de nuevo.', 'error');
+            document.getElementById('btnFicharSalida').disabled = false;
+            document.getElementById('btnFicharSalida').innerHTML = '<i class="bi bi-box-arrow-right me-2"></i>Fichar Salida';
+        }
     });
 }
 @endif
