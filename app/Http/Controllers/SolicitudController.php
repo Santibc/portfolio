@@ -387,12 +387,12 @@ class SolicitudController extends Controller
         
         if ($solicitud->estado === 'aplicada') {
             $html .= '<tr><td><strong>Aplicada por:</strong></td><td>' . $solicitud->aplicadaPor?->name . '</td></tr>';
-            $html .= '<tr><td><strong>Fecha aplicación:</strong></td><td>' . $solicitud->aplicada_en->format('d/m/Y H:i') . '</td></tr>';
+            $html .= '<tr><td><strong>Fecha aplicación:</strong></td><td>' . ($solicitud->aplicada_en ? $solicitud->aplicada_en->format('d/m/Y H:i') : 'N/A') . '</td></tr>';
         }
 
         if ($solicitud->estado === 'rechazada') {
             $html .= '<tr><td><strong>Rechazada por:</strong></td><td>' . $solicitud->rechazadaPor?->name . '</td></tr>';
-            $html .= '<tr><td><strong>Fecha rechazo:</strong></td><td>' . $solicitud->rechazada_en->format('d/m/Y H:i') . '</td></tr>';
+            $html .= '<tr><td><strong>Fecha rechazo:</strong></td><td>' . ($solicitud->rechazada_en ? $solicitud->rechazada_en->format('d/m/Y H:i') : 'N/A') . '</td></tr>';
         }
 
         // Reserva de stock
