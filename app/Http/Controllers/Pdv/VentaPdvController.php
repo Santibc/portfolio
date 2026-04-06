@@ -14,6 +14,7 @@ use App\Models\FacturaSiigo;
 use App\Services\VentaPdvServiceV2;
 use App\Services\AutorizacionPdvService;
 use App\Services\CajaService;
+use App\Services\Siigo\SiigoApiClient;
 use App\Services\Siigo\SiigoFacturacionService;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -92,7 +93,8 @@ class VentaPdvController extends Controller
                     $btn = '<button class="btn btn-sm btn-outline-info me-1" onclick="verDetalle(' . $v->id . ')" title="Detalle"><i class="bi bi-eye"></i></button>';
                     $btn .= '<a href="' . route('pdv.ventas.ticket', $v->id) . '" class="btn btn-sm btn-outline-danger me-1" title="Ticket" target="_blank"><i class="bi bi-printer"></i></a>';
                     if ($v->estado === 'completada' && auth()->user()->hasRole('admin')) {
-                        $btn .= '<button class="btn btn-sm btn-outline-warning" onclick="anularVenta(' . $v->id . ')" title="Anular"><i class="bi bi-x-circle"></i></button>';
+                        $btn .= '<button class="btn btn-sm btn-outline-warning me-1" onclick="devolucionParcial(' . $v->id . ')" title="Devolución Parcial"><i class="bi bi-arrow-return-left"></i></button>';
+                        $btn .= '<button class="btn btn-sm btn-outline-danger" onclick="anularVenta(' . $v->id . ')" title="Anular"><i class="bi bi-x-circle"></i></button>';
                     }
                     return $btn;
                 })
@@ -119,7 +121,16 @@ class VentaPdvController extends Controller
             ? $sesion->caja->ubicacion_id
             : (\App\Models\Caja::activas()->first()->ubicacion_id ?? null);
 
-        $listasPrecios = ListaPrecio::where('activo', true)->get();
+        $listasPrecioPdvConfig = ConfiguracionPdv::obtener('listas_precio_pdv', '');
+        $listasPrecioIds = array_filter(explode(',', $listasPrecioPdvConfig));
+
+        if (!empty($listasPrecioIds)) {
+            $listasPrecios = ListaPrecio::where('activo', true)->whereIn('id', $listasPrecioIds)->orderBy('orden')->get();
+        } else {
+            $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
+        }
+        $listasPrecioIdsPermitidas = $listasPrecios->pluck('id')->toArray();
+
         $listaPrecioDefault = ConfiguracionPdv::obtener('lista_precio_consumidor_final', 1);
         $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
         $descuentoMaximo = ConfiguracionPdv::obtenerNumero('descuento_maximo_cajero', 15);
@@ -174,12 +185,14 @@ class VentaPdvController extends Controller
 
         $siigoActivo = ConfiguracionPdv::obtenerBoolean('siigo_activo', false);
         $siigoFacturarSiempre = ConfiguracionPdv::obtenerBoolean('siigo_facturar_siempre', false);
+        $siigoModoTest = ConfiguracionPdv::obtener('siigo_modo', 'test') === 'test';
 
         return view('pdv.venta.crear', compact(
             'sesion', 'listasPrecios', 'listaPrecioDefault', 'ivaPorcentaje', 'descuentoMaximo',
             'requierePinDescuento', 'requierePinPrecio', 'esAdmin', 'ubicacionIdDefault',
             'prefactura', 'prefacturaItems',
-            'siigoActivo', 'siigoFacturarSiempre'
+            'siigoActivo', 'siigoFacturarSiempre', 'siigoModoTest',
+            'listasPrecioIdsPermitidas'
         ));
     }
 
@@ -260,7 +273,7 @@ class VentaPdvController extends Controller
 
     public function detalle($id)
     {
-        $venta = VentaPdv::with('items.producto', 'items.variante', 'usuario', 'cliente', 'caja.ubicacion', 'listaPrecio', 'anulador', 'sesionCaja', 'facturaSiigo.notasCredito')
+        $venta = VentaPdv::with('items.producto', 'items.variante', 'items.devolucionesItems', 'usuario', 'cliente', 'caja.ubicacion', 'listaPrecio', 'anulador', 'sesionCaja', 'facturaSiigo.notasCredito', 'devolucionesParciales.items.producto', 'devolucionesParciales.items.variante', 'devolucionesParciales.usuario', 'devolucionesParciales.facturaSiigo')
             ->findOrFail($id);
 
         // Load SIIGO logs for this sale's invoices
@@ -305,6 +318,71 @@ class VentaPdvController extends Controller
 
         return redirect()->route('pdv.ventas.index')
             ->with($resultado['exito'] ? 'success' : 'error', $resultado['mensaje']);
+    }
+
+    public function itemsParaDevolucion($id)
+    {
+        $venta = VentaPdv::with('items.producto', 'items.variante', 'items.devolucionesItems')
+            ->findOrFail($id);
+
+        $items = $venta->items->map(function ($item) {
+            $cantidadDevuelta = $item->cantidad_devuelta;
+            $cantidadDisponible = $item->cantidad - $cantidadDevuelta;
+
+            return [
+                'item_venta_pdv_id' => $item->id,
+                'producto_nombre' => $item->producto->nombre ?? 'Producto',
+                'variante_nombre' => $item->variante
+                    ? ($item->variante->referencia_variante ?? $item->variante->sku ?? '')
+                    : null,
+                'cantidad_original' => $item->cantidad,
+                'cantidad_devuelta' => $cantidadDevuelta,
+                'cantidad_disponible' => $cantidadDisponible,
+                'precio_unitario' => (float) $item->precio_unitario,
+                'descuento_porcentaje' => (float) ($item->descuento_porcentaje ?? 0),
+                'iva_unitario' => $item->cantidad > 0 ? round((float) $item->iva / $item->cantidad, 2) : 0,
+            ];
+        })->filter(fn($item) => $item['cantidad_disponible'] > 0)->values();
+
+        return response()->json(['items' => $items, 'numero_venta' => $venta->numero_venta]);
+    }
+
+    public function devolverParcial(Request $request, $id)
+    {
+        $request->validate([
+            'motivo_anulacion' => 'required|string|min:10',
+            'items' => 'required|array|min:1',
+            'items.*.item_venta_pdv_id' => 'required|integer',
+            'items.*.cantidad' => 'required|integer|min:1',
+        ]);
+
+        $venta = VentaPdv::with('facturaSiigo', 'items.devolucionesItems')->findOrFail($id);
+        $resultado = $this->ventaService->devolverParcial(
+            $venta,
+            auth()->id(),
+            $request->motivo_anulacion,
+            $request->items
+        );
+
+        // Generate partial credit note if sale had an approved SIIGO invoice
+        if ($resultado['exito'] && $venta->facturaSiigo && $venta->facturaSiigo->estaAprobada()) {
+            try {
+                $siigoService = app(SiigoFacturacionService::class);
+                $notaCredito = $siigoService->crearNotaCreditoParcial(
+                    $venta->facturaSiigo,
+                    $resultado['devolucion'],
+                    $request->motivo_anulacion
+                );
+                $resultado['nota_credito'] = [
+                    'estado' => $notaCredito->estado_dian,
+                    'numero' => $notaCredito->numero_factura,
+                ];
+            } catch (\Exception $e) {
+                $resultado['nota_credito_error'] = 'No se pudo generar la nota crédito parcial: ' . $e->getMessage();
+            }
+        }
+
+        return response()->json($resultado, $resultado['exito'] ? 200 : 422);
     }
 
     public function ticket($id)
@@ -375,13 +453,28 @@ class VentaPdvController extends Controller
             'documento' => 'nullable|string|max:50',
             'telefono' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
+            'lista_precio_id' => 'nullable|exists:listas_precios,id',
         ]);
+
+        $listaPrecioDefault = $request->lista_precio_id ?: ConfiguracionPdv::obtener('lista_precio_consumidor_final', 1);
+
+        // Generate a unique identifier if none provided
+        $documento = $request->documento;
+        if (empty($documento)) {
+            $documento = 'PDV-' . time() . '-' . rand(100, 999);
+        }
+
+        // Get default location (pais/ciudad) from an existing client or use fallbacks
+        $defaults = Cliente::select('pais_id', 'ciudad_id')->first();
 
         $cliente = Cliente::create([
             'nombre_contacto' => $request->nombre,
-            'numero_identificacion' => $request->documento,
+            'numero_identificacion' => $documento,
             'telefono' => $request->telefono,
-            'email' => $request->email,
+            'email' => $request->email ?: 'sin-email@pdv.local',
+            'pais_id' => $defaults->pais_id ?? 1,
+            'ciudad_id' => $defaults->ciudad_id ?? 1,
+            'lista_precio_id' => $listaPrecioDefault,
             'activo' => true,
         ]);
 
@@ -477,6 +570,8 @@ class VentaPdvController extends Controller
         }
 
         $siigoService = app(SiigoFacturacionService::class);
+        $esPrueba = app(SiigoApiClient::class)->esModoTest();
+        $prefijo = $esPrueba ? '(PRUEBA) ' : '';
 
         try {
             $tipo = $request->input('tipo_factura', 'con_cliente'); // 'con_cliente' or 'consumidor_final'
@@ -498,6 +593,7 @@ class VentaPdvController extends Controller
 
             return response()->json([
                 'exito' => true,
+                'modo_prueba' => $esPrueba,
                 'factura' => [
                     'id' => $factura->id,
                     'estado_dian' => $factura->estado_dian,
@@ -506,10 +602,10 @@ class VentaPdvController extends Controller
                     'errores' => $factura->errores,
                 ],
                 'mensaje' => $factura->estado_dian === 'aprobada'
-                    ? 'Factura electrónica generada exitosamente.'
+                    ? $prefijo . 'Factura electrónica generada exitosamente.'
                     : ($factura->estado_dian === 'error'
-                        ? 'Error al generar la factura: ' . $factura->errores
-                        : 'Factura enviada a SIIGO, estado: ' . $factura->estado_dian),
+                        ? $prefijo . 'Error al generar la factura: ' . $factura->errores
+                        : $prefijo . 'Factura enviada a SIIGO, estado: ' . $factura->estado_dian),
             ]);
         } catch (\Exception $e) {
             return response()->json([

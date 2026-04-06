@@ -249,6 +249,12 @@ class SolicitudCotizacion extends Model
                     ->orderBy('created_at', 'desc');
     }
 
+    public function logs()
+    {
+        return $this->hasMany(LogSolicitudCotizacion::class, 'solicitud_cotizacion_id')
+                    ->orderBy('created_at', 'desc');
+    }
+
     /**
      * Reservas de stock asociadas a esta cotización
      */

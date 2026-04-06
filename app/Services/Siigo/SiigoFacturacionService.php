@@ -4,6 +4,7 @@ namespace App\Services\Siigo;
 
 use App\Models\Cliente;
 use App\Models\ConfiguracionPdv;
+use App\Models\DevolucionParcialPdv;
 use App\Models\FacturaSiigo;
 use App\Models\VentaPdv;
 use Illuminate\Support\Facades\Log;
@@ -210,6 +211,73 @@ class SiigoFacturacionService
         } catch (Exception $e) {
             $factura->marcarError($e->getMessage());
             Log::error("SIIGO crearNotaCredito error: {$e->getMessage()}");
+            return $factura->fresh();
+        }
+    }
+
+    /**
+     * Crear nota crédito parcial para una devolución parcial.
+     */
+    public function crearNotaCreditoParcial(FacturaSiigo $facturaOriginal, DevolucionParcialPdv $devolucion, string $motivo): FacturaSiigo
+    {
+        if (!$facturaOriginal->siigo_invoice_id) {
+            throw new Exception('La factura original no tiene ID de SIIGO.');
+        }
+
+        $devolucion->loadMissing(['items.producto', 'items.variante']);
+
+        $creditNoteTypeId = (int) ConfiguracionPdv::obtener('siigo_credit_note_type_id');
+        if (!$creditNoteTypeId) {
+            throw new Exception('No se ha configurado el tipo de documento para notas crédito en SIIGO.');
+        }
+
+        $payload = [
+            'document' => ['id' => $creditNoteTypeId],
+            'date' => now()->format('Y-m-d'),
+            'invoice' => $facturaOriginal->siigo_invoice_id,
+            'reason' => 1, // Devolución parcial de bienes
+            'observations' => $motivo,
+            'items' => $this->construirItemsDesdeDevolucion($devolucion),
+            'payments' => $this->construirPaymentsDesdeDevolucion($devolucion->ventaPdv, $devolucion),
+            'stamp' => ['send' => true],
+        ];
+
+        $factura = FacturaSiigo::create([
+            'venta_pdv_id' => $devolucion->venta_pdv_id,
+            'tipo_documento' => 'nota_credito',
+            'siigo_document_type_id' => $creditNoteTypeId,
+            'fecha_emision' => now()->toDateString(),
+            'subtotal' => $devolucion->subtotal,
+            'iva' => $devolucion->iva,
+            'total' => $devolucion->total,
+            'estado_dian' => 'pendiente',
+            'siigo_request' => $payload,
+            'nota_credito_de' => $facturaOriginal->id,
+            'cliente_id' => $devolucion->ventaPdv->cliente_id,
+            'usuario_id' => auth()->id(),
+        ]);
+
+        try {
+            $factura->incrementarIntento();
+            $response = $this->api->post('/v1/credit-notes', $payload, $factura->id);
+
+            $factura->update([
+                'siigo_response' => $response,
+                'siigo_invoice_id' => $response['id'] ?? null,
+                'numero_factura' => isset($response['prefix'], $response['number'])
+                    ? $response['prefix'] . '-' . $response['number']
+                    : ($response['name'] ?? null),
+            ]);
+
+            $this->procesarEstadoRespuesta($factura, $response);
+
+            // Vincular nota crédito con la devolución
+            $devolucion->update(['factura_siigo_id' => $factura->id]);
+
+            return $factura->fresh();
+        } catch (Exception $e) {
+            $factura->marcarError($e->getMessage());
+            Log::error("SIIGO crearNotaCreditoParcial error: {$e->getMessage()}");
             return $factura->fresh();
         }
     }
@@ -658,6 +726,89 @@ class SiigoFacturacionService
                 $factura->update(['estado_envio_email' => 'enviado']);
             }
         }
+    }
+
+    /**
+     * Build items array from a partial return (DevolucionParcialPdv).
+     */
+    private function construirItemsDesdeDevolucion(DevolucionParcialPdv $devolucion): array
+    {
+        $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
+        $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
+        $items = [];
+
+        foreach ($devolucion->items as $itemDev) {
+            $producto = $itemDev->producto;
+            $variante = $itemDev->variante;
+
+            $code = $variante
+                ? ($variante->sku ?? $variante->referencia_variante ?? $producto->referencia ?? 'PROD-' . $itemDev->producto_id)
+                : ($producto->referencia ?? 'PROD-' . $itemDev->producto_id);
+
+            $description = $producto->nombre ?? 'Producto';
+            if ($variante) {
+                $description .= ' - ' . ($variante->referencia_variante ?? $variante->sku ?? '');
+            }
+
+            $itemData = [
+                'code' => substr($code, 0, 50),
+                'description' => substr($description, 0, 250),
+                'quantity' => (int) $itemDev->cantidad_devuelta,
+                'price' => round((float) $itemDev->precio_unitario, 2),
+            ];
+
+            $descuentoPorcentaje = (float) ($itemDev->descuento_porcentaje ?? 0);
+            if ($descuentoPorcentaje > 0) {
+                $itemData['discount'] = round($descuentoPorcentaje, 2);
+            }
+
+            if ($taxId && (float) $itemDev->iva > 0) {
+                $itemData['taxes'] = [['id' => (int) $taxId]];
+            }
+
+            if ($sellerId) {
+                $itemData['seller'] = $sellerId;
+            }
+
+            $items[] = $itemData;
+        }
+
+        return $items;
+    }
+
+    /**
+     * Build payments array from a partial return.
+     */
+    private function construirPaymentsDesdeDevolucion(VentaPdv $venta, DevolucionParcialPdv $devolucion): array
+    {
+        if ($venta->metodo_pago === 'efectivo') {
+            $paymentTypeId = (int) ConfiguracionPdv::obtener('siigo_payment_type_efectivo_id');
+        } else {
+            $paymentTypeId = (int) ConfiguracionPdv::obtener('siigo_payment_type_transferencia_id');
+        }
+
+        if (!$paymentTypeId) {
+            throw new Exception('No se ha configurado el tipo de pago en SIIGO para el método: ' . ($venta->metodo_pago ?? 'desconocido'));
+        }
+
+        // Calculate total from devolucion items
+        $totalItems = 0;
+        foreach ($devolucion->items as $itemDev) {
+            $itemTotal = (float) $itemDev->precio_unitario * (int) $itemDev->cantidad_devuelta;
+            $descPorcentaje = (float) ($itemDev->descuento_porcentaje ?? 0);
+            if ($descPorcentaje > 0) {
+                $itemTotal -= $itemTotal * ($descPorcentaje / 100);
+            }
+            $totalItems += $itemTotal + (float) ($itemDev->iva ?? 0);
+        }
+
+        return [
+            [
+                'id' => $paymentTypeId,
+                'value' => round($totalItems, 2),
+                'due_date' => now()->format('Y-m-d'),
+            ],
+        ];
     }
 
     /**

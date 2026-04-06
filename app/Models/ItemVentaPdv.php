@@ -54,6 +54,21 @@ class ItemVentaPdv extends Model
         return $this->belongsTo(VarianteProducto::class, 'variante_producto_id');
     }
 
+    public function devolucionesItems()
+    {
+        return $this->hasMany(ItemDevolucionParcialPdv::class, 'item_venta_pdv_id');
+    }
+
+    public function getCantidadDevueltaAttribute()
+    {
+        return (int) $this->devolucionesItems()->sum('cantidad_devuelta');
+    }
+
+    public function getCantidadDisponibleDevolucionAttribute()
+    {
+        return $this->cantidad - $this->cantidad_devuelta;
+    }
+
     // Métodos
     public function getNombreCompletoProductoAttribute()
     {

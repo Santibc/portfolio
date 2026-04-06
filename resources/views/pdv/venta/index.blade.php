@@ -85,6 +85,54 @@
         </div>
     </div>
 
+    {{-- Devolución Parcial Modal --}}
+    <div class="modal fade" id="modalDevolucionParcial" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning bg-opacity-10">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-arrow-return-left me-2"></i>Devolución Parcial - <span id="devNumeroVenta"></span></h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 small">
+                        <i class="bi bi-info-circle me-1"></i>Seleccione los productos y cantidades a devolver.
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover" id="tablaDevolucion">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40"><input type="checkbox" id="devCheckAll" onchange="toggleCheckAll(this)"></th>
+                                    <th>Producto</th>
+                                    <th class="text-center" width="80">Vendidos</th>
+                                    <th class="text-center" width="80">Devueltos</th>
+                                    <th class="text-center" width="100">Cantidad</th>
+                                    <th class="text-end" width="100">Precio</th>
+                                    <th class="text-end" width="100">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devItemsBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-semibold">Motivo de devolución <span class="text-danger">*</span></label>
+                        <textarea id="devMotivo" class="form-control" rows="2" placeholder="Ingrese el motivo (mínimo 10 caracteres)..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div>
+                        <span class="fw-bold text-danger" id="devTotalLabel">Total a devolver: $0</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="confirmarDevolucion()">
+                            <i class="bi bi-arrow-return-left me-1"></i>Confirmar Devolución
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
@@ -151,6 +199,157 @@
                     }).then(r => r.json()).then(data => {
                         Swal.fire(data.exito ? 'Anulada' : 'Error', data.mensaje, data.exito ? 'success' : 'error');
                         tabla.ajax.reload();
+                    });
+                }
+            });
+        }
+
+        // ===== Devolución Parcial =====
+        let devVentaId = null;
+        let devItemsData = [];
+
+        function devolucionParcial(id) {
+            devVentaId = id;
+            document.getElementById('devItemsBody').innerHTML = '<tr><td colspan="7" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div> Cargando...</td></tr>';
+            document.getElementById('devMotivo').value = '';
+            document.getElementById('devTotalLabel').textContent = 'Total a devolver: $0';
+            document.getElementById('devCheckAll').checked = false;
+
+            new bootstrap.Modal(document.getElementById('modalDevolucionParcial')).show();
+
+            fetch(`/pdv/ventas/${id}/items-devolucion`, { headers: { 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(data => {
+                    devItemsData = data.items;
+                    document.getElementById('devNumeroVenta').textContent = data.numero_venta;
+                    renderDevItems();
+                })
+                .catch(() => {
+                    document.getElementById('devItemsBody').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar items</td></tr>';
+                });
+        }
+
+        function renderDevItems() {
+            const tbody = document.getElementById('devItemsBody');
+            if (!devItemsData.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">No hay items disponibles para devolución</td></tr>';
+                return;
+            }
+            tbody.innerHTML = devItemsData.map((item, i) => {
+                const nombre = item.variante_nombre
+                    ? `${item.producto_nombre} <small class="text-muted">- ${item.variante_nombre}</small>`
+                    : item.producto_nombre;
+                const precioNeto = item.precio_unitario * (1 - item.descuento_porcentaje / 100);
+                return `<tr>
+                    <td><input type="checkbox" class="devCheck" data-index="${i}" onchange="actualizarTotalDevolucion()"></td>
+                    <td>${nombre}</td>
+                    <td class="text-center">${item.cantidad_original}</td>
+                    <td class="text-center">${item.cantidad_devuelta > 0 ? '<span class=\'text-danger\'>' + item.cantidad_devuelta + '</span>' : '0'}</td>
+                    <td class="text-center">
+                        <input type="number" class="form-control form-control-sm text-center devCantidad"
+                            data-index="${i}" min="1" max="${item.cantidad_disponible}"
+                            value="${item.cantidad_disponible}" style="width:70px;display:inline-block"
+                            onchange="actualizarTotalDevolucion()" oninput="actualizarTotalDevolucion()">
+                    </td>
+                    <td class="text-end">$${precioNeto.toLocaleString('es-CO', {minimumFractionDigits: 2})}</td>
+                    <td class="text-end devSubtotal" data-index="${i}">$0</td>
+                </tr>`;
+            }).join('');
+            actualizarTotalDevolucion();
+        }
+
+        function toggleCheckAll(el) {
+            document.querySelectorAll('.devCheck').forEach(cb => { cb.checked = el.checked; });
+            actualizarTotalDevolucion();
+        }
+
+        function actualizarTotalDevolucion() {
+            let total = 0;
+            document.querySelectorAll('.devCheck').forEach(cb => {
+                const i = parseInt(cb.dataset.index);
+                const item = devItemsData[i];
+                const cantInput = document.querySelector(`.devCantidad[data-index="${i}"]`);
+                const subtotalCell = document.querySelector(`.devSubtotal[data-index="${i}"]`);
+                let cant = parseInt(cantInput.value) || 0;
+                if (cant > item.cantidad_disponible) { cant = item.cantidad_disponible; cantInput.value = cant; }
+                if (cant < 1) { cant = 1; cantInput.value = cant; }
+
+                if (cb.checked) {
+                    const precioNeto = item.precio_unitario * (1 - item.descuento_porcentaje / 100);
+                    const ivaItem = item.iva_unitario * cant;
+                    const sub = (precioNeto * cant) + ivaItem;
+                    subtotalCell.textContent = '$' + sub.toLocaleString('es-CO', {minimumFractionDigits: 2});
+                    total += sub;
+                } else {
+                    subtotalCell.textContent = '$0';
+                }
+            });
+            document.getElementById('devTotalLabel').textContent = 'Total a devolver: $' + total.toLocaleString('es-CO', {minimumFractionDigits: 2});
+        }
+
+        function confirmarDevolucion() {
+            const motivo = document.getElementById('devMotivo').value.trim();
+            if (!motivo || motivo.length < 10) {
+                Swal.fire('Error', 'Ingrese un motivo de al menos 10 caracteres', 'error');
+                return;
+            }
+
+            const itemsSeleccionados = [];
+            document.querySelectorAll('.devCheck:checked').forEach(cb => {
+                const i = parseInt(cb.dataset.index);
+                const cant = parseInt(document.querySelector(`.devCantidad[data-index="${i}"]`).value) || 0;
+                if (cant > 0) {
+                    itemsSeleccionados.push({
+                        item_venta_pdv_id: devItemsData[i].item_venta_pdv_id,
+                        cantidad: cant,
+                    });
+                }
+            });
+
+            if (!itemsSeleccionados.length) {
+                Swal.fire('Error', 'Seleccione al menos un producto para devolver', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Confirmar devolución parcial?',
+                text: `Se devolverán ${itemsSeleccionados.length} producto(s). Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                confirmButtonText: 'Sí, devolver',
+                cancelButtonText: 'Cancelar',
+            }).then(result => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                    fetch(`/pdv/ventas/${devVentaId}/devolucion-parcial`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ motivo_anulacion: motivo, items: itemsSeleccionados }),
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        Swal.close();
+                        bootstrap.Modal.getInstance(document.getElementById('modalDevolucionParcial'))?.hide();
+
+                        let msg = data.mensaje;
+                        if (data.nota_credito) {
+                            msg += `\nNota Crédito: ${data.nota_credito.numero || 'Pendiente'} (${data.nota_credito.estado})`;
+                        }
+                        if (data.nota_credito_error) {
+                            msg += `\n⚠️ ${data.nota_credito_error}`;
+                        }
+
+                        Swal.fire(data.exito ? 'Devolución Exitosa' : 'Error', msg, data.exito ? 'success' : 'error');
+                        tabla.ajax.reload();
+                    })
+                    .catch(() => {
+                        Swal.fire('Error', 'Error de conexión', 'error');
                     });
                 }
             });

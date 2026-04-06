@@ -7,6 +7,7 @@ use App\Models\Caja;
 use App\Models\Ubicacion;
 use App\Models\User;
 use App\Models\ConfiguracionPdv;
+use App\Models\ListaPrecio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
@@ -82,8 +83,10 @@ class CajasController extends Controller
         $configuraciones = ConfiguracionPdv::all();
         $usuariosPin = User::role(['admin', 'cajero_principal'])
             ->get(['id', 'name', 'email', 'pin_pdv']);
+        $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
+        $listasPrecioSeleccionadas = ConfiguracionPdv::obtener('listas_precio_pdv', '');
 
-        return view('pdv.cajas.configuracion', compact('configuraciones', 'usuariosPin'));
+        return view('pdv.cajas.configuracion', compact('configuraciones', 'usuariosPin', 'listasPrecios', 'listasPrecioSeleccionadas'));
     }
 
     public function guardarConfiguracion(Request $request)

@@ -22,6 +22,7 @@
                                 <form action="{{ route('pdv.cajas.configuracion.guardar') }}" method="POST">
                                     @csrf
                                     @foreach($configuraciones as $config)
+                                        @if($config->clave === 'listas_precio_pdv') @continue @endif
                                         <div class="mb-3">
                                             <label class="form-label fw-semibold">{{ $config->descripcion ?? $config->clave }}</label>
                                             @if(in_array($config->valor, ['true', 'false']))
@@ -35,6 +36,23 @@
                                             <small class="text-muted">Clave: {{ $config->clave }}</small>
                                         </div>
                                     @endforeach
+
+                                    {{-- Listas de precio permitidas en PdV --}}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Listas de Precio disponibles en PdV</label>
+                                        <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                                            @foreach($listasPrecios as $lp)
+                                                <div class="form-check">
+                                                    <input class="form-check-input lista-precio-check" type="checkbox"
+                                                           value="{{ $lp->id }}" id="lp_{{ $lp->id }}"
+                                                           {{ in_array((string)$lp->id, explode(',', $listasPrecioSeleccionadas)) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="lp_{{ $lp->id }}">{{ $lp->nombre }}</label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <small class="text-muted">Si no selecciona ninguna, se mostraran todas las listas activas.</small>
+                                        <input type="hidden" name="listas_precio_pdv" id="listasPrecioPdvHidden" value="{{ $listasPrecioSeleccionadas }}">
+                                    </div>
 
                                     <div class="mt-4 d-flex justify-content-end">
                                         <button type="submit" class="btn text-white" style="background: var(--miracle-pink);">
@@ -140,6 +158,13 @@
 
     @push('scripts')
     <script>
+        // Sincronizar checkboxes de listas de precio con hidden input
+        document.querySelector('form').addEventListener('submit', function() {
+            const checked = Array.from(document.querySelectorAll('.lista-precio-check:checked'))
+                .map(cb => cb.value).join(',');
+            document.getElementById('listasPrecioPdvHidden').value = checked;
+        });
+
         // Auto-advance entre digitos del PIN
         document.querySelectorAll('[id^="pinDigit"]').forEach((input, idx, inputs) => {
             input.addEventListener('input', function() {

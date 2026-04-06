@@ -76,6 +76,7 @@ class SiigoConfigService
     {
         $claves = [
             'siigo_activo', 'siigo_modo', 'siigo_username', 'siigo_access_key',
+            'siigo_username_test', 'siigo_access_key_test',
             'siigo_partner_id', 'siigo_document_type_id', 'siigo_credit_note_type_id',
             'siigo_payment_type_efectivo_id', 'siigo_payment_type_transferencia_id',
             'siigo_tax_id', 'siigo_seller_id',
@@ -89,8 +90,10 @@ class SiigoConfigService
             }
         }
 
-        // Clear token cache when credentials change
-        if (isset($data['siigo_username']) || isset($data['siigo_access_key'])) {
+        // Clear token cache when credentials or mode change
+        if (isset($data['siigo_username']) || isset($data['siigo_access_key'])
+            || isset($data['siigo_username_test']) || isset($data['siigo_access_key_test'])
+            || isset($data['siigo_modo'])) {
             SiigoApiClient::limpiarTokenCache();
         }
     }
@@ -102,6 +105,8 @@ class SiigoConfigService
             'siigo_modo' => ConfiguracionPdv::obtener('siigo_modo', 'test'),
             'siigo_username' => ConfiguracionPdv::obtener('siigo_username', ''),
             'siigo_access_key' => ConfiguracionPdv::obtener('siigo_access_key', ''),
+            'siigo_username_test' => ConfiguracionPdv::obtener('siigo_username_test', ''),
+            'siigo_access_key_test' => ConfiguracionPdv::obtener('siigo_access_key_test', ''),
             'siigo_partner_id' => ConfiguracionPdv::obtener('siigo_partner_id', 'MiraclePdV'),
             'siigo_document_type_id' => ConfiguracionPdv::obtener('siigo_document_type_id', ''),
             'siigo_credit_note_type_id' => ConfiguracionPdv::obtener('siigo_credit_note_type_id', ''),

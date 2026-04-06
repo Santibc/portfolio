@@ -22,6 +22,7 @@ class TrasladoStock extends Model
         'usuario_receptor_id',
         'enviado_en',
         'recibido_en',
+        'observacion_recepcion',
     ];
 
     // Constantes de tipo de operación

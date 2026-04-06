@@ -1,6 +1,11 @@
 <x-app-layout>
   <x-slot name="header">
-    Editar Cotización: {{ $solicitud->numero_solicitud }}
+    <div class="d-flex justify-content-between align-items-center">
+      <span>Editar Cotización: {{ $solicitud->numero_solicitud }}</span>
+      <button type="button" class="btn btn-outline-warning btn-sm" onclick="verLogsSolicitud({{ $solicitud->id }})">
+        <i class="bi bi-clock-history"></i> Ver Logs
+      </button>
+    </div>
   </x-slot>
 
   <div class="py-6">
@@ -11,12 +16,20 @@
           <div class="row">
             <div class="col-md-4">
               <h6 class="text-muted mb-2">Cliente</h6>
-              <p class="mb-0 fw-bold">{{ $solicitud->cliente->nombre_contacto }}</p>
-              <small class="text-muted">{{ $solicitud->cliente->email }}</small>
+              <div class="d-flex align-items-center gap-2">
+                <div>
+                  <p class="mb-0 fw-bold" id="clienteNombreDisplay">{{ $solicitud->cliente->nombre_contacto }}</p>
+                  <small class="text-muted" id="clienteEmailDisplay">{{ $solicitud->cliente->email }}</small>
+                </div>
+                <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalCambiarCliente" title="Cambiar Cliente">
+                  <i class="bi bi-person-gear"></i>
+                </button>
+              </div>
+              <input type="hidden" name="cliente_id" id="clienteIdInput" form="formEditarSolicitud" value="{{ $solicitud->cliente_id }}">
             </div>
             <div class="col-md-4">
               <h6 class="text-muted mb-2">Lista de Precios</h6>
-              <p class="mb-0">{{ $solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista' }}</p>
+              <p class="mb-0" id="clienteListaPrecioDisplay">{{ $solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista' }}</p>
             </div>
             <div class="col-md-4">
               <h6 class="text-muted mb-2">Estado de Reserva</h6>
@@ -250,12 +263,57 @@
     </div>
   </div>
 
+  {{-- Modal para cambiar cliente --}}
+  <div class="modal fade" id="modalCambiarCliente" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Cambiar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning small">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Al cambiar el cliente, los precios de los productos se mantendrán como están. Puede ajustarlos manualmente después.
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Buscar Cliente</label>
+            <input type="text" id="buscarCliente" class="form-control" placeholder="Escriba nombre, razón social, NIT o email...">
+          </div>
+          <div id="resultadosClientes" class="list-group" style="max-height: 400px; overflow-y: auto;">
+            <!-- Resultados de búsqueda -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- Modal para ver logs --}}
+  <div class="modal fade" id="modalLogsSolicitud" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Historial de Cambios</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="logsContentSolicitud">
+          <div class="text-center">
+            <div class="spinner-border" role="status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @push('scripts')
   <script>
   let itemIndex = {{ $solicitud->items->count() }};
   let productoActual = null;
 
-  // Buscar productos
+  // ===================== BÚSQUEDA DE PRODUCTOS =====================
   let searchTimeout;
   $('#buscarProducto').on('input', function() {
     clearTimeout(searchTimeout);
@@ -295,7 +353,6 @@
     }, 300);
   });
 
-  // Seleccionar producto
   function seleccionarProducto(id, referencia, nombre, variantes) {
     productoActual = { id, referencia, nombre, variantes };
 
@@ -303,7 +360,6 @@
     $('#productoSeleccionado').show();
     $('#btnAgregarProducto').prop('disabled', false);
 
-    // Cargar variantes
     let options = '<option value="">Sin variante</option>';
     if (variantes && variantes.length > 0) {
       variantes.forEach(function(v) {
@@ -313,13 +369,10 @@
     }
     $('#varianteProducto').html(options);
 
-    // Obtener precio
     obtenerPrecio();
-
     return false;
   }
 
-  // Obtener precio según cliente
   function obtenerPrecio() {
     if (!productoActual) return;
 
@@ -327,7 +380,7 @@
       _token: '{{ csrf_token() }}',
       producto_id: productoActual.id,
       variante_id: $('#varianteProducto').val() || null,
-      cliente_id: {{ $solicitud->cliente_id }}
+      cliente_id: document.getElementById('clienteIdInput').value
     }, function(data) {
       const precio = parseFloat(data.precio) || 0;
       $('#precioLista').text(precio.toFixed(2));
@@ -337,7 +390,6 @@
 
   $('#varianteProducto').on('change', obtenerPrecio);
 
-  // Agregar producto a la tabla
   function agregarProducto() {
     if (!productoActual) return;
 
@@ -383,25 +435,20 @@
     $('#itemsBody').append(row);
     itemIndex++;
 
-    // Limpiar modal
     productoActual = null;
     $('#buscarProducto').val('');
     $('#resultadosProductos').html('');
     $('#productoSeleccionado').hide();
     $('#btnAgregarProducto').prop('disabled', true);
-
     $('#modalAgregarProducto').modal('hide');
-
     actualizarTotal();
   }
 
-  // Eliminar item
   function eliminarItem(btn) {
     $(btn).closest('tr').remove();
     actualizarTotal();
   }
 
-  // Actualizar subtotal de una fila
   function actualizarSubtotal(input) {
     const row = $(input).closest('tr');
     const cantidad = parseFloat(row.find('.cantidad-input').val()) || 0;
@@ -412,7 +459,6 @@
     actualizarTotal();
   }
 
-  // Actualizar total general
   function actualizarTotal() {
     let subtotal = 0;
 
@@ -426,7 +472,6 @@
     const descuento = parseFloat($('#descuentoTotal').val()) || 0;
     const porcentajeIva = parseFloat($('#porcentajeIva').val()) || 0;
 
-    // El IVA se calcula sobre el subtotal de productos (sin flete ni descuento)
     const valorIva = subtotal * (porcentajeIva / 100);
     const totalSinIva = subtotal + flete - descuento;
     const total = totalSinIva + valorIva;
@@ -436,9 +481,7 @@
     $('#totalGeneral').text('$' + total.toFixed(2));
   }
 
-  // Guardar solicitud
   function guardarSolicitud() {
-    // Verificar que haya al menos un item
     if ($('#itemsBody tr').length === 0) {
       Swal.fire('Error', 'Debe agregar al menos un producto a la cotización', 'error');
       return;
@@ -450,7 +493,6 @@
       didOpen: () => { Swal.showLoading(); }
     });
 
-    // Recolectar datos del formulario
     const formData = new FormData($('#formEditarSolicitud')[0]);
 
     $.ajax({
@@ -476,7 +518,6 @@
     });
   }
 
-  // Renovar reserva
   function renovarReserva() {
     Swal.fire({
       title: 'Renovando reserva...',
@@ -495,6 +536,164 @@
     }).fail(function(xhr) {
       Swal.fire('Error', xhr.responseJSON?.mensaje || 'Error al renovar la reserva', 'error');
     });
+  }
+
+  // ===================== BÚSQUEDA DE CLIENTES =====================
+  let clienteSearchTimeout;
+  $('#buscarCliente').on('input', function() {
+    clearTimeout(clienteSearchTimeout);
+    const query = $(this).val();
+
+    if (query.length < 2) {
+      $('#resultadosClientes').html('');
+      return;
+    }
+
+    clienteSearchTimeout = setTimeout(function() {
+      $.get('{{ route("solicitudes.buscar-clientes") }}', { search: query }, function(clientes) {
+        let html = '';
+        clientes.forEach(function(cliente) {
+          html += `
+            <a href="#" class="list-group-item list-group-item-action" onclick="seleccionarCliente(${cliente.id}, '${(cliente.nombre_contacto || '').replace(/'/g, "\\'")}', '${(cliente.email || '').replace(/'/g, "\\'")}', '${(cliente.lista_precio || '').replace(/'/g, "\\'")}')">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold">${cliente.nombre_contacto}</div>
+                  <small class="text-muted">${cliente.razon_social || ''} ${cliente.nit ? '- NIT: ' + cliente.nit : ''}</small>
+                </div>
+                <span class="badge bg-info">${cliente.lista_precio}</span>
+              </div>
+              <small class="text-muted">${cliente.email || ''}</small>
+            </a>
+          `;
+        });
+
+        if (clientes.length === 0) {
+          html = '<div class="list-group-item text-muted">No se encontraron clientes</div>';
+        }
+
+        $('#resultadosClientes').html(html);
+      });
+    }, 300);
+  });
+
+  function seleccionarCliente(id, nombre, email, listaPrecio) {
+    const clienteAnterior = $('#clienteNombreDisplay').text();
+
+    $('#clienteIdInput').val(id);
+    $('#clienteNombreDisplay').text(nombre);
+    $('#clienteEmailDisplay').text(email);
+    $('#clienteListaPrecioDisplay').text(listaPrecio);
+
+    // Limpiar modal
+    $('#buscarCliente').val('');
+    $('#resultadosClientes').html('');
+    $('#modalCambiarCliente').modal('hide');
+
+    // Notificar cambio
+    Swal.fire({
+      title: 'Cliente cambiado',
+      html: `<p>Se cambió de <strong>${clienteAnterior}</strong> a <strong>${nombre}</strong>.</p>
+             <small class="text-muted">Los precios se mantendrán. Puede ajustarlos manualmente.</small>`,
+      icon: 'info',
+      timer: 3000,
+      showConfirmButton: true,
+      confirmButtonText: 'Entendido'
+    });
+
+    return false;
+  }
+
+  // ===================== LOGS =====================
+  function verLogsSolicitud(solicitudId) {
+    $('#logsContentSolicitud').html('<div class="text-center py-4"><div class="spinner-border" role="status"></div></div>');
+    $('#modalLogsSolicitud').modal('show');
+
+    fetch(`/solicitudes/${solicitudId}/logs`)
+      .then(res => res.json())
+      .then(logs => {
+        if (logs.length === 0) {
+          $('#logsContentSolicitud').html('<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>No hay registros de cambios aún.</div>');
+          return;
+        }
+
+        let html = '<div class="timeline">';
+        logs.forEach(function(log) {
+          html += `
+            <div class="d-flex align-items-start mb-3 border-start border-3 border-${log.accion_color} ps-3">
+              <div class="w-100">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span>
+                    <i class="bi ${log.accion_icon} text-${log.accion_color} me-1"></i>
+                    <strong class="text-${log.accion_color}">${log.accion_label}</strong>
+                    <span class="text-muted ms-2">por ${log.usuario}</span>
+                  </span>
+                  <small class="text-muted" title="${log.fecha}">${log.fecha_relativa}</small>
+                </div>`;
+
+          if (log.detalle) {
+            // Cambios en campos
+            if (log.detalle.cambios && log.detalle.cambios.length > 0) {
+              html += '<div class="mt-2">';
+              log.detalle.cambios.forEach(function(c) {
+                html += `<div class="small mb-1">
+                  <span class="badge bg-light text-dark">${c.campo}</span>
+                  <span class="text-danger text-decoration-line-through">${c.anterior ?? '-'}</span>
+                  <i class="bi bi-arrow-right mx-1"></i>
+                  <span class="text-success">${c.nuevo ?? '-'}</span>
+                </div>`;
+              });
+              html += '</div>';
+            }
+
+            // Items agregados
+            if (log.detalle.items_agregados && log.detalle.items_agregados.length > 0) {
+              html += '<div class="mt-2"><small class="text-success fw-bold"><i class="bi bi-plus-circle me-1"></i>Productos agregados:</small><ul class="list-unstyled ms-3 mb-0">';
+              log.detalle.items_agregados.forEach(function(item) {
+                html += `<li class="small text-success">+ ${item.referencia} - ${item.producto} ${item.variante !== '-' ? '(' + item.variante + ')' : ''} x${item.cantidad} @ $${parseFloat(item.precio).toFixed(2)}</li>`;
+              });
+              html += '</ul></div>';
+            }
+
+            // Items eliminados
+            if (log.detalle.items_eliminados && log.detalle.items_eliminados.length > 0) {
+              html += '<div class="mt-2"><small class="text-danger fw-bold"><i class="bi bi-dash-circle me-1"></i>Productos eliminados:</small><ul class="list-unstyled ms-3 mb-0">';
+              log.detalle.items_eliminados.forEach(function(item) {
+                html += `<li class="small text-danger">- ${item.referencia} - ${item.producto} ${item.variante !== '-' ? '(' + item.variante + ')' : ''} x${item.cantidad} @ $${parseFloat(item.precio).toFixed(2)}</li>`;
+              });
+              html += '</ul></div>';
+            }
+
+            // Items modificados
+            if (log.detalle.items_modificados && log.detalle.items_modificados.length > 0) {
+              html += '<div class="mt-2"><small class="text-warning fw-bold"><i class="bi bi-pencil me-1"></i>Productos modificados:</small>';
+              log.detalle.items_modificados.forEach(function(item) {
+                html += `<div class="ms-3 small"><strong>${item.referencia} - ${item.producto}</strong> ${item.variante !== '-' ? '(' + item.variante + ')' : ''}`;
+                item.cambios.forEach(function(c) {
+                  html += `<div class="ms-2">
+                    <span class="badge bg-light text-dark">${c.campo}</span>
+                    <span class="text-danger">${c.anterior}</span>
+                    <i class="bi bi-arrow-right mx-1"></i>
+                    <span class="text-success">${c.nuevo}</span>
+                  </div>`;
+                });
+                html += '</div>';
+              });
+              html += '</div>';
+            }
+          }
+
+          html += `
+                <small class="text-muted d-block mt-1">${log.fecha}</small>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+
+        $('#logsContentSolicitud').html(html);
+      })
+      .catch(() => {
+        $('#logsContentSolicitud').html('<div class="alert alert-danger">Error al cargar los logs</div>');
+      });
   }
   </script>
   @endpush

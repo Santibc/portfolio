@@ -18,12 +18,26 @@ class SiigoApiClient
     private ?string $username;
     private ?string $accessKey;
     private ?string $partnerId;
+    private string $modo;
 
     public function __construct()
     {
-        $this->username = ConfiguracionPdv::obtener('siigo_username');
-        $this->accessKey = ConfiguracionPdv::obtener('siigo_access_key');
+        $this->modo = ConfiguracionPdv::obtener('siigo_modo', 'test');
+
+        if ($this->modo === 'test') {
+            $this->username = ConfiguracionPdv::obtener('siigo_username_test');
+            $this->accessKey = ConfiguracionPdv::obtener('siigo_access_key_test');
+        } else {
+            $this->username = ConfiguracionPdv::obtener('siigo_username');
+            $this->accessKey = ConfiguracionPdv::obtener('siigo_access_key');
+        }
+
         $this->partnerId = ConfiguracionPdv::obtener('siigo_partner_id', 'MiraclePdV');
+    }
+
+    public function esModoTest(): bool
+    {
+        return $this->modo === 'test';
     }
 
     public function estaConfigurado(): bool

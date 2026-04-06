@@ -130,7 +130,13 @@
         { data: 'estado_badge', name: 'estado' },
         { data: 'creador', name: 'usuarioCreador.name', orderable: false },
         { data: 'created_at', name: 'created_at' },
+        { data: 'tiene_observacion', name: 'tiene_observacion', visible: false },
       ],
+      createdRow: function(row, data) {
+        if (data.tiene_observacion === '1') {
+          $(row).css('background-color', '#f8d7da');
+        }
+      },
       order: [[8, 'desc']],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -209,6 +215,12 @@
         title: '¿Recibir traslado?',
         text: 'Se agregará el stock a la ubicación de destino',
         icon: 'question',
+        input: 'textarea',
+        inputLabel: 'Observación (opcional)',
+        inputPlaceholder: 'Escribe una observación si es necesario...',
+        inputAttributes: {
+          'aria-label': 'Observación'
+        },
         showCancelButton: true,
         confirmButtonColor: '#28a745',
         cancelButtonColor: '#6c757d',
@@ -216,12 +228,15 @@
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
+          const observacion = result.value || '';
           fetch(`/traslados/${id}/recibir`, {
             method: 'POST',
             headers: {
               'X-CSRF-TOKEN': '{{ csrf_token() }}',
-              'Accept': 'application/json'
-            }
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ observacion_recepcion: observacion })
           })
           .then(res => res.json())
           .then(data => {
@@ -310,6 +325,7 @@
               ${data.enviado_en ? `<p><strong>Enviado:</strong> ${data.enviado_en}</p>` : ''}
               ${data.recibido_en ? `<p><strong>Recibido:</strong> ${data.recibido_en}</p>` : ''}
               ${data.notas ? `<p><strong>Notas:</strong> ${data.notas}</p>` : ''}
+              ${data.observacion_recepcion ? `<p><strong>Observación de recepción:</strong> <span class="text-danger">${data.observacion_recepcion}</span></p>` : ''}
               <h6 class="mt-3 mb-0"><strong>Productos:</strong></h6>
               ${itemsHtml}
             </div>

@@ -38,6 +38,9 @@
                 @if($sesion)
                     <span class="badge bg-success"><i class="bi bi-unlock me-1"></i>{{ $sesion->caja->nombre }}</span>
                 @endif
+                @if(($siigoModoTest ?? false) && ($siigoActivo ?? false))
+                    <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>SIIGO MODO PRUEBA</span>
+                @endif
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('pdv.prefacturas.pendientes') }}" class="btn btn-outline-warning btn-sm position-relative" id="btnPrefacturas">
@@ -392,7 +395,7 @@
                     <div id="exitoFacturaInfo" class="d-none mt-3 p-3 bg-light rounded text-start">
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <i class="bi bi-receipt-cutoff"></i>
-                            <strong>Factura Electrónica:</strong>
+                            <strong>Factura Electrónica{{ ($siigoModoTest ?? false) ? ' (PRUEBA)' : '' }}:</strong>
                             <span id="exitoFacturaEstado"></span>
                         </div>
                         <div id="exitoFacturaNumero" class="d-none">
@@ -432,6 +435,8 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const siigoActivo = {{ $siigoActivo ? 'true' : 'false' }};
         const siigoFacturarSiempre = {{ $siigoFacturarSiempre ? 'true' : 'false' }};
+        const siigoModoTest = {{ ($siigoModoTest ?? false) ? 'true' : 'false' }};
+        const listasPrecioPermitidas = @json($listasPrecioIdsPermitidas);
         let searchTimeout;
         let ultimaVentaResult = null; // Stores last sale result for SIIGO flow
 
@@ -787,14 +792,42 @@
 
             // Auto-set price list
             if (cliente.lista_precio_id) {
-                document.getElementById('listaPrecio').value = cliente.lista_precio_id;
-                // Refresh product prices would require re-fetching - keep current for simplicity
+                const select = document.getElementById('listaPrecio');
+
+                // Remover opciones temporales previas
+                select.querySelectorAll('option[data-temporal="true"]').forEach(opt => opt.remove());
+
+                // Si la lista del cliente no está entre las permitidas, agregarla temporalmente
+                if (!listasPrecioPermitidas.includes(cliente.lista_precio_id)) {
+                    const opt = document.createElement('option');
+                    opt.value = cliente.lista_precio_id;
+                    opt.textContent = cliente.lista_precio_nombre + ' (del cliente)';
+                    opt.dataset.temporal = 'true';
+                    select.appendChild(opt);
+                }
+
+                select.value = cliente.lista_precio_id;
             }
         }
+
+        // Listener para remover opción temporal cuando el cajero cambia de lista
+        document.getElementById('listaPrecio').addEventListener('change', function() {
+            const temporales = this.querySelectorAll('option[data-temporal="true"]');
+            temporales.forEach(opt => {
+                if (opt.value !== this.value) {
+                    opt.remove();
+                }
+            });
+        });
 
         function quitarCliente() {
             clienteSeleccionado = null;
             document.getElementById('clienteInfo').classList.add('d-none');
+
+            // Remover opciones temporales y resetear al default
+            const select = document.getElementById('listaPrecio');
+            select.querySelectorAll('option[data-temporal="true"]').forEach(opt => opt.remove());
+            select.value = {{ $listaPrecioDefault }};
         }
 
         // New Client Modal
@@ -814,15 +847,19 @@
                     documento: document.getElementById('nuevoClienteDocumento').value,
                     telefono: document.getElementById('nuevoClienteTelefono').value,
                     email: document.getElementById('nuevoClienteEmail').value,
+                    lista_precio_id: document.getElementById('listaPrecio').value,
                 }),
             })
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Error al crear cliente'); });
+                return r.json();
+            })
             .then(cliente => {
                 bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente')).hide();
                 asignarCliente(cliente);
                 Swal.fire('Listo', 'Cliente creado exitosamente', 'success');
             })
-            .catch(() => Swal.fire('Error', 'No se pudo crear el cliente', 'error'));
+            .catch(err => Swal.fire('Error', err.message || 'No se pudo crear el cliente', 'error'));
         }
 
         // PIN Authorization — 4-digit OTP style

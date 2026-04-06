@@ -27,6 +27,8 @@ class SiigoConfigController extends Controller
         $request->validate([
             'siigo_username' => 'nullable|email|max:255',
             'siigo_access_key' => 'nullable|string|max:500',
+            'siigo_username_test' => 'nullable|email|max:255',
+            'siigo_access_key_test' => 'nullable|string|max:500',
             'siigo_partner_id' => 'nullable|string|max:100',
             'siigo_document_type_id' => 'nullable|integer',
             'siigo_credit_note_type_id' => 'nullable|integer',
@@ -39,7 +41,9 @@ class SiigoConfigController extends Controller
         ]);
 
         $data = $request->only([
-            'siigo_username', 'siigo_access_key', 'siigo_partner_id',
+            'siigo_username', 'siigo_access_key',
+            'siigo_username_test', 'siigo_access_key_test',
+            'siigo_partner_id',
             'siigo_document_type_id', 'siigo_credit_note_type_id',
             'siigo_payment_type_efectivo_id', 'siigo_payment_type_transferencia_id',
             'siigo_tax_id', 'siigo_seller_id',

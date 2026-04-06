@@ -102,6 +102,9 @@ class TrasladosController extends Controller
                 ->addColumn('creador', function ($row) {
                     return $row->usuarioCreador->name ?? 'N/A';
                 })
+                ->addColumn('tiene_observacion', function ($row) {
+                    return $row->observacion_recepcion ? '1' : '0';
+                })
                 ->rawColumns(['action', 'tipo_operacion_badge', 'estado_badge'])
                 ->make(true);
         }
@@ -726,7 +729,7 @@ class TrasladosController extends Controller
         }
     }
 
-    public function recibir($id)
+    public function recibir(Request $request, $id)
     {
         $user = auth()->user();
         $traslado = TrasladoStock::with('items')->findOrFail($id);
@@ -797,14 +800,23 @@ class TrasladosController extends Controller
                 ]);
             }
 
+            if ($request->filled('observacion_recepcion')) {
+                $traslado->observacion_recepcion = $request->observacion_recepcion;
+                $traslado->save();
+            }
+
             $traslado->completar(auth()->id());
             DB::commit();
 
-            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_RECEPCION, [
+            $logDetalle = [
                 'recibido_por' => $user->name,
                 'ubicacion_destino' => $traslado->ubicacionDestino->nombre,
                 'items_recibidos' => $traslado->items->count(),
-            ]);
+            ];
+            if ($traslado->observacion_recepcion) {
+                $logDetalle['observacion'] = $traslado->observacion_recepcion;
+            }
+            LogTraslado::registrar($traslado->id, LogTraslado::ACCION_RECEPCION, $logDetalle);
 
             return response()->json([
                 'success' => true,

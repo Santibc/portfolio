@@ -173,6 +173,9 @@
                 <th>Ubicación</th>
                 <th>Ubic. Específica</th>
                 <th>Acciones</th>
+                <th>Referencia</th>
+                <th>Nombre</th>
+                <th>Variante</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -513,13 +516,24 @@
         { data: 'stock_minimo_maximo', orderable: false },
         { data: 'ubicacion', name: 'ubicacion' },
         { data: 'ubicacion_especifica', name: 'ubicacion_especifica', orderable: false },
-        { data: 'action', orderable: false, searchable: false }
+        { data: 'action', orderable: false, searchable: false },
+        { data: 'referencia', visible: false },
+        { data: 'nombre_producto', visible: false },
+        { data: 'variante_nombre', visible: false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
         { extend: 'pageLength', className: 'btn btn-outline-dark', text: 'Filas' },
         { extend: 'colvis', className: 'btn btn-outline-dark', text: 'Columnas' },
-        { extend: 'excelHtml5', className: 'btn btn-outline-success', text: 'Excel' },
+        {
+          extend: 'excelHtml5',
+          className: 'btn btn-outline-success',
+          text: 'Excel',
+          title: 'Inventario',
+          exportOptions: {
+            columns: [7, 8, 9, 1, 2, 3, 4, 5]
+          }
+        },
         {
           text: 'Inicializar Stock', className: 'btn btn-outline-warning',
           action: () => {

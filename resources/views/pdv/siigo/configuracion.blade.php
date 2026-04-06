@@ -48,20 +48,45 @@
                                         <small class="text-muted">Usar modo Test para pruebas con SIIGO</small>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Usuario API (Email)</label>
-                                        <input type="email" name="siigo_username" class="form-control"
-                                            value="{{ $config['siigo_username'] }}" placeholder="usuario@empresa.com">
+                                    {{-- Credenciales de Producción --}}
+                                    <div id="credencialesProduccion" class="{{ $config['siigo_modo'] === 'test' ? 'd-none' : '' }}">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Usuario API - Producción (Email)</label>
+                                            <input type="email" name="siigo_username" class="form-control"
+                                                value="{{ $config['siigo_username'] }}" placeholder="usuario@empresa.com">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Access Key - Producción</label>
+                                            <div class="input-group">
+                                                <input type="password" name="siigo_access_key" class="form-control" id="inputAccessKey"
+                                                    value="{{ $config['siigo_access_key'] }}" placeholder="Access Key de SIIGO">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('inputAccessKey', 'iconPassword')">
+                                                    <i class="bi bi-eye" id="iconPassword"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Access Key</label>
-                                        <div class="input-group">
-                                            <input type="password" name="siigo_access_key" class="form-control" id="inputAccessKey"
-                                                value="{{ $config['siigo_access_key'] }}" placeholder="Access Key de SIIGO">
-                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                                                <i class="bi bi-eye" id="iconPassword"></i>
-                                            </button>
+                                    {{-- Credenciales de Test --}}
+                                    <div id="credencialesTest" class="{{ $config['siigo_modo'] !== 'test' ? 'd-none' : '' }}">
+                                        <div class="alert alert-warning py-2 mb-3">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            <strong>MODO PRUEBA:</strong> Use credenciales de prueba proporcionadas por Siigo. Las credenciales de producción NO se usarán en este modo.
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Usuario API - Test (Email)</label>
+                                            <input type="email" name="siigo_username_test" class="form-control"
+                                                value="{{ $config['siigo_username_test'] }}" placeholder="usuario-test@empresa.com">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Access Key - Test</label>
+                                            <div class="input-group">
+                                                <input type="password" name="siigo_access_key_test" class="form-control" id="inputAccessKeyTest"
+                                                    value="{{ $config['siigo_access_key_test'] }}" placeholder="Access Key de prueba de SIIGO">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('inputAccessKeyTest', 'iconPasswordTest')">
+                                                    <i class="bi bi-eye" id="iconPasswordTest"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -220,9 +245,9 @@
 
     @push('scripts')
     <script>
-        function togglePassword() {
-            const input = document.getElementById('inputAccessKey');
-            const icon = document.getElementById('iconPassword');
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.className = 'bi bi-eye-slash';
@@ -231,6 +256,13 @@
                 icon.className = 'bi bi-eye';
             }
         }
+
+        // Toggle credential fields based on mode
+        document.querySelector('select[name="siigo_modo"]').addEventListener('change', function() {
+            const esTest = this.value === 'test';
+            document.getElementById('credencialesTest').classList.toggle('d-none', !esTest);
+            document.getElementById('credencialesProduccion').classList.toggle('d-none', esTest);
+        });
 
         document.getElementById('btnTestConexion').addEventListener('click', function() {
             const btn = this;

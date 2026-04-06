@@ -56,7 +56,8 @@ class StockPdvController extends Controller
                 })
                 ->filterColumn('variante_nombre', function ($query, $keyword) {
                     $query->whereHas('variante', function ($q) use ($keyword) {
-                        $q->where('nombre_variante', 'like', "%{$keyword}%")
+                        $q->where('referencia_variante', 'like', "%{$keyword}%")
+                          ->orWhere('color', 'like', "%{$keyword}%")
                           ->orWhere('sku', 'like', "%{$keyword}%");
                     });
                 })

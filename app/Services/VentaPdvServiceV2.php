@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\VentaPdv;
 use App\Models\ItemVentaPdv;
+use App\Models\DevolucionParcialPdv;
+use App\Models\ItemDevolucionParcialPdv;
 use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
@@ -125,7 +127,11 @@ class VentaPdvServiceV2
         DB::beginTransaction();
         try {
             foreach ($venta->items as $item) {
-                $this->restaurarStockItem($venta, $item);
+                // Si hay devoluciones parciales previas, solo restaurar lo no devuelto
+                $cantidadRestante = $item->cantidad - $item->cantidad_devuelta;
+                if ($cantidadRestante > 0) {
+                    $this->restaurarStockItem($venta, $item, $cantidadRestante, 'Anulación');
+                }
             }
 
             $venta->anular($usuarioId, $motivo);
@@ -300,28 +306,166 @@ class VentaPdvServiceV2
         return $itemVenta;
     }
 
-    private function restaurarStockItem(VentaPdv $venta, ItemVentaPdv $item): void
+    public function devolverParcial(VentaPdv $venta, int $usuarioId, string $motivo, array $itemsDevolucion): array
+    {
+        if ($venta->estado !== 'completada') {
+            return ['exito' => false, 'mensaje' => 'Solo se pueden devolver productos de ventas completadas'];
+        }
+
+        if ($venta->sesionCaja && !$venta->sesionCaja->estaAbierta()) {
+            return ['exito' => false, 'mensaje' => 'No se puede hacer devolución en una sesión cerrada'];
+        }
+
+        // Cargar items con devoluciones previas
+        $venta->loadMissing('items.devolucionesItems');
+
+        // Validar items
+        $itemsVenta = $venta->items->keyBy('id');
+        foreach ($itemsDevolucion as $itemDev) {
+            $itemVenta = $itemsVenta->get($itemDev['item_venta_pdv_id']);
+            if (!$itemVenta) {
+                return ['exito' => false, 'mensaje' => "Item de venta #{$itemDev['item_venta_pdv_id']} no pertenece a esta venta"];
+            }
+            $disponible = $itemVenta->cantidad_disponible_devolucion;
+            if ($itemDev['cantidad'] > $disponible) {
+                $nombre = $itemVenta->producto->nombre ?? 'Producto';
+                return ['exito' => false, 'mensaje' => "No se puede devolver {$itemDev['cantidad']} de '{$nombre}' (disponible: {$disponible})"];
+            }
+            if ($itemDev['cantidad'] <= 0) {
+                return ['exito' => false, 'mensaje' => 'La cantidad a devolver debe ser mayor a 0'];
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $subtotalDevolucion = 0;
+            $ivaDevolucion = 0;
+
+            // Crear registro de devolución
+            $devolucion = DevolucionParcialPdv::create([
+                'venta_pdv_id' => $venta->id,
+                'usuario_id' => $usuarioId,
+                'motivo' => $motivo,
+                'subtotal' => 0,
+                'iva' => 0,
+                'total' => 0,
+            ]);
+
+            foreach ($itemsDevolucion as $itemDev) {
+                $itemVenta = $itemsVenta->get($itemDev['item_venta_pdv_id']);
+
+                // Calcular proporcionales basados en el item original
+                $precioUnitario = (float) $itemVenta->precio_unitario;
+                $descuentoPorcentaje = (float) ($itemVenta->descuento_porcentaje ?? 0);
+                $cantidadDevuelta = (int) $itemDev['cantidad'];
+
+                $subtotalItem = $precioUnitario * $cantidadDevuelta;
+                $descuentoValorItem = $descuentoPorcentaje > 0
+                    ? round($subtotalItem * ($descuentoPorcentaje / 100), 2)
+                    : 0;
+                $subtotalConDescuento = $subtotalItem - $descuentoValorItem;
+
+                // Calcular IVA proporcional
+                $ivaItem = 0;
+                if ((float) $itemVenta->iva > 0 && $itemVenta->cantidad > 0) {
+                    $ivaPorUnidad = (float) $itemVenta->iva / $itemVenta->cantidad;
+                    $ivaItem = round($ivaPorUnidad * $cantidadDevuelta, 2);
+                }
+
+                $totalItem = $subtotalConDescuento + $ivaItem;
+
+                ItemDevolucionParcialPdv::create([
+                    'devolucion_parcial_pdv_id' => $devolucion->id,
+                    'item_venta_pdv_id' => $itemVenta->id,
+                    'producto_id' => $itemVenta->producto_id,
+                    'variante_producto_id' => $itemVenta->variante_producto_id,
+                    'cantidad_devuelta' => $cantidadDevuelta,
+                    'precio_unitario' => $precioUnitario,
+                    'descuento_porcentaje' => $descuentoPorcentaje,
+                    'descuento_valor' => $descuentoValorItem,
+                    'subtotal' => $subtotalConDescuento,
+                    'iva' => $ivaItem,
+                    'total' => $totalItem,
+                ]);
+
+                $subtotalDevolucion += $subtotalConDescuento;
+                $ivaDevolucion += $ivaItem;
+
+                // Restaurar stock
+                $this->restaurarStockItem($venta, $itemVenta, $cantidadDevuelta, 'Devolución Parcial');
+            }
+
+            $totalDevolucion = $subtotalDevolucion + $ivaDevolucion;
+
+            $devolucion->update([
+                'subtotal' => round($subtotalDevolucion, 2),
+                'iva' => round($ivaDevolucion, 2),
+                'total' => round($totalDevolucion, 2),
+            ]);
+
+            // Actualizar total_devoluciones en la venta
+            $venta->increment('total_devoluciones', round($totalDevolucion, 2));
+
+            // Actualizar totales de sesión
+            if ($venta->sesion_caja_id) {
+                $sesion = $venta->sesionCaja;
+                if ($sesion) {
+                    $sesion->increment('total_anulaciones', round($totalDevolucion, 2));
+                    $sesion->decrement('total_ventas', round($totalDevolucion, 2));
+                    if ($venta->metodo_pago === 'efectivo') {
+                        $sesion->decrement('total_ventas_efectivo', round($totalDevolucion, 2));
+                    } elseif ($venta->metodo_pago === 'transferencia') {
+                        $sesion->decrement('total_ventas_transferencia', round($totalDevolucion, 2));
+                    } elseif ($venta->metodo_pago === 'mixto') {
+                        // Proporcional al peso de cada método
+                        $pesoEfectivo = $venta->total > 0 ? (float) $venta->monto_efectivo / (float) $venta->total : 0;
+                        $sesion->decrement('total_ventas_efectivo', round($totalDevolucion * $pesoEfectivo, 2));
+                        $sesion->decrement('total_ventas_transferencia', round($totalDevolucion * (1 - $pesoEfectivo), 2));
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return [
+                'exito' => true,
+                'mensaje' => "Devolución parcial procesada exitosamente por $" . number_format($totalDevolucion, 2, ',', '.'),
+                'devolucion' => $devolucion->load('items'),
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error en devolución parcial venta {$venta->numero_venta}: " . $e->getMessage());
+            return ['exito' => false, 'mensaje' => 'Error al procesar la devolución: ' . $e->getMessage()];
+        }
+    }
+
+    private function restaurarStockItem(VentaPdv $venta, ItemVentaPdv $item, ?int $cantidadOverride = null, string $motivoPrefijo = 'Anulación'): void
     {
         $producto = $item->producto;
         if (!$producto || !$producto->controlar_stock) return;
+
+        $cantidad = $cantidadOverride ?? $item->cantidad;
+        if ($cantidad <= 0) return;
 
         $stock = $this->obtenerStock($item->producto_id, $item->variante_producto_id, $venta->ubicacion_id);
 
         if ($stock) {
             $stockAnterior = $stock->cantidad_disponible;
-            $stock->increment('cantidad_disponible', $item->cantidad);
+            $stock->increment('cantidad_disponible', $cantidad);
+
+            $origen = $cantidadOverride !== null ? 'devolucion' : 'ajuste_inventario';
 
             MovimientoStock::create([
                 'producto_id' => $item->producto_id,
                 'variante_producto_id' => $item->variante_producto_id,
                 'ubicacion_id' => $venta->ubicacion_id,
                 'tipo_movimiento' => 'entrada',
-                'cantidad' => $item->cantidad,
+                'cantidad' => $cantidad,
                 'stock_anterior' => $stockAnterior,
                 'stock_nuevo' => $stock->cantidad_disponible,
-                'origen' => 'ajuste_inventario',
+                'origen' => $origen,
                 'referencia' => $venta->numero_venta,
-                'motivo' => "Anulación Venta PdV - {$venta->numero_venta}",
+                'motivo' => "{$motivoPrefijo} Venta PdV - {$venta->numero_venta}",
                 'usuario_id' => auth()->id(),
             ]);
         }

@@ -43,6 +43,7 @@ class VentaPdv extends Model
         'motivo_anulacion',
         'factura_siigo_id',
         'requiere_factura',
+        'total_devoluciones',
     ];
 
     protected $casts = [
@@ -58,6 +59,7 @@ class VentaPdv extends Model
         'cambio' => 'decimal:2',
         'anulada_en' => 'datetime',
         'requiere_factura' => 'boolean',
+        'total_devoluciones' => 'decimal:2',
     ];
 
     // Relaciones
@@ -121,6 +123,11 @@ class VentaPdv extends Model
         return $this->hasOne(FacturaSiigo::class, 'venta_pdv_id');
     }
 
+    public function devolucionesParciales()
+    {
+        return $this->hasMany(DevolucionParcialPdv::class, 'venta_pdv_id');
+    }
+
     // Scopes
     public function scopeCompletadas($query)
     {
@@ -172,6 +179,11 @@ class VentaPdv extends Model
     public function getEstaAnuladaAttribute()
     {
         return $this->estado === 'anulada';
+    }
+
+    public function getTieneDevolucionesAttribute()
+    {
+        return $this->devolucionesParciales()->exists();
     }
 
     public function anular($usuarioId, $motivo)

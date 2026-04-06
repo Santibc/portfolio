@@ -247,18 +247,18 @@
         }
 
         .total-label {
-            font-size: 12pt;
+            font-size: 9pt;
             font-weight: bold;
-            padding: 5px 15px;
+            padding: 3px 10px;
             display: inline-block;
         }
 
         .total-valor {
-            font-size: 16pt;
+            font-size: 9pt;
             font-weight: bold;
-            padding: 5px 15px;
+            padding: 3px 10px;
             display: inline-block;
-            min-width: 150px;
+            min-width: 100px;
         }
 
         .condiciones-finales {
@@ -333,18 +333,11 @@
         </tr>
     </table>
 
-    {{-- OBSERVACIONES DEL VENDEDOR (arriba de la tabla) --}}
-    @if($solicitud->observaciones_vendedor)
-    <div style="background-color: #FFF9E6; padding: 8px 12px; border-radius: 4px; margin: 10px 0;">
-        <strong style="color: #382E65; font-size: 9pt;">Observaciones:</strong>
-        <span style="font-size: 9pt;">{{ $solicitud->observaciones_vendedor }}</span>
-    </div>
-    @endif
-
     {{-- TABLA DE PRODUCTOS --}}
     <table class="productos-table">
         <thead>
             <tr>
+                <th style="width: 5%; text-align: center;">#</th>
                 <th class="col-referencia">REFERENCIA CODIGO</th>
                 <th class="col-descripcion">DESCRIPCION</th>
 
@@ -358,11 +351,12 @@
                 $totalGeneral = 0;
             @endphp
 
-            @foreach($solicitud->items as $item)
+            @foreach($solicitud->items as $index => $item)
                 @php
                     $totalGeneral += $item->precio_total;
                 @endphp
                 <tr>
+                    <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td class="col-referencia">{{ $item->referencia_producto }}</td>
                     <td class="col-descripcion">
                         {{ $item->nombre_producto }}
@@ -407,11 +401,11 @@
         </div>
         @endif
         <div class="total-row" style="margin-top: 5px; padding-top: 5px; border-top: 2px solid #FF84D5;">
-            <span class="total-label" style="font-size: 14pt;">TOTAL:</span>
+            <span class="total-label" style="font-size: 10pt;">TOTAL:</span>
             @php
                 $totalFinal = $totalGeneral + ($solicitud->valor_flete ?? 0) - ($solicitud->descuento_total ?? 0) + ($solicitud->valor_iva ?? 0);
             @endphp
-            <span class="total-valor" style="font-size: 16pt;">$ {{ number_format($totalFinal, 0) }}</span>
+            <span class="total-valor" style="font-size: 10pt;">$ {{ number_format($totalFinal, 0) }}</span>
         </div>
     </div>
 

@@ -38,6 +38,9 @@
             @else
                 <span class="badge bg-secondary">{{ ucfirst($venta->estado) }}</span>
             @endif
+            @if($venta->devolucionesParciales->count() > 0)
+                <span class="badge bg-warning text-dark">Con devoluciones ({{ $venta->devolucionesParciales->count() }})</span>
+            @endif
         </div>
         <div class="col-md-3">
             <small class="text-muted d-block">Lista de Precios</small>
@@ -99,6 +102,7 @@
                     <th>Producto</th>
                     <th>Variante</th>
                     <th class="text-center">Cant.</th>
+                    <th class="text-center">Devuelto</th>
                     <th class="text-end">P. Unit.</th>
                     <th class="text-center">Desc.</th>
                     <th class="text-end">Subtotal</th>
@@ -113,6 +117,13 @@
                     </td>
                     <td>{{ $item->variante->nombre_variante ?? '-' }}</td>
                     <td class="text-center">{{ $item->cantidad }}</td>
+                    <td class="text-center">
+                        @if($item->cantidad_devuelta > 0)
+                            <span class="text-danger fw-semibold">{{ $item->cantidad_devuelta }}</span>
+                        @else
+                            <span class="text-muted">0</span>
+                        @endif
+                    </td>
                     <td class="text-end">${{ number_format($item->precio_unitario, 2) }}</td>
                     <td class="text-center">
                         @if(($item->descuento_porcentaje ?? 0) > 0)
@@ -140,6 +151,10 @@
                 <tr><td>IVA:</td><td class="text-end">${{ number_format($venta->iva, 2) }}</td></tr>
                 @endif
                 <tr class="fw-bold" style="font-size:1.1em;"><td>TOTAL:</td><td class="text-end">${{ number_format($venta->total, 2) }}</td></tr>
+                @if(($venta->total_devoluciones ?? 0) > 0)
+                <tr class="text-danger"><td>Total devoluciones:</td><td class="text-end">-${{ number_format($venta->total_devoluciones, 2) }}</td></tr>
+                <tr class="fw-bold"><td>Neto:</td><td class="text-end">${{ number_format($venta->total - $venta->total_devoluciones, 2) }}</td></tr>
+                @endif
             </table>
         </div>
     </div>
@@ -238,6 +253,58 @@
         </div>
         @endif
     @endif
+    {{-- Devoluciones Parciales --}}
+    @if($venta->devolucionesParciales->count() > 0)
+    <div class="mt-3 p-3 border rounded" style="border-color: #ffc107 !important;">
+        <h6 class="fw-bold mb-2"><i class="bi bi-arrow-return-left me-2"></i>Devoluciones Parciales ({{ $venta->devolucionesParciales->count() }})</h6>
+        @foreach($venta->devolucionesParciales as $dev)
+        <div class="mb-2 p-2 bg-light rounded border">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <div>
+                    <strong class="text-danger">${{ number_format($dev->total, 2) }}</strong>
+                    <small class="text-muted ms-2">{{ $dev->created_at->format('d/m/Y h:i A') }}</small>
+                    <small class="text-muted ms-2">por {{ $dev->usuario->name ?? '-' }}</small>
+                </div>
+                @if($dev->facturaSiigo)
+                    {!! $dev->facturaSiigo->estado_badge !!}
+                    @if($dev->facturaSiigo->numero_factura)
+                        <small class="text-muted">NC: {{ $dev->facturaSiigo->numero_factura }}</small>
+                    @endif
+                @endif
+            </div>
+            <small class="text-muted d-block mb-1"><strong>Motivo:</strong> {{ $dev->motivo }}</small>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0" style="font-size: 0.85em;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Cant. devuelta</th>
+                            <th class="text-end">P. Unit.</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($dev->items as $itemDev)
+                        <tr>
+                            <td>
+                                {{ $itemDev->producto->nombre ?? '-' }}
+                                @if($itemDev->variante)
+                                    <small class="text-muted">- {{ $itemDev->variante->referencia_variante ?? $itemDev->variante->sku ?? '' }}</small>
+                                @endif
+                            </td>
+                            <td class="text-center">{{ $itemDev->cantidad_devuelta }}</td>
+                            <td class="text-end">${{ number_format($itemDev->precio_unitario, 2) }}</td>
+                            <td class="text-end">${{ number_format($itemDev->total, 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     {{-- Factura Electrónica SIIGO --}}
     @if($venta->facturaSiigo)
     <div class="mt-3 p-3 border rounded" style="border-color: var(--miracle-lilac) !important;">

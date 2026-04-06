@@ -32,6 +32,9 @@ class ActualizarSolicitudRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Cliente (opcional, para cambio de cliente)
+            'cliente_id' => 'nullable|exists:clientes,id',
+
             // Items de la cotización
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
@@ -57,6 +60,7 @@ class ActualizarSolicitudRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'cliente_id.exists' => 'El cliente seleccionado no existe',
             'items.required' => 'Debe haber al menos un producto en la cotización',
             'items.min' => 'Debe haber al menos un producto en la cotización',
             'items.*.producto_id.required' => 'El producto es requerido',

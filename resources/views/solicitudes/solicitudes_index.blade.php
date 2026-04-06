@@ -715,6 +715,95 @@
     });
   }
 
+  // Ver logs de una solicitud
+  function verLogsSolicitud(solicitudId) {
+    $('#logsContentSolicitud').html('<div class="text-center py-4"><div class="spinner-border" role="status"></div></div>');
+    $('#modalLogsSolicitud').modal('show');
+
+    fetch(`/solicitudes/${solicitudId}/logs`)
+      .then(res => res.json())
+      .then(logs => {
+        if (logs.length === 0) {
+          $('#logsContentSolicitud').html('<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>No hay registros de cambios aún.</div>');
+          return;
+        }
+
+        let html = '<div class="timeline">';
+        logs.forEach(function(log) {
+          html += `
+            <div class="d-flex align-items-start mb-3 border-start border-3 border-${log.accion_color} ps-3">
+              <div class="w-100">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span>
+                    <i class="bi ${log.accion_icon} text-${log.accion_color} me-1"></i>
+                    <strong class="text-${log.accion_color}">${log.accion_label}</strong>
+                    <span class="text-muted ms-2">por ${log.usuario}</span>
+                  </span>
+                  <small class="text-muted" title="${log.fecha}">${log.fecha_relativa}</small>
+                </div>`;
+
+          if (log.detalle) {
+            if (log.detalle.cambios && log.detalle.cambios.length > 0) {
+              html += '<div class="mt-2">';
+              log.detalle.cambios.forEach(function(c) {
+                html += `<div class="small mb-1">
+                  <span class="badge bg-light text-dark">${c.campo}</span>
+                  <span class="text-danger text-decoration-line-through">${c.anterior ?? '-'}</span>
+                  <i class="bi bi-arrow-right mx-1"></i>
+                  <span class="text-success">${c.nuevo ?? '-'}</span>
+                </div>`;
+              });
+              html += '</div>';
+            }
+
+            if (log.detalle.items_agregados && log.detalle.items_agregados.length > 0) {
+              html += '<div class="mt-2"><small class="text-success fw-bold"><i class="bi bi-plus-circle me-1"></i>Productos agregados:</small><ul class="list-unstyled ms-3 mb-0">';
+              log.detalle.items_agregados.forEach(function(item) {
+                html += `<li class="small text-success">+ ${item.referencia} - ${item.producto} ${item.variante !== '-' ? '(' + item.variante + ')' : ''} x${item.cantidad} @ $${parseFloat(item.precio).toFixed(2)}</li>`;
+              });
+              html += '</ul></div>';
+            }
+
+            if (log.detalle.items_eliminados && log.detalle.items_eliminados.length > 0) {
+              html += '<div class="mt-2"><small class="text-danger fw-bold"><i class="bi bi-dash-circle me-1"></i>Productos eliminados:</small><ul class="list-unstyled ms-3 mb-0">';
+              log.detalle.items_eliminados.forEach(function(item) {
+                html += `<li class="small text-danger">- ${item.referencia} - ${item.producto} ${item.variante !== '-' ? '(' + item.variante + ')' : ''} x${item.cantidad} @ $${parseFloat(item.precio).toFixed(2)}</li>`;
+              });
+              html += '</ul></div>';
+            }
+
+            if (log.detalle.items_modificados && log.detalle.items_modificados.length > 0) {
+              html += '<div class="mt-2"><small class="text-warning fw-bold"><i class="bi bi-pencil me-1"></i>Productos modificados:</small>';
+              log.detalle.items_modificados.forEach(function(item) {
+                html += `<div class="ms-3 small"><strong>${item.referencia} - ${item.producto}</strong> ${item.variante !== '-' ? '(' + item.variante + ')' : ''}`;
+                item.cambios.forEach(function(c) {
+                  html += `<div class="ms-2">
+                    <span class="badge bg-light text-dark">${c.campo}</span>
+                    <span class="text-danger">${c.anterior}</span>
+                    <i class="bi bi-arrow-right mx-1"></i>
+                    <span class="text-success">${c.nuevo}</span>
+                  </div>`;
+                });
+                html += '</div>';
+              });
+              html += '</div>';
+            }
+          }
+
+          html += `
+                <small class="text-muted d-block mt-1">${log.fecha}</small>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+
+        $('#logsContentSolicitud').html(html);
+      })
+      .catch(() => {
+        $('#logsContentSolicitud').html('<div class="alert alert-danger">Error al cargar los logs</div>');
+      });
+  }
+
   </script>
   @endpush
 
@@ -731,6 +820,23 @@
             <div class="spinner-border" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ver logs de solicitud -->
+  <div class="modal fade" id="modalLogsSolicitud" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Historial de Cambios</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="logsContentSolicitud">
+          <div class="text-center">
+            <div class="spinner-border" role="status"></div>
           </div>
         </div>
       </div>

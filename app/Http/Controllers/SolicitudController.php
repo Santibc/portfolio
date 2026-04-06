@@ -24,6 +24,7 @@ use App\Services\CotizacionService;
 use App\Services\ReservaStockService;
 use App\Services\FacturacionService;
 use App\Http\Requests\ActualizarSolicitudRequest;
+use App\Models\LogSolicitudCotizacion;
 use App\Http\Requests\CambiarEstadoSolicitudRequest;
 
 class SolicitudController extends Controller
@@ -268,6 +269,12 @@ class SolicitudController extends Controller
                         }
                     }
 
+                    // Botón ver logs
+                    $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm"
+                                        title="Ver Logs" onclick="verLogsSolicitud('.$s->id.')">
+                                   <i class="bi bi-clock-history"></i>
+                                </button>';
+
                     $buttons .= '</div>';
 
                     return $buttons;
@@ -348,7 +355,7 @@ class SolicitudController extends Controller
 
         $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
-        $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor', 'historialEstados.usuario', 'reservas.liberadaPor']);
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'cliente.ciudad.departamento', 'cliente.pais', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor', 'historialEstados.usuario', 'reservas.liberadaPor']);
 
         $html = '<div class="row">';
 
@@ -360,6 +367,30 @@ class SolicitudController extends Controller
         $html .= '<tr><td><strong>Email:</strong></td><td>' . $solicitud->cliente->email . '</td></tr>';
         $html .= '<tr><td><strong>Teléfono:</strong></td><td>' . $solicitud->cliente->telefono . '</td></tr>';
         $html .= '<tr><td><strong>Lista de Precios:</strong></td><td>' . ($solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista') . '</td></tr>';
+
+        // Ubicación del cliente
+        $ubicacionParts = [];
+        if ($solicitud->cliente->ciudad) {
+            $ubicacionParts[] = $solicitud->cliente->ciudad->nombre;
+            if ($solicitud->cliente->ciudad->departamento) {
+                $ubicacionParts[] = $solicitud->cliente->ciudad->departamento->nombre;
+            }
+        }
+        if ($solicitud->cliente->pais) {
+            $ubicacionParts[] = $solicitud->cliente->pais->nombre;
+        }
+        if (!empty($ubicacionParts)) {
+            $html .= '<tr><td><strong>Ubicación:</strong></td><td>' . e(implode(', ', $ubicacionParts)) . '</td></tr>';
+        }
+
+        // Información de flete
+        if ($solicitud->cliente->aplica_flete) {
+            $valorFlete = $solicitud->cliente->valor_flete ? '$' . number_format($solicitud->cliente->valor_flete, 2) : 'No definido';
+            $html .= '<tr><td><strong>Flete:</strong></td><td><span class="badge bg-success">Aplica</span> — ' . $valorFlete . '</td></tr>';
+        } else {
+            $html .= '<tr><td><strong>Flete:</strong></td><td><span class="badge bg-secondary">No aplica</span></td></tr>';
+        }
+
         $html .= '</table>';
         $html .= '</div>';
 
@@ -446,6 +477,7 @@ class SolicitudController extends Controller
         $html .= '<table class="table table-striped">';
         $html .= '<thead>';
         $html .= '<tr>';
+        $html .= '<th>#</th>';
         $html .= '<th>Referencia</th>';
         $html .= '<th>Producto</th>';
         $html .= '<th>Variante</th>';
@@ -460,8 +492,9 @@ class SolicitudController extends Controller
         $html .= '</thead>';
         $html .= '<tbody>';
 
-        foreach ($solicitud->items as $item) {
+        foreach ($solicitud->items as $index => $item) {
             $html .= '<tr>';
+            $html .= '<td>' . ($index + 1) . '</td>';
             $html .= '<td><code>' . $item->referencia_producto . '</code></td>';
             $html .= '<td>' . $item->nombre_producto . '</td>';
             $html .= '<td>' . ($item->info_variante ?: '-') . '</td>';
@@ -482,7 +515,7 @@ class SolicitudController extends Controller
         $html .= '</tbody>';
         $html .= '<tfoot>';
 
-        $colspanTotal = ($solicitud->estado === 'pendiente') ? 7 : 6;
+        $colspanTotal = ($solicitud->estado === 'pendiente') ? 8 : 7;
 
         // Calcular subtotal de items
         $subtotal = $solicitud->items->sum('precio_total');
@@ -2081,5 +2114,73 @@ class SolicitudController extends Controller
             'success' => true,
             'marcada' => $solicitud->marcada_inventario,
         ]);
+    }
+
+    /**
+     * Obtener logs de una cotización
+     */
+    public function logs(SolicitudCotizacion $solicitud)
+    {
+        $logs = LogSolicitudCotizacion::where('solicitud_cotizacion_id', $solicitud->id)
+            ->with('usuario')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'accion' => $log->accion,
+                    'accion_label' => $log->accion_label,
+                    'accion_color' => $log->accion_color,
+                    'accion_icon' => $log->accion_icon,
+                    'usuario' => $log->usuario->name ?? 'Sistema',
+                    'detalle' => $log->detalle,
+                    'fecha' => $log->created_at->format('d/m/Y h:i:s A'),
+                    'fecha_relativa' => $log->created_at->diffForHumans(),
+                ];
+            });
+
+        return response()->json($logs);
+    }
+
+    /**
+     * Buscar clientes para el cambio de cliente en edición
+     */
+    public function buscarClientes(Request $request)
+    {
+        $search = $request->get('search', '');
+
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $query = Cliente::where('activo', true)
+            ->where(function ($q) use ($search) {
+                $q->where('nombre_contacto', 'like', "%{$search}%")
+                  ->orWhere('razon_social', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nit', 'like', "%{$search}%");
+            });
+
+        // Vendedores solo ven sus clientes
+        $user = auth()->user();
+        if ($user->hasRole('vendedor') && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
+            $query->where('vendedor_id', $user->id);
+        }
+
+        $clientes = $query->with('listaPrecio')
+            ->limit(20)
+            ->get()
+            ->map(function ($cliente) {
+                return [
+                    'id' => $cliente->id,
+                    'nombre_contacto' => $cliente->nombre_contacto,
+                    'razon_social' => $cliente->razon_social,
+                    'email' => $cliente->email,
+                    'nit' => $cliente->nit,
+                    'lista_precio' => $cliente->listaPrecio?->nombre ?? 'Sin lista',
+                ];
+            });
+
+        return response()->json($clientes);
     }
 }

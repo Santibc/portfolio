@@ -9,6 +9,7 @@ use App\Models\ItemSolicitudCotizacion;
 use App\Models\Producto;
 use App\Models\SolicitudCotizacion;
 use App\Models\HistorialEstadoSolicitud;
+use App\Models\LogSolicitudCotizacion;
 use App\Models\VarianteProducto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -141,6 +142,33 @@ class CotizacionService
             return $resultado;
         }
 
+        // Snapshot del estado anterior para el log
+        $estadoAnterior = [
+            'cliente_id' => $solicitud->cliente_id,
+            'cliente_nombre' => $solicitud->cliente->nombre_contacto ?? '',
+            'valor_flete' => $solicitud->valor_flete,
+            'descuento_total' => $solicitud->descuento_total,
+            'porcentaje_iva' => $solicitud->porcentaje_iva,
+            'notas_cliente' => $solicitud->notas_cliente,
+            'observaciones_vendedor' => $solicitud->observaciones_vendedor,
+            'forma_pago_factura' => $solicitud->forma_pago_factura,
+            'fecha_vencimiento' => $solicitud->fecha_vencimiento ? (string) $solicitud->fecha_vencimiento : null,
+            'monto_total' => $solicitud->monto_total,
+        ];
+
+        $itemsAnteriores = $solicitud->items->map(function ($item) {
+            return [
+                'producto_id' => $item->producto_id,
+                'variante_producto_id' => $item->variante_producto_id,
+                'cantidad' => $item->cantidad,
+                'precio_unitario' => (float) $item->precio_unitario,
+                'referencia_producto' => $item->referencia_producto,
+                'nombre_producto' => $item->nombre_producto,
+                'info_variante' => $item->info_variante,
+                'observacion' => $item->observacion,
+            ];
+        })->toArray();
+
         DB::beginTransaction();
 
         try {
@@ -153,11 +181,18 @@ class CotizacionService
                 );
             }
 
+            // Manejar cambio de cliente
+            if (isset($datos['cliente_id']) && $datos['cliente_id'] != $solicitud->cliente_id) {
+                $cliente = Cliente::with('listaPrecio')->findOrFail($datos['cliente_id']);
+                $solicitud->cliente_id = $datos['cliente_id'];
+            } else {
+                $cliente = $solicitud->cliente;
+            }
+
             // Eliminar items actuales
             $solicitud->items()->delete();
 
             // Crear nuevos items
-            $cliente = $solicitud->cliente;
             $montoTotal = 0;
 
             foreach ($datos['items'] as $itemData) {
@@ -191,6 +226,7 @@ class CotizacionService
 
             // Actualizar solicitud
             $solicitud->update([
+                'cliente_id' => $solicitud->cliente_id,
                 'monto_total' => max(0, $montoTotal),
                 'valor_flete' => $datos['valor_flete'] ?? $solicitud->valor_flete,
                 'descuento_total' => $datos['descuento_total'] ?? $solicitud->descuento_total,
@@ -213,6 +249,9 @@ class CotizacionService
                 }
             }
 
+            // Registrar log de cambios
+            $this->registrarLogEdicion($solicitud, $estadoAnterior, $itemsAnteriores, $cliente);
+
             $resultado['solicitud'] = $solicitud->fresh(['items', 'cliente', 'reservas']);
 
             DB::commit();
@@ -225,6 +264,179 @@ class CotizacionService
         }
 
         return $resultado;
+    }
+
+    /**
+     * Registrar log detallado de los cambios realizados en una edición
+     */
+    private function registrarLogEdicion(
+        SolicitudCotizacion $solicitud,
+        array $estadoAnterior,
+        array $itemsAnteriores,
+        Cliente $clienteActual
+    ): void {
+        $cambios = [];
+
+        // Comparar cambio de cliente
+        if ($estadoAnterior['cliente_id'] != $solicitud->cliente_id) {
+            $cambios[] = [
+                'campo' => 'Cliente',
+                'anterior' => $estadoAnterior['cliente_nombre'],
+                'nuevo' => $clienteActual->nombre_contacto,
+            ];
+        }
+
+        // Comparar campos escalares
+        $camposComparar = [
+            'valor_flete' => 'Flete',
+            'descuento_total' => 'Descuento',
+            'porcentaje_iva' => 'IVA %',
+            'notas_cliente' => 'Notas del cliente',
+            'observaciones_vendedor' => 'Observaciones vendedor',
+            'forma_pago_factura' => 'Forma de pago',
+        ];
+
+        foreach ($camposComparar as $campo => $label) {
+            $valorAnterior = $estadoAnterior[$campo];
+            $valorNuevo = $solicitud->{$campo};
+
+            // Normalizar para comparación
+            if (is_numeric($valorAnterior) || is_numeric($valorNuevo)) {
+                $valorAnterior = (float) ($valorAnterior ?? 0);
+                $valorNuevo = (float) ($valorNuevo ?? 0);
+            }
+
+            if ($valorAnterior != $valorNuevo) {
+                $cambios[] = [
+                    'campo' => $label,
+                    'anterior' => $estadoAnterior[$campo] ?? '-',
+                    'nuevo' => $solicitud->{$campo} ?? '-',
+                ];
+            }
+        }
+
+        // Comparar monto total
+        if ((float) $estadoAnterior['monto_total'] != (float) $solicitud->monto_total) {
+            $cambios[] = [
+                'campo' => 'Monto total',
+                'anterior' => number_format((float) $estadoAnterior['monto_total'], 2),
+                'nuevo' => number_format((float) $solicitud->monto_total, 2),
+            ];
+        }
+
+        // Comparar items
+        $itemsNuevos = $solicitud->items()->get()->map(function ($item) {
+            return [
+                'producto_id' => $item->producto_id,
+                'variante_producto_id' => $item->variante_producto_id,
+                'cantidad' => $item->cantidad,
+                'precio_unitario' => (float) $item->precio_unitario,
+                'referencia_producto' => $item->referencia_producto,
+                'nombre_producto' => $item->nombre_producto,
+                'info_variante' => $item->info_variante,
+                'observacion' => $item->observacion,
+            ];
+        })->toArray();
+
+        // Indexar por clave compuesta producto_id-variante_id
+        $indexAnterior = [];
+        foreach ($itemsAnteriores as $item) {
+            $key = $item['producto_id'] . '-' . ($item['variante_producto_id'] ?? 'null');
+            $indexAnterior[$key] = $item;
+        }
+
+        $indexNuevo = [];
+        foreach ($itemsNuevos as $item) {
+            $key = $item['producto_id'] . '-' . ($item['variante_producto_id'] ?? 'null');
+            $indexNuevo[$key] = $item;
+        }
+
+        $itemsAgregados = [];
+        $itemsEliminados = [];
+        $itemsModificados = [];
+
+        // Items eliminados
+        foreach ($indexAnterior as $key => $item) {
+            if (!isset($indexNuevo[$key])) {
+                $itemsEliminados[] = [
+                    'referencia' => $item['referencia_producto'],
+                    'producto' => $item['nombre_producto'],
+                    'variante' => $item['info_variante'] ?: '-',
+                    'cantidad' => $item['cantidad'],
+                    'precio' => $item['precio_unitario'],
+                ];
+            }
+        }
+
+        // Items agregados y modificados
+        foreach ($indexNuevo as $key => $item) {
+            if (!isset($indexAnterior[$key])) {
+                $itemsAgregados[] = [
+                    'referencia' => $item['referencia_producto'],
+                    'producto' => $item['nombre_producto'],
+                    'variante' => $item['info_variante'] ?: '-',
+                    'cantidad' => $item['cantidad'],
+                    'precio' => $item['precio_unitario'],
+                ];
+            } else {
+                // Comparar cambios en el item
+                $anterior = $indexAnterior[$key];
+                $cambiosItem = [];
+
+                if ($anterior['cantidad'] != $item['cantidad']) {
+                    $cambiosItem[] = [
+                        'campo' => 'Cantidad',
+                        'anterior' => $anterior['cantidad'],
+                        'nuevo' => $item['cantidad'],
+                    ];
+                }
+
+                if ($anterior['precio_unitario'] != $item['precio_unitario']) {
+                    $cambiosItem[] = [
+                        'campo' => 'Precio unitario',
+                        'anterior' => number_format($anterior['precio_unitario'], 2),
+                        'nuevo' => number_format($item['precio_unitario'], 2),
+                    ];
+                }
+
+                if (($anterior['observacion'] ?? '') != ($item['observacion'] ?? '')) {
+                    $cambiosItem[] = [
+                        'campo' => 'Observación',
+                        'anterior' => $anterior['observacion'] ?? '-',
+                        'nuevo' => $item['observacion'] ?? '-',
+                    ];
+                }
+
+                if (!empty($cambiosItem)) {
+                    $itemsModificados[] = [
+                        'referencia' => $item['referencia_producto'],
+                        'producto' => $item['nombre_producto'],
+                        'variante' => $item['info_variante'] ?: '-',
+                        'cambios' => $cambiosItem,
+                    ];
+                }
+            }
+        }
+
+        // Solo registrar si hubo cambios
+        $hayCambios = !empty($cambios) || !empty($itemsAgregados) || !empty($itemsEliminados) || !empty($itemsModificados);
+
+        if ($hayCambios) {
+            $detalle = [
+                'cambios' => $cambios,
+                'items_agregados' => $itemsAgregados,
+                'items_eliminados' => $itemsEliminados,
+                'items_modificados' => $itemsModificados,
+            ];
+
+            // Determinar acción principal
+            $accion = LogSolicitudCotizacion::ACCION_EDICION;
+            if ($estadoAnterior['cliente_id'] != $solicitud->cliente_id) {
+                $accion = LogSolicitudCotizacion::ACCION_CAMBIO_CLIENTE;
+            }
+
+            LogSolicitudCotizacion::registrar($solicitud->id, $accion, $detalle);
+        }
     }
 
     /**

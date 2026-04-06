@@ -219,9 +219,11 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturac
 // EDICIÓN/ELIMINACIÓN DE COTIZACIONES (Admin, Facturación e Inventarios)
 // ============================================================
 Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios,vendedor'])->group(function () {
+    Route::get('/solicitudes/buscar-clientes', [SolicitudController::class, 'buscarClientes'])->name('solicitudes.buscar-clientes');
     Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
     Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
     Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
+    Route::get('/solicitudes/{solicitud}/logs', [SolicitudController::class, 'logs'])->name('solicitudes.logs');
 });
 
 // ============================================================
@@ -459,6 +461,8 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
 Route::middleware(['auth', 'role:admin'])
     ->prefix('pdv/ventas')->name('pdv.ventas.')->group(function () {
         Route::post('/{id}/anular', [VentaPdvController::class, 'anular'])->name('anular');
+        Route::get('/{id}/items-devolucion', [VentaPdvController::class, 'itemsParaDevolucion'])->name('items-devolucion');
+        Route::post('/{id}/devolucion-parcial', [VentaPdvController::class, 'devolverParcial'])->name('devolucion-parcial');
     });
 
 // SIIGO Configuración — Admin only

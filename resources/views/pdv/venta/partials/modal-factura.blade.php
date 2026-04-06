@@ -5,7 +5,12 @@
             {{-- Step 1: Ask if client needs invoice --}}
             <div id="facturaStep1">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Factura Electrónica</h5>
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Factura Electrónica
+                        @if(($siigoModoTest ?? false))
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">PRUEBA</span>
+                        @endif
+                    </h5>
                 </div>
                 <div class="modal-body text-center py-4">
                     <p class="mb-4 fs-5">¿El cliente requiere factura electrónica?</p>
@@ -26,7 +31,12 @@
             {{-- Step 2: Fiscal data form --}}
             <div id="facturaStep2" class="d-none">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Datos Fiscales</h5>
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Datos Fiscales
+                        @if(($siigoModoTest ?? false))
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">PRUEBA</span>
+                        @endif
+                    </h5>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="volverStep1()">
                         <i class="bi bi-arrow-left"></i>
                     </button>
@@ -77,7 +87,12 @@
             {{-- Step 3: Processing / Result --}}
             <div id="facturaStep3" class="d-none">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Resultado Facturación</h5>
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-receipt-cutoff me-2"></i>Resultado Facturación
+                        @if(($siigoModoTest ?? false))
+                            <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">PRUEBA</span>
+                        @endif
+                    </h5>
                 </div>
                 <div class="modal-body text-center py-4">
                     {{-- Loading state --}}
@@ -238,9 +253,12 @@
 
         const estado = data.factura?.estado_dian || 'error';
 
+        const esPrueba = data.modo_prueba || false;
+        const prefijoPrueba = esPrueba ? '(PRUEBA) ' : '';
+
         if (estado === 'aprobada') {
             icono.innerHTML = '<i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>';
-            estadoTexto.textContent = 'Factura Aprobada por DIAN';
+            estadoTexto.textContent = prefijoPrueba + 'Factura Aprobada por DIAN';
             estadoTexto.className = 'fw-bold mb-2 text-success';
 
             if (data.factura?.cufe) {
@@ -253,12 +271,12 @@
             }
         } else if (estado === 'pendiente') {
             icono.innerHTML = '<i class="bi bi-clock-fill text-warning" style="font-size: 4rem;"></i>';
-            estadoTexto.textContent = 'Factura Pendiente';
+            estadoTexto.textContent = prefijoPrueba + 'Factura Pendiente';
             estadoTexto.className = 'fw-bold mb-2 text-warning';
             btnReintentar.style.display = '';
         } else {
             icono.innerHTML = '<i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>';
-            estadoTexto.textContent = 'Error en Facturación';
+            estadoTexto.textContent = prefijoPrueba + 'Error en Facturación';
             estadoTexto.className = 'fw-bold mb-2 text-danger';
             btnReintentar.style.display = '';
 
