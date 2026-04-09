@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesAndPermissionsSeeder::class,
             ConfiguracionSistemaSeeder::class,
+            TiposPagoSeeder::class,
             TablaPreciosSeeder::class,
             ClientePredeterminadoSeeder::class,
         ]);

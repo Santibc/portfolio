@@ -6,6 +6,7 @@
 <div class="container-fluid py-4">
     {{-- Page Header --}}
     <x-sinden.page-header title="Ordenes de Trabajo" description="Buscar y gestionar ordenes">
+        @hasanyrole('Administrador|Recepcion')
         <x-slot name="actions">
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
                 href="{{ route('recepcion.ordenes.export-excel') }}">Excel</x-sinden.button>
@@ -35,6 +36,7 @@
             <x-sinden.button variant="primary" icon="bi bi-plus-lg"
                 href="{{ route('recepcion.ordenes.crear') }}">Nueva Orden</x-sinden.button>
         </x-slot>
+        @endhasanyrole
     </x-sinden.page-header>
 
     {{-- Summary Cards --}}
@@ -125,10 +127,10 @@
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Creacion</th>
-                            <th>Entrega</th>
-                            <th>Trabajo</th>
-                            <th>Entrega</th>
-                            <th>Pago</th>
+                            <th>Fecha Entrega</th>
+                            <th>Estado Trabajo</th>
+                            <th>Estado Entrega</th>
+                            <th>Estado Pago</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Saldo</th>
                             <th class="text-end">Acciones</th>
@@ -213,7 +215,7 @@ $(function() {
         buttons: [
             { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
         ],
-        order: [[1, 'desc']],
+        order: [[3, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
         language: {

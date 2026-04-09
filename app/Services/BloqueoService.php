@@ -131,11 +131,23 @@ class BloqueoService
 
         $bloqueador = User::find($orden->bloqueada_por);
 
-        // Verificar si hay notificacion de forzar cierre pendiente
+        $timeoutForzar = ConfiguracionSistema::get('timeout_forzar_cierre', 60);
+
+        // Limpiar notificaciones de forzar_cierre obsoletas (que quedaron colgadas
+        // sin marcarse como leidas porque el operario cerro la pagina antes del countdown).
+        Notificacion::where('usuario_id', $orden->bloqueada_por)
+            ->where('tipo', 'forzar_cierre')
+            ->where('leida', false)
+            ->where('url', 'like', "%ordenes/{$orden->id}%")
+            ->where('created_at', '<', now()->subSeconds($timeoutForzar))
+            ->update(['leida' => true, 'leida_en' => now()]);
+
+        // Verificar si hay notificacion de forzar cierre pendiente y vigente
         $forceClose = Notificacion::where('usuario_id', $orden->bloqueada_por)
             ->where('tipo', 'forzar_cierre')
             ->where('leida', false)
             ->where('url', 'like', "%ordenes/{$orden->id}%")
+            ->where('created_at', '>=', now()->subSeconds($timeoutForzar))
             ->latest()
             ->first();
 
@@ -149,7 +161,6 @@ class BloqueoService
         ];
 
         if ($forceClose) {
-            $timeoutForzar = ConfiguracionSistema::get('timeout_forzar_cierre', 60);
             $segundosTranscurridos = now()->diffInSeconds($forceClose->created_at);
             $segundosRestantes = max(0, $timeoutForzar - $segundosTranscurridos);
 

@@ -411,7 +411,12 @@ class OperarioController extends Controller
     public function subirFoto(Request $request, OrdenPieza $pieza)
     {
         $request->validate([
-            'foto' => 'required|image|max:5120', // Max 5MB
+            'foto' => 'required|image|max:30720', // Max 30MB
+        ], [
+            'foto.required' => 'Debe seleccionar una foto.',
+            'foto.image' => 'El archivo debe ser una imagen (JPG, PNG, etc.).',
+            'foto.max' => 'La foto no puede pesar mas de 30 MB.',
+            'foto.uploaded' => 'La foto no se pudo cargar. Verifica el tamano y vuelve a intentarlo.',
         ]);
 
         $user = auth()->user();

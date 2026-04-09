@@ -13,6 +13,7 @@ use App\Models\OrdenComentario;
 use App\Models\OrdenItem;
 use App\Models\OrdenPieza;
 use App\Models\Pago;
+use App\Models\TipoPago;
 use App\Models\User;
 use App\Services\NotificacionService;
 use App\Services\OrdenEstadoService;
@@ -329,22 +330,27 @@ class OrdenController extends Controller
                     return '<span class="' . $class . '">$' . number_format($o->saldo, 0, ',', '.') . '</span>';
                 })
                 ->addColumn('acciones', function ($o) {
+                    $puedeEscribir = auth()->user()->hasAnyRole(['Administrador', 'Recepcion']);
                     $viewUrl = route('recepcion.ordenes.show', $o);
-                    $editUrl = route('recepcion.ordenes.edit', $o);
 
                     $html = '<div class="action-buttons justify-content-end">';
                     $html .= '<a href="' . $viewUrl . '" class="action-btn view" title="Ver"><i class="bi bi-eye"></i></a>';
 
-                    if ($o->estado_trabajo !== 'anulada') {
+                    if ($puedeEscribir && $o->estado_trabajo !== 'anulada') {
+                        $editUrl = route('recepcion.ordenes.edit', $o);
                         $html .= '<a href="' . $editUrl . '" class="action-btn edit" title="Editar"><i class="bi bi-pencil"></i></a>';
                     }
 
-                    $html .= '<button type="button" class="action-btn" title="Copiar" onclick="copiarOrden(' . $o->id . ')"><i class="bi bi-copy"></i></button>';
+                    if ($puedeEscribir) {
+                        $html .= '<button type="button" class="action-btn" title="Copiar" onclick="copiarOrden(' . $o->id . ')"><i class="bi bi-copy"></i></button>';
+                    }
 
                     if (!in_array($o->estado_trabajo, ['anulada', 'borrador'])) {
                         $pdfUrl = route('recepcion.ordenes.pdf', $o);
                         $html .= '<a href="' . $pdfUrl . '" class="action-btn" title="PDF" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>';
-                        $html .= '<button type="button" class="action-btn delete" title="Anular" onclick="anularOrden(' . $o->id . ', \'' . addslashes($o->numero_orden) . '\')"><i class="bi bi-x-circle"></i></button>';
+                        if ($puedeEscribir) {
+                            $html .= '<button type="button" class="action-btn delete" title="Anular" onclick="anularOrden(' . $o->id . ', \'' . addslashes($o->numero_orden) . '\')"><i class="bi bi-x-circle"></i></button>';
+                        }
                     }
 
                     $html .= '</div>';
@@ -744,9 +750,10 @@ class OrdenController extends Controller
             return response()->json(['success' => false, 'message' => 'No se puede agregar pago a esta orden.'], 422);
         }
 
+        $codigosValidos = TipoPago::activos()->pluck('codigo')->toArray();
         $request->validate([
             'monto' => 'required|numeric|min:0.01',
-            'metodo_pago' => 'required|in:efectivo,nequi,transferencia,tarjeta,otro',
+            'metodo_pago' => ['required', \Illuminate\Validation\Rule::in($codigosValidos)],
             'referencia_pago' => 'nullable|string|max:255',
         ]);
 

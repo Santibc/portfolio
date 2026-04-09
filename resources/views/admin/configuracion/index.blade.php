@@ -110,6 +110,148 @@
             </div>
         </div>
 
+        {{-- ═══ SECCION: TIPOS DE PAGO ═══ --}}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#seccion-tipos-pago" role="button">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="bi bi-wallet2 me-2 text-purple"></i>Tipos de Pago
+                    <i class="bi bi-chevron-down float-end"></i>
+                </h6>
+            </div>
+            <div class="collapse show" id="seccion-tipos-pago">
+                <div class="card-body px-4 pb-4 pt-2">
+                    <p class="text-muted small mb-3">
+                        Define los metodos de pago disponibles en el sistema. Los tipos desactivados no aparecen en nuevos pagos pero los pagos historicos siguen mostrando su nombre/icono/color.
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:40px">#</th>
+                                    <th>Codigo</th>
+                                    <th>Nombre</th>
+                                    <th class="text-center">Vista previa</th>
+                                    <th class="text-center" style="width:80px">Activo</th>
+                                    <th class="text-end" style="width:130px">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($tiposPago as $tp)
+                                <tr @class(['table-warning'=>!$tp->activo])>
+                                    <td>{{ $tp->orden }}</td>
+                                    <td><code>{{ $tp->codigo }}</code></td>
+                                    <td>{{ $tp->nombre }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-{{ $tp->color }}-subtle text-{{ $tp->color }}">
+                                            <i class="bi {{ $tp->icono }} me-1"></i>{{ $tp->nombre }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if($tp->activo)
+                                            <span class="badge bg-success-subtle text-success">Si</span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary">No</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                @click='abrirEditarTipo(@json($tp))' title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        @if($tp->activo)
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                    @click="desactivarTipo({{ $tp->id }}, '{{ $tp->nombre }}')" title="Desactivar">
+                                                <i class="bi bi-eye-slash"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-outline-success btn-sm"
+                                                    @click="reactivarTipo({{ $tp->id }})" title="Reactivar">
+                                                <i class="bi bi-arrow-clockwise"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="6" class="text-center text-muted py-3">No hay tipos de pago configurados.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-sm btn-primary" @click="abrirNuevoTipo()">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo Tipo de Pago
+                        </button>
+                    </div>
+
+                    {{-- Modal Crear/Editar --}}
+                    <div class="modal fade" id="modalTipoPago" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" x-text="tipoForm.id ? 'Editar Tipo de Pago' : 'Nuevo Tipo de Pago'"></h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Codigo</label>
+                                            <input type="text" class="form-control" x-model="tipoForm.codigo" placeholder="ej: daviplata" maxlength="50" :disabled="tipoForm.id">
+                                            <small class="text-muted">Solo minusculas, numeros y _</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Nombre</label>
+                                            <input type="text" class="form-control" x-model="tipoForm.nombre" placeholder="ej: Daviplata" maxlength="100">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Icono (Bootstrap Icons)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi" :class="tipoForm.icono"></i></span>
+                                                <input type="text" class="form-control" x-model="tipoForm.icono" placeholder="bi-cash">
+                                            </div>
+                                            <small class="text-muted">Ej: bi-cash, bi-phone, bi-bank, bi-credit-card, bi-wallet2</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Color</label>
+                                            <select class="form-select" x-model="tipoForm.color">
+                                                <option value="success">Verde (success)</option>
+                                                <option value="primary">Azul (primary)</option>
+                                                <option value="info">Cyan (info)</option>
+                                                <option value="warning">Amarillo (warning)</option>
+                                                <option value="danger">Rojo (danger)</option>
+                                                <option value="secondary">Gris (secondary)</option>
+                                                <option value="purple">Morado (purple)</option>
+                                                <option value="dark">Negro (dark)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Orden</label>
+                                            <input type="number" class="form-control" x-model="tipoForm.orden" min="0">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Vista previa</label>
+                                            <div>
+                                                <span class="badge" :class="'bg-' + tipoForm.color + '-subtle text-' + tipoForm.color" style="font-size:1rem;">
+                                                    <i class="bi me-1" :class="tipoForm.icono"></i>
+                                                    <span x-text="tipoForm.nombre || 'Vista previa'"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" class="btn btn-primary" @click="guardarTipo()" :disabled="guardandoTipo">
+                                        <span x-show="!guardandoTipo">Guardar</span>
+                                        <span x-show="guardandoTipo"><i class="bi bi-hourglass-split me-1"></i>Guardando...</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- ═══ SECCION 3: SISTEMA / OPERARIO ═══ --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#seccion-sistema" role="button">
@@ -308,6 +450,10 @@ function configuracionApp() {
         // Otros
         cliente_predeterminado_id: @json($configs['cliente_predeterminado_id']->valor ?? ''),
 
+        // ─── Tipos de Pago ───────────────────────────
+        tipoForm: { id: null, codigo: '', nombre: '', icono: 'bi-cash', color: 'secondary', orden: 0 },
+        guardandoTipo: false,
+
         // ─── Tags: Nequi ─────────────────────────────
         agregarNequi() {
             var v = this.nuevoNequi.trim();
@@ -343,6 +489,101 @@ function configuracionApp() {
         },
         quitarCalibre(i) {
             this.calibres_disponibles.splice(i, 1);
+        },
+
+        // ─── Tipos de Pago ───────────────────────────
+        abrirNuevoTipo() {
+            this.tipoForm = { id: null, codigo: '', nombre: '', icono: 'bi-cash', color: 'secondary', orden: 0 };
+            new bootstrap.Modal(document.getElementById('modalTipoPago')).show();
+        },
+        abrirEditarTipo(tipo) {
+            this.tipoForm = {
+                id: tipo.id,
+                codigo: tipo.codigo,
+                nombre: tipo.nombre,
+                icono: tipo.icono,
+                color: tipo.color,
+                orden: tipo.orden,
+            };
+            new bootstrap.Modal(document.getElementById('modalTipoPago')).show();
+        },
+        guardarTipo() {
+            this.guardandoTipo = true;
+            var url, method;
+            if (this.tipoForm.id) {
+                url = '{{ url("admin/configuracion/tipos-pago") }}/' + this.tipoForm.id;
+                method = 'PUT';
+            } else {
+                url = '{{ route("admin.configuracion.tipos-pago.store") }}';
+                method = 'POST';
+            }
+            $.ajax({
+                url: url,
+                method: method,
+                data: JSON.stringify({
+                    codigo: this.tipoForm.codigo,
+                    nombre: this.tipoForm.nombre,
+                    icono: this.tipoForm.icono,
+                    color: this.tipoForm.color,
+                    orden: parseInt(this.tipoForm.orden) || 0,
+                }),
+                contentType: 'application/json',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                success: (data) => {
+                    this.guardandoTipo = false;
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                    setTimeout(() => location.reload(), 800);
+                },
+                error: (xhr) => {
+                    this.guardandoTipo = false;
+                    var msg = 'Error al guardar el tipo de pago.';
+                    if (xhr.responseJSON?.errors) {
+                        msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                    } else if (xhr.responseJSON?.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                }
+            });
+        },
+        desactivarTipo(id, nombre) {
+            Swal.fire({
+                title: 'Desactivar tipo de pago?',
+                text: '"' + nombre + '" no aparecera en nuevos pagos. Los pagos historicos seguiran mostrandose correctamente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Si, desactivar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: '{{ url("admin/configuracion/tipos-pago") }}/' + id,
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    success: (data) => {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                        setTimeout(() => location.reload(), 800);
+                    },
+                    error: (xhr) => {
+                        Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al desactivar.' });
+                    }
+                });
+            });
+        },
+        reactivarTipo(id) {
+            $.ajax({
+                url: '{{ url("admin/configuracion/tipos-pago") }}/' + id + '/restore',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                success: (data) => {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                    setTimeout(() => location.reload(), 800);
+                },
+                error: (xhr) => {
+                    Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al reactivar.' });
+                }
+            });
         },
 
         // ─── Logo ────────────────────────────────────

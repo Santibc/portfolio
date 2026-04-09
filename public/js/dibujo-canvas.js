@@ -47,6 +47,8 @@
     var pinchStartDist = 0;
     var pinchStartZoom = 1;
     var pinchLastCenter = null;
+    var ignoreNextPathCreated = 0; // descartar path:created generado durante pinch
+    var lastPinchEndedAt = 0;
 
     // =============================================
     // INICIALIZACION
@@ -227,7 +229,11 @@
     function bindCanvasEvents() {
         // --- MOUSE DOWN ---
         fabricCanvas.on('mouse:down', function(opt) {
+            // Si hay pinch activo, ignorar cualquier mouse:down sintetizado por touch
+            if (pinchActive) return;
             var e = opt.e;
+            // Si es un touch event con mas de 1 dedo, tampoco iniciar nada
+            if (e && e.touches && e.touches.length > 1) return;
             var pt = getEventPoint(e);
 
             // Pan con Alt+click, boton medio, herramienta pan, o spacebar
@@ -459,7 +465,16 @@
         });
 
         // --- PATH CREATED (free draw) ---
-        fabricCanvas.on('path:created', function() {
+        fabricCanvas.on('path:created', function(opt) {
+            // Si veniamos de un pinch, descartar el path generado por el dedo inicial
+            if (ignoreNextPathCreated > 0) {
+                ignoreNextPathCreated--;
+                if (opt && opt.path) {
+                    fabricCanvas.remove(opt.path);
+                    fabricCanvas.requestRenderAll();
+                }
+                return;
+            }
             saveState();
         });
 
@@ -647,8 +662,33 @@
             if (e.touches.length === 2) {
                 pinchActive = true;
                 // Deshabilitar dibujo durante pinch
-                if (fabricCanvas.isDrawingMode) {
+                var wasDrawing = fabricCanvas.isDrawingMode;
+                if (wasDrawing) {
                     fabricCanvas.isDrawingMode = false;
+                }
+                // Abortar cualquier trazo en curso del primer dedo:
+                // - vaciar puntos del brush
+                // - limpiar la capa contextTop (tinta provisional)
+                // - marcar para descartar el proximo path:created
+                var brush = fabricCanvas.freeDrawingBrush;
+                if (brush) {
+                    brush._points = [];
+                    if (typeof brush._reset === 'function') {
+                        try { brush._reset(); } catch(_) {}
+                    }
+                }
+                if (fabricCanvas.contextTop) {
+                    fabricCanvas.clearContext(fabricCanvas.contextTop);
+                }
+                if (wasDrawing) {
+                    ignoreNextPathCreated = 1;
+                }
+                // Cancelar shape drawing en curso (linea/rect/elipse/flecha)
+                if (isShapeDrawing && activeShape) {
+                    fabricCanvas.remove(activeShape);
+                    isShapeDrawing = false;
+                    activeShape = null;
+                    fabricCanvas.requestRenderAll();
                 }
                 pinchStartDist = getTouchDistance(e.touches[0], e.touches[1]);
                 pinchStartZoom = fabricCanvas.getZoom();
@@ -694,10 +734,18 @@
         upperCanvas.addEventListener('touchend', function(e) {
             if (pinchActive && e.touches.length < 2) {
                 pinchActive = false;
-                // Restaurar modo dibujo si estamos en pencil
-                if (currentTool === 'pencil') {
+                lastPinchEndedAt = Date.now();
+                // Restaurar modo dibujo si estamos en pencil o white-brush
+                if (currentTool === 'pencil' || currentTool === 'white-brush') {
                     fabricCanvas.isDrawingMode = true;
                 }
+                // Limpieza de seguridad: si quedo un flag huerfano, resetearlo
+                // tras un breve delay para no descartar trazos legitimos posteriores
+                setTimeout(function() {
+                    if (!pinchActive && Date.now() - lastPinchEndedAt >= 800) {
+                        ignoreNextPathCreated = 0;
+                    }
+                }, 1000);
             }
         });
     }

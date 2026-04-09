@@ -107,11 +107,9 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Metodo de Pago *</label>
                     <select class="form-select" id="pagoMetodo" style="min-height:48px" required>
-                        <option value="efectivo">Efectivo</option>
-                        <option value="nequi">Nequi</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="tarjeta">Tarjeta</option>
-                        <option value="otro">Otro</option>
+                        @foreach(($tiposPago ?? collect()) as $tp)
+                            <option value="{{ $tp->codigo }}">{{ $tp->nombre }}</option>
+                        @endforeach
                     </select>
                 </div>
 

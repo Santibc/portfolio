@@ -15,7 +15,11 @@ var wizardState = {
     autoSaveTimer: null,
     itemCounter: 0,
     piezaCounter: 0,
-    pagoCounter: 0
+    pagoCounter: 0,
+    isSaving: false,
+    pendingSave: false,
+    autoSaveDebounceTimer: null,
+    avisoSinClienteMostrado: false
 };
 
 // ==========================================
@@ -26,33 +30,8 @@ $(function() {
     initFirmaCanvas();
     initDibujoCanvas();
     initAutoSave();
+    initAutoSaveOnEdit();
     initStepWatchers();
-
-    // Recuperar borrador no guardado (corte de luz, cierre inesperado)
-    if (window.SindenConexion) {
-        var wizardKey = wizardState.ordenId || 'new';
-        var rw = SindenConexion.loadModuleData('wizard', wizardKey);
-        if (rw && rw.formData) {
-            var fecha = new Date(rw.timestamp).toLocaleString('es-CO', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-            Swal.fire({
-                title: 'Borrador recuperado',
-                html: 'Se encontro un borrador no guardado del <b>' + fecha + '</b>. ¿Desea restaurarlo?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Restaurar',
-                cancelButtonText: 'Descartar',
-                confirmButtonColor: '#4A7C59'
-            }).then(function(result) {
-                if (result.isConfirmed) {
-                    guardarOrden(true);
-                }
-                SindenConexion.clearModuleData('wizard', wizardKey);
-            });
-        }
-    }
 
     // Cerrar dropdown de autocomplete al hacer clic fuera
     $(document).on('click', function(e) {
@@ -83,7 +62,46 @@ $(function() {
     $(document).on('focus click', '.pieza-material', function() {
         buscarMaterialPieza(this);
     });
+
+    // Forzar enteros en cantidad de piezas (no decimales)
+    $(document).on('input', '.pieza-cantidad', function() {
+        var v = String(this.value || '').replace(/[.,].*$/, '').replace(/[^0-9]/g, '');
+        if (v !== this.value) this.value = v;
+    });
+    $(document).on('keydown', '.pieza-cantidad', function(e) {
+        // Bloquear tecla de punto, coma y "e"
+        if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+        }
+    });
+    $(document).on('blur', '.pieza-cantidad', function() {
+        var n = parseInt(this.value, 10);
+        if (isNaN(n) || n < 1) n = 1;
+        this.value = n;
+        autoExpandCantidad(this);
+    });
+
+    // Auto-expandir inputs de cantidad segun contenido
+    $(document).on('input change', '.cantidad-auto-expand', function() {
+        autoExpandCantidad(this);
+    });
 });
+
+// Ajusta dinamicamente el ancho del input segun el largo del valor
+function autoExpandCantidad(input) {
+    if (!input) return;
+    var len = String(input.value || '').length;
+    // Ancho minimo 60px, ~10px por caracter + padding
+    var w = Math.max(60, len * 11 + 24);
+    input.style.width = w + 'px';
+}
+
+// Aplica auto-expand a todos los inputs de cantidad existentes
+function aplicarAutoExpandCantidades() {
+    $('.cantidad-auto-expand').each(function() {
+        autoExpandCantidad(this);
+    });
+}
 
 // ==========================================
 // Step Watchers (completado de secciones)
@@ -202,6 +220,7 @@ function seleccionarCliente(id, nombre, celular, correo) {
 
     $('#clienteSeleccionado').html(infoHtml).slideDown(200);
     marcarStepCompletado(1);
+    triggerAutoSave('cliente');
 }
 
 function limpiarCliente() {
@@ -252,7 +271,8 @@ function crearClienteInline() {
 // ==========================================
 // SECCION 2: Items
 // ==========================================
-function agregarFilaItem() {
+function agregarFilaItem(opts) {
+    opts = opts || {};
     wizardState.itemCounter++;
     var idx = wizardState.itemCounter;
 
@@ -263,12 +283,12 @@ function agregarFilaItem() {
         + '    <input type="text" class="form-control form-control-sm item-codigo" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarItemCatalogo(this)">'
         + '    <button type="button" class="btn btn-sm btn-outline-secondary border-0 btn-desvincular-item p-0" onclick="desvincularItemCatalogo(' + idx + ')" style="display:none;min-width:24px" title="Desvincular del catalogo"><i class="bi bi-x-lg"></i></button>'
         + '  </div>'
-        + '  <div class="item-autocomplete-results list-group shadow-sm" id="itemResults_' + idx + '" style="display:none; position:absolute; z-index:1050; width:100%;"></div>'
+        + '  <div class="item-autocomplete-results list-group shadow-sm" id="itemResults_' + idx + '" style="display:none; position:absolute; z-index:1050; width:100%; max-height:240px; overflow-y:auto;"></div>'
         + '  <input type="hidden" class="item-catalogo-id" value="">'
         + '  <input type="hidden" class="item-categoria" value="servicio">'
         + '</td>'
         + '<td><input type="text" class="form-control form-control-sm item-descripcion" placeholder="Descripcion del item"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad" value="1" min="0.01" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:60px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-end item-precio" value="0" min="0" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input item-iva-check" checked onchange="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-end fw-semibold item-subtotal-display">$0</td>'
@@ -279,8 +299,13 @@ function agregarFilaItem() {
     $('#itemsVacio').hide();
     $('#panelTotales').show();
     renumerarFilasItems();
-    // Focus en el campo codigo de la nueva fila
-    $('#itemRow_' + idx + ' .item-codigo').focus();
+    // Focus en el campo codigo de la nueva fila (omitir en precarga modo edicion)
+    if (!opts.skipFocus) {
+        $('#itemRow_' + idx + ' .item-codigo').focus();
+    }
+    if (!opts.skipAutoSave) {
+        triggerAutoSave('item-add');
+    }
 }
 
 function eliminarFilaItem(idx) {
@@ -291,6 +316,7 @@ function eliminarFilaItem(idx) {
         $('#itemsVacio').show();
         $('#panelTotales').hide();
     }
+    triggerAutoSave('item-del');
 }
 
 function contarFilasItems() {
@@ -346,6 +372,7 @@ function seleccionarItemCatalogo(idx, item) {
     $row.find('.btn-desvincular-item').show();
     $('#itemResults_' + idx).hide();
     calcularTotalFila(idx);
+    triggerAutoSave('item-catalogo');
 }
 
 function desvincularItemCatalogo(idx) {
@@ -406,6 +433,7 @@ function piezaSubirArchivo(piezaIdx) {
     var input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/jpeg,image/png,image/webp';
+    input.multiple = true;
     input.style.display = 'none';
     input.onchange = function() { subirBosquejoParaPieza(input, 'archivo_local', piezaIdx); };
     document.body.appendChild(input);
@@ -573,30 +601,98 @@ function subirBosquejoParaPieza(fileInput, tipoOrigen, piezaIdx) {
     var files = fileInput.files;
     if (!files || files.length === 0) return;
 
-    var formData = new FormData();
-    formData.append('archivo', files[0]);
-    formData.append('tipo_origen', tipoOrigen || 'archivo_local');
-    formData.append('nombre', files[0].name.replace(/\.[^/.]+$/, ''));
-    if (wizardState.ordenId) formData.append('orden_id', wizardState.ordenId);
+    var total = files.length;
 
-    $.ajax({
-        url: ROUTES.subirBosquejo,
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': WIZARD_CONFIG.csrfToken },
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            if (response.success) {
-                var bosquejoIndex = wizardState.bosquejos.length;
-                wizardState.bosquejos.push(response.bosquejo);
-                vincularBosquejoAPieza(piezaIdx, bosquejoIndex);
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success',
-                    title: 'Bosquejo agregado', showConfirmButton: false, timer: 2000 });
+    // Caso simple: 1 archivo (comportamiento original)
+    if (total === 1) {
+        var formData = new FormData();
+        formData.append('archivo', files[0]);
+        formData.append('tipo_origen', tipoOrigen || 'archivo_local');
+        formData.append('nombre', files[0].name.replace(/\.[^/.]+$/, ''));
+        if (wizardState.ordenId) formData.append('orden_id', wizardState.ordenId);
+
+        $.ajax({
+            url: ROUTES.subirBosquejo,
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': WIZARD_CONFIG.csrfToken },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    var bosquejoIndex = wizardState.bosquejos.length;
+                    wizardState.bosquejos.push(response.bosquejo);
+                    vincularBosquejoAPieza(piezaIdx, bosquejoIndex);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success',
+                        title: 'Bosquejo agregado', showConfirmButton: false, timer: 2000 });
+                }
+            },
+            error: function(xhr) { handleAjaxError(xhr, 'subir el bosquejo'); }
+        });
+        fileInput.value = '';
+        return;
+    }
+
+    // Caso multi-archivo: subir en paralelo y mantener el orden de seleccion
+    var resultados = new Array(total);
+    var pendientes = total;
+    var errores = 0;
+
+    function procesarFinal() {
+        // Procesa los bosquejos en orden: el primero va a piezaIdx, los demas crean piezas nuevas
+        for (var i = 0; i < total; i++) {
+            var bosquejo = resultados[i];
+            if (!bosquejo) continue;
+            if (i === 0) {
+                var idx = wizardState.bosquejos.length;
+                wizardState.bosquejos.push(bosquejo);
+                vincularBosquejoAPieza(piezaIdx, idx);
+            } else {
+                agregarPiezaConBosquejo(bosquejo);
             }
-        },
-        error: function(xhr) { handleAjaxError(xhr, 'subir el bosquejo'); }
-    });
+        }
+        var exitos = total - errores;
+        Swal.fire({ toast: true, position: 'top-end',
+            icon: errores === 0 ? 'success' : 'warning',
+            title: exitos + ' bosquejo(s) agregado(s)' + (errores > 0 ? ' (' + errores + ' con error)' : ''),
+            showConfirmButton: false, timer: 2500 });
+    }
+
+    for (var i = 0; i < total; i++) {
+        (function(index) {
+            var file = files[index];
+            var formData = new FormData();
+            formData.append('archivo', file);
+            formData.append('tipo_origen', tipoOrigen || 'archivo_local');
+            formData.append('nombre', file.name.replace(/\.[^/.]+$/, ''));
+            if (wizardState.ordenId) formData.append('orden_id', wizardState.ordenId);
+
+            $.ajax({
+                url: ROUTES.subirBosquejo,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': WIZARD_CONFIG.csrfToken },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response && response.success) {
+                        resultados[index] = response.bosquejo;
+                    } else {
+                        errores++;
+                    }
+                },
+                error: function(xhr) {
+                    errores++;
+                    handleAjaxError(xhr, 'subir el bosquejo "' + file.name + '"');
+                },
+                complete: function() {
+                    pendientes--;
+                    if (pendientes === 0) procesarFinal();
+                }
+            });
+        })(i);
+    }
+
     fileInput.value = '';
 }
 
@@ -619,6 +715,7 @@ function vincularBosquejoAPieza(piezaIdx, bosquejoIndex) {
     // Mostrar nombre del bosquejo debajo de la miniatura
     $row.find('.bosquejo-name-text').text(b.nombre).attr('title', b.nombre);
     $row.find('.bosquejo-name-label').show();
+    triggerAutoSave('bosquejo-vinculado');
 }
 
 function agregarPiezaConBosquejo(bosquejoData) {
@@ -727,7 +824,8 @@ function abrirCamara() {
 
 // --- Funciones de pieza (tabla) ---
 
-function agregarFilaPieza() {
+function agregarFilaPieza(opts) {
+    opts = opts || {};
     wizardState.piezaCounter++;
     var idx = wizardState.piezaCounter;
     var letra = obtenerLetraPieza($('#tbodyPiezas tr').length);
@@ -762,7 +860,7 @@ function agregarFilaPieza() {
         + '</td>'
         + '<td class="text-center text-muted"><span class="pieza-num">' + ($('#tbodyPiezas tr').length + 1) + '</span></td>'
         + '<td><input type="text" class="form-control form-control-sm pieza-nombre" value="' + nombre + '" onchange="generarEspecificacion(' + idx + ')"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-center pieza-cantidad" value="1" min="1" onchange="generarEspecificacion(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center pieza-cantidad cantidad-auto-expand" value="1" min="1" step="1" inputmode="numeric" style="width:60px" onchange="generarEspecificacion(' + idx + ')"></td>'
         + '<td class="position-relative">'
         + '  <input type="text" class="form-control form-control-sm pieza-material" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarMaterialPieza(this)" onchange="generarEspecificacion(' + idx + ')">'
         + '  <div class="material-autocomplete-results list-group shadow-sm" id="materialResults_' + idx + '" style="display:none; position:fixed; z-index:1050; max-height:200px; overflow-y:auto;"></div>'
@@ -780,6 +878,9 @@ function agregarFilaPieza() {
     actualizarVisibilidadOperario();
     renumerarFilasPiezas();
     marcarStepCompletado(2);
+    if (!opts.skipAutoSave) {
+        triggerAutoSave('pieza-add');
+    }
 }
 
 function eliminarFilaPieza(idx) {
@@ -791,6 +892,7 @@ function eliminarFilaPieza(idx) {
         $('#piezasVacio').show();
         desmarcarStep(2);
     }
+    triggerAutoSave('pieza-del');
 }
 
 function renumerarFilasPiezas() {
@@ -888,7 +990,8 @@ function actualizarVisibilidadOperario() {
 // ==========================================
 // SECCION 6: Pagos
 // ==========================================
-function agregarFilaPago() {
+function agregarFilaPago(opts) {
+    opts = opts || {};
     wizardState.pagoCounter++;
     var idx = wizardState.pagoCounter;
 
@@ -902,11 +1005,12 @@ function agregarFilaPago() {
         + '  </div>'
         + '  <div class="col-sm-4">'
         + '    <select class="form-select form-select-sm pago-metodo">'
-        + '      <option value="efectivo">Efectivo</option>'
-        + '      <option value="nequi">Nequi</option>'
-        + '      <option value="transferencia">Transferencia</option>'
-        + '      <option value="tarjeta">Tarjeta</option>'
-        + '      <option value="otro">Otro</option>'
+        + (function () {
+            var tipos = (window.TIPOS_PAGO && window.TIPOS_PAGO.length) ? window.TIPOS_PAGO : [{codigo:'efectivo', nombre:'Efectivo'}];
+            return tipos.map(function (t) {
+                return '<option value="' + t.codigo + '">' + t.nombre + '</option>';
+            }).join('');
+          })()
         + '    </select>'
         + '  </div>'
         + '  <div class="col-sm-3">'
@@ -923,6 +1027,9 @@ function agregarFilaPago() {
     $('#panelSaldo').show();
     recalcularSaldo();
     marcarStepCompletado(6);
+    if (!opts.skipAutoSave) {
+        triggerAutoSave('pago-add');
+    }
 }
 
 function eliminarFilaPago(idx) {
@@ -933,6 +1040,7 @@ function eliminarFilaPago(idx) {
         $('#panelSaldo').hide();
         desmarcarStep(6);
     }
+    triggerAutoSave('pago-del');
 }
 
 function recalcularSaldo() {
@@ -1084,6 +1192,8 @@ function guardarOrden(isAutoSave) {
         $('#btnGuardar').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Guardando...');
     }
 
+    wizardState.isSaving = true;
+
     // Backup en localStorage antes de enviar (proteccion contra corte de luz)
     if (window.SindenConexion) {
         SindenConexion.saveModuleData('wizard', wizardState.ordenId || 'new', {
@@ -1128,6 +1238,11 @@ function guardarOrden(isAutoSave) {
         complete: function() {
             if (!isAutoSave) {
                 $('#btnGuardar').prop('disabled', false).html('<i class="bi bi-save me-1"></i> Guardar Orden');
+            }
+            wizardState.isSaving = false;
+            if (wizardState.pendingSave) {
+                wizardState.pendingSave = false;
+                triggerAutoSave('pending');
             }
         }
     });
@@ -1218,6 +1333,49 @@ function validarParaGenerar(data) {
 // ==========================================
 // Auto-guardado
 // ==========================================
+function triggerAutoSave(motivo) {
+    // Sin cliente: avisar una sola vez y abortar
+    if (!wizardState.clienteId) {
+        if (!wizardState.avisoSinClienteMostrado) {
+            wizardState.avisoSinClienteMostrado = true;
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'info',
+                    title: 'Selecciona un cliente para activar el auto-guardado',
+                    showConfirmButton: false, timer: 3000
+                });
+            }
+        }
+        return;
+    }
+
+    clearTimeout(wizardState.autoSaveDebounceTimer);
+    wizardState.autoSaveDebounceTimer = setTimeout(function() {
+        // Si hay un guardado en curso, encolar uno mas
+        if (wizardState.isSaving) {
+            wizardState.pendingSave = true;
+            return;
+        }
+        // Evitar POST si nada cambio desde el ultimo guardado
+        try {
+            var currentHash = JSON.stringify(recopilarDatosFormulario());
+            if (currentHash === wizardState.lastSavedHash) return;
+        } catch (e) { /* noop */ }
+        guardarOrden(true);
+    }, 600);
+}
+
+function initAutoSaveOnEdit() {
+    // Listeners delegados para edicion de filas existentes y campos globales
+    var selector = '#tbodyItems input, #tbodyItems select, #tbodyItems textarea, '
+        + '#tbodyPiezas input, #tbodyPiezas select, #tbodyPiezas textarea, '
+        + '#pagosContainer input, #pagosContainer select, #pagosContainer textarea, '
+        + '#fecha_entrega, #hora_entrega, #notas, #operario_id';
+    $(document).on('input change', selector, function() {
+        triggerAutoSave('edit');
+    });
+}
+
 function initAutoSave() {
     var interval = WIZARD_CONFIG.autoSaveInterval || 300000; // 5 min default
     var idleTimer = null;

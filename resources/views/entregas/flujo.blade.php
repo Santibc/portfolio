@@ -108,35 +108,42 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
                     <h6 class="mb-0 fw-semibold text-dark">
-                        <i class="bi bi-camera me-2 text-primary"></i>Foto
+                        <i class="bi bi-camera me-2 text-primary"></i>Fotos
                         <span class="text-muted fw-normal small ms-1">(Opcional)</span>
+                        <span class="badge bg-secondary ms-1" x-show="fotosSubidas.length > 0" x-text="fotosSubidas.length" x-cloak></span>
                     </h6>
                 </div>
                 <div class="card-body px-4 pb-4 pt-3">
-                    {{-- Sin foto: boton para abrir camara --}}
-                    <div class="text-center" x-show="!fotoSubida && !uploading">
-                        <button type="button" class="btn btn-outline-primary" @click="abrirCamara()">
-                            <i class="bi bi-camera me-2"></i>Tomar Foto
+                    {{-- Grid de fotos tomadas --}}
+                    <div class="d-flex flex-wrap gap-2 mb-3" x-show="fotosSubidas.length > 0" x-cloak>
+                        <template x-for="foto in fotosSubidas" :key="foto.id">
+                            <div class="position-relative">
+                                <img :src="foto.url" class="rounded shadow-sm border"
+                                     style="width: 80px; height: 80px; object-fit: cover;">
+                                <button type="button"
+                                        class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex align-items-center justify-content-center"
+                                        style="width: 22px; height: 22px; transform: translate(35%, -35%); border-radius: 50%;"
+                                        @click="quitarFoto(foto.id)"
+                                        title="Quitar foto">
+                                    <i class="bi bi-x" style="font-size: 14px;"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Boton tomar foto --}}
+                    <div class="text-center" x-show="!uploading">
+                        <button type="button" class="btn btn-outline-primary btn-sm" @click="abrirCamara()">
+                            <i class="bi bi-camera me-2"></i>
+                            <span x-show="fotosSubidas.length === 0">Tomar Foto</span>
+                            <span x-show="fotosSubidas.length > 0" x-cloak>Tomar otra foto</span>
                         </button>
                     </div>
 
                     {{-- Subiendo foto --}}
-                    <div class="text-center p-4" x-show="uploading" x-cloak>
+                    <div class="text-center p-2" x-show="uploading" x-cloak>
                         <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                         <p class="mt-1 mb-0 text-muted small">Subiendo...</p>
-                    </div>
-
-                    {{-- Foto tomada: preview --}}
-                    <div class="text-center" x-show="fotoSubida" x-cloak>
-                        <img :src="fotoSubida ? fotoSubida.url : ''" class="img-fluid rounded shadow-sm" style="max-height: 180px;">
-                        <div class="mt-2 d-flex justify-content-center gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-danger" @click="quitarFoto()">
-                                <i class="bi bi-trash me-1"></i>Quitar
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-primary" @click="quitarFoto(); $nextTick(() => abrirCamara())">
-                                <i class="bi bi-arrow-repeat me-1"></i>Retomar
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -216,7 +223,7 @@ function entregaFlujo() {
         piezas: piezasData,
         selectedIds: [],
         cantidades: cantidadesInit,
-        fotoSubida: null,
+        fotosSubidas: [],
         uploading: false,
         submitting: false,
 
@@ -302,8 +309,22 @@ function entregaFlujo() {
             }
         },
 
-        quitarFoto() {
-            this.fotoSubida = null;
+        quitarFoto(fotoId) {
+            var self = this;
+            $.ajax({
+                url: '{{ url("recepcion/entregas-pendientes/" . $orden->id . "/foto-entrega") }}/' + fotoId,
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                success: function(data) {
+                    if (data.success) {
+                        self.fotosSubidas = self.fotosSubidas.filter(function(f) { return f.id !== fotoId; });
+                    }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'No se pudo eliminar la foto.';
+                    Swal.fire('Error', msg, 'error');
+                }
+            });
         },
 
         subirBlob(blob) {
@@ -321,7 +342,7 @@ function entregaFlujo() {
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 success: function(data) {
                     if (data.success) {
-                        self.fotoSubida = data.foto;
+                        self.fotosSubidas.push(data.foto);
                     }
                     self.uploading = false;
                 },
@@ -365,8 +386,8 @@ function entregaFlujo() {
                     self.submitting = true;
 
                     var payload = { piezas: piezasPayload };
-                    if (self.fotoSubida) {
-                        payload.foto_id = self.fotoSubida.id;
+                    if (self.fotosSubidas.length > 0) {
+                        payload.foto_ids = self.fotosSubidas.map(function(f) { return f.id; });
                     }
 
                     $.ajax({

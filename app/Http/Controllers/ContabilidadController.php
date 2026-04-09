@@ -6,6 +6,7 @@ use App\Exports\ReporteItemsExport;
 use App\Models\Orden;
 use App\Models\OrdenItem;
 use App\Models\Pago;
+use App\Models\TipoPago;
 use App\Services\DashboardService;
 use App\Services\NotificacionService;
 use App\Services\OrdenEstadoService;
@@ -370,9 +371,10 @@ class ContabilidadController extends Controller
             return response()->json(['success' => false, 'message' => 'No se puede agregar pago a esta orden.'], 422);
         }
 
+        $codigosValidos = TipoPago::activos()->pluck('codigo')->toArray();
         $request->validate([
             'monto' => 'required|numeric|min:0.01',
-            'metodo_pago' => 'required|in:efectivo,nequi,transferencia,tarjeta,otro',
+            'metodo_pago' => ['required', \Illuminate\Validation\Rule::in($codigosValidos)],
             'referencia_pago' => 'nullable|string|max:255',
         ]);
 
@@ -815,15 +817,9 @@ class ContabilidadController extends Controller
 
     protected function badgeMetodoPago(string $metodo): string
     {
-        $map = [
-            'efectivo' => ['success', 'bi-cash'],
-            'nequi' => ['purple', 'bi-phone'],
-            'transferencia' => ['info', 'bi-bank'],
-            'tarjeta' => ['warning', 'bi-credit-card'],
-            'otro' => ['secondary', 'bi-three-dots'],
-        ];
-        $cfg = $map[$metodo] ?? ['secondary', 'bi-three-dots'];
-        $bgClass = $cfg[0] === 'purple' ? 'bg-purple' : 'bg-' . $cfg[0];
-        return '<span class="badge ' . $bgClass . ' bg-opacity-10 text-dark border"><i class="bi ' . $cfg[1] . ' me-1"></i>' . ucfirst($metodo) . '</span>';
+        $mapa = TipoPago::mapaBadges();
+        $cfg = $mapa[$metodo] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($metodo)];
+        $bgClass = $cfg['color'] === 'purple' ? 'bg-purple' : 'bg-' . $cfg['color'];
+        return '<span class="badge ' . $bgClass . ' bg-opacity-10 text-dark border"><i class="bi ' . $cfg['icono'] . ' me-1"></i>' . e($cfg['nombre']) . '</span>';
     }
 }

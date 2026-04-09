@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//f/xamppPro80/mysql/data//**)",
+      "Read(//f/xamppPro80/mysql/data/**)",
+      "Read(//f/xamppPro80/mysql/bin/**)",
+      "Bash(mkdir -p /f/xamppPro80/mysql/data_backup_2026-04-07)",
+      "Bash(cp /f/xamppPro80/mysql/data/ib_logfile0 /f/xamppPro80/mysql/data/ib_logfile1 /f/xamppPro80/mysql/data/ibdata1 /f/xamppPro80/mysql/bin/my.ini /f/xamppPro80/mysql/data_backup_2026-04-07/)",
+      "Read(//f/xamppPro80/mysql/**)",
+      "Bash(/f/xamppPro80/mysql/bin/mysqld.exe --defaults-file=/f/xamppPro80/mysql/bin/my.ini --standalone)",
+      "Bash(/f/xamppPro80/mysql/bin/mysqld.exe --defaults-file=/f/xamppPro80/mysql/bin/my.ini --skip-grant-tables --skip-networking=0)",
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"REPAIR TABLE mysql.proxies_priv USE_FRM;\")",
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"SHOW DATABASES;\")",
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"USE sinden; SHOW TABLES; SELECT COUNT\\(*\\) AS users FROM users;\")",
+      "Bash(/f/xamppPro80/mysql/bin/mysqladmin.exe -u root shutdown)",
+      "Bash(/f/xamppPro80/mysql/bin/mysqld.exe --defaults-file=/f/xamppPro80/mysql/bin/my.ini)",
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"USE sinden; SELECT COUNT\\(*\\) FROM users; INSERT INTO users \\(name,email,password,created_at,updated_at\\) VALUES \\('test_write','t@t.com','x',NOW\\(\\),NOW\\(\\)\\); DELETE FROM users WHERE email='t@t.com'; SELECT 'write OK' AS status;\")"
+    ],
+    "additionalDirectories": [
+      "f:\\xamppPro80\\mysql\\bin"
+    ]
+  }
+}

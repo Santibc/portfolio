@@ -3,11 +3,13 @@
     <div class="card-header bg-white border-0 px-4 pt-3 pb-0">
         <div class="d-flex justify-content-between align-items-center">
             <h6 class="mb-0 fw-semibold"><i class="bi bi-cash-stack me-2 text-primary"></i>Pagos</h6>
+            @hasanyrole('Administrador|Recepcion')
             @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="$('#modalAgregarPago').modal('show')">
                     <i class="bi bi-plus-lg me-1"></i>Agregar
                 </button>
             @endif
+            @endhasanyrole
         </div>
     </div>
     <div class="card-body px-4 pb-3 pt-2">
@@ -17,7 +19,10 @@
                     <div class="d-flex justify-content-between align-items-start py-2 {{ !$loop->last ? 'border-bottom' : '' }}" @if($pago->trashed()) style="opacity: 0.55;" @endif>
                         <div>
                             <span class="fw-semibold" @if($pago->trashed()) style="text-decoration: line-through;" @endif>${{ number_format($pago->monto, 0, ',', '.') }}</span>
-                            <span class="badge bg-light text-dark border ms-1 small">{{ ucfirst($pago->metodo_pago) }}</span>
+                            @php($_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? null)
+                            <span class="badge bg-{{ $_tp['color'] ?? 'light' }}-subtle text-{{ $_tp['color'] ?? 'dark' }} border ms-1 small">
+                                @if($_tp)<i class="bi {{ $_tp['icono'] }} me-1"></i>@endif{{ $_tp['nombre'] ?? ucfirst($pago->metodo_pago) }}
+                            </span>
                             @if($pago->trashed())
                                 <span class="badge bg-danger ms-1 small">Rechazado</span>
                             @elseif(!$pago->aprobado)

@@ -75,8 +75,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::patch('/items/{item}/toggle-activo', [CatalogoItemController::class, 'toggleActivo'])->name('items.toggle-activo');
         Route::resource('items', CatalogoItemController::class)->except(['show', 'destroy'])->parameters(['items' => 'item']);
 
-        // Ordenes - Listado y Exportacion (rutas literales ANTES de {orden})
-        Route::get('/ordenes', [OrdenController::class, 'index'])->name('ordenes.index');
+        // Ordenes - Exportacion listado (rutas literales ANTES de {orden})
         Route::get('/ordenes/export-excel', [OrdenController::class, 'exportExcel'])->name('ordenes.export-excel');
         Route::get('/ordenes/export-pdf', [OrdenController::class, 'exportPdf'])->name('ordenes.export-pdf');
         Route::get('/ordenes/pdf-multiple', [OrdenPdfController::class, 'multiple'])->name('ordenes.pdf-multiple');
@@ -91,9 +90,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/ordenes/operarios', [OrdenController::class, 'listarOperarios'])->name('ordenes.operarios');
         Route::get('/ordenes/grupos-bosquejos', [OrdenController::class, 'listarGruposBosquejos'])->name('ordenes.grupos-bosquejos');
 
-        // Ordenes - Detalle y Gestion (rutas con parametro {orden})
-        Route::get('/ordenes/{orden}/pdf', [OrdenPdfController::class, 'show'])->name('ordenes.pdf');
-        Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
+        // Ordenes - Gestion / escritura (rutas con parametro {orden})
         Route::get('/ordenes/{orden}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit');
         Route::put('/ordenes/{orden}', [OrdenController::class, 'update'])->name('ordenes.update');
         Route::post('/ordenes/{orden}/copiar', [OrdenController::class, 'copiar'])->name('ordenes.copiar');
@@ -108,6 +105,17 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
     });
 
 // ==========================================
+// RUTAS DE ORDENES SOLO-LECTURA (Admin/Recepcion/Contabilidad)
+// Contabilidad solo puede ver el listado, ver el detalle y descargar el PDF.
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilidad'])
+    ->prefix('recepcion')->name('recepcion.')->group(function () {
+        Route::get('/ordenes', [OrdenController::class, 'index'])->name('ordenes.index');
+        Route::get('/ordenes/{orden}/pdf', [OrdenPdfController::class, 'show'])->name('ordenes.pdf');
+        Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
+    });
+
+// ==========================================
 // RUTAS DE ENTREGAS (todos los roles)
 // ==========================================
 Route::middleware(['auth', 'verified'])
@@ -118,6 +126,7 @@ Route::middleware(['auth', 'verified'])
         Route::post('/entregas-pendientes/{orden}/entregar', [EntregaController::class, 'entregarPiezas'])->name('entregas.entregar');
         Route::post('/entregas-pendientes/{orden}/entrega-rapida', [EntregaController::class, 'entregaRapida'])->name('entregas.entrega-rapida');
         Route::post('/entregas-pendientes/{orden}/foto-entrega', [EntregaController::class, 'subirFotoEntrega'])->name('entregas.foto-entrega');
+        Route::delete('/entregas-pendientes/{orden}/foto-entrega/{foto}', [EntregaController::class, 'eliminarFotoEntrega'])->name('entregas.foto-entrega.eliminar');
 
         // Historial de Entregas
         Route::get('/entregas-historial', [EntregaController::class, 'historial'])->name('entregas.historial');
@@ -269,6 +278,12 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::post('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
     Route::post('/configuracion/logo', [ConfiguracionController::class, 'uploadLogo'])->name('configuracion.upload-logo');
     Route::delete('/configuracion/logo', [ConfiguracionController::class, 'deleteLogo'])->name('configuracion.delete-logo');
+
+    // Tipos de Pago (CRUD)
+    Route::post('/configuracion/tipos-pago', [ConfiguracionController::class, 'storeTipoPago'])->name('configuracion.tipos-pago.store');
+    Route::put('/configuracion/tipos-pago/{tipo}', [ConfiguracionController::class, 'updateTipoPago'])->name('configuracion.tipos-pago.update');
+    Route::delete('/configuracion/tipos-pago/{tipo}', [ConfiguracionController::class, 'destroyTipoPago'])->name('configuracion.tipos-pago.destroy');
+    Route::post('/configuracion/tipos-pago/{tipo}/restore', [ConfiguracionController::class, 'restoreTipoPago'])->name('configuracion.tipos-pago.restore');
 
     // Tabla de Precios
     Route::get('/tabla-precios', [TablaPreciosController::class, 'index'])->name('tabla-precios.index');

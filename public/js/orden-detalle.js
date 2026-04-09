@@ -124,7 +124,7 @@ function registrarPago() {
                 $('#modalAgregarPago').modal('hide');
                 $('#pagoMonto').val('');
                 $('#pagoReferencia').val('');
-                $('#pagoMetodo').val('efectivo');
+                $('#pagoMetodo').prop('selectedIndex', 0);
 
                 // Append pago to list
                 var pago = response.pago;

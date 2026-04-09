@@ -41,14 +41,14 @@ function cargarItems() {
     if (!ORDEN_DATA.items || ORDEN_DATA.items.length === 0) return;
 
     ORDEN_DATA.items.forEach(function(item) {
-        agregarFilaItem();
+        agregarFilaItem({ skipFocus: true, skipAutoSave: true });
         var idx = wizardState.itemCounter;
         var $row = $('#itemRow_' + idx);
 
         $row.find('.item-catalogo-id').val(item.catalogo_item_id || '');
         $row.find('.item-codigo').val(item.codigo || '');
         $row.find('.item-descripcion').val(item.descripcion || '');
-        $row.find('.item-cantidad').val(item.cantidad || 1);
+        $row.find('.item-cantidad').val(item.cantidad || 1).each(function(){ autoExpandCantidad(this); });
         $row.find('.item-precio').val(item.precio_unitario || 0);
         $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
         $row.find('.item-categoria').val(item.categoria || 'servicio');
@@ -93,12 +93,12 @@ function cargarPiezas() {
     if (!ORDEN_DATA.piezas || ORDEN_DATA.piezas.length === 0) return;
 
     ORDEN_DATA.piezas.forEach(function(pieza) {
-        agregarFilaPieza();
+        agregarFilaPieza({ skipAutoSave: true });
         var idx = wizardState.piezaCounter;
         var $row = $('#piezaRow_' + idx);
 
         $row.find('.pieza-nombre').val(pieza.nombre || '');
-        $row.find('.pieza-cantidad').val(pieza.cantidad || 1);
+        $row.find('.pieza-cantidad').val(parseInt(pieza.cantidad, 10) || 1).each(function(){ autoExpandCantidad(this); });
 
         if (pieza.material) {
             $row.find('.pieza-material').val(pieza.material);
@@ -145,12 +145,18 @@ function cargarPagos() {
                      && (typeof IS_ADMIN !== 'undefined' && !IS_ADMIN);
 
     ORDEN_DATA.pagos.forEach(function(pago) {
-        agregarFilaPago();
+        agregarFilaPago({ skipAutoSave: true });
         var idx = wizardState.pagoCounter;
         var $row = $('#pagoRow_' + idx);
 
         $row.find('.pago-monto').val(pago.monto || 0);
-        $row.find('.pago-metodo').val(pago.metodo_pago || 'efectivo');
+        var $metodoSel = $row.find('.pago-metodo');
+        var metodo = pago.metodo_pago || (window.TIPOS_PAGO && window.TIPOS_PAGO[0] ? window.TIPOS_PAGO[0].codigo : 'efectivo');
+        // Si el codigo historico ya no esta en el select (tipo desactivado/eliminado), agregarlo como option para preservar el valor.
+        if (metodo && $metodoSel.find('option[value="' + metodo + '"]').length === 0) {
+            $metodoSel.append('<option value="' + metodo + '">' + metodo.charAt(0).toUpperCase() + metodo.slice(1) + ' (inactivo)</option>');
+        }
+        $metodoSel.val(metodo);
         $row.find('.pago-referencia').val(pago.referencia_pago || '');
 
         if (bloquearPagos) {
@@ -196,15 +202,9 @@ function cargarFirma() {
         src = '/' + src;
     }
 
-    // Show existing signature image above the canvas
-    var $container = $('#firmaCanvasContainer');
-    if ($container.length) {
-        $container.before(
-            '<div id="firmaExistente" class="text-center mb-2">'
-            + '<p class="small text-muted mb-1">Firma actual (dibuje sobre el canvas para reemplazar)</p>'
-            + '<img src="' + src + '" class="firma-existente" alt="Firma existente">'
-            + '</div>'
-        );
+    // Pintar la firma existente sobre el canvas (no como img separado)
+    if (typeof cargarFirmaEnCanvas === 'function') {
+        cargarFirmaEnCanvas(src);
     }
     marcarStepCompletado(4);
 }

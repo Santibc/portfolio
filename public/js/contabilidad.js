@@ -80,7 +80,7 @@ function initOrdenesPendientesTable(config) {
         );
 
         $('#pagoMonto').val('');
-        $('#pagoMetodo').val('efectivo');
+        $('#pagoMetodo').prop('selectedIndex', 0);
         $('#pagoReferencia').val('');
         $('#modalAgregarPago').modal('show');
 

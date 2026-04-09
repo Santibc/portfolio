@@ -329,6 +329,7 @@ var WIZARD_CONFIG = {
     autoSaveInterval: {{ $autoSaveInterval }},
     csrfToken: '{{ csrf_token() }}'
 };
+window.TIPOS_PAGO = @json(($tiposPago ?? collect())->map(fn($t) => ['codigo' => $t->codigo, 'nombre' => $t->nombre]));
 
 var ROUTES = {
     guardar: '{{ route("recepcion.ordenes.update", $orden) }}',

@@ -7,8 +7,19 @@
     {{-- Page Header --}}
     <x-sinden.page-header :title="'Orden ' . ($orden->numero_orden ?? 'Borrador #' . $orden->id)" description="Detalle completo de la orden">
         <x-slot name="actions">
+            @php
+                $previousUrl = url()->previous();
+                $currentUrl  = url()->current();
+                $appBase     = url('/');
+                $backUrl = (
+                    $previousUrl
+                    && $previousUrl !== $currentUrl
+                    && str_starts_with($previousUrl, $appBase)
+                ) ? $previousUrl : route('dashboard');
+            @endphp
             <x-sinden.button variant="outline" icon="bi bi-arrow-left"
-                href="{{ route('recepcion.ordenes.index') }}">Volver</x-sinden.button>
+                href="{{ $backUrl }}">Volver</x-sinden.button>
+            @hasanyrole('Administrador|Recepcion')
             @if($orden->estado_trabajo !== 'anulada')
                 <x-sinden.button variant="primary" icon="bi bi-pencil"
                     href="{{ route('recepcion.ordenes.edit', $orden) }}">Editar</x-sinden.button>
@@ -16,6 +27,7 @@
                     <i class="bi bi-copy me-1"></i>Copiar
                 </button>
             @endif
+            @endhasanyrole
             @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
                 <div class="dropdown d-inline-block">
                     <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -35,9 +47,11 @@
                         <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 4]) }}">4 por fila</a></li>
                     </ul>
                 </div>
+                @hasanyrole('Administrador|Recepcion')
                 <button type="button" class="btn btn-outline-danger" onclick="$('#modalAnularOrden').modal('show')">
                     <i class="bi bi-x-circle me-1"></i>Anular
                 </button>
+                @endhasanyrole
             @endif
         </x-slot>
     </x-sinden.page-header>
@@ -101,11 +115,9 @@
                 <div class="mb-3">
                     <label class="form-label fw-medium">Metodo de Pago</label>
                     <select class="form-select" id="pagoMetodo">
-                        <option value="efectivo">Efectivo</option>
-                        <option value="nequi">Nequi</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="tarjeta">Tarjeta</option>
-                        <option value="otro">Otro</option>
+                        @foreach(($tiposPago ?? collect()) as $tp)
+                            <option value="{{ $tp->codigo }}">{{ $tp->nombre }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="mb-3">

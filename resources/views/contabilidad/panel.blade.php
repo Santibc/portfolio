@@ -41,17 +41,11 @@
                                         ${{ number_format($pago->monto, 0, ',', '.') }}
                                     </span>
                                     @php
-                                        $metodoCfg = [
-                                            'efectivo' => ['bg-success', 'bi-cash'],
-                                            'nequi' => ['bg-purple', 'bi-phone'],
-                                            'transferencia' => ['bg-info', 'bi-bank'],
-                                            'tarjeta' => ['bg-warning', 'bi-credit-card'],
-                                            'otro' => ['bg-secondary', 'bi-three-dots'],
-                                        ];
-                                        $mc = $metodoCfg[$pago->metodo_pago] ?? ['bg-secondary', 'bi-three-dots'];
+                                        $_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($pago->metodo_pago)];
+                                        $_bg = $_tp['color'] === 'purple' ? 'bg-purple' : 'bg-' . $_tp['color'];
                                     @endphp
-                                    <span class="badge {{ $mc[0] }} bg-opacity-10 text-dark border small">
-                                        <i class="bi {{ $mc[1] }} me-1"></i>{{ ucfirst($pago->metodo_pago) }}
+                                    <span class="badge {{ $_bg }} bg-opacity-10 text-dark border small">
+                                        <i class="bi {{ $_tp['icono'] }} me-1"></i>{{ $_tp['nombre'] }}
                                     </span>
                                 </div>
                                 <div class="text-end">
@@ -86,22 +80,18 @@
                 </div>
                 <div class="card-body px-4 pb-4 pt-3">
                     @php
-                        $metodos = [
-                            'efectivo' => ['Efectivo', 'bi-cash', 'text-success'],
-                            'nequi' => ['Nequi', 'bi-phone', 'text-purple'],
-                            'transferencia' => ['Transferencia', 'bi-bank', 'text-info'],
-                            'tarjeta' => ['Tarjeta', 'bi-credit-card', 'text-warning'],
-                            'otro' => ['Otro', 'bi-three-dots', 'text-secondary'],
-                        ];
                         $totalMetodos = array_sum($porMetodoPago);
+                        $_mapa = $tiposPagoMapa ?? [];
                     @endphp
 
                     @forelse($porMetodoPago as $metodo => $total)
-                        @php $cfg = $metodos[$metodo] ?? ['Otro', 'bi-three-dots', 'text-secondary']; @endphp
+                        @php
+                            $cfg = $_mapa[$metodo] ?? ['nombre' => ucfirst($metodo), 'icono' => 'bi-three-dots', 'color' => 'secondary'];
+                        @endphp
                         <div class="d-flex justify-content-between align-items-center py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
                             <div>
-                                <i class="bi {{ $cfg[1] }} {{ $cfg[2] }} me-2"></i>
-                                <span>{{ $cfg[0] }}</span>
+                                <i class="bi {{ $cfg['icono'] }} text-{{ $cfg['color'] }} me-2"></i>
+                                <span>{{ $cfg['nombre'] }}</span>
                             </div>
                             <span class="fw-semibold">${{ number_format($total, 0, ',', '.') }}</span>
                         </div>

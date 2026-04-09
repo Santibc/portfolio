@@ -216,21 +216,27 @@
         <input type="hidden" id="subir_grupo_id" name="grupo_bosquejo_id">
         <p class="text-muted mb-3">Grupo: <strong id="subir_grupo_nombre"></strong></p>
 
-        <div class="mb-3">
+        <div class="mb-3" id="bosquejoNombreWrapper">
             <label for="bosquejo_nombre" class="form-label">
-                <i class="bi bi-tag me-1"></i> Nombre del Bosquejo <span class="text-danger">*</span>
+                <i class="bi bi-tag me-1"></i> Nombre del Bosquejo
             </label>
             <input type="text" id="bosquejo_nombre" name="bosquejo_nombre"
-                class="form-control" placeholder="Ej: Puerta Corrediza 2m" required maxlength="255">
+                class="form-control" placeholder="Opcional - por defecto se usa el nombre del archivo" maxlength="255">
+            <small class="text-muted">Solo aplica si se sube una sola imagen.</small>
         </div>
 
         <div class="mb-3">
             <label for="archivo" class="form-label">
-                <i class="bi bi-image me-1"></i> Imagen <span class="text-danger">*</span>
+                <i class="bi bi-image me-1"></i> Imagenes <span class="text-danger">*</span>
             </label>
-            <input type="file" id="archivo" name="archivo"
-                class="form-control" required accept="image/jpeg,image/png,image/webp">
-            <small class="text-muted">Formatos: JPG, PNG, WebP. Maximo 10MB.</small>
+            <input type="file" id="archivo" name="archivo[]"
+                class="form-control" required multiple accept="image/jpeg,image/png,image/webp">
+            <small class="text-muted">Puede seleccionar varias. Formatos: JPG, PNG, WebP. Maximo 10MB cada una.</small>
+        </div>
+
+        <div id="multiInfo" class="alert alert-info py-2 px-3 mb-2" style="display:none;">
+            <i class="bi bi-info-circle me-1"></i>
+            <span id="multiInfoTexto"></span>
         </div>
 
         <div id="previewImagen" class="text-center mt-2" style="display: none;">
@@ -275,18 +281,36 @@
 @push('scripts')
 <script>
 $(function() {
-    // Preview de imagen al seleccionar archivo
+    // Preview de imagen(es) al seleccionar archivo(s)
     $('#archivo').on('change', function(e) {
-        var file = e.target.files[0];
-        if (file) {
+        var files = e.target.files;
+        if (!files || files.length === 0) {
+            $('#previewImagen').hide();
+            $('#multiInfo').hide();
+            $('#bosquejoNombreWrapper').show();
+            return;
+        }
+
+        if (files.length === 1) {
+            // Una sola imagen: preview + auto-llenar nombre si esta vacio
+            $('#bosquejoNombreWrapper').show();
+            $('#multiInfo').hide();
+            var file = files[0];
             var reader = new FileReader();
             reader.onload = function(ev) {
                 $('#previewImg').attr('src', ev.target.result);
                 $('#previewImagen').show();
             };
             reader.readAsDataURL(file);
+            if (!$('#bosquejo_nombre').val().trim()) {
+                $('#bosquejo_nombre').val(file.name.replace(/\.[^/.]+$/, ''));
+            }
         } else {
+            // Varias imagenes: ocultar campo nombre y mostrar info
             $('#previewImagen').hide();
+            $('#bosquejoNombreWrapper').hide();
+            $('#multiInfoTexto').text('Se subiran ' + files.length + ' imagenes y se usara el nombre de cada archivo como nombre del bosquejo.');
+            $('#multiInfo').show();
         }
     });
 });
@@ -409,9 +433,11 @@ function abrirModalSubirBosquejo(grupoId, grupoNombre) {
     $('#bosquejo_nombre').val('');
     $('#archivo').val('');
     $('#previewImagen').hide();
-    $('#btnSubirBosquejo').prop('disabled', false);
+    $('#multiInfo').hide();
+    $('#bosquejoNombreWrapper').show();
+    $('#btnSubirBosquejo').prop('disabled', false).html('<i class="bi bi-upload me-1"></i>Subir');
     $('#modalSubirBosquejo').modal('show');
-    setTimeout(function() { $('#bosquejo_nombre').focus(); }, 500);
+    setTimeout(function() { $('#archivo').focus(); }, 500);
 }
 
 function abrirModalSubirBosquejoIndividual() {
@@ -420,62 +446,101 @@ function abrirModalSubirBosquejoIndividual() {
     $('#bosquejo_nombre').val('');
     $('#archivo').val('');
     $('#previewImagen').hide();
-    $('#btnSubirBosquejo').prop('disabled', false);
+    $('#multiInfo').hide();
+    $('#bosquejoNombreWrapper').show();
+    $('#btnSubirBosquejo').prop('disabled', false).html('<i class="bi bi-upload me-1"></i>Subir');
     $('#modalSubirBosquejo').modal('show');
-    setTimeout(function() { $('#bosquejo_nombre').focus(); }, 500);
+    setTimeout(function() { $('#archivo').focus(); }, 500);
 }
 
 function subirBosquejo() {
-    var nombre = $('#bosquejo_nombre').val().trim();
+    var nombreManual = $('#bosquejo_nombre').val().trim();
     var grupoId = $('#subir_grupo_id').val();
     var archivoInput = document.getElementById('archivo');
+    var files = archivoInput.files;
 
-    if (!nombre) {
-        Swal.fire('Error', 'El nombre del bosquejo es obligatorio.', 'error');
-        return;
-    }
-    if (!archivoInput.files[0]) {
-        Swal.fire('Error', 'Debe seleccionar una imagen.', 'error');
+    if (!files || files.length === 0) {
+        Swal.fire('Error', 'Debe seleccionar al menos una imagen.', 'error');
         return;
     }
 
-    var formData = new FormData();
-    formData.append('nombre', nombre);
-    if (grupoId) {
-        formData.append('grupo_bosquejo_id', grupoId);
+    var $btn = $('#btnSubirBosquejo');
+    $btn.prop('disabled', true);
+
+    var total = files.length;
+    var exitos = 0;
+    var errores = [];
+    var url = '{{ route("recepcion.bosquejos-matriz.bosquejos.store") }}';
+    var csrf = $('meta[name="csrf-token"]').attr('content');
+
+    function actualizarBoton(i) {
+        $btn.html('<span class="spinner-border spinner-border-sm me-1"></span>Subiendo ' + i + ' de ' + total + '...');
     }
-    formData.append('archivo', archivoInput.files[0]);
 
-    $('#btnSubirBosquejo').prop('disabled', true);
-
-    $.ajax({
-        url: '{{ route("recepcion.bosquejos-matriz.bosquejos.store") }}',
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(data) {
-            if (data.success) {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 3000 });
+    function subirUno(index) {
+        if (index >= total) {
+            // Terminado
+            if (errores.length === 0) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success',
+                    title: exitos + ' bosquejo(s) subido(s)', showConfirmButton: false, timer: 2500 });
                 $('#modalSubirBosquejo').modal('hide');
-                location.reload();
+                setTimeout(function() { location.reload(); }, 600);
             } else {
-                $('#btnSubirBosquejo').prop('disabled', false);
-                Swal.fire('Error', data.message || 'No se pudo subir el bosquejo.', 'error');
+                $btn.prop('disabled', false).html('<i class="bi bi-upload me-1"></i>Subir');
+                Swal.fire({
+                    icon: exitos > 0 ? 'warning' : 'error',
+                    title: 'Subida con errores',
+                    html: 'Exitosos: ' + exitos + '<br>Errores: ' + errores.length + '<br><br><small>' + errores.join('<br>') + '</small>'
+                }).then(function() {
+                    if (exitos > 0) location.reload();
+                });
             }
-        },
-        error: function(xhr) {
-            $('#btnSubirBosquejo').prop('disabled', false);
-            var msg = 'No se pudo subir el bosquejo.';
-            if (xhr.responseJSON && xhr.responseJSON.errors) {
-                msg = Object.values(xhr.responseJSON.errors).flat().join('\n');
-            } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                msg = xhr.responseJSON.message;
-            }
-            Swal.fire('Error', msg, 'error');
+            return;
         }
-    });
+
+        actualizarBoton(index + 1);
+        var file = files[index];
+        var nombre;
+        if (total === 1) {
+            nombre = nombreManual || file.name.replace(/\.[^/.]+$/, '');
+        } else {
+            nombre = file.name.replace(/\.[^/.]+$/, '');
+        }
+
+        var formData = new FormData();
+        formData.append('nombre', nombre);
+        formData.append('archivo', file);
+        if (grupoId) formData.append('grupo_bosquejo_id', grupoId);
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data && data.success) {
+                    exitos++;
+                } else {
+                    errores.push(file.name + ': ' + ((data && data.message) || 'error desconocido'));
+                }
+                subirUno(index + 1);
+            },
+            error: function(xhr) {
+                var msg = 'error';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).flat().join(', ');
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                errores.push(file.name + ': ' + msg);
+                subirUno(index + 1);
+            }
+        });
+    }
+
+    subirUno(0);
 }
 
 // ===== ELIMINAR BOSQUEJO =====

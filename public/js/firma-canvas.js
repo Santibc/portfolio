@@ -84,7 +84,29 @@
         if (typeof marcarStepCompletado === 'function') {
             marcarStepCompletado(4);
         }
+        // Disparar auto-guardado (canvas no emite eventos input/change)
+        if (typeof triggerAutoSave === 'function') {
+            triggerAutoSave('firma');
+        }
     }
+
+    // Pinta una firma existente sobre el canvas (modo edicion)
+    window.cargarFirmaEnCanvas = function(src) {
+        if (!canvas || !ctx || !src) return;
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (typeof wizardState !== 'undefined') {
+                wizardState.firmaData = obtenerFirmaData();
+            }
+        };
+        img.onerror = function() {
+            console.warn('No se pudo cargar la firma existente:', src);
+        };
+        img.src = src;
+    };
 
     window.limpiarFirma = function() {
         if (!canvas || !ctx) return;

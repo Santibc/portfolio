@@ -20,6 +20,7 @@
         </div>
 
         {{-- Formulario agregar comentario --}}
+        @hasanyrole('Administrador|Recepcion')
         <div class="mt-3 pt-2 border-top">
             <div class="input-group">
                 <input type="text" class="form-control form-control-sm" id="nuevoComentario" placeholder="Escribir un comentario..." maxlength="2000">
@@ -28,5 +29,6 @@
                 </button>
             </div>
         </div>
+        @endhasanyrole
     </div>
 </div>

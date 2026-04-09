@@ -126,6 +126,18 @@
         </div>
     @endrole
 
+    @role('Contabilidad')
+        {{-- SECCION ORDENES (solo lectura para Contabilidad) --}}
+        <div class="nav-section-title">Ordenes</div>
+
+        <div class="nav-item {{ request()->routeIs('recepcion.ordenes.index') || request()->routeIs('recepcion.ordenes.show') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.ordenes.index') }}" class="nav-link">
+                <i class="bi bi-search"></i>
+                <span>Buscar Ordenes</span>
+            </a>
+        </div>
+    @endrole
+
     @hasanyrole('Administrador|Contabilidad')
         {{-- SECCION FINANZAS --}}
         <div class="nav-section-title">Finanzas</div>

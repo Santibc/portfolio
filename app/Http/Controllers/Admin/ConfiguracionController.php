@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cliente;
 use App\Models\ConfiguracionSistema;
+use App\Models\TipoPago;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ConfiguracionController extends Controller
 {
@@ -16,8 +18,88 @@ class ConfiguracionController extends Controller
     {
         $configs = ConfiguracionSistema::all()->keyBy('clave');
         $clientes = Cliente::where('activo', true)->orderBy('nombre')->get(['id', 'nombre']);
+        $tiposPago = TipoPago::orderBy('orden')->orderBy('id')->get();
 
-        return view('admin.configuracion.index', compact('configs', 'clientes'));
+        return view('admin.configuracion.index', compact('configs', 'clientes', 'tiposPago'));
+    }
+
+    /* ===================== Tipos de Pago CRUD ===================== */
+
+    private function reglasTipoPago($tipoId = null): array
+    {
+        return [
+            'codigo' => [
+                'required', 'string', 'max:50',
+                'regex:/^[a-z0-9_]+$/',
+                Rule::unique('tipos_pago', 'codigo')->ignore($tipoId),
+            ],
+            'nombre' => 'required|string|max:100',
+            'icono'  => 'required|string|max:50',
+            'color'  => ['required', Rule::in(['success','primary','info','warning','danger','secondary','purple','dark'])],
+            'orden'  => 'nullable|integer|min:0',
+        ];
+    }
+
+    public function storeTipoPago(Request $request)
+    {
+        $data = $request->validate($this->reglasTipoPago());
+        $data['activo'] = true;
+        $data['orden'] = $data['orden'] ?? (TipoPago::max('orden') + 1);
+
+        $tipo = TipoPago::create($data);
+
+        $this->registrarActividad(
+            'configuracion.tipo_pago_creado',
+            "Se creo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
+            null,
+            ['id' => $tipo->id]
+        );
+
+        return response()->json(['success' => true, 'tipo' => $tipo, 'message' => 'Tipo de pago creado.']);
+    }
+
+    public function updateTipoPago(Request $request, TipoPago $tipo)
+    {
+        $data = $request->validate($this->reglasTipoPago($tipo->id));
+        $tipo->update($data);
+
+        $this->registrarActividad(
+            'configuracion.tipo_pago_actualizado',
+            "Se actualizo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
+            null,
+            ['id' => $tipo->id]
+        );
+
+        return response()->json(['success' => true, 'tipo' => $tipo, 'message' => 'Tipo de pago actualizado.']);
+    }
+
+    public function destroyTipoPago(TipoPago $tipo)
+    {
+        // Soft delete via flag activo. Conserva pagos historicos con label/color/icono.
+        $tipo->update(['activo' => false]);
+
+        $this->registrarActividad(
+            'configuracion.tipo_pago_desactivado',
+            "Se desactivo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
+            null,
+            ['id' => $tipo->id]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Tipo de pago desactivado.']);
+    }
+
+    public function restoreTipoPago(TipoPago $tipo)
+    {
+        $tipo->update(['activo' => true]);
+
+        $this->registrarActividad(
+            'configuracion.tipo_pago_reactivado',
+            "Se reactivo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
+            null,
+            ['id' => $tipo->id]
+        );
+
+        return response()->json(['success' => true, 'message' => 'Tipo de pago reactivado.']);
     }
 
     public function update(Request $request)

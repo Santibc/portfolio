@@ -202,10 +202,12 @@ class EntregaController extends Controller
                 }
             }
 
-            // Vincular foto si fue subida previamente
-            if ($request->input('foto_id')) {
-                OrdenFoto::where('id', $request->input('foto_id'))
+            // Vincular fotos si fueron subidas previamente
+            $fotoIds = $request->input('foto_ids', []);
+            if (!empty($fotoIds)) {
+                OrdenFoto::whereIn('id', $fotoIds)
                     ->where('orden_id', $orden->id)
+                    ->whereNull('entrega_id')
                     ->update(['entrega_id' => $entrega->id]);
             }
 
@@ -322,7 +324,12 @@ class EntregaController extends Controller
     public function subirFotoEntrega(Request $request, Orden $orden)
     {
         $request->validate([
-            'foto' => 'required|image|max:5120',
+            'foto' => 'required|image|max:30720', // Max 30MB
+        ], [
+            'foto.required' => 'Debe seleccionar una foto.',
+            'foto.image' => 'El archivo debe ser una imagen (JPG, PNG, etc.).',
+            'foto.max' => 'La foto no puede pesar mas de 30 MB.',
+            'foto.uploaded' => 'La foto no se pudo cargar. Verifica el tamano y vuelve a intentarlo.',
         ]);
 
         $directorio = public_path("uploads/ordenes/{$orden->id}/fotos");
@@ -356,6 +363,31 @@ class EntregaController extends Controller
                 'url' => asset($rutaRelativa),
             ],
         ]);
+    }
+
+    /**
+     * DELETE /recepcion/entregas-pendientes/{orden}/foto-entrega/{foto} - Elimina foto aun no vinculada a entrega.
+     */
+    public function eliminarFotoEntrega(Orden $orden, OrdenFoto $foto)
+    {
+        if ($foto->orden_id !== $orden->id || $foto->tipo_foto !== 'entrega' || $foto->entrega_id !== null) {
+            return response()->json(['success' => false, 'message' => 'No se puede eliminar esta foto.'], 403);
+        }
+
+        if ($foto->subido_por !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'No autorizado.'], 403);
+        }
+
+        $rutaAbsoluta = public_path($foto->ruta_archivo);
+        if (is_file($rutaAbsoluta)) {
+            @unlink($rutaAbsoluta);
+        }
+
+        $foto->delete();
+
+        $this->registrarActividad('entrega.foto_eliminada', "Foto de entrega eliminada para orden {$orden->numero_orden}", $orden->id);
+
+        return response()->json(['success' => true]);
     }
 
     /**

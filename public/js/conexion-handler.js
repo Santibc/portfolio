@@ -10,11 +10,13 @@ window.SindenConexion = (function($) {
     // ESTADO INTERNO
     // ==========================================
     var state = {
-        online: navigator.onLine,
+        online: true, // Asumir online hasta que un ping ACTIVO falle (navigator.onLine no es confiable en Windows)
         lastPingSuccess: null,
         syncInProgress: false,
         pingInterval: null,
-        initialized: false
+        initialized: false,
+        confirmingOffline: false, // Flag para evitar multiples pings de confirmacion simultaneos
+        consecutivePingFails: 0   // Requiere varios fallos consecutivos antes de marcar offline
     };
 
     var CONFIG = {
@@ -36,9 +38,9 @@ window.SindenConexion = (function($) {
         if (state.initialized) return;
         state.initialized = true;
 
-        // Eventos del navegador
+        // Eventos del navegador (no confiar ciegamente: confirmar con ping activo)
         window.addEventListener('online', function() { doPing(); });
-        window.addEventListener('offline', function() { setOffline(); });
+        window.addEventListener('offline', function() { confirmOffline(); });
 
         // Interceptor AJAX global
         setupAjaxInterceptor();
@@ -72,13 +74,46 @@ window.SindenConexion = (function($) {
             global: false, // No dispara ajaxError global
             success: function() {
                 state.lastPingSuccess = Date.now();
+                state.consecutivePingFails = 0;
                 if (!state.online) setOnline();
             },
             error: function(xhr) {
-                // Solo marcar offline si es error de red (status 0), no errores HTTP
-                if (xhr.status === 0) {
-                    if (state.online) setOffline();
+                // Cualquier respuesta HTTP (incluso 4xx/5xx) significa que SI hay conexion
+                if (xhr.status > 0) {
+                    state.lastPingSuccess = Date.now();
+                    state.consecutivePingFails = 0;
+                    if (!state.online) setOnline();
+                    return;
                 }
+                // status 0 = error de red real. Requerir 2 fallos consecutivos antes de marcar offline
+                state.consecutivePingFails++;
+                if (state.consecutivePingFails >= 2 && state.online) {
+                    setOffline();
+                }
+            }
+        });
+    }
+
+    // Confirmacion activa antes de marcar offline (evita falsos positivos)
+    function confirmOffline() {
+        if (state.confirmingOffline) return;
+        state.confirmingOffline = true;
+        $.ajax({
+            url: CONFIG.PING_URL,
+            method: 'GET',
+            timeout: CONFIG.PING_TIMEOUT,
+            global: false,
+            complete: function(xhr) {
+                state.confirmingOffline = false;
+                // Si hubo cualquier respuesta del servidor, seguimos online
+                if (xhr.status > 0) {
+                    state.consecutivePingFails = 0;
+                    if (!state.online) setOnline();
+                    return;
+                }
+                // Sin respuesta -> realmente offline
+                state.consecutivePingFails = 2;
+                if (state.online) setOffline();
             }
         });
     }
@@ -249,10 +284,12 @@ window.SindenConexion = (function($) {
             // Ignorar URLs que sabemos pueden fallar sin ser offline
             if (isIgnoredUrl(settings.url)) return;
 
-            // Status 0 = error de red (sin respuesta del servidor)
+            // Status 0 = posible error de red. NO marcar offline directamente:
+            // confirmar con un ping activo para evitar falsos positivos
+            // (extensiones, peticiones canceladas por navegacion, blips momentaneos, etc.)
             if (xhr.status === 0 && xhr.readyState === 0) {
                 if (state.online) {
-                    setOffline();
+                    confirmOffline();
                 }
             }
 

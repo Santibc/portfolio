@@ -451,10 +451,12 @@ class OrdenService
 
     /**
      * Sincroniza pagos: delete-and-recreate.
+     * Usa forceDelete() para no dejar pagos soft-deleted (que la UI mostraria como "rechazados").
+     * El rechazo real de un pago se hace por ContabilidadController::rechazarPago.
      */
     protected function sincronizarPagos(Orden $orden, array $pagos, User $user): void
     {
-        $orden->pagos()->delete();
+        $orden->pagos()->forceDelete();
 
         $autoAprueba = $user->hasAnyRole(['Administrador', 'Contabilidad']);
 
