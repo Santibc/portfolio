@@ -52,8 +52,9 @@ class OrdenService
         }
 
         $bosquejoMap = [];
+        $bosquejosSincronizados = [];
         if (isset($data['bosquejos'])) {
-            $bosquejoMap = $this->sincronizarBosquejos($orden, $data['bosquejos']);
+            [$bosquejoMap, $bosquejosSincronizados] = $this->sincronizarBosquejos($orden, $data['bosquejos']);
         }
 
         if (isset($data['piezas'])) {
@@ -78,6 +79,9 @@ class OrdenService
         $this->estadoService->recalcularTotales($orden);
         $orden->save();
 
+        // Adjuntar bosquejos sincronizados para que el frontend actualice IDs y rutas
+        $orden->bosquejosSincronizados = $bosquejosSincronizados;
+
         return $orden;
     }
 
@@ -97,6 +101,10 @@ class OrdenService
 
         // Guardar borrador primero (persiste todos los datos)
         $orden = $this->guardarBorrador($data, $user, $orden);
+
+        // Remover atributo transiente para que no se intente persistir en BD
+        $bosquejosSincronizados = $orden->bosquejosSincronizados ?? [];
+        unset($orden->bosquejosSincronizados);
 
         // Asignar numero consecutivo y marcar como generada
         $orden->numero_orden = $this->estadoService->generarNumeroConsecutivo();
@@ -130,6 +138,9 @@ class OrdenService
         // Recalcular estado de pago
         $orden->estado_pago = $this->estadoService->recalcularEstadoPago($orden);
         $orden->save();
+
+        // Re-adjuntar bosquejos sincronizados para respuesta al frontend
+        $orden->bosquejosSincronizados = $bosquejosSincronizados;
 
         return $orden;
     }
@@ -272,6 +283,13 @@ class OrdenService
             $errores[] = 'Debe seleccionar un operario cuando hay piezas que lo requieren.';
         }
 
+        if (empty($data['fecha_entrega'])) {
+            $errores[] = 'Debe indicar la fecha de entrega.';
+        }
+        if (empty($data['hora_entrega'])) {
+            $errores[] = 'Debe indicar la hora de entrega.';
+        }
+
         return $errores;
     }
 
@@ -319,6 +337,7 @@ class OrdenService
         $existingIds = $orden->bosquejos()->pluck('id')->toArray();
         $keepIds = [];
         $indexToIdMap = [];
+        $bosquejosSincronizados = [];
 
         $ordenPath = public_path("uploads/ordenes/{$orden->id}/bosquejos");
         if (!File::exists($ordenPath)) {
@@ -330,6 +349,17 @@ class OrdenService
             if (!empty($bosquejo['id'])) {
                 $keepIds[] = $bosquejo['id'];
                 $indexToIdMap[$index] = $bosquejo['id'];
+                $existing = OrdenBosquejo::find($bosquejo['id']);
+                if ($existing) {
+                    $bosquejosSincronizados[] = [
+                        'id' => $existing->id,
+                        'nombre' => $existing->nombre,
+                        'tipo_origen' => $existing->tipo_origen,
+                        'ruta_archivo' => $existing->ruta_archivo,
+                        'ruta_miniatura' => $existing->ruta_miniatura,
+                        'plantilla_bosquejo_id' => $existing->plantilla_bosquejo_id,
+                    ];
+                }
                 continue;
             }
 
@@ -356,6 +386,14 @@ class OrdenService
 
             $keepIds[] = $registro->id;
             $indexToIdMap[$index] = $registro->id;
+            $bosquejosSincronizados[] = [
+                'id' => $registro->id,
+                'nombre' => $registro->nombre,
+                'tipo_origen' => $registro->tipo_origen,
+                'ruta_archivo' => $registro->ruta_archivo,
+                'ruta_miniatura' => $registro->ruta_miniatura,
+                'plantilla_bosquejo_id' => $registro->plantilla_bosquejo_id,
+            ];
         }
 
         // Eliminar bosquejos que ya no estan en la lista
@@ -373,7 +411,7 @@ class OrdenService
             }
         }
 
-        return $indexToIdMap;
+        return [$indexToIdMap, $bosquejosSincronizados];
     }
 
     /**

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid py-4" x-data="tablaPreciosApp()">
     {{-- Page Header --}}
-    <x-sinden.page-header title="Tabla de Precios" description="Administracion de precios por servicio, calibre, largo y cantidad">
+    <x-sinden.page-header title="Tabla de Precios" description="Administracion de precios por servicio, cantidad de servicios, largo (mm) y calibre">
         <x-slot name="actions">
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel" @click="exportarExcel()">
                 Exportar Excel
@@ -26,29 +26,21 @@
         <x-sinden.stat-card icon="bi bi-clock" :value="$ultimaActualizacion ? \Carbon\Carbon::parse($ultimaActualizacion)->format('d/m/Y H:i') : 'N/A'" title="Ultima Actualizacion" color="secondary" />
     </div>
 
-    {{-- Filtros --}}
+    {{-- Selector de servicio --}}
     <div class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
             <h6 class="mb-0 fw-semibold text-dark">
-                <i class="bi bi-funnel me-2 text-primary"></i>Seleccionar Servicio y Rango
+                <i class="bi bi-funnel me-2 text-primary"></i>Seleccionar Servicio
             </h6>
         </div>
         <div class="card-body px-4 pb-4 pt-3">
             <div class="row g-3 align-items-end">
-                <div class="col-md-5">
+                <div class="col-md-9">
                     <label class="form-label fw-medium">Tipo de Servicio</label>
-                    <select class="form-select" x-model="tipoServicio">
+                    <select class="form-select" x-model="tipoServicio" @change="cargarPrecios()">
                         <option value="">-- Seleccione un servicio --</option>
                         @foreach($servicios as $servicio)
                         <option value="{{ $servicio->tipo_servicio }}">{{ $servicio->etiqueta_servicio }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-medium">Rango de Largo</label>
-                    <select class="form-select" x-model="largoRangoIndex">
-                        @foreach($largoRangos as $i => $rango)
-                        <option value="{{ $i }}">{{ $rango->largo_rango_min }} - {{ $rango->largo_rango_max ?? '∞' }} mm</option>
                         @endforeach
                     </select>
                 </div>
@@ -56,7 +48,7 @@
                     <button type="button" class="btn btn-primary w-100"
                         @click="cargarPrecios()"
                         :disabled="loading || !tipoServicio">
-                        <span x-show="!loading"><i class="bi bi-arrow-clockwise me-2"></i>Cargar</span>
+                        <span x-show="!loading"><i class="bi bi-arrow-clockwise me-2"></i>Recargar</span>
                         <span x-show="loading"><i class="bi bi-hourglass-split me-2"></i>Cargando...</span>
                     </button>
                 </div>
@@ -64,83 +56,93 @@
         </div>
     </div>
 
-    {{-- Grid de Precios --}}
+    {{-- Encabezado del servicio + acciones de guardado --}}
     <div class="card border-0 shadow-sm mt-4" x-show="precios.length > 0" x-transition x-cloak>
-        <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
+        <div class="card-body px-4 py-3">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
-                    <h6 class="mb-0 fw-semibold text-dark">
+                    <h5 class="mb-0 fw-bold text-dark">
                         <i class="bi bi-table me-2 text-primary"></i><span x-text="servicioEtiqueta"></span>
-                    </h6>
+                    </h5>
                     <small class="text-muted">
                         Precio minimo: <strong class="text-danger" x-text="'$' + formatNumber(precioMinimo)"></strong>
-                        &bull; Rango largo seleccionado: <strong x-text="largoLabel"></strong>
+                        &bull; Precios sin IVA
                     </small>
                 </div>
-                <div>
+                <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-warning text-dark" x-show="Object.keys(modified).length > 0" x-cloak>
                         <i class="bi bi-pencil me-1"></i><span x-text="Object.keys(modified).length"></span> cambio(s) sin guardar
                     </span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                        @click="descartarCambios()"
+                        x-show="Object.keys(modified).length > 0" x-cloak>
+                        <i class="bi bi-x-circle me-1"></i>Descartar
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm"
+                        @click="guardarCambios()"
+                        :disabled="guardando || Object.keys(modified).length === 0">
+                        <span x-show="!guardando"><i class="bi bi-check-circle me-1"></i>Guardar Cambios</span>
+                        <span x-show="guardando"><i class="bi bi-hourglass-split me-1"></i>Guardando...</span>
+                    </button>
                 </div>
             </div>
         </div>
-        <div class="card-body px-4 pb-4 pt-2">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="fw-semibold" style="width: 120px;">Calibre</th>
-                            <template x-for="rango in cantidadRangos" :key="rango.cantidad_rango_min">
-                                <th class="text-center fw-semibold" x-text="rango.cantidad_rango_min + '-' + (rango.cantidad_rango_max ?? '∞')"></th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="calibre in calibres" :key="calibre.clave_calibre">
+    </div>
+
+    {{-- 6 sub-tablas (una por rango de cantidad de servicios) --}}
+    <template x-for="(rangoCantidad, idx) in cantidadesServicios" :key="rangoCantidad.cantidad_servicios_min">
+        <div class="card border-0 shadow-sm mt-3" x-show="precios.length > 0" x-cloak>
+            <div class="card-header text-white fw-semibold py-2 px-4"
+                :style="'background-color: ' + colorSubtabla(idx) + ';'">
+                <i class="bi bi-layers me-2"></i>
+                <span x-text="rangoCantidad.cantidad_servicios_min + (rangoCantidad.cantidad_servicios_max ? ('-' + rangoCantidad.cantidad_servicios_max) : '+')"></span>
+                Servicios
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0 table-sm" style="min-width: 1100px;">
+                        <thead class="table-light">
                             <tr>
-                                <td class="fw-medium bg-light">
-                                    <span x-text="calibre.clave_calibre"></span>
-                                    <small class="text-muted d-block" x-text="calibre.calibre_mm + 'mm'"></small>
-                                </td>
-                                <template x-for="rango in cantidadRangos" :key="calibre.clave_calibre + '-' + rango.cantidad_rango_min">
-                                    <td class="p-1 text-center">
-                                        <input type="number"
-                                            class="form-control form-control-sm text-end border-0"
-                                            :class="{ 'bg-warning bg-opacity-25': isModified(calibre.clave_calibre, rango.cantidad_rango_min) }"
-                                            :value="getPrecio(calibre.clave_calibre, rango.cantidad_rango_min)"
-                                            @change="setPrecio(calibre.clave_calibre, rango.cantidad_rango_min, $event.target.value)"
-                                            min="0"
-                                            step="1"
-                                            style="width: 100%; min-width: 90px;">
-                                    </td>
+                                <th class="fw-semibold text-center" style="width: 90px;">Largo (mm)</th>
+                                <template x-for="calibre in calibres" :key="calibre.clave_calibre">
+                                    <th class="text-center fw-semibold small">
+                                        <span x-text="calibre.clave_calibre"></span>
+                                        <small class="text-muted d-block" x-text="'(' + calibre.calibre_mm + 'mm)'"></small>
+                                    </th>
                                 </template>
                             </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-end mt-3 gap-2">
-                <button type="button" class="btn btn-outline-secondary"
-                    @click="descartarCambios()"
-                    x-show="Object.keys(modified).length > 0">
-                    <i class="bi bi-x-circle me-1"></i>Descartar
-                </button>
-                <button type="button" class="btn btn-primary"
-                    @click="guardarCambios()"
-                    :disabled="guardando || Object.keys(modified).length === 0">
-                    <span x-show="!guardando"><i class="bi bi-check-circle me-1"></i>Guardar Cambios</span>
-                    <span x-show="guardando"><i class="bi bi-hourglass-split me-1"></i>Guardando...</span>
-                </button>
+                        </thead>
+                        <tbody>
+                            <template x-for="rangoLargo in largosMm" :key="rangoCantidad.cantidad_servicios_min + '-' + rangoLargo.largo_mm_min">
+                                <tr>
+                                    <td class="fw-medium bg-light text-center"
+                                        x-text="rangoLargo.largo_mm_min + (rangoLargo.largo_mm_max ? ('-' + rangoLargo.largo_mm_max) : '+')"></td>
+                                    <template x-for="calibre in calibres" :key="calibre.clave_calibre + '-' + rangoCantidad.cantidad_servicios_min + '-' + rangoLargo.largo_mm_min">
+                                        <td class="p-1 text-center">
+                                            <input type="number"
+                                                class="form-control form-control-sm text-end border-0"
+                                                :class="{ 'bg-warning bg-opacity-25': isModified(calibre.clave_calibre, rangoCantidad.cantidad_servicios_min, rangoLargo.largo_mm_min) }"
+                                                :value="getPrecio(calibre.clave_calibre, rangoCantidad.cantidad_servicios_min, rangoLargo.largo_mm_min)"
+                                                @change="setPrecio(calibre.clave_calibre, rangoCantidad.cantidad_servicios_min, rangoLargo.largo_mm_min, $event.target.value)"
+                                                min="0"
+                                                step="1"
+                                                style="width: 100%; min-width: 75px; font-size: 0.8rem;">
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 
     {{-- Mensaje si no se ha seleccionado --}}
     <div class="card border-0 shadow-sm mt-4" x-show="precios.length === 0 && !loading" x-cloak>
         <div class="card-body text-center py-5">
             <i class="bi bi-table text-muted" style="font-size: 3rem;"></i>
-            <p class="text-muted mt-3 mb-0">Seleccione un tipo de servicio y rango de largo, luego haga clic en <strong>Cargar</strong> para ver la tabla de precios.</p>
+            <p class="text-muted mt-3 mb-0">Seleccione un tipo de servicio para ver las 6 sub-tablas de precios (una por rango de cantidad de servicios).</p>
         </div>
     </div>
 
@@ -153,7 +155,8 @@
                 <input type="file" class="form-control" name="archivo" accept=".xlsx,.xls" required>
                 <small class="text-muted mt-1 d-block">
                     <i class="bi bi-info-circle me-1"></i>
-                    El archivo debe tener las mismas columnas que el Excel exportado.
+                    El archivo debe tener las mismas columnas que el Excel exportado
+                    (tipo_servicio, calibre, cantidad_servicios_min/max, largo_mm_min/max, precio).
                     Solo se actualizaran precios de registros existentes.
                 </small>
             </div>
@@ -255,22 +258,23 @@
 @push('scripts')
 <script>
 function tablaPreciosApp() {
-    var largoRangosData = @json($largoRangos);
-
     return {
         // Filtros
         tipoServicio: '',
-        largoRangoIndex: '0',
         loading: false,
 
         // Grid
         precios: [],
         calibres: [],
-        cantidadRangos: [],
+        cantidadesServicios: [],
+        largosMm: [],
         servicioEtiqueta: '',
         precioMinimo: 0,
         modified: {},
         guardando: false,
+
+        // Indice rapido: clave_calibre + '|' + cantidad_min + '|' + largo_min => registro
+        precioIndex: {},
 
         // Servicios modal
         listaServicios: [],
@@ -278,31 +282,34 @@ function tablaPreciosApp() {
         editandoServicio: null,
         editServicioData: { etiqueta: '', precioMinimo: '' },
 
-        get largoLabel() {
-            var r = largoRangosData[this.largoRangoIndex];
-            return r ? (r.largo_rango_min + ' - ' + (r.largo_rango_max ?? '∞') + ' mm') : '';
+        // Colores para las 6 sub-tablas (mismo orden que el PDF)
+        coloresSubtabla: ['#E91E63', '#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#607D8B'],
+
+        colorSubtabla(idx) {
+            return this.coloresSubtabla[idx % this.coloresSubtabla.length];
         },
 
         // ─── Grid ─────────────────────────────────────
         cargarPrecios() {
-            if (!this.tipoServicio) return;
+            if (!this.tipoServicio) {
+                this.precios = [];
+                this.modified = {};
+                return;
+            }
             this.loading = true;
             this.modified = {};
-            var rango = largoRangosData[this.largoRangoIndex];
 
             $.ajax({
                 url: '{{ route("admin.tabla-precios.index") }}',
-                data: {
-                    tipo_servicio: this.tipoServicio,
-                    largo_min: rango.largo_rango_min,
-                    largo_max: rango.largo_rango_max ?? '',
-                },
+                data: { tipo_servicio: this.tipoServicio },
                 success: (data) => {
                     this.precios = data.precios;
                     this.calibres = data.calibres;
-                    this.cantidadRangos = data.cantidad_rangos;
+                    this.cantidadesServicios = data.cantidades_servicios;
+                    this.largosMm = data.largos_mm;
                     this.servicioEtiqueta = data.servicio_etiqueta;
                     this.precioMinimo = data.precio_minimo;
+                    this.buildIndex();
                     this.loading = false;
                 },
                 error: () => {
@@ -312,15 +319,23 @@ function tablaPreciosApp() {
             });
         },
 
-        getPrecio(calibre, cantidadMin) {
-            var p = this.precios.find(x => x.clave_calibre === calibre && x.cantidad_rango_min === cantidadMin);
-            if (!p) return '';
-            var key = p.id;
-            return key in this.modified ? this.modified[key] : p.precio;
+        buildIndex() {
+            this.precioIndex = {};
+            for (var i = 0; i < this.precios.length; i++) {
+                var p = this.precios[i];
+                var key = p.clave_calibre + '|' + p.cantidad_servicios_min + '|' + p.largo_mm_min;
+                this.precioIndex[key] = p;
+            }
         },
 
-        setPrecio(calibre, cantidadMin, valor) {
-            var p = this.precios.find(x => x.clave_calibre === calibre && x.cantidad_rango_min === cantidadMin);
+        getPrecio(calibre, cantMin, largoMin) {
+            var p = this.precioIndex[calibre + '|' + cantMin + '|' + largoMin];
+            if (!p) return '';
+            return p.id in this.modified ? this.modified[p.id] : p.precio;
+        },
+
+        setPrecio(calibre, cantMin, largoMin, valor) {
+            var p = this.precioIndex[calibre + '|' + cantMin + '|' + largoMin];
             if (!p) return;
             var nuevo = parseFloat(valor) || 0;
             if (parseFloat(p.precio) === nuevo) {
@@ -328,12 +343,11 @@ function tablaPreciosApp() {
             } else {
                 this.modified[p.id] = nuevo;
             }
-            // Force reactivity
             this.modified = Object.assign({}, this.modified);
         },
 
-        isModified(calibre, cantidadMin) {
-            var p = this.precios.find(x => x.clave_calibre === calibre && x.cantidad_rango_min === cantidadMin);
+        isModified(calibre, cantMin, largoMin) {
+            var p = this.precioIndex[calibre + '|' + cantMin + '|' + largoMin];
             return p && p.id in this.modified;
         },
 
@@ -386,7 +400,6 @@ function tablaPreciosApp() {
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 3000 });
                     this.nuevoServicio = { clave: '', etiqueta: '', precioMinimo: '' };
                     this.cargarServicios();
-                    // Recargar pagina para actualizar dropdowns
                     setTimeout(() => location.reload(), 1500);
                 },
                 error: (xhr) => {
@@ -464,7 +477,6 @@ function tablaPreciosApp() {
         },
 
         init() {
-            // Cargar servicios cuando se abre el modal
             var self = this;
             var modal = document.getElementById('modalServicios');
             if (modal) {

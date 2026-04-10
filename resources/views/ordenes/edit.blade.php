@@ -35,9 +35,7 @@
                     <i class="bi bi-calendar3"></i> <span class="d-none d-md-inline">Fechas</span>
                 </div>
             </div>
-            <span id="autoguardadoIndicator" class="text-muted small" style="display:none;">
-                <i class="bi bi-check-circle text-success me-1"></i><span id="autoguardadoTexto"></span>
-            </span>
+            <span id="autoguardadoIndicator" style="display:none;"><span id="autoguardadoTexto"></span></span>
         </div>
     </div>
 

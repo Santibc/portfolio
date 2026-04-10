@@ -45,7 +45,7 @@
         <div class="nav-item {{ request()->routeIs('recepcion.garantias.*') ? 'active' : '' }}">
             <a href="{{ route('recepcion.garantias.index') }}" class="nav-link">
                 <i class="bi bi-shield-check"></i>
-                <span>Garantias</span>
+                <span>Devoluciones/Garantias</span>
             </a>
         </div>
 

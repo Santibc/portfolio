@@ -19,10 +19,14 @@
             @endphp
             <x-sinden.button variant="outline" icon="bi bi-arrow-left"
                 href="{{ $backUrl }}">Volver</x-sinden.button>
-            @hasanyrole('Administrador|Recepcion')
+            @hasanyrole('Administrador|Recepcion|Contabilidad')
             @if($orden->estado_trabajo !== 'anulada')
                 <x-sinden.button variant="primary" icon="bi bi-pencil"
                     href="{{ route('recepcion.ordenes.edit', $orden) }}">Editar</x-sinden.button>
+            @endif
+            @endhasanyrole
+            @hasanyrole('Administrador|Recepcion')
+            @if($orden->estado_trabajo !== 'anulada')
                 <button type="button" class="btn btn-outline-secondary" onclick="copiarOrden()">
                     <i class="bi bi-copy me-1"></i>Copiar
                 </button>

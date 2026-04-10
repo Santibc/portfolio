@@ -14,10 +14,15 @@
       "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"USE sinden; SHOW TABLES; SELECT COUNT\\(*\\) AS users FROM users;\")",
       "Bash(/f/xamppPro80/mysql/bin/mysqladmin.exe -u root shutdown)",
       "Bash(/f/xamppPro80/mysql/bin/mysqld.exe --defaults-file=/f/xamppPro80/mysql/bin/my.ini)",
-      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"USE sinden; SELECT COUNT\\(*\\) FROM users; INSERT INTO users \\(name,email,password,created_at,updated_at\\) VALUES \\('test_write','t@t.com','x',NOW\\(\\),NOW\\(\\)\\); DELETE FROM users WHERE email='t@t.com'; SELECT 'write OK' AS status;\")"
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root -e \"USE sinden; SELECT COUNT\\(*\\) FROM users; INSERT INTO users \\(name,email,password,created_at,updated_at\\) VALUES \\('test_write','t@t.com','x',NOW\\(\\),NOW\\(\\)\\); DELETE FROM users WHERE email='t@t.com'; SELECT 'write OK' AS status;\")",
+      "Read(//f:/xamppPro80/htdocs/**)",
+      "Bash(./mysql.exe -u root -e \"USE sinden; SELECT id, nombre, ruta_archivo, ruta_miniatura FROM orden_bosquejos WHERE orden_id = 18 LIMIT 10;\")",
+      "Bash(./mysql.exe -u root sinden)",
+      "Read(//c/Users/santi/.claude/**)"
     ],
     "additionalDirectories": [
-      "f:\\xamppPro80\\mysql\\bin"
+      "f:\\xamppPro80\\mysql\\bin",
+      "C:\\Users\\santi\\.claude"
     ]
   }
 }

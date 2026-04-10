@@ -81,7 +81,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'ver_dashboard',
             'ver_catalogo_items',
             'ver_bosquejos_matriz',
-            'ver_ordenes',
+            'ver_ordenes', 'editar_ordenes',
             'ver_pagos', 'crear_pagos', 'aprobar_pagos',
             'ver_actividades_propias',
             'ver_notificaciones',

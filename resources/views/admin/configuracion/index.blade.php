@@ -67,6 +67,21 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">Imagen de Fondo (Login y Pagina de Inicio)</label>
+                            <div class="d-flex align-items-start gap-3">
+                                <div x-show="imagen_fondo_login" class="border rounded p-2" style="min-width:150px;">
+                                    <img :src="imagen_fondo_login" alt="Fondo" style="max-height:80px;max-width:250px;object-fit:cover;" class="d-block rounded">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" class="form-control" accept="image/png,image/jpeg,image/webp" @change="subirFondo($event)">
+                                    <small class="text-muted">PNG, JPG o WEBP. Maximo 5MB. Se usa como fondo en la pagina de login y la pagina de inicio.</small>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger btn-sm" x-show="imagen_fondo_login" @click="eliminarFondo()">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -424,6 +439,7 @@ function configuracionApp() {
         // Empresa
         nombre_empresa: @json($configs['nombre_empresa']->valor ?? ''),
         logo_empresa: @json($configs['logo_empresa']->valor ?? ''),
+        imagen_fondo_login: @json($configs['imagen_fondo_login']->valor ?? ''),
         direccion_empresa: @json($configs['direccion_empresa']->valor ?? ''),
         telefono_empresa: @json($configs['telefono_empresa']->valor ?? ''),
         nit_empresa: @json($configs['nit_empresa']->valor ?? ''),
@@ -640,6 +656,66 @@ function configuracionApp() {
                         },
                         error: (xhr) => {
                             Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'No se pudo eliminar el logo.' });
+                        }
+                    });
+                }
+            });
+        },
+
+        // ─── Fondo ───────────────────────────────────
+        subirFondo(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'El archivo no debe superar 5MB.' });
+                event.target.value = '';
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('fondo', file);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            $.ajax({
+                url: '{{ route("admin.configuracion.upload-fondo") }}',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: (data) => {
+                    this.imagen_fondo_login = data.path + '?t=' + Date.now();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                },
+                error: (xhr) => {
+                    Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'No se pudo subir la imagen de fondo.' });
+                }
+            });
+            event.target.value = '';
+        },
+
+        eliminarFondo() {
+            Swal.fire({
+                title: 'Eliminar imagen de fondo?',
+                text: 'Se eliminara la imagen de fondo del login y pagina de inicio.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Si, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '{{ route("admin.configuracion.delete-fondo") }}',
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        success: (data) => {
+                            this.imagen_fondo_login = '';
+                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                        },
+                        error: (xhr) => {
+                            Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'No se pudo eliminar la imagen de fondo.' });
                         }
                     });
                 }

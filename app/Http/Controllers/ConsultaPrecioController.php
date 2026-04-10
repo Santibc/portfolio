@@ -21,15 +21,15 @@ class ConsultaPrecioController extends Controller
         $request->validate([
             'tipo_servicio' => 'required|string',
             'clave_calibre' => 'required|string',
-            'largo' => 'required|numeric|min:0',
-            'cantidad' => 'required|integer|min:1',
+            'largo_mm' => 'required|numeric|min:0',
+            'cantidad_servicios' => 'required|integer|min:1',
         ]);
 
         $resultado = TablaPrecioServicio::lookup(
             $request->tipo_servicio,
             $request->clave_calibre,
-            $request->largo,
-            $request->cantidad
+            $request->largo_mm,
+            (int) $request->cantidad_servicios
         );
 
         if (!$resultado) {
@@ -48,8 +48,8 @@ class ConsultaPrecioController extends Controller
             'etiqueta_servicio' => $resultado->etiqueta_servicio,
             'clave_calibre' => $resultado->clave_calibre,
             'calibre_mm' => $resultado->calibre_mm,
-            'largo_rango' => $resultado->largo_rango_min . '-' . ($resultado->largo_rango_max ?? '∞') . ' mm',
-            'cantidad_rango' => $resultado->cantidad_rango_min . '-' . ($resultado->cantidad_rango_max ?? '∞') . ' uds',
+            'largo_rango' => $resultado->largo_mm_min . '-' . ($resultado->largo_mm_max ?? '∞') . ' mm',
+            'cantidad_rango' => $resultado->cantidad_servicios_min . '-' . ($resultado->cantidad_servicios_max ?? '∞') . ' servicios',
         ]);
     }
 }

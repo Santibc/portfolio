@@ -78,11 +78,13 @@ class UserController extends Controller
 
         $user->assignRole($validated['role']);
 
-        $this->registrarActividad('usuario.creado', "Usuario creado: {$user->name} ({$validated['role']})", null, [
-            'usuario_id' => $user->id,
-            'email' => $user->email,
-            'rol' => $validated['role'],
-        ]);
+        $this->registrarCreacion(
+            'usuario.creado',
+            "Usuario creado: {$user->name} ({$validated['role']})",
+            $user,
+            null,
+            ['rol' => $validated['role']]
+        );
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario creado exitosamente.');
@@ -122,6 +124,9 @@ class UserController extends Controller
             'role.exists' => 'El rol seleccionado no existe.',
         ]);
 
+        $rolAnterior = $user->roles->first()->name ?? null;
+        $valoresOriginales = $user->getOriginal();
+
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -134,11 +139,22 @@ class UserController extends Controller
         // Sincronizar rol
         $user->syncRoles([$validated['role']]);
 
-        $this->registrarActividad('usuario.actualizado', "Usuario actualizado: {$user->name}", null, [
-            'usuario_id' => $user->id,
-            'email' => $user->email,
-            'rol' => $validated['role'],
-        ]);
+        $extra = [];
+        if ($rolAnterior !== $validated['role']) {
+            $extra['rol'] = ['antes' => $rolAnterior, 'despues' => $validated['role']];
+        }
+        if (!empty($validated['password'])) {
+            $extra['password'] = ['antes' => '***', 'despues' => '*** (cambiado)'];
+        }
+
+        $this->registrarActualizacion(
+            'usuario.actualizado',
+            "Usuario actualizado: {$user->name}",
+            $user,
+            $valoresOriginales,
+            null,
+            $extra
+        );
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario actualizado exitosamente.');
@@ -153,15 +169,17 @@ class UserController extends Controller
         }
 
         $userName = $user->name;
-        $userEmail = $user->email;
         $userRol = $user->roles->first()->name ?? '-';
 
-        $user->delete();
+        $this->registrarEliminacion(
+            'usuario.eliminado',
+            "Usuario eliminado: {$userName}",
+            $user,
+            null,
+            ['rol' => $userRol]
+        );
 
-        $this->registrarActividad('usuario.eliminado', "Usuario eliminado: {$userName}", null, [
-            'email' => $userEmail,
-            'rol' => $userRol,
-        ]);
+        $user->delete();
 
         return redirect()->route('admin.usuarios.index')
             ->with('success', 'Usuario eliminado exitosamente.');

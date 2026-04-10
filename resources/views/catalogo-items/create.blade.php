@@ -67,11 +67,11 @@
                                     type="number"
                                     icon="bi bi-percent"
                                     :required="true"
-                                    step="0.01"
+                                    step="1"
                                     min="0"
                                     max="100"
-                                    value="19.00"
-                                    placeholder="19.00" />
+                                    :value="$ivaDefecto"
+                                    placeholder="{{ $ivaDefecto }}" />
                             </div>
                         </div>
 

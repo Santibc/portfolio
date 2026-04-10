@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CatalogoItem;
+use App\Models\CatalogoItemImport;
+use App\Models\ConfiguracionSistema;
 use App\Exports\CatalogoItemsExport;
+use App\Exports\CatalogoItemsTemplateExport;
+use App\Imports\CatalogoItemsImport;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -98,7 +103,8 @@ class CatalogoItemController extends Controller
     public function create()
     {
         $categorias = self::CATEGORIAS;
-        return view('catalogo-items.create', compact('categorias'));
+        $ivaDefecto = (int) round((float) ConfiguracionSistema::get('porcentaje_iva_defecto', 19));
+        return view('catalogo-items.create', compact('categorias', 'ivaDefecto'));
     }
 
     public function store(Request $request)
@@ -110,11 +116,10 @@ class CatalogoItemController extends Controller
 
         $item = CatalogoItem::create($validated);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'catalogo_item.creado',
             "Se creo el item: {$item->codigo} - {$item->descripcion}",
-            null,
-            ['catalogo_item_id' => $item->id]
+            $item
         );
 
         return redirect()->route('recepcion.items.index')
@@ -135,20 +140,16 @@ class CatalogoItemController extends Controller
             $this->messages()
         );
 
-        $cambios = array_diff_assoc(
-            $request->only(['codigo', 'descripcion', 'precio_unitario', 'porcentaje_iva', 'categoria']),
-            $item->only(['codigo', 'descripcion', 'precio_unitario', 'porcentaje_iva', 'categoria'])
-        );
-
+        $valoresOriginales = $item->getOriginal();
         $item->update($validated);
 
         $routePrefix = $request->routeIs('contabilidad.*') ? 'contabilidad' : 'recepcion';
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'catalogo_item.actualizado',
             "Se actualizo el item: {$item->codigo}",
-            null,
-            ['catalogo_item_id' => $item->id, 'cambios' => $cambios]
+            $item,
+            $valoresOriginales
         );
 
         return redirect()->route($routePrefix . '.items.index')
@@ -157,16 +158,17 @@ class CatalogoItemController extends Controller
 
     public function toggleActivo(CatalogoItem $item)
     {
+        $valoresOriginales = $item->getOriginal();
         $item->activo = !$item->activo;
         $item->save();
 
         $accion = $item->activo ? 'activo' : 'desactivo';
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'catalogo_item.actualizado',
             "Se {$accion} el item: {$item->codigo}",
-            null,
-            ['catalogo_item_id' => $item->id, 'activo' => $item->activo]
+            $item,
+            $valoresOriginales
         );
 
         if (request()->ajax()) {
@@ -248,6 +250,114 @@ class CatalogoItemController extends Controller
         return Pdf::loadHTML($html)
             ->setPaper('letter', 'landscape')
             ->download('catalogo-items-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new CatalogoItemsTemplateExport(), 'plantilla-catalogo-items.xlsx');
+    }
+
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls|max:5120',
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo Excel.',
+            'archivo.mimes' => 'El archivo debe ser formato .xlsx o .xls.',
+            'archivo.max' => 'El archivo no puede superar 5MB.',
+        ]);
+
+        $archivo = $request->file('archivo');
+
+        $importRecord = CatalogoItemImport::create([
+            'usuario_id' => Auth::id(),
+            'nombre_archivo' => $archivo->getClientOriginalName(),
+            'estado' => 'procesando',
+        ]);
+
+        try {
+            $import = new CatalogoItemsImport();
+            Excel::import($import, $archivo);
+
+            $importRecord->update([
+                'total_filas' => $import->getTotalFilas(),
+                'creados' => $import->getCreados(),
+                'actualizados' => $import->getActualizados(),
+                'errores' => $import->getErrores(),
+                'estado' => $import->getErrores() > 0
+                    ? ($import->getCreados() + $import->getActualizados() > 0 ? 'completado_con_errores' : 'fallido')
+                    : 'completado',
+                'detalle_log' => $import->getDetalleLog(),
+            ]);
+
+            $this->registrarActividad(
+                'catalogo_item.importacion',
+                "Importacion de items: {$import->getCreados()} creados, {$import->getActualizados()} actualizados, {$import->getErrores()} errores",
+                null,
+                [
+                    'tipo_cambio' => 'import',
+                    'modelo' => 'CatalogoItem',
+                    'archivo' => $archivo->getClientOriginalName(),
+                    'creados' => $import->getCreados(),
+                    'actualizados' => $import->getActualizados(),
+                    'errores' => $import->getErrores(),
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Importacion completada: {$import->getCreados()} creados, {$import->getActualizados()} actualizados, {$import->getErrores()} errores.",
+                'data' => [
+                    'id' => $importRecord->id,
+                    'creados' => $import->getCreados(),
+                    'actualizados' => $import->getActualizados(),
+                    'errores' => $import->getErrores(),
+                    'total' => $import->getTotalFilas(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            $importRecord->update([
+                'estado' => 'fallido',
+                'detalle_log' => [['fila' => 0, 'codigo' => '-', 'accion' => 'error', 'mensaje' => $e->getMessage(), 'datos' => []]],
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar el archivo: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function importHistory()
+    {
+        $imports = CatalogoItemImport::with('usuario:id,name')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get()
+            ->map(function ($import) {
+                return [
+                    'id' => $import->id,
+                    'usuario' => $import->usuario->name ?? '-',
+                    'nombre_archivo' => $import->nombre_archivo,
+                    'total_filas' => $import->total_filas,
+                    'creados' => $import->creados,
+                    'actualizados' => $import->actualizados,
+                    'errores' => $import->errores,
+                    'estado' => $import->estado,
+                    'fecha' => $import->created_at->format('d/m/Y H:i'),
+                ];
+            });
+
+        return response()->json($imports);
+    }
+
+    public function importDetail(CatalogoItemImport $import)
+    {
+        return response()->json([
+            'id' => $import->id,
+            'nombre_archivo' => $import->nombre_archivo,
+            'detalle_log' => $import->detalle_log ?? [],
+        ]);
     }
 
     protected function rules(?int $itemId = null): array

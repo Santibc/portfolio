@@ -10,8 +10,16 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @php $fondoLogin = \App\Models\ConfiguracionSistema::get('imagen_fondo_login'); @endphp
+    @if($fondoLogin)
+    <style>
+        body.fondo-custom {
+            background: url('{{ asset($fondoLogin) }}') center/cover no-repeat fixed !important;
+        }
+    </style>
+    @endif
 </head>
-<body class="antialiased bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+<body class="antialiased min-h-screen {{ $fondoLogin ? 'fondo-custom' : 'bg-gradient-to-br from-gray-50 to-gray-100' }}">
     <div class="flex flex-col items-center justify-center min-h-screen p-6">
         <!-- Logo -->
         <div class="mb-8 text-center">

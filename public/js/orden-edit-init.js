@@ -107,7 +107,7 @@ function cargarPiezas() {
             $row.find('.pieza-calibre').val(pieza.calibre);
         }
         if (pieza.notas) {
-            $row.find('.pieza-notas').val(pieza.notas);
+            $('#piezaNotasRow_' + idx).find('.pieza-notas').val(pieza.notas);
         }
 
         // Match bosquejo by DB ID in wizardState.bosquejos array

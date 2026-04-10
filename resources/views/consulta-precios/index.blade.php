@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid py-4" x-data="consultaPrecios()">
     {{-- Page Header --}}
-    <x-sinden.page-header title="Consulta de Precios" description="Consulta rapida de precios por servicio, calibre, largo y cantidad">
+    <x-sinden.page-header title="Consulta de Precios" description="Consulta rapida de precios por servicio, calibre, largo de pieza (mm) y cantidad de servicios">
     </x-sinden.page-header>
 
     <div class="row justify-content-center mt-4">
@@ -40,19 +40,21 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">Largo (mm)</label>
-                            <input type="number" class="form-control" x-model="largo" placeholder="Ej: 150" min="0" step="1">
+                            <label class="form-label fw-medium">Largo de la pieza (mm)</label>
+                            <input type="number" class="form-control" x-model="largoMm" placeholder="Ej: 150" min="0" step="1">
+                            <small class="text-muted">Largo del corte o doblez en milimetros</small>
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-medium">Cantidad (uds)</label>
-                            <input type="number" class="form-control" x-model="cantidad" placeholder="Ej: 25" min="1" step="1">
+                            <label class="form-label fw-medium">Cantidad de servicios</label>
+                            <input type="number" class="form-control" x-model="cantidadServicios" placeholder="Ej: 25" min="1" step="1">
+                            <small class="text-muted">Numero de piezas a procesar</small>
                         </div>
 
                         <div class="col-12">
                             <button type="button" class="btn btn-primary w-100"
                                 @click="consultar()"
-                                :disabled="consultando || !tipoServicio || !claveCalibe || !largo || !cantidad">
+                                :disabled="consultando || !tipoServicio || !claveCalibe || !largoMm || !cantidadServicios">
                                 <span x-show="!consultando"><i class="bi bi-search me-2"></i>Consultar Precio</span>
                                 <span x-show="consultando"><i class="bi bi-hourglass-split me-2"></i>Consultando...</span>
                             </button>
@@ -70,8 +72,8 @@
                             <p class="text-muted mb-3">
                                 Calibre: <strong x-text="resultado.clave_calibre"></strong>
                                 (<span x-text="resultado.calibre_mm"></span>mm)
-                                &bull; Largo: <span x-text="resultado.largo_rango"></span>
-                                &bull; Cantidad: <span x-text="resultado.cantidad_rango"></span>
+                                &bull; Largo pieza: <span x-text="resultado.largo_rango"></span>
+                                &bull; Cant. servicios: <span x-text="resultado.cantidad_rango"></span>
                             </p>
                             <div class="display-4 fw-bold text-primary mb-2" x-text="resultado.precio_formato"></div>
                             <p class="text-muted small">
@@ -103,14 +105,14 @@ function consultaPrecios() {
     return {
         tipoServicio: '',
         claveCalibe: '',
-        largo: '',
-        cantidad: '',
+        largoMm: '',
+        cantidadServicios: '',
         resultado: null,
         consultando: false,
         error: '',
 
         consultar() {
-            if (!this.tipoServicio || !this.claveCalibe || !this.largo || !this.cantidad) return;
+            if (!this.tipoServicio || !this.claveCalibe || !this.largoMm || !this.cantidadServicios) return;
 
             this.consultando = true;
             this.error = '';
@@ -123,8 +125,8 @@ function consultaPrecios() {
                     _token: '{{ csrf_token() }}',
                     tipo_servicio: this.tipoServicio,
                     clave_calibre: this.claveCalibe,
-                    largo: this.largo,
-                    cantidad: this.cantidad,
+                    largo_mm: this.largoMm,
+                    cantidad_servicios: this.cantidadServicios,
                 },
                 success: (data) => {
                     this.resultado = data;

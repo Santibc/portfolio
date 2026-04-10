@@ -23,7 +23,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered align-middle mb-0" id="tablaPiezas" style="display:none; min-width:900px;">
+            <table class="table table-bordered align-middle mb-0" id="tablaPiezas" style="display:none; min-width:750px;">
                 <thead>
                     <tr class="table-light">
                         <th style="width:100px" class="text-center">Bosquejo</th>
@@ -32,8 +32,7 @@
                         <th style="width:70px" class="text-center">Cantidad</th>
                         <th style="width:140px">Material</th>
                         <th style="width:90px">Calibre</th>
-                        <th style="width:150px">Especificacion</th>
-                        <th>Notas</th>
+                        <th>Especificacion</th>
                         <th style="width:60px" class="text-center">Operario</th>
                         <th style="width:40px"></th>
                     </tr>

@@ -89,6 +89,15 @@
                         </tr>
                     </thead>
                     <tfoot>
+                        <tr class="table-light">
+                            <td colspan="4" class="text-end small text-muted">
+                                Subtotal (Sin IVA): <span id="sumaSubtotal" class="fw-bold text-dark">$0</span>
+                            </td>
+                            <td colspan="3" class="text-end small text-muted">
+                                IVA: <span id="sumaIva" class="fw-bold text-dark">$0</span>
+                            </td>
+                            <td colspan="4"></td>
+                        </tr>
                         <tr class="table-light fw-bold">
                             <td colspan="4" class="text-end">Totales seleccionados:</td>
                             <td class="text-end" id="sumaTotal">$0</td>

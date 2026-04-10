@@ -87,12 +87,29 @@ $(function() {
     });
 });
 
-// Ajusta dinamicamente el ancho del input segun el largo del valor
+// Ajusta dinamicamente el ancho del input segun el largo del valor.
+// Usa canvas para medir el ancho real del texto y suma padding + spinner.
+var _autoExpandCanvas = null;
 function autoExpandCantidad(input) {
     if (!input) return;
-    var len = String(input.value || '').length;
-    // Ancho minimo 60px, ~10px por caracter + padding
-    var w = Math.max(60, len * 11 + 24);
+    var val = String(input.value || input.placeholder || '0');
+    if (val.length === 0) val = '0';
+
+    if (!_autoExpandCanvas) {
+        _autoExpandCanvas = document.createElement('canvas');
+    }
+    var ctx = _autoExpandCanvas.getContext('2d');
+    var cs = window.getComputedStyle(input);
+    ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    var textW = ctx.measureText(val).width;
+
+    // padding horizontal del input + ancho de los spinners (~22px) + holgura
+    var padL = parseFloat(cs.paddingLeft) || 0;
+    var padR = parseFloat(cs.paddingRight) || 0;
+    var spinner = 22;
+    var safety = 6;
+    var w = Math.ceil(textW + padL + padR + spinner + safety);
+    if (w < 70) w = 70;
     input.style.width = w + 'px';
 }
 
@@ -116,9 +133,9 @@ function initStepWatchers() {
         }
     });
 
-    // Step 7: Fechas - se completa al poner fecha de entrega
-    $('#fecha_entrega').on('change', function() {
-        if ($(this).val()) {
+    // Step 7: Fechas - se completa al poner fecha y hora de entrega
+    $('#fecha_entrega, #hora_entrega').on('change', function() {
+        if ($('#fecha_entrega').val() && $('#hora_entrega').val()) {
             marcarStepCompletado(7);
         } else {
             desmarcarStep(7);
@@ -288,7 +305,7 @@ function agregarFilaItem(opts) {
         + '  <input type="hidden" class="item-categoria" value="servicio">'
         + '</td>'
         + '<td><input type="text" class="form-control form-control-sm item-descripcion" placeholder="Descripcion del item"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:60px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-end item-precio" value="0" min="0" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input item-iva-check" checked onchange="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-end fw-semibold item-subtotal-display">$0</td>'
@@ -718,6 +735,37 @@ function vincularBosquejoAPieza(piezaIdx, bosquejoIndex) {
     triggerAutoSave('bosquejo-vinculado');
 }
 
+/**
+ * Sincroniza wizardState.bosquejos con los datos persistidos del backend.
+ * Actualiza IDs y rutas (temp -> permanente) para evitar que re-saves borren archivos.
+ */
+function sincronizarBosquejosDesdeRespuesta(bosquejosBackend) {
+    // El backend devuelve los bosquejos en el mismo orden que fueron enviados.
+    // recopilarDatosFormulario() filtra solo los referenciados por piezas,
+    // asi que necesitamos mapear por indice de los bosquejos referenciados.
+    var referencedIndices = [];
+    $('#tbodyPiezas tr.pieza-row').each(function() {
+        var bIdx = $(this).attr('data-bosquejo-index');
+        if (bIdx !== '' && bIdx !== undefined) {
+            var idx = parseInt(bIdx);
+            if (referencedIndices.indexOf(idx) === -1) {
+                referencedIndices.push(idx);
+            }
+        }
+    });
+    referencedIndices.sort(function(a, b) { return a - b; });
+
+    for (var i = 0; i < referencedIndices.length && i < bosquejosBackend.length; i++) {
+        var wsIdx = referencedIndices[i];
+        var bb = bosquejosBackend[i];
+        if (wizardState.bosquejos[wsIdx]) {
+            wizardState.bosquejos[wsIdx].id = bb.id;
+            wizardState.bosquejos[wsIdx].ruta_archivo = bb.ruta_archivo;
+            wizardState.bosquejos[wsIdx].ruta_miniatura = bb.ruta_miniatura;
+        }
+    }
+}
+
 function agregarPiezaConBosquejo(bosquejoData) {
     var bosquejoIndex = wizardState.bosquejos.length;
     wizardState.bosquejos.push(bosquejoData);
@@ -828,7 +876,7 @@ function agregarFilaPieza(opts) {
     opts = opts || {};
     wizardState.piezaCounter++;
     var idx = wizardState.piezaCounter;
-    var letra = obtenerLetraPieza($('#tbodyPiezas tr').length);
+    var letra = obtenerLetraPieza($('#tbodyPiezas tr.pieza-row').length);
     var nombre = 'Pieza ' + letra;
 
     // Opciones de calibre
@@ -841,7 +889,7 @@ function agregarFilaPieza(opts) {
         });
     }
 
-    var html = '<tr id="piezaRow_' + idx + '" data-idx="' + idx + '" data-bosquejo-index="">'
+    var html = '<tr id="piezaRow_' + idx + '" class="pieza-row" data-idx="' + idx + '" data-bosquejo-index="">'
         + '<td class="pieza-bosquejo-cell text-center">'
         + '  <div class="bosquejo-empty-actions">'
         + '    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="piezaSubirArchivo(' + idx + ')" title="Subir archivo"><i class="bi bi-upload"></i></button>'
@@ -858,18 +906,25 @@ function agregarFilaPieza(opts) {
         + '    <button type="button" class="bosquejo-name-edit-btn" onclick="piezaEditarNombreBosquejo(' + idx + ')" title="Editar nombre"><i class="bi bi-pencil-fill"></i></button>'
         + '  </div>'
         + '</td>'
-        + '<td class="text-center text-muted"><span class="pieza-num">' + ($('#tbodyPiezas tr').length + 1) + '</span></td>'
+        + '<td class="text-center text-muted"><span class="pieza-num">' + ($('#tbodyPiezas tr.pieza-row').length + 1) + '</span></td>'
         + '<td><input type="text" class="form-control form-control-sm pieza-nombre" value="' + nombre + '" onchange="generarEspecificacion(' + idx + ')"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-center pieza-cantidad cantidad-auto-expand" value="1" min="1" step="1" inputmode="numeric" style="width:60px" onchange="generarEspecificacion(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center pieza-cantidad cantidad-auto-expand" value="1" min="1" step="1" inputmode="numeric" style="width:75px" onchange="generarEspecificacion(' + idx + ')"></td>'
         + '<td class="position-relative">'
         + '  <input type="text" class="form-control form-control-sm pieza-material" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarMaterialPieza(this)" onchange="generarEspecificacion(' + idx + ')">'
         + '  <div class="material-autocomplete-results list-group shadow-sm" id="materialResults_' + idx + '" style="display:none; position:fixed; z-index:1050; max-height:200px; overflow-y:auto;"></div>'
         + '</td>'
         + '<td><select class="form-select form-select-sm pieza-calibre" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
         + '<td class="small text-muted pieza-especificacion">1 - ' + nombre + '</td>'
-        + '<td><textarea class="form-control form-control-sm pieza-notas" placeholder="Notas..." rows="2" style="resize:vertical;"></textarea></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input pieza-requiere-operario" checked onchange="actualizarVisibilidadOperario()"></td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaPieza(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
+        + '</tr>'
+        + '<tr id="piezaNotasRow_' + idx + '" class="pieza-notas-row" data-idx="' + idx + '">'
+        + '<td colspan="9" style="border-top:0; padding-top:0;">'
+        + '  <div class="d-flex align-items-start gap-2">'
+        + '    <label class="form-label small text-muted mb-0 mt-1 fw-semibold" style="min-width:55px;"><i class="bi bi-sticky me-1"></i>Notas:</label>'
+        + '    <textarea class="form-control form-control-sm pieza-notas" data-idx="' + idx + '" placeholder="Notas de la pieza..." rows="2" style="resize:vertical;"></textarea>'
+        + '  </div>'
+        + '</td>'
         + '</tr>';
 
     $('#tbodyPiezas').append(html);
@@ -885,9 +940,10 @@ function agregarFilaPieza(opts) {
 
 function eliminarFilaPieza(idx) {
     $('#piezaRow_' + idx).remove();
+    $('#piezaNotasRow_' + idx).remove();
     renumerarFilasPiezas();
     actualizarVisibilidadOperario();
-    if ($('#tbodyPiezas tr').length === 0) {
+    if ($('#tbodyPiezas tr.pieza-row').length === 0) {
         $('#tablaPiezas').hide();
         $('#piezasVacio').show();
         desmarcarStep(2);
@@ -896,7 +952,7 @@ function eliminarFilaPieza(idx) {
 }
 
 function renumerarFilasPiezas() {
-    $('#tbodyPiezas tr').each(function(i) {
+    $('#tbodyPiezas tr.pieza-row').each(function(i) {
         $(this).find('.pieza-num').text(i + 1);
         var letra = obtenerLetraPieza(i);
         var nuevoNombre = 'Pieza ' + letra;
@@ -975,7 +1031,7 @@ function seleccionarMaterialPieza(idx, material) {
 }
 
 function actualizarVisibilidadOperario() {
-    var tienePiezas = $('#tbodyPiezas tr').length > 0;
+    var tienePiezas = $('#tbodyPiezas tr.pieza-row').length > 0;
     var algunaRequiereOperario = $('#tbodyPiezas .pieza-requiere-operario:checked').length > 0;
     if (tienePiezas && algunaRequiereOperario) {
         $('#operarioInfo').hide();
@@ -1113,14 +1169,15 @@ function recopilarDatosFormulario() {
     });
 
     var piezas = [];
-    $('#tbodyPiezas tr').each(function() {
+    $('#tbodyPiezas tr.pieza-row').each(function() {
         var bosquejoIdx = $(this).attr('data-bosquejo-index');
+        var rowIdx = $(this).data('idx');
         piezas.push({
             nombre: $(this).find('.pieza-nombre').val(),
             cantidad: parseInt($(this).find('.pieza-cantidad').val()) || 1,
             material: $(this).find('.pieza-material').val() || null,
             calibre: $(this).find('.pieza-calibre').val() || null,
-            notas: $(this).find('.pieza-notas').val() || null,
+            notas: $('#piezaNotasRow_' + rowIdx).find('.pieza-notas').val() || null,
             bosquejo_index: (bosquejoIdx !== '' && bosquejoIdx !== undefined) ? parseInt(bosquejoIdx) : null,
             requiere_operario: $(this).find('.pieza-requiere-operario').is(':checked') ? 1 : 0
         });
@@ -1215,6 +1272,12 @@ function guardarOrden(isAutoSave) {
             if (response.success) {
                 wizardState.ordenId = response.orden_id;
                 $('#orden_id').val(response.orden_id);
+
+                // Sincronizar IDs y rutas de bosquejos desde el backend
+                if (response.bosquejos && response.bosquejos.length > 0) {
+                    sincronizarBosquejosDesdeRespuesta(response.bosquejos);
+                }
+
                 wizardState.lastSavedHash = JSON.stringify(recopilarDatosFormulario());
 
                 // Limpiar backup de localStorage (datos guardados exitosamente)
@@ -1223,9 +1286,7 @@ function guardarOrden(isAutoSave) {
                 }
 
                 if (isAutoSave) {
-                    var ahora = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-                    $('#autoguardadoTexto').text('Auto-guardado ' + ahora);
-                    $('#autoguardadoIndicator').show();
+                    // Auto-guardado silencioso, sin mensaje visible
                 } else {
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success',
                         title: 'La orden ha sido guardada exitosamente.', showConfirmButton: false, timer: 3000 });
@@ -1327,6 +1388,8 @@ function validarParaGenerar(data) {
     if (algunaRequiereOperario && !data.operario_id) {
         errores.push('Debe seleccionar un operario cuando hay piezas que lo requieren.');
     }
+    if (!data.fecha_entrega) errores.push('Debe indicar la fecha de entrega.');
+    if (!data.hora_entrega) errores.push('Debe indicar la hora de entrega.');
     return errores;
 }
 

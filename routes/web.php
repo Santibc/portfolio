@@ -73,6 +73,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/items/export-excel', [CatalogoItemController::class, 'exportExcel'])->name('items.export-excel');
         Route::get('/items/export-pdf', [CatalogoItemController::class, 'exportPdf'])->name('items.export-pdf');
         Route::patch('/items/{item}/toggle-activo', [CatalogoItemController::class, 'toggleActivo'])->name('items.toggle-activo');
+        Route::get('/items/import-template', [CatalogoItemController::class, 'downloadTemplate'])->name('items.import-template');
+        Route::post('/items/import-excel', [CatalogoItemController::class, 'importExcel'])->name('items.import-excel');
+        Route::get('/items/import-history', [CatalogoItemController::class, 'importHistory'])->name('items.import-history');
+        Route::get('/items/import-detail/{import}', [CatalogoItemController::class, 'importDetail'])->name('items.import-detail');
         Route::resource('items', CatalogoItemController::class)->except(['show', 'destroy'])->parameters(['items' => 'item']);
 
         // Ordenes - Exportacion listado (rutas literales ANTES de {orden})
@@ -91,8 +95,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/ordenes/grupos-bosquejos', [OrdenController::class, 'listarGruposBosquejos'])->name('ordenes.grupos-bosquejos');
 
         // Ordenes - Gestion / escritura (rutas con parametro {orden})
-        Route::get('/ordenes/{orden}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit');
-        Route::put('/ordenes/{orden}', [OrdenController::class, 'update'])->name('ordenes.update');
+        Route::get('/ordenes/{orden}/editar', [OrdenController::class, 'edit'])->name('ordenes.edit')->middleware('role:Administrador|Recepcion|Contabilidad');
+        Route::put('/ordenes/{orden}', [OrdenController::class, 'update'])->name('ordenes.update')->middleware('role:Administrador|Recepcion|Contabilidad');
         Route::post('/ordenes/{orden}/copiar', [OrdenController::class, 'copiar'])->name('ordenes.copiar');
         Route::post('/ordenes/{orden}/anular', [OrdenController::class, 'anular'])->name('ordenes.anular');
         Route::post('/ordenes/{orden}/comentarios', [OrdenController::class, 'agregarComentario'])->name('ordenes.comentarios.store');
@@ -278,6 +282,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::post('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
     Route::post('/configuracion/logo', [ConfiguracionController::class, 'uploadLogo'])->name('configuracion.upload-logo');
     Route::delete('/configuracion/logo', [ConfiguracionController::class, 'deleteLogo'])->name('configuracion.delete-logo');
+    Route::post('/configuracion/fondo', [ConfiguracionController::class, 'uploadFondo'])->name('configuracion.upload-fondo');
+    Route::delete('/configuracion/fondo', [ConfiguracionController::class, 'deleteFondo'])->name('configuracion.delete-fondo');
 
     // Tipos de Pago (CRUD)
     Route::post('/configuracion/tipos-pago', [ConfiguracionController::class, 'storeTipoPago'])->name('configuracion.tipos-pago.store');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
@@ -17,8 +18,12 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        $esUnicoAdmin = $user->hasRole('Administrador') && User::role('Administrador')->count() <= 1;
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'esUnicoAdmin' => $esUnicoAdmin,
         ]);
     }
 
@@ -104,6 +109,16 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Impedir eliminar si es el único Administrador
+        if ($user->hasRole('Administrador')) {
+            $adminCount = User::role('Administrador')->count();
+            if ($adminCount <= 1) {
+                return back()->withErrors([
+                    'password' => 'No puedes eliminar tu cuenta porque eres el único Administrador del sistema.',
+                ], 'userDeletion');
+            }
+        }
 
         Auth::logout();
 

@@ -262,6 +262,7 @@ class ContabilidadController extends Controller
             return response()->json(['success' => false, 'message' => 'Este pago ya esta aprobado.'], 422);
         }
 
+        $valoresOriginales = $pago->getOriginal();
         $pago->update([
             'aprobado' => true,
             'aprobado_por' => auth()->id(),
@@ -269,11 +270,12 @@ class ContabilidadController extends Controller
 
         $this->estadoService->recalcularTodo($pago->orden);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'pago.aprobado',
             'Pago de $' . number_format($pago->monto, 0, ',', '.') . ' aprobado (Orden ' . ($pago->orden->numero_orden ?? 'ID:' . $pago->orden_id) . ')',
-            $pago->orden_id,
-            ['pago_id' => $pago->id, 'monto' => $pago->monto, 'metodo_pago' => $pago->metodo_pago]
+            $pago,
+            $valoresOriginales,
+            $pago->orden_id
         );
 
         NotificacionService::pagoAprobado($pago);
@@ -317,6 +319,7 @@ class ContabilidadController extends Controller
         DB::beginTransaction();
         try {
             foreach ($pagos as $pago) {
+                $valoresOriginales = $pago->getOriginal();
                 $pago->update([
                     'aprobado' => true,
                     'aprobado_por' => auth()->id(),
@@ -326,11 +329,13 @@ class ContabilidadController extends Controller
                 $montoTotal += $pago->monto;
                 $ordenesAfectadas->push($pago->orden_id);
 
-                $this->registrarActividad(
+                $this->registrarActualizacion(
                     'pago.aprobado',
                     'Pago de $' . number_format($pago->monto, 0, ',', '.') . ' aprobado (Orden ' . ($pago->orden->numero_orden ?? 'ID:' . $pago->orden_id) . ')',
+                    $pago,
+                    $valoresOriginales,
                     $pago->orden_id,
-                    ['pago_id' => $pago->id, 'monto' => $pago->monto, 'metodo_pago' => $pago->metodo_pago, 'masivo' => true]
+                    ['masivo' => true]
                 );
 
                 NotificacionService::pagoAprobado($pago);
@@ -392,11 +397,11 @@ class ContabilidadController extends Controller
 
         $this->estadoService->recalcularTodo($orden);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'pago.registrado',
             'Pago de $' . number_format($request->monto, 0, ',', '.') . ' registrado y aprobado en orden ' . ($orden->numero_orden ?? 'ID:' . $orden->id),
-            $orden->id,
-            ['monto' => $request->monto, 'metodo_pago' => $request->metodo_pago, 'aprobado' => true]
+            $pago,
+            $orden->id
         );
 
         $ordenFresh = $orden->fresh();
@@ -435,19 +440,20 @@ class ContabilidadController extends Controller
             'motivo_rechazo' => $request->input('motivo_rechazo'),
         ]);
 
+        $this->registrarEliminacion(
+            'pago.rechazado',
+            'Pago de $' . number_format($monto, 0, ',', '.') . ' rechazado (Orden ' . $ordenNumero . ')',
+            $pago,
+            $ordenId,
+            ['motivo_rechazo' => $request->input('motivo_rechazo')]
+        );
+
         $pago->delete(); // Soft delete: marca deleted_at
 
         $orden = Orden::find($ordenId);
         if ($orden) {
             $this->estadoService->recalcularTodo($orden);
         }
-
-        $this->registrarActividad(
-            'pago.rechazado',
-            'Pago de $' . number_format($monto, 0, ',', '.') . ' rechazado (Orden ' . $ordenNumero . ')',
-            $ordenId,
-            ['monto' => $monto, 'metodo_pago' => $metodo]
-        );
 
         NotificacionService::pagoRechazado($pago, $ordenNumero, $ordenId);
 
@@ -498,6 +504,8 @@ class ContabilidadController extends Controller
                 ->addColumn('checkbox', function ($o) {
                     return '<input type="checkbox" class="form-check-input fila-check" checked'
                         . ' data-total="' . $o->total . '"'
+                        . ' data-subtotal="' . $o->subtotal . '"'
+                        . ' data-iva="' . $o->monto_iva . '"'
                         . ' data-pagado="' . $o->total_pagado . '"'
                         . ' data-saldo="' . $o->saldo . '">';
                 })
@@ -620,9 +628,12 @@ class ContabilidadController extends Controller
         if ($request->ajax()) {
             $query = OrdenItem::query()
                 ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
-                ->where('ordenes.estado_pago', 'pagado')
                 ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada'])
                 ->select('orden_items.*', 'ordenes.numero_orden', 'ordenes.created_at as fecha_orden');
+
+            if ($request->filled('estado_pago') && in_array($request->estado_pago, ['pagado', 'saldo_pendiente'])) {
+                $query->where('ordenes.estado_pago', $request->estado_pago);
+            }
 
             // Filtros
             if ($request->filled('busqueda')) {
@@ -648,8 +659,11 @@ class ContabilidadController extends Controller
             // Calcular totales con los filtros aplicados
             $totalesQuery = OrdenItem::query()
                 ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
-                ->where('ordenes.estado_pago', 'pagado')
                 ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada']);
+
+            if ($request->filled('estado_pago') && in_array($request->estado_pago, ['pagado', 'saldo_pendiente'])) {
+                $totalesQuery->where('ordenes.estado_pago', $request->estado_pago);
+            }
 
             if ($request->filled('busqueda')) {
                 $busqueda2 = $request->busqueda;
@@ -714,17 +728,18 @@ class ContabilidadController extends Controller
         // Stats para la vista
         $baseQuery = fn() => OrdenItem::query()
             ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
-            ->where('ordenes.estado_pago', 'pagado')
             ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada']);
 
         $totalServicios = $baseQuery()->where('orden_items.categoria', 'servicio')->sum('orden_items.total');
         $totalMateriales = $baseQuery()->where('orden_items.categoria', 'material')->sum('orden_items.total');
         $totalProductos = $baseQuery()->where('orden_items.categoria', 'producto_terminado')->sum('orden_items.total');
+        $totalSinIva = $baseQuery()->sum('orden_items.subtotal');
+        $totalIva = $baseQuery()->sum('orden_items.monto_iva');
         $granTotal = $baseQuery()->sum('orden_items.total');
         $totalItems = $baseQuery()->count();
 
         return view('contabilidad.reporte-items', compact(
-            'totalServicios', 'totalMateriales', 'totalProductos', 'granTotal', 'totalItems'
+            'totalServicios', 'totalMateriales', 'totalProductos', 'totalSinIva', 'totalIva', 'granTotal', 'totalItems'
         ));
     }
 
@@ -735,10 +750,13 @@ class ContabilidadController extends Controller
     {
         $query = OrdenItem::query()
             ->join('ordenes', 'orden_items.orden_id', '=', 'ordenes.id')
-            ->where('ordenes.estado_pago', 'pagado')
             ->whereNotIn('ordenes.estado_trabajo', ['borrador', 'anulada'])
             ->select('orden_items.*', 'ordenes.numero_orden', 'ordenes.created_at as fecha_orden')
             ->orderBy('ordenes.created_at', 'desc');
+
+        if ($request->filled('estado_pago') && in_array($request->estado_pago, ['pagado', 'saldo_pendiente'])) {
+            $query->where('ordenes.estado_pago', $request->estado_pago);
+        }
 
         if ($request->filled('busqueda')) {
             $busqueda = $request->busqueda;

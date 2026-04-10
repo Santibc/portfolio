@@ -269,18 +269,74 @@
 </x-sinden.modal>
 @endcan
 
-{{-- Modal: Ver imagen completa (lightbox) --}}
-<x-sinden.modal id="modalVerBosquejo" title="Bosquejo" size="lg">
-    <div class="text-center">
-        <img id="verBosquejoImg" src="" alt="" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">
+{{-- Visor de bosquejo en pantalla completa --}}
+<div id="visorBosquejo" class="visor-bosquejo" role="dialog" aria-hidden="true">
+    <div class="visor-bosquejo__header">
+        <span id="visorBosquejoTitulo" class="visor-bosquejo__titulo"></span>
+        <button type="button" class="visor-bosquejo__cerrar" aria-label="Cerrar"
+                onclick="cerrarVisorBosquejo()">
+            <i class="bi bi-x-lg"></i>
+        </button>
     </div>
-</x-sinden.modal>
+    <div class="visor-bosquejo__canvas" id="visorBosquejoCanvas">
+        <img id="visorBosquejoImg" src="" alt="" draggable="false">
+    </div>
+</div>
 
 @endsection
 
 @push('scripts')
 <script>
 $(function() {
+    // ===== Reabrir acordeon del grupo donde se subio el ultimo bosquejo =====
+    try {
+        var openGrupoId = sessionStorage.getItem('bosquejosMatrizOpenGrupo');
+        if (openGrupoId) {
+            sessionStorage.removeItem('bosquejosMatrizOpenGrupo');
+
+            if (openGrupoId === 'individuales') {
+                // Cerrar el primer acordeon que abre por defecto y hacer scroll a individuales
+                var $primero = $('#acordeonGrupos .accordion-collapse.show').first();
+                if ($primero.length && typeof bootstrap !== 'undefined') {
+                    bootstrap.Collapse.getOrCreateInstance($primero[0]).hide();
+                    $primero.prev('.accordion-header')
+                        .find('.accordion-button')
+                        .addClass('collapsed')
+                        .attr('aria-expanded', 'false');
+                }
+                var $ind = $('#seccion-individuales');
+                if ($ind.length) {
+                    setTimeout(function() {
+                        $ind[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 200);
+                }
+            } else {
+                var $target = $('#collapse-' + openGrupoId);
+                if ($target.length && typeof bootstrap !== 'undefined') {
+                    // Cerrar el que esta abierto por defecto (si no es el target)
+                    $('#acordeonGrupos .accordion-collapse.show').not($target).each(function() {
+                        bootstrap.Collapse.getOrCreateInstance(this).hide();
+                        $(this).prev('.accordion-header')
+                            .find('.accordion-button')
+                            .addClass('collapsed')
+                            .attr('aria-expanded', 'false');
+                    });
+                    // Abrir el target
+                    bootstrap.Collapse.getOrCreateInstance($target[0]).show();
+                    $target.prev('.accordion-header')
+                        .find('.accordion-button')
+                        .removeClass('collapsed')
+                        .attr('aria-expanded', 'true');
+                    // Scroll al grupo
+                    setTimeout(function() {
+                        var card = document.getElementById('grupo-card-' + openGrupoId);
+                        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
+            }
+        }
+    } catch (e) {}
+
     // Preview de imagen(es) al seleccionar archivo(s)
     $('#archivo').on('change', function(e) {
         var files = e.target.files;
@@ -480,6 +536,12 @@ function subirBosquejo() {
     function subirUno(index) {
         if (index >= total) {
             // Terminado
+            // Recordar a que grupo se subio para reabrir su acordeon tras el reload
+            if (exitos > 0) {
+                try {
+                    sessionStorage.setItem('bosquejosMatrizOpenGrupo', grupoId ? String(grupoId) : 'individuales');
+                } catch (e) {}
+            }
             if (errores.length === 0) {
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success',
                     title: exitos + ' bosquejo(s) subido(s)', showConfirmButton: false, timer: 2500 });
@@ -575,11 +637,164 @@ function confirmarEliminarBosquejo(bosquejoId, nombre) {
 }
 @endcan
 
-// ===== VER IMAGEN COMPLETA (lightbox) =====
-function verBosquejo(url, nombre) {
-    $('#verBosquejoImg').attr('src', url);
-    $('#modalVerBosquejoLabel').text(nombre);
-    $('#modalVerBosquejo').modal('show');
-}
+// ===== VISOR DE BOSQUEJO EN PANTALLA COMPLETA =====
+const visorBosquejo = {
+    el: null, canvas: null, img: null, titulo: null,
+    scale: 1, tx: 0, ty: 0, minScale: 1, maxScale: 8,
+    pointers: new Map(),
+    pinchStartDist: 0, pinchStartScale: 1, pinchCenter: { x: 0, y: 0 },
+    isPanning: false, panStartX: 0, panStartY: 0, panStartTx: 0, panStartTy: 0,
+    lastTap: 0,
+
+    init() {
+        this.el = document.getElementById('visorBosquejo');
+        if (!this.el) return;
+        this.canvas = document.getElementById('visorBosquejoCanvas');
+        this.img = document.getElementById('visorBosquejoImg');
+        this.titulo = document.getElementById('visorBosquejoTitulo');
+
+        // Wheel: zoom solo con Ctrl, sin Ctrl no hace nada (passive:false para preventDefault)
+        this.canvas.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
+
+        // Pointer events para pinch + pan (touch-action:none en CSS bloquea gestos nativos)
+        this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+        this.canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
+        const up = (e) => this.onPointerUp(e);
+        this.canvas.addEventListener('pointerup', up);
+        this.canvas.addEventListener('pointercancel', up);
+        this.canvas.addEventListener('pointerleave', up);
+
+        // Doble clic / doble tap para resetear
+        this.canvas.addEventListener('dblclick', (e) => { e.preventDefault(); this.reset(); });
+
+        // Esc para cerrar
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.el.classList.contains('is-open')) {
+                this.cerrar();
+            }
+        });
+
+        // Clic en el fondo (fuera de la imagen) cierra
+        this.canvas.addEventListener('click', (e) => {
+            if (e.target === this.canvas && this.scale === 1) this.cerrar();
+        });
+    },
+
+    abrir(url, nombre) {
+        if (!this.el) this.init();
+        this.titulo.textContent = nombre || '';
+        this.img.src = url;
+        this.reset();
+        this.el.classList.add('is-open');
+        this.el.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('visor-bosquejo-open');
+    },
+
+    cerrar() {
+        if (!this.el) return;
+        this.el.classList.remove('is-open');
+        this.el.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('visor-bosquejo-open');
+        this.reset();
+        this.img.src = '';
+        this.pointers.clear();
+        this.isPanning = false;
+    },
+
+    aplicar() {
+        this.img.style.transform = `translate(${this.tx}px, ${this.ty}px) scale(${this.scale})`;
+    },
+
+    reset() {
+        this.scale = 1; this.tx = 0; this.ty = 0;
+        this.aplicar();
+    },
+
+    // Zoom centrado en un punto del viewport (cx, cy)
+    zoomEnPunto(cx, cy, factor) {
+        const next = Math.min(this.maxScale, Math.max(this.minScale, this.scale * factor));
+        if (next === this.scale) return;
+        const rect = this.canvas.getBoundingClientRect();
+        // Coordenadas del punto relativas al centro del canvas (donde está anclado el transform-origin)
+        const px = cx - rect.left - rect.width / 2;
+        const py = cy - rect.top - rect.height / 2;
+        // Mantiene el punto bajo el cursor estable
+        const ratio = next / this.scale;
+        this.tx = px - (px - this.tx) * ratio;
+        this.ty = py - (py - this.ty) * ratio;
+        this.scale = next;
+        if (this.scale === 1) { this.tx = 0; this.ty = 0; }
+        this.aplicar();
+    },
+
+    onWheel(e) {
+        if (!e.ctrlKey) return;          // solo Ctrl + rueda
+        e.preventDefault();              // bloquea zoom del navegador
+        const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+        this.zoomEnPunto(e.clientX, e.clientY, factor);
+    },
+
+    onPointerDown(e) {
+        if (e.target.tagName === 'BUTTON') return;
+        this.canvas.setPointerCapture(e.pointerId);
+        this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (this.pointers.size === 2) {
+            // Inicio de pinch
+            const pts = Array.from(this.pointers.values());
+            this.pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            this.pinchStartScale = this.scale;
+            this.pinchCenter = {
+                x: (pts[0].x + pts[1].x) / 2,
+                y: (pts[0].y + pts[1].y) / 2,
+            };
+            this.isPanning = false;
+        } else if (this.pointers.size === 1 && this.scale > 1) {
+            // Inicio de pan
+            this.isPanning = true;
+            this.panStartX = e.clientX;
+            this.panStartY = e.clientY;
+            this.panStartTx = this.tx;
+            this.panStartTy = this.ty;
+            this.img.classList.add('is-panning');
+        }
+    },
+
+    onPointerMove(e) {
+        if (!this.pointers.has(e.pointerId)) return;
+        this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (this.pointers.size === 2) {
+            const pts = Array.from(this.pointers.values());
+            const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            if (this.pinchStartDist > 0) {
+                const targetScale = Math.min(this.maxScale,
+                    Math.max(this.minScale, this.pinchStartScale * (dist / this.pinchStartDist)));
+                const factor = targetScale / this.scale;
+                if (factor !== 1) {
+                    this.zoomEnPunto(this.pinchCenter.x, this.pinchCenter.y, factor);
+                }
+            }
+        } else if (this.isPanning) {
+            this.tx = this.panStartTx + (e.clientX - this.panStartX);
+            this.ty = this.panStartTy + (e.clientY - this.panStartY);
+            this.aplicar();
+        }
+    },
+
+    onPointerUp(e) {
+        if (this.pointers.has(e.pointerId)) this.pointers.delete(e.pointerId);
+        if (this.pointers.size < 2) this.pinchStartDist = 0;
+        if (this.pointers.size === 0) {
+            this.isPanning = false;
+            this.img.classList.remove('is-panning');
+        }
+    },
+};
+
+function verBosquejo(url, nombre) { visorBosquejo.abrir(url, nombre); }
+function cerrarVisorBosquejo() { visorBosquejo.cerrar(); }
+
+$(function() { visorBosquejo.init(); });
 </script>
 @endpush

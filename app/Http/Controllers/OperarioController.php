@@ -320,7 +320,18 @@ class OperarioController extends Controller
             if (!empty($resultado['piezas_terminadas'])) {
                 $desc .= '. Terminadas: ' . implode(', ', $resultado['piezas_terminadas']);
             }
+            $cambiosAvance = [];
+            foreach ($request->input('cambios', []) as $c) {
+                $cambiosAvance['pieza_' . ($c['pieza_id'] ?? '?')] = [
+                    'antes' => null,
+                    'despues' => ($c['porcentaje'] ?? null) . '%',
+                ];
+            }
             $this->registrarActividad('pieza.avance_actualizado', $desc, $orden->id, [
+                'tipo_cambio' => 'update',
+                'modelo' => 'OrdenPieza',
+                'modelo_id' => null,
+                'cambios' => $cambiosAvance,
                 'piezas_actualizadas' => $resultado['piezas_actualizadas'],
                 'piezas_terminadas' => $resultado['piezas_terminadas'],
             ]);
@@ -330,7 +341,18 @@ class OperarioController extends Controller
                 $this->registrarActividad('pieza.avance_disminuido',
                     "Avance disminuido en '{$disminuido['pieza']}': {$disminuido['desde']}% -> {$disminuido['hasta']}%",
                     $orden->id,
-                    $disminuido
+                    [
+                        'tipo_cambio' => 'update',
+                        'modelo' => 'OrdenPieza',
+                        'modelo_id' => $disminuido['pieza_id'] ?? null,
+                        'cambios' => [
+                            'porcentaje_avance' => [
+                                'antes' => $disminuido['desde'] . '%',
+                                'despues' => $disminuido['hasta'] . '%',
+                            ],
+                        ],
+                        'pieza' => $disminuido['pieza'] ?? null,
+                    ]
                 );
             }
         }
@@ -349,6 +371,7 @@ class OperarioController extends Controller
         ]);
 
         $user = auth()->user();
+        $operarioAnteriorId = $pieza->operario_actual_id;
         $resultado = $this->piezaService->transferirPieza(
             $pieza,
             $request->input('nuevo_operario_id'),
@@ -360,7 +383,18 @@ class OperarioController extends Controller
             $this->registrarActividad('pieza.transferida',
                 "Pieza '{$pieza->nombre}' transferida a {$resultado['nuevo_operario']}",
                 $pieza->orden_id,
-                ['pieza_id' => $pieza->id, 'nuevo_operario_id' => $request->input('nuevo_operario_id')]
+                [
+                    'tipo_cambio' => 'update',
+                    'modelo' => 'OrdenPieza',
+                    'modelo_id' => $pieza->id,
+                    'cambios' => [
+                        'operario_actual_id' => [
+                            'antes' => $operarioAnteriorId,
+                            'despues' => (int) $request->input('nuevo_operario_id'),
+                        ],
+                    ],
+                    'notas_transferencia' => $request->input('notas'),
+                ]
             );
         }
 
@@ -373,13 +407,21 @@ class OperarioController extends Controller
     public function dejarEnCola(OrdenPieza $pieza)
     {
         $user = auth()->user();
+        $operarioAnteriorId = $pieza->operario_actual_id;
         $resultado = $this->piezaService->dejarEnCola($pieza, $user);
 
         if ($resultado['success']) {
             $this->registrarActividad('pieza.liberada_a_pool',
                 "Pieza '{$pieza->nombre}' dejada en cola general",
                 $pieza->orden_id,
-                ['pieza_id' => $pieza->id]
+                [
+                    'tipo_cambio' => 'update',
+                    'modelo' => 'OrdenPieza',
+                    'modelo_id' => $pieza->id,
+                    'cambios' => [
+                        'operario_actual_id' => ['antes' => $operarioAnteriorId, 'despues' => null],
+                    ],
+                ]
             );
         }
 
@@ -392,13 +434,21 @@ class OperarioController extends Controller
     public function tomarPieza(OrdenPieza $pieza)
     {
         $user = auth()->user();
+        $operarioAnteriorId = $pieza->operario_actual_id;
         $resultado = $this->piezaService->tomarPieza($pieza, $user);
 
         if ($resultado['success']) {
             $this->registrarActividad('pieza.tomada_de_pool',
                 "Pieza '{$resultado['pieza']}' tomada de cola general",
                 $resultado['orden_id'],
-                ['pieza_id' => $pieza->id]
+                [
+                    'tipo_cambio' => 'update',
+                    'modelo' => 'OrdenPieza',
+                    'modelo_id' => $pieza->id,
+                    'cambios' => [
+                        'operario_actual_id' => ['antes' => $operarioAnteriorId, 'despues' => $user->id],
+                    ],
+                ]
             );
         }
 
@@ -422,7 +472,12 @@ class OperarioController extends Controller
         $user = auth()->user();
         $foto = $this->piezaService->subirFoto($pieza, $request->file('foto'), $user);
 
-        $this->registrarActividad('pieza.foto_subida', "Foto subida para pieza de orden {$pieza->orden->numero_orden}", $pieza->orden_id);
+        $this->registrarCreacion(
+            'pieza.foto_subida',
+            "Foto subida para pieza de orden {$pieza->orden->numero_orden}",
+            $foto,
+            $pieza->orden_id
+        );
 
         return response()->json([
             'success' => true,

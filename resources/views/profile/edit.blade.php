@@ -201,11 +201,18 @@
                 </div>
                 <div class="card-body">
                     <h6>Eliminar Cuenta</h6>
-                    <p class="text-muted mb-3">Una vez eliminada tu cuenta, todos tus recursos y datos se eliminarán permanentemente. Antes de eliminarla, descarga cualquier dato o información que desees conservar.</p>
+                    @if($esUnicoAdmin)
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <strong>No puedes eliminar tu cuenta.</strong> Eres el único Administrador del sistema. Debes asignar el rol de Administrador a otro usuario antes de poder eliminar tu cuenta.
+                        </div>
+                    @else
+                        <p class="text-muted mb-3">Una vez eliminada tu cuenta, todos tus recursos y datos se eliminarán permanentemente. Antes de eliminarla, descarga cualquier dato o información que desees conservar.</p>
 
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                        <i class="fas fa-trash me-2"></i>Eliminar Cuenta
-                    </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="fas fa-trash me-2"></i>Eliminar Cuenta
+                        </button>
+                    @endif
                 </div>
             </div>
             @endrole

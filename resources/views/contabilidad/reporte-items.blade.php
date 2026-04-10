@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <x-sinden.page-header title="Reporte Ventas por Items" description="Items vendidos en ordenes con estado de pago completado">
+    <x-sinden.page-header title="Reporte Ventas por Items" description="Items vendidos en ordenes (pagadas y con saldo pendiente)">
         <x-slot name="actions">
             <a href="{{ route('contabilidad.reporte-items.export') }}" class="btn btn-success" id="btnExportar" style="min-height:48px">
                 <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
@@ -17,6 +17,8 @@
         <x-sinden.stat-card icon="bi bi-gear" :value="'$' . number_format($totalServicios, 0, ',', '.')" title="Total Servicios" color="info" />
         <x-sinden.stat-card icon="bi bi-box" :value="'$' . number_format($totalMateriales, 0, ',', '.')" title="Total Materiales" color="warning" />
         <x-sinden.stat-card icon="bi bi-bag-check" :value="'$' . number_format($totalProductos, 0, ',', '.')" title="Total Prod. Terminados" color="success" />
+        <x-sinden.stat-card icon="bi bi-cash" :value="'$' . number_format($totalSinIva, 0, ',', '.')" title="Total Sin IVA" color="secondary" />
+        <x-sinden.stat-card icon="bi bi-receipt" :value="'$' . number_format($totalIva, 0, ',', '.')" title="Total IVA" color="dark" />
         <x-sinden.stat-card icon="bi bi-cash-stack" :value="'$' . number_format($granTotal, 0, ',', '.')" title="Gran Total" color="primary" />
     </div>
 
@@ -24,9 +26,9 @@
     <div class="card border-0 shadow-sm mt-4">
         <div class="card-body px-4 py-3">
             <div class="row g-2 align-items-end">
-                <div class="col-md-3 col-6">
+                <div class="col-md-2 col-6">
                     <label class="form-label small text-muted mb-1">Buscar (codigo / descripcion)</label>
-                    <input type="text" class="form-control" id="filtroBusqueda" placeholder="Ej: CORTE-001 o corte laser" style="min-height:44px">
+                    <input type="text" class="form-control" id="filtroBusqueda" placeholder="Ej: CORTE-001" style="min-height:44px">
                 </div>
                 <div class="col-md-2 col-6">
                     <label class="form-label small text-muted mb-1">Categoria</label>
@@ -38,6 +40,14 @@
                     </select>
                 </div>
                 <div class="col-md-2 col-6">
+                    <label class="form-label small text-muted mb-1">Estado pago</label>
+                    <select class="form-select" id="filtroEstadoPago" style="min-height:44px">
+                        <option value="todos">Todos</option>
+                        <option value="pagado">Pagado</option>
+                        <option value="saldo_pendiente">Saldo Pendiente</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-6">
                     <label class="form-label small text-muted mb-1">Desde</label>
                     <input type="date" class="form-control" id="filtroFechaDesde" style="min-height:44px">
                 </div>
@@ -45,7 +55,7 @@
                     <label class="form-label small text-muted mb-1">Hasta</label>
                     <input type="date" class="form-control" id="filtroFechaHasta" style="min-height:44px">
                 </div>
-                <div class="col-md-3 col-12">
+                <div class="col-md-2 col-12">
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-primary flex-grow-1" id="btnFiltrarReporte" style="min-height:44px">
                             <i class="bi bi-search me-1"></i>Filtrar
@@ -64,7 +74,7 @@
         <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
             <div class="d-flex align-items-center justify-content-between">
                 <h6 class="mb-0 fw-semibold text-dark">
-                    <i class="bi bi-bar-chart-line me-2 text-primary"></i>Items Vendidos (Ordenes Pagadas)
+                    <i class="bi bi-bar-chart-line me-2 text-primary"></i>Items Vendidos
                 </h6>
                 <span class="badge bg-light text-muted border" id="totalRegistros"></span>
             </div>

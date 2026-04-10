@@ -46,10 +46,23 @@ class ActividadController extends Controller
                         . ($r->orden->numero_orden ?? "#{$r->orden_id}")
                         . '</a>';
                 })
+                ->addColumn('detalle_btn', function ($r) {
+                    if (empty($r->datos_extra)) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    $payload = htmlspecialchars(json_encode($r->datos_extra), ENT_QUOTES, 'UTF-8');
+                    $accion = e(RegistroActividad::TIPOS_ACCION[$r->accion] ?? $r->accion);
+                    $fecha = $r->created_at->format('d/m/Y H:i');
+                    return '<button type="button" class="btn btn-sm btn-outline-primary btn-ver-detalle"'
+                        . ' data-detalle="' . $payload . '"'
+                        . ' data-accion="' . $accion . '"'
+                        . ' data-fecha="' . $fecha . '"'
+                        . ' title="Ver detalle del cambio"><i class="bi bi-eye"></i></button>';
+                })
                 ->orderColumn('fecha_formatted', function ($query, $order) {
                     $query->orderBy('created_at', $order);
                 })
-                ->rawColumns(['accion_badge', 'orden_link'])
+                ->rawColumns(['accion_badge', 'orden_link', 'detalle_btn'])
                 ->make(true);
         }
 
@@ -137,6 +150,21 @@ class ActividadController extends Controller
                         . ($r->orden->numero_orden ?? "#{$r->orden_id}")
                         . '</a>';
                 })
+                ->addColumn('detalle_btn', function ($r) {
+                    if (empty($r->datos_extra)) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    $payload = htmlspecialchars(json_encode($r->datos_extra), ENT_QUOTES, 'UTF-8');
+                    $accion = e(RegistroActividad::TIPOS_ACCION[$r->accion] ?? $r->accion);
+                    $fecha = $r->created_at->format('d/m/Y H:i');
+                    $usuario = e($r->usuario->name ?? '-');
+                    return '<button type="button" class="btn btn-sm btn-outline-primary btn-ver-detalle"'
+                        . ' data-detalle="' . $payload . '"'
+                        . ' data-accion="' . $accion . '"'
+                        . ' data-fecha="' . $fecha . '"'
+                        . ' data-usuario="' . $usuario . '"'
+                        . ' title="Ver detalle del cambio"><i class="bi bi-eye"></i></button>';
+                })
                 ->filterColumn('usuario_nombre', function ($query, $keyword) {
                     $query->whereHas('usuario', function ($q) use ($keyword) {
                         $q->where('name', 'like', "%{$keyword}%");
@@ -145,7 +173,7 @@ class ActividadController extends Controller
                 ->orderColumn('fecha_formatted', function ($query, $order) {
                     $query->orderBy('created_at', $order);
                 })
-                ->rawColumns(['usuario_rol', 'accion_badge', 'orden_link'])
+                ->rawColumns(['usuario_rol', 'accion_badge', 'orden_link', 'detalle_btn'])
                 ->make(true);
         }
 

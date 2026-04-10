@@ -60,11 +60,10 @@ class BosquejoMatrizController extends Controller
 
         $grupo = GrupoBosquejo::create($validated);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'bosquejo_grupo.creado',
             "Se creo el grupo de bosquejos: {$grupo->nombre}",
-            null,
-            ['grupo_bosquejo_id' => $grupo->id]
+            $grupo
         );
 
         return response()->json([
@@ -83,14 +82,15 @@ class BosquejoMatrizController extends Controller
             'nombre' => 'required|string|max:255',
         ]);
 
+        $valoresOriginales = $grupo->getOriginal();
         $nombreAnterior = $grupo->nombre;
         $grupo->update($validated);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'bosquejo_grupo.actualizado',
             "Se renombro el grupo: '{$nombreAnterior}' a '{$grupo->nombre}'",
-            null,
-            ['grupo_bosquejo_id' => $grupo->id, 'nombre_anterior' => $nombreAnterior]
+            $grupo,
+            $valoresOriginales
         );
 
         return response()->json([
@@ -106,6 +106,7 @@ class BosquejoMatrizController extends Controller
     {
         $nombreGrupo = $grupo->nombre;
         $plantillas = $grupo->plantillas;
+        $bosquejosCount = $plantillas->count();
 
         foreach ($plantillas as $plantilla) {
             $this->eliminarArchivosBosquejo($plantilla);
@@ -118,14 +119,15 @@ class BosquejoMatrizController extends Controller
             File::deleteDirectory($dirPath);
         }
 
-        $grupo->delete();
-
-        $this->registrarActividad(
+        $this->registrarEliminacion(
             'bosquejo_grupo.eliminado',
-            "Se elimino el grupo: '{$nombreGrupo}' con {$plantillas->count()} bosquejos",
+            "Se elimino el grupo: '{$nombreGrupo}' con {$bosquejosCount} bosquejos",
+            $grupo,
             null,
-            ['grupo_nombre' => $nombreGrupo, 'bosquejos_eliminados' => $plantillas->count()]
+            ['bosquejos_eliminados' => $bosquejosCount]
         );
+
+        $grupo->delete();
 
         return response()->json([
             'success' => true,
@@ -198,11 +200,12 @@ class BosquejoMatrizController extends Controller
             ? "Se subio el bosquejo: '{$bosquejo->nombre}' al grupo ID {$grupoId}"
             : "Se subio el bosquejo individual: '{$bosquejo->nombre}'";
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'bosquejo.creado',
             $desc,
+            $bosquejo,
             null,
-            ['plantilla_bosquejo_id' => $bosquejo->id, 'grupo_bosquejo_id' => $grupoId]
+            ['grupo_bosquejo_id' => $grupoId]
         );
 
         return response()->json([
@@ -221,14 +224,15 @@ class BosquejoMatrizController extends Controller
             'nombre' => 'required|string|max:255',
         ]);
 
+        $valoresOriginales = $bosquejo->getOriginal();
         $nombreAnterior = $bosquejo->nombre;
         $bosquejo->update($validated);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'bosquejo.actualizado',
             "Se renombro el bosquejo: '{$nombreAnterior}' a '{$bosquejo->nombre}'",
-            null,
-            ['plantilla_bosquejo_id' => $bosquejo->id, 'nombre_anterior' => $nombreAnterior]
+            $bosquejo,
+            $valoresOriginales
         );
 
         return response()->json([
@@ -245,14 +249,14 @@ class BosquejoMatrizController extends Controller
         $nombreBosquejo = $bosquejo->nombre;
 
         $this->eliminarArchivosBosquejo($bosquejo);
-        $bosquejo->delete();
 
-        $this->registrarActividad(
+        $this->registrarEliminacion(
             'bosquejo.eliminado',
             "Se elimino el bosquejo: '{$nombreBosquejo}'",
-            null,
-            ['bosquejo_nombre' => $nombreBosquejo]
+            $bosquejo
         );
+
+        $bosquejo->delete();
 
         return response()->json([
             'success' => true,

@@ -28,7 +28,7 @@
                             <div class="pieza-header">
                                 <div>
                                     <strong>{{ $pieza->nombre }}</strong>
-                                    <span class="text-muted ms-2 small">x{{ $pieza->cantidad }}</span>
+                                    <span class="text-muted ms-2 small">Cantidad: {{ $pieza->cantidad }}</span>
                                     @if($pieza->cantidad_entregada >= $pieza->cantidad)
                                         <span class="status-badge success ms-2">ENTREGADA</span>
                                     @elseif($pieza->cantidad_entregada > 0)

@@ -134,11 +134,12 @@ class GarantiaController extends Controller
             'registrado_por' => auth()->id(),
         ]);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'garantia.registrada',
             "Garantia registrada para pieza '{$pieza->nombre}' (x{$request->cantidad_devuelta})",
+            $garantia,
             $orden->id,
-            ['garantia_id' => $garantia->id, 'pieza' => $pieza->nombre, 'cantidad' => $request->cantidad_devuelta]
+            ['pieza' => $pieza->nombre]
         );
 
         NotificacionService::garantiaRegistrada($garantia, $orden);
@@ -182,6 +183,7 @@ class GarantiaController extends Controller
             ], 422);
         }
 
+        $valoresOriginales = $garantia->getOriginal();
         $garantia->estado = $nuevo;
 
         if ($nuevo === 'completada') {
@@ -200,11 +202,12 @@ class GarantiaController extends Controller
             'reentregada' => 'reentregada',
         ];
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             "garantia.{$nuevo}",
             "Garantia de pieza '{$pieza->nombre}' marcada como {$etiquetas[$nuevo]}",
-            $garantia->orden_id,
-            ['garantia_id' => $garantia->id, 'estado_anterior' => $actual, 'estado_nuevo' => $nuevo]
+            $garantia,
+            $valoresOriginales,
+            $garantia->orden_id
         );
 
         if ($nuevo === 'completada') {
@@ -229,6 +232,7 @@ class GarantiaController extends Controller
             'operario_asignado_id' => 'required|exists:users,id',
         ]);
 
+        $valoresOriginales = $garantia->getOriginal();
         $garantia->operario_asignado_id = $request->operario_asignado_id;
 
         if ($garantia->estado === 'abierta') {
@@ -240,11 +244,13 @@ class GarantiaController extends Controller
         $operario = User::find($request->operario_asignado_id);
         $pieza = $garantia->pieza;
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'garantia.en_proceso',
             "Operario '{$operario->name}' asignado a garantia de pieza '{$pieza->nombre}'",
+            $garantia,
+            $valoresOriginales,
             $garantia->orden_id,
-            ['garantia_id' => $garantia->id, 'operario_id' => $operario->id]
+            ['operario_nombre' => $operario->name]
         );
 
         NotificacionService::garantiaAsignada($garantia);
@@ -276,6 +282,7 @@ class GarantiaController extends Controller
             ], 422);
         }
 
+        $valoresOriginales = $garantia->getOriginal();
         $garantia->update([
             'estado' => 'completada',
             'completada_en' => now(),
@@ -283,11 +290,13 @@ class GarantiaController extends Controller
 
         $pieza = $garantia->pieza;
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'garantia.completada',
             "Trabajo de garantia completado para pieza '{$pieza->nombre}'",
+            $garantia,
+            $valoresOriginales,
             $garantia->orden_id,
-            ['garantia_id' => $garantia->id, 'operario' => $user->name]
+            ['operario' => $user->name]
         );
 
         NotificacionService::garantiaCompletada($garantia);

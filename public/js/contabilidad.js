@@ -575,12 +575,16 @@ function initHistorialFinancieroTable(config) {
 }
 
 function recalcularTotalesHistorial() {
-    var total = 0, pagado = 0, saldo = 0;
+    var total = 0, subtotal = 0, iva = 0, pagado = 0, saldo = 0;
     $('#historialFinancieroTable tbody .fila-check:checked').each(function() {
-        total += parseFloat($(this).data('total')) || 0;
-        pagado += parseFloat($(this).data('pagado')) || 0;
-        saldo += parseFloat($(this).data('saldo')) || 0;
+        total    += parseFloat($(this).data('total'))    || 0;
+        subtotal += parseFloat($(this).data('subtotal')) || 0;
+        iva      += parseFloat($(this).data('iva'))      || 0;
+        pagado   += parseFloat($(this).data('pagado'))   || 0;
+        saldo    += parseFloat($(this).data('saldo'))    || 0;
     });
+    $('#sumaSubtotal').text('$' + formatNumber(subtotal));
+    $('#sumaIva').text('$' + formatNumber(iva));
     $('#sumaTotal').text('$' + formatNumber(total));
     $('#sumaPagado').html('<span class="text-success">$' + formatNumber(pagado) + '</span>');
     $('#sumaSaldo').html('<span class="text-danger">$' + formatNumber(saldo) + '</span>');
@@ -605,6 +609,7 @@ function initReporteItemsTable(config) {
             data: function(d) {
                 d.busqueda = $('#filtroBusqueda').val();
                 d.categoria = $('#filtroCategoria').val();
+                d.estado_pago = $('#filtroEstadoPago').val();
                 d.fecha_desde = $('#filtroFechaDesde').val();
                 d.fecha_hasta = $('#filtroFechaHasta').val();
             }
@@ -654,6 +659,7 @@ function initReporteItemsTable(config) {
     $('#btnLimpiarReporte').on('click', function() {
         $('#filtroBusqueda').val('');
         $('#filtroCategoria').val('todas');
+        $('#filtroEstadoPago').val('todos');
         $('#filtroFechaDesde').val('');
         $('#filtroFechaHasta').val('');
         reporteItemsTable.draw();
@@ -673,10 +679,12 @@ function actualizarExportUrl(baseUrl) {
     var params = new URLSearchParams();
     var busqueda = $('#filtroBusqueda').val();
     var categoria = $('#filtroCategoria').val();
+    var estadoPago = $('#filtroEstadoPago').val();
     var desde = $('#filtroFechaDesde').val();
     var hasta = $('#filtroFechaHasta').val();
     if (busqueda) params.set('busqueda', busqueda);
     if (categoria && categoria !== 'todas') params.set('categoria', categoria);
+    if (estadoPago && estadoPago !== 'todos') params.set('estado_pago', estadoPago);
     if (desde) params.set('fecha_desde', desde);
     if (hasta) params.set('fecha_hasta', hasta);
     var qs = params.toString();

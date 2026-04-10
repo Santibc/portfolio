@@ -16,6 +16,24 @@ class TablaPreciosController extends Controller
 {
     use RegistraActividad;
 
+    /** 6 rangos de cantidad de servicios (sub-tablas del PDF). */
+    private const CANTIDADES_SERVICIOS = [
+        ['min' => 1,   'max' => 5],
+        ['min' => 6,   'max' => 25],
+        ['min' => 26,  'max' => 50],
+        ['min' => 51,  'max' => 100],
+        ['min' => 101, 'max' => 200],
+        ['min' => 201, 'max' => null],
+    ];
+
+    /** 4 rangos de largo en mm (filas del PDF). */
+    private const LARGOS_MM = [
+        ['min' => 1,   'max' => 60],
+        ['min' => 61,  'max' => 120],
+        ['min' => 121, 'max' => 320],
+        ['min' => 321, 'max' => null],
+    ];
+
     /**
      * Vista principal + AJAX para cargar grid de precios.
      */
@@ -26,39 +44,39 @@ class TablaPreciosController extends Controller
         }
 
         $servicios = TablaPrecioServicio::getDistinctServicios();
-        $largoRangos = TablaPrecioServicio::getDistinctLargoRangos();
         $totalServicios = $servicios->count();
         $totalRegistros = TablaPrecioServicio::count();
         $ultimaActualizacion = TablaPrecioServicio::max('updated_at');
 
         return view('admin.tabla-precios.index', compact(
-            'servicios', 'largoRangos', 'totalServicios', 'totalRegistros', 'ultimaActualizacion'
+            'servicios', 'totalServicios', 'totalRegistros', 'ultimaActualizacion'
         ));
     }
 
     /**
      * Carga grid de precios (AJAX).
+     * Devuelve las 6 sub-tablas (cantidad de servicios) para el servicio dado.
      */
     private function cargarGrid(Request $request)
     {
         $tipoServicio = $request->tipo_servicio;
-        $largoMin = $request->largo_min;
-        $largoMax = $request->largo_max;
 
         $precios = TablaPrecioServicio::forServicio($tipoServicio)
-            ->forLargoRange((int)$largoMin, $largoMax === '' || $largoMax === null ? null : (int)$largoMax)
+            ->orderBy('cantidad_servicios_min')
+            ->orderBy('largo_mm_min')
             ->orderBy('calibre_mm')
-            ->orderBy('cantidad_rango_min')
             ->get();
 
         $calibres = TablaPrecioServicio::getDistinctCalibres();
-        $cantidadRangos = TablaPrecioServicio::getDistinctCantidadRangos();
+        $cantidadesServicios = TablaPrecioServicio::getDistinctCantidadesServicios();
+        $largosMm = TablaPrecioServicio::getDistinctLargosMm();
 
         $servicio = $precios->first();
 
         return response()->json([
             'calibres' => $calibres,
-            'cantidad_rangos' => $cantidadRangos,
+            'cantidades_servicios' => $cantidadesServicios,
+            'largos_mm' => $largosMm,
             'precios' => $precios,
             'servicio_etiqueta' => $servicio?->etiqueta_servicio ?? '',
             'precio_minimo' => $servicio?->precio_minimo ?? 0,
@@ -87,7 +105,8 @@ class TablaPreciosController extends Controller
                 $registro->update(['precio' => $precioNuevo]);
                 $cambios[] = [
                     'calibre' => $registro->clave_calibre,
-                    'cantidad_rango' => $registro->cantidad_rango_min . '-' . ($registro->cantidad_rango_max ?? '∞'),
+                    'cantidad_servicios' => $registro->cantidad_servicios_min . '-' . ($registro->cantidad_servicios_max ?? '∞'),
+                    'largo_mm' => $registro->largo_mm_min . '-' . ($registro->largo_mm_max ?? '∞'),
                     'anterior' => $precioAnterior,
                     'nuevo' => $precioNuevo,
                 ];
@@ -96,11 +115,24 @@ class TablaPreciosController extends Controller
 
         if (count($cambios) > 0) {
             $servicio = TablaPrecioServicio::find($request->precios[0]['id']);
+            $cambiosFormateados = [];
+            foreach ($cambios as $c) {
+                $key = "{$c['calibre']} | servicios {$c['cantidad_servicios']} | largo {$c['largo_mm']}mm";
+                $cambiosFormateados[$key] = [
+                    'antes' => $c['anterior'],
+                    'despues' => $c['nuevo'],
+                ];
+            }
             $this->registrarActividad(
                 'tabla_precios.precios_actualizados',
                 'Actualizados ' . count($cambios) . ' precios de ' . ($servicio->etiqueta_servicio ?? ''),
                 null,
-                ['cambios' => $cambios]
+                [
+                    'tipo_cambio' => 'update',
+                    'modelo' => 'TablaPrecioServicio',
+                    'modelo_id' => null,
+                    'cambios' => $cambiosFormateados,
+                ]
             );
         }
 
@@ -124,7 +156,7 @@ class TablaPreciosController extends Controller
     }
 
     /**
-     * Crear nuevo tipo de servicio con 312 registros.
+     * Crear nuevo tipo de servicio con 312 registros (13 calibres x 6 cantidades x 4 largos).
      */
     public function storeServicio(Request $request)
     {
@@ -142,36 +174,22 @@ class TablaPreciosController extends Controller
         }
 
         $calibres = ConfiguracionSistema::get('calibres_disponibles', []);
-        $largos = [
-            ['min' => 0, 'max' => 50],
-            ['min' => 51, 'max' => 100],
-            ['min' => 101, 'max' => 200],
-            ['min' => 201, 'max' => null],
-        ];
-        $cantidades = [
-            ['min' => 1, 'max' => 10],
-            ['min' => 11, 'max' => 50],
-            ['min' => 51, 'max' => 100],
-            ['min' => 101, 'max' => 500],
-            ['min' => 501, 'max' => 1000],
-            ['min' => 1001, 'max' => null],
-        ];
 
         $records = [];
         $now = now();
 
         foreach ($calibres as $calibre) {
-            foreach ($largos as $largo) {
-                foreach ($cantidades as $cantidad) {
+            foreach (self::CANTIDADES_SERVICIOS as $cantidad) {
+                foreach (self::LARGOS_MM as $largo) {
                     $records[] = [
                         'tipo_servicio' => $clave,
                         'etiqueta_servicio' => $request->etiqueta_servicio,
-                        'clave_calibre' => $calibre['clave'],
+                        'clave_calibre' => $calibre['calibre'],
                         'calibre_mm' => $calibre['mm'],
-                        'largo_rango_min' => $largo['min'],
-                        'largo_rango_max' => $largo['max'],
-                        'cantidad_rango_min' => $cantidad['min'],
-                        'cantidad_rango_max' => $cantidad['max'],
+                        'cantidad_servicios_min' => $cantidad['min'],
+                        'cantidad_servicios_max' => $cantidad['max'],
+                        'largo_mm_min' => $largo['min'],
+                        'largo_mm_max' => $largo['max'],
                         'precio' => $request->precio_minimo,
                         'precio_minimo' => $request->precio_minimo,
                         'created_at' => $now,
@@ -189,7 +207,17 @@ class TablaPreciosController extends Controller
             'tabla_precios.servicio_creado',
             'Creado tipo de servicio: ' . $request->etiqueta_servicio . ' (' . count($records) . ' registros)',
             null,
-            ['clave' => $clave, 'etiqueta' => $request->etiqueta_servicio, 'precio_minimo' => $request->precio_minimo]
+            [
+                'tipo_cambio' => 'create',
+                'modelo' => 'TablaPrecioServicio',
+                'modelo_id' => null,
+                'cambios' => [
+                    'tipo_servicio' => ['antes' => null, 'despues' => $clave],
+                    'etiqueta_servicio' => ['antes' => null, 'despues' => $request->etiqueta_servicio],
+                    'precio_minimo' => ['antes' => null, 'despues' => $request->precio_minimo],
+                ],
+                'registros_creados' => count($records),
+            ]
         );
 
         return response()->json([
@@ -208,6 +236,8 @@ class TablaPreciosController extends Controller
             'precio_minimo' => 'required|numeric|min:0',
         ]);
 
+        $servicioPrev = TablaPrecioServicio::forServicio($tipo_servicio)->first();
+
         $actualizados = TablaPrecioServicio::forServicio($tipo_servicio)->update([
             'etiqueta_servicio' => $request->etiqueta_servicio,
             'precio_minimo' => $request->precio_minimo,
@@ -221,7 +251,22 @@ class TablaPreciosController extends Controller
             'tabla_precios.servicio_actualizado',
             'Actualizado servicio: ' . $request->etiqueta_servicio,
             null,
-            ['clave' => $tipo_servicio, 'etiqueta' => $request->etiqueta_servicio, 'precio_minimo' => $request->precio_minimo]
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'TablaPrecioServicio',
+                'modelo_id' => null,
+                'cambios' => [
+                    'etiqueta_servicio' => [
+                        'antes' => $servicioPrev?->etiqueta_servicio,
+                        'despues' => $request->etiqueta_servicio,
+                    ],
+                    'precio_minimo' => [
+                        'antes' => $servicioPrev?->precio_minimo,
+                        'despues' => $request->precio_minimo,
+                    ],
+                ],
+                'registros_afectados' => $actualizados,
+            ]
         );
 
         return response()->json(['success' => true, 'message' => 'Servicio actualizado.']);
@@ -239,13 +284,24 @@ class TablaPreciosController extends Controller
         }
 
         $etiqueta = $servicio->etiqueta_servicio;
+        $precioMinimo = $servicio->precio_minimo;
         $eliminados = TablaPrecioServicio::forServicio($tipo_servicio)->delete();
 
         $this->registrarActividad(
             'tabla_precios.servicio_eliminado',
             'Eliminado servicio: ' . $etiqueta . ' (' . $eliminados . ' registros)',
             null,
-            ['clave' => $tipo_servicio, 'etiqueta' => $etiqueta, 'registros_eliminados' => $eliminados]
+            [
+                'tipo_cambio' => 'delete',
+                'modelo' => 'TablaPrecioServicio',
+                'modelo_id' => null,
+                'cambios' => [
+                    'tipo_servicio' => ['antes' => $tipo_servicio, 'despues' => null],
+                    'etiqueta_servicio' => ['antes' => $etiqueta, 'despues' => null],
+                    'precio_minimo' => ['antes' => $precioMinimo, 'despues' => null],
+                ],
+                'registros_eliminados' => $eliminados,
+            ]
         );
 
         return response()->json(['success' => true, 'message' => 'Servicio eliminado (' . $eliminados . ' registros).']);
@@ -280,7 +336,14 @@ class TablaPreciosController extends Controller
             'tabla_precios.importacion',
             'Importacion de precios: ' . $actualizados . ' registros actualizados',
             null,
-            ['registros_actualizados' => $actualizados]
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'TablaPrecioServicio',
+                'modelo_id' => null,
+                'cambios' => [],
+                'registros_actualizados' => $actualizados,
+                'archivo' => $request->file('archivo')->getClientOriginalName(),
+            ]
         );
 
         return response()->json([

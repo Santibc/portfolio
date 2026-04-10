@@ -87,11 +87,10 @@ class ClienteController extends Controller
 
         $cliente = Cliente::create($validated);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'cliente.creado',
             "Se creo el cliente: {$cliente->nombre}",
-            null,
-            ['cliente_id' => $cliente->id]
+            $cliente
         );
 
         return redirect()->route('recepcion.clientes.index')
@@ -119,18 +118,14 @@ class ClienteController extends Controller
             $this->messages()
         );
 
-        $cambios = array_diff_assoc(
-            $request->only(['nombre', 'cedula', 'direccion', 'correo', 'celular_1', 'celular_2']),
-            $cliente->only(['nombre', 'cedula', 'direccion', 'correo', 'celular_1', 'celular_2'])
-        );
-
+        $valoresOriginales = $cliente->getOriginal();
         $cliente->update($validated);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'cliente.actualizado',
             "Se actualizo el cliente: {$cliente->nombre}",
-            null,
-            ['cliente_id' => $cliente->id, 'cambios' => $cambios]
+            $cliente,
+            $valoresOriginales
         );
 
         return redirect()->route('recepcion.clientes.index')
@@ -150,16 +145,17 @@ class ClienteController extends Controller
             return redirect()->back()->with('error', 'El cliente mostrador no se puede desactivar.');
         }
 
+        $valoresOriginales = $cliente->getOriginal();
         $cliente->activo = !$cliente->activo;
         $cliente->save();
 
         $accion = $cliente->activo ? 'activo' : 'desactivo';
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'cliente.actualizado',
             "Se {$accion} el cliente: {$cliente->nombre}",
-            null,
-            ['cliente_id' => $cliente->id, 'activo' => $cliente->activo]
+            $cliente,
+            $valoresOriginales
         );
 
         if (request()->ajax()) {

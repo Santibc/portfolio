@@ -48,11 +48,10 @@ class ConfiguracionController extends Controller
 
         $tipo = TipoPago::create($data);
 
-        $this->registrarActividad(
+        $this->registrarCreacion(
             'configuracion.tipo_pago_creado',
             "Se creo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
-            null,
-            ['id' => $tipo->id]
+            $tipo
         );
 
         return response()->json(['success' => true, 'tipo' => $tipo, 'message' => 'Tipo de pago creado.']);
@@ -61,13 +60,14 @@ class ConfiguracionController extends Controller
     public function updateTipoPago(Request $request, TipoPago $tipo)
     {
         $data = $request->validate($this->reglasTipoPago($tipo->id));
+        $valoresOriginales = $tipo->getOriginal();
         $tipo->update($data);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'configuracion.tipo_pago_actualizado',
             "Se actualizo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
-            null,
-            ['id' => $tipo->id]
+            $tipo,
+            $valoresOriginales
         );
 
         return response()->json(['success' => true, 'tipo' => $tipo, 'message' => 'Tipo de pago actualizado.']);
@@ -76,13 +76,14 @@ class ConfiguracionController extends Controller
     public function destroyTipoPago(TipoPago $tipo)
     {
         // Soft delete via flag activo. Conserva pagos historicos con label/color/icono.
+        $valoresOriginales = $tipo->getOriginal();
         $tipo->update(['activo' => false]);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'configuracion.tipo_pago_desactivado',
             "Se desactivo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
-            null,
-            ['id' => $tipo->id]
+            $tipo,
+            $valoresOriginales
         );
 
         return response()->json(['success' => true, 'message' => 'Tipo de pago desactivado.']);
@@ -90,13 +91,14 @@ class ConfiguracionController extends Controller
 
     public function restoreTipoPago(TipoPago $tipo)
     {
+        $valoresOriginales = $tipo->getOriginal();
         $tipo->update(['activo' => true]);
 
-        $this->registrarActividad(
+        $this->registrarActualizacion(
             'configuracion.tipo_pago_reactivado',
             "Se reactivo el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
-            null,
-            ['id' => $tipo->id]
+            $tipo,
+            $valoresOriginales
         );
 
         return response()->json(['success' => true, 'message' => 'Tipo de pago reactivado.']);
@@ -162,11 +164,17 @@ class ConfiguracionController extends Controller
         $request->validate($validar);
 
         $actualizadas = 0;
+        $cambios = [];
         foreach ($datos as $clave => $valor) {
             if (!in_array($clave, $clavesPermitidas)) {
                 continue;
             }
+            $valorAnterior = ConfiguracionSistema::get($clave);
             ConfiguracionSistema::set($clave, $valor);
+            $cambios[$clave] = [
+                'antes' => $valorAnterior,
+                'despues' => $valor,
+            ];
             $actualizadas++;
         }
 
@@ -174,12 +182,90 @@ class ConfiguracionController extends Controller
             'configuracion.actualizada',
             "Se actualizaron {$actualizadas} parametro(s) del sistema",
             null,
-            ['claves' => array_keys(array_intersect_key($datos, array_flip($clavesPermitidas)))]
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'ConfiguracionSistema',
+                'modelo_id' => null,
+                'cambios' => $cambios,
+            ]
         );
 
         return response()->json([
             'success' => true,
             'message' => "{$actualizadas} configuracion(es) actualizada(s) correctamente.",
+        ]);
+    }
+
+    public function uploadFondo(Request $request)
+    {
+        $request->validate([
+            'fondo' => 'required|image|mimes:png,jpg,jpeg,webp|max:5120',
+        ]);
+
+        $fondoActual = ConfiguracionSistema::get('imagen_fondo_login');
+        if ($fondoActual && file_exists(public_path($fondoActual))) {
+            unlink(public_path($fondoActual));
+        }
+
+        $destino = public_path('uploads/empresa');
+        if (!is_dir($destino)) {
+            mkdir($destino, 0755, true);
+        }
+
+        $archivo = $request->file('fondo');
+        $nombre = 'fondo_login.' . $archivo->getClientOriginalExtension();
+        $archivo->move($destino, $nombre);
+
+        $ruta = '/uploads/empresa/' . $nombre;
+        ConfiguracionSistema::set('imagen_fondo_login', $ruta);
+
+        $this->registrarActividad(
+            'configuracion.fondo_actualizado',
+            'Imagen de fondo de login actualizada',
+            null,
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'ConfiguracionSistema',
+                'modelo_id' => null,
+                'cambios' => [
+                    'imagen_fondo_login' => ['antes' => $fondoActual, 'despues' => $ruta],
+                ],
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'path' => $ruta,
+            'message' => 'Imagen de fondo actualizada correctamente.',
+        ]);
+    }
+
+    public function deleteFondo()
+    {
+        $fondoActual = ConfiguracionSistema::get('imagen_fondo_login');
+        if ($fondoActual && file_exists(public_path($fondoActual))) {
+            unlink(public_path($fondoActual));
+        }
+
+        ConfiguracionSistema::set('imagen_fondo_login', null);
+
+        $this->registrarActividad(
+            'configuracion.fondo_eliminado',
+            'Imagen de fondo de login eliminada',
+            null,
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'ConfiguracionSistema',
+                'modelo_id' => null,
+                'cambios' => [
+                    'imagen_fondo_login' => ['antes' => $fondoActual, 'despues' => null],
+                ],
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imagen de fondo eliminada correctamente.',
         ]);
     }
 
@@ -204,10 +290,23 @@ class ConfiguracionController extends Controller
         $nombre = 'logo_empresa.' . $archivo->getClientOriginalExtension();
         $archivo->move($destino, $nombre);
 
+        $logoAnterior = ConfiguracionSistema::get('logo_empresa');
         $ruta = '/uploads/empresa/' . $nombre;
         ConfiguracionSistema::set('logo_empresa', $ruta);
 
-        $this->registrarActividad('configuracion.logo_actualizado', 'Logo de empresa actualizado');
+        $this->registrarActividad(
+            'configuracion.logo_actualizado',
+            'Logo de empresa actualizado',
+            null,
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'ConfiguracionSistema',
+                'modelo_id' => null,
+                'cambios' => [
+                    'logo_empresa' => ['antes' => $logoAnterior, 'despues' => $ruta],
+                ],
+            ]
+        );
 
         return response()->json([
             'success' => true,
@@ -225,7 +324,19 @@ class ConfiguracionController extends Controller
 
         ConfiguracionSistema::set('logo_empresa', null);
 
-        $this->registrarActividad('configuracion.logo_eliminado', 'Logo de empresa eliminado');
+        $this->registrarActividad(
+            'configuracion.logo_eliminado',
+            'Logo de empresa eliminado',
+            null,
+            [
+                'tipo_cambio' => 'update',
+                'modelo' => 'ConfiguracionSistema',
+                'modelo_id' => null,
+                'cambios' => [
+                    'logo_empresa' => ['antes' => $logoActual, 'despues' => null],
+                ],
+            ]
+        );
 
         return response()->json([
             'success' => true,

@@ -101,6 +101,12 @@ class ConfiguracionSistemaSeeder extends Seeder
                 'descripcion' => 'ID del cliente predeterminado (mostrador)',
             ],
             [
+                'clave' => 'imagen_fondo_login',
+                'valor' => null,
+                'tipo' => 'texto',
+                'descripcion' => 'Imagen de fondo para login y pagina de inicio',
+            ],
+            [
                 'clave' => 'calibres_disponibles',
                 'valor' => json_encode([
                     ['calibre' => '#22', 'mm' => 0.76],

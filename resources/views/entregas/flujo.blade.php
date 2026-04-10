@@ -41,8 +41,8 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h6 class="mb-0 fw-semibold text-dark">
+                    <div>
+                        <h6 class="mb-1 fw-semibold text-dark">
                             <i class="bi bi-check2-square me-2 text-primary"></i>Piezas Pendientes
                         </h6>
                         <span class="text-muted small">

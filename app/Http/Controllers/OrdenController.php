@@ -81,22 +81,35 @@ class OrdenController extends Controller
                 ->first();
         }
 
+        $esCreacion = empty($data['orden_id']);
+        $valoresOriginales = $orden ? $orden->getOriginal() : [];
+
         try {
             $orden = $this->ordenService->guardarBorrador($data, $user, $orden);
 
-            $accion = empty($data['orden_id']) ? 'orden.creada' : 'orden.actualizada';
-            $desc = empty($data['orden_id'])
-                ? "Orden borrador creada (ID: {$orden->id})"
-                : "Orden borrador actualizada (ID: {$orden->id})";
-
-            $this->registrarActividad($accion, $desc, $orden->id, [
-                'estado_trabajo' => $orden->estado_trabajo,
-            ]);
+            if ($esCreacion) {
+                $this->registrarCreacion(
+                    'orden.creada',
+                    "Orden borrador creada (ID: {$orden->id})",
+                    $orden,
+                    $orden->id
+                );
+            } else {
+                $orden->refresh();
+                $this->registrarActualizacion(
+                    'orden.actualizada',
+                    "Orden borrador actualizada (ID: {$orden->id})",
+                    $orden,
+                    $valoresOriginales,
+                    $orden->id
+                );
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'La orden ha sido guardada exitosamente.',
                 'orden_id' => $orden->id,
+                'bosquejos' => $orden->bosquejosSincronizados ?? [],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -121,16 +134,32 @@ class OrdenController extends Controller
                 ->first();
         }
 
+        $valoresOriginales = $orden ? $orden->getOriginal() : [];
+        $eraBorrador = $orden !== null;
+
         try {
             $orden = DB::transaction(function () use ($data, $user, $orden) {
                 return $this->ordenService->generarOrden($data, $user, $orden);
             });
 
-            $this->registrarActividad('orden.creada', "Orden generada {$orden->numero_orden}", $orden->id, [
-                'numero_orden' => $orden->numero_orden,
-                'estado_trabajo' => $orden->estado_trabajo,
-                'total' => $orden->total,
-            ]);
+            $orden->refresh();
+
+            if ($eraBorrador) {
+                $this->registrarActualizacion(
+                    'orden.creada',
+                    "Orden generada {$orden->numero_orden}",
+                    $orden,
+                    $valoresOriginales,
+                    $orden->id
+                );
+            } else {
+                $this->registrarCreacion(
+                    'orden.creada',
+                    "Orden generada {$orden->numero_orden}",
+                    $orden,
+                    $orden->id
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -221,9 +250,11 @@ class OrdenController extends Controller
 
         $cliente = Cliente::create($validated);
 
-        $this->registrarActividad('cliente.creado', "Cliente creado desde wizard: {$cliente->nombre}", null, [
-            'cliente_id' => $cliente->id,
-        ]);
+        $this->registrarCreacion(
+            'cliente.creado',
+            "Cliente creado desde wizard: {$cliente->nombre}",
+            $cliente
+        );
 
         return response()->json([
             'success' => true,
@@ -279,35 +310,7 @@ class OrdenController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Orden::with('cliente')->select('ordenes.*');
-
-            // Filtros
-            if ($request->filled('numero_orden')) {
-                $query->where('numero_orden', 'like', '%' . $request->input('numero_orden') . '%');
-            }
-            if ($request->filled('cliente')) {
-                $query->whereHas('cliente', function ($q) use ($request) {
-                    $q->where('nombre', 'like', '%' . $request->input('cliente') . '%');
-                });
-            }
-            if ($request->filled('estado_trabajo')) {
-                $estados = is_array($request->input('estado_trabajo'))
-                    ? $request->input('estado_trabajo')
-                    : [$request->input('estado_trabajo')];
-                $query->whereIn('estado_trabajo', $estados);
-            }
-            if ($request->filled('estado_entrega')) {
-                $query->where('estado_entrega', $request->input('estado_entrega'));
-            }
-            if ($request->filled('estado_pago')) {
-                $query->where('estado_pago', $request->input('estado_pago'));
-            }
-            if ($request->filled('fecha_desde')) {
-                $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
-            }
-            if ($request->filled('fecha_hasta')) {
-                $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
-            }
+            $query = $this->aplicarFiltrosListado($request);
 
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function ($o) {
@@ -331,12 +334,13 @@ class OrdenController extends Controller
                 })
                 ->addColumn('acciones', function ($o) {
                     $puedeEscribir = auth()->user()->hasAnyRole(['Administrador', 'Recepcion']);
+                    $puedeEditar   = auth()->user()->hasAnyRole(['Administrador', 'Recepcion', 'Contabilidad']);
                     $viewUrl = route('recepcion.ordenes.show', $o);
 
                     $html = '<div class="action-buttons justify-content-end">';
                     $html .= '<a href="' . $viewUrl . '" class="action-btn view" title="Ver"><i class="bi bi-eye"></i></a>';
 
-                    if ($puedeEscribir && $o->estado_trabajo !== 'anulada') {
+                    if ($puedeEditar && $o->estado_trabajo !== 'anulada') {
                         $editUrl = route('recepcion.ordenes.edit', $o);
                         $html .= '<a href="' . $editUrl . '" class="action-btn edit" title="Editar"><i class="bi bi-pencil"></i></a>';
                     }
@@ -543,6 +547,7 @@ class OrdenController extends Controller
 
         $data = $request->all();
         $user = $request->user();
+        $valoresOriginales = $orden->getOriginal();
 
         try {
             $this->ordenService->guardarBorrador($data, $user, $orden);
@@ -551,14 +556,21 @@ class OrdenController extends Controller
                 $this->estadoService->recalcularTodo($orden);
             }
 
-            $this->registrarActividad('orden.actualizada', "Orden actualizada (ID: {$orden->id})", $orden->id, [
-                'estado_trabajo' => $orden->estado_trabajo,
-            ]);
+            $orden->refresh();
+
+            $this->registrarActualizacion(
+                'orden.actualizada',
+                "Orden actualizada (ID: {$orden->id})",
+                $orden,
+                $valoresOriginales,
+                $orden->id
+            );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Orden actualizada exitosamente.',
                 'orden_id' => $orden->id,
+                'bosquejos' => $orden->bosquejosSincronizados ?? [],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -648,8 +660,10 @@ class OrdenController extends Controller
                 return $nueva;
             });
 
-            $this->registrarActividad('orden.copiada',
+            $this->registrarCreacion(
+                'orden.copiada',
                 "Orden copiada desde " . ($orden->numero_orden ?? 'ID:' . $orden->id) . " como borrador (ID: {$nuevaOrden->id})",
+                $nuevaOrden,
                 $nuevaOrden->id,
                 ['orden_original_id' => $orden->id]
             );
@@ -683,6 +697,8 @@ class OrdenController extends Controller
             'motivo' => 'required|string|max:500',
         ]);
 
+        $valoresOriginales = $orden->getOriginal();
+
         try {
             DB::transaction(function () use ($orden) {
                 $orden->asignaciones()->where('activa', true)->update(['activa' => false]);
@@ -694,10 +710,15 @@ class OrdenController extends Controller
                 ]);
             });
 
-            $this->registrarActividad('orden.anulada',
+            $orden->refresh();
+
+            $this->registrarActualizacion(
+                'orden.anulada',
                 "Orden {$orden->numero_orden} anulada. Motivo: {$request->motivo}",
+                $orden,
+                $valoresOriginales,
                 $orden->id,
-                ['motivo' => $request->motivo, 'numero_orden' => $orden->numero_orden]
+                ['motivo' => $request->motivo]
             );
 
             return response()->json([
@@ -727,7 +748,12 @@ class OrdenController extends Controller
             'contenido' => $request->contenido,
         ]);
 
-        $this->registrarActividad('orden.comentario_agregado', "Comentario agregado a orden {$orden->numero_orden}", $orden->id);
+        $this->registrarCreacion(
+            'orden.comentario_agregado',
+            "Comentario agregado a orden {$orden->numero_orden}",
+            $comentario,
+            $orden->id
+        );
 
         return response()->json([
             'success' => true,
@@ -772,10 +798,11 @@ class OrdenController extends Controller
 
         $this->estadoService->recalcularTodo($orden);
 
-        $this->registrarActividad('pago.registrado',
+        $this->registrarCreacion(
+            'pago.registrado',
             'Pago de $' . number_format($request->monto, 0, ',', '.') . " registrado en orden " . ($orden->numero_orden ?? 'ID:' . $orden->id),
-            $orden->id,
-            ['monto' => $request->monto, 'metodo_pago' => $request->metodo_pago, 'aprobado' => $autoAprueba]
+            $pago,
+            $orden->id
         );
 
         if (!$autoAprueba) {
@@ -802,20 +829,72 @@ class OrdenController extends Controller
     }
 
     /**
+     * Aplica los filtros del listado de ordenes a la consulta base.
+     * Compartido entre index() y los exportadores para que respeten los filtros activos.
+     */
+    protected function aplicarFiltrosListado(Request $request)
+    {
+        $query = Orden::with('cliente')->select('ordenes.*');
+
+        if ($request->filled('numero_orden')) {
+            $query->where('numero_orden', 'like', '%' . $request->input('numero_orden') . '%');
+        }
+        if ($request->filled('cliente')) {
+            $query->whereHas('cliente', function ($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->input('cliente') . '%');
+            });
+        }
+        if ($request->filled('estado_trabajo')) {
+            $estados = is_array($request->input('estado_trabajo'))
+                ? $request->input('estado_trabajo')
+                : [$request->input('estado_trabajo')];
+            $query->whereIn('estado_trabajo', $estados);
+        }
+        if ($request->filled('estado_entrega')) {
+            $query->where('estado_entrega', $request->input('estado_entrega'));
+        }
+        if ($request->filled('estado_pago')) {
+            $query->where('estado_pago', $request->input('estado_pago'));
+        }
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
+        }
+        if ($request->filled('busqueda')) {
+            $term = $request->input('busqueda');
+            $query->where(function ($q) use ($term) {
+                $q->where('numero_orden', 'like', '%' . $term . '%')
+                  ->orWhereHas('cliente', function ($cq) use ($term) {
+                      $cq->where('nombre', 'like', '%' . $term . '%');
+                  });
+            });
+        }
+
+        return $query;
+    }
+
+    /**
      * GET /recepcion/ordenes/export-excel
      */
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        $ordenes = Orden::with('cliente')->orderBy('id', 'desc')->get();
+        $ordenes = $this->aplicarFiltrosListado($request)->orderBy('id', 'desc')->get();
         return Excel::download(new OrdenesExport($ordenes), 'ordenes-' . now()->format('Y-m-d') . '.xlsx');
     }
 
     /**
      * GET /recepcion/ordenes/export-pdf
      */
-    public function exportPdf()
+    public function exportPdf(Request $request)
     {
-        $ordenes = Orden::with('cliente')->noAnuladas()->orderBy('id', 'desc')->get();
+        $query = $this->aplicarFiltrosListado($request);
+        // Si no se filtro explicitamente por estado_trabajo, excluir anuladas (comportamiento previo)
+        if (!$request->filled('estado_trabajo')) {
+            $query->where('estado_trabajo', '!=', 'anulada');
+        }
+        $ordenes = $query->orderBy('id', 'desc')->get();
         $fecha = now()->timezone('America/Bogota')->format('d/m/Y H:i');
 
         $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>

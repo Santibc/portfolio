@@ -9,9 +9,9 @@
         @hasanyrole('Administrador|Recepcion')
         <x-slot name="actions">
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
-                href="{{ route('recepcion.ordenes.export-excel') }}">Excel</x-sinden.button>
+                href="#" onclick="exportarListado('excel'); return false;">Excel</x-sinden.button>
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-pdf"
-                href="{{ route('recepcion.ordenes.export-pdf') }}">PDF</x-sinden.button>
+                href="#" onclick="exportarListado('pdf'); return false;">PDF</x-sinden.button>
             <div class="dropdown d-inline-block">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     <i class="bi bi-files me-1"></i>PDF Masivo
@@ -265,6 +265,28 @@ $(function() {
         });
     });
 });
+
+function exportarListado(tipo) {
+    var dt = $('#ordenesTable').DataTable();
+    var params = {
+        numero_orden: $('#filtroNumeroOrden').val(),
+        cliente: $('#filtroCliente').val(),
+        estado_trabajo: $('#filtroEstadoTrabajo').val(),
+        estado_entrega: $('#filtroEstadoEntrega').val(),
+        estado_pago: $('#filtroEstadoPago').val(),
+        fecha_desde: $('#filtroFechaDesde').val(),
+        fecha_hasta: $('#filtroFechaHasta').val(),
+        busqueda: dt.search()
+    };
+    var qs = $.param(Object.keys(params).reduce(function(acc, k) {
+        if (params[k]) acc[k] = params[k];
+        return acc;
+    }, {}));
+    var base = tipo === 'excel'
+        ? '{{ route("recepcion.ordenes.export-excel") }}'
+        : '{{ route("recepcion.ordenes.export-pdf") }}';
+    window.location.href = base + (qs ? ('?' + qs) : '');
+}
 
 function copiarOrden(ordenId) {
     Swal.fire({

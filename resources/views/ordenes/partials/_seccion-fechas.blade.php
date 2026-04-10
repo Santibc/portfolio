@@ -12,12 +12,12 @@
                 <input type="text" class="form-control bg-light" value="{{ now()->timezone('America/Bogota')->format('d/m/Y H:i') }}" readonly>
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-medium">Fecha de Entrega</label>
-                <input type="date" id="fecha_entrega" class="form-control" min="{{ date('Y-m-d') }}">
+                <label class="form-label fw-medium">Fecha de Entrega <span class="text-danger">*</span></label>
+                <input type="date" id="fecha_entrega" class="form-control" min="{{ date('Y-m-d') }}" required>
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-medium">Hora de Entrega</label>
-                <input type="time" id="hora_entrega" class="form-control">
+                <label class="form-label fw-medium">Hora de Entrega <span class="text-danger">*</span></label>
+                <input type="time" id="hora_entrega" class="form-control" required>
             </div>
             <div class="col-12">
                 <label class="form-label fw-medium">Notas / Observaciones Generales</label>

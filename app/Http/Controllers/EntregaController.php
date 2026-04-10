@@ -168,6 +168,9 @@ class EntregaController extends Controller
 
                 if ($cantidadAEntregar <= 0) continue;
 
+                $cantidadEntregadaAntes = $pieza->cantidad_entregada;
+                $entregadaAntes = (bool) $pieza->entregada;
+
                 // Registrar detalle de entrega
                 EntregaPieza::create([
                     'entrega_id' => $entrega->id,
@@ -194,7 +197,23 @@ class EntregaController extends Controller
                     'pieza.entregada',
                     "Entrega de {$cantidadAEntregar} unidad(es) de '{$pieza->nombre}' (Orden {$orden->numero_orden})",
                     $orden->id,
-                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
+                    [
+                        'tipo_cambio' => 'update',
+                        'modelo' => 'OrdenPieza',
+                        'modelo_id' => $pieza->id,
+                        'cambios' => [
+                            'cantidad_entregada' => [
+                                'antes' => $cantidadEntregadaAntes,
+                                'despues' => $pieza->cantidad_entregada,
+                            ],
+                            'entregada' => [
+                                'antes' => $entregadaAntes,
+                                'despues' => (bool) $pieza->entregada,
+                            ],
+                        ],
+                        'pieza_nombre' => $pieza->nombre,
+                        'entrega_id' => $entrega->id,
+                    ]
                 );
 
                 if ($pieza->porcentaje_avance == 0) {
@@ -268,6 +287,7 @@ class EntregaController extends Controller
 
             foreach ($piezasPendientes as $pieza) {
                 $cantidadAEntregar = $pieza->cantidad - $pieza->cantidad_entregada;
+                $cantidadEntregadaAntes = $pieza->cantidad_entregada;
 
                 EntregaPieza::create([
                     'entrega_id' => $entrega->id,
@@ -289,7 +309,21 @@ class EntregaController extends Controller
                     'pieza.entregada',
                     "Entrega rapida de {$cantidadAEntregar} unidad(es) de '{$pieza->nombre}' (Orden {$orden->numero_orden})",
                     $orden->id,
-                    ['pieza_id' => $pieza->id, 'pieza_nombre' => $pieza->nombre, 'cantidad' => $cantidadAEntregar, 'entrega_id' => $entrega->id]
+                    [
+                        'tipo_cambio' => 'update',
+                        'modelo' => 'OrdenPieza',
+                        'modelo_id' => $pieza->id,
+                        'cambios' => [
+                            'cantidad_entregada' => [
+                                'antes' => $cantidadEntregadaAntes,
+                                'despues' => $pieza->cantidad,
+                            ],
+                            'entregada' => ['antes' => false, 'despues' => true],
+                            'estado' => ['antes' => 'pendiente', 'despues' => 'entregada'],
+                        ],
+                        'pieza_nombre' => $pieza->nombre,
+                        'entrega_id' => $entrega->id,
+                    ]
                 );
 
                 if ($pieza->porcentaje_avance == 0) {
@@ -354,7 +388,12 @@ class EntregaController extends Controller
             'aprobada' => false,
         ]);
 
-        $this->registrarActividad('entrega.foto_subida', "Foto de entrega subida para orden {$orden->numero_orden}", $orden->id);
+        $this->registrarCreacion(
+            'entrega.foto_subida',
+            "Foto de entrega subida para orden {$orden->numero_orden}",
+            $foto,
+            $orden->id
+        );
 
         return response()->json([
             'success' => true,
@@ -383,9 +422,14 @@ class EntregaController extends Controller
             @unlink($rutaAbsoluta);
         }
 
-        $foto->delete();
+        $this->registrarEliminacion(
+            'entrega.foto_eliminada',
+            "Foto de entrega eliminada para orden {$orden->numero_orden}",
+            $foto,
+            $orden->id
+        );
 
-        $this->registrarActividad('entrega.foto_eliminada', "Foto de entrega eliminada para orden {$orden->numero_orden}", $orden->id);
+        $foto->delete();
 
         return response()->json(['success' => true]);
     }

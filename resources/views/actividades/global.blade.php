@@ -81,7 +81,8 @@
                             <th style="width:110px" class="text-center">Rol</th>
                             <th style="width:200px">Accion</th>
                             <th style="width:120px">Orden</th>
-                            <th>Detalle</th>
+                            <th>Descripcion</th>
+                            <th style="width:80px" class="text-center">Detalle</th>
                         </tr>
                     </thead>
                 </table>
@@ -89,6 +90,8 @@
         </div>
     </div>
 </div>
+
+@include('actividades.partials._modal-detalle')
 @endsection
 
 @push('scripts')

@@ -10,7 +10,8 @@ class TablaPrecioServicio extends Model
 
     protected $fillable = [
         'tipo_servicio', 'etiqueta_servicio', 'clave_calibre', 'calibre_mm',
-        'largo_rango_min', 'largo_rango_max', 'cantidad_rango_min', 'cantidad_rango_max',
+        'cantidad_servicios_min', 'cantidad_servicios_max',
+        'largo_mm_min', 'largo_mm_max',
         'precio', 'precio_minimo',
     ];
 
@@ -27,10 +28,16 @@ class TablaPrecioServicio extends Model
         return $query->where('tipo_servicio', $tipoServicio);
     }
 
-    public function scopeForLargoRange($query, int $min, ?int $max)
+    public function scopeForCantidadServicios($query, int $min, ?int $max)
     {
-        return $query->where('largo_rango_min', $min)
-            ->where('largo_rango_max', $max);
+        return $query->where('cantidad_servicios_min', $min)
+            ->where('cantidad_servicios_max', $max);
+    }
+
+    public function scopeForLargoMm($query, int $min, ?int $max)
+    {
+        return $query->where('largo_mm_min', $min)
+            ->where('largo_mm_max', $max);
     }
 
     // ─── Static Helpers ─────────────────────────────────
@@ -47,22 +54,22 @@ class TablaPrecioServicio extends Model
     }
 
     /**
-     * Retorna rangos de largo distintos.
+     * Retorna rangos distintos de cantidad de servicios.
      */
-    public static function getDistinctLargoRangos()
+    public static function getDistinctCantidadesServicios()
     {
-        return static::selectRaw('DISTINCT largo_rango_min, largo_rango_max')
-            ->orderBy('largo_rango_min')
+        return static::selectRaw('DISTINCT cantidad_servicios_min, cantidad_servicios_max')
+            ->orderBy('cantidad_servicios_min')
             ->get();
     }
 
     /**
-     * Retorna rangos de cantidad distintos.
+     * Retorna rangos distintos de largo en mm.
      */
-    public static function getDistinctCantidadRangos()
+    public static function getDistinctLargosMm()
     {
-        return static::selectRaw('DISTINCT cantidad_rango_min, cantidad_rango_max')
-            ->orderBy('cantidad_rango_min')
+        return static::selectRaw('DISTINCT largo_mm_min, largo_mm_max')
+            ->orderBy('largo_mm_min')
             ->get();
     }
 
@@ -78,15 +85,20 @@ class TablaPrecioServicio extends Model
 
     /**
      * Consulta de precio: busca el registro que coincida con los parametros dados.
+     *
+     * @param string $tipoServicio       Clave del servicio (ej: "corte_inox").
+     * @param string $claveCalibre       Clave del calibre (ej: "#18").
+     * @param int|float $largoMm         Largo de la pieza en mm.
+     * @param int $cantidadServicios     Numero de servicios (piezas) a procesar.
      */
-    public static function lookup(string $tipoServicio, string $claveCalibe, $largo, $cantidad)
+    public static function lookup(string $tipoServicio, string $claveCalibre, $largoMm, int $cantidadServicios)
     {
         return static::where('tipo_servicio', $tipoServicio)
-            ->where('clave_calibre', $claveCalibe)
-            ->where('largo_rango_min', '<=', $largo)
-            ->where(fn($q) => $q->whereNull('largo_rango_max')->orWhere('largo_rango_max', '>=', $largo))
-            ->where('cantidad_rango_min', '<=', $cantidad)
-            ->where(fn($q) => $q->whereNull('cantidad_rango_max')->orWhere('cantidad_rango_max', '>=', $cantidad))
+            ->where('clave_calibre', $claveCalibre)
+            ->where('largo_mm_min', '<=', $largoMm)
+            ->where(fn($q) => $q->whereNull('largo_mm_max')->orWhere('largo_mm_max', '>=', $largoMm))
+            ->where('cantidad_servicios_min', '<=', $cantidadServicios)
+            ->where(fn($q) => $q->whereNull('cantidad_servicios_max')->orWhere('cantidad_servicios_max', '>=', $cantidadServicios))
             ->first();
     }
 }

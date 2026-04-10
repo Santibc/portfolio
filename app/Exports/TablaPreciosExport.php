@@ -23,9 +23,9 @@ class TablaPreciosExport implements FromCollection, WithHeadings, WithMapping, W
     {
         $query = TablaPrecioServicio::query()
             ->orderBy('tipo_servicio')
-            ->orderBy('calibre_mm')
-            ->orderBy('largo_rango_min')
-            ->orderBy('cantidad_rango_min');
+            ->orderBy('cantidad_servicios_min')
+            ->orderBy('largo_mm_min')
+            ->orderBy('calibre_mm');
 
         if ($this->tipoServicio) {
             $query->forServicio($this->tipoServicio);
@@ -37,16 +37,16 @@ class TablaPreciosExport implements FromCollection, WithHeadings, WithMapping, W
     public function headings(): array
     {
         return [
-            'Tipo Servicio',
-            'Etiqueta',
-            'Calibre',
-            'Calibre (mm)',
-            'Largo Min',
-            'Largo Max',
-            'Cantidad Min',
-            'Cantidad Max',
-            'Precio',
-            'Precio Minimo',
+            'tipo_servicio',
+            'etiqueta',
+            'calibre',
+            'calibre_mm',
+            'cantidad_servicios_min',
+            'cantidad_servicios_max',
+            'largo_mm_min',
+            'largo_mm_max',
+            'precio',
+            'precio_minimo',
         ];
     }
 
@@ -57,10 +57,10 @@ class TablaPreciosExport implements FromCollection, WithHeadings, WithMapping, W
             $row->etiqueta_servicio,
             $row->clave_calibre,
             $row->calibre_mm,
-            $row->largo_rango_min,
-            $row->largo_rango_max,
-            $row->cantidad_rango_min,
-            $row->cantidad_rango_max,
+            $row->cantidad_servicios_min,
+            $row->cantidad_servicios_max,
+            $row->largo_mm_min,
+            $row->largo_mm_max,
             $row->precio,
             $row->precio_minimo,
         ];

@@ -261,11 +261,23 @@
             }
 
             // Borrador: eliminar objeto
+            // Usamos deteccion manual (containsPoint + distancia a segmento para lineas)
+            // porque findTarget falla con shapes creadas con fill transparente o evented:false,
+            // y con lineas/flechas cuyo bounding box es demasiado delgado para acertar el click.
             if (currentTool === 'eraser') {
-                var target = fabricCanvas.findTarget(e);
-                if (target) {
+                var ptrErase = fabricCanvas.getPointer(e, false);
+                var hit = findEraseTarget(ptrErase);
+                if (hit) {
                     saveState();
-                    fabricCanvas.remove(target);
+                    // Si el objeto es parte de una flecha (linea + punta), borrar ambos
+                    if (hit.arrowPairId) {
+                        var pairId = hit.arrowPairId;
+                        fabricCanvas.getObjects().slice().forEach(function(o) {
+                            if (o.arrowPairId === pairId) fabricCanvas.remove(o);
+                        });
+                    } else {
+                        fabricCanvas.remove(hit);
+                    }
                     fabricCanvas.renderAll();
                 }
                 return;
@@ -447,16 +459,24 @@
             if (!isShapeDrawing || !activeShape) return;
             isShapeDrawing = false;
 
-            // Para flecha: agregar punta
+            // Para flecha: agregar punta y vincularla a la linea para que el borrador
+            // elimine ambas piezas como una unidad.
             if (currentTool === 'arrow') {
                 var arrowHead = createArrowHead(activeShape);
                 if (arrowHead) {
+                    arrowHead.set({ selectable: true, evented: true });
+                    var pairId = 'arrow_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                    activeShape.arrowPairId = pairId;
+                    arrowHead.arrowPairId = pairId;
                     fabricCanvas.add(arrowHead);
                 }
             }
 
-            // Hacer la forma seleccionable ahora
+            // Hacer la forma seleccionable ahora y recalcular coordenadas
+            // setCoords() es necesario para que containsPoint() funcione con las
+            // dimensiones finales (sin esto el borrador no detecta rects/elipses).
             activeShape.set({ selectable: true, evented: true });
+            activeShape.setCoords();
             activeShape = null;
             shapeOrigin = null;
 
@@ -525,6 +545,54 @@
     // =============================================
     // FLECHA (arrowhead)
     // =============================================
+    // Distancia de un punto a un segmento de linea (en coordenadas de canvas)
+    function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        var lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+        var t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        var projX = x1 + t * dx;
+        var projY = y1 + t * dy;
+        return Math.hypot(px - projX, py - projY);
+    }
+
+    // Busca un objeto del canvas bajo el puntero para el borrador.
+    // Itera de arriba hacia abajo (los ultimos dibujados primero) y prueba:
+    //  - Lineas: distancia al segmento (para que sean facil de tocar)
+    //  - Resto: containsPoint (bounding box)
+    function findEraseTarget(pointer) {
+        var objects = fabricCanvas.getObjects();
+        // Tolerancia adaptada al zoom para que las lineas sean clickeables
+        var zoom = fabricCanvas.getZoom() || 1;
+        var lineTolerance = Math.max(8 / zoom, 6);
+        for (var i = objects.length - 1; i >= 0; i--) {
+            var obj = objects[i];
+            if (!obj || obj.excludeFromExport === true) continue;
+            if (obj.type === 'line') {
+                // Coordenadas absolutas del segmento
+                var pts = obj.calcLinePoints();
+                var center = obj.getCenterPoint();
+                var ax = center.x + pts.x1;
+                var ay = center.y + pts.y1;
+                var bx = center.x + pts.x2;
+                var by = center.y + pts.y2;
+                var dist = pointToSegmentDistance(pointer.x, pointer.y, ax, ay, bx, by);
+                if (dist <= lineTolerance + (obj.strokeWidth || 0) / 2) {
+                    return obj;
+                }
+            } else {
+                try {
+                    if (obj.containsPoint(pointer)) {
+                        return obj;
+                    }
+                } catch (err) { /* ignore */ }
+            }
+        }
+        return null;
+    }
+
     function createArrowHead(line) {
         if (!line) return null;
         // Obtener coordenadas absolutas del canvas (no relativas al objeto)
@@ -564,7 +632,7 @@
         isSavingState = true;
         try {
             redoStack = [];
-            var json = JSON.stringify(fabricCanvas.toJSON());
+            var json = JSON.stringify(fabricCanvas.toJSON(['arrowPairId']));
             undoStack.push(json);
             if (undoStack.length > maxUndo) undoStack.shift();
         } finally {

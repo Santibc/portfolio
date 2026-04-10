@@ -19,6 +19,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        @php $fondoLogin = \App\Models\ConfiguracionSistema::get('imagen_fondo_login'); @endphp
         <style>
             :root {
                 --sinden-primary: #1E40AF;
@@ -33,7 +34,11 @@
                 align-items: center;
                 justify-content: center;
                 padding: 1.5rem;
+                @if($fondoLogin)
+                background: url('{{ asset($fondoLogin) }}') center/cover no-repeat fixed;
+                @else
                 background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #475569 100%);
+                @endif
             }
 
             .sinden-logo {

@@ -72,10 +72,10 @@
                                     type="number"
                                     icon="bi bi-percent"
                                     :required="true"
-                                    step="0.01"
+                                    step="1"
                                     min="0"
                                     max="100"
-                                    :value="$item->porcentaje_iva"
+                                    :value="(int) round($item->porcentaje_iva)"
                                     placeholder="19.00" />
                             </div>
                         </div>
