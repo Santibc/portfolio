@@ -209,7 +209,7 @@
                 </button>
                 <button class="btn btn-sm btn-outline-secondary btn-dejar-cola"
                         data-pieza-id="{{ $pieza->id }}" data-pieza-nombre="{{ e($pieza->nombre) }}">
-                    <i class="bi bi-box-seam me-1"></i>Dejar en Pendiente por Terminar
+                    <i class="bi bi-box-seam me-1"></i>Terminé mi parte
                 </button>
             </div>
         </div>
@@ -312,6 +312,7 @@ var OPERARIO_ROUTES = {
     actualizarAvances: '{{ route("operario.ordenes.actualizar-avances", $orden) }}',
     heartbeat: '{{ route("operario.ordenes.heartbeat", $orden) }}',
     desbloquear: '{{ route("operario.ordenes.desbloquear", $orden) }}',
+    bloquear: '{{ route("operario.ordenes.bloquear", $orden) }}',
     estadoBloqueo: '{{ route("operario.ordenes.estado-bloqueo", $orden) }}',
     ordenesAsignadas: '{{ route("operario.ordenes-asignadas") }}'
 };

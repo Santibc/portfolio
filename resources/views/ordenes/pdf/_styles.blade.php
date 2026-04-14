@@ -118,3 +118,24 @@ body { font-family: sans-serif; font-size: 10px; color: #1f2937; line-height: 1.
 
 /* Page break */
 .page-break { page-break-before: always; }
+
+/* Saltos controlados: flujo continuo evitando cortar bloques al medio */
+.avoid-break-section { page-break-inside: avoid; }
+.data-table tr { page-break-inside: avoid; }
+
+/* Fila de observaciones debajo de cada pieza (patron del wizard de creacion) */
+.pieza-notas-row td {
+    background: #fafafa !important;
+    border-top: 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 3px 6px 5px 8px;
+    font-size: 8px;
+    color: #374151;
+    border-left: 2px solid #4A7C59;
+}
+.pieza-notas-label {
+    font-weight: 600;
+    color: #4A7C59;
+    margin-right: 4px;
+}
+.pieza-notas-texto { color: #374151; }

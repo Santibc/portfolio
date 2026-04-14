@@ -108,6 +108,7 @@
                     <th class="text-center" style="width: 35px;">Cant.</th>
                     <th class="text-end" style="width: 70px;">P.Unitario</th>
                     <th class="text-center" style="width: 35px;">IVA%</th>
+                    <th class="text-center" style="width: 40px;">Desc.%</th>
                     <th class="text-end" style="width: 70px;">Subtotal</th>
                     <th class="text-end" style="width: 70px;">Total</th>
                 </tr>
@@ -121,24 +122,41 @@
                         <td class="text-center">{{ number_format($item->cantidad, 0) }}</td>
                         <td class="text-end">${{ number_format($item->precio_unitario, 0, ',', '.') }}</td>
                         <td class="text-center">{{ number_format($item->porcentaje_iva, 0) }}%</td>
+                        <td class="text-center">{{ $item->descuento_porcentaje > 0 ? number_format($item->descuento_porcentaje, 2) . '%' : '-' }}</td>
                         <td class="text-end">${{ number_format($item->subtotal, 0, ',', '.') }}</td>
                         <td class="text-end fw-semibold">${{ number_format($item->total, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
+            @php
+                $totalDescuentosPdf = $orden->items->sum('descuento_monto');
+                $subtotalBrutoPdf = $orden->subtotal + $totalDescuentosPdf;
+            @endphp
             <tfoot>
+                @if($totalDescuentosPdf > 0)
+                    <tr>
+                        <td colspan="7"></td>
+                        <td class="text-end text-muted" style="border-top: 1px solid #d1d5db;">Subtotal bruto</td>
+                        <td class="text-end fw-semibold" style="border-top: 1px solid #d1d5db;">${{ number_format($subtotalBrutoPdf, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7"></td>
+                        <td class="text-end" style="color:#b91c1c;">Descuento</td>
+                        <td class="text-end fw-semibold" style="color:#b91c1c;">-${{ number_format($totalDescuentosPdf, 0, ',', '.') }}</td>
+                    </tr>
+                @endif
                 <tr>
-                    <td colspan="6"></td>
-                    <td class="text-end text-muted" style="border-top: 1px solid #d1d5db;">Subtotal</td>
-                    <td class="text-end fw-semibold" style="border-top: 1px solid #d1d5db;">${{ number_format($orden->subtotal, 0, ',', '.') }}</td>
+                    <td colspan="7"></td>
+                    <td class="text-end text-muted" @if($totalDescuentosPdf == 0) style="border-top: 1px solid #d1d5db;" @endif>Subtotal</td>
+                    <td class="text-end fw-semibold" @if($totalDescuentosPdf == 0) style="border-top: 1px solid #d1d5db;" @endif>${{ number_format($orden->subtotal, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6"></td>
+                    <td colspan="7"></td>
                     <td class="text-end text-muted">IVA</td>
                     <td class="text-end fw-semibold">${{ number_format($orden->monto_iva, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="6"></td>
+                    <td colspan="7"></td>
                     <td class="text-end fw-bold">TOTAL</td>
                     <td class="text-end fw-bold" style="font-size: 11px;">${{ number_format($orden->total, 0, ',', '.') }}</td>
                 </tr>

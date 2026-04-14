@@ -43,7 +43,7 @@
                         <button type="button" class="btn btn-primary flex-fill" id="btnFiltrar">
                             <i class="bi bi-search me-1"></i>Filtrar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiar">
+                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiar" title="Borrar filtros">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>

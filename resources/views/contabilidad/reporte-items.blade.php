@@ -19,6 +19,7 @@
         <x-sinden.stat-card icon="bi bi-bag-check" :value="'$' . number_format($totalProductos, 0, ',', '.')" title="Total Prod. Terminados" color="success" />
         <x-sinden.stat-card icon="bi bi-cash" :value="'$' . number_format($totalSinIva, 0, ',', '.')" title="Total Sin IVA" color="secondary" />
         <x-sinden.stat-card icon="bi bi-receipt" :value="'$' . number_format($totalIva, 0, ',', '.')" title="Total IVA" color="dark" />
+        <x-sinden.stat-card icon="bi bi-percent" :value="'$' . number_format($totalDescuentos, 0, ',', '.')" title="Total Descuentos" color="danger" />
         <x-sinden.stat-card icon="bi bi-cash-stack" :value="'$' . number_format($granTotal, 0, ',', '.')" title="Gran Total" color="primary" />
     </div>
 
@@ -28,7 +29,7 @@
             <div class="row g-2 align-items-end">
                 <div class="col-md-2 col-6">
                     <label class="form-label small text-muted mb-1">Buscar (codigo / descripcion)</label>
-                    <input type="text" class="form-control" id="filtroBusqueda" placeholder="Ej: CORTE-001" style="min-height:44px">
+                    <input type="text" class="form-control" id="filtroBusqueda" placeholder="Ej: SER 1004" style="min-height:44px">
                 </div>
                 <div class="col-md-2 col-6">
                     <label class="form-label small text-muted mb-1">Categoria</label>
@@ -60,7 +61,7 @@
                         <button type="button" class="btn btn-primary flex-grow-1" id="btnFiltrarReporte" style="min-height:44px">
                             <i class="bi bi-search me-1"></i>Filtrar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiarReporte" style="min-height:44px">
+                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiarReporte" style="min-height:44px" title="Borrar filtros">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
@@ -91,6 +92,7 @@
                             <th class="text-center">Categoria</th>
                             <th class="text-center">Cantidad</th>
                             <th class="text-end">P. Unitario</th>
+                            <th class="text-center">Descuento</th>
                             <th class="text-end">Subtotal</th>
                             <th class="text-end">IVA</th>
                             <th class="text-end">Total</th>
@@ -100,6 +102,7 @@
                         <tr class="table-light fw-bold">
                             <td colspan="6" class="text-end">Totales (filtro aplicado):</td>
                             <td class="text-end" id="sumaPrecio">-</td>
+                            <td class="text-center" id="sumaDescuento">$0</td>
                             <td class="text-end" id="sumaSubtotal">$0</td>
                             <td class="text-end" id="sumaIva">$0</td>
                             <td class="text-end" id="sumaTotal">$0</td>

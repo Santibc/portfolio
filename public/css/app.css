@@ -2932,3 +2932,48 @@ select {
         background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
     }
 }
+
+/* =========================================================
+   Flatpickr: ocultar d\u00edas de meses adyacentes + dark mode
+   ========================================================= */
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+html.dark .flatpickr-calendar {
+    background: #1e293b;
+    color: #e5e7eb;
+    box-shadow: 0 3px 13px rgba(0, 0, 0, 0.6);
+    border-color: #334155;
+}
+html.dark .flatpickr-months .flatpickr-month,
+html.dark .flatpickr-current-month,
+html.dark .flatpickr-weekdays,
+html.dark span.flatpickr-weekday {
+    color: #e5e7eb;
+    background: transparent;
+    fill: #e5e7eb;
+}
+html.dark .flatpickr-day {
+    color: #e5e7eb;
+}
+html.dark .flatpickr-day:hover {
+    background: #334155;
+    border-color: #334155;
+}
+html.dark .flatpickr-day.selected,
+html.dark .flatpickr-day.selected:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+html.dark .flatpickr-day.today {
+    border-color: #60a5fa;
+}
+html.dark .flatpickr-months .flatpickr-prev-month,
+html.dark .flatpickr-months .flatpickr-next-month {
+    color: #e5e7eb;
+    fill: #e5e7eb;
+}

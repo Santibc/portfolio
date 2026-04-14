@@ -1,8 +1,8 @@
-{{-- Seccion 6: Pagos / Abonos --}}
-<div class="card border-0 shadow-sm mb-4 wizard-section" data-section="6" id="seccionPagos">
+{{-- Seccion 5: Pagos / Abonos --}}
+<div class="card border-0 shadow-sm mb-4 wizard-section" data-section="5" id="seccionPagos">
     <div class="card-header bg-white border-0 px-4 pt-4 pb-2 d-flex align-items-center justify-content-between">
         <h6 class="mb-0 fw-semibold">
-            <i class="bi bi-cash-coin me-2 text-primary"></i>6. Pagos / Abonos
+            <i class="bi bi-cash-coin me-2 text-primary"></i>5. Pagos / Abonos
         </h6>
         <button type="button" class="btn btn-sm btn-primary" onclick="agregarFilaPago()">
             <i class="bi bi-plus-lg me-1"></i> Agregar Pago

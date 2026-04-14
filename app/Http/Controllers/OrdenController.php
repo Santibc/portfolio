@@ -10,6 +10,7 @@ use App\Models\PlantillaBosquejo;
 use App\Models\Orden;
 use App\Models\OrdenBosquejo;
 use App\Models\OrdenComentario;
+use App\Models\OrdenDocumento;
 use App\Models\OrdenItem;
 use App\Models\OrdenPieza;
 use App\Models\Pago;
@@ -22,6 +23,8 @@ use App\Traits\RegistraActividad;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -325,11 +328,20 @@ class OrdenController extends Controller
                 ->addColumn('estado_pago_badge', function ($o) {
                     return $this->badgeEstadoPago($o->estado_pago);
                 })
+                ->addColumn('porcentaje_total_html', function ($o) {
+                    return $this->badgePorcentajeTotal($o);
+                })
                 ->addColumn('total_formatted', function ($o) {
                     return '$' . number_format($o->total, 0, ',', '.');
                 })
                 ->addColumn('saldo_formatted', function ($o) {
-                    $class = $o->saldo > 0 ? ' text-danger fw-semibold' : '';
+                    if ($o->saldo > 0) {
+                        $class = ' text-danger fw-semibold';
+                    } elseif ($o->saldo < 0) {
+                        $class = ' text-warning fw-semibold';
+                    } else {
+                        $class = '';
+                    }
                     return '<span class="' . $class . '">$' . number_format($o->saldo, 0, ',', '.') . '</span>';
                 })
                 ->addColumn('acciones', function ($o) {
@@ -355,6 +367,10 @@ class OrdenController extends Controller
                         if ($puedeEscribir) {
                             $html .= '<button type="button" class="action-btn delete" title="Anular" onclick="anularOrden(' . $o->id . ', \'' . addslashes($o->numero_orden) . '\')"><i class="bi bi-x-circle"></i></button>';
                         }
+                    }
+
+                    if ($o->estado_trabajo === 'borrador' && $puedeEscribir) {
+                        $html .= '<button type="button" class="action-btn delete" title="Eliminar borrador" onclick="eliminarBorrador(' . $o->id . ')"><i class="bi bi-trash"></i></button>';
                     }
 
                     $html .= '</div>';
@@ -384,7 +400,7 @@ class OrdenController extends Controller
                 ->editColumn('fecha_entrega', function ($o) {
                     return $o->fecha_entrega ? $o->fecha_entrega->format('d/m/Y') : '-';
                 })
-                ->rawColumns(['numero_orden', 'estado_trabajo_badge', 'estado_entrega_badge', 'estado_pago_badge', 'saldo_formatted', 'acciones'])
+                ->rawColumns(['numero_orden', 'estado_trabajo_badge', 'estado_entrega_badge', 'estado_pago_badge', 'porcentaje_total_html', 'saldo_formatted', 'acciones'])
                 ->make(true);
         }
 
@@ -395,8 +411,12 @@ class OrdenController extends Controller
         $ejecutadas = Orden::ejecutadas()->count();
         $saldoPendienteTotal = Orden::noAnuladas()->noBorradores()->where('saldo', '>', 0)->sum('saldo');
 
+        $creadores = User::whereIn('id', Orden::whereNotNull('creado_por')->distinct()->pluck('creado_por'))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return view('ordenes.index', compact(
-            'totalOrdenes', 'borradores', 'enProceso', 'ejecutadas', 'saldoPendienteTotal'
+            'totalOrdenes', 'borradores', 'enProceso', 'ejecutadas', 'saldoPendienteTotal', 'creadores'
         ));
     }
 
@@ -498,6 +518,7 @@ class OrdenController extends Controller
                 'cantidad' => $item->cantidad,
                 'precio_unitario' => $item->precio_unitario,
                 'porcentaje_iva' => $item->porcentaje_iva,
+                'descuento_porcentaje' => $item->descuento_porcentaje,
                 'categoria' => $item->categoria,
             ])->values(),
             'bosquejos' => $orden->bosquejos->map(fn ($b) => [
@@ -508,21 +529,21 @@ class OrdenController extends Controller
                 'ruta_miniatura' => $b->ruta_miniatura,
                 'plantilla_bosquejo_id' => $b->plantilla_bosquejo_id,
             ])->values(),
-            'piezas' => $orden->piezas->map(fn ($p) => [
+            'piezas' => $orden->piezas->sortBy('orden_visual')->map(fn ($p) => [
+                'id' => $p->id,
                 'nombre' => $p->nombre,
                 'cantidad' => $p->cantidad,
                 'material' => $p->material,
                 'calibre' => $p->calibre,
                 'notas' => $p->notas,
                 'orden_bosquejo_id' => $p->orden_bosquejo_id,
-                'requiere_operario' => $p->requiere_operario,
+                'operario_actual_id' => $p->operario_actual_id,
             ])->values(),
             'pagos' => $orden->pagos->map(fn ($p) => [
                 'monto' => $p->monto,
                 'metodo_pago' => $p->metodo_pago,
                 'referencia_pago' => $p->referencia_pago,
             ])->values(),
-            'operario_id' => $orden->piezas->first()?->operario_actual_id,
             'fecha_entrega' => $orden->fecha_entrega ? $orden->fecha_entrega->format('Y-m-d') : null,
             'hora_entrega' => $orden->hora_entrega,
             'notas' => $orden->notas,
@@ -552,6 +573,10 @@ class OrdenController extends Controller
         try {
             $this->ordenService->guardarBorrador($data, $user, $orden);
 
+            // Extraer y remover atributo transiente antes de cualquier save posterior
+            $bosquejosSincronizados = $orden->bosquejosSincronizados ?? [];
+            unset($orden->bosquejosSincronizados);
+
             if ($orden->estado_trabajo !== 'borrador') {
                 $this->estadoService->recalcularTodo($orden);
             }
@@ -570,7 +595,7 @@ class OrdenController extends Controller
                 'success' => true,
                 'message' => 'Orden actualizada exitosamente.',
                 'orden_id' => $orden->id,
-                'bosquejos' => $orden->bosquejosSincronizados ?? [],
+                'bosquejos' => $bosquejosSincronizados,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -607,6 +632,8 @@ class OrdenController extends Controller
                         'cantidad' => $item->cantidad,
                         'precio_unitario' => $item->precio_unitario,
                         'porcentaje_iva' => $item->porcentaje_iva,
+                        'descuento_porcentaje' => $item->descuento_porcentaje,
+                        'descuento_monto' => $item->descuento_monto,
                         'categoria' => $item->categoria,
                         'subtotal' => $item->subtotal,
                         'monto_iva' => $item->monto_iva,
@@ -734,6 +761,101 @@ class OrdenController extends Controller
     }
 
     /**
+     * DELETE /recepcion/ordenes/{orden} - Eliminar borrador (solo estado 'borrador').
+     * Registra snapshot completo en registros_actividad y en laravel.log antes de eliminar.
+     */
+    public function destroy(Orden $orden)
+    {
+        if ($orden->estado_trabajo !== 'borrador') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Solo se pueden eliminar borradores. Use Anular para ordenes generadas.',
+            ], 422);
+        }
+
+        $ordenId = $orden->id;
+        $userId = auth()->id();
+        $userName = auth()->user()->name ?? 'desconocido';
+
+        $orden->load(['items', 'bosquejos', 'piezas', 'documentos', 'fotos', 'comentarios', 'asignaciones']);
+
+        $snapshot = [
+            'orden' => $orden->getAttributes(),
+            'cliente_id' => $orden->cliente_id,
+            'items' => $orden->items->map->getAttributes()->all(),
+            'bosquejos' => $orden->bosquejos->map->getAttributes()->all(),
+            'piezas' => $orden->piezas->map->getAttributes()->all(),
+            'documentos' => $orden->documentos->map->getAttributes()->all(),
+            'fotos' => $orden->fotos->map->getAttributes()->all(),
+            'comentarios_count' => $orden->comentarios->count(),
+            'asignaciones_count' => $orden->asignaciones->count(),
+        ];
+
+        $archivosFisicos = [];
+        foreach ($orden->documentos as $doc) {
+            if ($doc->ruta_archivo) $archivosFisicos[] = $doc->ruta_archivo;
+        }
+        foreach ($orden->bosquejos as $b) {
+            if ($b->ruta_archivo) $archivosFisicos[] = $b->ruta_archivo;
+            if ($b->ruta_miniatura) $archivosFisicos[] = $b->ruta_miniatura;
+        }
+        foreach ($orden->fotos as $f) {
+            if ($f->ruta_archivo) $archivosFisicos[] = $f->ruta_archivo;
+            if ($f->ruta_miniatura) $archivosFisicos[] = $f->ruta_miniatura;
+        }
+        if ($orden->ruta_firma_cliente) $archivosFisicos[] = $orden->ruta_firma_cliente;
+
+        try {
+            $this->registrarActividad(
+                'orden.borrador_eliminado',
+                "Borrador #{$ordenId} eliminado por {$userName}",
+                null,
+                [
+                    'tipo_cambio' => 'delete',
+                    'modelo' => 'Orden',
+                    'modelo_id' => $ordenId,
+                    'snapshot' => $snapshot,
+                    'archivos_eliminados' => $archivosFisicos,
+                ]
+            );
+
+            Log::info('Borrador eliminado', [
+                'orden_id' => $ordenId,
+                'user_id' => $userId,
+                'user_name' => $userName,
+                'archivos_eliminados' => $archivosFisicos,
+                'snapshot' => $snapshot,
+            ]);
+
+            DB::transaction(function () use ($orden) {
+                $orden->delete();
+            });
+
+            foreach ($archivosFisicos as $ruta) {
+                $path = public_path($ruta);
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Borrador #{$ordenId} eliminado exitosamente.",
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar borrador', [
+                'orden_id' => $ordenId,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar borrador: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * POST /recepcion/ordenes/{orden}/comentarios - Agregar comentario (AJAX).
      */
     public function agregarComentario(Request $request, Orden $orden)
@@ -834,7 +956,7 @@ class OrdenController extends Controller
      */
     protected function aplicarFiltrosListado(Request $request)
     {
-        $query = Orden::with('cliente')->select('ordenes.*');
+        $query = Orden::with(['cliente', 'piezas'])->select('ordenes.*');
 
         if ($request->filled('numero_orden')) {
             $query->where('numero_orden', 'like', '%' . $request->input('numero_orden') . '%');
@@ -855,6 +977,9 @@ class OrdenController extends Controller
         }
         if ($request->filled('estado_pago')) {
             $query->where('estado_pago', $request->input('estado_pago'));
+        }
+        if ($request->filled('creado_por')) {
+            $query->where('creado_por', $request->input('creado_por'));
         }
         if ($request->filled('fecha_desde')) {
             $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
@@ -880,7 +1005,7 @@ class OrdenController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $ordenes = $this->aplicarFiltrosListado($request)->orderBy('id', 'desc')->get();
+        $ordenes = $this->aplicarFiltrosListado($request)->with('items')->orderBy('id', 'desc')->get();
         return Excel::download(new OrdenesExport($ordenes), 'ordenes-' . now()->format('Y-m-d') . '.xlsx');
     }
 
@@ -952,6 +1077,79 @@ class OrdenController extends Controller
         return '<span class="status-badge ' . $cfg[0] . '">' . $cfg[1] . '</span>';
     }
 
+    /**
+     * POST /recepcion/ordenes/{orden}/documentos - Subir documento adjunto (cualquier tipo).
+     */
+    public function subirDocumento(Request $request, Orden $orden)
+    {
+        $request->validate([
+            'archivo' => 'required|file|max:51200',
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo.',
+            'archivo.file' => 'El archivo es invalido.',
+            'archivo.max' => 'El archivo no puede superar 50 MB.',
+        ]);
+
+        $file = $request->file('archivo');
+        $dir = public_path("uploads/ordenes/{$orden->id}/documentos");
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $ext = $file->getClientOriginalExtension();
+        $nombreGuardado = 'doc_' . time() . '_' . Str::random(6) . ($ext ? ".{$ext}" : '');
+        $file->move($dir, $nombreGuardado);
+
+        $doc = OrdenDocumento::create([
+            'orden_id'        => $orden->id,
+            'nombre_original' => $file->getClientOriginalName(),
+            'ruta_archivo'    => "uploads/ordenes/{$orden->id}/documentos/{$nombreGuardado}",
+            'extension'       => $ext,
+            'mime_type'       => $file->getClientMimeType(),
+            'tamano_bytes'    => $file->getSize(),
+            'subido_por'      => auth()->id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'documento' => [
+                'id'              => $doc->id,
+                'nombre_original' => $doc->nombre_original,
+                'tamano_legible'  => $doc->tamano_legible,
+                'icono'           => $doc->icono,
+                'url_descarga'    => $doc->url_descarga,
+                'url_eliminar'    => route('recepcion.ordenes.documentos.eliminar', ['orden' => $orden->id, 'documento' => $doc->id]),
+                'subido_por'      => auth()->user()->name,
+                'created_at'      => optional($doc->created_at)->format('d/m/Y H:i'),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /recepcion/ordenes/{orden}/documentos/{documento}/descargar - Descargar adjunto.
+     */
+    public function descargarDocumento(Orden $orden, OrdenDocumento $documento)
+    {
+        abort_if($documento->orden_id !== $orden->id, 404);
+        $path = public_path($documento->ruta_archivo);
+        abort_if(!file_exists($path), 404);
+        return response()->download($path, $documento->nombre_original);
+    }
+
+    /**
+     * DELETE /recepcion/ordenes/{orden}/documentos/{documento} - Eliminar adjunto.
+     */
+    public function eliminarDocumento(Orden $orden, OrdenDocumento $documento)
+    {
+        abort_if($documento->orden_id !== $orden->id, 404);
+        $path = public_path($documento->ruta_archivo);
+        if (file_exists($path)) {
+            @unlink($path);
+        }
+        $documento->delete();
+        return response()->json(['success' => true]);
+    }
+
     protected function badgeEstadoEntrega(?string $estado): string
     {
         if (!$estado) return '<span class="text-muted">-</span>';
@@ -972,5 +1170,27 @@ class OrdenController extends Controller
         ];
         $cfg = $map[$estado] ?? ['secondary', strtoupper($estado)];
         return '<span class="status-badge ' . $cfg[0] . '">' . $cfg[1] . '</span>';
+    }
+
+    protected function badgePorcentajeTotal(Orden $orden): string
+    {
+        $pct = $orden->porcentaje_total;
+        if ($pct === null) {
+            return '<span class="text-muted">&mdash;</span>';
+        }
+        if ($pct < 40) {
+            $color = 'bg-danger';
+        } elseif ($pct < 80) {
+            $color = 'bg-warning';
+        } else {
+            $color = 'bg-success';
+        }
+        $label = $pct . '%';
+        return '<div class="d-flex align-items-center gap-2">'
+            . '<div class="progress flex-grow-1" style="height: 8px; min-width: 70px;">'
+            . '<div class="progress-bar ' . $color . '" role="progressbar" style="width: ' . $pct . '%;" aria-valuenow="' . $pct . '" aria-valuemin="0" aria-valuemax="100"></div>'
+            . '</div>'
+            . '<span class="small fw-semibold" style="min-width: 32px;">' . $label . '</span>'
+            . '</div>';
     }
 }

@@ -33,7 +33,7 @@
                         <th style="width:140px">Material</th>
                         <th style="width:90px">Calibre</th>
                         <th>Especificacion</th>
-                        <th style="width:60px" class="text-center">Operario</th>
+                        <th style="width:180px">Operario</th>
                         <th style="width:40px"></th>
                     </tr>
                 </thead>

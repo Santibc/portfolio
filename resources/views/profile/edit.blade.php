@@ -156,7 +156,10 @@
 
                         <div class="mb-3">
                             <label for="current_password" class="form-label">Contraseña Actual</label>
-                            <input type="password" class="form-control" id="current_password" name="current_password" autocomplete="current-password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="current_password" name="current_password" autocomplete="current-password">
+                                <button type="button" class="btn btn-outline-secondary" data-password-toggle="current_password"><i class="bi bi-eye"></i></button>
+                            </div>
                             @error('current_password', 'updatePassword')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -164,7 +167,10 @@
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
+                                <button type="button" class="btn btn-outline-secondary" data-password-toggle="password"><i class="bi bi-eye"></i></button>
+                            </div>
                             @error('password', 'updatePassword')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -172,7 +178,10 @@
 
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Confirmar Contraseña</label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" autocomplete="new-password">
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" autocomplete="new-password">
+                                <button type="button" class="btn btn-outline-secondary" data-password-toggle="password_confirmation"><i class="bi bi-eye"></i></button>
+                            </div>
                             @error('password_confirmation', 'updatePassword')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -238,7 +247,10 @@
 
                     <div class="mb-3">
                         <label for="delete_password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="delete_password" name="password" placeholder="Tu contraseña">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="delete_password" name="password" placeholder="Tu contraseña">
+                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="delete_password"><i class="bi bi-eye"></i></button>
+                        </div>
                         @error('password', 'userDeletion')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -263,5 +275,26 @@
 </script>
 @endpush
 @endif
+
+@push('scripts')
+<script>
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-password-toggle]');
+        if (!btn) return;
+        const input = document.getElementById(btn.dataset.passwordToggle);
+        if (!input) return;
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+</script>
+@endpush
 @endrole
 @endsection

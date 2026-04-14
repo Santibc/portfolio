@@ -26,6 +26,7 @@
                         <th style="width:100px" class="text-center">Cantidad</th>
                         <th style="width:140px" class="text-end">P. Unitario</th>
                         <th style="width:70px" class="text-center">IVA</th>
+                        <th style="width:90px" class="text-center">Desc. %</th>
                         <th style="width:140px" class="text-end">Subtotal</th>
                         <th style="width:50px"></th>
                     </tr>
@@ -45,6 +46,14 @@
         <div class="row mt-3 justify-content-end" id="panelTotales" style="display:none;">
             <div class="col-md-5 col-lg-4">
                 <div class="bg-light rounded p-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal bruto:</span>
+                        <strong id="totalSubtotalBruto">$0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" id="filaDescuento" style="display:none;">
+                        <span class="text-danger">Descuento:</span>
+                        <strong class="text-danger" id="totalDescuento">-$0</strong>
+                    </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Subtotal:</span>
                         <strong id="totalSubtotal">$0</strong>

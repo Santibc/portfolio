@@ -72,6 +72,11 @@ class Orden extends Model
         return $this->hasMany(OrdenFoto::class, 'orden_id');
     }
 
+    public function documentos()
+    {
+        return $this->hasMany(OrdenDocumento::class, 'orden_id')->orderByDesc('created_at');
+    }
+
     public function comentarios()
     {
         return $this->hasMany(OrdenComentario::class, 'orden_id');
@@ -142,5 +147,54 @@ class Orden extends Model
     public function scopeNoBorradores($query)
     {
         return $query->where('estado_trabajo', '!=', 'borrador');
+    }
+
+    // === Accesores de avance ===
+
+    public function getPorcentajeTrabajoAttribute(): int
+    {
+        $piezas = $this->piezas;
+        if (!$piezas || $piezas->isEmpty()) {
+            return 0;
+        }
+        $avg = (float) $piezas->avg('porcentaje_avance');
+        return (int) max(0, min(100, round($avg)));
+    }
+
+    public function getPorcentajeEntregaAttribute(): int
+    {
+        $piezas = $this->piezas;
+        if (!$piezas || $piezas->isEmpty()) {
+            return 0;
+        }
+        $totalCant = (int) $piezas->sum('cantidad');
+        if ($totalCant <= 0) {
+            return 0;
+        }
+        $totalEntregada = (int) $piezas->sum('cantidad_entregada');
+        $pct = ($totalEntregada / $totalCant) * 100;
+        return (int) max(0, min(100, round($pct)));
+    }
+
+    public function getPorcentajePagoAttribute(): int
+    {
+        $total = (float) $this->total;
+        if ($total <= 0) {
+            return 0;
+        }
+        $pct = ((float) $this->total_pagado / $total) * 100;
+        return (int) max(0, min(100, round($pct)));
+    }
+
+    public function getPorcentajeTotalAttribute(): ?int
+    {
+        if ($this->estado_trabajo === 'anulada') {
+            return null;
+        }
+        if ($this->estado_trabajo === 'borrador') {
+            return 0;
+        }
+        $prom = ($this->porcentaje_trabajo + $this->porcentaje_entrega + $this->porcentaje_pago) / 3;
+        return (int) max(0, min(100, round($prom)));
     }
 }

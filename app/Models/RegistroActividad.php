@@ -33,6 +33,8 @@ class RegistroActividad extends Model
         'pieza.transferida' => 'Pieza Transferida',
         'pieza.liberada_a_pool' => 'Pieza Liberada a Pool',
         'pieza.tomada_de_pool' => 'Pieza Tomada de Pool',
+        'pieza.operario_asignado' => 'Operario Asignado a Pieza',
+        'pieza.operario_removido' => 'Operario Removido de Pieza',
         'pieza.entregada' => 'Pieza Entregada',
         'pieza.foto_subida' => 'Foto de Pieza Subida',
         // Entregas

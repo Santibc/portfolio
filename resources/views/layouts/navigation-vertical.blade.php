@@ -94,6 +94,16 @@
     @endcan
 
     @role('Operario')
+        {{-- SECCION ORDENES (solo lectura para Operario) --}}
+        <div class="nav-section-title">Ordenes</div>
+
+        <div class="nav-item {{ request()->routeIs('recepcion.ordenes.index') || request()->routeIs('recepcion.ordenes.show') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.ordenes.index') }}" class="nav-link">
+                <i class="bi bi-search"></i>
+                <span>Ordenes</span>
+            </a>
+        </div>
+
         {{-- SECCION MI TRABAJO --}}
         <div class="nav-section-title">Mi Trabajo</div>
 
@@ -166,7 +176,7 @@
         <div class="nav-item {{ request()->routeIs('contabilidad.reporte-items') ? 'active' : '' }}">
             <a href="{{ route('contabilidad.reporte-items') }}" class="nav-link">
                 <i class="bi bi-bar-chart-line"></i>
-                <span>Reporte Ventas Items</span>
+                <span>Reporte Ventas por Categoría de Items</span>
             </a>
         </div>
 

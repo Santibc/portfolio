@@ -18,7 +18,6 @@ $(function() {
         cargarPagos();
         cargarFechas();
         cargarFirma();
-        cargarOperario();
 
         // Set initial saved hash to prevent immediate auto-save
         wizardState.lastSavedHash = JSON.stringify(recopilarDatosFormulario());
@@ -51,6 +50,7 @@ function cargarItems() {
         $row.find('.item-cantidad').val(item.cantidad || 1).each(function(){ autoExpandCantidad(this); });
         $row.find('.item-precio').val(item.precio_unitario || 0);
         $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
+        $row.find('.item-descuento').val(item.descuento_porcentaje || 0);
         $row.find('.item-categoria').val(item.categoria || 'servicio');
 
         if (item.catalogo_item_id) {
@@ -97,6 +97,10 @@ function cargarPiezas() {
         var idx = wizardState.piezaCounter;
         var $row = $('#piezaRow_' + idx);
 
+        if (pieza.id) {
+            $row.data('pieza-id', pieza.id);
+        }
+
         $row.find('.pieza-nombre').val(pieza.nombre || '');
         $row.find('.pieza-cantidad').val(parseInt(pieza.cantidad, 10) || 1).each(function(){ autoExpandCantidad(this); });
 
@@ -124,15 +128,13 @@ function cargarPiezas() {
             }
         }
 
-        // Restore requiere_operario checkbox state
-        if (pieza.requiere_operario === false || pieza.requiere_operario === 0) {
-            $row.find('.pieza-requiere-operario').prop('checked', false);
+        // Preseleccionar operario asignado a esta pieza (si aplica)
+        if (pieza.operario_actual_id) {
+            $row.find('.pieza-operario').val(String(pieza.operario_actual_id));
         }
 
         generarEspecificacion(idx);
     });
-
-    actualizarVisibilidadOperario();
 }
 
 // ==========================================
@@ -181,7 +183,7 @@ function cargarPagos() {
 function cargarFechas() {
     if (ORDEN_DATA.fecha_entrega) {
         $('#fecha_entrega').val(ORDEN_DATA.fecha_entrega);
-        marcarStepCompletado(7);
+        marcarStepCompletado(6);
     }
     if (ORDEN_DATA.hora_entrega) {
         $('#hora_entrega').val(ORDEN_DATA.hora_entrega);
@@ -207,19 +209,4 @@ function cargarFirma() {
         cargarFirmaEnCanvas(src);
     }
     marcarStepCompletado(4);
-}
-
-// ==========================================
-// Cargar Operario
-// ==========================================
-function cargarOperario() {
-    if (!ORDEN_DATA.operario_id) return;
-
-    var $select = $('#operario_id');
-    if ($select.length) {
-        $select.val(ORDEN_DATA.operario_id);
-        if ($select.val()) {
-            marcarStepCompletado(5);
-        }
-    }
 }

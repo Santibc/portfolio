@@ -19,8 +19,82 @@ class ConfiguracionController extends Controller
         $configs = ConfiguracionSistema::all()->keyBy('clave');
         $clientes = Cliente::where('activo', true)->orderBy('nombre')->get(['id', 'nombre']);
         $tiposPago = TipoPago::orderBy('orden')->orderBy('id')->get();
+        $metricasCatalogo = $this->catalogoMetricasPanel();
+        $metricasVisibles = $this->normalizarMetricasPanel(
+            ConfiguracionSistema::get('metricas_panel_visibles', [])
+        );
 
-        return view('admin.configuracion.index', compact('configs', 'clientes', 'tiposPago'));
+        return view('admin.configuracion.index', compact(
+            'configs', 'clientes', 'tiposPago', 'metricasCatalogo', 'metricasVisibles'
+        ));
+    }
+
+    public static function catalogoMetricasPanel(): array
+    {
+        return [
+            'admin' => [
+                'label' => 'Administrador',
+                'metricas' => [
+                    'ordenes_activas' => 'Ordenes Activas',
+                    'entregas_vencidas' => 'Entregas Vencidas',
+                    'saldo_pendiente_total' => 'Saldo Pendiente Total',
+                    'recaudado_hoy' => 'Recaudado Hoy',
+                    'garantias_activas' => 'Garantias Activas',
+                    'pagos_por_aprobar' => 'Pagos por Aprobar',
+                    'ordenes_hoy' => 'Ordenes Creadas Hoy',
+                ],
+            ],
+            'recepcion' => [
+                'label' => 'Recepcion',
+                'metricas' => [
+                    'entregas_hoy' => 'Entregas Hoy',
+                    'entregas_hoy_manana' => 'Entregas Hoy+Manana',
+                    'entregas_vencidas' => 'Entregas Vencidas',
+                    'ordenes_abiertas' => 'Ordenes Abiertas',
+                    'saldo_pendiente' => 'Saldo Pendiente',
+                    'para_complementar' => 'Para Complementar',
+                    'garantias_activas' => 'Garantias Activas',
+                ],
+            ],
+            'operario' => [
+                'label' => 'Operario',
+                'metricas' => [
+                    'ordenes_asignadas' => 'Ordenes Asignadas',
+                    'piezas_en_proceso' => 'Piezas en Proceso',
+                    'para_complementar' => 'Para Complementar',
+                    'completadas_hoy' => 'Completadas Hoy',
+                    'garantias_pendientes' => 'Garantias Pendientes',
+                ],
+            ],
+            'contabilidad' => [
+                'label' => 'Contabilidad',
+                'metricas' => [
+                    'ordenes_con_saldo' => 'Ordenes con Saldo',
+                    'abonos_por_aprobar' => 'Abonos por Aprobar',
+                    'total_pendiente' => 'Total Pendiente',
+                    'recaudado_hoy' => 'Recaudado Hoy',
+                    'ultimos_pagos' => 'Ultimos Pagos Aprobados (seccion)',
+                    'recaudo_por_metodo' => 'Recaudo por Metodo Hoy (seccion)',
+                ],
+            ],
+        ];
+    }
+
+    private function normalizarMetricasPanel($valor): array
+    {
+        $catalogo = static::catalogoMetricasPanel();
+        $normalizado = [];
+        $entrada = is_array($valor) ? $valor : [];
+
+        foreach ($catalogo as $rol => $data) {
+            $normalizado[$rol] = [];
+            foreach ($data['metricas'] as $clave => $_label) {
+                $actual = $entrada[$rol][$clave] ?? true;
+                $normalizado[$rol][$clave] = filter_var($actual, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        return $normalizado;
     }
 
     /* ===================== Tipos de Pago CRUD ===================== */
@@ -128,6 +202,9 @@ class ConfiguracionController extends Controller
             'calibres_disponibles.*.calibre' => 'required|string|max:20',
             'calibres_disponibles.*.mm' => 'required|numeric|min:0',
             'cliente_predeterminado_id' => 'nullable|integer|exists:clientes,id',
+            'metricas_panel_visibles' => 'array',
+            'metricas_panel_visibles.*' => 'array',
+            'metricas_panel_visibles.*.*' => 'boolean',
         ];
 
         $clavesPermitidas = [
@@ -136,7 +213,7 @@ class ConfiguracionController extends Controller
             'timeout_autoguardado_recepcion', 'timeout_forzar_cierre',
             'dias_expiracion_borradores', 'dias_borradores_recientes',
             'materiales_disponibles', 'calibres_disponibles',
-            'cliente_predeterminado_id',
+            'cliente_predeterminado_id', 'metricas_panel_visibles',
         ];
 
         $datos = $request->input('configs', []);
@@ -159,6 +236,9 @@ class ConfiguracionController extends Controller
                 $validar["{$prefijo}.*.calibre"] = $reglas["{$clave}.*.calibre"];
                 $validar["{$prefijo}.*.mm"] = $reglas["{$clave}.*.mm"];
             }
+            if (isset($reglas["{$clave}.*.*"])) {
+                $validar["{$prefijo}.*.*"] = $reglas["{$clave}.*.*"];
+            }
         }
 
         $request->validate($validar);
@@ -168,6 +248,9 @@ class ConfiguracionController extends Controller
         foreach ($datos as $clave => $valor) {
             if (!in_array($clave, $clavesPermitidas)) {
                 continue;
+            }
+            if ($clave === 'metricas_panel_visibles') {
+                $valor = $this->normalizarMetricasPanel($valor);
             }
             $valorAnterior = ConfiguracionSistema::get($clave);
             ConfiguracionSistema::set($clave, $valor);

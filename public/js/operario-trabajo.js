@@ -10,6 +10,7 @@
     var heartbeatInterval = null;
     var inactivityTimer = null;
     var forceCloseInterval = null;
+    var huboAccionPieza = false; // true si se hizo transferencia o dejar-en-cola durante la sesion
 
     // ==========================================
     // INIT
@@ -246,6 +247,7 @@
                     btn.prop('disabled', false);
 
                     if (data.success) {
+                        huboAccionPieza = true;
                         showToast('success', 'Pieza transferida', 'La pieza fue transferida a ' + data.nuevo_operario);
                         $('#pieza-' + piezaId).fadeOut(400, function() { $(this).remove(); });
                         delete piezasCambios[piezaId];
@@ -299,6 +301,7 @@
                             data: { _token: CSRF_TOKEN },
                             success: function(data) {
                                 if (data.success) {
+                                    huboAccionPieza = true;
                                     showToast('success', 'Pieza liberada', 'La pieza fue dejada en pendiente por terminar.');
                                     $('#pieza-' + piezaId).fadeOut(400, function() { $(this).remove(); });
                                     delete piezasCambios[piezaId];
@@ -336,6 +339,21 @@
             var cambios = recopilarCambios();
 
             if (cambios.length === 0) {
+                // Si ya se hizo alguna accion sobre piezas (transferencia o dejar en cola),
+                // no mostrar el dialogo "Sin cambios": el trabajo ya fue registrado.
+                if (huboAccionPieza) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Trabajo registrado',
+                        text: 'Las acciones sobre las piezas ya fueron guardadas.',
+                        confirmButtonText: 'Continuar',
+                        confirmButtonColor: '#4A7C59'
+                    }).then(function() {
+                        window.location.href = OPERARIO_ROUTES.ordenesAsignadas;
+                    });
+                    return;
+                }
+
                 Swal.fire({
                     icon: 'info',
                     title: 'Sin cambios',
@@ -564,10 +582,14 @@
                         if (seconds <= 0) clearInterval(countdownInterval);
                     }, 1000);
 
-                } else if (data.force_closed || !data.locked) {
-                    // Lock was released externally
+                } else if (data.force_closed) {
+                    // Cierre forzado por superior con timeout vencido
                     clearInterval(forceCloseInterval);
                     cerrarSesionTrabajo('La sesion de trabajo fue cerrada.');
+                } else if (!data.locked) {
+                    // Lock liberado externamente (otro operario salio, superior lo libero, etc.)
+                    // Reintentar adquirirlo silenciosamente para no interrumpir el trabajo.
+                    $.post(OPERARIO_ROUTES.bloquear, { _token: CSRF_TOKEN });
                 }
             });
         }, 10000); // Check every 10 seconds

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AsignacionPieza;
+use App\Models\HistorialAvance;
 use App\Models\Orden;
 use App\Models\OrdenBosquejo;
 use App\Models\OrdenItem;
@@ -10,12 +11,16 @@ use App\Models\OrdenPieza;
 use App\Models\Pago;
 use App\Models\User;
 use App\Services\NotificacionService;
+use App\Traits\RegistraActividad;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use App\Helpers\ImageHelper;
 use Intervention\Image\Facades\Image;
 
 class OrdenService
 {
+    use RegistraActividad;
+
     protected OrdenEstadoService $estadoService;
 
     public function __construct(OrdenEstadoService $estadoService)
@@ -59,6 +64,12 @@ class OrdenService
 
         if (isset($data['piezas'])) {
             $this->sincronizarPiezas($orden, $data['piezas'], $bosquejoMap);
+
+            // Aplicar asignacion de operario por pieza. Modo segun estado:
+            // - borrador: solo persiste operario_actual_id/requiere_operario/estado sin crear asignaciones
+            // - generada u otro: aplica transiciones completas con asignaciones, historial y log
+            $modo = $orden->estado_trabajo === 'borrador' ? 'borrador' : 'edicion';
+            $this->sincronizarOperariosPorPieza($orden, $data['piezas'], $user, $modo);
         }
 
         if (isset($data['pagos'])) {
@@ -68,11 +79,6 @@ class OrdenService
         if (!empty($data['firma_data'])) {
             $ruta = $this->guardarFirma($orden, $data['firma_data']);
             $orden->update(['ruta_firma_cliente' => $ruta]);
-        }
-
-        // Preservar/crear asignacion de operario para ordenes ya generadas
-        if ($orden->estado_trabajo !== 'borrador' && !empty($data['operario_id'])) {
-            $this->actualizarAsignacionOperario($orden, (int) $data['operario_id'], $user);
         }
 
         // Recalcular totales
@@ -118,17 +124,17 @@ class OrdenService
             $orden->estado_trabajo = 'ejecutada';
             $orden->estado_entrega = 'entregada';
         } else {
-            // Piezas sin operario -> completada inmediatamente
-            foreach ($piezas->where('requiere_operario', false) as $pieza) {
-                $pieza->update(['estado' => 'completada', 'porcentaje_avance' => 100]);
-            }
+            // Aplicar asignaciones iniciales: piezas con operario_id reciben AsignacionPieza
+            // tipo='inicial', piezas sin operario quedan completadas al 100%.
+            $this->sincronizarOperariosPorPieza($orden, $data['piezas'] ?? [], $user, 'inicial');
 
-            // Piezas con operario -> asignar
-            $piezasConOperario = $piezas->where('requiere_operario', true);
-            if ($piezasConOperario->isNotEmpty()) {
-                $operarioId = $data['operario_id'];
-                $this->crearAsignacionesIniciales($orden, (int) $operarioId, $user, $piezasConOperario);
-                NotificacionService::ordenGenerada($orden, (int) $operarioId);
+            // Notificar a cada operario asignado (unicos)
+            $operariosAsignados = $orden->piezas()
+                ->whereNotNull('operario_actual_id')
+                ->pluck('operario_actual_id')
+                ->unique();
+            foreach ($operariosAsignados as $opId) {
+                NotificacionService::ordenGenerada($orden, (int) $opId);
             }
 
             // Recalcular estado basado en piezas actualizadas
@@ -277,12 +283,6 @@ class OrdenService
             }
         }
 
-        $piezas = $data['piezas'] ?? [];
-        $algunaRequiereOperario = collect($piezas)->contains(fn($p) => ($p['requiere_operario'] ?? true));
-        if ($algunaRequiereOperario && empty($data['operario_id'])) {
-            $errores[] = 'Debe seleccionar un operario cuando hay piezas que lo requieren.';
-        }
-
         if (empty($data['fecha_entrega'])) {
             $errores[] = 'Debe indicar la fecha de entrega.';
         }
@@ -308,8 +308,12 @@ class OrdenService
             $cantidad = floatval($item['cantidad'] ?? 0);
             $precioUnitario = floatval($item['precio_unitario'] ?? 0);
             $porcentajeIva = floatval($item['porcentaje_iva'] ?? 19);
-            $subtotal = $cantidad * $precioUnitario;
-            $montoIva = $subtotal * ($porcentajeIva / 100);
+            $descuentoPorcentaje = max(0, min(100, floatval($item['descuento_porcentaje'] ?? 0)));
+
+            $base = $cantidad * $precioUnitario;
+            $descuentoMonto = round($base * $descuentoPorcentaje / 100, 2);
+            $subtotal = $base - $descuentoMonto;
+            $montoIva = round($subtotal * ($porcentajeIva / 100), 2);
 
             OrdenItem::create([
                 'orden_id' => $orden->id,
@@ -319,6 +323,8 @@ class OrdenService
                 'cantidad' => $cantidad,
                 'precio_unitario' => $precioUnitario,
                 'porcentaje_iva' => $porcentajeIva,
+                'descuento_porcentaje' => $descuentoPorcentaje,
+                'descuento_monto' => $descuentoMonto,
                 'categoria' => $item['categoria'] ?? 'servicio',
                 'subtotal' => $subtotal,
                 'monto_iva' => $montoIva,
@@ -436,12 +442,18 @@ class OrdenService
     }
 
     /**
-     * Sincroniza piezas: delete-and-recreate.
-     * Resuelve bosquejo_index usando el mapa de sincronizarBosquejos.
+     * Sincroniza piezas con UPSERT por ID. Preserva historial y asignaciones
+     * de piezas existentes; crea las nuevas; elimina las que ya no estan en
+     * el payload (CASCADE borra su historial, lo cual es correcto porque
+     * la pieza dejo de existir).
+     *
+     * No toca operario_actual_id / estado / porcentaje_avance / requiere_operario
+     * en piezas existentes: esos los maneja sincronizarOperariosPorPieza().
      */
     protected function sincronizarPiezas(Orden $orden, array $piezas, array $bosquejoMap = []): void
     {
-        $orden->piezas()->delete();
+        $idsExistentes = $orden->piezas()->pluck('id')->toArray();
+        $idsConservar = [];
 
         foreach ($piezas as $index => $pieza) {
             $letra = $this->obtenerLetraPieza($index);
@@ -457,7 +469,6 @@ class OrdenService
                 $bosquejoIndex = (int) $pieza['bosquejo_index'];
                 $ordenBosquejoId = $bosquejoMap[$bosquejoIndex] ?? null;
             }
-            // Fallback: si viene orden_bosquejo_id directo (compatibilidad)
             if (!$ordenBosquejoId && !empty($pieza['orden_bosquejo_id'])) {
                 $ordenBosquejoId = $pieza['orden_bosquejo_id'];
             }
@@ -469,8 +480,7 @@ class OrdenService
             if ($material) $partes[] = $material;
             $especificacion = implode(' - ', $partes);
 
-            OrdenPieza::create([
-                'orden_id' => $orden->id,
+            $camposBase = [
                 'orden_bosquejo_id' => $ordenBosquejoId,
                 'nombre' => $nombre,
                 'nombre_automatico' => "Pieza {$letra}",
@@ -479,11 +489,35 @@ class OrdenService
                 'calibre' => $calibre,
                 'especificacion' => $especificacion,
                 'notas' => $notas,
-                'porcentaje_avance' => 0,
-                'estado' => 'pendiente',
-                'requiere_operario' => (bool) ($pieza['requiere_operario'] ?? true),
                 'orden_visual' => $index,
-            ]);
+            ];
+
+            $piezaId = !empty($pieza['id']) ? (int) $pieza['id'] : null;
+            $existente = $piezaId ? OrdenPieza::where('id', $piezaId)
+                ->where('orden_id', $orden->id)
+                ->first() : null;
+
+            if ($existente) {
+                // Actualizar solo campos editables; conservar avance/operario/estado
+                $existente->update($camposBase);
+                $idsConservar[] = $existente->id;
+            } else {
+                // Crear nueva: estado inicial pendiente/0%. sincronizarOperariosPorPieza
+                // ajustara requiere_operario/operario_actual_id/estado/porcentaje_avance.
+                $nueva = OrdenPieza::create(array_merge($camposBase, [
+                    'orden_id' => $orden->id,
+                    'porcentaje_avance' => 0,
+                    'estado' => 'pendiente',
+                    'requiere_operario' => false,
+                ]));
+                $idsConservar[] = $nueva->id;
+            }
+        }
+
+        // Eliminar piezas ya no presentes (CASCADE borra asignaciones e historial)
+        $idsBorrar = array_diff($idsExistentes, $idsConservar);
+        if (!empty($idsBorrar)) {
+            OrdenPieza::whereIn('id', $idsBorrar)->delete();
         }
     }
 
@@ -534,58 +568,286 @@ class OrdenService
     }
 
     /**
-     * Actualiza la asignacion de operario en piezas de una orden ya generada.
-     * Se usa al editar ordenes que ya pasaron de borrador.
+     * Sincroniza el operario asignado por pieza segun el payload.
+     *
+     * Modos:
+     * - 'borrador': persiste operario_actual_id / requiere_operario / estado
+     *   en la pieza sin crear AsignacionPieza ni historial ni log. El operario
+     *   efectivo se crea solo al generar la orden.
+     * - 'inicial': la orden se acaba de generar; piezas con operario reciben
+     *   AsignacionPieza tipo='inicial', piezas sin operario quedan completadas.
+     * - 'edicion': la orden ya estaba generada. Se comparan valores antes/despues
+     *   por pieza y se aplica la transicion correspondiente:
+     *     null -> X : reset a pendiente/0%, nueva asignacion inicial, log 'pieza.operario_asignado'
+     *     X -> null : completar 100%, cerrar asignacion/historial, log 'pieza.operario_removido'
+     *     A -> B    : transferencia preservando avance, log 'pieza.transferida'
+     *
+     * $piezasPayload debe venir en el mismo orden que las piezas recien
+     * sincronizadas en BD (por orden_visual).
      */
-    protected function actualizarAsignacionOperario(Orden $orden, int $operarioId, User $asignadoPor): void
+    protected function sincronizarOperariosPorPieza(Orden $orden, array $piezasPayload, User $asignadoPor, string $modo): void
     {
-        $piezas = $orden->piezas()->where('requiere_operario', true)->get();
+        $piezasDb = $orden->piezas()->orderBy('orden_visual')->get();
 
-        foreach ($piezas as $pieza) {
-            $pieza->update(['operario_actual_id' => $operarioId]);
+        foreach ($piezasDb as $index => $pieza) {
+            $payload = $piezasPayload[$index] ?? null;
+            if (!$payload) {
+                continue;
+            }
 
-            // Recrear asignacion (las anteriores se eliminaron por CASCADE al sincronizar piezas)
-            AsignacionPieza::create([
-                'orden_pieza_id' => $pieza->id,
-                'orden_id' => $orden->id,
-                'asignado_desde_id' => null,
-                'asignado_a_id' => $operarioId,
-                'asignado_por_id' => $asignadoPor->id,
-                'tipo_asignacion' => 'inicial',
-                'porcentaje_al_asignar' => $pieza->porcentaje_avance ?? 0,
-                'activa' => true,
+            $operarioNuevoRaw = $payload['operario_id'] ?? null;
+            $operarioNuevo = ($operarioNuevoRaw === '' || $operarioNuevoRaw === null)
+                ? null
+                : (int) $operarioNuevoRaw;
+            $operarioAnterior = $pieza->operario_actual_id ? (int) $pieza->operario_actual_id : null;
+
+            if ($modo === 'borrador') {
+                $this->aplicarBorradorOperario($pieza, $operarioNuevo);
+                continue;
+            }
+
+            if ($modo === 'inicial') {
+                $this->aplicarAsignacionInicial($pieza, $operarioNuevo, $asignadoPor);
+                continue;
+            }
+
+            // modo 'edicion': transiciones
+            if ($operarioAnterior === $operarioNuevo) {
+                continue;
+            }
+
+            if ($operarioAnterior === null && $operarioNuevo !== null) {
+                $this->transicionAsignarOperario($pieza, $operarioNuevo, $asignadoPor);
+            } elseif ($operarioAnterior !== null && $operarioNuevo === null) {
+                $this->transicionRemoverOperario($pieza, $operarioAnterior, $asignadoPor);
+            } else {
+                $this->transicionTransferirOperario($pieza, $operarioAnterior, $operarioNuevo, $asignadoPor);
+            }
+        }
+    }
+
+    /**
+     * Modo borrador: solo persiste los campos de la pieza, sin asignaciones ni logs.
+     */
+    protected function aplicarBorradorOperario(OrdenPieza $pieza, ?int $operarioNuevo): void
+    {
+        if ($operarioNuevo === null) {
+            $pieza->update([
+                'operario_actual_id' => null,
+                'requiere_operario' => false,
+                'estado' => 'pendiente',
+                'porcentaje_avance' => 0,
+            ]);
+        } else {
+            $pieza->update([
+                'operario_actual_id' => $operarioNuevo,
+                'requiere_operario' => true,
+                'estado' => 'pendiente',
+                'porcentaje_avance' => 0,
             ]);
         }
+    }
 
-        // Piezas sin operario -> asegurar estado completada
-        $orden->piezas()->where('requiere_operario', false)->update([
-            'estado' => 'completada',
-            'porcentaje_avance' => 100,
-            'operario_actual_id' => null,
+    /**
+     * Modo inicial (al generar la orden): crea AsignacionPieza inicial
+     * o deja la pieza completada si no tiene operario.
+     */
+    protected function aplicarAsignacionInicial(OrdenPieza $pieza, ?int $operarioNuevo, User $asignadoPor): void
+    {
+        if ($operarioNuevo === null) {
+            $pieza->update([
+                'operario_actual_id' => null,
+                'requiere_operario' => false,
+                'estado' => 'completada',
+                'porcentaje_avance' => 100,
+            ]);
+            return;
+        }
+
+        $pieza->update([
+            'operario_actual_id' => $operarioNuevo,
+            'requiere_operario' => true,
+            'estado' => 'pendiente',
+            'porcentaje_avance' => 0,
+        ]);
+
+        AsignacionPieza::create([
+            'orden_pieza_id' => $pieza->id,
+            'orden_id' => $pieza->orden_id,
+            'asignado_desde_id' => null,
+            'asignado_a_id' => $operarioNuevo,
+            'asignado_por_id' => $asignadoPor->id,
+            'tipo_asignacion' => 'inicial',
+            'porcentaje_al_asignar' => 0,
+            'activa' => true,
+        ]);
+
+        HistorialAvance::create([
+            'orden_pieza_id' => $pieza->id,
+            'operario_id' => $operarioNuevo,
+            'porcentaje_desde' => 0,
+            'porcentaje_hasta' => 0,
+            'contribucion' => 0,
+            'asignado_en' => now(),
+            'completado_en' => null,
         ]);
     }
 
     /**
-     * Crea asignaciones iniciales al generar orden.
+     * Transicion edicion: null -> operario. Resetea la pieza a pendiente/0%
+     * y crea asignacion inicial.
      */
-    protected function crearAsignacionesIniciales(Orden $orden, int $operarioId, User $asignadoPor, $piezas = null): void
+    protected function transicionAsignarOperario(OrdenPieza $pieza, int $operarioNuevo, User $asignadoPor): void
     {
-        $piezas = $piezas ?? $orden->piezas()->get();
+        $original = $pieza->getOriginal();
+        $pieza->update([
+            'operario_actual_id' => $operarioNuevo,
+            'requiere_operario' => true,
+            'estado' => 'pendiente',
+            'porcentaje_avance' => 0,
+        ]);
 
-        foreach ($piezas as $pieza) {
-            AsignacionPieza::create([
-                'orden_pieza_id' => $pieza->id,
-                'orden_id' => $orden->id,
-                'asignado_desde_id' => null,
-                'asignado_a_id' => $operarioId,
-                'asignado_por_id' => $asignadoPor->id,
-                'tipo_asignacion' => 'inicial',
-                'porcentaje_al_asignar' => 0,
-                'activa' => true,
+        AsignacionPieza::create([
+            'orden_pieza_id' => $pieza->id,
+            'orden_id' => $pieza->orden_id,
+            'asignado_desde_id' => null,
+            'asignado_a_id' => $operarioNuevo,
+            'asignado_por_id' => $asignadoPor->id,
+            'tipo_asignacion' => 'inicial',
+            'porcentaje_al_asignar' => 0,
+            'activa' => true,
+        ]);
+
+        HistorialAvance::create([
+            'orden_pieza_id' => $pieza->id,
+            'operario_id' => $operarioNuevo,
+            'porcentaje_desde' => 0,
+            'porcentaje_hasta' => 0,
+            'contribucion' => 0,
+            'asignado_en' => now(),
+            'completado_en' => null,
+        ]);
+
+        $nombreOperario = User::find($operarioNuevo)?->name ?? "#{$operarioNuevo}";
+        $this->registrarActualizacion(
+            'pieza.operario_asignado',
+            "Operario '{$nombreOperario}' asignado a pieza '{$pieza->nombre}'",
+            $pieza,
+            $original,
+            $pieza->orden_id
+        );
+
+        NotificacionService::ordenGenerada($pieza->orden, $operarioNuevo);
+    }
+
+    /**
+     * Transicion edicion: operario -> null. Marca la pieza como completada al 100%,
+     * cierra asignacion activa e historial abierto.
+     */
+    protected function transicionRemoverOperario(OrdenPieza $pieza, int $operarioAnterior, User $asignadoPor): void
+    {
+        $original = $pieza->getOriginal();
+        $porcentajeActual = (float) $pieza->porcentaje_avance;
+
+        // Cerrar asignacion activa
+        AsignacionPieza::where('orden_pieza_id', $pieza->id)
+            ->where('asignado_a_id', $operarioAnterior)
+            ->where('activa', true)
+            ->update(['activa' => false]);
+
+        // Cerrar historial abierto del operario anterior
+        HistorialAvance::where('orden_pieza_id', $pieza->id)
+            ->where('operario_id', $operarioAnterior)
+            ->whereNull('completado_en')
+            ->update([
+                'porcentaje_hasta' => $porcentajeActual,
+                'contribucion' => DB::raw("({$porcentajeActual} - porcentaje_desde)"),
+                'completado_en' => now(),
             ]);
 
-            $pieza->update(['operario_actual_id' => $operarioId]);
-        }
+        $pieza->update([
+            'operario_actual_id' => null,
+            'requiere_operario' => false,
+            'estado' => 'completada',
+            'porcentaje_avance' => 100,
+        ]);
+
+        $nombreOperario = User::find($operarioAnterior)?->name ?? "#{$operarioAnterior}";
+        $this->registrarActualizacion(
+            'pieza.operario_removido',
+            "Operario '{$nombreOperario}' removido de pieza '{$pieza->nombre}'; marcada como completada",
+            $pieza,
+            $original,
+            $pieza->orden_id
+        );
+    }
+
+    /**
+     * Transicion edicion: operario A -> operario B. Preserva el avance,
+     * cierra asignacion/historial de A, crea asignacion tipo transferencia e
+     * historial abierto para B.
+     */
+    protected function transicionTransferirOperario(OrdenPieza $pieza, int $operarioAnterior, int $operarioNuevo, User $asignadoPor): void
+    {
+        $original = $pieza->getOriginal();
+        $porcentajeActual = (float) $pieza->porcentaje_avance;
+
+        // Cerrar asignacion activa del operario anterior
+        AsignacionPieza::where('orden_pieza_id', $pieza->id)
+            ->where('asignado_a_id', $operarioAnterior)
+            ->where('activa', true)
+            ->update(['activa' => false]);
+
+        // Cerrar historial abierto
+        HistorialAvance::where('orden_pieza_id', $pieza->id)
+            ->where('operario_id', $operarioAnterior)
+            ->whereNull('completado_en')
+            ->update([
+                'porcentaje_hasta' => $porcentajeActual,
+                'contribucion' => DB::raw("({$porcentajeActual} - porcentaje_desde)"),
+                'completado_en' => now(),
+            ]);
+
+        // Nueva asignacion tipo transferencia
+        AsignacionPieza::create([
+            'orden_pieza_id' => $pieza->id,
+            'orden_id' => $pieza->orden_id,
+            'asignado_desde_id' => $operarioAnterior,
+            'asignado_a_id' => $operarioNuevo,
+            'asignado_por_id' => $asignadoPor->id,
+            'tipo_asignacion' => 'transferencia',
+            'porcentaje_al_asignar' => $porcentajeActual,
+            'notas' => 'Transferida desde recepcion',
+            'activa' => true,
+        ]);
+
+        // Historial abierto para el nuevo operario
+        HistorialAvance::create([
+            'orden_pieza_id' => $pieza->id,
+            'operario_id' => $operarioNuevo,
+            'porcentaje_desde' => $porcentajeActual,
+            'porcentaje_hasta' => $porcentajeActual,
+            'contribucion' => 0,
+            'asignado_en' => now(),
+            'completado_en' => null,
+        ]);
+
+        $pieza->update([
+            'operario_actual_id' => $operarioNuevo,
+            'requiere_operario' => true,
+        ]);
+
+        $nombreAnterior = User::find($operarioAnterior)?->name ?? "#{$operarioAnterior}";
+        $nombreNuevo = User::find($operarioNuevo)?->name ?? "#{$operarioNuevo}";
+        $this->registrarActualizacion(
+            'pieza.transferida',
+            "Pieza '{$pieza->nombre}' transferida de '{$nombreAnterior}' a '{$nombreNuevo}' (desde recepcion)",
+            $pieza,
+            $original,
+            $pieza->orden_id
+        );
+
+        NotificacionService::ordenGenerada($pieza->orden, $operarioNuevo);
     }
 
     /**

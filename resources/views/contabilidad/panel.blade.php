@@ -9,19 +9,28 @@
 
     {{-- Stat Cards clickeables --}}
     <div class="summary-cards">
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'ordenes_con_saldo'))
         <a href="{{ route('contabilidad.ordenes-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-receipt-cutoff" :value="$ordenesConSaldo" title="Ordenes con Saldo" color="danger" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'abonos_por_aprobar'))
         <a href="{{ route('contabilidad.pagos-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-hourglass-split" :value="$abonosPorAprobar" title="Abonos por Aprobar" color="warning" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'total_pendiente'))
         <x-sinden.stat-card icon="bi bi-currency-dollar" :value="'$' . number_format($totalPendiente, 0, ',', '.')" title="Total Pendiente" color="info" />
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'recaudado_hoy'))
         <x-sinden.stat-card icon="bi bi-cash-stack" :value="'$' . number_format($recaudadoHoy, 0, ',', '.')" title="Recaudado Hoy" color="success" />
+        @endif
     </div>
 
     {{-- Contenido principal --}}
     <div class="row mt-4">
         {{-- Ultimos pagos aprobados --}}
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'ultimos_pagos'))
         <div class="col-lg-8 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
@@ -68,10 +77,12 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Recaudo por metodo + acciones --}}
         <div class="col-lg-4 mb-4">
             {{-- Recaudo por metodo --}}
+            @if(\App\Models\ConfiguracionSistema::metricaVisible('contabilidad', 'recaudo_por_metodo'))
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
                     <h6 class="mb-0 fw-semibold text-dark">
@@ -118,6 +129,7 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             {{-- Garantias cobrables --}}
             @if($garantiasCobrables['count'] > 0)

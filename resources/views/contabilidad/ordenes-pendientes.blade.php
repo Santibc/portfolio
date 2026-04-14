@@ -10,7 +10,7 @@
     {{-- Stat Cards --}}
     <div class="summary-cards">
         <x-sinden.stat-card icon="bi bi-receipt-cutoff" :value="$totalOrdenes" title="Ordenes con Saldo" color="primary" />
-        <x-sinden.stat-card icon="bi bi-currency-dollar" :value="'$' . number_format($totalPendiente, 0, ',', '.')" title="Total Pendiente" color="danger" />
+        <x-sinden.stat-card icon="bi bi-currency-dollar" :value="'$' . number_format($totalPendiente, 0, ',', '.')" title="Cartera Total" color="danger" />
         <x-sinden.stat-card icon="bi bi-hourglass-split" :value="$abonosSinAprobar" title="Abonos sin Aprobar" color="warning" />
         <x-sinden.stat-card icon="bi bi-cash-stack" :value="'$' . number_format($recaudadoHoy, 0, ',', '.')" title="Recaudado Hoy" color="success" />
     </div>
@@ -40,7 +40,7 @@
                         <button type="button" class="btn btn-primary flex-grow-1" id="btnFiltrar" style="min-height:44px">
                             <i class="bi bi-search me-1"></i>Filtrar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiar" style="min-height:44px">
+                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiar" style="min-height:44px" title="Borrar filtros">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>

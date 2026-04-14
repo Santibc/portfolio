@@ -33,6 +33,11 @@ $(function() {
     initAutoSaveOnEdit();
     initStepWatchers();
 
+    // Limpiar bandera de destino al cerrar modal de matriz sin seleccionar
+    $(document).on('hidden.bs.modal', '#modalBosquejoMatriz', function() {
+        window._piezaDestinoMatriz = undefined;
+    });
+
     // Cerrar dropdown de autocomplete al hacer clic fuera
     $(document).on('click', function(e) {
         if (!$(e.target).closest('#clienteSearch, #clienteResults').length) {
@@ -124,21 +129,12 @@ function aplicarAutoExpandCantidades() {
 // Step Watchers (completado de secciones)
 // ==========================================
 function initStepWatchers() {
-    // Step 5: Operario - se completa al seleccionar
-    $('#operario_id').on('change', function() {
-        if ($(this).val()) {
-            marcarStepCompletado(5);
-        } else {
-            desmarcarStep(5);
-        }
-    });
-
-    // Step 7: Fechas - se completa al poner fecha y hora de entrega
+    // Step 6: Fechas - se completa al poner fecha y hora de entrega
     $('#fecha_entrega, #hora_entrega').on('change', function() {
         if ($('#fecha_entrega').val() && $('#hora_entrega').val()) {
-            marcarStepCompletado(7);
+            marcarStepCompletado(6);
         } else {
-            desmarcarStep(7);
+            desmarcarStep(6);
         }
     });
 }
@@ -308,6 +304,7 @@ function agregarFilaItem(opts) {
         + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-end item-precio" value="0" min="0" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input item-iva-check" checked onchange="calcularTotalFila(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center item-descuento" value="0" min="0" max="100" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-end fw-semibold item-subtotal-display">$0</td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaItem(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
         + '</tr>';
@@ -405,12 +402,16 @@ function calcularTotalFila(idx) {
     var $row = $('#itemRow_' + idx);
     var cantidad = parseFloat($row.find('.item-cantidad').val()) || 0;
     var precio = parseFloat($row.find('.item-precio').val()) || 0;
-    var subtotal = cantidad * precio;
+    var descPct = Math.max(0, Math.min(100, parseFloat($row.find('.item-descuento').val()) || 0));
+    var base = cantidad * precio;
+    var subtotal = base - (base * descPct / 100);
     $row.find('.item-subtotal-display').text(formatCOP(subtotal));
     recalcularTotales();
 }
 
 function recalcularTotales() {
+    var totalSubtotalBruto = 0;
+    var totalDescuento = 0;
     var totalSubtotal = 0;
     var totalIva = 0;
 
@@ -418,13 +419,21 @@ function recalcularTotales() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
         var precio = parseFloat($(this).find('.item-precio').val()) || 0;
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
-        var sub = cantidad * precio;
+        var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
+        var base = cantidad * precio;
+        var descMonto = base * descPct / 100;
+        var sub = base - descMonto;
         var ivaVal = sub * (iva / 100);
+        totalSubtotalBruto += base;
+        totalDescuento += descMonto;
         totalSubtotal += sub;
         totalIva += ivaVal;
     });
 
     var totalGeneral = totalSubtotal + totalIva;
+    $('#totalSubtotalBruto').text(formatCOP(totalSubtotalBruto));
+    $('#totalDescuento').text('-' + formatCOP(totalDescuento));
+    if (totalDescuento > 0) { $('#filaDescuento').show(); } else { $('#filaDescuento').hide(); }
     $('#totalSubtotal').text(formatCOP(totalSubtotal));
     $('#totalIva').text(formatCOP(totalIva));
     $('#totalGeneral').text(formatCOP(totalGeneral));
@@ -777,7 +786,36 @@ function agregarPiezaConBosquejo(bosquejoData) {
 
 // --- Funciones de matriz (ahora crean piezas automaticamente) ---
 
+function piezaSeleccionarDeMatriz(piezaIdx) {
+    window._piezaDestinoMatriz = piezaIdx;
+    var modalEl = document.getElementById('modalBosquejoMatriz');
+    if (modalEl) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+}
+
 function seleccionarPlantillaMatriz(plantillaId, nombre, rutaArchivo, rutaMiniatura) {
+    if (typeof window._piezaDestinoMatriz !== 'undefined' && window._piezaDestinoMatriz !== null) {
+        var piezaIdx = window._piezaDestinoMatriz;
+        window._piezaDestinoMatriz = undefined;
+        var bosquejoIndex = wizardState.bosquejos.length;
+        wizardState.bosquejos.push({
+            nombre: nombre,
+            tipo_origen: 'plantilla',
+            ruta_archivo: rutaArchivo,
+            ruta_miniatura: rutaMiniatura,
+            plantilla_bosquejo_id: plantillaId
+        });
+        vincularBosquejoAPieza(piezaIdx, bosquejoIndex);
+        var modalEl = document.getElementById('modalBosquejoMatriz');
+        if (modalEl) {
+            var inst = bootstrap.Modal.getInstance(modalEl);
+            if (inst) inst.hide();
+        }
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success',
+            title: 'Bosquejo asignado a la pieza', showConfirmButton: false, timer: 2000 });
+        return;
+    }
     agregarPiezaConBosquejo({
         nombre: nombre,
         tipo_origen: 'plantilla',
@@ -790,6 +828,7 @@ function seleccionarPlantillaMatriz(plantillaId, nombre, rutaArchivo, rutaMiniat
 }
 
 function insertarGrupoCompleto(grupoId) {
+    window._piezaDestinoMatriz = undefined;
     $.get(ROUTES.subirBosquejo.replace('subir-bosquejo', 'grupos-bosquejos'), function(response) {
         if (response.success) {
             var grupo = response.grupos.find(function(g) { return g.id === grupoId; });
@@ -895,6 +934,7 @@ function agregarFilaPieza(opts) {
         + '    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="piezaSubirArchivo(' + idx + ')" title="Subir archivo"><i class="bi bi-upload"></i></button>'
         + '    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="piezaAbrirCamara(' + idx + ')" title="Camara"><i class="bi bi-camera"></i></button>'
         + '    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="piezaAbrirDibujo(' + idx + ')" title="Dibujar"><i class="bi bi-pencil-square"></i></button>'
+        + '    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="piezaSeleccionarDeMatriz(' + idx + ')" title="Seleccionar de matriz"><i class="bi bi-grid-3x3"></i></button>'
         + '  </div>'
         + '  <div class="bosquejo-thumb-container" style="display:none;">'
         + '    <img src="" class="pieza-bosquejo-thumb" alt="">'
@@ -915,7 +955,7 @@ function agregarFilaPieza(opts) {
         + '</td>'
         + '<td><select class="form-select form-select-sm pieza-calibre" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
         + '<td class="small text-muted pieza-especificacion">1 - ' + nombre + '</td>'
-        + '<td class="text-center"><input type="checkbox" class="form-check-input pieza-requiere-operario" checked onchange="actualizarVisibilidadOperario()"></td>'
+        + '<td>' + construirSelectOperario() + '</td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaPieza(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
         + '</tr>'
         + '<tr id="piezaNotasRow_' + idx + '" class="pieza-notas-row" data-idx="' + idx + '">'
@@ -930,7 +970,6 @@ function agregarFilaPieza(opts) {
     $('#tbodyPiezas').append(html);
     $('#tablaPiezas').show();
     $('#piezasVacio').hide();
-    actualizarVisibilidadOperario();
     renumerarFilasPiezas();
     marcarStepCompletado(2);
     if (!opts.skipAutoSave) {
@@ -942,7 +981,6 @@ function eliminarFilaPieza(idx) {
     $('#piezaRow_' + idx).remove();
     $('#piezaNotasRow_' + idx).remove();
     renumerarFilasPiezas();
-    actualizarVisibilidadOperario();
     if ($('#tbodyPiezas tr.pieza-row').length === 0) {
         $('#tablaPiezas').hide();
         $('#piezasVacio').show();
@@ -1030,17 +1068,13 @@ function seleccionarMaterialPieza(idx, material) {
     generarEspecificacion(idx);
 }
 
-function actualizarVisibilidadOperario() {
-    var tienePiezas = $('#tbodyPiezas tr.pieza-row').length > 0;
-    var algunaRequiereOperario = $('#tbodyPiezas .pieza-requiere-operario:checked').length > 0;
-    if (tienePiezas && algunaRequiereOperario) {
-        $('#operarioInfo').hide();
-        $('#operarioSelector').show();
-    } else {
-        $('#operarioInfo').show();
-        $('#operarioSelector').hide();
-        if (!algunaRequiereOperario) $('#operario_id').val('');
-    }
+function construirSelectOperario() {
+    var operarios = (WIZARD_CONFIG && WIZARD_CONFIG.operarios) ? WIZARD_CONFIG.operarios : [];
+    var opts = '<option value="">-- Sin operario --</option>';
+    operarios.forEach(function(op) {
+        opts += '<option value="' + op.id + '">' + escapeHtml(String(op.name)) + '</option>';
+    });
+    return '<select class="form-select form-select-sm pieza-operario" onchange="triggerAutoSave(\'pieza-operario\')">' + opts + '</select>';
 }
 
 // ==========================================
@@ -1082,7 +1116,7 @@ function agregarFilaPago(opts) {
     $('#pagosVacio').hide();
     $('#panelSaldo').show();
     recalcularSaldo();
-    marcarStepCompletado(6);
+    marcarStepCompletado(5);
     if (!opts.skipAutoSave) {
         triggerAutoSave('pago-add');
     }
@@ -1094,7 +1128,7 @@ function eliminarFilaPago(idx) {
     if ($('#pagosContainer .pago-row').length === 0) {
         $('#pagosVacio').show();
         $('#panelSaldo').hide();
-        desmarcarStep(6);
+        desmarcarStep(5);
     }
     triggerAutoSave('pago-del');
 }
@@ -1111,7 +1145,9 @@ function recalcularSaldo() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
         var precio = parseFloat($(this).find('.item-precio').val()) || 0;
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
-        var sub = cantidad * precio;
+        var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
+        var base = cantidad * precio;
+        var sub = base - (base * descPct / 100);
         totalGeneral += sub + (sub * iva / 100);
     });
 
@@ -1133,7 +1169,7 @@ function recalcularSaldo() {
 // Step Navigation
 // ==========================================
 function irASeccion(num) {
-    var sectionId = ['seccionCliente', 'seccionBosquejosPiezas', 'seccionItems', 'seccionFirma', 'seccionOperario', 'seccionPagos', 'seccionFechas'];
+    var sectionId = ['seccionCliente', 'seccionBosquejosPiezas', 'seccionItems', 'seccionFirma', 'seccionPagos', 'seccionFechas'];
     var target = $('#' + sectionId[num - 1]);
     if (target.length) {
         $('html, body').animate({ scrollTop: target.offset().top - 140 }, 300);
@@ -1164,6 +1200,7 @@ function recopilarDatosFormulario() {
             cantidad: parseFloat($(this).find('.item-cantidad').val()) || 0,
             precio_unitario: parseFloat($(this).find('.item-precio').val()) || 0,
             porcentaje_iva: $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0,
+            descuento_porcentaje: Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0)),
             categoria: $(this).find('.item-categoria').val() || 'servicio'
         });
     });
@@ -1172,14 +1209,17 @@ function recopilarDatosFormulario() {
     $('#tbodyPiezas tr.pieza-row').each(function() {
         var bosquejoIdx = $(this).attr('data-bosquejo-index');
         var rowIdx = $(this).data('idx');
+        var piezaId = $(this).data('pieza-id');
+        var operarioVal = $(this).find('.pieza-operario').val();
         piezas.push({
+            id: piezaId || null,
             nombre: $(this).find('.pieza-nombre').val(),
             cantidad: parseInt($(this).find('.pieza-cantidad').val()) || 1,
             material: $(this).find('.pieza-material').val() || null,
             calibre: $(this).find('.pieza-calibre').val() || null,
             notas: $('#piezaNotasRow_' + rowIdx).find('.pieza-notas').val() || null,
             bosquejo_index: (bosquejoIdx !== '' && bosquejoIdx !== undefined) ? parseInt(bosquejoIdx) : null,
-            requiere_operario: $(this).find('.pieza-requiere-operario').is(':checked') ? 1 : 0
+            operario_id: operarioVal ? parseInt(operarioVal) : null
         });
     });
 
@@ -1223,7 +1263,6 @@ function recopilarDatosFormulario() {
         items: items,
         bosquejos: bosquejosToSend,
         piezas: piezas,
-        operario_id: $('#operario_id').val() || null,
         pagos: pagos,
         firma_data: wizardState.firmaData || obtenerFirmaData()
     };
@@ -1384,10 +1423,6 @@ function validarParaGenerar(data) {
             if (item.precio_unitario < 0) errores.push('Item ' + num + ': precio no valido.');
         });
     }
-    var algunaRequiereOperario = data.piezas && data.piezas.some(function(p) { return p.requiere_operario; });
-    if (algunaRequiereOperario && !data.operario_id) {
-        errores.push('Debe seleccionar un operario cuando hay piezas que lo requieren.');
-    }
     if (!data.fecha_entrega) errores.push('Debe indicar la fecha de entrega.');
     if (!data.hora_entrega) errores.push('Debe indicar la hora de entrega.');
     return errores;
@@ -1433,7 +1468,7 @@ function initAutoSaveOnEdit() {
     var selector = '#tbodyItems input, #tbodyItems select, #tbodyItems textarea, '
         + '#tbodyPiezas input, #tbodyPiezas select, #tbodyPiezas textarea, '
         + '#pagosContainer input, #pagosContainer select, #pagosContainer textarea, '
-        + '#fecha_entrega, #hora_entrega, #notas, #operario_id';
+        + '#fecha_entrega, #hora_entrega, #notas';
     $(document).on('input change', selector, function() {
         triggerAutoSave('edit');
     });

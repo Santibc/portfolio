@@ -1,8 +1,8 @@
-{{-- Seccion 7: Fechas y Notas --}}
-<div class="card border-0 shadow-sm mb-4 wizard-section" data-section="7" id="seccionFechas">
+{{-- Seccion 6: Fechas y Notas --}}
+<div class="card border-0 shadow-sm mb-4 wizard-section" data-section="6" id="seccionFechas">
     <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
         <h6 class="mb-0 fw-semibold">
-            <i class="bi bi-calendar3 me-2 text-primary"></i>7. Fechas y Notas
+            <i class="bi bi-calendar3 me-2 text-primary"></i>6. Fechas y Notas
         </h6>
     </div>
     <div class="card-body px-4 pb-4 pt-2">

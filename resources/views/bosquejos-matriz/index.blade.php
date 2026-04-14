@@ -298,7 +298,7 @@ $(function() {
                 // Cerrar el primer acordeon que abre por defecto y hacer scroll a individuales
                 var $primero = $('#acordeonGrupos .accordion-collapse.show').first();
                 if ($primero.length && typeof bootstrap !== 'undefined') {
-                    bootstrap.Collapse.getOrCreateInstance($primero[0]).hide();
+                    bootstrap.Collapse.getOrCreateInstance($primero[0], { toggle: false }).hide();
                     $primero.prev('.accordion-header')
                         .find('.accordion-button')
                         .addClass('collapsed')
@@ -313,16 +313,19 @@ $(function() {
             } else {
                 var $target = $('#collapse-' + openGrupoId);
                 if ($target.length && typeof bootstrap !== 'undefined') {
+                    var yaAbierto = $target.hasClass('show');
                     // Cerrar el que esta abierto por defecto (si no es el target)
                     $('#acordeonGrupos .accordion-collapse.show').not($target).each(function() {
-                        bootstrap.Collapse.getOrCreateInstance(this).hide();
+                        bootstrap.Collapse.getOrCreateInstance(this, { toggle: false }).hide();
                         $(this).prev('.accordion-header')
                             .find('.accordion-button')
                             .addClass('collapsed')
                             .attr('aria-expanded', 'false');
                     });
-                    // Abrir el target
-                    bootstrap.Collapse.getOrCreateInstance($target[0]).show();
+                    // Abrir el target solo si no esta ya abierto (evita que Bootstrap lo toggle al cerrado)
+                    if (!yaAbierto) {
+                        bootstrap.Collapse.getOrCreateInstance($target[0], { toggle: false }).show();
+                    }
                     $target.prev('.accordion-header')
                         .find('.accordion-button')
                         .removeClass('collapsed')

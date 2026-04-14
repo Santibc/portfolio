@@ -9,27 +9,41 @@
 
     {{-- Stat Cards clickeables --}}
     <div class="summary-cards">
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'ordenes_activas'))
         <a href="{{ route('recepcion.ordenes.index') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-file-earmark-text" :value="$stats['ordenes_activas']" title="Ordenes Activas" color="primary" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'entregas_vencidas'))
         <a href="{{ route('recepcion.entregas-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-exclamation-triangle" :value="$stats['entregas_vencidas']" title="Entregas Vencidas" color="danger" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'saldo_pendiente_total'))
         <a href="{{ route('contabilidad.ordenes-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-currency-dollar" :value="'$' . number_format($stats['saldo_pendiente_total'], 0, ',', '.')" title="Saldo Pendiente" color="danger" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'recaudado_hoy'))
         <x-sinden.stat-card icon="bi bi-cash-stack" :value="'$' . number_format($stats['recaudado_hoy'], 0, ',', '.')" title="Recaudado Hoy" color="success" />
+        @endif
     </div>
 
     {{-- Segunda fila de stats --}}
     <div class="summary-cards mt-3">
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'garantias_activas'))
         <a href="{{ route('recepcion.garantias.index') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-shield-check" :value="$stats['garantias_activas']" title="Garantias Activas" color="warning" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'pagos_por_aprobar'))
         <a href="{{ route('contabilidad.pagos-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-hourglass-split" :value="$stats['pagos_por_aprobar']" title="Pagos por Aprobar" color="warning" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('admin', 'ordenes_hoy'))
         <x-sinden.stat-card icon="bi bi-plus-circle" :value="$stats['ordenes_hoy']" title="Ordenes Nuevas Hoy" color="info" />
+        @endif
     </div>
 
     {{-- Acciones rapidas --}}

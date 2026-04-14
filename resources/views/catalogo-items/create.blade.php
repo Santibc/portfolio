@@ -26,7 +26,7 @@
                                     type="text"
                                     icon="bi bi-upc"
                                     :required="true"
-                                    placeholder="Ej: CORTE-001" />
+                                    placeholder="Ej: SER 1004" />
                             </div>
                             <div class="col-md-6">
                                 <x-sinden.form-group
@@ -93,7 +93,7 @@
                 <div class="card-body p-4">
                     <h6 class="mb-3"><i class="bi bi-info-circle me-2"></i>Informacion</h6>
                     <p class="text-muted small mb-2">Los campos <strong>codigo</strong>, <strong>descripcion</strong>, <strong>precio</strong> y <strong>categoria</strong> son obligatorios.</p>
-                    <p class="text-muted small mb-2">El <strong>codigo</strong> debe ser unico (Ej: CORTE-001, MAT-010).</p>
+                    <p class="text-muted small mb-2">El <strong>codigo</strong> debe ser unico (Ej: SER 1004, MAT-010).</p>
                     <p class="text-muted small mb-2">El <strong>precio unitario</strong> se ingresa sin IVA.</p>
                     <p class="text-muted small mb-0">El <strong>IVA</strong> por defecto es 19%. Modifiquelo si aplica una tasa diferente.</p>
                 </div>

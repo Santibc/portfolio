@@ -363,7 +363,7 @@ El proyecto ya tiene las siguientes tablas:
 | Campo | Tipo | Validacion | Notas |
 |-------|------|-----------|-------|
 | `id` | bigIncrements | auto | PK |
-| `codigo` | varchar(50) | requerido, unico | Ej: "CORTE-001" |
+| `codigo` | varchar(50) | requerido, unico | Ej: "SER 1004" |
 | `descripcion` | text | requerido | |
 | `precio_unitario` | decimal(12,2) | requerido, min:0 | Sin IVA |
 | `porcentaje_iva` | decimal(5,2) | requerido, default:19.00 | |

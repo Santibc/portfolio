@@ -96,11 +96,20 @@
                         <option value="pagado">Pagado</option>
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-medium mb-1">Creado Por</label>
+                    <select class="form-select form-select-sm" id="filtroCreador">
+                        <option value="">Todos</option>
+                        @foreach($creadores as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-primary" id="btnFiltrar">
                         <i class="bi bi-funnel me-1"></i>Filtrar
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnLimpiar">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnLimpiar" title="Borrar filtros">
                         <i class="bi bi-x-lg me-1"></i>Limpiar
                     </button>
                 </div>
@@ -123,7 +132,20 @@
                 <table class="table table-hover align-middle mb-0 sinden-datatable" id="ordenesTable" style="width:100%">
                     <thead>
                         <tr>
-                            <th style="width: 30px;"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                            <th style="width: 50px;" class="text-center">
+                                <input type="checkbox" id="selectAll" class="form-check-input">
+                                <button type="button"
+                                        class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline"
+                                        data-bs-toggle="popover"
+                                        data-bs-trigger="focus"
+                                        data-bs-placement="right"
+                                        data-bs-html="true"
+                                        data-bs-title="¿Para qué sirve este check?"
+                                        data-bs-content="Selecciona una o varias órdenes para generar <strong>PDF Masivo</strong> (unido o en ZIP) desde el botón superior derecho.<br><br><small class='text-muted'>El checkbox del encabezado selecciona todas las órdenes visibles. Las órdenes en estado <em>Borrador</em> o <em>Anulada</em> no pueden seleccionarse.</small>"
+                                        title="Ver explicación">
+                                    <i class="bi bi-question-circle"></i>
+                                </button>
+                            </th>
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Creacion</th>
@@ -131,6 +153,7 @@
                             <th>Estado Trabajo</th>
                             <th>Estado Entrega</th>
                             <th>Estado Pago</th>
+                            <th class="text-center" style="width: 140px;">% Total</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Saldo</th>
                             <th class="text-end">Acciones</th>
@@ -177,6 +200,12 @@ var CSRF_TOKEN = '{{ csrf_token() }}';
 var anularOrdenId = null;
 
 $(function() {
+    if (window.bootstrap) {
+        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function(el) {
+            new bootstrap.Popover(el);
+        });
+    }
+
     var table = $('#ordenesTable').DataTable({
         processing: true,
         serverSide: true,
@@ -190,6 +219,7 @@ $(function() {
                 d.estado_pago = $('#filtroEstadoPago').val();
                 d.fecha_desde = $('#filtroFechaDesde').val();
                 d.fecha_hasta = $('#filtroFechaHasta').val();
+                d.creado_por = $('#filtroCreador').val();
             }
         },
         columns: [
@@ -207,6 +237,7 @@ $(function() {
             { data: 'estado_trabajo_badge', name: 'estado_trabajo', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_entrega_badge', name: 'estado_entrega', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_pago_badge', name: 'estado_pago', className: 'text-center', orderable: true, searchable: false },
+            { data: 'porcentaje_total_html', name: 'porcentaje_total_html', className: 'text-center', orderable: false, searchable: false, width: '140px' },
             { data: 'total_formatted', name: 'total', className: 'text-end', orderable: true, searchable: false },
             { data: 'saldo_formatted', name: 'saldo', className: 'text-end', orderable: true, searchable: false },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '160px' }
@@ -230,7 +261,15 @@ $(function() {
     $('#btnFiltrar').on('click', function() { table.ajax.reload(); });
     $('#btnLimpiar').on('click', function() {
         $('#filtroNumeroOrden, #filtroCliente, #filtroFechaDesde, #filtroFechaHasta').val('');
-        $('#filtroEstadoTrabajo, #filtroEstadoEntrega, #filtroEstadoPago').val('');
+        $('#filtroEstadoTrabajo, #filtroEstadoEntrega, #filtroEstadoPago, #filtroCreador').val('');
+        table.ajax.reload();
+    });
+
+    // Enter para filtrar
+    $('#filtroNumeroOrden, #filtroCliente, #filtroFechaDesde, #filtroFechaHasta').on('keypress', function(e) {
+        if (e.which === 13) { e.preventDefault(); table.ajax.reload(); }
+    });
+    $('#filtroEstadoTrabajo, #filtroEstadoEntrega, #filtroEstadoPago, #filtroCreador').on('change', function() {
         table.ajax.reload();
     });
 
@@ -325,6 +364,41 @@ function anularOrden(ordenId, numeroOrden) {
     $('#anularOrdenNumero').text(numeroOrden || '#' + ordenId);
     $('#motivoAnulacion').val('');
     $('#modalAnularOrden').modal('show');
+}
+
+function eliminarBorrador(ordenId) {
+    Swal.fire({
+        title: 'Eliminar borrador?',
+        html: 'Esta accion eliminara permanentemente el borrador <strong>#' + ordenId + '</strong> y todos sus items, bosquejos, piezas y archivos adjuntos.<br><br><span class="text-danger fw-semibold">No se puede deshacer.</span>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Si, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+        $.ajax({
+            url: '{{ url("recepcion/ordenes") }}/' + ordenId,
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
+            success: function(data) {
+                if (data.success) {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 3000 });
+                    $('#ordenesTable').DataTable().ajax.reload(null, false);
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo eliminar.', 'error');
+                }
+            },
+            error: function(xhr) {
+                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error al eliminar el borrador.';
+                Swal.fire('Error', msg, 'error');
+            }
+        });
+    });
 }
 
 // Select All checkbox

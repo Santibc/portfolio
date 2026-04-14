@@ -49,7 +49,7 @@
                         <button type="button" class="btn btn-primary flex-grow-1" id="btnFiltrarHistorial" style="min-height:44px">
                             <i class="bi bi-search me-1"></i>Filtrar
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiarHistorial" style="min-height:44px">
+                        <button type="button" class="btn btn-outline-secondary" id="btnLimpiarHistorial" style="min-height:44px" title="Borrar filtros">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>

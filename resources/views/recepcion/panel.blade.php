@@ -9,24 +9,36 @@
 
     {{-- 6 Stat Cards clickeables --}}
     <div class="summary-cards">
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'entregas_hoy'))
         <a href="{{ route('recepcion.entregas-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-clock-history" :value="$stats['entregas_hoy']" title="Entregas Pendientes Hoy" color="warning" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'entregas_hoy_manana'))
         <a href="{{ route('recepcion.entregas-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-calendar-event" :value="$stats['entregas_hoy_manana']" title="Entregas Hoy/Manana" color="warning" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'entregas_vencidas'))
         <a href="{{ route('recepcion.entregas-pendientes') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-exclamation-triangle" :value="$stats['entregas_vencidas']" title="Entregas Vencidas" color="danger" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'ordenes_abiertas'))
         <a href="{{ route('recepcion.ordenes.index') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-file-earmark-plus" :value="$stats['ordenes_abiertas']" title="Ordenes Abiertas" color="primary" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'saldo_pendiente'))
         <a href="{{ route('recepcion.ordenes.index') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-currency-dollar" :value="'$' . number_format($stats['saldo_pendiente'], 0, ',', '.')" title="Saldo Pendiente" color="danger" />
         </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'para_complementar'))
         <a href="{{ route('recepcion.ordenes.index') }}" class="text-decoration-none">
             <x-sinden.stat-card icon="bi bi-people-fill" :value="$stats['para_complementar']" title="Para Complementar" color="info" />
         </a>
+        @endif
     </div>
 
     {{-- Contenido principal --}}
@@ -73,6 +85,7 @@
 
         {{-- Garantias activas + enlaces --}}
         <div class="col-lg-4 mb-4">
+            @if(\App\Models\ConfiguracionSistema::metricaVisible('recepcion', 'garantias_activas'))
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
                     <h6 class="mb-0 fw-semibold text-dark">
@@ -102,6 +115,7 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             {{-- Enlaces rapidos --}}
             <div class="card border-0 shadow-sm">

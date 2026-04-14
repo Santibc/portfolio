@@ -31,12 +31,28 @@ class ConfiguracionSistema extends Model
 
     public static function set(string $clave, $valor): void
     {
+        $valorPersistir = is_array($valor) ? json_encode($valor) : (is_null($valor) ? null : (string) $valor);
         $config = static::where('clave', $clave)->first();
 
         if ($config) {
-            $valor = is_array($valor) ? json_encode($valor) : (string) $valor;
-            $config->update(['valor' => $valor]);
-            cache()->forget("config_sistema.{$clave}");
+            $config->update(['valor' => $valorPersistir]);
+        } else {
+            static::create([
+                'clave' => $clave,
+                'valor' => $valorPersistir,
+                'tipo' => is_array($valor) ? 'json' : 'texto',
+            ]);
         }
+
+        cache()->forget("config_sistema.{$clave}");
+    }
+
+    public static function metricaVisible(string $rol, string $metrica): bool
+    {
+        $config = self::get('metricas_panel_visibles', []);
+        if (!is_array($config)) {
+            return true;
+        }
+        return (bool) ($config[$rol][$metrica] ?? true);
     }
 }

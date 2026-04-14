@@ -613,7 +613,8 @@ class ContabilidadController extends Controller
                 'cliente' => $orden->cliente->nombre ?? '-',
                 'total' => '$' . number_format($orden->total, 0, ',', '.'),
                 'total_pagado' => '$' . number_format($orden->total_pagado, 0, ',', '.'),
-                'saldo' => '$' . number_format($orden->saldo, 0, ',', '.'),
+                'saldo' => '$' . number_format(abs($orden->saldo), 0, ',', '.'),
+                'saldo_raw' => (float) $orden->saldo,
                 'estado_pago' => $orden->estado_pago,
             ],
             'pagos' => $pagos,
@@ -685,7 +686,8 @@ class ContabilidadController extends Controller
             $totales = $totalesQuery->selectRaw('
                 SUM(orden_items.subtotal) as sum_subtotal,
                 SUM(orden_items.monto_iva) as sum_iva,
-                SUM(orden_items.total) as sum_total
+                SUM(orden_items.total) as sum_total,
+                SUM(orden_items.descuento_monto) as sum_descuento
             ')->first();
 
             return DataTables::of($query)
@@ -694,6 +696,7 @@ class ContabilidadController extends Controller
                         'subtotal' => '$' . number_format($totales->sum_subtotal ?? 0, 0, ',', '.'),
                         'iva' => '$' . number_format($totales->sum_iva ?? 0, 0, ',', '.'),
                         'total' => '$' . number_format($totales->sum_total ?? 0, 0, ',', '.'),
+                        'descuento' => '$' . number_format($totales->sum_descuento ?? 0, 0, ',', '.'),
                     ]
                 ])
                 ->addColumn('numero_orden_link', function ($item) {
@@ -712,6 +715,13 @@ class ContabilidadController extends Controller
                 ->addColumn('precio_formatted', function ($item) {
                     return '$' . number_format($item->precio_unitario, 0, ',', '.');
                 })
+                ->addColumn('descuento_formatted', function ($item) {
+                    if ($item->descuento_porcentaje > 0) {
+                        return '<span class="text-danger">' . number_format($item->descuento_porcentaje, 2) . '%</span>'
+                            . '<div class="small text-muted">-$' . number_format($item->descuento_monto, 0, ',', '.') . '</div>';
+                    }
+                    return '<span class="text-muted">-</span>';
+                })
                 ->addColumn('subtotal_formatted', function ($item) {
                     return '$' . number_format($item->subtotal, 0, ',', '.');
                 })
@@ -721,7 +731,7 @@ class ContabilidadController extends Controller
                 ->addColumn('total_formatted', function ($item) {
                     return '<span class="fw-bold">$' . number_format($item->total, 0, ',', '.') . '</span>';
                 })
-                ->rawColumns(['numero_orden_link', 'categoria_badge', 'total_formatted'])
+                ->rawColumns(['numero_orden_link', 'categoria_badge', 'total_formatted', 'descuento_formatted'])
                 ->make(true);
         }
 
@@ -736,10 +746,11 @@ class ContabilidadController extends Controller
         $totalSinIva = $baseQuery()->sum('orden_items.subtotal');
         $totalIva = $baseQuery()->sum('orden_items.monto_iva');
         $granTotal = $baseQuery()->sum('orden_items.total');
+        $totalDescuentos = $baseQuery()->sum('orden_items.descuento_monto');
         $totalItems = $baseQuery()->count();
 
         return view('contabilidad.reporte-items', compact(
-            'totalServicios', 'totalMateriales', 'totalProductos', 'totalSinIva', 'totalIva', 'granTotal', 'totalItems'
+            'totalServicios', 'totalMateriales', 'totalProductos', 'totalSinIva', 'totalIva', 'granTotal', 'totalDescuentos', 'totalItems'
         ));
     }
 

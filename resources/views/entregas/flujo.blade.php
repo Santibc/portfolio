@@ -29,8 +29,11 @@
                     <strong>{{ $orden->fecha_entrega ? $orden->fecha_entrega->format('d/m/Y') : '-' }}</strong>
                 </div>
                 <div class="col-md-3">
-                    <small class="text-muted d-block">Piezas Pendientes</small>
-                    <strong class="text-warning">{{ $piezasEntregables->count() }}</strong>
+                    <small class="text-muted d-block">Piezas Pendientes / Total</small>
+                    <strong>
+                        <span class="text-warning">{{ $piezasEntregables->count() }}</span>
+                        <span class="text-muted">/ {{ $orden->piezas->count() }}</span>
+                    </strong>
                 </div>
             </div>
         </div>
@@ -59,6 +62,7 @@
                                         <input type="checkbox" class="form-check-input" @click="toggleAll()" :checked="allSelected">
                                     </th>
                                     <th>Identificador</th>
+                                    <th class="text-center">Total</th>
                                     <th class="text-center">Pendiente</th>
                                     <th class="text-center" style="width: 100px;">Entregar</th>
                                     <th>Material</th>
@@ -80,6 +84,9 @@
                                             <div class="progress mt-1" style="height: 4px; width: 100px;">
                                                 <div class="progress-bar bg-info" :style="'width:' + (pieza.cantidad > 0 ? (pieza.cantidad_entregada / pieza.cantidad * 100) : 0) + '%'"></div>
                                             </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary" x-text="pieza.cantidad"></span>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-warning text-dark" x-text="pieza.cantidad_pendiente"></span>

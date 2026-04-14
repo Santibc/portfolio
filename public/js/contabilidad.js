@@ -323,14 +323,26 @@ function aprobarMasivo(config) {
     ids.forEach(function(id) { montoTotal += selectedPagos[id]; });
 
     Swal.fire({
-        title: 'Aprobar ' + ids.length + ' pago(s)?',
-        html: 'Monto total: <strong>$' + formatNumber(montoTotal) + '</strong>',
-        icon: 'question',
+        title: '<span style="color:#dc3545;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Accion Delicada</span>',
+        html: '<div style="text-align:center;">' +
+              '<p style="font-size:1.1rem;margin-bottom:0.75rem;">Esta a punto de aprobar <strong style="color:#dc3545;">' + ids.length + ' pago(s)</strong></p>' +
+              '<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:0.75rem;margin:0.75rem 0;">' +
+              '<div style="font-size:0.9rem;color:#856404;">Monto total a aprobar</div>' +
+              '<div style="font-size:1.5rem;font-weight:bold;color:#dc3545;">$' + formatNumber(montoTotal) + '</div>' +
+              '</div>' +
+              '<div style="background:#f8d7da;border:1px solid #dc3545;border-radius:8px;padding:0.75rem;color:#721c24;font-size:0.9rem;">' +
+              '<i class="bi bi-shield-exclamation me-1"></i><strong>Atencion:</strong> Esta accion aprobara todos los pagos seleccionados y no se puede deshacer. Verifique antes de continuar.' +
+              '</div>' +
+              '</div>',
+        icon: 'warning',
+        iconColor: '#dc3545',
         showCancelButton: true,
-        confirmButtonColor: '#28a745',
+        confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="bi bi-check-all me-1"></i>Aprobar Todos',
-        cancelButtonText: 'Cancelar'
+        confirmButtonText: '<i class="bi bi-check-all me-1"></i>Si, aprobar todos',
+        cancelButtonText: '<i class="bi bi-x-lg me-1"></i>Cancelar',
+        focusCancel: true,
+        reverseButtons: true
     }).then(function(result) {
         if (result.isConfirmed) {
             $.ajax({
@@ -486,12 +498,24 @@ function initHistorialFinancieroTable(config) {
             success: function(res) {
                 // Resumen
                 var estadoBadge = '';
-                if (res.orden.estado_pago === 'pagada') {
+                var saldoRaw = Number(res.orden.saldo_raw || 0);
+                if (res.orden.estado_pago === 'pagada' || saldoRaw === 0) {
                     estadoBadge = '<span class="badge bg-success">PAGADA</span>';
+                } else if (saldoRaw < 0) {
+                    estadoBadge = '<span class="badge bg-info text-dark">SALDO A FAVOR</span>';
                 } else if (res.pagos.length > 0) {
                     estadoBadge = '<span class="badge bg-danger">SALDO PEND.</span>';
                 } else {
                     estadoBadge = '<span class="badge bg-secondary">SIN PAGOS</span>';
+                }
+
+                var saldoLabel, saldoClass;
+                if (saldoRaw < 0) {
+                    saldoLabel = 'Saldo a favor del cliente:';
+                    saldoClass = 'text-info';
+                } else {
+                    saldoLabel = 'Saldo:';
+                    saldoClass = 'text-danger';
                 }
 
                 $('#modalResumenContainer').html(
@@ -503,7 +527,7 @@ function initHistorialFinancieroTable(config) {
                     '<div class="d-flex gap-3 flex-wrap">' +
                     '<span class="small"><strong>Total:</strong> ' + res.orden.total + '</span>' +
                     '<span class="small text-success"><strong>Pagado:</strong> ' + res.orden.total_pagado + '</span>' +
-                    '<span class="small text-danger"><strong>Saldo:</strong> ' + res.orden.saldo + '</span>' +
+                    '<span class="small ' + saldoClass + '"><strong>' + saldoLabel + '</strong> ' + res.orden.saldo + '</span>' +
                     '</div>' +
                     '</div>'
                 );
@@ -622,6 +646,7 @@ function initReporteItemsTable(config) {
             { data: 'categoria_badge', name: 'orden_items.categoria', className: 'text-center', width: '120px' },
             { data: 'cantidad_formatted', name: 'orden_items.cantidad', className: 'text-center', width: '80px' },
             { data: 'precio_formatted', name: 'orden_items.precio_unitario', className: 'text-end', width: '100px' },
+            { data: 'descuento_formatted', name: 'orden_items.descuento_porcentaje', className: 'text-center', width: '90px', orderable: false },
             { data: 'subtotal_formatted', name: 'orden_items.subtotal', className: 'text-end', width: '100px' },
             { data: 'iva_formatted', name: 'orden_items.monto_iva', className: 'text-end', width: '80px' },
             { data: 'total_formatted', name: 'orden_items.total', className: 'text-end', width: '100px' }
@@ -645,6 +670,9 @@ function initReporteItemsTable(config) {
                 $('#sumaSubtotal').text(json.totales.subtotal);
                 $('#sumaIva').text(json.totales.iva);
                 $('#sumaTotal').text(json.totales.total);
+                if (json.totales.descuento !== undefined) {
+                    $('#sumaDescuento').text('-' + json.totales.descuento);
+                }
             }
         }
     });

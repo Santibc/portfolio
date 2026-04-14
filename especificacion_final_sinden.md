@@ -94,7 +94,7 @@ Este documento describe EXACTAMENTE cómo debe funcionar cada módulo de un sist
 | Campo | Tipo | Validación | Notas |
 |-------|------|-----------|-------|
 | `id` | bigserial PK | auto | |
-| `codigo` | varchar(50) | requerido, único | Código del item. Ej: "CORTE-001" |
+| `codigo` | varchar(50) | requerido, único | Código del item. Ej: "SER 1004" |
 | `descripcion` | text | requerido | Descripción del producto/servicio |
 | `precio_unitario` | decimal(12,2) | requerido, min:0 | Precio unitario sin IVA |
 | `porcentaje_iva` | decimal(5,2) | requerido, default:19.00 | Porcentaje de IVA |

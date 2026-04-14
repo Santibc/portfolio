@@ -21,12 +21,9 @@
                     <i class="bi bi-pen"></i> <span class="d-none d-md-inline">Firma</span>
                 </div>
                 <div class="wizard-step" data-step="5" onclick="irASeccion(5)">
-                    <i class="bi bi-person-gear"></i> <span class="d-none d-md-inline">Operario</span>
-                </div>
-                <div class="wizard-step" data-step="6" onclick="irASeccion(6)">
                     <i class="bi bi-cash-coin"></i> <span class="d-none d-md-inline">Pagos</span>
                 </div>
-                <div class="wizard-step" data-step="7" onclick="irASeccion(7)">
+                <div class="wizard-step" data-step="6" onclick="irASeccion(6)">
                     <i class="bi bi-calendar3"></i> <span class="d-none d-md-inline">Fechas</span>
                 </div>
             </div>
@@ -42,9 +39,9 @@
     @include('ordenes.partials._seccion-bosquejos-piezas')
     @include('ordenes.partials._seccion-items')
     @include('ordenes.partials._seccion-firma')
-    @include('ordenes.partials._seccion-operario')
     @include('ordenes.partials._seccion-pagos')
     @include('ordenes.partials._seccion-fechas')
+    @include('ordenes.partials._seccion-documentos')
 
     {{-- Botones de accion --}}
     <div class="d-flex justify-content-end gap-2 mb-4">
@@ -311,6 +308,7 @@
 var WIZARD_CONFIG = {
     materiales: @json($materiales),
     calibres: @json($calibres),
+    operarios: @json($operarios),
     ivaDefecto: {{ $ivaDefecto }},
     autoSaveInterval: {{ $autoSaveInterval }},
     csrfToken: '{{ csrf_token() }}'

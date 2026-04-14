@@ -9,11 +9,31 @@
 
     {{-- Summary Cards --}}
     <div class="summary-cards">
-        <x-sinden.stat-card icon="bi bi-list-check" :value="$stats['ordenes_asignadas']" title="Ordenes Asignadas" color="primary" />
-        <x-sinden.stat-card icon="bi bi-gear-wide-connected" :value="$stats['piezas_en_proceso']" title="Piezas en Proceso" color="warning" />
-        <x-sinden.stat-card icon="bi bi-plus-circle" :value="$stats['para_complementar']" title="Para Complementar" color="info" />
-        <x-sinden.stat-card icon="bi bi-check-circle" :value="$stats['completadas_hoy']" title="Completadas Hoy" color="success" />
-        <x-sinden.stat-card icon="bi bi-shield-check" :value="$stats['garantias_pendientes']" title="Garantias Pendientes" color="danger" />
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('operario', 'ordenes_asignadas'))
+        <a href="{{ route('operario.ordenes-asignadas') }}" class="text-decoration-none">
+            <x-sinden.stat-card icon="bi bi-list-check" :value="$stats['ordenes_asignadas']" title="Ordenes Asignadas" color="primary" />
+        </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('operario', 'piezas_en_proceso'))
+        <a href="{{ route('operario.ordenes-asignadas') }}" class="text-decoration-none">
+            <x-sinden.stat-card icon="bi bi-gear-wide-connected" :value="$stats['piezas_en_proceso']" title="Piezas en Proceso" color="warning" />
+        </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('operario', 'para_complementar'))
+        <a href="{{ route('operario.complementar') }}" class="text-decoration-none">
+            <x-sinden.stat-card icon="bi bi-plus-circle" :value="$stats['para_complementar']" title="Para Complementar" color="info" />
+        </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('operario', 'completadas_hoy'))
+        <a href="{{ route('operario.ordenes-asignadas') }}" class="text-decoration-none">
+            <x-sinden.stat-card icon="bi bi-check-circle" :value="$stats['completadas_hoy']" title="Completadas Hoy" color="success" />
+        </a>
+        @endif
+        @if(\App\Models\ConfiguracionSistema::metricaVisible('operario', 'garantias_pendientes'))
+        <a href="{{ route('operario.garantias') }}" class="text-decoration-none">
+            <x-sinden.stat-card icon="bi bi-shield-check" :value="$stats['garantias_pendientes']" title="Garantias Pendientes" color="danger" />
+        </a>
+        @endif
     </div>
 
     {{-- Quick Actions --}}
@@ -45,4 +65,15 @@
         </a>
     </div>
 </div>
+
+<style>
+    .summary-cards a:hover .summary-card {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .summary-cards a .summary-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+</style>
 @endsection

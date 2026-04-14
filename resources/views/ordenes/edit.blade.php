@@ -26,12 +26,9 @@
                     <i class="bi bi-pen"></i> <span class="d-none d-md-inline">Firma</span>
                 </div>
                 <div class="wizard-step" data-step="5" onclick="irASeccion(5)">
-                    <i class="bi bi-person-gear"></i> <span class="d-none d-md-inline">Operario</span>
-                </div>
-                <div class="wizard-step" data-step="6" onclick="irASeccion(6)">
                     <i class="bi bi-cash-coin"></i> <span class="d-none d-md-inline">Pagos</span>
                 </div>
-                <div class="wizard-step" data-step="7" onclick="irASeccion(7)">
+                <div class="wizard-step" data-step="6" onclick="irASeccion(6)">
                     <i class="bi bi-calendar3"></i> <span class="d-none d-md-inline">Fechas</span>
                 </div>
             </div>
@@ -47,12 +44,12 @@
     @include('ordenes.partials._seccion-bosquejos-piezas')
     @include('ordenes.partials._seccion-items')
     @include('ordenes.partials._seccion-firma')
-    @include('ordenes.partials._seccion-operario')
     @include('ordenes.partials._seccion-pagos')
     @include('ordenes.partials._seccion-fechas')
+    @include('ordenes.partials._seccion-documentos')
 
     {{-- Botones de accion --}}
-    <div class="d-flex justify-content-end gap-2 mb-4">
+    <div class="d-flex justify-content-end gap-2 wizard-actions-sticky">
         @if($orden->estado_trabajo === 'borrador')
             <button type="button" class="btn btn-outline-primary btn-lg" id="btnGuardar" onclick="guardarOrden(false)">
                 <i class="bi bi-save me-1"></i> Guardar Borrador
@@ -314,6 +311,16 @@
     .cursor-pointer { cursor: pointer; }
     .border-dashed { border-style: dashed !important; }
     .firma-existente { max-height: 120px; border: 1px solid #dee2e6; border-radius: 0.375rem; }
+    .wizard-actions-sticky {
+        position: sticky;
+        bottom: 0;
+        z-index: 1020;
+        background: #fff;
+        padding: 0.75rem 1rem;
+        margin: 0 -1.5rem -1.5rem -1.5rem;
+        border-top: 1px solid #dee2e6;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    }
 </style>
 @endpush
 
@@ -323,6 +330,7 @@
 var WIZARD_CONFIG = {
     materiales: @json($materiales),
     calibres: @json($calibres),
+    operarios: @json($operarios),
     ivaDefecto: {{ $ivaDefecto }},
     autoSaveInterval: {{ $autoSaveInterval }},
     csrfToken: '{{ csrf_token() }}'

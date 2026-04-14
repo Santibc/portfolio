@@ -1,5 +1,5 @@
 {{-- PAGINA 2: Piezas --}}
-<div class="page-break page-con-margen">
+<div class="page-con-margen avoid-break-section">
     <div class="section-title" style="margin-bottom: 12px;">PIEZAS</div>
 
     @php
@@ -57,6 +57,14 @@
                         {{ $pieza->cantidad_entregada ?? 0 }} / {{ $pieza->cantidad }}
                     </td>
                 </tr>
+                @if(!empty($pieza->notas))
+                    <tr class="pieza-notas-row">
+                        <td colspan="10">
+                            <span class="pieza-notas-label">Notas:</span>
+                            <span class="pieza-notas-texto">{{ $pieza->notas }}</span>
+                        </td>
+                    </tr>
+                @endif
             @endforeach
         </tbody>
     </table>

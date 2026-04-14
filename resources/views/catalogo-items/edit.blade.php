@@ -28,7 +28,7 @@
                                     icon="bi bi-upc"
                                     :required="true"
                                     :value="$item->codigo"
-                                    placeholder="Ej: CORTE-001" />
+                                    placeholder="Ej: SER 1004" />
                             </div>
                             <div class="col-md-6">
                                 <x-sinden.form-group

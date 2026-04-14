@@ -99,8 +99,13 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::put('/ordenes/{orden}', [OrdenController::class, 'update'])->name('ordenes.update')->middleware('role:Administrador|Recepcion|Contabilidad');
         Route::post('/ordenes/{orden}/copiar', [OrdenController::class, 'copiar'])->name('ordenes.copiar');
         Route::post('/ordenes/{orden}/anular', [OrdenController::class, 'anular'])->name('ordenes.anular');
+        Route::delete('/ordenes/{orden}', [OrdenController::class, 'destroy'])->name('ordenes.destroy');
         Route::post('/ordenes/{orden}/comentarios', [OrdenController::class, 'agregarComentario'])->name('ordenes.comentarios.store');
         Route::post('/ordenes/{orden}/pagos', [OrdenController::class, 'agregarPago'])->name('ordenes.pagos.store');
+
+        // Ordenes - Documentos adjuntos
+        Route::post('/ordenes/{orden}/documentos', [OrdenController::class, 'subirDocumento'])->name('ordenes.documentos.subir');
+        Route::delete('/ordenes/{orden}/documentos/{documento}', [OrdenController::class, 'eliminarDocumento'])->name('ordenes.documentos.eliminar');
 
         // Actividades
         Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
@@ -109,13 +114,14 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
     });
 
 // ==========================================
-// RUTAS DE ORDENES SOLO-LECTURA (Admin/Recepcion/Contabilidad)
-// Contabilidad solo puede ver el listado, ver el detalle y descargar el PDF.
+// RUTAS DE ORDENES SOLO-LECTURA (Admin/Recepcion/Contabilidad/Operario)
+// Contabilidad y Operario solo pueden ver el listado, ver el detalle y descargar el PDF.
 // ==========================================
-Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilidad'])
+Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilidad|Operario'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
         Route::get('/ordenes', [OrdenController::class, 'index'])->name('ordenes.index');
         Route::get('/ordenes/{orden}/pdf', [OrdenPdfController::class, 'show'])->name('ordenes.pdf');
+        Route::get('/ordenes/{orden}/documentos/{documento}/descargar', [OrdenController::class, 'descargarDocumento'])->name('ordenes.documentos.descargar');
         Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
     });
 

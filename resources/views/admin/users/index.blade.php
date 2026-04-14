@@ -39,8 +39,8 @@
                     <label class="form-label">Estado</label>
                     <select name="status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Activos</option>
-                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactivos</option>
+                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Correo confirmado</option>
+                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Pendiente de correo</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -62,7 +62,20 @@
                             <th class="ps-4">Usuario</th>
                             <th>Email</th>
                             <th>Rol</th>
-                            <th>Estado</th>
+                            <th>
+                                Estado
+                                <button type="button"
+                                        class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline"
+                                        data-bs-toggle="popover"
+                                        data-bs-trigger="focus"
+                                        data-bs-placement="top"
+                                        data-bs-html="true"
+                                        data-bs-title="¿Qué significa cada estado?"
+                                        data-bs-content="<div class='mb-2'><span class='badge bg-success-subtle text-success'><i class='bi bi-check-circle me-1'></i>Correo confirmado</span><br><small class='text-muted'>El usuario verificó su correo electrónico y puede iniciar sesión normalmente.</small></div><div><span class='badge bg-warning-subtle text-warning'><i class='bi bi-clock me-1'></i>Pendiente de correo</span><br><small class='text-muted'>El usuario aún no ha confirmado su correo electrónico desde el enlace de verificación.</small></div>"
+                                        title="Ver explicación de los estados">
+                                    <i class="bi bi-question-circle"></i>
+                                </button>
+                            </th>
                             <th>Registro</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
@@ -99,12 +112,16 @@
                             </td>
                             <td>
                                 @if($usuario->email_verified_at)
-                                    <span class="badge bg-success-subtle text-success">
-                                        <i class="bi bi-check-circle me-1"></i>Activo
+                                    <span class="badge bg-success-subtle text-success"
+                                          data-bs-toggle="tooltip"
+                                          title="El usuario verificó su correo y puede iniciar sesión.">
+                                        <i class="bi bi-check-circle me-1"></i>Correo confirmado
                                     </span>
                                 @else
-                                    <span class="badge bg-warning-subtle text-warning">
-                                        <i class="bi bi-clock me-1"></i>Pendiente
+                                    <span class="badge bg-warning-subtle text-warning"
+                                          data-bs-toggle="tooltip"
+                                          title="El usuario aún no ha confirmado su correo electrónico.">
+                                        <i class="bi bi-clock me-1"></i>Pendiente de correo
                                     </span>
                                 @endif
                             </td>
@@ -169,13 +186,19 @@
 
                     <div class="mb-3">
                         <label class="form-label">Contraseña <span class="text-danger">*</span></label>
-                        <input type="password" name="password" class="form-control" required minlength="8">
+                        <div class="input-group">
+                            <input type="password" name="password" id="createPassword" class="form-control" required minlength="8">
+                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="createPassword"><i class="bi bi-eye"></i></button>
+                        </div>
                         <small class="text-muted">Mínimo 8 caracteres</small>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
-                        <input type="password" name="password_confirmation" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password_confirmation" id="createPasswordConfirmation" class="form-control" required>
+                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="createPasswordConfirmation"><i class="bi bi-eye"></i></button>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -222,12 +245,18 @@
 
                     <div class="mb-3">
                         <label class="form-label">Nueva Contraseña <small class="text-muted">(dejar vacío para no cambiar)</small></label>
-                        <input type="password" name="password" class="form-control" minlength="8" autocomplete="off">
+                        <div class="input-group">
+                            <input type="password" name="password" id="editPassword" class="form-control" minlength="8" autocomplete="off">
+                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="editPassword"><i class="bi bi-eye"></i></button>
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Confirmar Contraseña</label>
-                        <input type="password" name="password_confirmation" class="form-control" minlength="8" autocomplete="off">
+                        <div class="input-group">
+                            <input type="password" name="password_confirmation" id="editPasswordConfirmation" class="form-control" minlength="8" autocomplete="off">
+                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="editPasswordConfirmation"><i class="bi bi-eye"></i></button>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -334,6 +363,30 @@ function deleteUser(userId, userName) {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.bootstrap) {
+        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el => new bootstrap.Popover(el));
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+    }
+});
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    const input = document.getElementById(btn.dataset.passwordToggle);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+});
 </script>
 @endpush
 @endsection

@@ -88,6 +88,9 @@
             {{-- Seccion 9: Fotos --}}
             @include('ordenes.show._seccion-fotos')
 
+            {{-- Seccion 9a: Documentos adjuntos --}}
+            @include('ordenes.show._seccion-documentos')
+
             {{-- Seccion 9b: Entregas --}}
             @include('ordenes.show._seccion-entregas')
 

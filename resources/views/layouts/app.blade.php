@@ -82,6 +82,10 @@
     <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" rel="stylesheet">
 
+    {{-- Flatpickr CSS (date picker unificado) --}}
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+    <link id="flatpickrDarkTheme" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/dark.css" rel="stylesheet" disabled>
+
     @stack('styles')
 </head>
 <body>
@@ -128,7 +132,7 @@
                     </div>
                 </div>
 
-                <div class="user-menu">
+                <a href="{{ route('profile.edit') }}" class="user-menu" style="text-decoration: none; color: inherit;" title="Ir a Mi Perfil">
                     <div class="user-avatar">
                         @if(Auth::user()->hasProfilePhoto())
                             <img src="{{ Auth::user()->profile_photo_url }}"
@@ -142,7 +146,7 @@
                         <span class="user-name">{{ Auth::user()->name }}</span>
                         <span class="user-role">{{ Auth::user()->roles->first()->name ?? 'Usuario' }}</span>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </header>
@@ -219,6 +223,11 @@
 
     {{-- Fabric.js v5 (Canvas profesional para dibujo de bosquejos) --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+    {{-- Flatpickr (date picker unificado) --}}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
+    <script src="{{ asset('js/flatpickr-init.js') }}"></script>
 
     {{-- Main JS --}}
     <script src="{{ asset('js/gva-main.js') }}"></script>

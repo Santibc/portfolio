@@ -393,6 +393,47 @@
             </div>
         </div>
 
+        {{-- ═══ SECCION: METRICAS DEL PANEL INICIO POR ROL ═══ --}}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#seccion-metricas-panel" role="button">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="bi bi-grid-1x2 me-2 text-info"></i>Metricas visibles en Inicio por rol
+                    <i class="bi bi-chevron-down float-end"></i>
+                </h6>
+            </div>
+            <div class="collapse show" id="seccion-metricas-panel">
+                <div class="card-body px-4 pb-4 pt-2">
+                    <p class="text-muted small mb-3">
+                        Activa o desactiva cada tarjeta o seccion que ve cada rol al ingresar a <strong>Inicio</strong>.
+                        Desactivar no elimina los datos, solo oculta la tarjeta.
+                    </p>
+                    <div class="row g-3">
+                        @foreach($metricasCatalogo as $rol => $data)
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 h-100">
+                                <h6 class="fw-semibold mb-3 text-primary">
+                                    <i class="bi bi-person-badge me-1"></i>{{ $data['label'] }}
+                                </h6>
+                                @foreach($data['metricas'] as $claveMetrica => $labelMetrica)
+                                <div class="form-check form-switch mb-2">
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        id="metrica_{{ $rol }}_{{ $claveMetrica }}"
+                                        x-model="metricas_panel_visibles['{{ $rol }}']['{{ $claveMetrica }}']">
+                                    <label class="form-check-label" for="metrica_{{ $rol }}_{{ $claveMetrica }}">
+                                        {{ $labelMetrica }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- ═══ SECCION 6: OTROS ═══ --}}
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#seccion-otros" role="button">
@@ -465,6 +506,9 @@ function configuracionApp() {
 
         // Otros
         cliente_predeterminado_id: @json($configs['cliente_predeterminado_id']->valor ?? ''),
+
+        // Metricas del panel Inicio por rol
+        metricas_panel_visibles: @json($metricasVisibles),
 
         // ─── Tipos de Pago ───────────────────────────
         tipoForm: { id: null, codigo: '', nombre: '', icono: 'bi-cash', color: 'secondary', orden: 0 },
@@ -741,6 +785,7 @@ function configuracionApp() {
                     materiales_disponibles: this.materiales_disponibles,
                     calibres_disponibles: this.calibres_disponibles.map(c => ({ calibre: c.calibre, mm: parseFloat(c.mm) })),
                     cliente_predeterminado_id: this.cliente_predeterminado_id || null,
+                    metricas_panel_visibles: this.metricas_panel_visibles,
                 }
             };
 

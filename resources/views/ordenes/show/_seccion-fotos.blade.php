@@ -2,7 +2,7 @@
 @php $fotosGenerales = $orden->fotos->where('tipo_foto', '!=', 'entrega'); @endphp
 <div class="card border-0 shadow-sm mt-3">
     <div class="card-header bg-white border-0 px-4 pt-3 pb-0">
-        <h6 class="mb-0 fw-semibold"><i class="bi bi-camera me-2 text-primary"></i>Fotos ({{ $fotosGenerales->count() }})</h6>
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-camera me-2 text-primary"></i>Fotos de operarios ({{ $fotosGenerales->count() }})</h6>
     </div>
     <div class="card-body px-4 pb-3 pt-2">
         @if($fotosGenerales->count() > 0)
