@@ -34,7 +34,7 @@
                             <th>Orden</th>
                             <th>Cliente</th>
                             <th>Fecha Entrega</th>
-                            <th>Piezas Pendientes</th>
+                            <th>Porcentaje</th>
                             <th>Estado Trabajo</th>
                             <th>Estado Entrega</th>
                             <th class="text-end">Acciones</th>
@@ -60,7 +60,7 @@ $(function() {
             { data: 'numero_orden', name: 'numero_orden', width: '90px' },
             { data: 'cliente_nombre', name: 'cliente.nombre' },
             { data: 'fecha_entrega', name: 'fecha_entrega', width: '110px', className: 'text-center' },
-            { data: 'piezas_pendientes', name: 'piezas_pendientes', className: 'text-center', orderable: false, searchable: false },
+            { data: 'porcentaje', name: 'porcentaje', className: 'text-center', orderable: false, searchable: false },
             { data: 'estado_trabajo_badge', name: 'estado_trabajo', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_entrega_badge', name: 'estado_entrega', className: 'text-center', orderable: true, searchable: false },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '120px' }

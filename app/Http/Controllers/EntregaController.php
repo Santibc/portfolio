@@ -43,10 +43,27 @@ class EntregaController extends Controller
                 ->addColumn('cliente_nombre', function ($o) {
                     return $o->cliente->nombre ?? '-';
                 })
-                ->addColumn('piezas_pendientes', function ($o) {
-                    $total = $o->piezas->count();
-                    $pendientes = $o->piezas->filter(fn($p) => $p->cantidad_entregada < $p->cantidad)->count();
-                    return '<span class="fw-semibold text-warning">' . $pendientes . '</span> de ' . $total;
+                ->addColumn('porcentaje', function ($o) {
+                    $totalUnidades = (int) $o->piezas->sum('cantidad');
+                    $unidadesEntregadas = (int) $o->piezas->sum('cantidad_entregada');
+                    $porcentaje = $totalUnidades > 0 ? round(($unidadesEntregadas / $totalUnidades) * 100) : 0;
+
+                    if ($porcentaje >= 100) {
+                        $color = 'success';
+                    } elseif ($porcentaje >= 50) {
+                        $color = 'info';
+                    } elseif ($porcentaje > 0) {
+                        $color = 'warning';
+                    } else {
+                        $color = 'danger';
+                    }
+
+                    return '<div class="d-flex align-items-center gap-2" style="min-width: 140px;">'
+                        . '<div class="progress flex-grow-1" style="height: 8px;">'
+                        . '<div class="progress-bar bg-' . $color . '" role="progressbar" style="width: ' . $porcentaje . '%" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>'
+                        . '</div>'
+                        . '<span class="fw-semibold text-' . $color . '" style="min-width: 40px;">' . $porcentaje . '%</span>'
+                        . '</div>';
                 })
                 ->addColumn('estado_trabajo_badge', function ($o) {
                     return $this->badgeEstadoTrabajo($o->estado_trabajo);
@@ -77,7 +94,7 @@ class EntregaController extends Controller
                     }
                     return '<span class="' . $class . '">' . $fecha->format('d/m/Y') . '</span>';
                 })
-                ->rawColumns(['numero_orden', 'piezas_pendientes', 'estado_trabajo_badge', 'estado_entrega_badge', 'fecha_entrega', 'acciones'])
+                ->rawColumns(['numero_orden', 'porcentaje', 'estado_trabajo_badge', 'estado_entrega_badge', 'fecha_entrega', 'acciones'])
                 ->make(true);
         }
 
@@ -128,9 +145,17 @@ class EntregaController extends Controller
                 ->with('info', 'No hay piezas pendientes para entregar en esta orden.');
         }
 
+        $piezasEntregadas = $orden->piezas()
+            ->where('cantidad_entregada', '>', 0)
+            ->orderBy('orden_visual')
+            ->get();
+
+        $totalUnidades = $orden->piezas->sum('cantidad');
+        $unidadesPendientes = $orden->piezas->sum(fn($p) => max(0, $p->cantidad - $p->cantidad_entregada));
+
         $orden->load('cliente');
 
-        return view('entregas.flujo', compact('orden', 'piezasEntregables'));
+        return view('entregas.flujo', compact('orden', 'piezasEntregables', 'piezasEntregadas', 'totalUnidades', 'unidadesPendientes'));
     }
 
     /**

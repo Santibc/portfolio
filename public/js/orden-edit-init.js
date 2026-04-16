@@ -50,7 +50,7 @@ function cargarItems() {
         $row.find('.item-cantidad').val(item.cantidad || 1).each(function(){ autoExpandCantidad(this); });
         $row.find('.item-precio').val(item.precio_unitario || 0);
         $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
-        $row.find('.item-descuento').val(item.descuento_porcentaje || 0);
+        $row.find('.item-descuento').val(parseInt(item.descuento_porcentaje, 10) || 0).each(function(){ autoExpandCantidad(this); });
         $row.find('.item-categoria').val(item.categoria || 'servicio');
 
         if (item.catalogo_item_id) {

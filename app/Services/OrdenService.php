@@ -372,12 +372,43 @@ class OrdenService
             // Mover archivo de temp si es necesario
             $rutaArchivo = $bosquejo['ruta_archivo'] ?? '';
             $rutaMiniatura = $bosquejo['ruta_miniatura'] ?? $rutaArchivo;
+            $tipoOrigen = $bosquejo['tipo_origen'] ?? 'archivo_local';
 
             if (str_contains($rutaArchivo, 'temp_')) {
                 $rutaArchivo = $this->moverArchivoDeTemp($rutaArchivo, $orden->id);
                 if ($rutaMiniatura && str_contains($rutaMiniatura, 'temp_')) {
                     $rutaMiniatura = $this->moverArchivoDeTemp($rutaMiniatura, $orden->id);
                 }
+            } elseif (in_array($tipoOrigen, ['plantilla', 'grupo_plantillas'], true)
+                && str_contains($rutaArchivo, 'bosquejos-matriz')) {
+                // Copiar archivo de la matriz a la carpeta de la orden para que cada orden
+                // tenga su propia copia (no referencias compartidas a la matriz).
+                $rutaArchivo = $this->copiarArchivoDePlantilla($rutaArchivo, $orden->id);
+                if ($rutaMiniatura && str_contains($rutaMiniatura, 'bosquejos-matriz')) {
+                    $rutaMiniatura = $this->copiarArchivoDePlantilla($rutaMiniatura, $orden->id);
+                } else {
+                    $rutaMiniatura = $rutaArchivo;
+                }
+            }
+
+            // Idempotencia: si ya existe un bosquejo en esta orden con la misma ruta_archivo,
+            // reutilizarlo en lugar de crear un duplicado. Esto evita que el autosave
+            // dispare creaciones duplicadas seguidas de File::delete del archivo compartido.
+            $existentePorRuta = OrdenBosquejo::where('orden_id', $orden->id)
+                ->where('ruta_archivo', $rutaArchivo)
+                ->first();
+            if ($existentePorRuta) {
+                $keepIds[] = $existentePorRuta->id;
+                $indexToIdMap[$index] = $existentePorRuta->id;
+                $bosquejosSincronizados[] = [
+                    'id' => $existentePorRuta->id,
+                    'nombre' => $existentePorRuta->nombre,
+                    'tipo_origen' => $existentePorRuta->tipo_origen,
+                    'ruta_archivo' => $existentePorRuta->ruta_archivo,
+                    'ruta_miniatura' => $existentePorRuta->ruta_miniatura,
+                    'plantilla_bosquejo_id' => $existentePorRuta->plantilla_bosquejo_id,
+                ];
+                continue;
             }
 
             $registro = OrdenBosquejo::create([
@@ -407,10 +438,34 @@ class OrdenService
         if (!empty($toDelete)) {
             $oldBosquejos = OrdenBosquejo::whereIn('id', $toDelete)->get();
             foreach ($oldBosquejos as $old) {
-                if ($old->ruta_archivo && File::exists(public_path($old->ruta_archivo))) {
+                // Nunca borrar archivos de la matriz: son compartidos por todas las ordenes.
+                $archivoEsDeMatriz = $old->ruta_archivo && str_contains($old->ruta_archivo, 'bosquejos-matriz');
+                $miniaturaEsDeMatriz = $old->ruta_miniatura && str_contains($old->ruta_miniatura, 'bosquejos-matriz');
+
+                // Safe delete: no borrar el archivo si otro registro (de esta u otra orden)
+                // aun lo referencia. Previene race conditions del autosave donde un duplicado
+                // puede haberse creado con la misma ruta fisica.
+                $archivoAunReferenciado = $old->ruta_archivo
+                    ? OrdenBosquejo::where('id', '!=', $old->id)
+                        ->where(function ($q) use ($old) {
+                            $q->where('ruta_archivo', $old->ruta_archivo)
+                              ->orWhere('ruta_miniatura', $old->ruta_archivo);
+                        })
+                        ->exists()
+                    : false;
+                $miniaturaAunReferenciada = $old->ruta_miniatura
+                    ? OrdenBosquejo::where('id', '!=', $old->id)
+                        ->where(function ($q) use ($old) {
+                            $q->where('ruta_archivo', $old->ruta_miniatura)
+                              ->orWhere('ruta_miniatura', $old->ruta_miniatura);
+                        })
+                        ->exists()
+                    : false;
+
+                if (!$archivoEsDeMatriz && !$archivoAunReferenciado && $old->ruta_archivo && File::exists(public_path($old->ruta_archivo))) {
                     File::delete(public_path($old->ruta_archivo));
                 }
-                if ($old->ruta_miniatura && $old->ruta_miniatura !== $old->ruta_archivo && File::exists(public_path($old->ruta_miniatura))) {
+                if (!$miniaturaEsDeMatriz && !$miniaturaAunReferenciada && $old->ruta_miniatura && $old->ruta_miniatura !== $old->ruta_archivo && File::exists(public_path($old->ruta_miniatura))) {
                     File::delete(public_path($old->ruta_miniatura));
                 }
                 $old->delete();
@@ -439,6 +494,31 @@ class OrdenService
         File::move($fullPath, "{$destDir}/{$fileName}");
 
         return "uploads/ordenes/{$ordenId}/bosquejos/{$fileName}";
+    }
+
+    /**
+     * Copia un archivo de la matriz de plantillas a la carpeta de la orden.
+     * A diferencia de moverArchivoDeTemp, NO mueve: preserva el original
+     * porque la matriz es compartida entre todas las ordenes.
+     */
+    protected function copiarArchivoDePlantilla(string $rutaRelativa, int $ordenId): string
+    {
+        $fullPath = public_path($rutaRelativa);
+        if (!File::exists($fullPath)) {
+            return $rutaRelativa;
+        }
+
+        $destDir = public_path("uploads/ordenes/{$ordenId}/bosquejos");
+        if (!File::exists($destDir)) {
+            File::makeDirectory($destDir, 0755, true);
+        }
+
+        $extension = pathinfo($rutaRelativa, PATHINFO_EXTENSION) ?: 'png';
+        $nuevoNombre = 'plantilla_' . time() . '_' . uniqid() . '.' . $extension;
+
+        File::copy($fullPath, "{$destDir}/{$nuevoNombre}");
+
+        return "uploads/ordenes/{$ordenId}/bosquejos/{$nuevoNombre}";
     }
 
     /**

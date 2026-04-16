@@ -31,8 +31,8 @@
                 <div class="col-md-3">
                     <small class="text-muted d-block">Piezas Pendientes / Total</small>
                     <strong>
-                        <span class="text-warning">{{ $piezasEntregables->count() }}</span>
-                        <span class="text-muted">/ {{ $orden->piezas->count() }}</span>
+                        <span class="text-warning">{{ $unidadesPendientes }}</span>
+                        <span class="text-muted">/ {{ $totalUnidades }}</span>
                     </strong>
                 </div>
             </div>
@@ -107,6 +107,72 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Tabla de piezas ya entregadas (solo visual) --}}
+            @if($piezasEntregadas->isNotEmpty())
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                    <div>
+                        <h6 class="mb-1 fw-semibold text-dark">
+                            <i class="bi bi-check-circle me-2 text-success"></i>Piezas Entregadas
+                        </h6>
+                        <span class="text-muted small">
+                            Registro de piezas ya entregadas (informativo)
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4 pt-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Entregadas</th>
+                                    <th class="text-center">Pendientes</th>
+                                    <th>Material</th>
+                                    <th>Calibre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($piezasEntregadas as $pe)
+                                    @php
+                                        $pendientesPE = max(0, $pe->cantidad - $pe->cantidad_entregada);
+                                        $completa = $pendientesPE === 0;
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold">{{ $pe->nombre }}</span>
+                                            <div class="small text-muted">
+                                                {{ $pe->cantidad_entregada }} / {{ $pe->cantidad }} entregadas
+                                            </div>
+                                            <div class="progress mt-1" style="height: 4px; width: 100px;">
+                                                <div class="progress-bar bg-success" style="width: {{ $pe->cantidad > 0 ? ($pe->cantidad_entregada / $pe->cantidad * 100) : 0 }}%"></div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">{{ $pe->cantidad }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">{{ $pe->cantidad_entregada }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($completa)
+                                                <span class="badge bg-light text-muted">0</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">{{ $pendientesPE }}</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $pe->material ?: '-' }}</td>
+                                        <td>{{ $pe->calibre ?: '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
 
         {{-- Columna derecha: Foto + Boton entregar --}}

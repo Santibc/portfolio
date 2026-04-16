@@ -272,6 +272,10 @@
             <div class="modal-footer border-0 py-2">
                 <span class="text-muted small me-auto" id="dibujoZoomLabel">100%</span>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <span class="badge bg-warning text-dark d-inline-flex align-items-center" style="white-space: normal; max-width: 260px;">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Si no guarda, se perderan los cambios
+                </span>
                 <button type="button" class="btn btn-primary" id="btnGuardarDibujo" onclick="guardarDibujoComoImagen()">
                     <i class="bi bi-save me-1"></i> Guardar Dibujo
                 </button>

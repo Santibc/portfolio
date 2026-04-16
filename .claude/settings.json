@@ -18,7 +18,10 @@
       "Read(//f:/xamppPro80/htdocs/**)",
       "Bash(./mysql.exe -u root -e \"USE sinden; SELECT id, nombre, ruta_archivo, ruta_miniatura FROM orden_bosquejos WHERE orden_id = 18 LIMIT 10;\")",
       "Bash(./mysql.exe -u root sinden)",
-      "Read(//c/Users/santi/.claude/**)"
+      "Read(//c/Users/santi/.claude/**)",
+      "Bash(printf 'test documento content')",
+      "Read(//tmp/**)",
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root sinden -e \"SELECT id, orden_id, tipo_origen, ruta_archivo, ruta_miniatura FROM orden_bosquejos WHERE orden_id = 28;\")"
     ],
     "additionalDirectories": [
       "f:\\xamppPro80\\mysql\\bin",

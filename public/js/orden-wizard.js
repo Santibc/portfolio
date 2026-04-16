@@ -86,6 +86,24 @@ $(function() {
         autoExpandCantidad(this);
     });
 
+    // Forzar enteros en descuento (no decimales, rango 0-100)
+    $(document).on('input', '.item-descuento', function() {
+        var v = String(this.value || '').replace(/[.,].*$/, '').replace(/[^0-9]/g, '');
+        if (v !== this.value) this.value = v;
+    });
+    $(document).on('keydown', '.item-descuento', function(e) {
+        if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+        }
+    });
+    $(document).on('blur', '.item-descuento', function() {
+        var n = parseInt(this.value, 10);
+        if (isNaN(n) || n < 0) n = 0;
+        if (n > 100) n = 100;
+        this.value = n;
+        autoExpandCantidad(this);
+    });
+
     // Auto-expandir inputs de cantidad segun contenido
     $(document).on('input change', '.cantidad-auto-expand', function() {
         autoExpandCantidad(this);
@@ -304,7 +322,7 @@ function agregarFilaItem(opts) {
         + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-end item-precio" value="0" min="0" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input item-iva-check" checked onchange="calcularTotalFila(' + idx + ')"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-center item-descuento" value="0" min="0" max="100" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
+        + '<td><input type="number" class="form-control form-control-sm text-center item-descuento cantidad-auto-expand" value="0" min="0" max="100" step="1" inputmode="numeric" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-end fw-semibold item-subtotal-display">$0</td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaItem(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
         + '</tr>';

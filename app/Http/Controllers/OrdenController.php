@@ -1097,16 +1097,19 @@ class OrdenController extends Controller
         }
 
         $ext = $file->getClientOriginalExtension();
+        $nombreOriginal = $file->getClientOriginalName();
+        $mimeType = $file->getClientMimeType();
+        $tamanoBytes = $file->getSize();
         $nombreGuardado = 'doc_' . time() . '_' . Str::random(6) . ($ext ? ".{$ext}" : '');
         $file->move($dir, $nombreGuardado);
 
         $doc = OrdenDocumento::create([
             'orden_id'        => $orden->id,
-            'nombre_original' => $file->getClientOriginalName(),
+            'nombre_original' => $nombreOriginal,
             'ruta_archivo'    => "uploads/ordenes/{$orden->id}/documentos/{$nombreGuardado}",
             'extension'       => $ext,
-            'mime_type'       => $file->getClientMimeType(),
-            'tamano_bytes'    => $file->getSize(),
+            'mime_type'       => $mimeType,
+            'tamano_bytes'    => $tamanoBytes,
             'subido_por'      => auth()->id(),
         ]);
 

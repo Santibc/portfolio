@@ -2,6 +2,27 @@
 
 @section('title', 'Ordenes de Trabajo')
 
+@push('styles')
+<style>
+    /* Fijar columna Acciones (ultima) para que siempre sea visible */
+    #ordenesTable thead th:last-child,
+    #ordenesTable tbody td:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background-color: #fff;
+        box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    #ordenesTable thead th:last-child {
+        background-color: #f8f9fa;
+        z-index: 3;
+    }
+    #ordenesTable tbody tr:hover td:last-child {
+        background-color: #f5f5f5;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     {{-- Page Header --}}
@@ -148,14 +169,14 @@
                             </th>
                             <th>Orden</th>
                             <th>Cliente</th>
-                            <th>Creacion</th>
-                            <th>Fecha Entrega</th>
                             <th>Estado Trabajo</th>
                             <th>Estado Entrega</th>
                             <th>Estado Pago</th>
                             <th class="text-center" style="width: 140px;">% Total</th>
                             <th class="text-end">Total</th>
                             <th class="text-end">Saldo</th>
+                            <th>Creacion</th>
+                            <th>Fecha Entrega</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -232,21 +253,21 @@ $(function() {
             },
             { data: 'numero_orden', name: 'numero_orden', width: '90px', className: 'fw-semibold' },
             { data: 'cliente_nombre', name: 'cliente.nombre' },
-            { data: 'created_at', name: 'created_at', width: '95px', className: 'text-center' },
-            { data: 'fecha_entrega', name: 'fecha_entrega', width: '95px', className: 'text-center' },
             { data: 'estado_trabajo_badge', name: 'estado_trabajo', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_entrega_badge', name: 'estado_entrega', className: 'text-center', orderable: true, searchable: false },
             { data: 'estado_pago_badge', name: 'estado_pago', className: 'text-center', orderable: true, searchable: false },
             { data: 'porcentaje_total_html', name: 'porcentaje_total_html', className: 'text-center', orderable: false, searchable: false, width: '140px' },
             { data: 'total_formatted', name: 'total', className: 'text-end', orderable: true, searchable: false },
             { data: 'saldo_formatted', name: 'saldo', className: 'text-end', orderable: true, searchable: false },
+            { data: 'created_at', name: 'created_at', width: '95px', className: 'text-center' },
+            { data: 'fecha_entrega', name: 'fecha_entrega', width: '95px', className: 'text-center' },
             { data: 'acciones', name: 'acciones', orderable: false, searchable: false, className: 'text-end', width: '160px' }
         ],
         dom: '<"d-flex flex-wrap align-items-center justify-content-between mb-2"<"d-flex align-items-center gap-2"lB>f>rt<"d-flex justify-content-between"ip>',
         buttons: [
             { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
         ],
-        order: [[3, 'desc']],
+        order: [[9, 'desc']],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
         language: {

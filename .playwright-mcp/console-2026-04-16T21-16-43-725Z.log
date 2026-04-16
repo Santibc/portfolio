@@ -1,0 +1,9 @@
+[     479ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[     714ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/bosquejos-matriz/2/bosquejo_20_1775857807_thumb.png:0
+[     994ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/bosquejos-matriz/1/bosquejo_2_1771282146_thumb.png:0
+[    1209ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/bosquejos-matriz/1/bosquejo_13_1775852872_thumb.png:0
+[    1421ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/bosquejos-matriz/1/bosquejo_17_1775857756_thumb.png:0
+[    1627ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/bosquejos-matriz/1/bosquejo_19_1775857797_thumb.jpg:0
+[    2060ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/ordenes/25/bosquejos/thumb_1776373798_69e1502678b7e.png:0
+[  108312ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:8000/recepcion/ordenes/25/documentos:0
+[  456713ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:8000/recepcion/ordenes/25:0

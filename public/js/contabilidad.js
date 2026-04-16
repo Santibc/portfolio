@@ -38,7 +38,7 @@ function initOrdenesPendientesTable(config) {
         buttons: [
             { extend: 'colvis', text: '<i class="bi bi-layout-three-columns"></i> Columnas', className: 'btn btn-sm btn-outline-secondary' }
         ],
-        order: [[4, 'desc']], // Ordenar por saldo descendente
+        order: [[0, 'desc']], // Ordenar por numero de orden descendente
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50], [10, 15, 25, 50]],
         language: {
