@@ -21,9 +21,17 @@ class ActualizarSolicitudRequest extends FormRequest
             return false;
         }
 
+        if (!auth()->check()) {
+            return false;
+        }
+
+        // Solo roles administrativos pueden editar (vendedor NO)
+        if (!auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+            return false;
+        }
+
         // Facturación y auxiliar_administrativo pueden editar siempre, los demás solo si es editable
-        return auth()->check()
-            && (auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) || $solicitud->esEditable());
+        return auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) || $solicitud->esEditable();
     }
 
     /**
