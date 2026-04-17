@@ -7,10 +7,45 @@
   <title>@yield('title', $empresa->nombre . ' - Tienda Online')</title>
   <meta name="description" content="@yield('description', $empresa->descripcion)">
   <meta name="keywords" content="@yield('keywords', '')">
+  <link rel="canonical" href="{{ url()->current() }}">
 
   <!-- Favicons -->
-  <link href="{{ $empresa->logo_url }}" rel="icon">
-  <link href="{{ asset('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ $empresa->logo_url }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ $empresa->logo_url }}">
+  <link rel="shortcut icon" href="{{ $empresa->logo_url }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ $empresa->logo_url }}">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ $empresa->nombre }}">
+  <meta property="og:title" content="@yield('title', $empresa->nombre . ' - Tienda Online')">
+  <meta property="og:description" content="@yield('description', $empresa->descripcion)">
+  <meta property="og:url" content="{{ url()->current() }}">
+  <meta property="og:image" content="{{ $empresa->logo_url }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="@yield('title', $empresa->nombre . ' - Tienda Online')">
+  <meta name="twitter:description" content="@yield('description', $empresa->descripcion)">
+  <meta name="twitter:image" content="{{ $empresa->logo_url }}">
+
+  <!-- Datos estructurados: Organization (para que Google identifique el logo) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": @json($empresa->nombre),
+    "url": "{{ url('/') }}",
+    "logo": "{{ $empresa->logo_url }}"@if(!empty($empresa->telefono)),
+    "telephone": @json($empresa->telefono)@endif
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": @json($empresa->nombre),
+    "url": "{{ url('/') }}"
+  }
+  </script>
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
