@@ -601,6 +601,22 @@
       gtag('js', new Date());
       gtag('config', 'AW-17792196133');
     </script>
+
+    <!-- Google Ads Conversion Tracking Helper -->
+    <script>
+      function gtag_report_conversion(sendTo, url) {
+        var callback = function () {
+          if (typeof(url) !== 'undefined') {
+            window.location = url;
+          }
+        };
+        gtag('event', 'conversion', {
+          'send_to': sendTo,
+          'event_callback': callback
+        });
+        return false;
+      }
+    </script>
 </head>
 
 <body>
@@ -670,7 +686,8 @@
                             <a href="{{ $layoutConfig->facebook_url }}" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                         @endif
                         @if ($layoutConfig && $layoutConfig->whatsapp_url)
-                            <a href="{{ $layoutConfig->whatsapp_url }}" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                            <a href="{{ $layoutConfig->whatsapp_url }}" target="_blank" aria-label="WhatsApp"
+                               onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);"><i class="bi bi-whatsapp"></i></a>
                         @endif
                         @if ($layoutConfig && $layoutConfig->tiktok_url)
                             <a href="{{ $layoutConfig->tiktok_url }}" target="_blank" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
@@ -711,11 +728,13 @@
                     </div>
                     <div class="footer-contact-item">
                         <i class="bi bi-telephone"></i>
-                        <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}">{{ $layoutConfig->footer_phone ?? '+34 698 98 96 66' }}</a>
+                        <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}"
+                           onclick="return gtag_report_conversion('AW-17792196133/e7vtCMTc2NUbEKW8_aNC', this.href);">{{ $layoutConfig->footer_phone ?? '+34 698 98 96 66' }}</a>
                     </div>
                     <div class="footer-contact-item">
                         <i class="bi bi-envelope"></i>
-                        <a href="mailto:{{ $layoutConfig->footer_email ?? 'contacto@manzeragroforestal.es' }}">{{ $layoutConfig->footer_email ?? 'contacto@manzeragroforestal.es' }}</a>
+                        <a href="mailto:{{ $layoutConfig->footer_email ?? 'contacto@manzeragroforestal.es' }}"
+                           onclick="return gtag_report_conversion('AW-17792196133/FFoECMHc2NUbEKW8_aNC', this.href);">{{ $layoutConfig->footer_email ?? 'contacto@manzeragroforestal.es' }}</a>
                     </div>
                 </div>
             </div>
@@ -727,7 +746,8 @@
     </footer>
 
     {{-- WhatsApp Float --}}
-    <a href="https://wa.me/34698989666" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+    <a href="https://wa.me/34698989666" target="_blank" class="whatsapp-float" aria-label="WhatsApp"
+       onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);">
         <i class="bi bi-whatsapp"></i>
     </a>
 

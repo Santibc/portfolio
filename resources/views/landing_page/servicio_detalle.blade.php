@@ -400,14 +400,16 @@
         <div class="sd-cta-content reveal">
             <span class="section-label">Presupuesto sin compromiso</span>
             <h2 class="section-title" style="color: var(--manzer-white);">Solicitar presupuesto para este servicio</h2>
-            <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}" class="sd-cta-phone">
+            <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}" class="sd-cta-phone"
+               onclick="return gtag_report_conversion('AW-17792196133/e7vtCMTc2NUbEKW8_aNC', this.href);">
                 {{ $layoutConfig->footer_phone ?? '+34 698 98 96 66' }}
             </a>
             <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
                 <a href="{{ route('contacto') }}" class="btn-manzer btn-manzer-primary">
                     <i class="bi bi-envelope"></i> Contactar
                 </a>
-                <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline">
+                <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline"
+                   onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);">
                     <i class="bi bi-whatsapp"></i> WhatsApp
                 </a>
             </div>

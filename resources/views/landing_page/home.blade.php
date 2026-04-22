@@ -440,10 +440,12 @@
     <div class="cta-content reveal">
         <span class="section-label">Contactanos</span>
         <h2 class="section-title" style="color: var(--manzer-white);">Solicite su presupuesto sin compromiso</h2>
-        <a href="tel:+34698989666" class="cta-phone">+34 698 98 96 66</a>
+        <a href="tel:+34698989666" class="cta-phone"
+           onclick="return gtag_report_conversion('AW-17792196133/e7vtCMTc2NUbEKW8_aNC', this.href);">+34 698 98 96 66</a>
         <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
             <a href="{{ route('contacto') }}" class="btn-manzer btn-manzer-primary"><i class="bi bi-envelope"></i> Escribenos</a>
-            <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+            <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline"
+               onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);"><i class="bi bi-whatsapp"></i> WhatsApp</a>
         </div>
     </div>
 </section>

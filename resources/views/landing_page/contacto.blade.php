@@ -355,7 +355,8 @@
                     <div class="contact-info-icon"><i class="bi bi-telephone"></i></div>
                     <div>
                         <h4>Telefono</h4>
-                        <a href="tel:{{ $contactInfo->phone ?? '+34698989666' }}">{{ $contactInfo->phone ?? '+34 698 98 96 66' }}</a>
+                        <a href="tel:{{ $contactInfo->phone ?? '+34698989666' }}"
+                           onclick="return gtag_report_conversion('AW-17792196133/e7vtCMTc2NUbEKW8_aNC', this.href);">{{ $contactInfo->phone ?? '+34 698 98 96 66' }}</a>
                     </div>
                 </div>
 
@@ -363,7 +364,8 @@
                     <div class="contact-info-icon"><i class="bi bi-envelope"></i></div>
                     <div>
                         <h4>Email</h4>
-                        <a href="mailto:{{ $contactInfo->email ?? 'contacto@manzeragroforestal.es' }}">{{ $contactInfo->email ?? 'contacto@manzeragroforestal.es' }}</a>
+                        <a href="mailto:{{ $contactInfo->email ?? 'contacto@manzeragroforestal.es' }}"
+                           onclick="return gtag_report_conversion('AW-17792196133/FFoECMHc2NUbEKW8_aNC', this.href);">{{ $contactInfo->email ?? 'contacto@manzeragroforestal.es' }}</a>
                     </div>
                 </div>
 
@@ -371,7 +373,8 @@
                     <div class="contact-info-icon"><i class="bi bi-whatsapp"></i></div>
                     <div>
                         <h4>WhatsApp</h4>
-                        <a href="https://wa.me/34698989666" target="_blank">Enviar mensaje por WhatsApp</a>
+                        <a href="https://wa.me/34698989666" target="_blank"
+                           onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);">Enviar mensaje por WhatsApp</a>
                     </div>
                 </div>
 
@@ -386,7 +389,8 @@
                     @if($layoutConfig && $layoutConfig->facebook_url)
                     <a href="{{ $layoutConfig->facebook_url }}" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                     @endif
-                    <a href="https://wa.me/34698989666" target="_blank" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    <a href="https://wa.me/34698989666" target="_blank" aria-label="WhatsApp"
+                       onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);"><i class="bi bi-whatsapp"></i></a>
                 </div>
             </div>
 
@@ -493,6 +497,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Response status:', response.status, 'Body:', result);
 
                 if (result.success) {
+                    gtag('event', 'conversion', {'send_to': 'AW-17792196133/oVcyCMrZy9UbEKW8_aNC', 'value': 1.0, 'currency': 'EUR'});
+
                     msg.className = 'form-message success';
                     msg.innerHTML = '<i class="bi bi-check-circle"></i> Su mensaje ha sido enviado correctamente. Le responderemos lo antes posible.';
                     msg.style.display = 'block';

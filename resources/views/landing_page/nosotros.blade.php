@@ -605,7 +605,8 @@
                         <a href="{{ $member->twitter_url }}" target="_blank" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
                         @endif
                         @if($member->email)
-                        <a href="mailto:{{ $member->email }}" aria-label="Email"><i class="bi bi-envelope"></i></a>
+                        <a href="mailto:{{ $member->email }}" aria-label="Email"
+                           onclick="return gtag_report_conversion('AW-17792196133/FFoECMHc2NUbEKW8_aNC', this.href);"><i class="bi bi-envelope"></i></a>
                         @endif
                     </div>
                 </div>
@@ -676,12 +677,14 @@
     <div class="about-cta-content reveal">
         <span class="section-label">Contactanos</span>
         <h2 class="section-title" style="color: var(--manzer-white);">Trabajemos juntos en su proximo proyecto</h2>
-        <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}" class="about-cta-phone">
+        <a href="tel:{{ $layoutConfig->footer_phone ?? '+34698989666' }}" class="about-cta-phone"
+           onclick="return gtag_report_conversion('AW-17792196133/e7vtCMTc2NUbEKW8_aNC', this.href);">
             {{ $layoutConfig->footer_phone ?? '+34 698 98 96 66' }}
         </a>
         <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
             <a href="{{ route('contacto') }}" class="btn-manzer btn-manzer-primary"><i class="bi bi-envelope"></i> Contactar</a>
-            <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+            <a href="https://wa.me/34698989666" target="_blank" class="btn-manzer btn-manzer-outline"
+               onclick="return gtag_report_conversion('AW-17792196133/6sYcCO3By-4bEKW8_aNC', this.href);"><i class="bi bi-whatsapp"></i> WhatsApp</a>
         </div>
     </div>
 </section>
