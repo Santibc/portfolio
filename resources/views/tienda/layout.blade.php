@@ -9,32 +9,55 @@
   <meta name="keywords" content="@yield('keywords', '')">
   <link rel="canonical" href="{{ url()->current() }}">
 
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ $empresa->logo_url }}">
-  <link rel="icon" type="image/png" sizes="192x192" href="{{ $empresa->logo_url }}">
-  <link rel="shortcut icon" href="{{ $empresa->logo_url }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ $empresa->logo_url }}">
+  {{-- URL ABSOLUTA del logo (Open Graph, JSON-LD y Google requieren URL absoluta con protocolo) --}}
+  @php
+      $logoAbsoluto = $empresa->logo
+          ? asset($empresa->logo)
+          : asset('favicon.png');
+      // Garantizar que sea absoluta con esquema
+      if (!preg_match('#^https?://#', $logoAbsoluto)) {
+          $logoAbsoluto = url($logoAbsoluto);
+      }
+      $ogTitle = trim(($empresa->nombre ?? 'Esnova') . ' - Tienda Online');
+      $ogDescription = $empresa->descripcion ?? ($empresa->nombre . ' - Tienda online');
+  @endphp
 
-  <!-- Open Graph -->
+  <!-- Favicons -->
+  <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ $logoAbsoluto }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ $logoAbsoluto }}">
+  <link rel="shortcut icon" href="{{ $logoAbsoluto }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+
+  <!-- Open Graph (Facebook / WhatsApp) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{{ $empresa->nombre }}">
-  <meta property="og:title" content="@yield('title', $empresa->nombre . ' - Tienda Online')">
-  <meta property="og:description" content="@yield('description', $empresa->descripcion)">
+  <meta property="og:title" content="@yield('title', $ogTitle)">
+  <meta property="og:description" content="@yield('description', $ogDescription)">
   <meta property="og:url" content="{{ url()->current() }}">
-  <meta property="og:image" content="{{ $empresa->logo_url }}">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="@yield('title', $empresa->nombre . ' - Tienda Online')">
-  <meta name="twitter:description" content="@yield('description', $empresa->descripcion)">
-  <meta name="twitter:image" content="{{ $empresa->logo_url }}">
+  <meta property="og:image" content="{{ $logoAbsoluto }}">
+  <meta property="og:image:secure_url" content="{{ $logoAbsoluto }}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="{{ $empresa->nombre }}">
+  <meta property="og:locale" content="es_CO">
 
-  <!-- Datos estructurados: Organization (para que Google identifique el logo) -->
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="@yield('title', $ogTitle)">
+  <meta name="twitter:description" content="@yield('description', $ogDescription)">
+  <meta name="twitter:image" content="{{ $logoAbsoluto }}">
+
+  <!-- Datos estructurados: Organization (señal principal para el logo en Google) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": @json($empresa->nombre),
     "url": "{{ url('/') }}",
-    "logo": "{{ $empresa->logo_url }}"@if(!empty($empresa->telefono)),
+    "logo": @json($logoAbsoluto),
+    "image": @json($logoAbsoluto)@if(!empty($empresa->telefono)),
     "telephone": @json($empresa->telefono)@endif
   }
   </script>

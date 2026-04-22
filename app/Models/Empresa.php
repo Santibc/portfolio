@@ -114,7 +114,7 @@ class Empresa extends Model
 
     public function getLogoUrlAttribute()
     {
-        return $this->logo ? asset($this->logo) : asset('images/default-logo.png');
+        return $this->logo ? asset($this->logo) : asset('images/logo.png');
     }
 
     public function getImagenPortadaUrlAttribute()
