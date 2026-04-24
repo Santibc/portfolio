@@ -1,0 +1,7 @@
+[     294ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[     301ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:8000/admin/siigo:0
+[  193831ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  196998ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  197165ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  209302ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  214777ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801

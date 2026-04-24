@@ -1,25 +1,36 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('¿Olvidaste tu contraseña? No hay problema. Simplemente indícanos tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.') }}
+    @section('title', 'Recuperar contraseña')
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold tracking-tight">Recuperar contraseña</h1>
+        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Indícanos tu correo y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
     </div>
 
-    <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label for="email" class="mb-1.5 block text-sm font-medium">Correo</label>
+            <div class="relative">
+                <i class="bi bi-envelope pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400"></i>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="tu@email.com" class="input pl-9">
+            </div>
+            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Enlace para restablecer contraseña de correo electrónico') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="btn-primary w-full">
+            Enviar enlace de recuperación
+            <i class="bi bi-send"></i>
+        </button>
     </form>
+
+    <p class="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <a href="{{ route('login') }}" class="inline-flex items-center gap-1 font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
+            <i class="bi bi-arrow-left"></i> Volver al login
+        </a>
+    </p>
 </x-guest-layout>

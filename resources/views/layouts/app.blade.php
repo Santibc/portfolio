@@ -1,151 +1,171 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Manzer') }}</title>
+    <title>@yield('title', 'Inicio') · {{ config('app.name', 'Manzer') }}</title>
 
-    {{-- Fuentes --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    {{-- Font Awesome 6 --}}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-    {{-- Bootstrap Icons --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    {{-- Bootstrap 5 CSS --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    {{-- Tailwind CSS (para componentes Blade - con preflight deshabilitado) --}}
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Theme init inline para evitar flash --}}
     <script>
-        tailwind.config = {
-            corePlugins: {
-                preflight: false,
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (stored === 'dark' || (!stored && prefersDark)) {
+                document.documentElement.classList.add('dark');
             }
-        }
+        })();
     </script>
 
-    {{-- Manzer CSS --}}
-    <link href="{{ asset('css/gva-global.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/gva-dashboard.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/gva-components.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/manzer-components.css') }}" rel="stylesheet">
-
-    {{-- DataTables CSS --}}
-    <link href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
 </head>
-<body>
-    {{-- Header --}}
-    <header class="dashboard-header">
-        <div class="header-container" style="position: relative;">
-            <div class="header-left">
-                <button class="sidebar-toggle" id="sidebarToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
+<body class="min-h-screen">
+    {{-- Skip to content (a11y) --}}
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary-500 focus:px-4 focus:py-2 focus:text-white">
+        Saltar al contenido
+    </a>
 
-            <div class="nav-logo" style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center;">
-                <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 32px; margin-right: 8px;"> Manzer Agroforestal
-            </div>
+    <div x-data class="relative flex min-h-screen">
+        {{-- Overlay móvil --}}
+        <div
+            x-show="$store.sidebar.open"
+            x-transition.opacity
+            @click="$store.sidebar.close()"
+            class="fixed inset-0 z-30 bg-zinc-900/50 backdrop-blur-sm lg:hidden"
+            aria-hidden="true"
+            style="display: none;"
+        ></div>
 
-            <div class="header-right">
-                <div class="user-menu">
-                    <div class="user-avatar">
-                        @if(Auth::user()->hasProfilePhoto())
-                            <img src="{{ Auth::user()->profile_photo_url }}"
-                                 alt="Foto de perfil"
-                                 style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                        @else
-                            <i class="fas fa-user"></i>
-                        @endif
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name">{{ Auth::user()->name }}</span>
-                        <span class="user-role">{{ Auth::user()->roles->first()->name ?? 'Usuario' }}</span>
-                    </div>
+        {{-- Sidebar --}}
+        <aside
+            :class="$store.sidebar.open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+            class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 ease-smooth dark:border-zinc-800 dark:bg-zinc-900 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+        >
+            {{-- Sidebar header / logo --}}
+            <div class="flex h-16 shrink-0 items-center gap-3 border-b border-zinc-200 px-6 dark:border-zinc-800">
+                <img src="{{ asset('images/logo.png') }}" alt="CLC & CIA" class="h-10 w-10 object-contain">
+                <div class="leading-tight">
+                    <div class="text-sm font-bold tracking-tight">CLC & CIA</div>
+                    <div class="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">S.A.S.</div>
                 </div>
             </div>
+
+            {{-- Nav --}}
+            <div class="flex-1 overflow-y-auto scrollbar-thin px-3 py-4">
+                @include('layouts.navigation-vertical')
+            </div>
+
+            {{-- Sidebar footer --}}
+            <div class="border-t border-zinc-200 p-3 dark:border-zinc-800">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-red-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-red-400">
+                        <i class="bi bi-box-arrow-left text-base"></i>
+                        <span>Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        {{-- Contenido --}}
+        <div class="flex min-w-0 flex-1 flex-col">
+            {{-- Header --}}
+            <header class="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-zinc-200 bg-white/80 px-4 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80 sm:px-6">
+                {{-- Toggle sidebar (mobile) --}}
+                <button
+                    type="button"
+                    @click="$store.sidebar.toggle()"
+                    class="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 lg:hidden"
+                    aria-label="Abrir menú"
+                    :aria-expanded="$store.sidebar.open.toString()"
+                >
+                    <i class="bi bi-list text-xl"></i>
+                </button>
+
+                {{-- Spacer --}}
+                <div class="flex-1"></div>
+
+                {{-- Actions --}}
+                <div class="flex items-center gap-1">
+                    {{-- Theme toggle --}}
+                    <button
+                        type="button"
+                        @click="$store.theme.toggle()"
+                        class="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        aria-label="Cambiar tema"
+                    >
+                        <i class="bi bi-sun-fill text-lg dark:hidden"></i>
+                        <i class="bi bi-moon-fill hidden text-lg dark:inline"></i>
+                    </button>
+
+                    {{-- User dropdown --}}
+                    <div x-data="{ open: false }" @click.away="open = false" class="relative ms-1">
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="flex items-center gap-2 rounded-lg p-1 pr-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            :aria-expanded="open.toString()"
+                            aria-haspopup="true"
+                        >
+                            @if(Auth::user()->hasProfilePhoto())
+                                <img src="{{ Auth::user()->profile_photo_url }}" alt="" class="h-8 w-8 rounded-full object-cover">
+                            @else
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-700 dark:bg-primary-900 dark:text-primary-300">
+                                    {{ Auth::user()->initials }}
+                                </div>
+                            @endif
+                            <div class="hidden text-left sm:block">
+                                <div class="text-sm font-medium leading-tight">{{ Auth::user()->name }}</div>
+                                <div class="text-xs text-zinc-500 dark:text-zinc-400">{{ Auth::user()->roles->first()->name ?? 'Usuario' }}</div>
+                            </div>
+                            <i class="bi bi-chevron-down hidden text-xs text-zinc-400 sm:inline"></i>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            x-transition:enter="transition ease-smooth duration-150"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-smooth duration-100"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-white p-1 shadow-lg ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800"
+                            role="menu"
+                            style="display: none;"
+                        >
+                            <div class="border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
+                                <div class="text-sm font-medium">{{ Auth::user()->name }}</div>
+                                <div class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ Auth::user()->email }}</div>
+                            </div>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800" role="menuitem">
+                                <i class="bi bi-person-gear"></i> Mi perfil
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950" role="menuitem">
+                                    <i class="bi bi-box-arrow-left"></i> Cerrar sesión
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {{-- Main --}}
+            <main id="main-content" class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                <x-flash-messages />
+
+                @hasSection('content')
+                    @yield('content')
+                @else
+                    {{ $slot ?? '' }}
+                @endif
+            </main>
         </div>
-    </header>
-
-    {{-- Sidebar --}}
-    <aside class="sidebar" id="sidebar">
-        @include('layouts.navigation-vertical')
-    </aside>
-
-    {{-- Contenido Principal --}}
-    <main class="main-content" id="mainContent">
-        {{-- Flash Messages --}}
-        @if(session('success'))
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if(session('warning'))
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>{{ session('warning') }}</span>
-            </div>
-        @endif
-
-        {{-- Soporte para @yield('content') y {{ $slot }} --}}
-        @hasSection('content')
-            @yield('content')
-        @else
-            {{ $slot ?? '' }}
-        @endif
-    </main>
-
-    {{-- JavaScript --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    {{-- Bootstrap 5 JS (para modales) --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    {{-- DataTables --}}
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-    {{-- SweetAlert2 --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    {{-- Alpine.js --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    {{-- Manzer Main JS --}}
-    <script src="{{ asset('js/gva-main.js') }}"></script>
+    </div>
 
     @stack('scripts')
 </body>

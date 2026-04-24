@@ -1,0 +1,8 @@
+[      62ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[      70ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:8000/admin/siigo:0
+[     884ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[     890ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:8000/admin/siigo:0
+[   43031ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[   43044ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:8000/admin/siigo:0
+[   44414ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[   44422ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://127.0.0.1:8000/admin/siigo:0

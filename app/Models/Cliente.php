@@ -2,139 +2,114 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Cliente extends Model
 {
-    use SoftDeletes;
+    use HasFactory;
 
     protected $table = 'clientes';
 
     protected $fillable = [
         'tipo',
+        'tipo_identificacion',
+        'identificacion',
+        'nombre',
         'nombre_comercial',
-        'razon_social',
-        'cif',
-        'direccion',
-        'codigo_postal',
-        'ciudad',
-        'provincia',
-        'pais',
-        'telefono',
         'email',
-        'persona_contacto',
-        'telefono_contacto',
-        'email_contacto',
-        'condiciones_pago',
-        'retencion_porcentaje',
-        'notas',
+        'telefono',
+        'direccion_facturacion',
+        'direccion_envio',
+        'pais',
+        'ciudad',
+        'moneda_preferida_id',
+        'incoterm_id',
+        'puerto_id',
+        'tipo_pago_id',
+        'idioma_documento',
+        'plantilla_factura_id',
+        'datos_bancarios_destino',
+        'observaciones',
+        'siigo_id',
         'activo',
     ];
 
     protected $casts = [
-        'retencion_porcentaje' => 'decimal:2',
-        'activo' => 'boolean',
+        'activo' => 'bool',
     ];
 
-    public function obras(): HasMany
+    /**
+     * @return BelongsTo<Moneda, Cliente>
+     */
+    public function monedaPreferida(): BelongsTo
     {
-        return $this->hasMany(Obra::class);
-    }
-
-    public function leads(): HasMany
-    {
-        return $this->hasMany(Lead::class);
-    }
-
-    public function contratos(): HasMany
-    {
-        return $this->hasMany(Contrato::class);
-    }
-
-    public function facturas(): HasMany
-    {
-        return $this->hasMany(Factura::class);
-    }
-
-    public function ingresos(): HasMany
-    {
-        return $this->hasMany(Ingreso::class);
-    }
-
-    public function interacciones(): HasMany
-    {
-        return $this->hasMany(LeadInteraccion::class);
-    }
-
-    public function emailsAdicionales(): HasMany
-    {
-        return $this->hasMany(ClienteEmailAdicional::class);
-    }
-
-    public function emailsAdicionalesActivos(): HasMany
-    {
-        return $this->hasMany(ClienteEmailAdicional::class)->where('activo', true);
-    }
-
-    // Accessors
-    public function getNombreCompletoAttribute(): string
-    {
-        return $this->razon_social ?? $this->nombre_comercial;
+        return $this->belongsTo(Moneda::class, 'moneda_preferida_id');
     }
 
     /**
-     * Get all available emails for this client (main + contact + additional)
+     * @return BelongsTo<Incoterm, Cliente>
      */
-    public function getTodosEmailsAttribute(): array
+    public function incoterm(): BelongsTo
     {
-        $emails = [];
-
-        if ($this->email) {
-            $emails[] = [
-                'email' => $this->email,
-                'tipo' => 'principal',
-                'label' => "Email principal: {$this->email}",
-            ];
-        }
-
-        if ($this->email_contacto && $this->email_contacto !== $this->email) {
-            $emails[] = [
-                'email' => $this->email_contacto,
-                'tipo' => 'contacto',
-                'label' => "Email contacto: {$this->email_contacto}",
-            ];
-        }
-
-        foreach ($this->emailsAdicionalesActivos as $adicional) {
-            $emails[] = [
-                'email' => $adicional->email,
-                'tipo' => 'adicional',
-                'id' => $adicional->id,
-                'label' => $adicional->nombre
-                    ? "{$adicional->nombre} ({$adicional->email})"
-                    : $adicional->email,
-                'por_defecto' => $adicional->enviar_facturas_por_defecto,
-            ];
-        }
-
-        return $emails;
+        return $this->belongsTo(Incoterm::class);
     }
 
-    // Scopes
-    public function scopeActivos($query)
+    /**
+     * @return BelongsTo<Puerto, Cliente>
+     */
+    public function puerto(): BelongsTo
+    {
+        return $this->belongsTo(Puerto::class);
+    }
+
+    /**
+     * @return BelongsTo<TipoPago, Cliente>
+     */
+    public function tipoPago(): BelongsTo
+    {
+        return $this->belongsTo(TipoPago::class);
+    }
+
+    /**
+     * @return BelongsTo<PlantillaFactura, Cliente>
+     */
+    public function plantilla(): BelongsTo
+    {
+        return $this->belongsTo(PlantillaFactura::class, 'plantilla_factura_id');
+    }
+
+    /**
+     * @param  Builder<Cliente>  $query
+     * @return Builder<Cliente>
+     */
+    public function scopeActivos(Builder $query): Builder
     {
         return $query->where('activo', true);
     }
 
-    public function scopePublicos($query)
+    /**
+     * @param  Builder<Cliente>  $query
+     * @return Builder<Cliente>
+     */
+    public function scopeNacionales(Builder $query): Builder
     {
-        return $query->where('tipo', 'publico');
+        return $query->where('tipo', 'nacional');
     }
 
-    public function scopePrivados($query)
+    /**
+     * @param  Builder<Cliente>  $query
+     * @return Builder<Cliente>
+     */
+    public function scopeInternacionales(Builder $query): Builder
     {
-        return $query->where('tipo', 'privado');
+        return $query->where('tipo', 'internacional');
+    }
+
+    public function esInternacional(): bool
+    {
+        return $this->tipo === 'internacional';
     }
 }

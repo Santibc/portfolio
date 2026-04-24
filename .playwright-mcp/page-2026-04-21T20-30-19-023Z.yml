@@ -1,0 +1,58 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link " CLC&CIA" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: 
+        - generic [ref=e8]: CLC&CIA
+      - generic [ref=e9]:
+        - heading "Iniciar sesión" [level=1] [ref=e10]
+        - paragraph [ref=e11]: Accede a tu cuenta para continuar.
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: Correo
+          - generic [ref=e15]:
+            - generic: 
+            - textbox "Correo" [active] [ref=e16]:
+              - /placeholder: tu@email.com
+              - text: admin@admin.com
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: Contraseña
+            - link "¿Olvidaste tu contraseña?" [ref=e20] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/forgot-password
+          - generic [ref=e21]:
+            - generic: 
+            - textbox "Contraseña" [ref=e22]:
+              - /placeholder: ••••••••
+              - text: "12345678"
+            - button "Mostrar contraseña" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]: 
+              - text: 
+        - generic [ref=e25]:
+          - checkbox "Recordarme" [ref=e26]
+          - text: Recordarme
+        - button "Ingresar " [ref=e27] [cursor=pointer]:
+          - text: Ingresar
+          - generic [ref=e28]: 
+      - paragraph [ref=e29]:
+        - text: ¿No tienes cuenta?
+        - link "Regístrate" [ref=e30] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/register
+    - generic [ref=e31]: © 2026 CLC&CIA. Todos los derechos reservados.
+  - generic [ref=e36]:
+    - generic [ref=e37]: Bienvenido
+    - heading "Construye algo extraordinario." [level=2] [ref=e39]:
+      - text: Construye algo
+      - text: extraordinario.
+    - paragraph [ref=e40]: Una base moderna lista para que empieces tu próximo proyecto con estilo.
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]: 
+        - generic [ref=e44]: Rápido
+      - generic [ref=e45]:
+        - generic [ref=e46]: 
+        - generic [ref=e47]: Seguro
+      - generic [ref=e48]:
+        - generic [ref=e49]: 
+        - generic [ref=e50]: Elegante

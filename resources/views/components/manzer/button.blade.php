@@ -3,44 +3,36 @@
     'type' => 'button',
     'icon' => null,
     'size' => 'md',
-    'href' => null
+    'href' => null,
 ])
 
 @php
-    $classes = match($variant) {
-        'primary' => 'btn btn-primary',
-        'secondary' => 'btn btn-secondary',
-        'success' => 'btn btn-success',
-        'danger' => 'btn btn-danger',
-        'warning' => 'btn btn-warning',
-        'info' => 'btn btn-info',
-        'outline' => 'btn btn-outline-primary',
-        'outline-primary' => 'btn btn-outline-primary',
-        'outline-secondary' => 'btn btn-outline-secondary',
-        'outline-danger' => 'btn btn-outline-danger',
-        'outline-success' => 'btn btn-outline-success',
-        'outline-warning' => 'btn btn-outline-warning',
-        'outline-info' => 'btn btn-outline-info',
-        'icon' => 'btn-icon',
-        default => 'btn btn-primary'
+    $base = match ($variant) {
+        'primary' => 'btn-primary',
+        'secondary' => 'btn-secondary',
+        'danger' => 'btn-danger',
+        'ghost' => 'btn-ghost',
+        'outline' => 'btn bg-white text-primary-600 ring-1 ring-inset ring-primary-200 hover:bg-primary-50 dark:bg-transparent dark:text-primary-400 dark:ring-primary-900 dark:hover:bg-primary-950',
+        default => 'btn-primary',
     };
 
-    if ($size === 'sm') $classes .= ' btn-sm';
-    if ($size === 'lg') $classes .= ' btn-lg';
+    $sizeCls = match ($size) {
+        'sm' => 'text-xs px-3 py-1.5',
+        'lg' => 'text-base px-5 py-2.5',
+        default => '',
+    };
+
+    $classes = trim($base.' '.$sizeCls);
 @endphp
 
-@if($href)
+@if ($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon)
-            <i class="{{ $icon }} me-1"></i>
-        @endif
+        @if ($icon)<i class="bi bi-{{ $icon }}"></i>@endif
         {{ $slot }}
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if($icon)
-            <i class="{{ $icon }} me-1"></i>
-        @endif
+        @if ($icon)<i class="bi bi-{{ $icon }}"></i>@endif
         {{ $slot }}
     </button>
 @endif

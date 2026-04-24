@@ -1,0 +1,224 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - generic "Disponible en Fase 3" [ref=e29]:
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+                - generic [ref=e32]: Fase 3
+            - listitem [ref=e33]:
+              - generic "Disponible en Fase 4" [ref=e34]:
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+                - generic [ref=e37]: Fase 4
+        - generic [ref=e38]:
+          - generic [ref=e39]: Administración
+          - list [ref=e40]:
+            - listitem [ref=e41]:
+              - button " Configuración " [ref=e42] [cursor=pointer]:
+                - generic [ref=e43]: 
+                - generic [ref=e44]: Configuración
+                - generic [ref=e45]: 
+              - list [ref=e46]:
+                - listitem [ref=e47]:
+                  - link " Resumen" [ref=e48] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Resumen
+                - listitem [ref=e51]:
+                  - link " Empresa y banco" [ref=e52] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e53]: 
+                    - generic [ref=e54]: Empresa y banco
+                - listitem [ref=e55]:
+                  - link " Monedas" [ref=e56] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e57]: 
+                    - generic [ref=e58]: Monedas
+                - listitem [ref=e59]:
+                  - link " Impuestos" [ref=e60] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e61]: 
+                    - generic [ref=e62]: Impuestos
+                - listitem [ref=e63]:
+                  - link " Tipos de descuento" [ref=e64] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e65]: 
+                    - generic [ref=e66]: Tipos de descuento
+                - listitem [ref=e67]:
+                  - link " Incoterms" [ref=e68] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Incoterms
+                - listitem [ref=e71]:
+                  - link "Puertos" [ref=e72] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e73]: Puertos
+                - listitem [ref=e74]:
+                  - link " Tipos de pago" [ref=e75] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e76]: 
+                    - generic [ref=e77]: Tipos de pago
+            - listitem [ref=e78]:
+              - generic "Disponible en Fase 2" [ref=e79]:
+                - generic [ref=e80]: 
+                - generic [ref=e81]: Integración Siigo
+                - generic [ref=e82]: Fase 2
+            - listitem [ref=e83]:
+              - generic "Disponible en Fase 5" [ref=e84]:
+                - generic [ref=e85]: 
+                - generic [ref=e86]: Plantillas de factura
+                - generic [ref=e87]: Fase 5
+        - generic [ref=e88]:
+          - generic [ref=e89]: Cuenta
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - link " Mi perfil" [ref=e92] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e93]: 
+                - generic [ref=e94]: Mi perfil
+      - button " Cerrar sesión" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: 
+        - generic [ref=e99]: Cerrar sesión
+    - generic [ref=e100]:
+      - banner [ref=e101]:
+        - text: 
+        - generic [ref=e102]:
+          - button "Cambiar tema" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]: 
+            - text: 
+          - generic [ref=e105]:
+            - button "A Administrador Administrador " [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: A
+              - generic [ref=e108]:
+                - generic [ref=e109]: Administrador
+                - generic [ref=e110]: Administrador
+              - generic [ref=e111]: 
+            - text:  
+      - main [ref=e112]:
+        - alert [ref=e113]:
+          - generic [ref=e114]: 
+          - paragraph [ref=e115]: Moneda creada.
+          - button "Cerrar" [ref=e116] [cursor=pointer]:
+            - generic [ref=e117]: 
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - heading "Monedas" [level=1] [ref=e120]
+            - paragraph [ref=e121]: Administra las monedas disponibles para facturación.
+          - generic [ref=e122]:
+            - link " Volver" [ref=e123] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin
+              - generic [ref=e124]: 
+              - text: Volver
+            - link " Nueva moneda" [ref=e125] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/monedas/create
+              - generic [ref=e126]: 
+              - text: Nueva moneda
+        - alert [ref=e128]:
+          - generic [ref=e129]: 
+          - generic [ref=e130]: Moneda creada.
+          - button "Cerrar" [ref=e131] [cursor=pointer]:
+            - generic [ref=e132]: 
+        - table [ref=e135]:
+          - rowgroup [ref=e136]:
+            - row "Código Nombre Símbolo Predeterminada Activa Acciones" [ref=e137]:
+              - columnheader "Código" [ref=e138]
+              - columnheader "Nombre" [ref=e139]
+              - columnheader "Símbolo" [ref=e140]
+              - columnheader "Predeterminada" [ref=e141]
+              - columnheader "Activa" [ref=e142]
+              - columnheader "Acciones" [ref=e143]
+          - rowgroup [ref=e144]:
+            - row "COP Peso Colombiano $ Sí Activa  Editar  Eliminar" [ref=e145]:
+              - cell "COP" [ref=e146]
+              - cell "Peso Colombiano" [ref=e147]
+              - cell "$" [ref=e148]
+              - cell "Sí" [ref=e149]:
+                - generic [ref=e150]: Sí
+              - cell "Activa" [ref=e151]:
+                - generic [ref=e152]: Activa
+              - cell " Editar  Eliminar" [ref=e153]:
+                - generic [ref=e154]:
+                  - link " Editar" [ref=e155] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas/1/edit
+                    - generic [ref=e156]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e158] [cursor=pointer]:
+                    - generic [ref=e159]: 
+                    - text: Eliminar
+            - row "EUR Euro € No Activa  Editar  Eliminar" [ref=e160]:
+              - cell "EUR" [ref=e161]
+              - cell "Euro" [ref=e162]
+              - cell "€" [ref=e163]
+              - cell "No" [ref=e164]:
+                - generic [ref=e165]: "No"
+              - cell "Activa" [ref=e166]:
+                - generic [ref=e167]: Activa
+              - cell " Editar  Eliminar" [ref=e168]:
+                - generic [ref=e169]:
+                  - link " Editar" [ref=e170] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas/3/edit
+                    - generic [ref=e171]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e173] [cursor=pointer]:
+                    - generic [ref=e174]: 
+                    - text: Eliminar
+            - row "GBP Libra Esterlina £ No Activa  Editar  Eliminar" [ref=e175]:
+              - cell "GBP" [ref=e176]
+              - cell "Libra Esterlina" [ref=e177]
+              - cell "£" [ref=e178]
+              - cell "No" [ref=e179]:
+                - generic [ref=e180]: "No"
+              - cell "Activa" [ref=e181]:
+                - generic [ref=e182]: Activa
+              - cell " Editar  Eliminar" [ref=e183]:
+                - generic [ref=e184]:
+                  - link " Editar" [ref=e185] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas/4/edit
+                    - generic [ref=e186]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e188] [cursor=pointer]:
+                    - generic [ref=e189]: 
+                    - text: Eliminar
+            - row "USD Dólar Estadounidense US$ No Activa  Editar  Eliminar" [ref=e190]:
+              - cell "USD" [ref=e191]
+              - cell "Dólar Estadounidense" [ref=e192]
+              - cell "US$" [ref=e193]
+              - cell "No" [ref=e194]:
+                - generic [ref=e195]: "No"
+              - cell "Activa" [ref=e196]:
+                - generic [ref=e197]: Activa
+              - cell " Editar  Eliminar" [ref=e198]:
+                - generic [ref=e199]:
+                  - link " Editar" [ref=e200] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas/2/edit
+                    - generic [ref=e201]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e203] [cursor=pointer]:
+                    - generic [ref=e204]: 
+                    - text: Eliminar

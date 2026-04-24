@@ -1,94 +1,80 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
+    <title>@yield('title', 'Autenticación') · CLC & CIA S.A.S.</title>
 
-        <title>{{ config('app.name', 'Manzer') }}</title>
-        <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-        <!-- Font Awesome -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <style>
-            :root {
-                --manzer-primary: #1E40AF;
-                --manzer-primary-dark: #1E3A8A;
-                --manzer-secondary: #059669;
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (stored === 'dark' || (!stored && prefersDark)) {
+                document.documentElement.classList.add('dark');
             }
+        })();
+    </script>
 
-            .manzer-auth-container {
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 1.5rem;
-                background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 50%, #059669 100%);
-            }
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="min-h-screen">
+    <div class="grid min-h-screen lg:grid-cols-2">
+        {{-- Form side --}}
+        <div class="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16">
+            <div class="mx-auto w-full max-w-md">
+                {{-- Logo CLC & CIA --}}
+                <a href="/" class="mb-8 inline-flex items-center gap-3">
+                    <img src="{{ asset('images/logo.png') }}" alt="CLC & CIA S.A.S." class="h-16 w-16 object-contain">
+                    <div class="leading-tight">
+                        <div class="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">CLC & CIA S.A.S.</div>
+                        <div class="text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Plataforma de facturación</div>
+                    </div>
+                </a>
 
-            .manzer-logo {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                font-size: 2rem;
-                font-weight: 700;
-                color: white;
-                margin-bottom: 2rem;
-            }
-
-            .manzer-logo i {
-                font-size: 2.5rem;
-            }
-
-            .manzer-auth-card {
-                width: 100%;
-                max-width: 28rem;
-                background: white;
-                border-radius: 1rem;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-                padding: 2rem;
-            }
-
-            .manzer-auth-title {
-                text-align: center;
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: #1F2937;
-                margin-bottom: 1.5rem;
-            }
-
-            .manzer-footer {
-                margin-top: 2rem;
-                text-align: center;
-                color: rgba(255, 255, 255, 0.8);
-                font-size: 0.875rem;
-            }
-        </style>
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="manzer-auth-container">
-            <div class="manzer-logo">
-                <img src="{{ asset('images/logo.png') }}" alt="Manzer Logo" style="height: 50px; margin-right: 12px;">
-                <span>Manzer</span>
-            </div>
-
-            <div class="manzer-auth-card">
                 {{ $slot }}
             </div>
 
-            <div class="manzer-footer">
-                <p>&copy; {{ date('Y') }} Manzer</p>
+            <div class="mx-auto mt-10 w-full max-w-md text-center text-xs text-zinc-400 dark:text-zinc-500">
+                © {{ date('Y') }} CLC & CIA S.A.S. · NIT 901.249.576-9
             </div>
         </div>
-    </body>
+
+        {{-- Visual side --}}
+        <div class="relative hidden overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-primary-800 lg:flex lg:items-center lg:justify-center">
+            <div class="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
+            <div class="absolute -right-20 -bottom-20 h-96 w-96 rounded-full bg-primary-300/20 blur-3xl"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),transparent_60%)]"></div>
+
+            <div class="relative z-10 max-w-md px-12 text-white">
+                <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+                    <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+                    Facturación DIAN · Multi-moneda
+                </div>
+                <h2 class="text-4xl font-bold leading-tight tracking-tight">
+                    Factura a tus clientes<br/>del mundo entero.
+                </h2>
+                <p class="mt-4 text-lg text-white/80">
+                    Gestiona productos, clientes nacionales e internacionales, plantillas personalizadas y facturación electrónica DIAN — todo desde un solo lugar.
+                </p>
+
+                <div class="mt-10 grid grid-cols-3 gap-3">
+                    <div class="rounded-xl bg-white/10 p-4 backdrop-blur">
+                        <i class="bi bi-currency-exchange text-2xl"></i>
+                        <div class="mt-2 text-xs font-medium">Multi-moneda</div>
+                    </div>
+                    <div class="rounded-xl bg-white/10 p-4 backdrop-blur">
+                        <i class="bi bi-file-earmark-check text-2xl"></i>
+                        <div class="mt-2 text-xs font-medium">DIAN vía Siigo</div>
+                    </div>
+                    <div class="rounded-xl bg-white/10 p-4 backdrop-blur">
+                        <i class="bi bi-palette text-2xl"></i>
+                        <div class="mt-2 text-xs font-medium">Plantillas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

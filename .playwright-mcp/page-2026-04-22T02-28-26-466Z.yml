@@ -1,0 +1,200 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC & CIA" [ref=e6]
+        - generic [ref=e7]:
+          - generic [ref=e8]: CLC & CIA
+          - generic [ref=e9]: S.A.S.
+      - navigation "Navegación principal" [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: General
+          - list [ref=e14]:
+            - listitem [ref=e15]:
+              - link " Inicio" [ref=e16] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e17]: 
+                - generic [ref=e18]: Inicio
+        - generic [ref=e19]:
+          - generic [ref=e20]: Operación
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link " Facturas" [ref=e23] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e24]: 
+                - generic [ref=e25]: Facturas
+        - generic [ref=e26]:
+          - generic [ref=e27]: Catálogos
+          - list [ref=e28]:
+            - listitem [ref=e29]:
+              - link " Productos" [ref=e30] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e31]: 
+                - generic [ref=e32]: Productos
+            - listitem [ref=e33]:
+              - link " Clientes" [ref=e34] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - list [ref=e45]:
+                - listitem [ref=e46]:
+                  - link " Resumen" [ref=e47] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e48]: 
+                    - generic [ref=e49]: Resumen
+                - listitem [ref=e50]:
+                  - link " Empresa y banco" [ref=e51] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e52]: 
+                    - generic [ref=e53]: Empresa y banco
+                - listitem [ref=e54]:
+                  - link " Monedas" [ref=e55] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e56]: 
+                    - generic [ref=e57]: Monedas
+                - listitem [ref=e58]:
+                  - link " Impuestos" [ref=e59] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e60]: 
+                    - generic [ref=e61]: Impuestos
+                - listitem [ref=e62]:
+                  - link " Tipos de descuento" [ref=e63] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Tipos de descuento
+                - listitem [ref=e66]:
+                  - link " Incoterms" [ref=e67] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e68]: 
+                    - generic [ref=e69]: Incoterms
+                - listitem [ref=e70]:
+                  - link " Puertos" [ref=e71] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e72]: 
+                    - generic [ref=e73]: Puertos
+                - listitem [ref=e74]:
+                  - link " Tipos de pago" [ref=e75] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e76]: 
+                    - generic [ref=e77]: Tipos de pago
+            - listitem [ref=e78]:
+              - link " Integración Siigo" [ref=e79] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e80]: 
+                - generic [ref=e81]: Integración Siigo
+            - listitem [ref=e82]:
+              - link " Plantillas de factura" [ref=e83] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e84]: 
+                - generic [ref=e85]: Plantillas de factura
+        - generic [ref=e86]:
+          - generic [ref=e87]: Cuenta
+          - list [ref=e88]:
+            - listitem [ref=e89]:
+              - link " Mi perfil" [ref=e90] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e91]: 
+                - generic [ref=e92]: Mi perfil
+      - button " Cerrar sesión" [ref=e95] [cursor=pointer]:
+        - generic [ref=e96]: 
+        - generic [ref=e97]: Cerrar sesión
+    - generic [ref=e98]:
+      - banner [ref=e99]:
+        - text: 
+        - generic [ref=e100]:
+          - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 
+            - text: 
+          - generic [ref=e103]:
+            - button "A Administrador Administrador " [ref=e104] [cursor=pointer]:
+              - generic [ref=e105]: A
+              - generic [ref=e106]:
+                - generic [ref=e107]: Administrador
+                - generic [ref=e108]: Administrador
+              - generic [ref=e109]: 
+            - text:  
+      - main [ref=e110]:
+        - alert [ref=e111]:
+          - generic [ref=e112]: 
+          - paragraph [ref=e113]: Plantilla actualizada.
+          - button "Cerrar" [ref=e114] [cursor=pointer]:
+            - generic [ref=e115]: 
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - heading "Plantillas de factura" [level=1] [ref=e118]
+            - paragraph [ref=e119]: Diseña el HTML de la factura que reciben tus clientes. Una plantilla debe ser predeterminada.
+          - generic [ref=e120]:
+            - link " Volver" [ref=e121] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin
+              - generic [ref=e122]: 
+              - text: Volver
+            - link " Nueva plantilla" [ref=e123] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/plantillas/create
+              - generic [ref=e124]: 
+              - text: Nueva plantilla
+        - alert [ref=e126]:
+          - generic [ref=e127]: 
+          - generic [ref=e128]: Plantilla actualizada.
+          - button "Cerrar" [ref=e129] [cursor=pointer]:
+            - generic [ref=e130]: 
+        - table [ref=e133]:
+          - rowgroup [ref=e134]:
+            - row "Nombre Descripción Predeterminada Activa Acciones" [ref=e135]:
+              - columnheader "Nombre" [ref=e136]
+              - columnheader "Descripción" [ref=e137]
+              - columnheader "Predeterminada" [ref=e138]
+              - columnheader "Activa" [ref=e139]
+              - columnheader "Acciones" [ref=e140]
+          - rowgroup [ref=e141]:
+            - row "Plantilla genérica Factura estándar para cualquier cliente. Marcada como predeterminada. Default Activa  Editar" [ref=e142]:
+              - cell "Plantilla genérica" [ref=e143]
+              - cell "Factura estándar para cualquier cliente. Marcada como predeterminada." [ref=e144]
+              - cell "Default" [ref=e145]:
+                - generic [ref=e146]: Default
+              - cell "Activa" [ref=e147]:
+                - generic [ref=e148]: Activa
+              - cell " Editar" [ref=e149]:
+                - link " Editar" [ref=e151] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/plantillas/1/edit
+                  - generic [ref=e152]: 
+                  - text: Editar
+            - row "Consumidor final internacional (USD + TRM) Factura para consumidor final fuera de Colombia con tasa representativa y total COP. Activa  Editar  Eliminar" [ref=e153]:
+              - cell "Consumidor final internacional (USD + TRM)" [ref=e154]
+              - cell "Factura para consumidor final fuera de Colombia con tasa representativa y total COP." [ref=e155]
+              - cell [ref=e156]
+              - cell "Activa" [ref=e157]:
+                - generic [ref=e158]: Activa
+              - cell " Editar  Eliminar" [ref=e159]:
+                - generic [ref=e160]:
+                  - link " Editar" [ref=e161] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/plantillas/3/edit
+                    - generic [ref=e162]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e164] [cursor=pointer]:
+                    - generic [ref=e165]: 
+                    - text: Eliminar
+            - row "Mytheresa (EUR, internacional) Plantilla para clientes tipo Mytheresa, con separación SOLD TO / SHIP TO, EUR, taxes/insurance/freight separados y bloque bancario. Activa  Editar  Eliminar" [ref=e166]:
+              - cell "Mytheresa (EUR, internacional)" [ref=e167]
+              - cell "Plantilla para clientes tipo Mytheresa, con separación SOLD TO / SHIP TO, EUR, taxes/insurance/freight separados y bloque bancario." [ref=e168]
+              - cell [ref=e169]
+              - cell "Activa" [ref=e170]:
+                - generic [ref=e171]: Activa
+              - cell " Editar  Eliminar" [ref=e172]:
+                - generic [ref=e173]:
+                  - link " Editar" [ref=e174] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/plantillas/2/edit
+                    - generic [ref=e175]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e177] [cursor=pointer]:
+                    - generic [ref=e178]: 
+                    - text: Eliminar

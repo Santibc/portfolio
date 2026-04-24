@@ -1,50 +1,46 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    // Rutas para tus vistas de Blade
-    "./resources/**/*.blade.php",
-    // Rutas para tus archivos JavaScript y Vue (si los usas)
-    "./resources/**/*.js",
-    "./resources/**/*.vue",
-    // Rutas para las vistas de paginación de Laravel
-    "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
-  ],
-
-  theme: {
-    extend: {
-      // Si quieres usar Figtree como fuente sans-serif por defecto y mantener las de Tailwind
-      fontFamily: {
-        sans: ['Figtree', 'sans-serif'], // 'sans-serif' como fallback general
-      },
-          extend: {
-      colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: { /* ... */ },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+    darkMode: 'class',
+    content: [
+        './resources/**/*.blade.php',
+        './resources/**/*.js',
+        './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
+    ],
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            },
+            colors: {
+                // Escala naranja como color primario (matching logo)
+                primary: {
+                    50: '#fff7ed',
+                    100: '#ffedd5',
+                    200: '#fed7aa',
+                    300: '#fdba74',
+                    400: '#fb923c',
+                    500: '#f97316',
+                    600: '#ea580c',
+                    700: '#c2410c',
+                    800: '#9a3412',
+                    900: '#7c2d12',
+                    950: '#431407',
+                },
+            },
+            borderRadius: {
+                xl: '0.875rem',
+                '2xl': '1.125rem',
+            },
+            boxShadow: {
+                soft: '0 1px 2px 0 rgb(0 0 0 / 0.05), 0 1px 3px 0 rgb(0 0 0 / 0.06)',
+                card: '0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.03)',
+            },
+            transitionTimingFunction: {
+                smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            },
         },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        // ... otros colores
-      },
     },
-    },
-  },
-
-  plugins: [
-    // Incluye el plugin de formularios de Tailwind CSS
-    require('@tailwindcss/forms'),
-    // Agrega otros plugins aquí si los necesitas
-  ],
+    plugins: [
+        require('@tailwindcss/forms'),
+    ],
 };

@@ -1,0 +1,272 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - link " Facturas" [ref=e21] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+        - generic [ref=e24]:
+          - generic [ref=e25]: Catálogos
+          - list [ref=e26]:
+            - listitem [ref=e27]:
+              - link " Productos" [ref=e28] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e29]: 
+                - generic [ref=e30]: Productos
+            - listitem [ref=e31]:
+              - link " Clientes" [ref=e32] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e33]: 
+                - generic [ref=e34]: Clientes
+        - generic [ref=e35]:
+          - generic [ref=e36]: Administración
+          - list [ref=e37]:
+            - listitem [ref=e38]:
+              - button " Configuración " [ref=e39] [cursor=pointer]:
+                - generic [ref=e40]: 
+                - generic [ref=e41]: Configuración
+                - generic [ref=e42]: 
+              - text:        
+            - listitem [ref=e43]:
+              - link " Integración Siigo" [ref=e44] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e45]: 
+                - generic [ref=e46]: Integración Siigo
+            - listitem [ref=e47]:
+              - link " Plantillas de factura" [ref=e48] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e49]: 
+                - generic [ref=e50]: Plantillas de factura
+        - generic [ref=e51]:
+          - generic [ref=e52]: Cuenta
+          - list [ref=e53]:
+            - listitem [ref=e54]:
+              - link " Mi perfil" [ref=e55] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e56]: 
+                - generic [ref=e57]: Mi perfil
+      - button " Cerrar sesión" [ref=e60] [cursor=pointer]:
+        - generic [ref=e61]: 
+        - generic [ref=e62]: Cerrar sesión
+    - generic [ref=e63]:
+      - banner [ref=e64]:
+        - text: 
+        - generic [ref=e65]:
+          - button "Cambiar tema" [ref=e66] [cursor=pointer]:
+            - text: 
+            - generic [ref=e67]: 
+          - generic [ref=e68]:
+            - button "A Administrador Administrador " [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: A
+              - generic [ref=e71]:
+                - generic [ref=e72]: Administrador
+                - generic [ref=e73]: Administrador
+              - generic [ref=e74]: 
+            - text:  
+      - main [ref=e75]:
+        - alert [ref=e76]:
+          - generic [ref=e77]: 
+          - paragraph [ref=e78]: Borrador creado.
+          - button "Cerrar" [ref=e79] [cursor=pointer]:
+            - generic [ref=e80]: 
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - heading "Factura REM-2026-0001" [level=1] [ref=e84]
+              - paragraph [ref=e85]: Revisa o edita los datos de la factura.
+            - generic [ref=e86]:
+              - generic [ref=e87]: Borrador
+              - link " Volver" [ref=e88] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e89]: 
+                - text: Volver
+              - link " Previsualizar PDF" [ref=e90] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas/1/previsualizar
+                - generic [ref=e91]: 
+                - text: Previsualizar PDF
+              - link " Descargar PDF" [ref=e92] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas/1/pdf
+                - generic [ref=e93]: 
+                - text: Descargar PDF
+          - alert [ref=e95]:
+            - generic [ref=e96]: 
+            - generic [ref=e97]: Borrador creado.
+            - button "Cerrar" [ref=e98] [cursor=pointer]:
+              - generic [ref=e99]: 
+          - generic [ref=e100]:
+            - group [ref=e101]:
+              - generic [ref=e102]:
+                - generic [ref=e103]:
+                  - generic [ref=e104]: 
+                  - heading "Datos generales" [level=2] [ref=e105]
+                - generic [ref=e106]:
+                  - generic [ref=e107]:
+                    - generic [ref=e108]:
+                      - generic [ref=e109]: 
+                      - text: Cliente *
+                    - combobox " Cliente *" [ref=e110]:
+                      - option "Seleccionar cliente…"
+                      - option "Mytheresa International Service GmbH" [selected]
+                  - generic [ref=e111]:
+                    - generic [ref=e112]:
+                      - generic [ref=e113]: 
+                      - text: Plantilla
+                    - combobox " Plantilla" [ref=e114]:
+                      - option "Usar plantilla del cliente/default"
+                      - option "Plantilla genérica" [selected]
+                      - option "Mytheresa (EUR, internacional)"
+                      - option "Consumidor final internacional (USD + TRM)"
+                  - generic [ref=e115]:
+                    - generic [ref=e116]:
+                      - generic [ref=e117]: 
+                      - text: Fecha *
+                    - textbox " Fecha *" [ref=e118]: 2026-04-21
+                  - generic [ref=e119]:
+                    - generic [ref=e120]:
+                      - generic [ref=e121]: 
+                      - text: Vencimiento
+                    - textbox " Vencimiento" [ref=e122]
+                  - generic [ref=e123]:
+                    - generic [ref=e124]:
+                      - generic [ref=e125]: 
+                      - text: Moneda *
+                    - combobox " Moneda *" [ref=e126]:
+                      - option "COP"
+                      - option "EUR" [selected]
+                      - option "USD"
+                  - generic [ref=e127]:
+                    - generic [ref=e128]:
+                      - generic [ref=e129]: 
+                      - text: Tasa de cambio
+                    - spinbutton " Tasa de cambio" [ref=e130]: "4200.0000"
+                    - paragraph [ref=e131]: Tasa COP por unidad de moneda (solo si moneda ≠ COP).
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - generic [ref=e134]: 
+                  - heading "Configuración" [level=2] [ref=e135]
+                - generic [ref=e136]:
+                  - 'checkbox "Generar factura electrónica ante la DIAN (vía Siigo) Si está activa, al emitir la factura se enviará a Siigo. Nota: Siigo/DIAN siempre recibe en COP — usa la tasa de cambio de arriba." [ref=e137]'
+                  - generic [ref=e138]:
+                    - generic [ref=e139]: Generar factura electrónica ante la DIAN (vía Siigo)
+                    - generic [ref=e140]: "Si está activa, al emitir la factura se enviará a Siigo. Nota: Siigo/DIAN siempre recibe en COP — usa la tasa de cambio de arriba."
+              - generic [ref=e141]:
+                - generic [ref=e142]:
+                  - generic [ref=e143]:
+                    - generic [ref=e144]: 
+                    - heading "Líneas de factura" [level=2] [ref=e145]
+                    - generic [ref=e146]: 1 línea
+                  - button " Línea manual" [ref=e147] [cursor=pointer]:
+                    - generic [ref=e148]: 
+                    - text: Línea manual
+                - generic [ref=e149]:
+                  - generic [ref=e150]:
+                    - generic [ref=e151]: 
+                    - text: Agregar desde catálogo
+                  - textbox " Agregar desde catálogo" [ref=e152]:
+                    - /placeholder: Buscar por referencia, descripción o color…
+                - table [ref=e154]:
+                  - rowgroup [ref=e155]:
+                    - row "Ref. Descripción Color Cant. P. Unit. Desc. IVA % Total" [ref=e156]:
+                      - columnheader "Ref." [ref=e157]
+                      - columnheader "Descripción" [ref=e158]
+                      - columnheader "Color" [ref=e159]
+                      - columnheader "Cant." [ref=e160]
+                      - columnheader "P. Unit." [ref=e161]
+                      - columnheader "Desc." [ref=e162]
+                      - columnheader "IVA %" [ref=e163]
+                      - columnheader "Total" [ref=e164]
+                      - columnheader [ref=e165]
+                  - rowgroup [ref=e166]:
+                    - row "25C185 ERES DRESS HIBISCUS 149,64 Eliminar línea" [ref=e167]:
+                      - cell "25C185" [ref=e168]:
+                        - textbox "REF-001" [ref=e169]: 25C185
+                      - cell "ERES DRESS" [ref=e170]:
+                        - textbox "Descripción" [ref=e171]: ERES DRESS
+                      - cell "HIBISCUS" [ref=e172]:
+                        - textbox "—" [ref=e173]: HIBISCUS
+                      - cell [ref=e174]:
+                        - spinbutton [ref=e175]: "1"
+                      - cell [ref=e176]:
+                        - spinbutton [ref=e177]: "149.64"
+                      - cell [ref=e178]:
+                        - spinbutton [ref=e179]: "0"
+                      - cell [ref=e180]:
+                        - spinbutton [ref=e181]: "0"
+                      - cell "149,64" [ref=e182]
+                      - cell "Eliminar línea" [ref=e183]:
+                        - button "Eliminar línea" [ref=e184] [cursor=pointer]:
+                          - generic [ref=e185]: 
+                - text:   
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - generic [ref=e188]: 
+                  - heading "Totales" [level=2] [ref=e189]
+                - generic [ref=e190]:
+                  - generic [ref=e191]:
+                    - generic [ref=e192]:
+                      - generic [ref=e193]:
+                        - generic [ref=e194]: 
+                        - text: Flete
+                      - spinbutton " Flete" [ref=e195]: "0"
+                    - generic [ref=e196]:
+                      - generic [ref=e197]:
+                        - generic [ref=e198]: 
+                        - text: Seguro
+                      - spinbutton " Seguro" [ref=e199]: "0"
+                  - generic [ref=e201]:
+                    - generic [ref=e202]:
+                      - term [ref=e203]: Subtotal
+                      - definition [ref=e204]: 149,64
+                    - generic [ref=e205]:
+                      - term [ref=e206]: Descuento
+                      - definition [ref=e207]: "-0,00"
+                    - generic [ref=e208]:
+                      - term [ref=e209]: IVA
+                      - definition [ref=e210]: 0,00
+                    - generic [ref=e211]:
+                      - term [ref=e212]: Flete
+                      - definition [ref=e213]: 0,00
+                    - generic [ref=e214]:
+                      - term [ref=e215]: Seguro
+                      - definition [ref=e216]: 0,00
+                    - generic [ref=e218]:
+                      - term [ref=e219]: TOTAL
+                      - definition [ref=e220]: 149,64
+                    - generic [ref=e221]:
+                      - term [ref=e222]: Total COP
+                      - definition [ref=e223]: $ 628.488,00
+              - generic [ref=e224]:
+                - generic [ref=e225]:
+                  - generic [ref=e226]: 
+                  - heading "Observaciones" [level=2] [ref=e227]
+                - generic [ref=e228]:
+                  - generic [ref=e229]: Observaciones
+                  - textbox "Observaciones" [ref=e230]:
+                    - /placeholder: Notas visibles en la factura (condiciones, instrucciones, agradecimiento…).
+            - generic [ref=e231]:
+              - link "Cancelar" [ref=e232] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+              - button " Guardar" [ref=e233] [cursor=pointer]:
+                - generic [ref=e234]: 
+                - text: Guardar
+          - button " Emitir factura" [ref=e236] [cursor=pointer]:
+            - generic [ref=e237]: 
+            - text: Emitir factura

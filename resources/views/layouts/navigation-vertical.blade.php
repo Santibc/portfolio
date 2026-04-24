@@ -1,361 +1,231 @@
-<nav class="sidebar-nav">
-    {{-- Dashboard --}}
-    <div class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-        <a href="{{ route('dashboard') }}" class="nav-link">
-            <i class="bi bi-house-door"></i>
-            <span>Inicio</span>
-        </a>
+<nav aria-label="Navegación principal" class="space-y-6">
+    <div>
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            General
+        </div>
+        <ul class="space-y-1">
+            <li>
+                <a
+                    href="{{ route('dashboard') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('dashboard'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('dashboard'),
+                    ])
+                    @if(request()->routeIs('dashboard')) aria-current="page" @endif
+                >
+                    <i class="bi bi-house-door text-base"></i>
+                    <span>Inicio</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    {{-- Dashboard Encargado - Solo para rol Encargado --}}
-    @role('Encargado')
-    <div class="nav-item {{ request()->routeIs('encargado.dashboard') ? 'active' : '' }}">
-        <a href="{{ route('encargado.dashboard') }}" class="nav-link">
-            <i class="bi bi-speedometer2"></i>
-            <span>Mi Panel</span>
-        </a>
-    </div>
-    @endrole
-
-    {{-- Portal del Trabajador - Solo para rol Trabajador --}}
-    @role('Trabajador')
-    <div class="nav-item {{ request()->routeIs('trabajador.dashboard*') ? 'active' : '' }}">
-        <a href="{{ route('trabajador.dashboard') }}" class="nav-link">
-            <i class="bi bi-person-badge"></i>
-            <span>Mi Portal</span>
-        </a>
-    </div>
-    @endrole
-
-    {{-- Dashboard Admin - Solo para rol Administrador --}}
-    @role('Administrador')
-    <div class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <a href="{{ route('admin.dashboard') }}" class="nav-link">
-            <i class="bi bi-graph-up"></i>
-            <span>Dashboard Admin</span>
-        </a>
-    </div>
-    @endrole
-
-    @php
-        $user = Auth::user();
-        $isAdmin = $user->hasRole('Administrador');
-        $canVerTrabajadores = $user->can('ver_trabajadores');
-        $canVerCuadrillas = $user->can('ver_cuadrillas');
-        $canVerClientes = $user->can('ver_clientes');
-        $canVerObras = $user->can('ver_obras');
-        $canVerFichajes = $user->can('ver_fichajes');
-        $canVerPartesDiarios = $user->can('ver_partes');
-        $canVerMaquinaria = $user->can('ver_maquinaria');
-        $canVerVehiculos = $user->can('ver_vehiculos');
-        $canVerSubcontratas = $user->can('ver_subcontratas');
-    @endphp
-
-    {{-- SECCIÓN COMERCIAL - Solo si tiene permiso de clientes --}}
-    @if($canVerClientes)
-        <div class="nav-section-title">Comercial</div>
-
-        @can('ver_clientes')
-        <div class="nav-item {{ request()->routeIs('clientes.*') ? 'active' : '' }}">
-            <a href="{{ route('clientes.index') }}" class="nav-link">
-                <i class="bi bi-building"></i>
-                <span>Clientes</span>
-            </a>
+    <div>
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            Operación
         </div>
-        @endcan
-    @endif
-
-    {{-- SECCIÓN ORGANIZACIÓN - Todos los usuarios con permiso --}}
-    @can('ver_tableros')
-        <div class="nav-section-title">Organizacion</div>
-
-        <div class="nav-item {{ request()->routeIs('tableros.*') ? 'active' : '' }}">
-            <a href="{{ route('tableros.index') }}" class="nav-link">
-                <i class="bi bi-kanban"></i>
-                <span>Tableros</span>
-            </a>
-        </div>
-    @endcan
-
-    {{-- SECCIÓN OPERACIONES - Solo si tiene permiso de obras, partes, maquinaria, vehiculos o subcontratas --}}
-    @if($canVerObras || $canVerPartesDiarios || $canVerMaquinaria || $canVerVehiculos || $canVerSubcontratas)
-        <div class="nav-section-title">Operaciones</div>
-
-        @can('ver_obras')
-        <div class="nav-item {{ request()->routeIs('obras.*') ? 'active' : '' }}">
-            <a href="{{ route('obras.index') }}" class="nav-link">
-                <i class="bi bi-geo-alt-fill"></i>
-                <span>Obras</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_partes')
-        <div class="nav-item {{ request()->routeIs('partes-diarios.*') ? 'active' : '' }}">
-            <a href="{{ route('partes-diarios.index') }}" class="nav-link">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Partes Diarios</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_maquinaria')
-        <div class="nav-item {{ request()->routeIs('maquinaria.*') ? 'active' : '' }}">
-            <a href="{{ route('maquinaria.index') }}" class="nav-link">
-                <i class="bi bi-tools"></i>
-                <span>Maquinaria</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_vehiculos')
-        <div class="nav-item {{ request()->routeIs('vehiculos.*') ? 'active' : '' }}">
-            <a href="{{ route('vehiculos.index') }}" class="nav-link">
-                <i class="bi bi-truck"></i>
-                <span>Vehiculos</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_subcontratas')
-        <div class="nav-item {{ request()->routeIs('subcontratas.*') ? 'active' : '' }}">
-            <a href="{{ route('subcontratas.index') }}" class="nav-link">
-                <i class="bi bi-briefcase-fill"></i>
-                <span>Subcontratas</span>
-            </a>
-        </div>
-        @endcan
-    @endif
-
-    {{-- SECCIÓN RECURSOS HUMANOS - Solo si tiene algún permiso --}}
-    @if($canVerTrabajadores || $canVerCuadrillas || $canVerFichajes)
-        <div class="nav-section-title">Recursos Humanos</div>
-
-        @can('ver_trabajadores')
-        <div class="nav-item {{ request()->routeIs('trabajadores.*') && !request()->routeIs('trabajadores.bonos.*') ? 'active' : '' }}">
-            <a href="{{ route('trabajadores.index') }}" class="nav-link">
-                <i class="bi bi-people-fill"></i>
-                <span>Trabajadores</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_cuadrillas')
-        <div class="nav-item {{ request()->routeIs('cuadrillas.*') ? 'active' : '' }}">
-            <a href="{{ route('cuadrillas.index') }}" class="nav-link">
-                <i class="bi bi-diagram-3"></i>
-                <span>Cuadrillas</span>
-            </a>
-        </div>
-        @endcan
-
-        @can('ver_fichajes')
-        <div class="nav-item {{ request()->routeIs('fichajes.*') ? 'active' : '' }}">
-            <a href="{{ route('fichajes.index') }}" class="nav-link">
-                <i class="bi bi-clock-history"></i>
-                <span>Fichajes</span>
-            </a>
-        </div>
-        @endcan
-
-        @role('Administrador|Contabilidad')
-        <div class="nav-item {{ request()->routeIs('trabajadores.bonos.*') ? 'active' : '' }}">
-            <a href="{{ route('trabajadores.bonos.index') }}" class="nav-link">
-                <i class="bi bi-gift"></i>
-                <span>Bonos y Primas</span>
-            </a>
-        </div>
-        @endrole
-    @endif
-
-    {{-- SECCIÓN PREVENCIÓN - Admin, RRHH, Encargado, Contabilidad --}}
-    @role('Administrador|RRHH|Encargado|Contabilidad')
-        <div class="nav-section-title">Prevención</div>
-
-        <div class="nav-item {{ request()->routeIs('epi-inventario.*') ? 'active' : '' }}">
-            <a href="{{ route('epi-inventario.index') }}" class="nav-link">
-                <i class="bi bi-shield-check"></i>
-                <span>Inventario EPIs</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('epi-entregas.*') ? 'active' : '' }}">
-            <a href="{{ route('epi-entregas.index') }}" class="nav-link">
-                <i class="bi bi-arrow-left-right"></i>
-                <span>Entregas EPIs</span>
-            </a>
-        </div>
-
-        @role('Administrador|RRHH|Encargado')
-        <div class="nav-item {{ request()->routeIs('epi-catalogo.*') ? 'active' : '' }}">
-            <a href="{{ route('epi-catalogo.index') }}" class="nav-link">
-                <i class="bi bi-list-check"></i>
-                <span>Catálogo EPIs</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('formacion-tipos.*') ? 'active' : '' }}">
-            <a href="{{ route('formacion-tipos.index') }}" class="nav-link">
-                <i class="bi bi-mortarboard"></i>
-                <span>Tipos Formación</span>
-            </a>
-        </div>
-        @endrole
-    @endrole
-
-    {{-- SECCIÓN ALERTAS - Todos los usuarios autenticados --}}
-    <div class="nav-section-title">Alertas</div>
-
-    <div class="nav-item {{ request()->routeIs('alertas.*') && !request()->routeIs('alertas.configuracion.*') ? 'active' : '' }}">
-        <a href="{{ route('alertas.index') }}" class="nav-link d-flex justify-content-between align-items-center">
-            <span>
-                <i class="bi bi-bell"></i>
-                <span>Centro de Alertas</span>
-            </span>
-            @if(isset($alertasNoLeidas) && $alertasNoLeidas > 0)
-                <span class="badge bg-danger rounded-pill">{{ $alertasNoLeidas > 99 ? '99+' : $alertasNoLeidas }}</span>
-            @endif
-        </a>
+        <ul class="space-y-1">
+            <li>
+                <a
+                    href="{{ route('facturacion.facturas.index') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('facturacion.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('facturacion.*'),
+                    ])
+                >
+                    <i class="bi bi-receipt text-base"></i>
+                    <span>Facturas</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    @role('Administrador|RRHH')
-    <div class="nav-item {{ request()->routeIs('caducidades-generales.*') ? 'active' : '' }}">
-        <a href="{{ route('caducidades-generales.index') }}" class="nav-link">
-            <i class="bi bi-calendar-x"></i>
-            <span>Caducidades Empresa</span>
-        </a>
+    <div>
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            Catálogos
+        </div>
+        <ul class="space-y-1">
+            <li>
+                <a
+                    href="{{ route('catalogos.productos.index') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('catalogos.productos.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('catalogos.productos.*'),
+                    ])
+                >
+                    <i class="bi bi-box-seam text-base"></i>
+                    <span>Productos</span>
+                </a>
+            </li>
+            <li>
+                <a
+                    href="{{ route('catalogos.clientes.index') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('catalogos.clientes.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('catalogos.clientes.*'),
+                    ])
+                >
+                    <i class="bi bi-people text-base"></i>
+                    <span>Clientes</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <div class="nav-item {{ request()->routeIs('alertas.configuracion.*') ? 'active' : '' }}">
-        <a href="{{ route('alertas.configuracion.index') }}" class="nav-link">
-            <i class="bi bi-sliders"></i>
-            <span>Config. Alertas</span>
-        </a>
+    <div x-data="{ open: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }">
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            Administración
+        </div>
+        <ul class="space-y-1">
+            <li>
+                <button
+                    type="button"
+                    @click="open = !open"
+                    @class([
+                        'w-full group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('admin.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.*'),
+                    ])
+                >
+                    <i class="bi bi-sliders text-base"></i>
+                    <span>Configuración</span>
+                    <i class="bi bi-chevron-down ml-auto text-xs transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+                <ul x-show="open" x-collapse class="ml-6 mt-1 space-y-1 border-l border-zinc-200 pl-2 dark:border-zinc-800">
+                    <li>
+                        <a href="{{ route('admin.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.index'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.index'),
+                        ])>
+                            <i class="bi bi-speedometer2 text-xs"></i>
+                            <span>Resumen</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.empresa.edit') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.empresa.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.empresa.*'),
+                        ])>
+                            <i class="bi bi-building text-xs"></i>
+                            <span>Empresa y banco</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.monedas.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.monedas.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.monedas.*'),
+                        ])>
+                            <i class="bi bi-currency-exchange text-xs"></i>
+                            <span>Monedas</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.impuestos.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.impuestos.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.impuestos.*'),
+                        ])>
+                            <i class="bi bi-percent text-xs"></i>
+                            <span>Impuestos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.tipos-descuento.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.tipos-descuento.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.tipos-descuento.*'),
+                        ])>
+                            <i class="bi bi-tag text-xs"></i>
+                            <span>Tipos de descuento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.incoterms.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.incoterms.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.incoterms.*'),
+                        ])>
+                            <i class="bi bi-globe text-xs"></i>
+                            <span>Incoterms</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.puertos.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.puertos.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.puertos.*'),
+                        ])>
+                            <i class="bi bi-geo-alt-fill text-xs"></i>
+                            <span>Puertos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.tipos-pago.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.tipos-pago.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.tipos-pago.*'),
+                        ])>
+                            <i class="bi bi-cash-coin text-xs"></i>
+                            <span>Tipos de pago</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a
+                    href="{{ route('admin.siigo.edit') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('admin.siigo.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.siigo.*'),
+                    ])
+                >
+                    <i class="bi bi-cloud-arrow-up text-base"></i>
+                    <span>Integración Siigo</span>
+                </a>
+            </li>
+            <li>
+                <a
+                    href="{{ route('admin.plantillas.index') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('admin.plantillas.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.plantillas.*'),
+                    ])
+                >
+                    <i class="bi bi-file-earmark-code text-base"></i>
+                    <span>Plantillas de factura</span>
+                </a>
+            </li>
+        </ul>
     </div>
 
-    <div class="nav-item {{ request()->routeIs('cumpleanos.configuracion.*') ? 'active' : '' }}">
-        <a href="{{ route('cumpleanos.configuracion.index') }}" class="nav-link">
-            <i class="bi bi-envelope-heart"></i>
-            <span>Emails Cumpleaños</span>
-        </a>
-    </div>
-    @endrole
-
-    {{-- SECCIÓN CONTABILIDAD - Solo Administrador o Contabilidad --}}
-    @role('Administrador|Contabilidad')
-        <div class="nav-section-title">Contabilidad</div>
-
-        <div class="nav-item {{ request()->routeIs('ingresos.*') ? 'active' : '' }}">
-            <a href="{{ route('ingresos.index') }}" class="nav-link">
-                <i class="bi bi-arrow-down-circle"></i>
-                <span>Ingresos</span>
-            </a>
+    <div>
+        <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            Cuenta
         </div>
-
-        <div class="nav-item {{ request()->routeIs('gastos.*') ? 'active' : '' }}">
-            <a href="{{ route('gastos.index') }}" class="nav-link">
-                <i class="bi bi-arrow-up-circle"></i>
-                <span>Gastos</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('contratos.*') ? 'active' : '' }}">
-            <a href="{{ route('contratos.index') }}" class="nav-link">
-                <i class="bi bi-file-earmark-text"></i>
-                <span>Contratos</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('facturas.*') ? 'active' : '' }}">
-            <a href="{{ route('facturas.index') }}" class="nav-link">
-                <i class="bi bi-receipt"></i>
-                <span>Facturas</span>
-            </a>
-        </div>
-
-        @role('Administrador')
-        <div class="nav-item {{ request()->routeIs('gasto-categorias.*') ? 'active' : '' }}">
-            <a href="{{ route('gasto-categorias.index') }}" class="nav-link">
-                <i class="bi bi-tags"></i>
-                <span>Categorías Gastos</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('contrato-tipos.*') ? 'active' : '' }}">
-            <a href="{{ route('contrato-tipos.index') }}" class="nav-link">
-                <i class="bi bi-collection"></i>
-                <span>Tipos Contrato</span>
-            </a>
-        </div>
-        @endrole
-    @endrole
-
-    {{-- GASTOS - Encargado --}}
-    @role('Encargado')
-        <div class="nav-section-title">Finanzas</div>
-
-        <div class="nav-item {{ request()->routeIs('gastos.*') ? 'active' : '' }}">
-            <a href="{{ route('gastos.index') }}" class="nav-link">
-                <i class="bi bi-arrow-up-circle"></i>
-                <span>Gastos</span>
-            </a>
-        </div>
-    @endrole
-
-    @if($isAdmin)
-        {{-- SECCIÓN ADMIN --}}
-        <div class="nav-section-title">Administración</div>
-
-        {{-- Temporalmente oculto hasta crear la vista
-        <div class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link">
-                <i class="bi bi-speedometer2"></i>
-                <span>Panel Admin</span>
-            </a>
-        </div>
-        --}}
-
-        <div class="nav-item {{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.usuarios.index') }}" class="nav-link">
-                <i class="bi bi-people"></i>
-                <span>Usuarios</span>
-            </a>
-        </div>
-
-        <div class="nav-item {{ request()->routeIs('documentos-empresa.*') ? 'active' : '' }}">
-            <a href="{{ route('documentos-empresa.index') }}" class="nav-link">
-                <i class="bi bi-folder2"></i>
-                <span>Docs. Empresa</span>
-            </a>
-        </div>
-
-        @can('ver_auditoria')
-        <div class="nav-item {{ request()->routeIs('auditoria.*') ? 'active' : '' }}">
-            <a href="{{ route('auditoria.index') }}" class="nav-link">
-                <i class="bi bi-journal-text"></i>
-                <span>Auditoría</span>
-            </a>
-        </div>
-        @endcan
-    @endif
-
-    {{-- SECCIÓN CUENTA --}}
-    <div class="nav-section-title">Cuenta</div>
-
-    <div class="nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-        <a href="{{ route('profile.edit') }}" class="nav-link">
-            <i class="bi bi-person-gear"></i>
-            <span>Mi Perfil</span>
-        </a>
+        <ul class="space-y-1">
+            <li>
+                <a
+                    href="{{ route('profile.edit') }}"
+                    @class([
+                        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                        'nav-item-active' => request()->routeIs('profile.*'),
+                        'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('profile.*'),
+                    ])
+                    @if(request()->routeIs('profile.*')) aria-current="page" @endif
+                >
+                    <i class="bi bi-person-gear text-base"></i>
+                    <span>Mi perfil</span>
+                </a>
+            </li>
+        </ul>
     </div>
 </nav>
-
-<div class="sidebar-footer">
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit" class="logout-btn">
-            <i class="bi bi-box-arrow-left"></i>
-            <span>Cerrar Sesión</span>
-        </button>
-    </form>
-</div>

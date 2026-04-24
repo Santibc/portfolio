@@ -1,0 +1,86 @@
+- generic [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: 
+        - generic [ref=e8]: CLC&CIA
+      - navigation "Navegación principal" [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: General
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - link " Inicio" [ref=e15] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e16]: 
+                - generic [ref=e17]: Inicio
+        - generic [ref=e18]:
+          - generic [ref=e19]: Cuenta
+          - list [ref=e20]:
+            - listitem [ref=e21]:
+              - link " Mi perfil" [ref=e22] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e23]: 
+                - generic [ref=e24]: Mi perfil
+      - button " Cerrar sesión" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 
+        - generic [ref=e29]: Cerrar sesión
+    - generic [ref=e30]:
+      - banner [ref=e31]:
+        - text: 
+        - generic [ref=e32]:
+          - generic: 
+          - searchbox "Buscar" [ref=e33]
+        - generic [ref=e34]:
+          - button "Cambiar tema" [ref=e35] [cursor=pointer]:
+            - text: 
+            - generic [ref=e36]: 
+          - generic [ref=e37]:
+            - button "A Administrador Administrador " [ref=e38] [cursor=pointer]:
+              - generic [ref=e39]: A
+              - generic [ref=e40]:
+                - generic [ref=e41]: Administrador
+                - generic [ref=e42]: Administrador
+              - generic [ref=e43]: 
+            - text:  
+      - main [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e47]:
+            - heading "Mi perfil" [level=1] [ref=e48]
+            - paragraph [ref=e49]: Gestiona tu información personal y preferencias.
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: A
+                - heading "Administrador" [level=2] [ref=e54]
+                - paragraph [ref=e55]: admin@admin.com
+                - generic [ref=e56]: Administrador
+              - navigation [ref=e57]:
+                - button " Información" [ref=e58] [cursor=pointer]:
+                  - generic [ref=e59]: 
+                  - text: Información
+                - button " Foto de perfil" [ref=e60] [cursor=pointer]:
+                  - generic [ref=e61]: 
+                  - text: Foto de perfil
+                - button " Contraseña" [ref=e62] [cursor=pointer]:
+                  - generic [ref=e63]: 
+                  - text: Contraseña
+                - button " Zona de peligro" [ref=e64] [cursor=pointer]:
+                  - generic [ref=e65]: 
+                  - text: Zona de peligro
+            - generic [ref=e66]:
+              - generic [ref=e67]:
+                - heading "Información del perfil" [level=3] [ref=e68]
+                - paragraph [ref=e69]: Actualiza tu nombre y correo electrónico.
+                - generic [ref=e70]:
+                  - generic [ref=e71]:
+                    - generic [ref=e72]: Nombre
+                    - textbox "Nombre" [active] [ref=e73]: Administrador
+                  - generic [ref=e74]:
+                    - generic [ref=e75]: Correo electrónico
+                    - textbox "Correo electrónico" [ref=e76]: admin@admin.com
+                  - button " Guardar cambios" [ref=e78] [cursor=pointer]:
+                    - generic [ref=e79]: 
+                    - text: Guardar cambios
+              - text:   

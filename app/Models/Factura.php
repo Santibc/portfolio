@@ -2,102 +2,127 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Factura extends Model
 {
+    use HasFactory;
+
     protected $table = 'facturas';
 
     protected $fillable = [
-        'numero',
-        'serie',
+        'numero_interno',
+        'numero_siigo',
+        'cufe',
+        'qr_html',
+        'qr_url',
+        'siigo_response',
+        'siigo_id',
+        'stamp_status',
+        'xml_firmado_path',
+        'fecha',
+        'vencimiento',
         'cliente_id',
-        'obra_id',
-        'fecha_emision',
-        'fecha_vencimiento',
-        'base_imponible',
-        'iva_porcentaje',
-        'iva_importe',
-        'retencion_porcentaje',
-        'retencion_importe',
+        'moneda_id',
+        'tasa_cambio',
+        'subtotal',
+        'descuento_total',
+        'iva_total',
+        'flete',
+        'seguro',
         'total',
+        'total_cop',
+        'observaciones',
+        'po_numero',
+        'awb',
+        'shipper',
         'estado',
-        'fecha_cobro',
+        'es_electronica',
+        'plantilla_factura_id',
         'pdf_path',
-        'notas',
-        'footer_text',
+        'token_publico',
+        'created_by',
+        'emitida_at',
+        'enviada_at',
+    ];
+
+    protected $casts = [
+        'fecha' => 'date',
+        'vencimiento' => 'date',
+        'tasa_cambio' => 'decimal:4',
+        'subtotal' => 'decimal:2',
+        'descuento_total' => 'decimal:2',
+        'iva_total' => 'decimal:2',
+        'flete' => 'decimal:2',
+        'seguro' => 'decimal:2',
+        'total' => 'decimal:2',
+        'total_cop' => 'decimal:2',
+        'es_electronica' => 'bool',
+        'siigo_response' => 'array',
+        'emitida_at' => 'datetime',
+        'enviada_at' => 'datetime',
     ];
 
     /**
-     * Texto por defecto para el pie de página del PDF
+     * @return BelongsTo<Cliente, Factura>
      */
-    const DEFAULT_FOOTER_TEXT = 'MANZER AGROFORESTAL, S.R.L.U. | CIF: B12345678 | Inscrita en el Registro Mercantil de Barcelona';
-
-    protected $casts = [
-        'fecha_emision' => 'date',
-        'fecha_vencimiento' => 'date',
-        'fecha_cobro' => 'date',
-        'base_imponible' => 'decimal:2',
-        'iva_porcentaje' => 'decimal:2',
-        'iva_importe' => 'decimal:2',
-        'retencion_porcentaje' => 'decimal:2',
-        'retencion_importe' => 'decimal:2',
-        'total' => 'decimal:2',
-    ];
-
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class);
     }
 
-    public function obra(): BelongsTo
+    /**
+     * @return BelongsTo<Moneda, Factura>
+     */
+    public function moneda(): BelongsTo
     {
-        return $this->belongsTo(Obra::class);
-    }
-
-    public function lineas(): HasMany
-    {
-        return $this->hasMany(FacturaLinea::class)->orderBy('orden');
-    }
-
-    public function ingresos(): HasMany
-    {
-        return $this->hasMany(Ingreso::class);
-    }
-
-    // Métodos
-    public function calcularTotales(): void
-    {
-        $baseImponible = $this->lineas->sum('importe');
-        $this->base_imponible = $baseImponible;
-        $this->iva_importe = $baseImponible * ($this->iva_porcentaje / 100);
-        $this->retencion_importe = $baseImponible * ($this->retencion_porcentaje / 100);
-        $this->total = $baseImponible + $this->iva_importe - $this->retencion_importe;
+        return $this->belongsTo(Moneda::class);
     }
 
     /**
-     * Accessor para footer_text - devuelve el texto por defecto si es null
+     * @return BelongsTo<PlantillaFactura, Factura>
      */
-    public function getFooterTextAttribute($value)
+    public function plantilla(): BelongsTo
     {
-        return $value ?? self::DEFAULT_FOOTER_TEXT;
+        return $this->belongsTo(PlantillaFactura::class, 'plantilla_factura_id');
     }
 
-    // Scopes
-    public function scopePendientes($query)
+    /**
+     * @return HasMany<FacturaItem>
+     */
+    public function items(): HasMany
     {
-        return $query->whereIn('estado', ['emitida', 'enviada']);
+        return $this->hasMany(FacturaItem::class);
     }
 
-    public function scopeCobradas($query)
+    /**
+     * @return BelongsTo<User, Factura>
+     */
+    public function creador(): BelongsTo
     {
-        return $query->where('estado', 'cobrada');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function scopeDelAnio($query, $anio = null)
+    public function esEditable(): bool
     {
-        return $query->whereYear('fecha_emision', $anio ?? now()->year);
+        return $this->estado === 'borrador';
+    }
+
+    public function yaEmitida(): bool
+    {
+        return in_array($this->estado, ['emitida', 'enviada', 'pagada'], true);
+    }
+
+    /**
+     * @param  Builder<Factura>  $query
+     * @return Builder<Factura>
+     */
+    public function scopeEstado(Builder $query, string $estado): Builder
+    {
+        return $query->where('estado', $estado);
     }
 }

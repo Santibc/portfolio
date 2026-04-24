@@ -1,0 +1,262 @@
+- generic [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC & CIA" [ref=e6]
+        - generic [ref=e7]:
+          - generic [ref=e8]: CLC & CIA
+          - generic [ref=e9]: S.A.S.
+      - navigation "Navegación principal" [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: General
+          - list [ref=e14]:
+            - listitem [ref=e15]:
+              - link " Inicio" [ref=e16] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e17]: 
+                - generic [ref=e18]: Inicio
+        - generic [ref=e19]:
+          - generic [ref=e20]: Operación
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link " Facturas" [ref=e23] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e24]: 
+                - generic [ref=e25]: Facturas
+        - generic [ref=e26]:
+          - generic [ref=e27]: Catálogos
+          - list [ref=e28]:
+            - listitem [ref=e29]:
+              - link " Productos" [ref=e30] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e31]: 
+                - generic [ref=e32]: Productos
+            - listitem [ref=e33]:
+              - link " Clientes" [ref=e34] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - text:        
+            - listitem [ref=e45]:
+              - link " Integración Siigo" [ref=e46] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e47]: 
+                - generic [ref=e48]: Integración Siigo
+            - listitem [ref=e49]:
+              - link " Plantillas de factura" [ref=e50] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e51]: 
+                - generic [ref=e52]: Plantillas de factura
+        - generic [ref=e53]:
+          - generic [ref=e54]: Cuenta
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link " Mi perfil" [ref=e57] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e58]: 
+                - generic [ref=e59]: Mi perfil
+      - button " Cerrar sesión" [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Cerrar sesión
+    - generic [ref=e65]:
+      - banner [ref=e66]:
+        - text: 
+        - generic [ref=e67]:
+          - button "Cambiar tema" [ref=e68] [cursor=pointer]:
+            - generic [ref=e69]: 
+            - text: 
+          - generic [ref=e70]:
+            - button "A Administrador Administrador " [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: A
+              - generic [ref=e73]:
+                - generic [ref=e74]: Administrador
+                - generic [ref=e75]: Administrador
+              - generic [ref=e76]: 
+            - text:  
+      - main [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Facturas" [level=1] [ref=e81]
+              - paragraph [ref=e82]: Borradores, emitidas y anuladas — filtrables por cliente, estado y fecha.
+            - generic [ref=e83]:
+              - link " Volver" [ref=e84] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e85]: 
+                - text: Volver
+              - link " Nueva factura" [ref=e86] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas/create
+                - generic [ref=e87]: 
+                - text: Nueva factura
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]: 
+                - text: Desde
+              - textbox " Desde" [ref=e93]
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: 
+                - text: Hasta
+              - textbox " Hasta" [ref=e97]
+            - generic [ref=e98]:
+              - generic [ref=e99]:
+                - generic [ref=e100]: 
+                - text: Estado
+              - combobox " Estado" [ref=e101]:
+                - option "Todos" [selected]
+                - option "Borrador"
+                - option "Emitida"
+                - option "Enviada"
+                - option "Pagada"
+                - option "Anulada"
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: 
+                - text: Cliente
+              - combobox " Cliente" [ref=e105]:
+                - option "Todos" [selected]
+                - option "Santi"
+            - generic [ref=e106]:
+              - generic [ref=e107]:
+                - generic [ref=e108]: 
+                - text: Electrónica
+              - combobox " Electrónica" [ref=e109]:
+                - option "Todas" [selected]
+                - option "Electrónicas"
+                - option "No electrónicas"
+            - button " Filtrar" [ref=e111] [cursor=pointer]:
+              - generic [ref=e112]: 
+              - text: Filtrar
+          - table [ref=e115]:
+            - rowgroup [ref=e116]:
+              - row "# Fecha Cliente Moneda Total Total COP Estado Electrónica Acciones" [ref=e117]:
+                - columnheader "#" [ref=e118]
+                - columnheader "Fecha" [ref=e119]
+                - columnheader "Cliente" [ref=e120]
+                - columnheader "Moneda" [ref=e121]
+                - columnheader "Total" [ref=e122]
+                - columnheader "Total COP" [ref=e123]
+                - columnheader "Estado" [ref=e124]
+                - columnheader "Electrónica" [ref=e125]
+                - columnheader "Acciones" [ref=e126]
+            - rowgroup [ref=e127]:
+              - row "REM-2026-0003 21/04/2026 Santi Internacional COP $ 119.000,00 $ 119.000 Borrador No Ver PDF Datos de envío Editar Emitir electrónica Eliminar" [ref=e128]:
+                - cell "REM-2026-0003" [ref=e129]
+                - cell "21/04/2026" [ref=e130]
+                - cell "Santi Internacional" [ref=e131]:
+                  - generic [ref=e132]: Santi
+                  - generic [ref=e133]: Internacional
+                - cell "COP" [ref=e134]
+                - cell "$ 119.000,00" [ref=e135]
+                - cell "$ 119.000" [ref=e136]
+                - cell "Borrador" [ref=e137]:
+                  - generic [ref=e138]: Borrador
+                - cell "No" [ref=e139]:
+                  - generic [ref=e140]: "No"
+                - cell "Ver PDF Datos de envío Editar Emitir electrónica Eliminar" [ref=e141]:
+                  - generic [ref=e142]:
+                    - link "Ver PDF" [ref=e143] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/facturacion/facturas/3/pdf
+                      - generic [ref=e144]: 
+                      - text: Ver PDF
+                    - button "Datos de envío" [active] [ref=e145] [cursor=pointer]:
+                      - generic [ref=e146]: 
+                      - text: Envío
+                    - link "Editar" [ref=e147] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/facturacion/facturas/3/edit
+                      - generic [ref=e148]: 
+                      - text: Editar
+                    - button "Emitir electrónica" [ref=e150] [cursor=pointer]:
+                      - generic [ref=e151]: 
+                      - text: Emitir DIAN
+                    - button "Eliminar" [ref=e153] [cursor=pointer]:
+                      - generic [ref=e154]: 
+                      - text: Eliminar
+              - row "REM-2026-0002 21/04/2026 Santi Internacional COP $ 435.000,00 $ 435.000 Emitida No Ver PDF Datos de envío" [ref=e155]:
+                - cell "REM-2026-0002" [ref=e156]
+                - cell "21/04/2026" [ref=e157]
+                - cell "Santi Internacional" [ref=e158]:
+                  - generic [ref=e159]: Santi
+                  - generic [ref=e160]: Internacional
+                - cell "COP" [ref=e161]
+                - cell "$ 435.000,00" [ref=e162]
+                - cell "$ 435.000" [ref=e163]
+                - cell "Emitida" [ref=e164]:
+                  - generic [ref=e165]: Emitida
+                - cell "No" [ref=e166]:
+                  - generic [ref=e167]: "No"
+                - cell "Ver PDF Datos de envío" [ref=e168]:
+                  - generic [ref=e169]:
+                    - link "Ver PDF" [ref=e170] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/facturacion/facturas/2/pdf
+                      - generic [ref=e171]: 
+                      - text: Ver PDF
+                    - button "Datos de envío" [ref=e172] [cursor=pointer]:
+                      - generic [ref=e173]: 
+                      - text: Envío
+              - row "REM-2026-0001 21/04/2026 Santi Internacional COP $ 408.000,00 $ 408.000 Emitida No Ver PDF Datos de envío" [ref=e174]:
+                - cell "REM-2026-0001" [ref=e175]
+                - cell "21/04/2026" [ref=e176]
+                - cell "Santi Internacional" [ref=e177]:
+                  - generic [ref=e178]: Santi
+                  - generic [ref=e179]: Internacional
+                - cell "COP" [ref=e180]
+                - cell "$ 408.000,00" [ref=e181]
+                - cell "$ 408.000" [ref=e182]
+                - cell "Emitida" [ref=e183]:
+                  - generic [ref=e184]: Emitida
+                - cell "No" [ref=e185]:
+                  - generic [ref=e186]: "No"
+                - cell "Ver PDF Datos de envío" [ref=e187]:
+                  - generic [ref=e188]:
+                    - link "Ver PDF" [ref=e189] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/facturacion/facturas/1/pdf
+                      - generic [ref=e190]: 
+                      - text: Ver PDF
+                    - button "Datos de envío" [ref=e191] [cursor=pointer]:
+                      - generic [ref=e192]: 
+                      - text: Envío
+        - dialog [ref=e193]:
+          - generic [ref=e196]:
+            - generic [ref=e197]:
+              - heading " Datos de envío" [level=2] [ref=e198]:
+                - generic [ref=e199]: 
+                - text: Datos de envío
+              - button "" [ref=e200] [cursor=pointer]:
+                - generic [ref=e201]: 
+            - paragraph [ref=e202]: Puedes editar estos campos en cualquier momento — se usan en la plantilla de la factura pero no afectan el timbrado DIAN.
+            - generic [ref=e203]:
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - generic [ref=e206]: 
+                  - text: PO# (Orden de compra)
+                - textbox " PO# (Orden de compra)" [ref=e207]:
+                  - /placeholder: "Ej: PO-2026-04567"
+              - generic [ref=e208]:
+                - generic [ref=e209]:
+                  - generic [ref=e210]: 
+                  - text: AWB (Guía aérea)
+                - textbox " AWB (Guía aérea)" [ref=e211]:
+                  - /placeholder: "Ej: 123-45678901"
+              - generic [ref=e212]:
+                - generic [ref=e213]:
+                  - generic [ref=e214]: 
+                  - text: Shipper (Transportista)
+                - textbox " Shipper (Transportista)" [ref=e215]:
+                  - /placeholder: "Ej: DHL Express"
+            - generic [ref=e216]:
+              - button "Cancelar" [ref=e217] [cursor=pointer]
+              - button " Guardar" [ref=e218] [cursor=pointer]:
+                - generic [ref=e219]: 
+                - text: Guardar

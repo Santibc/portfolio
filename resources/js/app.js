@@ -1,24 +1,37 @@
-import './bootstrap';
 import Alpine from 'alpinejs';
-
-import jQuery from 'jquery';
-window.$ = jQuery;
-window.jQuery = jQuery; // Importante para que funcione DataTables
-
-// DataTables núcleo
-import 'datatables.net-dt';
-
-// Extensiones de botones
-import 'datatables.net-buttons-dt';
-import 'datatables.net-buttons/js/buttons.html5.js';
-import 'datatables.net-buttons/js/buttons.print.js';
-import 'datatables.net-buttons/js/buttons.colVis.js';
 import Swal from 'sweetalert2';
-window.Swal = Swal;
-// Dependencias de exportación
-import jszip from 'jszip';
-window.JSZip = jszip;
 
+// Theme toggle logic — se ejecuta ANTES de Alpine para evitar flash
+(function () {
+    const stored = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+})();
+
+// Alpine data store global para el tema
+document.addEventListener('alpine:init', () => {
+    Alpine.store('theme', {
+        current: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        toggle() {
+            this.current = this.current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', this.current);
+            document.documentElement.classList.toggle('dark', this.current === 'dark');
+        },
+    });
+
+    Alpine.store('sidebar', {
+        open: window.innerWidth >= 1024,
+        toggle() {
+            this.open = !this.open;
+        },
+        close() {
+            this.open = false;
+        },
+    });
+});
 
 window.Alpine = Alpine;
+window.Swal = Swal;
+
 Alpine.start();

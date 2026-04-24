@@ -1,0 +1,358 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC & CIA" [ref=e6]
+        - generic [ref=e7]:
+          - generic [ref=e8]: CLC & CIA
+          - generic [ref=e9]: S.A.S.
+      - navigation "Navegación principal" [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: General
+          - list [ref=e14]:
+            - listitem [ref=e15]:
+              - link " Inicio" [ref=e16] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e17]: 
+                - generic [ref=e18]: Inicio
+        - generic [ref=e19]:
+          - generic [ref=e20]: Operación
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link " Facturas" [ref=e23] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e24]: 
+                - generic [ref=e25]: Facturas
+        - generic [ref=e26]:
+          - generic [ref=e27]: Catálogos
+          - list [ref=e28]:
+            - listitem [ref=e29]:
+              - link " Productos" [ref=e30] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e31]: 
+                - generic [ref=e32]: Productos
+            - listitem [ref=e33]:
+              - link " Clientes" [ref=e34] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - list [ref=e45]:
+                - listitem [ref=e46]:
+                  - link " Resumen" [ref=e47] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e48]: 
+                    - generic [ref=e49]: Resumen
+                - listitem [ref=e50]:
+                  - link " Empresa y banco" [ref=e51] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e52]: 
+                    - generic [ref=e53]: Empresa y banco
+                - listitem [ref=e54]:
+                  - link " Monedas" [ref=e55] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e56]: 
+                    - generic [ref=e57]: Monedas
+                - listitem [ref=e58]:
+                  - link " Impuestos" [ref=e59] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e60]: 
+                    - generic [ref=e61]: Impuestos
+                - listitem [ref=e62]:
+                  - link " Tipos de descuento" [ref=e63] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Tipos de descuento
+                - listitem [ref=e66]:
+                  - link " Incoterms" [ref=e67] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e68]: 
+                    - generic [ref=e69]: Incoterms
+                - listitem [ref=e70]:
+                  - link " Puertos" [ref=e71] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e72]: 
+                    - generic [ref=e73]: Puertos
+                - listitem [ref=e74]:
+                  - link " Tipos de pago" [ref=e75] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e76]: 
+                    - generic [ref=e77]: Tipos de pago
+            - listitem [ref=e78]:
+              - link " Integración Siigo" [ref=e79] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e80]: 
+                - generic [ref=e81]: Integración Siigo
+            - listitem [ref=e82]:
+              - link " Plantillas de factura" [ref=e83] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e84]: 
+                - generic [ref=e85]: Plantillas de factura
+        - generic [ref=e86]:
+          - generic [ref=e87]: Cuenta
+          - list [ref=e88]:
+            - listitem [ref=e89]:
+              - link " Mi perfil" [ref=e90] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e91]: 
+                - generic [ref=e92]: Mi perfil
+      - button " Cerrar sesión" [ref=e95] [cursor=pointer]:
+        - generic [ref=e96]: 
+        - generic [ref=e97]: Cerrar sesión
+    - generic [ref=e98]:
+      - banner [ref=e99]:
+        - text: 
+        - generic [ref=e100]:
+          - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 
+            - text: 
+          - generic [ref=e103]:
+            - button "A Administrador Administrador " [ref=e104] [cursor=pointer]:
+              - generic [ref=e105]: A
+              - generic [ref=e106]:
+                - generic [ref=e107]: Administrador
+                - generic [ref=e108]: Administrador
+              - generic [ref=e109]: 
+            - text:  
+      - main [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - heading "Editar Plantilla genérica" [level=1] [ref=e113]
+            - paragraph [ref=e114]: Editor tipo Word — escribe y formatea tu factura. Los colores y estilos que ves son los mismos del PDF final.
+          - generic [ref=e115]:
+            - link " Volver" [ref=e116] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/plantillas
+              - generic [ref=e117]: 
+              - text: Volver
+            - button " Previsualizar con datos reales" [ref=e118] [cursor=pointer]:
+              - generic [ref=e119]: 
+              - text: Previsualizar con datos reales
+        - generic [ref=e120]:
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]:
+                - generic [ref=e125]: 
+                - text: Nombre *
+              - textbox " Nombre *" [ref=e126]:
+                - /placeholder: Plantilla estándar
+                - text: Plantilla genérica
+            - generic [ref=e127]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: 
+                - text: Descripción
+              - textbox " Descripción" [ref=e130]:
+                - /placeholder: Uso interno (opcional)
+                - text: Factura estándar para cualquier cliente. Marcada como predeterminada.
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - generic [ref=e134]: 
+                - text: Editor de factura (tipo Word) *
+              - paragraph [ref=e135]:
+                - text: Usa los botones de la barra superior para dar formato. Para insertar datos dinámicos (nombre del cliente, totales, etc.), haz click en
+                - strong [ref=e136]: "\"Insertar campo\""
+                - text: .
+              - application [ref=e137]:
+                - generic [ref=e138]:
+                  - generic [ref=e139]:
+                    - menubar [ref=e140]:
+                      - menuitem "File" [ref=e141]:
+                        - generic [ref=e142]: File
+                      - menuitem "Edit" [ref=e143]:
+                        - generic [ref=e144]: Edit
+                      - menuitem "View" [ref=e145]:
+                        - generic [ref=e146]: View
+                      - menuitem "Insert" [ref=e147]:
+                        - generic [ref=e148]: Insert
+                      - menuitem "Format" [ref=e149]:
+                        - generic [ref=e150]: Format
+                      - menuitem "Table" [ref=e151]:
+                        - generic [ref=e152]: Table
+                      - menuitem "Tools" [ref=e153]:
+                        - generic [ref=e154]: Tools
+                      - menuitem "Help" [ref=e155]:
+                        - generic [ref=e156]: Help
+                    - generic [ref=e157]:
+                      - group [ref=e158]:
+                        - toolbar [ref=e159]:
+                          - button "Undo" [disabled] [ref=e160]:
+                            - img [ref=e162]
+                          - button "Redo" [disabled] [ref=e164]:
+                            - img [ref=e166]
+                        - toolbar [ref=e168]:
+                          - button "Block Encabezado 1" [ref=e169]:
+                            - generic [ref=e170]: Encabezado 1
+                            - img [ref=e172]
+                          - button "Font Arial" [ref=e174]:
+                            - generic [ref=e175]: Arial
+                            - img [ref=e177]
+                          - button "Font size 22px" [ref=e179]:
+                            - generic [ref=e180]: 22px
+                            - img [ref=e182]
+                        - toolbar [ref=e184]:
+                          - button "Bold" [ref=e185]:
+                            - img [ref=e187]
+                          - button "Italic" [ref=e189]:
+                            - img [ref=e191]
+                          - button "Underline" [ref=e193]:
+                            - img [ref=e195]
+                          - button "Strikethrough" [ref=e197]:
+                            - img [ref=e199]
+                        - toolbar [ref=e203]:
+                          - button "Text color Black" [ref=e204]:
+                            - img [ref=e206]
+                            - img [ref=e210]
+                          - button "Background color Black" [ref=e212]:
+                            - img [ref=e214]
+                            - img [ref=e218]
+                      - group [ref=e220]:
+                        - toolbar [ref=e221]:
+                          - button "Align left" [ref=e222]:
+                            - img [ref=e224]
+                          - button "Align center" [ref=e226]:
+                            - img [ref=e228]
+                          - button "Align right" [ref=e230]:
+                            - img [ref=e232]
+                          - button "Justify" [ref=e234]:
+                            - img [ref=e236]
+                        - toolbar [ref=e238]:
+                          - button "Bullet list" [ref=e239]:
+                            - img [ref=e241]
+                            - img [ref=e243]
+                          - button "Numbered list" [ref=e245]:
+                            - img [ref=e247]
+                            - img [ref=e249]
+                          - button "Decrease indent" [disabled] [ref=e251]:
+                            - img [ref=e253]
+                          - button "Increase indent" [ref=e255]:
+                            - img [ref=e257]
+                        - toolbar [ref=e259]:
+                          - button "Insert/edit link" [ref=e260]:
+                            - img [ref=e262]
+                          - button "Insert/edit image" [ref=e264]:
+                            - img [ref=e266]
+                          - button "Table" [ref=e268]:
+                            - img [ref=e270]
+                            - img [ref=e273]
+                          - button "Horizontal line" [ref=e275]:
+                            - img [ref=e277]
+                        - toolbar [ref=e279]:
+                          - button "Inserta un dato dinámico de la factura (cliente, totales, etc.)" [ref=e280]:
+                            - img [ref=e282]
+                            - generic [ref=e284]: Insertar campo
+                            - img [ref=e286]
+                        - toolbar [ref=e288]:
+                          - button "Clear formatting" [ref=e289]:
+                            - img [ref=e291]
+                        - toolbar [ref=e293]:
+                          - button "Fullscreen" [ref=e294]:
+                            - img [ref=e296]
+                          - button "Preview" [ref=e298]:
+                            - img [ref=e300]
+                          - button "Source code" [ref=e302]:
+                            - img [ref=e304]
+                  - iframe [ref=e309]:
+                    - generic "Rich Text Area. Press ALT-0 for help." [active] [ref=f8e1]:
+                      - generic [ref=f8e2]:
+                        - generic [ref=f8e3]:
+                          - generic [ref=f8e4]:
+                            - 'heading "{{empresa.razon_social}}" [level=1] [ref=f8e5]'
+                            - paragraph [ref=f8e6]: "NIT {{empresa.nit}} · {{empresa.direccion}}"
+                            - paragraph [ref=f8e7]: "Tel. {{empresa.telefono}} · {{empresa.email}}"
+                          - generic [ref=f8e8]:
+                            - 'heading "FACTURA {{factura.numero}}" [level=2] [ref=f8e9]'
+                            - paragraph [ref=f8e10]: "Fecha: {{factura.fecha}}"
+                            - paragraph [ref=f8e11]: "Vencimiento: {{factura.vencimiento}}"
+                        - generic [ref=f8e12]:
+                          - generic [ref=f8e13]:
+                            - generic [ref=f8e14]: Cliente
+                            - paragraph [ref=f8e15]:
+                              - strong [ref=f8e16]: "{{cliente.nombre}}"
+                            - paragraph [ref=f8e17]: "ID: {{cliente.identificacion}}"
+                            - paragraph [ref=f8e18]: "{{cliente.direccion_facturacion}}"
+                            - paragraph [ref=f8e19]: "{{cliente.email}} · {{cliente.telefono}}"
+                          - generic [ref=f8e20]:
+                            - generic [ref=f8e21]: Detalles
+                            - paragraph [ref=f8e22]: "Moneda: {{factura.moneda}}"
+                            - paragraph [ref=f8e23]: "CUFE:"
+                            - paragraph [ref=f8e24]: "{{factura.cufe}}"
+                        - table [ref=f8e25]:
+                          - rowgroup [ref=f8e26]:
+                            - row "# Referencia Descripción Cantidad Precio Total" [ref=f8e27]:
+                              - columnheader "#" [ref=f8e28]
+                              - columnheader "Referencia" [ref=f8e29]
+                              - columnheader "Descripción" [ref=f8e30]
+                              - columnheader "Cantidad" [ref=f8e31]
+                              - columnheader "Precio" [ref=f8e32]
+                              - columnheader "Total" [ref=f8e33]
+                          - rowgroup [ref=f8e34]:
+                            - 'row "↻ items {{@index}} {{referencia}} {{descripcion}} {{cantidad}} {{precio_unitario}} {{total}}" [ref=f8e35]':
+                              - text: ↻ items
+                              - 'cell "{{@index}}" [ref=f8e36]'
+                              - 'cell "{{referencia}}" [ref=f8e37]'
+                              - 'cell "{{descripcion}}" [ref=f8e38]'
+                              - 'cell "{{cantidad}}" [ref=f8e39]'
+                              - 'cell "{{precio_unitario}}" [ref=f8e40]'
+                              - 'cell "{{total}}" [ref=f8e41]'
+                        - table [ref=f8e42]:
+                          - rowgroup [ref=f8e43]:
+                            - 'row "Subtotal {{totales.subtotal}}" [ref=f8e44]':
+                              - cell "Subtotal" [ref=f8e45]
+                              - 'cell "{{totales.subtotal}}" [ref=f8e46]'
+                            - 'row "IVA {{totales.iva}}" [ref=f8e47]':
+                              - cell "IVA" [ref=f8e48]
+                              - 'cell "{{totales.iva}}" [ref=f8e49]'
+                            - 'row "Descuento {{totales.descuento}}" [ref=f8e50]':
+                              - cell "Descuento" [ref=f8e51]
+                              - 'cell "{{totales.descuento}}" [ref=f8e52]'
+                            - 'row "TOTAL {{factura.moneda}} {{totales.total}}" [ref=f8e53]':
+                              - 'cell "TOTAL {{factura.moneda}}" [ref=f8e54]'
+                              - 'cell "{{totales.total}}" [ref=f8e55]'
+                        - generic [ref=f8e56]:
+                          - generic [ref=f8e57]: Observaciones
+                          - paragraph [ref=f8e58]: "{{factura.observaciones}}"
+                - generic [ref=e310]:
+                  - generic [ref=e311]:
+                    - navigation [ref=e312]:
+                      - button "div" [ref=e313]
+                      - generic [ref=e314]: ›
+                      - button "div" [ref=e315]
+                      - generic [ref=e316]: ›
+                      - button "div" [ref=e317]
+                      - generic [ref=e318]: ›
+                      - button "h1" [ref=e319]
+                    - generic [ref=e320]: Press Alt+0 for help
+                    - button "47 words" [ref=e322]
+                  - generic "Press the Up and Down arrow keys to resize the editor." [ref=e323]:
+                    - img [ref=e324]
+            - group [ref=e327]:
+              - generic "▸ Estilos CSS avanzados (opcional — solo si sabes CSS)" [ref=e328] [cursor=pointer]
+          - generic [ref=e329]:
+            - heading "Configuración" [level=3] [ref=e330]
+            - generic [ref=e331]:
+              - generic [ref=e332]:
+                - checkbox "Marcar como predeterminada Sustituye a la actual predeterminada." [checked] [ref=e333]
+                - generic [ref=e334]:
+                  - text: Marcar como predeterminada
+                  - generic [ref=e335]: Sustituye a la actual predeterminada.
+              - generic [ref=e336]:
+                - checkbox "Activa Disponible para emitir facturas." [checked] [ref=e337]
+                - generic [ref=e338]:
+                  - text: Activa
+                  - generic [ref=e339]: Disponible para emitir facturas.
+            - generic [ref=e340]:
+              - link "Cancelar" [ref=e341] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+              - button " Guardar plantilla" [ref=e342] [cursor=pointer]:
+                - generic [ref=e343]: 
+                - text: Guardar plantilla
+        - text:   

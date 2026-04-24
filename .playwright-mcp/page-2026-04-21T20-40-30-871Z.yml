@@ -1,0 +1,124 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - generic "Disponible en Fase 4" [ref=e33]:
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+                - generic [ref=e36]: Fase 4
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - text:        
+            - listitem [ref=e45]:
+              - link " Integración Siigo" [ref=e46] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e47]: 
+                - generic [ref=e48]: Integración Siigo
+            - listitem [ref=e49]:
+              - generic "Disponible en Fase 5" [ref=e50]:
+                - generic [ref=e51]: 
+                - generic [ref=e52]: Plantillas de factura
+                - generic [ref=e53]: Fase 5
+        - generic [ref=e54]:
+          - generic [ref=e55]: Cuenta
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - link " Mi perfil" [ref=e58] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e59]: 
+                - generic [ref=e60]: Mi perfil
+      - button " Cerrar sesión" [ref=e63] [cursor=pointer]:
+        - generic [ref=e64]: 
+        - generic [ref=e65]: Cerrar sesión
+    - generic [ref=e66]:
+      - banner [ref=e67]:
+        - text: 
+        - generic [ref=e68]:
+          - button "Cambiar tema" [ref=e69] [cursor=pointer]:
+            - text: 
+            - generic [ref=e70]: 
+          - generic [ref=e71]:
+            - button "A Administrador Administrador " [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: A
+              - generic [ref=e74]:
+                - generic [ref=e75]: Administrador
+                - generic [ref=e76]: Administrador
+              - generic [ref=e77]: 
+            - text:  
+      - main [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - heading "Productos" [level=1] [ref=e82]
+              - paragraph [ref=e83]: Catálogo de prendas y accesorios para facturación.
+            - generic [ref=e84]:
+              - link " Volver" [ref=e85] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e86]: 
+                - text: Volver
+              - link " Nuevo producto" [ref=e87] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos/create
+                - generic [ref=e88]: 
+                - text: Nuevo producto
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: 
+                - text: Buscar
+              - textbox " Buscar" [ref=e94]:
+                - /placeholder: Referencia, descripción o color…
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: 
+                - text: Tipo
+              - combobox " Tipo" [ref=e98]:
+                - option "Todos" [selected]
+                - option "Prendas"
+                - option "Accesorios"
+            - button " Filtrar" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]: 
+              - text: Filtrar
+          - generic [ref=e102]:
+            - generic [ref=e104]: 
+            - heading "Aún no hay productos" [level=3] [ref=e105]
+            - paragraph [ref=e106]: Empieza creando tu primer producto del catálogo.
+            - link " Crear primer producto" [ref=e108] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/catalogos/productos/create
+              - generic [ref=e109]: 
+              - text: Crear primer producto

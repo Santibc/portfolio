@@ -14,8 +14,6 @@ class RoleRedirectController extends Controller
 
     /**
      * Redirigir al usuario autenticado al dashboard.
-     *
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function redirect(): RedirectResponse
     {

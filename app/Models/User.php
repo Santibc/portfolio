@@ -2,10 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,21 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    /**
-     * Obtener el trabajador asociado al usuario
-     */
-    public function trabajador(): HasOne
-    {
-        return $this->hasOne(Trabajador::class);
-    }
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -35,28 +19,15 @@ class User extends Authenticatable
         'profile_photo',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * Obtener las iniciales del nombre
-     */
     public function getInitialsAttribute(): string
     {
         $words = explode(' ', $this->name);
@@ -64,50 +35,30 @@ class User extends Authenticatable
 
         foreach ($words as $word) {
             $initials .= strtoupper(substr($word, 0, 1));
-            if (strlen($initials) >= 2) break;
+            if (strlen($initials) >= 2) {
+                break;
+            }
         }
 
         return $initials ?: 'U';
     }
 
-    /**
-     * Verificar si es administrador
-     */
     public function isAdmin(): bool
     {
         return $this->hasRole('Administrador');
     }
 
-    /**
-     * Obtener la URL de la foto de perfil
-     */
     public function getProfilePhotoUrlAttribute(): string
     {
         if ($this->profile_photo) {
-            return asset('uploads/profile-photos/' . $this->profile_photo);
+            return asset('uploads/profile-photos/'.$this->profile_photo);
         }
 
         return '';
     }
 
-    /**
-     * Verificar si tiene foto de perfil
-     */
     public function hasProfilePhoto(): bool
     {
-        return !empty($this->profile_photo);
-    }
-
-    public function tableros(): BelongsToMany
-    {
-        return $this->belongsToMany(Tablero::class, 'tablero_miembros')
-            ->withPivot('rol')
-            ->withTimestamps();
-    }
-
-    public function tarjetasAsignadas(): BelongsToMany
-    {
-        return $this->belongsToMany(Tarjeta::class, 'tarjeta_usuarios')
-            ->withTimestamps();
+        return ! empty($this->profile_photo);
     }
 }

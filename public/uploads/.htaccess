@@ -1,0 +1,12 @@
+# Bloquea ejecución de scripts arbitrarios dentro de public/uploads/.
+# Los archivos subidos aquí deben servirse SOLO como assets estáticos.
+
+<FilesMatch "\.(php|phtml|phar|php3|php4|php5|php7|phps|cgi|pl|py|rb|sh)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>
+
+Options -ExecCGI -Indexes

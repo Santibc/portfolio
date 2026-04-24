@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - generic "Disponible en Fase 4" [ref=e33]:
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+                - generic [ref=e36]: Fase 4
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - text:        
+            - listitem [ref=e45]:
+              - link " Integración Siigo" [ref=e46] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e47]: 
+                - generic [ref=e48]: Integración Siigo
+            - listitem [ref=e49]:
+              - generic "Disponible en Fase 5" [ref=e50]:
+                - generic [ref=e51]: 
+                - generic [ref=e52]: Plantillas de factura
+                - generic [ref=e53]: Fase 5
+        - generic [ref=e54]:
+          - generic [ref=e55]: Cuenta
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - link " Mi perfil" [ref=e58] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e59]: 
+                - generic [ref=e60]: Mi perfil
+      - button " Cerrar sesión" [ref=e63] [cursor=pointer]:
+        - generic [ref=e64]: 
+        - generic [ref=e65]: Cerrar sesión
+    - generic [ref=e66]:
+      - banner [ref=e67]:
+        - text: 
+        - generic [ref=e68]:
+          - button "Cambiar tema" [ref=e69] [cursor=pointer]:
+            - text: 
+            - generic [ref=e70]: 
+          - generic [ref=e71]:
+            - button "A Administrador Administrador " [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: A
+              - generic [ref=e74]:
+                - generic [ref=e75]: Administrador
+                - generic [ref=e76]: Administrador
+              - generic [ref=e77]: 
+            - text:  
+      - main [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - heading "Nuevo producto" [level=1] [ref=e82]
+              - paragraph [ref=e83]: Define referencia, precio base y características del producto.
+            - link " Volver" [ref=e85] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/catalogos/productos
+              - generic [ref=e86]: 
+              - text: Volver
+          - generic [ref=e87]:
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - generic [ref=e92]: 
+                  - text: Referencia *
+                - textbox " Referencia *" [ref=e93]:
+                  - /placeholder: REF-001
+              - generic [ref=e94]:
+                - generic [ref=e95]:
+                  - generic [ref=e96]: 
+                  - text: Descripción *
+                - textbox " Descripción *" [ref=e97]:
+                  - /placeholder: Descripción del producto
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - generic [ref=e100]: 
+                  - text: Color
+                - textbox " Color" [ref=e101]:
+                  - /placeholder: p.ej. Azul marino
+              - generic [ref=e102]:
+                - generic [ref=e103]:
+                  - generic [ref=e104]: 
+                  - text: Composición
+                - textbox " Composición" [ref=e105]:
+                  - /placeholder: p.ej. 100% algodón
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - generic [ref=e108]: 
+                  - text: Código PA
+                - textbox " Código PA" [ref=e109]:
+                  - /placeholder: "6104.44"
+                - paragraph [ref=e110]: Partida arancelaria, p.ej. 6104.44
+              - generic [ref=e111]:
+                - generic [ref=e112]:
+                  - generic [ref=e113]: 
+                  - text: Unidad de medida
+                - textbox " Unidad de medida" [ref=e114]:
+                  - /placeholder: Und
+                  - text: Und
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - generic [ref=e117]: 
+                  - text: Precio unitario *
+                - spinbutton " Precio unitario *" [ref=e118]
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - generic [ref=e121]: 
+                  - text: Moneda *
+                - combobox " Moneda *" [ref=e122]:
+                  - option "COP" [selected]
+                  - option "EUR"
+                  - option "USD"
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]: 
+                  - text: Impuesto (IVA)
+                - combobox " Impuesto (IVA)" [ref=e126]:
+                  - option "Sin impuesto" [selected]
+                  - option "IVA Exento (0%)"
+                  - option "ReteFuente Servicios 4%"
+                  - option "IVA 5%"
+                  - option "ReteIVA 15%"
+                  - option "IVA 19%"
+              - generic [ref=e127]:
+                - generic [ref=e128]:
+                  - generic [ref=e129]: 
+                  - text: Imagen
+                - button " Imagen" [ref=e130]
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - checkbox "Es una prenda (se desglosa por tallas en la factura)" [checked] [ref=e134]
+                  - generic [ref=e135]: Es una prenda (se desglosa por tallas en la factura)
+                - generic [ref=e136]:
+                  - checkbox "Activo" [checked] [ref=e137]
+                  - generic [ref=e138]: Activo
+            - generic [ref=e139]:
+              - link "Cancelar" [ref=e140] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+              - button " Guardar producto" [ref=e141] [cursor=pointer]:
+                - generic [ref=e142]: 
+                - text: Guardar producto

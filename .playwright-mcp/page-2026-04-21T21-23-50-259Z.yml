@@ -1,0 +1,60 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "CLC CLC & CIA Facturación internacional" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e7]: CLC
+        - generic [ref=e8]:
+          - generic [ref=e9]: CLC & CIA
+          - generic [ref=e10]: Facturación internacional
+      - generic [ref=e11]:
+        - heading "Iniciar sesión" [level=1] [ref=e12]
+        - paragraph [ref=e13]: Accede a tu cuenta para continuar.
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: Correo
+          - generic [ref=e17]:
+            - generic: 
+            - textbox "Correo" [active] [ref=e18]:
+              - /placeholder: tu@email.com
+              - text: admin@admin.com
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]: Contraseña
+            - link "¿Olvidaste tu contraseña?" [ref=e22] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/forgot-password
+          - generic [ref=e23]:
+            - generic: 
+            - textbox "Contraseña" [ref=e24]:
+              - /placeholder: ••••••••
+              - text: "12345678"
+            - button "Mostrar contraseña" [ref=e25] [cursor=pointer]:
+              - generic [ref=e26]: 
+              - text: 
+        - generic [ref=e27]:
+          - checkbox "Recordarme" [ref=e28]
+          - text: Recordarme
+        - button "Ingresar " [ref=e29] [cursor=pointer]:
+          - text: Ingresar
+          - generic [ref=e30]: 
+      - paragraph [ref=e31]:
+        - text: ¿No tienes cuenta?
+        - link "Regístrate" [ref=e32] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/register
+    - generic [ref=e33]: © 2026 CLC & CIA S.A.S. · NIT 901249576-9
+  - generic [ref=e38]:
+    - generic [ref=e39]: Plataforma de facturación
+    - heading "Factura a tus clientes del mundo entero." [level=2] [ref=e41]:
+      - text: Factura a tus clientes
+      - text: del mundo entero.
+    - paragraph [ref=e42]: Gestiona productos, clientes nacionales e internacionales, plantillas personalizadas y facturación electrónica DIAN — todo desde un solo lugar.
+    - generic [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]: 
+        - generic [ref=e46]: Multi-moneda
+      - generic [ref=e47]:
+        - generic [ref=e48]: 
+        - generic [ref=e49]: DIAN vía Siigo
+      - generic [ref=e50]:
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Plantillas

@@ -1,0 +1,42 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "CLC&CIA" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - text: CLC&CIA
+      - generic [ref=e6]:
+        - heading "Iniciar sesión" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Accede a tu cuenta para continuar.
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - text: Correo
+          - textbox "Correo" [active] [ref=e12]:
+            - /placeholder: tu@email.com
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - text: Contraseña
+            - link "¿Olvidaste tu contraseña?" [ref=e15] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/forgot-password
+          - generic [ref=e16]:
+            - textbox "Contraseña" [ref=e17]:
+              - /placeholder: ••••••••
+            - button "Mostrar contraseña" [ref=e18]
+        - generic [ref=e19]:
+          - checkbox "Recordarme" [ref=e20]
+          - text: Recordarme
+        - button "Ingresar" [ref=e21]: Ingresar
+      - paragraph [ref=e22]:
+        - text: ¿No tienes cuenta?
+        - link "Regístrate" [ref=e23] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/register
+    - generic [ref=e24]: © 2026 CLC&CIA. Todos los derechos reservados.
+  - generic [ref=e26]:
+    - generic [ref=e27]: Bienvenido
+    - heading "Construye algo extraordinario." [level=2] [ref=e28]:
+      - text: Construye algo
+      - text: extraordinario.
+    - paragraph [ref=e29]: Una base moderna lista para que empieces tu próximo proyecto con estilo.
+    - generic [ref=e30]:
+      - generic [ref=e32]: Rápido
+      - generic [ref=e34]: Seguro
+      - generic [ref=e36]: Elegante

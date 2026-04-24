@@ -1,0 +1,217 @@
+- generic [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - generic "Disponible en Fase 3" [ref=e29]:
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+                - generic [ref=e32]: Fase 3
+            - listitem [ref=e33]:
+              - generic "Disponible en Fase 4" [ref=e34]:
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+                - generic [ref=e37]: Fase 4
+        - generic [ref=e38]:
+          - generic [ref=e39]: Administración
+          - list [ref=e40]:
+            - listitem [ref=e41]:
+              - button " Configuración " [ref=e42] [cursor=pointer]:
+                - generic [ref=e43]: 
+                - generic [ref=e44]: Configuración
+                - generic [ref=e45]: 
+              - list [ref=e46]:
+                - listitem [ref=e47]:
+                  - link " Resumen" [ref=e48] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Resumen
+                - listitem [ref=e51]:
+                  - link " Empresa y banco" [ref=e52] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e53]: 
+                    - generic [ref=e54]: Empresa y banco
+                - listitem [ref=e55]:
+                  - link " Monedas" [ref=e56] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e57]: 
+                    - generic [ref=e58]: Monedas
+                - listitem [ref=e59]:
+                  - link " Impuestos" [ref=e60] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e61]: 
+                    - generic [ref=e62]: Impuestos
+                - listitem [ref=e63]:
+                  - link " Tipos de descuento" [ref=e64] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e65]: 
+                    - generic [ref=e66]: Tipos de descuento
+                - listitem [ref=e67]:
+                  - link " Incoterms" [ref=e68] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Incoterms
+                - listitem [ref=e71]:
+                  - link "Puertos" [ref=e72] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e73]: Puertos
+                - listitem [ref=e74]:
+                  - link " Tipos de pago" [ref=e75] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e76]: 
+                    - generic [ref=e77]: Tipos de pago
+            - listitem [ref=e78]:
+              - generic "Disponible en Fase 2" [ref=e79]:
+                - generic [ref=e80]: 
+                - generic [ref=e81]: Integración Siigo
+                - generic [ref=e82]: Fase 2
+            - listitem [ref=e83]:
+              - generic "Disponible en Fase 5" [ref=e84]:
+                - generic [ref=e85]: 
+                - generic [ref=e86]: Plantillas de factura
+                - generic [ref=e87]: Fase 5
+        - generic [ref=e88]:
+          - generic [ref=e89]: Cuenta
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - link " Mi perfil" [ref=e92] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e93]: 
+                - generic [ref=e94]: Mi perfil
+      - button " Cerrar sesión" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: 
+        - generic [ref=e99]: Cerrar sesión
+    - generic [ref=e100]:
+      - banner [ref=e101]:
+        - text: 
+        - generic [ref=e102]:
+          - button "Cambiar tema" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]: 
+            - text: 
+          - generic [ref=e105]:
+            - button "A Administrador Administrador " [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: A
+              - generic [ref=e108]:
+                - generic [ref=e109]: Administrador
+                - generic [ref=e110]: Administrador
+              - generic [ref=e111]: 
+            - text:  
+      - main [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - heading "Datos de empresa" [level=1] [ref=e115]
+            - paragraph [ref=e116]: Información corporativa, resoluciones DIAN, cuenta bancaria y contacto financiero.
+          - link " Volver" [ref=e118] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/admin
+            - generic [ref=e119]: 
+            - text: Volver
+        - generic [ref=e120]:
+          - navigation "Secciones" [ref=e122]:
+            - button " Empresa" [ref=e123] [cursor=pointer]:
+              - generic [ref=e124]: 
+              - text: Empresa
+            - button " DIAN" [ref=e125] [cursor=pointer]:
+              - generic [ref=e126]: 
+              - text: DIAN
+            - button " Banco" [ref=e127] [cursor=pointer]:
+              - generic [ref=e128]: 
+              - text: Banco
+            - button " Contacto financiero" [ref=e129] [cursor=pointer]:
+              - generic [ref=e130]: 
+              - text: Contacto financiero
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]: 
+              - generic [ref=e134]:
+                - heading "Información de la empresa" [level=3] [ref=e135]
+                - paragraph [ref=e136]: Datos fiscales y de identidad corporativa.
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]: 
+                  - text: Razón social *
+                - textbox " Razón social *" [ref=e141]:
+                  - /placeholder: CLC & CIA S.A.S.
+                  - text: CLC & CIA S.A.S.
+              - generic [ref=e142]:
+                - generic [ref=e143]:
+                  - generic [ref=e144]: 
+                  - text: NIT *
+                - textbox " NIT *" [ref=e145]:
+                  - /placeholder: 900.123.456-7
+                  - text: 901249576-9
+              - generic [ref=e147]:
+                - generic [ref=e148]:
+                  - generic [ref=e149]: 
+                  - text: Dirección *
+                - textbox " Dirección *" [active] [ref=e150]:
+                  - /placeholder: "Cra. 10 # 20-30, Bogotá"
+                  - text: Cr 4 No. 4-43 oficina 302
+              - generic [ref=e151]:
+                - generic [ref=e152]:
+                  - generic [ref=e153]: 
+                  - text: Teléfono *
+                - textbox " Teléfono *" [ref=e154]:
+                  - /placeholder: +57 300 000 0000
+                  - text: 89 36 527
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - generic [ref=e157]: 
+                  - text: Email *
+                - textbox " Email *" [ref=e158]:
+                  - /placeholder: facturacion@clc.com
+                  - text: jsrojas@caladelacruz
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 
+                  - text: Sitio web
+                - textbox " Sitio web" [ref=e162]:
+                  - /placeholder: https://www.clc.com
+                  - text: www.caladelacruz.com
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]: 
+                  - text: Logo
+                - button " Logo" [ref=e166]
+                - paragraph [ref=e167]: Se sube a public/uploads/empresa/. Formato PNG/JPG.
+              - generic [ref=e169]:
+                - generic [ref=e170]:
+                  - generic [ref=e171]: 
+                  - text: Régimen tributario
+                - textbox " Régimen tributario" [ref=e172]:
+                  - /placeholder: Responsable de IVA, Gran contribuyente, etc.
+                  - text: IVA RÉGIMEN COMÚN – NO SOMOS RETENEDORES DE IVA – NO SOMOS GRANDES CONTRIBUYENTES
+            - generic [ref=e173]:
+              - paragraph [ref=e174]: Logo actual
+              - img "Logo empresa" [ref=e175]
+          - text:                 
+          - generic [ref=e176]:
+            - link "Volver" [ref=e177] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin
+            - button " Guardar cambios" [ref=e178] [cursor=pointer]:
+              - generic [ref=e179]: 
+              - text: Guardar cambios

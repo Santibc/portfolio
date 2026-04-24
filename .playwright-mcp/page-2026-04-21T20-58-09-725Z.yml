@@ -1,0 +1,436 @@
+- generic [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - link " Clientes" [ref=e33] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+        - generic [ref=e36]:
+          - generic [ref=e37]: Administración
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - button " Configuración " [ref=e40] [cursor=pointer]:
+                - generic [ref=e41]: 
+                - generic [ref=e42]: Configuración
+                - generic [ref=e43]: 
+              - list [ref=e44]:
+                - listitem [ref=e45]:
+                  - link " Resumen" [ref=e46] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e47]: 
+                    - generic [ref=e48]: Resumen
+                - listitem [ref=e49]:
+                  - link " Empresa y banco" [ref=e50] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e51]: 
+                    - generic [ref=e52]: Empresa y banco
+                - listitem [ref=e53]:
+                  - link " Monedas" [ref=e54] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e55]: 
+                    - generic [ref=e56]: Monedas
+                - listitem [ref=e57]:
+                  - link " Impuestos" [ref=e58] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e59]: 
+                    - generic [ref=e60]: Impuestos
+                - listitem [ref=e61]:
+                  - link " Tipos de descuento" [ref=e62] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e63]: 
+                    - generic [ref=e64]: Tipos de descuento
+                - listitem [ref=e65]:
+                  - link " Incoterms" [ref=e66] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e67]: 
+                    - generic [ref=e68]: Incoterms
+                - listitem [ref=e69]:
+                  - link " Puertos" [ref=e70] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e71]: 
+                    - generic [ref=e72]: Puertos
+                - listitem [ref=e73]:
+                  - link " Tipos de pago" [ref=e74] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e75]: 
+                    - generic [ref=e76]: Tipos de pago
+            - listitem [ref=e77]:
+              - link " Integración Siigo" [ref=e78] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e79]: 
+                - generic [ref=e80]: Integración Siigo
+            - listitem [ref=e81]:
+              - link " Plantillas de factura" [ref=e82] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e83]: 
+                - generic [ref=e84]: Plantillas de factura
+        - generic [ref=e85]:
+          - generic [ref=e86]: Cuenta
+          - list [ref=e87]:
+            - listitem [ref=e88]:
+              - link " Mi perfil" [ref=e89] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e90]: 
+                - generic [ref=e91]: Mi perfil
+      - button " Cerrar sesión" [ref=e94] [cursor=pointer]:
+        - generic [ref=e95]: 
+        - generic [ref=e96]: Cerrar sesión
+    - generic [ref=e97]:
+      - banner [ref=e98]:
+        - text: 
+        - generic [ref=e99]:
+          - button "Cambiar tema" [ref=e100] [cursor=pointer]:
+            - text: 
+            - generic [ref=e101]: 
+          - generic [ref=e102]:
+            - button "A Administrador Administrador " [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]: A
+              - generic [ref=e105]:
+                - generic [ref=e106]: Administrador
+                - generic [ref=e107]: Administrador
+              - generic [ref=e108]: 
+            - text:  
+      - main [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - heading "Editar Plantilla genérica" [level=1] [ref=e112]
+            - paragraph [ref=e113]: Personaliza el HTML/CSS del PDF de factura con merge tags dinámicos.
+          - generic [ref=e114]:
+            - link " Volver" [ref=e115] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/plantillas
+              - generic [ref=e116]: 
+              - text: Volver
+            - button " Previsualizar" [ref=e117] [cursor=pointer]:
+              - generic [ref=e118]: 
+              - text: Previsualizar
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]:
+                    - generic [ref=e126]: 
+                    - text: Nombre *
+                  - textbox " Nombre *" [ref=e127]:
+                    - /placeholder: Plantilla estándar
+                    - text: Plantilla genérica
+                - generic [ref=e128]:
+                  - generic [ref=e129]:
+                    - generic [ref=e130]: 
+                    - text: Descripción
+                  - textbox " Descripción" [ref=e131]:
+                    - /placeholder: Uso interno (opcional)
+                    - text: Factura estándar para cualquier cliente. Marcada como predeterminada.
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - generic [ref=e134]: 
+                  - text: Contenido HTML *
+                - application "Rich Text Editor" [ref=e135]:
+                  - toolbar "Editor toolbar" [ref=e138]:
+                    - generic [ref=e139]:
+                      - button "Heading 1, Heading" [ref=e141]:
+                        - generic [ref=e142]: Heading 1
+                        - img
+                      - button "Bold" [ref=e144]:
+                        - img [ref=e145]
+                      - button "Italic" [ref=e147]:
+                        - img [ref=e148]
+                      - button "Bulleted List" [ref=e151]:
+                        - img [ref=e152]
+                      - button "Numbered List" [ref=e154]:
+                        - img [ref=e155]
+                      - button "Insert table" [ref=e159]:
+                        - img [ref=e160]
+                        - img
+                      - button "Undo" [disabled] [ref=e163]:
+                        - img [ref=e164]
+                      - button "Redo" [disabled] [ref=e166]:
+                        - img [ref=e167]
+                  - 'textbox "Editor editing area: main. Press Alt+0 for help." [ref=e169]':
+                    - 'heading "{{empresa.razon_social}}" [level=2] [ref=e170]'
+                    - paragraph [ref=e171]: "NIT {{empresa.nit}} · {{empresa.direccion}}"
+                    - paragraph [ref=e172]: "Tel. {{empresa.telefono}} · {{empresa.email}}"
+                    - 'heading "FACTURA {{factura.numero}}" [level=2] [ref=e173]'
+                    - paragraph [ref=e174]: "Fecha: {{factura.fecha}}"
+                    - paragraph [ref=e175]: Cliente
+                    - paragraph [ref=e176]:
+                      - strong [ref=e177]: "{{cliente.nombre}}"
+                    - paragraph [ref=e178]: "ID: {{cliente.identificacion}}"
+                    - paragraph [ref=e179]: "{{cliente.direccion_facturacion}}"
+                    - paragraph [ref=e180]: "{{cliente.email}} · {{cliente.telefono}}"
+                    - paragraph [ref=e181]: Detalles
+                    - paragraph [ref=e182]: "Moneda: {{factura.moneda}}"
+                    - paragraph [ref=e183]: "Vencimiento: {{factura.vencimiento}}"
+                    - paragraph [ref=e184]: "CUFE: {{factura.cufe}}"
+                    - paragraph [ref=e185]: "{{#each items}} {{/each}}"
+                    - figure [ref=e186]:
+                      - img [ref=e188]
+                      - table [ref=e194]:
+                        - rowgroup [ref=e195]:
+                          - row "# Referencia Descripción Cantidad Precio Total" [ref=e196]:
+                            - textbox [ref=e197]:
+                              - generic [ref=e198]: "#"
+                            - textbox [ref=e199]:
+                              - generic [ref=e200]: Referencia
+                            - textbox [ref=e201]:
+                              - generic [ref=e202]: Descripción
+                            - textbox [ref=e203]:
+                              - generic [ref=e204]: Cantidad
+                            - textbox [ref=e205]:
+                              - generic [ref=e206]: Precio
+                            - textbox [ref=e207]:
+                              - generic [ref=e208]: Total
+                        - rowgroup [ref=e209]:
+                          - 'row "{{@index}} {{referencia}} {{descripcion}} {{cantidad}} {{precio_unitario}} {{total}}" [ref=e210]':
+                            - textbox [ref=e211]:
+                              - generic [ref=e212]: "{{@index}}"
+                            - textbox [ref=e213]:
+                              - generic [ref=e214]: "{{referencia}}"
+                            - textbox [ref=e215]:
+                              - generic [ref=e216]: "{{descripcion}}"
+                            - textbox [ref=e217]:
+                              - generic [ref=e218]: "{{cantidad}}"
+                            - textbox [ref=e219]:
+                              - generic [ref=e220]: "{{precio_unitario}}"
+                            - textbox [ref=e221]:
+                              - generic [ref=e222]: "{{total}}"
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - img
+                    - figure [ref=e223]:
+                      - img [ref=e225]
+                      - table [ref=e231]:
+                        - rowgroup [ref=e232]:
+                          - 'row "Subtotal {{totales.subtotal}}" [ref=e233]':
+                            - textbox [ref=e234]:
+                              - generic [ref=e235]: Subtotal
+                            - textbox [ref=e236]:
+                              - generic [ref=e237]: "{{totales.subtotal}}"
+                          - 'row "IVA {{totales.iva}}" [ref=e238]':
+                            - textbox [ref=e239]:
+                              - generic [ref=e240]: IVA
+                            - textbox [ref=e241]:
+                              - generic [ref=e242]: "{{totales.iva}}"
+                          - 'row "Descuento {{totales.descuento}}" [ref=e243]':
+                            - textbox [ref=e244]:
+                              - generic [ref=e245]: Descuento
+                            - textbox [ref=e246]:
+                              - generic [ref=e247]: "{{totales.descuento}}"
+                          - 'row "TOTAL {{factura.moneda}} {{totales.total}}" [ref=e248]':
+                            - textbox [ref=e249]:
+                              - generic [ref=e250]: "TOTAL {{factura.moneda}}"
+                            - textbox [ref=e251]:
+                              - generic [ref=e252]: "{{totales.total}}"
+                      - generic:
+                        - generic:
+                          - img
+                        - generic:
+                          - img
+                    - paragraph [ref=e253]: Observaciones
+                    - paragraph [ref=e254]: "{{factura.observaciones}}"
+                - paragraph [ref=e255]:
+                  - text: Usa los merge tags del panel derecho. Soporta bloques
+                  - code [ref=e256]: "{{#each items}}...{{/each}}"
+                  - text: para iterar líneas.
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - generic [ref=e259]: 
+                - text: CSS personalizado (opcional)
+              - textbox " CSS personalizado (opcional)" [ref=e260]:
+                - /placeholder: "body { font-family: Arial, sans-serif; } .factura-header { color: #0f172a; }"
+                - text: "body { font-family: Arial, sans-serif; font-size: 11px; color: #1f2937; } .factura { max-width: 900px; margin: 0 auto; padding: 20px; } .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px; } .header h1 { color: #f97316; font-size: 22px; margin: 0; } .section { margin-bottom: 16px; } .section-title { background: #fef3c7; padding: 6px 10px; font-weight: bold; border-left: 3px solid #f97316; } table { width: 100%; border-collapse: collapse; margin-top: 8px; } th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; font-size: 10px; } th { background: #f3f4f6; font-weight: bold; } .totales { margin-top: 12px; float: right; width: 260px; } .totales td { padding: 4px 8px; font-size: 11px; } .totales .total-final { font-weight: bold; background: #fff7ed; } .banco { background: #fff7ed; padding: 10px; border: 1px dashed #fb923c; font-size: 10px; } .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }"
+              - paragraph [ref=e261]: Reglas CSS globales que se aplican al renderizar el PDF.
+            - generic [ref=e262]:
+              - heading "Configuración" [level=3] [ref=e263]
+              - generic [ref=e264]:
+                - generic [ref=e265]:
+                  - checkbox "Marcar como predeterminada Sustituye a la actual predeterminada." [checked] [ref=e266]
+                  - generic [ref=e267]:
+                    - text: Marcar como predeterminada
+                    - generic [ref=e268]: Sustituye a la actual predeterminada.
+                - generic [ref=e269]:
+                  - checkbox "Activa Disponible para emitir facturas." [checked] [ref=e270]
+                  - generic [ref=e271]:
+                    - text: Activa
+                    - generic [ref=e272]: Disponible para emitir facturas.
+              - generic [ref=e273]:
+                - link "Cancelar" [ref=e274] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/admin/plantillas
+                - button " Guardar plantilla" [ref=e275] [cursor=pointer]:
+                  - generic [ref=e276]: 
+                  - text: Guardar plantilla
+          - generic [ref=e278]:
+            - generic [ref=e279]:
+              - heading "Merge tags disponibles" [level=3] [ref=e280]
+              - paragraph [ref=e281]: Click en una variable la copia al portapapeles y la inserta en el editor. También puedes pegarla con Ctrl+V.
+            - generic [ref=e282]:
+              - generic [ref=e283]:
+                - heading "Empresa" [level=4] [ref=e284]
+                - generic [ref=e285]:
+                  - code [ref=e286]: "{{empresa.nombre}}"
+                  - code [ref=e287]: "{{empresa.nit}}"
+                  - code [ref=e288]: "{{empresa.direccion}}"
+                  - code [ref=e289]: "{{empresa.telefono}}"
+                  - code [ref=e290]: "{{empresa.email}}"
+                  - code [ref=e291]: "{{empresa.sitio_web}}"
+              - generic [ref=e292]:
+                - heading "Cliente" [level=4] [ref=e293]
+                - generic [ref=e294]:
+                  - code [ref=e295]: "{{cliente.nombre}}"
+                  - code [ref=e296]: "{{cliente.identificacion}}"
+                  - code [ref=e297]: "{{cliente.direccion_facturacion}}"
+                  - code [ref=e298]: "{{cliente.direccion_envio}}"
+                  - code [ref=e299]: "{{cliente.email}}"
+                  - code [ref=e300]: "{{cliente.telefono}}"
+                  - code [ref=e301]: "{{cliente.incoterm}}"
+                  - code [ref=e302]: "{{cliente.puerto}}"
+              - generic [ref=e303]:
+                - heading "Factura" [level=4] [ref=e304]
+                - generic [ref=e305]:
+                  - code [ref=e306]: "{{factura.numero}}"
+                  - code [ref=e307]: "{{factura.fecha}}"
+                  - code [ref=e308]: "{{factura.vencimiento}}"
+                  - code [ref=e309]: "{{factura.moneda}}"
+                  - code [ref=e310]: "{{factura.simbolo}}"
+                  - code [ref=e311]: "{{factura.cufe}}"
+                  - code [ref=e312]: "{{factura.observaciones}}"
+              - generic [ref=e313]:
+                - heading "Totales" [level=4] [ref=e314]
+                - generic [ref=e315]:
+                  - code [ref=e316]: "{{totales.subtotal}}"
+                  - code [ref=e317]: "{{totales.iva}}"
+                  - code [ref=e318]: "{{totales.flete}}"
+                  - code [ref=e319]: "{{totales.seguro}}"
+                  - code [ref=e320]: "{{totales.descuento}}"
+                  - code [ref=e321]: "{{totales.total}}"
+              - generic [ref=e322]:
+                - heading "Banco" [level=4] [ref=e323]
+                - generic [ref=e324]:
+                  - code [ref=e325]: "{{banco.nombre}}"
+                  - code [ref=e326]: "{{banco.swift}}"
+                  - code [ref=e327]: "{{banco.numero_cuenta}}"
+              - generic [ref=e328]:
+                - heading "Contacto" [level=4] [ref=e329]
+                - generic [ref=e330]:
+                  - code [ref=e331]: "{{contacto.nombre}}"
+                  - code [ref=e332]: "{{contacto.email}}"
+              - generic [ref=e333]:
+                - heading "Loop items (líneas de factura)" [level=4] [ref=e334]
+                - generic [ref=e335]:
+                  - code [ref=e336]: "{{#each items}}"
+                  - code [ref=e337]: "{{referencia}}"
+                  - code [ref=e338]: "{{descripcion}}"
+                  - code [ref=e339]: "{{color}}"
+                  - code [ref=e340]: "{{cantidad}}"
+                  - code [ref=e341]: "{{precio_unitario}}"
+                  - code [ref=e342]: "{{total}}"
+                  - code [ref=e343]: "{{/each}}"
+                - paragraph [ref=e344]:
+                  - text: Envuelve las variables de línea entre
+                  - code [ref=e345]: "{{#each items}}"
+                  - text: "y"
+                  - code [ref=e346]: "{{/each}}"
+                  - text: .
+        - dialog " Vista previa con datos dummy" [ref=e347]:
+          - generic [ref=e349]:
+            - generic [ref=e350]:
+              - heading " Vista previa con datos dummy" [level=2] [ref=e351]:
+                - generic [ref=e352]: 
+                - text: Vista previa con datos dummy
+              - button "Cerrar" [ref=e353] [cursor=pointer]:
+                - generic [ref=e354]: 
+            - generic [ref=e355]:
+              - text: 
+              - iframe [active] [ref=e356]:
+                - generic [active] [ref=f2e1]:
+                  - heading "CLC & CIA S.A.S." [level=2] [ref=f2e2]
+                  - paragraph [ref=f2e3]: NIT 901249576-9 · Cr 4 No. 4-43 oficina 302
+                  - paragraph [ref=f2e4]: Tel. 89 36 527 · jsrojas@caladelacruz
+                  - heading "FACTURA CLC780" [level=2] [ref=f2e5]
+                  - paragraph [ref=f2e6]: "Fecha: 2026-03-11"
+                  - paragraph [ref=f2e7]: Cliente
+                  - paragraph [ref=f2e8]:
+                    - strong [ref=f2e9]: Mytheresa International Service GmbH
+                  - paragraph [ref=f2e10]: "ID: DE213277271-0"
+                  - paragraph [ref=f2e11]: Einsteinring 9 85609 Aschheim/Munich
+                  - paragraph [ref=f2e12]: accounts@mytheresa.com · +49 89 1276950
+                  - paragraph [ref=f2e13]: Detalles
+                  - paragraph [ref=f2e14]: "Moneda: EUR"
+                  - paragraph [ref=f2e15]: "Vencimiento: 2026-03-11"
+                  - paragraph [ref=f2e16]: "CUFE: 018da043f31036423b13e8864429b4e8b62f232b6611f47f2a22860ef3e7fe963b00cf927e2b41ce44fe67f278429728"
+                  - paragraph
+                  - figure [ref=f2e17]:
+                    - table [ref=f2e18]:
+                      - rowgroup [ref=f2e19]:
+                        - row "# Referencia Descripción Cantidad Precio Total" [ref=f2e20]:
+                          - columnheader "#" [ref=f2e21]
+                          - columnheader "Referencia" [ref=f2e22]
+                          - columnheader "Descripción" [ref=f2e23]
+                          - columnheader "Cantidad" [ref=f2e24]
+                          - columnheader "Precio" [ref=f2e25]
+                          - columnheader "Total" [ref=f2e26]
+                      - rowgroup [ref=f2e27]:
+                        - 'row "{{@index}}" [ref=f2e28]':
+                          - 'cell "{{@index}}" [ref=f2e29]'
+                          - cell [ref=f2e30]
+                          - cell [ref=f2e31]
+                          - cell [ref=f2e32]
+                          - cell [ref=f2e33]
+                          - cell [ref=f2e34]
+                  - figure [ref=f2e35]:
+                    - table [ref=f2e36]:
+                      - rowgroup [ref=f2e37]:
+                        - row "Subtotal 87.814,60" [ref=f2e38]:
+                          - cell "Subtotal" [ref=f2e39]
+                          - cell "87.814,60" [ref=f2e40]
+                        - row "IVA 0,00" [ref=f2e41]:
+                          - cell "IVA" [ref=f2e42]
+                          - cell "0,00" [ref=f2e43]
+                        - row "Descuento 0,00" [ref=f2e44]:
+                          - cell "Descuento" [ref=f2e45]
+                          - cell "0,00" [ref=f2e46]
+                        - row "TOTAL EUR 87.814,60" [ref=f2e47]:
+                          - cell "TOTAL EUR" [ref=f2e48]
+                          - cell "87.814,60" [ref=f2e49]
+                  - paragraph [ref=f2e50]: Observaciones
+                  - paragraph
+  - generic:
+    - generic:
+      - generic:
+        - region:
+          - list
+        - region:
+          - list

@@ -6,22 +6,18 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
         $this->call([
-            // 1. Roles y permisos (incluye usuarios base)
             RolesAndPermissionsSeeder::class,
-
-            // 2. Catálogos (tipos, categorías)
-            CatalogosSeeder::class,
-
-            // 3. Datos de ejemplo (clientes, trabajadores, obras)
-            DatosEjemploSeeder::class,
+            MonedaSeeder::class,
+            ImpuestoSeeder::class,
+            TipoDescuentoSeeder::class,
+            IncotermSeeder::class,
+            PuertoSeeder::class,
+            TipoPagoSeeder::class,
+            ConfiguracionSeeder::class,
+            PlantillaFacturaSeeder::class,
         ]);
     }
 }

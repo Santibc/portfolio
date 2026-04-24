@@ -1,0 +1,35 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - link "CLC & CIA CLC & CIA S.A.S. Facturación internacional" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "CLC & CIA" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: CLC & CIA S.A.S.
+        - generic [ref=e8]: Facturación internacional
+    - navigation [ref=e9]:
+      - link "Ir al panel " [ref=e10] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - text: Ir al panel
+        - generic [ref=e11]: 
+  - main [ref=e12]:
+    - generic [ref=e13]: Facturación electrónica DIAN + clientes internacionales
+    - heading "Factura a tus clientes del mundo entero." [level=1] [ref=e15]
+    - paragraph [ref=e16]: Plataforma interna de CLC & CIA S.A.S. para gestionar productos, clientes nacionales e internacionales, plantillas personalizables por cliente y emisión electrónica ante la DIAN vía Siigo.
+    - link "Ir al panel " [ref=e18] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - text: Ir al panel
+      - generic [ref=e19]: 
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e23]: 
+        - heading "Multi-moneda" [level=3] [ref=e24]
+        - paragraph [ref=e25]: COP, EUR, USD. La factura al cliente se muestra en su moneda y a la DIAN se envía en pesos.
+      - generic [ref=e26]:
+        - generic [ref=e28]: 
+        - heading "Electrónica DIAN" [level=3] [ref=e29]
+        - paragraph [ref=e30]: Integración con Siigo vía API oficial. Opcional por factura — tú decides cuándo emitirla.
+      - generic [ref=e31]:
+        - generic [ref=e33]: 
+        - heading "Plantillas por cliente" [level=3] [ref=e34]
+        - paragraph [ref=e35]: Editor visual tipo Word para personalizar el PDF que entregas a cada cliente.
+  - contentinfo [ref=e36]: © 2026 CLC & CIA S.A.S. · NIT 901.249.576-9 · Cali, Colombia

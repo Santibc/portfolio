@@ -1,0 +1,150 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - link " Facturas" [ref=e21] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+        - generic [ref=e24]:
+          - generic [ref=e25]: Catálogos
+          - list [ref=e26]:
+            - listitem [ref=e27]:
+              - link " Productos" [ref=e28] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e29]: 
+                - generic [ref=e30]: Productos
+            - listitem [ref=e31]:
+              - link " Clientes" [ref=e32] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e33]: 
+                - generic [ref=e34]: Clientes
+        - generic [ref=e35]:
+          - generic [ref=e36]: Administración
+          - list [ref=e37]:
+            - listitem [ref=e38]:
+              - button " Configuración " [ref=e39] [cursor=pointer]:
+                - generic [ref=e40]: 
+                - generic [ref=e41]: Configuración
+                - generic [ref=e42]: 
+              - text:        
+            - listitem [ref=e43]:
+              - link " Integración Siigo" [ref=e44] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e45]: 
+                - generic [ref=e46]: Integración Siigo
+            - listitem [ref=e47]:
+              - link " Plantillas de factura" [ref=e48] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e49]: 
+                - generic [ref=e50]: Plantillas de factura
+        - generic [ref=e51]:
+          - generic [ref=e52]: Cuenta
+          - list [ref=e53]:
+            - listitem [ref=e54]:
+              - link " Mi perfil" [ref=e55] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e56]: 
+                - generic [ref=e57]: Mi perfil
+      - button " Cerrar sesión" [ref=e60] [cursor=pointer]:
+        - generic [ref=e61]: 
+        - generic [ref=e62]: Cerrar sesión
+    - generic [ref=e63]:
+      - banner [ref=e64]:
+        - text: 
+        - generic [ref=e65]:
+          - button "Cambiar tema" [ref=e66] [cursor=pointer]:
+            - generic [ref=e67]: 
+            - text: 
+          - generic [ref=e68]:
+            - button "A Administrador Administrador " [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: A
+              - generic [ref=e71]:
+                - generic [ref=e72]: Administrador
+                - generic [ref=e73]: Administrador
+              - generic [ref=e74]: 
+            - text:  
+      - main [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - generic [ref=e82]: martes, 21 de abril
+              - heading "Hola, Administrador 👋" [level=1] [ref=e84]
+              - paragraph [ref=e85]: Bienvenido de vuelta. Aquí tienes un resumen de tu actividad.
+            - link " Mi perfil" [ref=e87] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/profile
+              - generic [ref=e88]: 
+              - text: Mi perfil
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e93]: 
+                - generic [ref=e94]:
+                  - generic [ref=e95]: 
+                  - text: 0%
+              - generic [ref=e96]:
+                - generic [ref=e97]: —
+                - generic [ref=e98]: Usuarios totales
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e102]: 
+                - generic [ref=e103]: —
+              - generic [ref=e104]:
+                - generic [ref=e105]: —
+                - generic [ref=e106]: Actividad
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e110]: 
+                - generic [ref=e111]: —
+              - generic [ref=e112]:
+                - generic [ref=e113]: —
+                - generic [ref=e114]: Completados
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e118]: 
+                - generic [ref=e119]: —
+              - generic [ref=e120]:
+                - generic [ref=e121]: "0"
+                - generic [ref=e122]: Notificaciones
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - generic [ref=e125]:
+                - generic [ref=e126]:
+                  - heading "Bienvenido al sistema" [level=2] [ref=e127]
+                  - paragraph [ref=e128]: Proyecto base listo para construir encima.
+                - generic [ref=e129]: v1.0
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - generic [ref=e133]: 
+                  - generic [ref=e134]: Empieza a construir
+                  - paragraph [ref=e135]: Crea modelos, controladores y vistas para tu nueva funcionalidad.
+                - generic [ref=e136]:
+                  - generic [ref=e138]: 
+                  - generic [ref=e139]: Componentes listos
+                  - paragraph [ref=e140]: Alertas, botones, modales, tablas y más en resources/views/components.
+            - generic [ref=e141]:
+              - heading "Accesos rápidos" [level=2] [ref=e142]
+              - link " Mi perfil Editar datos y contraseña " [ref=e144] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e146]: 
+                - generic [ref=e147]:
+                  - generic [ref=e148]: Mi perfil
+                  - generic [ref=e149]: Editar datos y contraseña
+                - generic [ref=e150]: 

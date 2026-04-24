@@ -1,0 +1,194 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - link " Clientes" [ref=e33] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+        - generic [ref=e36]:
+          - generic [ref=e37]: Administración
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - button " Configuración " [ref=e40] [cursor=pointer]:
+                - generic [ref=e41]: 
+                - generic [ref=e42]: Configuración
+                - generic [ref=e43]: 
+              - text:        
+            - listitem [ref=e44]:
+              - link " Integración Siigo" [ref=e45] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e46]: 
+                - generic [ref=e47]: Integración Siigo
+            - listitem [ref=e48]:
+              - generic "Disponible en Fase 5" [ref=e49]:
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Plantillas de factura
+                - generic [ref=e52]: Fase 5
+        - generic [ref=e53]:
+          - generic [ref=e54]: Cuenta
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link " Mi perfil" [ref=e57] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e58]: 
+                - generic [ref=e59]: Mi perfil
+      - button " Cerrar sesión" [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Cerrar sesión
+    - generic [ref=e65]:
+      - banner [ref=e66]:
+        - text: 
+        - generic [ref=e67]:
+          - button "Cambiar tema" [ref=e68] [cursor=pointer]:
+            - text: 
+            - generic [ref=e69]: 
+          - generic [ref=e70]:
+            - button "A Administrador Administrador " [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: A
+              - generic [ref=e73]:
+                - generic [ref=e74]: Administrador
+                - generic [ref=e75]: Administrador
+              - generic [ref=e76]: 
+            - text:  
+      - main [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Nuevo cliente" [level=1] [ref=e81]
+              - paragraph [ref=e82]: Define los datos fiscales y comerciales del cliente.
+            - link " Volver" [ref=e84] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/catalogos/clientes
+              - generic [ref=e85]: 
+              - text: Volver
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e88]:
+                - generic [ref=e89]: 
+                - heading "Clasificación" [level=2] [ref=e90]
+              - generic [ref=e91]:
+                - generic [ref=e92]:
+                  - generic [ref=e93]: Tipo de cliente *
+                  - generic [ref=e94]:
+                    - button " Nacional" [ref=e95] [cursor=pointer]:
+                      - generic [ref=e96]: 
+                      - text: Nacional
+                    - button " Internacional" [ref=e97] [cursor=pointer]:
+                      - generic [ref=e98]: 
+                      - text: Internacional
+                - generic [ref=e99]:
+                  - generic [ref=e100]:
+                    - generic [ref=e101]: 
+                    - text: Idioma del documento
+                  - combobox " Idioma del documento" [ref=e102]:
+                    - option "Español" [selected]
+                    - option "Inglés"
+            - generic [ref=e103]:
+              - generic [ref=e104]:
+                - generic [ref=e105]: 
+                - heading "Identidad fiscal" [level=2] [ref=e106]
+              - generic [ref=e107]:
+                - generic [ref=e108]:
+                  - generic [ref=e109]: Tipo de identificación
+                  - combobox "Tipo de identificación" [ref=e110]:
+                    - option "—" [selected]
+                    - option "NIT"
+                    - option "Cédula"
+                    - option "C. Extranjería"
+                    - option "Pasaporte"
+                    - option "VAT internacional"
+                - generic [ref=e111]:
+                  - generic [ref=e112]: Identificación
+                  - textbox "Identificación" [ref=e113]:
+                    - /placeholder: Número / documento
+                - generic [ref=e114]:
+                  - generic [ref=e115]: Nombre comercial
+                  - textbox "Nombre comercial" [ref=e116]:
+                    - /placeholder: Nombre comercial (opcional)
+              - generic [ref=e118]:
+                - generic [ref=e119]: Nombre / Razón social *
+                - textbox "Nombre / Razón social *" [ref=e120]:
+                  - /placeholder: Razón social completa
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - generic [ref=e123]: 
+                - heading "Contacto" [level=2] [ref=e124]
+              - generic [ref=e125]:
+                - generic [ref=e126]:
+                  - generic [ref=e127]:
+                    - generic [ref=e128]: 
+                    - text: Email
+                  - textbox " Email" [ref=e129]:
+                    - /placeholder: contacto@cliente.com
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - generic [ref=e132]: 
+                    - text: Teléfono
+                  - textbox " Teléfono" [ref=e133]:
+                    - /placeholder: +57 300 000 0000
+              - generic [ref=e135]:
+                - generic [ref=e136]: Dirección de facturación
+                - textbox "Dirección de facturación" [ref=e137]:
+                  - /placeholder: Dirección fiscal
+              - generic [ref=e139]:
+                - generic [ref=e140]: Dirección de envío
+                - textbox "Dirección de envío" [ref=e141]:
+                  - /placeholder: Dirección de entrega
+                - paragraph [ref=e142]: Si difiere de la de facturación.
+              - generic [ref=e143]:
+                - generic [ref=e144]:
+                  - generic [ref=e145]: País
+                  - textbox "País" [ref=e146]:
+                    - /placeholder: Colombia
+                    - text: Colombia
+                - generic [ref=e147]:
+                  - generic [ref=e148]: Ciudad
+                  - textbox "Ciudad" [ref=e149]
+            - text: 
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]: 
+                - heading "Notas y estado" [level=2] [ref=e153]
+              - generic [ref=e154]:
+                - generic [ref=e155]: Observaciones
+                - textbox "Observaciones" [ref=e156]:
+                  - /placeholder: Notas internas (opcional)
+              - generic [ref=e158]:
+                - checkbox "Cliente activo" [checked] [ref=e159]
+                - generic [ref=e160]: Cliente activo
+            - generic [ref=e161]:
+              - link "Cancelar" [ref=e162] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+              - button " Guardar cliente" [ref=e163] [cursor=pointer]:
+                - generic [ref=e164]: 
+                - text: Guardar cliente

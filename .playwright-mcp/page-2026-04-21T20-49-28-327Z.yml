@@ -1,0 +1,164 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - link " Clientes" [ref=e33] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+        - generic [ref=e36]:
+          - generic [ref=e37]: Administración
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - button " Configuración " [ref=e40] [cursor=pointer]:
+                - generic [ref=e41]: 
+                - generic [ref=e42]: Configuración
+                - generic [ref=e43]: 
+              - text:        
+            - listitem [ref=e44]:
+              - link " Integración Siigo" [ref=e45] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e46]: 
+                - generic [ref=e47]: Integración Siigo
+            - listitem [ref=e48]:
+              - generic "Disponible en Fase 5" [ref=e49]:
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Plantillas de factura
+                - generic [ref=e52]: Fase 5
+        - generic [ref=e53]:
+          - generic [ref=e54]: Cuenta
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link " Mi perfil" [ref=e57] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e58]: 
+                - generic [ref=e59]: Mi perfil
+      - button " Cerrar sesión" [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Cerrar sesión
+    - generic [ref=e65]:
+      - banner [ref=e66]:
+        - text: 
+        - generic [ref=e67]:
+          - button "Cambiar tema" [ref=e68] [cursor=pointer]:
+            - text: 
+            - generic [ref=e69]: 
+          - generic [ref=e70]:
+            - button "A Administrador Administrador " [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: A
+              - generic [ref=e73]:
+                - generic [ref=e74]: Administrador
+                - generic [ref=e75]: Administrador
+              - generic [ref=e76]: 
+            - text:  
+      - main [ref=e77]:
+        - alert [ref=e78]:
+          - generic [ref=e79]: 
+          - paragraph [ref=e80]: Cliente creado.
+          - button "Cerrar" [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]: 
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - heading "Clientes" [level=1] [ref=e86]
+              - paragraph [ref=e87]: Nacionales e internacionales, para facturación DIAN y documentos comerciales.
+            - generic [ref=e88]:
+              - link " Volver" [ref=e89] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e90]: 
+                - text: Volver
+              - link " Nuevo cliente" [ref=e91] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes/create
+                - generic [ref=e92]: 
+                - text: Nuevo cliente
+          - alert [ref=e94]:
+            - generic [ref=e95]: 
+            - generic [ref=e96]: Cliente creado.
+            - button "Cerrar" [ref=e97] [cursor=pointer]:
+              - generic [ref=e98]: 
+          - generic [ref=e100]:
+            - generic [ref=e101]:
+              - generic [ref=e102]:
+                - generic [ref=e103]: 
+                - text: Buscar
+              - textbox " Buscar" [ref=e104]:
+                - /placeholder: Nombre, identificación o email…
+            - generic [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: 
+                - text: Tipo
+              - combobox " Tipo" [ref=e108]:
+                - option "Todos" [selected]
+                - option "Nacionales"
+                - option "Internacionales"
+            - button " Filtrar" [ref=e110] [cursor=pointer]:
+              - generic [ref=e111]: 
+              - text: Filtrar
+          - table [ref=e114]:
+            - rowgroup [ref=e115]:
+              - row "Tipo Identificación Nombre País Moneda Email Teléfono Activo Acciones" [ref=e116]:
+                - columnheader "Tipo" [ref=e117]
+                - columnheader "Identificación" [ref=e118]
+                - columnheader "Nombre" [ref=e119]
+                - columnheader "País" [ref=e120]
+                - columnheader "Moneda" [ref=e121]
+                - columnheader "Email" [ref=e122]
+                - columnheader "Teléfono" [ref=e123]
+                - columnheader "Activo" [ref=e124]
+                - columnheader "Acciones" [ref=e125]
+            - rowgroup [ref=e126]:
+              - row "Internacional VAT DE213277271-0 Mytheresa International Service GmbH Mytheresa Alemania Munich EUR accounts@mytheresa.com +49 89 1276950 Activo Editar Eliminar" [ref=e127]:
+                - cell "Internacional" [ref=e128]:
+                  - generic [ref=e129]: Internacional
+                - cell "VAT DE213277271-0" [ref=e130]:
+                  - generic [ref=e131]: VAT DE213277271-0
+                - cell "Mytheresa International Service GmbH Mytheresa" [ref=e132]:
+                  - generic [ref=e133]: Mytheresa International Service GmbH
+                  - generic [ref=e134]: Mytheresa
+                - cell "Alemania Munich" [ref=e135]:
+                  - generic [ref=e136]: Alemania
+                  - generic [ref=e137]: Munich
+                - cell "EUR" [ref=e138]
+                - cell "accounts@mytheresa.com" [ref=e139]
+                - cell "+49 89 1276950" [ref=e140]
+                - cell "Activo" [ref=e141]:
+                  - generic [ref=e142]: Activo
+                - cell "Editar Eliminar" [ref=e143]:
+                  - generic [ref=e144]:
+                    - link "Editar" [ref=e145] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/catalogos/clientes/1/edit
+                      - generic [ref=e146]: 
+                      - text: Editar
+                    - button "Eliminar" [ref=e148] [cursor=pointer]:
+                      - generic [ref=e149]: 
+                      - text: Eliminar

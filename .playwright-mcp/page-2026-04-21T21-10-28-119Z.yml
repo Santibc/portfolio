@@ -1,0 +1,132 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - link " Facturas" [ref=e21] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+        - generic [ref=e24]:
+          - generic [ref=e25]: Catálogos
+          - list [ref=e26]:
+            - listitem [ref=e27]:
+              - link " Productos" [ref=e28] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e29]: 
+                - generic [ref=e30]: Productos
+            - listitem [ref=e31]:
+              - link " Clientes" [ref=e32] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e33]: 
+                - generic [ref=e34]: Clientes
+        - generic [ref=e35]:
+          - generic [ref=e36]: Administración
+          - list [ref=e37]:
+            - listitem [ref=e38]:
+              - button " Configuración " [ref=e39] [cursor=pointer]:
+                - generic [ref=e40]: 
+                - generic [ref=e41]: Configuración
+                - generic [ref=e42]: 
+              - text:        
+            - listitem [ref=e43]:
+              - link " Integración Siigo" [ref=e44] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e45]: 
+                - generic [ref=e46]: Integración Siigo
+            - listitem [ref=e47]:
+              - link " Plantillas de factura" [ref=e48] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e49]: 
+                - generic [ref=e50]: Plantillas de factura
+        - generic [ref=e51]:
+          - generic [ref=e52]: Cuenta
+          - list [ref=e53]:
+            - listitem [ref=e54]:
+              - link " Mi perfil" [ref=e55] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e56]: 
+                - generic [ref=e57]: Mi perfil
+      - button " Cerrar sesión" [ref=e60] [cursor=pointer]:
+        - generic [ref=e61]: 
+        - generic [ref=e62]: Cerrar sesión
+    - generic [ref=e63]:
+      - banner [ref=e64]:
+        - text: 
+        - generic [ref=e65]:
+          - button "Cambiar tema" [ref=e66] [cursor=pointer]:
+            - text: 
+            - generic [ref=e67]: 
+          - generic [ref=e68]:
+            - button "A Administrador Administrador " [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: A
+              - generic [ref=e71]:
+                - generic [ref=e72]: Administrador
+                - generic [ref=e73]: Administrador
+              - generic [ref=e74]: 
+            - text:  
+      - main [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - heading "Panel de facturación" [level=1] [ref=e78]
+            - paragraph [ref=e79]: Resumen de actividad del mes en curso.
+          - link " Nueva factura" [ref=e81] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/facturacion/facturas/create
+            - generic [ref=e82]: 
+            - text: Nueva factura
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e87]: 
+            - generic [ref=e88]:
+              - generic [ref=e89]: "0"
+              - generic [ref=e90]: Emitidas este mes
+          - generic [ref=e91]:
+            - generic [ref=e94]: 
+            - generic [ref=e95]:
+              - generic [ref=e96]: "1"
+              - generic [ref=e97]: Borradores pendientes
+          - generic [ref=e98]:
+            - generic [ref=e101]: 
+            - generic [ref=e102]:
+              - generic [ref=e103]: "1"
+              - generic [ref=e104]: Total histórico
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - heading "Últimas 10 facturas" [level=3] [ref=e107]
+            - table [ref=e109]:
+              - rowgroup [ref=e110]:
+                - row "# Fecha Cliente Total Estado" [ref=e111]:
+                  - columnheader "#" [ref=e112]
+                  - columnheader "Fecha" [ref=e113]
+                  - columnheader "Cliente" [ref=e114]
+                  - columnheader "Total" [ref=e115]
+                  - columnheader "Estado" [ref=e116]
+              - rowgroup [ref=e117]:
+                - row "REM-2026-0001 2026-04-21 Mytheresa International Service GmbH € 149,64 Borrador" [ref=e118]:
+                  - cell "REM-2026-0001" [ref=e119]:
+                    - link "REM-2026-0001" [ref=e120] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/facturacion/facturas/1/edit
+                  - cell "2026-04-21" [ref=e121]
+                  - cell "Mytheresa International Service GmbH" [ref=e122]
+                  - cell "€ 149,64" [ref=e123]
+                  - cell "Borrador" [ref=e124]:
+                    - generic [ref=e125]: Borrador
+          - generic [ref=e126]:
+            - heading "Facturado por moneda (mes)" [level=3] [ref=e127]
+            - paragraph [ref=e128]: Sin movimientos este mes.

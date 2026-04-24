@@ -1,0 +1,14 @@
+[    1547ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[    1878ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  399858ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  400004ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  400891ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  401063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  401977ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  402156ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  442093ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  442269ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  445304ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0
+[  445409ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  549414ms] [WARNING] Alpine Warning: You can't use [x-collapse] without first installing the "Collapse" plugin here: https://alpinejs.dev/plugins/collapse JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=db063e36:801
+[  549613ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:8000/uploads/empresa/logo.png:0

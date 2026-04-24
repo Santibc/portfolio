@@ -1,0 +1,60 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "CLC & CIA S.A.S. CLC & CIA S.A.S. Plataforma de facturación" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img "CLC & CIA S.A.S." [ref=e6]
+        - generic [ref=e7]:
+          - generic [ref=e8]: CLC & CIA S.A.S.
+          - generic [ref=e9]: Plataforma de facturación
+      - generic [ref=e10]:
+        - heading "Iniciar sesión" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Accede a tu cuenta para continuar.
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]: Correo
+          - generic [ref=e16]:
+            - generic: 
+            - textbox "Correo" [active] [ref=e17]:
+              - /placeholder: tu@email.com
+              - text: admin@admin.com
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: Contraseña
+            - link "¿Olvidaste tu contraseña?" [ref=e21] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/forgot-password
+          - generic [ref=e22]:
+            - generic: 
+            - textbox "Contraseña" [ref=e23]:
+              - /placeholder: ••••••••
+              - text: "12345678"
+            - button "Mostrar contraseña" [ref=e24] [cursor=pointer]:
+              - generic [ref=e25]: 
+              - text: 
+        - generic [ref=e26]:
+          - checkbox "Recordarme" [ref=e27]
+          - text: Recordarme
+        - button "Ingresar " [ref=e28] [cursor=pointer]:
+          - text: Ingresar
+          - generic [ref=e29]: 
+      - paragraph [ref=e30]:
+        - text: ¿No tienes cuenta?
+        - link "Regístrate" [ref=e31] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/register
+    - generic [ref=e32]: © 2026 CLC & CIA S.A.S. · NIT 901.249.576-9
+  - generic [ref=e37]:
+    - generic [ref=e38]: Facturación DIAN · Multi-moneda
+    - heading "Factura a tus clientes del mundo entero." [level=2] [ref=e40]:
+      - text: Factura a tus clientes
+      - text: del mundo entero.
+    - paragraph [ref=e41]: Gestiona productos, clientes nacionales e internacionales, plantillas personalizadas y facturación electrónica DIAN — todo desde un solo lugar.
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]: 
+        - generic [ref=e45]: Multi-moneda
+      - generic [ref=e46]:
+        - generic [ref=e47]: 
+        - generic [ref=e48]: DIAN vía Siigo
+      - generic [ref=e49]:
+        - generic [ref=e50]: 
+        - generic [ref=e51]: Plantillas

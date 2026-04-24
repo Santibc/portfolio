@@ -1,0 +1,862 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Stack" [ref=e9] [cursor=pointer]:
+              - /url: "#stack"
+              - button "Stack" [ref=e10]:
+                - img [ref=e12]
+                - text: Stack
+          - listitem [ref=e14]:
+            - link "Context" [ref=e15] [cursor=pointer]:
+              - /url: "#context"
+              - button "Context" [ref=e16]:
+                - img [ref=e18]
+                - text: Context
+          - listitem [ref=e20]:
+            - link "Debug" [ref=e21] [cursor=pointer]:
+              - /url: "#debug"
+              - button "Debug" [ref=e22]:
+                - img [ref=e24]
+                - text: Debug
+          - listitem [ref=e26]:
+            - link "Flare" [ref=e27] [cursor=pointer]:
+              - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+              - button "Flare" [ref=e28]:
+                - img [ref=e30]
+                - text: Flare
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "Share" [ref=e37] [cursor=pointer]:
+              - /url: "#share"
+              - button "Share" [ref=e38]:
+                - img [ref=e40]
+                - text: Share
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Share with Flare" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/docs/ignition/introducing-ignition/sharing-errors?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - list:
+                  - listitem:
+                    - generic:
+                      - checkbox "Stack" [checked]
+                      - generic: Stack
+                  - listitem:
+                    - generic:
+                      - checkbox "Context" [checked]
+                      - generic: Context
+                  - listitem:
+                    - generic:
+                      - checkbox "Debug" [checked]
+                      - generic: Debug
+                - generic:
+                  - button "Create Share":
+                    - img
+                    - text: Create Share
+          - listitem [ref=e42]:
+            - link "Docs" [ref=e43] [cursor=pointer]:
+              - /url: https://laravel.com/docs/
+              - button "Docs" [ref=e44]:
+                - img [ref=e46]
+                - text: Docs
+          - listitem [ref=e48]:
+            - link [ref=e49] [cursor=pointer]:
+              - /url: "#settings"
+              - button [ref=e50]:
+                - img [ref=e52]
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Ignition Settings" [level=4]
+                  - link "Docs":
+                    - /url: https://flareapp.io/ignition?utm_campaign=ignition&utm_source=ignition
+                    - text: Docs
+                    - img
+                - generic:
+                  - text: Editor
+                  - generic:
+                    - combobox "Editor":
+                      - option "Clipboard"
+                      - option "Sublime"
+                      - option "TextMate"
+                      - option "Emacs"
+                      - option "MacVim"
+                      - option "PhpStorm" [selected]
+                      - option "PHPStorm Remote"
+                      - option "Idea"
+                      - option "VS Code"
+                      - option "VS Code Insiders"
+                      - option "VS Code Remote"
+                      - option "VS Code Insiders Remote"
+                      - option "VS Codium"
+                      - option "Cursor"
+                      - option "Atom"
+                      - option "Nova"
+                      - option "NetBeans"
+                      - option "Xdebug"
+                    - generic:
+                      - img
+                - generic:
+                  - text: Theme
+                  - button "auto":
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                        - generic:
+                          - generic:
+                            - img
+                      - generic: auto
+                - generic:
+                  - button "Save settings"
+                - paragraph:
+                  - text: Settings will be saved locally in
+                  - code: ~/.ignition.json
+                  - text: .
+      - 'link "Unclosed ''('' does not match ''}''" [ref=e56] [cursor=pointer]':
+        - /url: "#top"
+        - generic [ref=e57]: "Unclosed '(' does not match '}'"
+  - main [ref=e58]:
+    - main [ref=e62]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e68]: ParseError
+          - generic [ref=e69]:
+            - generic [ref=e70]: PHP 8.2.12
+            - generic [ref=e71]:
+              - img [ref=e72]
+              - text: 9.52.20
+        - generic [ref=e75]: "Unclosed '(' does not match '}'"
+    - generic [ref=e78]:
+      - complementary [ref=e79]:
+        - generic [ref=e80]:
+          - button "Expand vendor frames" [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - img [ref=e84]
+              - img [ref=e86]
+            - text: Expand vendor frames
+          - list [ref=e89]:
+            - listitem [ref=e90]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: Illuminate
+                - generic [ref=e94]: \
+                - generic [ref=e95]: Filesystem
+                - generic [ref=e96]: \
+                - generic [ref=e97]: Filesystem
+                - generic [ref=e98]: ": 112"
+              - generic [ref=e99]: "Illuminate\\Filesystem\\{closure}"
+            - listitem [ref=e100]
+            - listitem [ref=e101] [cursor=pointer]:
+              - text: 62 vendor frames
+              - img [ref=e102]
+            - listitem [ref=e104] [cursor=pointer]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: F:\xamppPro80\htdocs\clc\public\index
+                - generic [ref=e108]: .php
+                - generic [ref=e109]: ": 51"
+              - generic [ref=e110]: require_once
+            - listitem [ref=e111] [cursor=pointer]:
+              - text: 1 vendor frame
+              - img [ref=e112]
+      - generic [ref=e114]:
+        - 'link "F:\\xamppPro80\\htdocs\\clc\\resources\\views\\admin\\plantillas\\form.blade .php : 112" [ref=e116] [cursor=pointer]':
+          - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=112
+          - generic [ref=e117]:
+            - generic [ref=e118]: F:\xamppPro80\htdocs\clc\resources\views\admin\plantillas\form.blade
+            - generic [ref=e119]: .php
+            - generic [ref=e120]: ": 112"
+        - main [ref=e121]:
+          - navigation [ref=e122]:
+            - generic [ref=e123]:
+              - paragraph [ref=e124]: "97"
+              - paragraph [ref=e125]: "98"
+              - paragraph [ref=e126]: "99"
+              - paragraph [ref=e127]: "100"
+              - paragraph [ref=e128]: "101"
+              - paragraph [ref=e129]: "102"
+              - paragraph [ref=e130]: "103"
+              - paragraph [ref=e131]: "104"
+              - paragraph [ref=e132]: "105"
+              - paragraph [ref=e133]: "106"
+              - paragraph [ref=e134]: "107"
+              - paragraph [ref=e135]: "108"
+              - paragraph [ref=e136]: "109"
+              - paragraph [ref=e137]: "110"
+              - paragraph [ref=e138]: "111"
+              - paragraph [ref=e139]: "112"
+              - paragraph [ref=e140]: "113"
+              - paragraph [ref=e141]: "114"
+              - paragraph [ref=e142]: "115"
+              - paragraph [ref=e143]: "116"
+              - paragraph [ref=e144]: "117"
+              - paragraph [ref=e145]: "118"
+              - paragraph [ref=e146]: "119"
+              - paragraph [ref=e147]: "120"
+              - paragraph [ref=e148]: "121"
+              - paragraph [ref=e149]: "122"
+              - paragraph [ref=e150]: "123"
+              - paragraph [ref=e151]: "124"
+              - paragraph [ref=e152]: "125"
+              - paragraph [ref=e153]: "126"
+          - code [ref=e156]:
+            - generic [ref=e157]:
+              - link [ref=e158] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=97
+                - button [ref=e159]:
+                  - img [ref=e160]
+              - generic [ref=e163]: placeholder="Uso interno (opcional)"
+            - generic [ref=e164]:
+              - link [ref=e165] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=98
+                - button [ref=e166]:
+                  - img [ref=e167]
+              - generic [ref=e169]: />
+            - generic [ref=e170]:
+              - link [ref=e171] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=99
+                - button [ref=e172]:
+                  - img [ref=e173]
+              - generic [ref=e176]: </div>
+            - link [ref=e178] [cursor=pointer]:
+              - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=100
+              - button [ref=e179]:
+                - img [ref=e180]
+            - generic [ref=e183]:
+              - link [ref=e184] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=101
+                - button [ref=e185]:
+                  - img [ref=e186]
+              - generic [ref=e189]: <div class="space-y-1.5">
+            - generic [ref=e190]:
+              - link [ref=e191] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=102
+                - button [ref=e192]:
+                  - img [ref=e193]
+              - generic [ref=e196]: <label for="html_content" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            - generic [ref=e197]:
+              - link [ref=e198] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=103
+                - button [ref=e199]:
+                  - img [ref=e200]
+              - generic [ref=e203]: <i class="bi bi-file-earmark-code mr-1"></i>
+            - generic [ref=e204]:
+              - link [ref=e205] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=104
+                - button [ref=e206]:
+                  - img [ref=e207]
+              - generic [ref=e209]: Contenido HTML
+            - generic [ref=e210]:
+              - link [ref=e211] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=105
+                - button [ref=e212]:
+                  - img [ref=e213]
+              - generic [ref=e216]: <span class="text-red-500">*</span>
+            - generic [ref=e217]:
+              - link [ref=e218] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=106
+                - button [ref=e219]:
+                  - img [ref=e220]
+              - generic [ref=e223]: </label>
+            - generic [ref=e224]:
+              - link [ref=e225] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=107
+                - button [ref=e226]:
+                  - img [ref=e227]
+              - generic [ref=e230]: "<textarea id=\"html_content\" name=\"html_content\">{{ old('html_content', $plantilla->html_content ?? '') }}</textarea>"
+            - generic [ref=e231]:
+              - link [ref=e232] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=108
+                - button [ref=e233]:
+                  - img [ref=e234]
+              - generic [ref=e237]: "@error('html_content')"
+            - generic [ref=e238]:
+              - link [ref=e239] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=109
+                - button [ref=e240]:
+                  - img [ref=e241]
+              - generic [ref=e244]: "<p class=\"text-xs text-red-600 dark:text-red-400\">{{ $message }}</p>"
+            - generic [ref=e245]:
+              - link [ref=e246] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=110
+                - button [ref=e247]:
+                  - img [ref=e248]
+              - generic [ref=e251]: "@enderror"
+            - generic [ref=e252]:
+              - link [ref=e253] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=111
+                - button [ref=e254]:
+                  - img [ref=e255]
+              - generic [ref=e258]: <p class="text-xs text-zinc-500 dark:text-zinc-400">
+            - generic [ref=e259]:
+              - link [ref=e260] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=112
+                - button [ref=e261]:
+                  - img [ref=e262]
+              - generic [ref=e265]: "Usa los merge tags del panel derecho. Soporta bloques <code>{{ '{{#each items}}...{{/each}}' }}</code> para iterar líneas."
+            - generic [ref=e266]:
+              - link [ref=e267] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=113
+                - button [ref=e268]:
+                  - img [ref=e269]
+              - generic [ref=e272]: </p>
+            - generic [ref=e273]:
+              - link [ref=e274] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=114
+                - button [ref=e275]:
+                  - img [ref=e276]
+              - generic [ref=e279]: </div>
+            - generic [ref=e280]:
+              - link [ref=e281] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=115
+                - button [ref=e282]:
+                  - img [ref=e283]
+              - generic [ref=e286]: </div>
+            - link [ref=e288] [cursor=pointer]:
+              - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=116
+              - button [ref=e289]:
+                - img [ref=e290]
+            - generic [ref=e293]:
+              - link [ref=e294] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=117
+                - button [ref=e295]:
+                  - img [ref=e296]
+              - generic [ref=e299]: <div class="card space-y-1.5">
+            - generic [ref=e300]:
+              - link [ref=e301] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=118
+                - button [ref=e302]:
+                  - img [ref=e303]
+              - generic [ref=e306]: <label for="css_content" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            - generic [ref=e307]:
+              - link [ref=e308] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=119
+                - button [ref=e309]:
+                  - img [ref=e310]
+              - generic [ref=e313]: <i class="bi bi-palette mr-1"></i>
+            - generic [ref=e314]:
+              - link [ref=e315] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=120
+                - button [ref=e316]:
+                  - img [ref=e317]
+              - generic [ref=e319]: CSS personalizado (opcional)
+            - generic [ref=e320]:
+              - link [ref=e321] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=121
+                - button [ref=e322]:
+                  - img [ref=e323]
+              - generic [ref=e326]: </label>
+            - generic [ref=e327]:
+              - link [ref=e328] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=122
+                - button [ref=e329]:
+                  - img [ref=e330]
+              - generic [ref=e333]: <textarea
+            - generic [ref=e334]:
+              - link [ref=e335] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=123
+                - button [ref=e336]:
+                  - img [ref=e337]
+              - generic [ref=e340]: id="css_content"
+            - generic [ref=e341]:
+              - link [ref=e342] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=124
+                - button [ref=e343]:
+                  - img [ref=e344]
+              - generic [ref=e347]: name="css_content"
+            - generic [ref=e348]:
+              - link [ref=e349] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=125
+                - button [ref=e350]:
+                  - img [ref=e351]
+              - generic [ref=e354]: rows="10"
+            - generic [ref=e355]:
+              - link [ref=e356] [cursor=pointer]:
+                - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=126
+                - button [ref=e357]:
+                  - img [ref=e358]
+              - generic [ref=e361]: class="input font-mono text-xs"
+    - generic [ref=e363]:
+      - navigation [ref=e364]:
+        - list [ref=e366]:
+          - listitem [ref=e367]:
+            - link "App" [ref=e368] [cursor=pointer]:
+              - /url: "#context-app"
+            - list [ref=e369]:
+              - listitem [ref=e370]:
+                - link "Routing" [ref=e371] [cursor=pointer]:
+                  - /url: "#context-app-routing"
+                  - img [ref=e373]
+                  - generic [ref=e375]: Routing
+              - listitem [ref=e376]:
+                - link "Views" [ref=e377] [cursor=pointer]:
+                  - /url: "#context-app-views"
+                  - img [ref=e379]
+                  - generic [ref=e381]: Views
+          - listitem [ref=e382]:
+            - link "Request" [ref=e383] [cursor=pointer]:
+              - /url: "#context-request"
+            - list [ref=e384]:
+              - listitem [ref=e385]:
+                - link "Browser" [ref=e386] [cursor=pointer]:
+                  - /url: "#context-request-browser"
+                  - img [ref=e388]
+                  - generic [ref=e390]: Browser
+              - listitem [ref=e391]:
+                - link "Headers" [ref=e392] [cursor=pointer]:
+                  - /url: "#context-request-headers"
+                  - img [ref=e394]
+                  - generic [ref=e396]: Headers
+              - listitem [ref=e397]:
+                - link "Body" [ref=e398] [cursor=pointer]:
+                  - /url: "#context-request-body"
+                  - img [ref=e400]
+                  - generic [ref=e402]: Body
+          - listitem [ref=e403]:
+            - link "Context" [ref=e404] [cursor=pointer]:
+              - /url: "#context-context"
+            - list [ref=e405]:
+              - listitem [ref=e406]:
+                - link "User" [ref=e407] [cursor=pointer]:
+                  - /url: "#context-user-user"
+                  - img [ref=e409]
+                  - generic [ref=e411]: User
+              - listitem [ref=e412]:
+                - link "Versions" [ref=e413] [cursor=pointer]:
+                  - /url: "#context-context-versions"
+                  - img [ref=e415]
+                  - generic [ref=e417]: Versions
+          - listitem [ref=e418]:
+            - link "Custom" [ref=e419] [cursor=pointer]:
+              - /url: "#context-custom-context"
+            - list [ref=e420]:
+              - listitem [ref=e421]:
+                - link "Context" [ref=e422] [cursor=pointer]:
+                  - /url: "#context-custom-context-context"
+                  - img [ref=e424]
+                  - generic [ref=e426]: Context
+      - generic [ref=e427]:
+        - generic [ref=e428]:
+          - heading "App" [level=2] [ref=e429]
+          - generic [ref=e430]:
+            - generic [ref=e431]:
+              - heading "Routing" [level=1] [ref=e432]:
+                - text: Routing
+                - img [ref=e434]
+              - generic [ref=e436]:
+                - generic [ref=e437]:
+                  - term [ref=e438]: Controller
+                  - definition [ref=e439]:
+                    - generic [ref=e440]:
+                      - code [ref=e443]: App\Http\Controllers\Admin\PlantillaFacturaController@edit
+                      - button "Copy to clipboard" [ref=e445] [cursor=pointer]:
+                        - img [ref=e446]
+                - generic [ref=e448]:
+                  - term [ref=e449]: Route name
+                  - definition [ref=e450]:
+                    - generic [ref=e451]:
+                      - code [ref=e454]: admin.plantillas.edit
+                      - button "Copy to clipboard" [ref=e456] [cursor=pointer]:
+                        - img [ref=e457]
+                - generic [ref=e459]:
+                  - term [ref=e460]: Middleware
+                  - definition [ref=e461]:
+                    - list [ref=e462]:
+                      - listitem [ref=e463]:
+                        - generic [ref=e464]:
+                          - code [ref=e467]: web
+                          - button "Copy to clipboard" [ref=e469] [cursor=pointer]:
+                            - img [ref=e470]
+                      - listitem [ref=e472]:
+                        - generic [ref=e473]:
+                          - code [ref=e476]: auth
+                          - button "Copy to clipboard" [ref=e478] [cursor=pointer]:
+                            - img [ref=e479]
+                      - listitem [ref=e481]:
+                        - generic [ref=e482]:
+                          - code [ref=e485]: verified
+                          - button "Copy to clipboard" [ref=e487] [cursor=pointer]:
+                            - img [ref=e488]
+                      - listitem [ref=e490]:
+                        - generic [ref=e491]:
+                          - code [ref=e494]: role:Administrador
+                          - button "Copy to clipboard" [ref=e496] [cursor=pointer]:
+                            - img [ref=e497]
+                      - listitem [ref=e499]:
+                        - generic [ref=e500]:
+                          - code [ref=e503]: throttle:30,1
+                          - button "Copy to clipboard" [ref=e505] [cursor=pointer]:
+                            - img [ref=e506]
+            - generic [ref=e508]:
+              - heading "Views" [level=1] [ref=e509]:
+                - text: Views
+                - img [ref=e511]
+              - generic [ref=e513]:
+                - generic [ref=e514]:
+                  - term [ref=e515]: View
+                  - definition [ref=e516]:
+                    - link "F:\\xamppPro80\\htdocs\\clc\\resources\\views\\admin\\plantillas\\form.blade .php" [ref=e517] [cursor=pointer]:
+                      - /url: phpstorm://open?file=F%3A%5CxamppPro80%5Chtdocs%5Cclc%5Cresources%5Cviews%5Cadmin%5Cplantillas%5Cform.blade.php&line=1
+                      - generic [ref=e518]:
+                        - generic [ref=e519]: F:\xamppPro80\htdocs\clc\resources\views\admin\plantillas\form.blade
+                        - generic [ref=e520]: .php
+                - generic [ref=e521]:
+                  - term [ref=e522]: Data
+                  - definition [ref=e523]:
+                    - generic [ref=e524]:
+                      - generic [ref=e525]:
+                        - term [ref=e526]: errors
+                        - definition [ref=e527]:
+                          - generic [ref=e529]:
+                            - text: "Illuminate\\Support\\ViewErrorBag {"
+                            - generic "[Ctrl+click] Expand all children" [ref=e530] [cursor=pointer]:
+                              - text: "#1555"
+                              - generic [ref=e531]: ▼
+                            - generic [ref=e532]: "#bags: []"
+                            - text: "}"
+                      - generic [ref=e533]:
+                        - term [ref=e534]: plantilla
+                        - definition [ref=e535]:
+                          - generic [ref=e537]:
+                            - text: "App\\Models\\PlantillaFactura {"
+                            - generic "[Ctrl+click] Expand all children" [ref=e538] [cursor=pointer]:
+                              - text: "#1592"
+                              - generic [ref=e539]: ▼
+                            - generic [ref=e540]:
+                              - text: "#connection: \"mysql\" #table: \"plantillas_factura\" #primaryKey: \"id\" #keyType: \"int\" +incrementing: true #with: [] #withCount: [] +preventsLazyLoading: false #perPage: 15 +exists: true +wasRecentlyCreated: false #escapeWhenCastingToString: false #attributes: array:9 ["
+                              - generic "[Ctrl+click] Expand all children" [ref=e541] [cursor=pointer]:
+                                - generic [ref=e542]: ▶
+                              - text: "] #original: array:9 ["
+                              - generic "[Ctrl+click] Expand all children" [ref=e543] [cursor=pointer]:
+                                - generic [ref=e544]: ▶
+                              - text: "] #changes: [] #casts: array:2 ["
+                              - generic "[Ctrl+click] Expand all children" [ref=e545] [cursor=pointer]:
+                                - generic [ref=e546]: ▶
+                              - text: "] #classCastCache: [] #attributeCastCache: [] #dates: [] #dateFormat: null #appends: [] #dispatchesEvents: [] #observables: [] #relations: [] #touches: [] +timestamps: true #hidden: [] #visible: [] #fillable: array:6 ["
+                              - generic "[Ctrl+click] Expand all children" [ref=e547] [cursor=pointer]:
+                                - generic [ref=e548]: ▶
+                              - text: "] #guarded: array:1 ["
+                              - generic "[Ctrl+click] Expand all children" [ref=e549] [cursor=pointer]:
+                                - generic [ref=e550]: ▶
+                              - text: "]"
+                            - text: "}"
+        - generic [ref=e551]:
+          - heading "Request" [level=2] [ref=e552]
+          - generic [ref=e553]:
+            - generic [ref=e554]:
+              - generic [ref=e555]:
+                - generic [ref=e556]: http://127.0.0.1:8000/admin/plantillas/1/edit
+                - generic [ref=e557]: GET
+              - generic [ref=e559] [cursor=pointer]:
+                - code [ref=e562]:
+                  - code [ref=e564]: "curl \"http://127.0.0.1:8000/admin/plantillas/1/edit\" \\ -X GET \\ -H 'host: 127.0.0.1:8000' \\ -H 'connection: keep-alive' \\ -H 'sec-ch-ua: \"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"' \\ -H 'sec-ch-ua-mobile: ?0' \\ -H 'sec-ch-ua-platform: \"Windows\"' \\ -H 'upgrade-insecure-requests: 1' \\ -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \\ -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \\ -H 'sec-fetch-site: none' \\ -H 'sec-fetch-mode: navigate' \\ -H 'sec-fetch-user: ?1' \\ -H 'sec-fetch-dest: document' \\ -H 'accept-encoding: gzip, deflate, br, zstd' \\ -H 'accept-language: es-419,es;q=0.9' \\ -H 'cookie: XSRF-TOKEN=eyJpdiI6IjlzMGNUNEhaT3VyQUNBQlZrVTJHcFE9PSIsInZhbHVlIjoibnZBbzNJUTR3L0laOVQwb1NnSzJPYzVzNm44VkR2Mm1zN0NoMm9pR3dQOUIweHlhTGFKUmkwdVpCODhkVGJGZW1PcVk5ejF0VXNGazJ1RzNiT2dDS0ozMzRhcnNrMGYxZ2tmc1Q1WGh2c0dSZEtEMXJIVXNQV1d2VjFtRndyOGwiLCJtYWMiOiIyNzI4ODQ1OGY4OWUyOTY0N2EzODEwYWVhNzgyNTQzOGY4ZWY3MGE5Y2E5MTIyY2Q0MWYzNjQxOTU5MThiZTkwIiwidGFnIjoiIn0%3D; clccia_session=eyJpdiI6ImFGK1Jxd1Fac0VTMlVqaS9QeFpobVE9PSIsInZhbHVlIjoiSkdzOUhJMWc4SnVzYnlNMEQ3emFYMFhhUHBIRklzVmVaVnFLeVNidUt6cDdES1VkTmk2bG5oeFFCY1hhb2ppVnRIWEl4eEZZK2U4VjdFNkdUWGsrNVkxeFo3ODBGcVlvL3V0L2hZMFBseXNWNGMycVNyWjRmdktxek1EQldiR3MiLCJtYWMiOiI4OWU2YjBkZmRkYWI2NzUyZDZjMmM0ZTViMTkxYTljZTA2YjUwMTBhOTJiNmFjOTRmMzc4NDY1MWUzZTQ5YzVlIiwidGFnIjoiIn0%3D';"
+                - button "Copy to clipboard" [ref=e566]:
+                  - img [ref=e567]
+                - button [ref=e569]:
+                  - img [ref=e570]
+            - generic [ref=e572]:
+              - heading "Browser" [level=1] [ref=e573]:
+                - text: Browser
+                - img [ref=e575]
+              - generic [ref=e577]:
+                - code [ref=e580]: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+                - button "Copy to clipboard" [ref=e582] [cursor=pointer]:
+                  - img [ref=e583]
+            - generic [ref=e585]:
+              - heading "Headers" [level=1] [ref=e586]:
+                - text: Headers
+                - img [ref=e588]
+              - generic [ref=e590]:
+                - generic [ref=e591]:
+                  - term [ref=e592]: host
+                  - definition [ref=e593]:
+                    - generic [ref=e594]:
+                      - code [ref=e597]: 127.0.0.1:8000
+                      - button "Copy to clipboard" [ref=e599] [cursor=pointer]:
+                        - img [ref=e600]
+                - generic [ref=e602]:
+                  - term [ref=e603]: connection
+                  - definition [ref=e604]:
+                    - generic [ref=e605]:
+                      - code [ref=e608]: keep-alive
+                      - button "Copy to clipboard" [ref=e610] [cursor=pointer]:
+                        - img [ref=e611]
+                - generic [ref=e613]:
+                  - term [ref=e614]: sec-ch-ua
+                  - definition [ref=e615]:
+                    - generic [ref=e616]:
+                      - code [ref=e619]: "\"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\""
+                      - button "Copy to clipboard" [ref=e621] [cursor=pointer]:
+                        - img [ref=e622]
+                - generic [ref=e624]:
+                  - term [ref=e625]: sec-ch-ua-mobile
+                  - definition [ref=e626]:
+                    - generic [ref=e627]:
+                      - code [ref=e630]: "?0"
+                      - button "Copy to clipboard" [ref=e632] [cursor=pointer]:
+                        - img [ref=e633]
+                - generic [ref=e635]:
+                  - term [ref=e636]: sec-ch-ua-platform
+                  - definition [ref=e637]:
+                    - generic [ref=e638]:
+                      - code [ref=e641]: "\"Windows\""
+                      - button "Copy to clipboard" [ref=e643] [cursor=pointer]:
+                        - img [ref=e644]
+                - generic [ref=e646]:
+                  - term [ref=e647]: upgrade-insecure-requests
+                  - definition [ref=e648]:
+                    - generic [ref=e649]:
+                      - code [ref=e652]: "1"
+                      - button "Copy to clipboard" [ref=e654] [cursor=pointer]:
+                        - img [ref=e655]
+                - generic [ref=e657]:
+                  - term [ref=e658]: user-agent
+                  - definition [ref=e659]:
+                    - generic [ref=e660]:
+                      - code [ref=e663]: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+                      - button "Copy to clipboard" [ref=e665] [cursor=pointer]:
+                        - img [ref=e666]
+                - generic [ref=e668]:
+                  - term [ref=e669]: accept
+                  - definition [ref=e670]:
+                    - generic [ref=e671]:
+                      - code [ref=e674]: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+                      - button "Copy to clipboard" [ref=e676] [cursor=pointer]:
+                        - img [ref=e677]
+                - generic [ref=e679]:
+                  - term [ref=e680]: sec-fetch-site
+                  - definition [ref=e681]:
+                    - generic [ref=e682]:
+                      - code [ref=e685]: none
+                      - button "Copy to clipboard" [ref=e687] [cursor=pointer]:
+                        - img [ref=e688]
+                - generic [ref=e690]:
+                  - term [ref=e691]: sec-fetch-mode
+                  - definition [ref=e692]:
+                    - generic [ref=e693]:
+                      - code [ref=e696]: navigate
+                      - button "Copy to clipboard" [ref=e698] [cursor=pointer]:
+                        - img [ref=e699]
+                - generic [ref=e701]:
+                  - term [ref=e702]: sec-fetch-user
+                  - definition [ref=e703]:
+                    - generic [ref=e704]:
+                      - code [ref=e707]: "?1"
+                      - button "Copy to clipboard" [ref=e709] [cursor=pointer]:
+                        - img [ref=e710]
+                - generic [ref=e712]:
+                  - term [ref=e713]: sec-fetch-dest
+                  - definition [ref=e714]:
+                    - generic [ref=e715]:
+                      - code [ref=e718]: document
+                      - button "Copy to clipboard" [ref=e720] [cursor=pointer]:
+                        - img [ref=e721]
+                - generic [ref=e723]:
+                  - term [ref=e724]: accept-encoding
+                  - definition [ref=e725]:
+                    - generic [ref=e726]:
+                      - code [ref=e729]: gzip, deflate, br, zstd
+                      - button "Copy to clipboard" [ref=e731] [cursor=pointer]:
+                        - img [ref=e732]
+                - generic [ref=e734]:
+                  - term [ref=e735]: accept-language
+                  - definition [ref=e736]:
+                    - generic [ref=e737]:
+                      - code [ref=e740]: es-419,es;q=0.9
+                      - button "Copy to clipboard" [ref=e742] [cursor=pointer]:
+                        - img [ref=e743]
+                - generic [ref=e745]:
+                  - term [ref=e746]: cookie
+                  - definition [ref=e747]:
+                    - generic [ref=e748]:
+                      - code [ref=e751]: XSRF-TOKEN=eyJpdiI6IjlzMGNUNEhaT3VyQUNBQlZrVTJHcFE9PSIsInZhbHVlIjoibnZBbzNJUTR3L0laOVQwb1NnSzJPYzVzNm44VkR2Mm1zN0NoMm9pR3dQOUIweHlhTGFKUmkwdVpCODhkVGJGZW1PcVk5ejF0VXNGazJ1RzNiT2dDS0ozMzRhcnNrMGYxZ2tmc1Q1WGh2c0dSZEtEMXJIVXNQV1d2VjFtRndyOGwiLCJtYWMiOiIyNzI4ODQ1OGY4OWUyOTY0N2EzODEwYWVhNzgyNTQzOGY4ZWY3MGE5Y2E5MTIyY2Q0MWYzNjQxOTU5MThiZTkwIiwidGFnIjoiIn0%3D; clccia_session=eyJpdiI6ImFGK1Jxd1Fac0VTMlVqaS9QeFpobVE9PSIsInZhbHVlIjoiSkdzOUhJMWc4SnVzYnlNMEQ3emFYMFhhUHBIRklzVmVaVnFLeVNidUt6cDdES1VkTmk2bG5oeFFCY1hhb2ppVnRIWEl4eEZZK2U4VjdFNkdUWGsrNVkxeFo3ODBGcVlvL3V0L2hZMFBseXNWNGMycVNyWjRmdktxek1EQldiR3MiLCJtYWMiOiI4OWU2YjBkZmRkYWI2NzUyZDZjMmM0ZTViMTkxYTljZTA2YjUwMTBhOTJiNmFjOTRmMzc4NDY1MWUzZTQ5YzVlIiwidGFnIjoiIn0%3D
+                      - button "Copy to clipboard" [ref=e753] [cursor=pointer]:
+                        - img [ref=e754]
+            - generic [ref=e756]:
+              - heading "Body" [level=1] [ref=e757]:
+                - text: Body
+                - img [ref=e759]
+              - generic [ref=e761]:
+                - code [ref=e764]: "[]"
+                - button "Copy to clipboard" [ref=e766] [cursor=pointer]:
+                  - img [ref=e767]
+        - generic [ref=e769]:
+          - heading "Context" [level=2] [ref=e770]
+          - generic [ref=e771]:
+            - generic [ref=e772]:
+              - heading "User" [level=1] [ref=e773]:
+                - text: User
+                - img [ref=e775]
+              - generic [ref=e777]:
+                - img "admin@admin.com" [ref=e779]
+                - generic [ref=e780]:
+                  - paragraph [ref=e781]: Administrador
+                  - paragraph [ref=e782]: admin@admin.com
+              - generic [ref=e783] [cursor=pointer]:
+                - code [ref=e786]:
+                  - code [ref=e788]: "{ \"id\": 1, \"name\": \"Administrador\", \"email\": \"admin@admin.com\", \"profile_photo\": null, \"email_verified_at\": \"2026-04-21T20:30:55.000000Z\", \"created_at\": \"2026-04-21T20:30:55.000000Z\", \"updated_at\": \"2026-04-21T20:30:55.000000Z\", \"roles\": [ { \"id\": 1, \"name\": \"Administrador\", \"guard_name\": \"web\", \"created_at\": \"2026-04-21T20:30:54.000000Z\", \"updated_at\": \"2026-04-21T20:30:54.000000Z\", \"pivot\": { \"model_id\": 1, \"role_id\": 1, \"model_type\": \"App\\\\Models\\\\User\" } } ] }"
+                - button "Copy to clipboard" [ref=e790]:
+                  - img [ref=e791]
+                - button [ref=e793]:
+                  - img [ref=e794]
+            - generic [ref=e796]:
+              - heading "Versions" [level=1] [ref=e797]:
+                - text: Versions
+                - img [ref=e799]
+              - generic [ref=e801]:
+                - generic [ref=e802]:
+                  - term [ref=e803]: Php Version
+                  - definition [ref=e804]:
+                    - generic [ref=e805]:
+                      - code [ref=e808]: 8.2.12
+                      - button "Copy to clipboard" [ref=e810] [cursor=pointer]:
+                        - img [ref=e811]
+                - generic [ref=e813]:
+                  - term [ref=e814]: Laravel Version
+                  - definition [ref=e815]:
+                    - generic [ref=e816]:
+                      - code [ref=e819]: 9.52.20
+                      - button "Copy to clipboard" [ref=e821] [cursor=pointer]:
+                        - img [ref=e822]
+                - generic [ref=e824]:
+                  - term [ref=e825]: Laravel Locale
+                  - definition [ref=e826]:
+                    - generic [ref=e827]:
+                      - code [ref=e830]: es
+                      - button "Copy to clipboard" [ref=e832] [cursor=pointer]:
+                        - img [ref=e833]
+                - generic [ref=e835]:
+                  - term [ref=e836]: Laravel Config Cached
+                  - definition [ref=e837]:
+                    - generic [ref=e838]:
+                      - img [ref=e839]
+                      - generic [ref=e841]: "false"
+                - generic [ref=e842]:
+                  - term [ref=e843]: App Debug
+                  - definition [ref=e844]:
+                    - generic [ref=e845]:
+                      - img [ref=e846]
+                      - generic [ref=e848]: "true"
+                - generic [ref=e849]:
+                  - term [ref=e850]: App Env
+                  - definition [ref=e851]:
+                    - generic [ref=e852]:
+                      - code [ref=e855]: local
+                      - button "Copy to clipboard" [ref=e857] [cursor=pointer]:
+                        - img [ref=e858]
+        - generic [ref=e860]:
+          - heading "Custom" [level=2] [ref=e861]
+          - generic [ref=e863]:
+            - heading "Context" [level=1] [ref=e864]:
+              - text: Context
+              - img [ref=e866]
+            - generic [ref=e869]:
+              - term [ref=e870]: View
+              - definition [ref=e871]:
+                - generic [ref=e872] [cursor=pointer]:
+                  - code [ref=e875]:
+                    - code [ref=e877]: "{ \"view\": \"F:\\\\xamppPro80\\\\htdocs\\\\clc\\\\resources\\\\views\\\\admin\\\\plantillas\\\\form.blade.php\", \"data\": { \"errors\": \"<pre class=sf-dump id=sf-dump-1610587855 data-indent-pad=\\\" \\\"><span class=sf-dump-note>Illuminate\\\\Support\\\\ViewErrorBag</span> {<a class=sf-dump-ref>#1555</a><samp data-depth=1 class=sf-dump-expanded>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">bags</span>: []\\n</samp>}\\n</pre><script>Sfdump(\\\"sf-dump-1610587855\\\", {\\\"maxDepth\\\":3,\\\"maxStringLength\\\":160})</script>\\n\", \"plantilla\": \"<pre class=sf-dump id=sf-dump-568364308 data-indent-pad=\\\" \\\"><span class=sf-dump-note>App\\\\Models\\\\PlantillaFactura</span> {<a class=sf-dump-ref>#1592</a><samp data-depth=1 class=sf-dump-expanded>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">connection</span>: \\\"<span class=sf-dump-str title=\\\"5 characters\\\">mysql</span>\\\"\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">table</span>: \\\"<span class=sf-dump-str title=\\\"18 characters\\\">plantillas_factura</span>\\\"\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">primaryKey</span>: \\\"<span class=sf-dump-str title=\\\"2 characters\\\">id</span>\\\"\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">keyType</span>: \\\"<span class=sf-dump-str title=\\\"3 characters\\\">int</span>\\\"\\n +<span class=sf-dump-public title=\\\"Public property\\\">incrementing</span>: <span class=sf-dump-const>true</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">with</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">withCount</span>: []\\n +<span class=sf-dump-public title=\\\"Public property\\\">preventsLazyLoading</span>: <span class=sf-dump-const>false</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">perPage</span>: <span class=sf-dump-num>15</span>\\n +<span class=sf-dump-public title=\\\"Public property\\\">exists</span>: <span class=sf-dump-const>true</span>\\n +<span class=sf-dump-public title=\\\"Public property\\\">wasRecentlyCreated</span>: <span class=sf-dump-const>false</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">escapeWhenCastingToString</span>: <span class=sf-dump-const>false</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">attributes</span>: <span class=sf-dump-note>array:9</span> [<samp data-depth=2 class=sf-dump-compact>\\n \\\"<span class=sf-dump-key>id</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>nombre</span>\\\" => \\\"<span class=sf-dump-str title=\\\"18 characters\\\">Plantilla gen&#233;rica</span>\\\"\\n \\\"<span class=sf-dump-key>descripcion</span>\\\" => \\\"<span class=sf-dump-str title=\\\"69 characters\\\">Factura est&#225;ndar para cualquier cliente. Marcada como predeterminada.</span>\\\"\\n \\\"<span class=sf-dump-key>html_content</span>\\\" => \\\"\\\"\\\"\\n <span class=sf-dump-str title=\\\"2179 characters\\\">&lt;div class=&quot;factura&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;header&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;h1&gt;{{empresa.razon_social}}&lt;/h1&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;NIT {{empresa.nit}} &#183; {{empresa.direccion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Tel. {{empresa.telefono}} &#183; {{empresa.email}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div style=&quot;text-align:right;&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;h2 style=&quot;margin:0;&quot;&gt;FACTURA {{factura.numero}}&lt;/h2&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Fecha: {{factura.fecha}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;grid-2&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Cliente&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;&lt;strong&gt;{{cliente.nombre}}&lt;/strong&gt;&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;ID: {{cliente.identificacion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{cliente.direccion_facturacion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{cliente.email}} &#183; {{cliente.telefono}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Detalles&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Moneda: {{factura.moneda}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Vencimiento: {{factura.vencimiento}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;CUFE: {{factura.cufe}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;thead&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;th&gt;#&lt;/th&gt;&lt;th&gt;Referencia&lt;/th&gt;&lt;th&gt;Descripci&#243;n&lt;/th&gt;&lt;th&gt;Cantidad&lt;/th&gt;&lt;th&gt;Precio&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/thead&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tbody&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> {{#each items}}<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{@index}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{referencia}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{descripcion}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{cantidad}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{precio_unitario}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{total}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> {{/each}}<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/tbody&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;table class=&quot;totales&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;Subtotal&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.subtotal}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;IVA&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.iva}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;Descuento&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.descuento}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr class=&quot;total-final&quot;&gt;&lt;td&gt;TOTAL {{factura.moneda}}&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.total}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot; style=&quot;margin-top:30px;&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Observaciones&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{factura.observaciones}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\">&lt;/div&gt;</span>\\n \\\"\\\"\\\"\\n \\\"<span class=sf-dump-key>css_content</span>\\\" => \\\"\\\"\\\"\\n <span class=sf-dump-str title=\\\"1038 characters\\\">body { font-family: Arial, sans-serif; font-size: 11px; color: #1f2937; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.factura { max-width: 900px; margin: 0 auto; padding: 20px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.header h1 { color: #f97316; font-size: 22px; margin: 0; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.section { margin-bottom: 16px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.section-title { background: #fef3c7; padding: 6px 10px; font-weight: bold; border-left: 3px solid #f97316; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">table { width: 100%; border-collapse: collapse; margin-top: 8px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; font-size: 10px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">th { background: #f3f4f6; font-weight: bold; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales { margin-top: 12px; float: right; width: 260px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales td { padding: 4px 8px; font-size: 11px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales .total-final { font-weight: bold; background: #fff7ed; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.banco { background: #fff7ed; padding: 10px; border: 1px dashed #fb923c; font-size: 10px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }</span>\\n \\\"\\\"\\\"\\n \\\"<span class=sf-dump-key>es_default</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>activo</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>created_at</span>\\\" => \\\"<span class=sf-dump-str title=\\\"19 characters\\\">2026-04-21 15:51:56</span>\\\"\\n \\\"<span class=sf-dump-key>updated_at</span>\\\" => \\\"<span class=sf-dump-str title=\\\"19 characters\\\">2026-04-21 15:51:56</span>\\\"\\n </samp>]\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">original</span>: <span class=sf-dump-note>array:9</span> [<samp data-depth=2 class=sf-dump-compact>\\n \\\"<span class=sf-dump-key>id</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>nombre</span>\\\" => \\\"<span class=sf-dump-str title=\\\"18 characters\\\">Plantilla gen&#233;rica</span>\\\"\\n \\\"<span class=sf-dump-key>descripcion</span>\\\" => \\\"<span class=sf-dump-str title=\\\"69 characters\\\">Factura est&#225;ndar para cualquier cliente. Marcada como predeterminada.</span>\\\"\\n \\\"<span class=sf-dump-key>html_content</span>\\\" => \\\"\\\"\\\"\\n <span class=sf-dump-str title=\\\"2179 characters\\\">&lt;div class=&quot;factura&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;header&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;h1&gt;{{empresa.razon_social}}&lt;/h1&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;NIT {{empresa.nit}} &#183; {{empresa.direccion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Tel. {{empresa.telefono}} &#183; {{empresa.email}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div style=&quot;text-align:right;&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;h2 style=&quot;margin:0;&quot;&gt;FACTURA {{factura.numero}}&lt;/h2&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Fecha: {{factura.fecha}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;grid-2&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Cliente&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;&lt;strong&gt;{{cliente.nombre}}&lt;/strong&gt;&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;ID: {{cliente.identificacion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{cliente.direccion_facturacion}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{cliente.email}} &#183; {{cliente.telefono}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Detalles&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Moneda: {{factura.moneda}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;Vencimiento: {{factura.vencimiento}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;CUFE: {{factura.cufe}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;thead&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;th&gt;#&lt;/th&gt;&lt;th&gt;Referencia&lt;/th&gt;&lt;th&gt;Descripci&#243;n&lt;/th&gt;&lt;th&gt;Cantidad&lt;/th&gt;&lt;th&gt;Precio&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/thead&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tbody&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> {{#each items}}<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{@index}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{referencia}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{descripcion}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{cantidad}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{precio_unitario}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;td&gt;{{total}}&lt;/td&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> {{/each}}<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/tbody&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;table class=&quot;totales&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;Subtotal&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.subtotal}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;IVA&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.iva}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr&gt;&lt;td&gt;Descuento&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.descuento}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;tr class=&quot;total-final&quot;&gt;&lt;td&gt;TOTAL {{factura.moneda}}&lt;/td&gt;&lt;td style=&quot;text-align:right;&quot;&gt;{{totales.total}}&lt;/td&gt;&lt;/tr&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/table&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div style=&quot;clear:both;&quot;&gt;&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"><span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section&quot; style=&quot;margin-top:30px;&quot;&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;div class=&quot;section-title&quot;&gt;Observaciones&lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;p&gt;{{factura.observaciones}}&lt;/p&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\"> &lt;/div&gt;<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"2179 characters\\\">&lt;/div&gt;</span>\\n \\\"\\\"\\\"\\n \\\"<span class=sf-dump-key>css_content</span>\\\" => \\\"\\\"\\\"\\n <span class=sf-dump-str title=\\\"1038 characters\\\">body { font-family: Arial, sans-serif; font-size: 11px; color: #1f2937; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.factura { max-width: 900px; margin: 0 auto; padding: 20px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.header h1 { color: #f97316; font-size: 22px; margin: 0; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.section { margin-bottom: 16px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.section-title { background: #fef3c7; padding: 6px 10px; font-weight: bold; border-left: 3px solid #f97316; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">table { width: 100%; border-collapse: collapse; margin-top: 8px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; font-size: 10px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">th { background: #f3f4f6; font-weight: bold; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales { margin-top: 12px; float: right; width: 260px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales td { padding: 4px 8px; font-size: 11px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.totales .total-final { font-weight: bold; background: #fff7ed; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.banco { background: #fff7ed; padding: 10px; border: 1px dashed #fb923c; font-size: 10px; }<span class=\\\"sf-dump-default sf-dump-ns\\\">\\\\n</span></span>\\n <span class=sf-dump-str title=\\\"1038 characters\\\">.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }</span>\\n \\\"\\\"\\\"\\n \\\"<span class=sf-dump-key>es_default</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>activo</span>\\\" => <span class=sf-dump-num>1</span>\\n \\\"<span class=sf-dump-key>created_at</span>\\\" => \\\"<span class=sf-dump-str title=\\\"19 characters\\\">2026-04-21 15:51:56</span>\\\"\\n \\\"<span class=sf-dump-key>updated_at</span>\\\" => \\\"<span class=sf-dump-str title=\\\"19 characters\\\">2026-04-21 15:51:56</span>\\\"\\n </samp>]\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">changes</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">casts</span>: <span class=sf-dump-note>array:2</span> [<samp data-depth=2 class=sf-dump-compact>\\n \\\"<span class=sf-dump-key>es_default</span>\\\" => \\\"<span class=sf-dump-str title=\\\"4 characters\\\">bool</span>\\\"\\n \\\"<span class=sf-dump-key>activo</span>\\\" => \\\"<span class=sf-dump-str title=\\\"4 characters\\\">bool</span>\\\"\\n </samp>]\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">classCastCache</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">attributeCastCache</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">dates</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">dateFormat</span>: <span class=sf-dump-const>null</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">appends</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">dispatchesEvents</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">observables</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">relations</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">touches</span>: []\\n +<span class=sf-dump-public title=\\\"Public property\\\">timestamps</span>: <span class=sf-dump-const>true</span>\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">hidden</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">visible</span>: []\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">fillable</span>: <span class=sf-dump-note>array:6</span> [<samp data-depth=2 class=sf-dump-compact>\\n <span class=sf-dump-index>0</span> => \\\"<span class=sf-dump-str title=\\\"6 characters\\\">nombre</span>\\\"\\n <span class=sf-dump-index>1</span> => \\\"<span class=sf-dump-str title=\\\"11 characters\\\">descripcion</span>\\\"\\n <span class=sf-dump-index>2</span> => \\\"<span class=sf-dump-str title=\\\"12 characters\\\">html_content</span>\\\"\\n <span class=sf-dump-index>3</span> => \\\"<span class=sf-dump-str title=\\\"11 characters\\\">css_content</span>\\\"\\n <span class=sf-dump-index>4</span> => \\\"<span class=sf-dump-str title=\\\"10 characters\\\">es_default</span>\\\"\\n <span class=sf-dump-index>5</span> => \\\"<span class=sf-dump-str title=\\\"6 characters\\\">activo</span>\\\"\\n </samp>]\\n #<span class=sf-dump-protected title=\\\"Protected property\\\">guarded</span>: <span class=sf-dump-note>array:1</span> [<samp data-depth=2 class=sf-dump-compact>\\n <span class=sf-dump-index>0</span> => \\\"<span class=sf-dump-str>*</span>\\\"\\n </samp>]\\n</samp>}\\n</pre><script>Sfdump(\\\"sf-dump-568364308\\\", {\\\"maxDepth\\\":3,\\\"maxStringLength\\\":160})</script>\\n\" } }"
+                  - button "Copy to clipboard" [ref=e879]:
+                    - img [ref=e880]
+                  - button [ref=e882]:
+                    - img [ref=e883]
+    - generic [ref=e886]:
+      - navigation:
+        - list [ref=e887]:
+          - listitem [ref=e888]:
+            - button "3 Queries" [ref=e889] [cursor=pointer]:
+              - generic [ref=e890]: "3"
+              - generic [ref=e891]: Queries
+      - generic [ref=e892]:
+        - generic [ref=e893]:
+          - generic [ref=e894]:
+            - generic [ref=e895]: 3:55:55 p.m.
+            - generic [ref=e896]:
+              - img "Runtime" [ref=e897]
+              - text: 2.11ms
+            - generic [ref=e899]:
+              - img "Connection" [ref=e900]
+              - text: mysql
+          - generic [ref=e903]:
+            - generic [ref=e904] [cursor=pointer]:
+              - code [ref=e907]:
+                - code [ref=e909]: "select * from `users` where `id` = 1 limit 1"
+              - button "Copy to clipboard" [ref=e911]:
+                - img [ref=e912]
+              - button [ref=e914]:
+                - img [ref=e915]
+            - button "1 query parameter" [ref=e918] [cursor=pointer]:
+              - img [ref=e919]
+              - text: 1 query parameter
+        - generic [ref=e921]:
+          - generic [ref=e922]:
+            - generic [ref=e923]: 3:55:55 p.m.
+            - generic [ref=e924]:
+              - img "Runtime" [ref=e925]
+              - text: 0.52ms
+            - generic [ref=e927]:
+              - img "Connection" [ref=e928]
+              - text: mysql
+          - generic [ref=e931]:
+            - generic [ref=e932] [cursor=pointer]:
+              - code [ref=e935]:
+                - code [ref=e937]: "select * from `plantillas_factura` where `id` = 1 limit 1"
+              - button "Copy to clipboard" [ref=e939]:
+                - img [ref=e940]
+              - button [ref=e942]:
+                - img [ref=e943]
+            - button "1 query parameter" [ref=e946] [cursor=pointer]:
+              - img [ref=e947]
+              - text: 1 query parameter
+        - generic [ref=e949]:
+          - generic [ref=e950]:
+            - generic [ref=e951]: 3:55:55 p.m.
+            - generic [ref=e952]:
+              - img "Runtime" [ref=e953]
+              - text: 0.5ms
+            - generic [ref=e955]:
+              - img "Connection" [ref=e956]
+              - text: mysql
+          - generic [ref=e959]:
+            - generic [ref=e960] [cursor=pointer]:
+              - code [ref=e963]:
+                - code [ref=e965]: "select `roles`.*, `model_has_roles`.`model_id` as `pivot_model_id`, `model_has_roles`.`role_id` as `pivot_role_id`, `model_has_roles`.`model_type` as `pivot_model_type` from `roles` inner join `model_has_roles` on `roles`.`id` = `model_has_roles`.`role_id` where `model_has_roles`.`model_id` in (1) and `model_has_roles`.`model_type` = App\\Models\\User"
+              - button "Copy to clipboard" [ref=e967]:
+                - img [ref=e968]
+              - button [ref=e970]:
+                - img [ref=e971]
+            - button "1 query parameter" [ref=e974] [cursor=pointer]:
+              - img [ref=e975]
+              - text: 1 query parameter
+    - generic [ref=e978]:
+      - list [ref=e979]:
+        - listitem [ref=e980]:
+          - img [ref=e981]
+        - listitem [ref=e989]: ·
+        - listitem [ref=e990]:
+          - link "Source" [ref=e991] [cursor=pointer]:
+            - /url: https://github.com/spatie/laravel-ignition
+        - listitem [ref=e992]: ·
+        - listitem [ref=e993]:
+          - link "Docs" [ref=e994] [cursor=pointer]:
+            - /url: https://flareapp.io/docs/ignition/introducing-ignition/overview
+        - listitem [ref=e995]: ·
+        - listitem [ref=e996]:
+          - link "Laravel" [ref=e997] [cursor=pointer]:
+            - /url: https://laravel.com
+      - paragraph [ref=e999]:
+        - text: Ignition is built by
+        - link "Flare" [ref=e1000] [cursor=pointer]:
+          - /url: https://flareapp.io/?utm_campaign=ignition&utm_source=ignition
+          - img [ref=e1001]
+          - text: Flare
+        - text: ", the Laravel error reporting service."

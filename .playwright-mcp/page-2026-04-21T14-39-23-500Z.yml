@@ -1,0 +1,97 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - button "" [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]: 
+      - generic [ref=e7]:
+        - img "Manzer Logo" [ref=e8]
+        - text: Manzer Agroforestal
+      - generic [ref=e10] [cursor=pointer]:
+        - generic [ref=e12]: 
+        - generic [ref=e13]:
+          - generic [ref=e14]: Administrador
+          - generic [ref=e15]: Administrador
+  - complementary [ref=e16]:
+    - navigation [ref=e17]:
+      - link " Inicio" [ref=e19] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - generic [ref=e20]: 
+        - generic [ref=e21]: Inicio
+      - generic [ref=e22]: Cuenta
+      - link " Mi Perfil" [ref=e24] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - generic [ref=e25]: 
+        - generic [ref=e26]: Mi Perfil
+    - button " Cerrar Sesión" [ref=e29] [cursor=pointer]:
+      - generic [ref=e30]: 
+      - generic [ref=e31]: Cerrar Sesión
+  - main [ref=e32]:
+    - generic [ref=e34]:
+      - heading " Mi Perfil" [level=1] [ref=e35]:
+        - generic [ref=e36]: 
+        - text: Mi Perfil
+      - paragraph [ref=e37]: Gestiona tu información personal y preferencias
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - heading " Foto de Perfil" [level=5] [ref=e43]:
+          - generic [ref=e44]: 
+          - text: Foto de Perfil
+        - generic [ref=e45]:
+          - generic [ref=e48]: A
+          - heading "Administrador" [level=4] [ref=e49]
+          - paragraph [ref=e50]: admin@admin.com
+          - generic [ref=e51]: Administrador
+          - separator [ref=e52]
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]: Cambiar foto
+              - button "Cambiar foto" [ref=e56] [cursor=pointer]
+            - button " Subir Foto" [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]: 
+              - text: Subir Foto
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - heading " Información del Perfil" [level=5] [ref=e62]:
+            - generic [ref=e63]: 
+            - text: Información del Perfil
+          - generic [ref=e64]:
+            - paragraph [ref=e65]: Actualiza la información de perfil y la dirección de correo electrónico de tu cuenta.
+            - generic [ref=e66]:
+              - generic [ref=e67]:
+                - generic [ref=e68]: Nombre
+                - textbox "Nombre" [active] [ref=e69]: Administrador
+              - generic [ref=e70]:
+                - generic [ref=e71]: Correo Electrónico
+                - textbox "Correo Electrónico" [ref=e72]: admin@admin.com
+              - button " Guardar Cambios" [ref=e73] [cursor=pointer]:
+                - generic [ref=e74]: 
+                - text: Guardar Cambios
+        - generic [ref=e75]:
+          - heading " Actualizar Contraseña" [level=5] [ref=e77]:
+            - generic [ref=e78]: 
+            - text: Actualizar Contraseña
+          - generic [ref=e79]:
+            - paragraph [ref=e80]: Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerte seguro.
+            - generic [ref=e81]:
+              - generic [ref=e82]:
+                - generic [ref=e83]: Contraseña Actual
+                - textbox "Contraseña Actual" [ref=e84]
+              - generic [ref=e85]:
+                - generic [ref=e86]: Nueva Contraseña
+                - textbox "Nueva Contraseña" [ref=e87]
+              - generic [ref=e88]:
+                - generic [ref=e89]: Confirmar Contraseña
+                - textbox "Confirmar Contraseña" [ref=e90]
+              - button " Cambiar Contraseña" [ref=e91] [cursor=pointer]:
+                - generic [ref=e92]: 
+                - text: Cambiar Contraseña
+        - generic [ref=e93]:
+          - heading " Zona de Peligro" [level=5] [ref=e95]:
+            - generic [ref=e96]: 
+            - text: Zona de Peligro
+          - generic [ref=e97]:
+            - heading "Eliminar Cuenta" [level=6] [ref=e98]
+            - paragraph [ref=e99]: Una vez eliminada tu cuenta, todos tus recursos y datos se eliminarán permanentemente. Antes de eliminarla, descarga cualquier dato o información que desees conservar.
+            - button " Eliminar Cuenta" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]: 
+              - text: Eliminar Cuenta

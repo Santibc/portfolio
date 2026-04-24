@@ -1,0 +1,231 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - generic "Disponible en Fase 3" [ref=e29]:
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+                - generic [ref=e32]: Fase 3
+            - listitem [ref=e33]:
+              - generic "Disponible en Fase 4" [ref=e34]:
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+                - generic [ref=e37]: Fase 4
+        - generic [ref=e38]:
+          - generic [ref=e39]: Administración
+          - list [ref=e40]:
+            - listitem [ref=e41]:
+              - button " Configuración " [ref=e42] [cursor=pointer]:
+                - generic [ref=e43]: 
+                - generic [ref=e44]: Configuración
+                - generic [ref=e45]: 
+              - list [ref=e46]:
+                - listitem [ref=e47]:
+                  - link " Resumen" [ref=e48] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Resumen
+                - listitem [ref=e51]:
+                  - link " Empresa y banco" [ref=e52] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e53]: 
+                    - generic [ref=e54]: Empresa y banco
+                - listitem [ref=e55]:
+                  - link " Monedas" [ref=e56] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e57]: 
+                    - generic [ref=e58]: Monedas
+                - listitem [ref=e59]:
+                  - link " Impuestos" [ref=e60] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e61]: 
+                    - generic [ref=e62]: Impuestos
+                - listitem [ref=e63]:
+                  - link " Tipos de descuento" [ref=e64] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e65]: 
+                    - generic [ref=e66]: Tipos de descuento
+                - listitem [ref=e67]:
+                  - link " Incoterms" [ref=e68] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Incoterms
+                - listitem [ref=e71]:
+                  - link " Puertos" [ref=e72] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e73]: 
+                    - generic [ref=e74]: Puertos
+                - listitem [ref=e75]:
+                  - link " Tipos de pago" [ref=e76] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e77]: 
+                    - generic [ref=e78]: Tipos de pago
+            - listitem [ref=e79]:
+              - link " Integración Siigo" [ref=e80] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e81]: 
+                - generic [ref=e82]: Integración Siigo
+            - listitem [ref=e83]:
+              - generic "Disponible en Fase 5" [ref=e84]:
+                - generic [ref=e85]: 
+                - generic [ref=e86]: Plantillas de factura
+                - generic [ref=e87]: Fase 5
+        - generic [ref=e88]:
+          - generic [ref=e89]: Cuenta
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - link " Mi perfil" [ref=e92] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e93]: 
+                - generic [ref=e94]: Mi perfil
+      - button " Cerrar sesión" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: 
+        - generic [ref=e99]: Cerrar sesión
+    - generic [ref=e100]:
+      - banner [ref=e101]:
+        - text: 
+        - generic [ref=e102]:
+          - button "Cambiar tema" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]: 
+            - text: 
+          - generic [ref=e105]:
+            - button "A Administrador Administrador " [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: A
+              - generic [ref=e108]:
+                - generic [ref=e109]: Administrador
+                - generic [ref=e110]: Administrador
+              - generic [ref=e111]: 
+            - text:  
+      - main [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - heading "Tipos de descuento" [level=1] [ref=e115]
+            - paragraph [ref=e116]: Configura los descuentos aplicables en facturas.
+          - generic [ref=e117]:
+            - link " Volver" [ref=e118] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin
+              - generic [ref=e119]: 
+              - text: Volver
+            - link " Nuevo tipo" [ref=e120] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/tipos-descuento/create
+              - generic [ref=e121]: 
+              - text: Nuevo tipo
+        - table [ref=e124]:
+          - rowgroup [ref=e125]:
+            - row "Nombre Alcance Modalidad Activo Acciones" [ref=e126]:
+              - columnheader "Nombre" [ref=e127]
+              - columnheader "Alcance" [ref=e128]
+              - columnheader "Modalidad" [ref=e129]
+              - columnheader "Activo" [ref=e130]
+              - columnheader "Acciones" [ref=e131]
+          - rowgroup [ref=e132]:
+            - row "Descuento Comercial Por línea Porcentaje Activo  Editar  Eliminar" [ref=e133]:
+              - cell "Descuento Comercial" [ref=e134]
+              - cell "Por línea" [ref=e135]:
+                - generic [ref=e136]: Por línea
+              - cell "Porcentaje" [ref=e137]:
+                - generic [ref=e138]: Porcentaje
+              - cell "Activo" [ref=e139]:
+                - generic [ref=e140]: Activo
+              - cell " Editar  Eliminar" [ref=e141]:
+                - generic [ref=e142]:
+                  - link " Editar" [ref=e143] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento/1/edit
+                    - generic [ref=e144]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e146] [cursor=pointer]:
+                    - generic [ref=e147]: 
+                    - text: Eliminar
+            - row "Descuento Línea Valor Fijo Por línea Valor fijo Activo  Editar  Eliminar" [ref=e148]:
+              - cell "Descuento Línea Valor Fijo" [ref=e149]
+              - cell "Por línea" [ref=e150]:
+                - generic [ref=e151]: Por línea
+              - cell "Valor fijo" [ref=e152]:
+                - generic [ref=e153]: Valor fijo
+              - cell "Activo" [ref=e154]:
+                - generic [ref=e155]: Activo
+              - cell " Editar  Eliminar" [ref=e156]:
+                - generic [ref=e157]:
+                  - link " Editar" [ref=e158] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento/5/edit
+                    - generic [ref=e159]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e161] [cursor=pointer]:
+                    - generic [ref=e162]: 
+                    - text: Eliminar
+            - row "Descuento por Volumen Global Porcentaje Activo  Editar  Eliminar" [ref=e163]:
+              - cell "Descuento por Volumen" [ref=e164]
+              - cell "Global" [ref=e165]:
+                - generic [ref=e166]: Global
+              - cell "Porcentaje" [ref=e167]:
+                - generic [ref=e168]: Porcentaje
+              - cell "Activo" [ref=e169]:
+                - generic [ref=e170]: Activo
+              - cell " Editar  Eliminar" [ref=e171]:
+                - generic [ref=e172]:
+                  - link " Editar" [ref=e173] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento/2/edit
+                    - generic [ref=e174]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e176] [cursor=pointer]:
+                    - generic [ref=e177]: 
+                    - text: Eliminar
+            - row "Descuento Pronto Pago Global Porcentaje Activo  Editar  Eliminar" [ref=e178]:
+              - cell "Descuento Pronto Pago" [ref=e179]
+              - cell "Global" [ref=e180]:
+                - generic [ref=e181]: Global
+              - cell "Porcentaje" [ref=e182]:
+                - generic [ref=e183]: Porcentaje
+              - cell "Activo" [ref=e184]:
+                - generic [ref=e185]: Activo
+              - cell " Editar  Eliminar" [ref=e186]:
+                - generic [ref=e187]:
+                  - link " Editar" [ref=e188] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento/3/edit
+                    - generic [ref=e189]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e191] [cursor=pointer]:
+                    - generic [ref=e192]: 
+                    - text: Eliminar
+            - row "Descuento Valor Fijo Global Valor fijo Activo  Editar  Eliminar" [ref=e193]:
+              - cell "Descuento Valor Fijo" [ref=e194]
+              - cell "Global" [ref=e195]:
+                - generic [ref=e196]: Global
+              - cell "Valor fijo" [ref=e197]:
+                - generic [ref=e198]: Valor fijo
+              - cell "Activo" [ref=e199]:
+                - generic [ref=e200]: Activo
+              - cell " Editar  Eliminar" [ref=e201]:
+                - generic [ref=e202]:
+                  - link " Editar" [ref=e203] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento/4/edit
+                    - generic [ref=e204]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e206] [cursor=pointer]:
+                    - generic [ref=e207]: 
+                    - text: Eliminar

@@ -1,0 +1,250 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC & CIA" [ref=e6]
+        - generic [ref=e7]:
+          - generic [ref=e8]: CLC & CIA
+          - generic [ref=e9]: S.A.S.
+      - navigation "Navegación principal" [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]: General
+          - list [ref=e14]:
+            - listitem [ref=e15]:
+              - link " Inicio" [ref=e16] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e17]: 
+                - generic [ref=e18]: Inicio
+        - generic [ref=e19]:
+          - generic [ref=e20]: Operación
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link " Facturas" [ref=e23] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/facturacion/facturas
+                - generic [ref=e24]: 
+                - generic [ref=e25]: Facturas
+        - generic [ref=e26]:
+          - generic [ref=e27]: Catálogos
+          - list [ref=e28]:
+            - listitem [ref=e29]:
+              - link " Productos" [ref=e30] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e31]: 
+                - generic [ref=e32]: Productos
+            - listitem [ref=e33]:
+              - link " Clientes" [ref=e34] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+        - generic [ref=e37]:
+          - generic [ref=e38]: Administración
+          - list [ref=e39]:
+            - listitem [ref=e40]:
+              - button " Configuración " [ref=e41] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - generic [ref=e43]: Configuración
+                - generic [ref=e44]: 
+              - list [ref=e45]:
+                - listitem [ref=e46]:
+                  - link " Resumen" [ref=e47] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e48]: 
+                    - generic [ref=e49]: Resumen
+                - listitem [ref=e50]:
+                  - link " Empresa y banco" [ref=e51] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e52]: 
+                    - generic [ref=e53]: Empresa y banco
+                - listitem [ref=e54]:
+                  - link " Monedas" [ref=e55] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e56]: 
+                    - generic [ref=e57]: Monedas
+                - listitem [ref=e58]:
+                  - link " Impuestos" [ref=e59] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e60]: 
+                    - generic [ref=e61]: Impuestos
+                - listitem [ref=e62]:
+                  - link " Tipos de descuento" [ref=e63] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Tipos de descuento
+                - listitem [ref=e66]:
+                  - link " Incoterms" [ref=e67] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e68]: 
+                    - generic [ref=e69]: Incoterms
+                - listitem [ref=e70]:
+                  - link " Puertos" [ref=e71] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e72]: 
+                    - generic [ref=e73]: Puertos
+                - listitem [ref=e74]:
+                  - link " Tipos de pago" [ref=e75] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e76]: 
+                    - generic [ref=e77]: Tipos de pago
+            - listitem [ref=e78]:
+              - link " Integración Siigo" [ref=e79] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e80]: 
+                - generic [ref=e81]: Integración Siigo
+            - listitem [ref=e82]:
+              - link " Plantillas de factura" [ref=e83] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/plantillas
+                - generic [ref=e84]: 
+                - generic [ref=e85]: Plantillas de factura
+        - generic [ref=e86]:
+          - generic [ref=e87]: Cuenta
+          - list [ref=e88]:
+            - listitem [ref=e89]:
+              - link " Mi perfil" [ref=e90] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e91]: 
+                - generic [ref=e92]: Mi perfil
+      - button " Cerrar sesión" [ref=e95] [cursor=pointer]:
+        - generic [ref=e96]: 
+        - generic [ref=e97]: Cerrar sesión
+    - generic [ref=e98]:
+      - banner [ref=e99]:
+        - text: 
+        - generic [ref=e100]:
+          - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 
+            - text: 
+          - generic [ref=e103]:
+            - button "A Administrador Administrador " [ref=e104] [cursor=pointer]:
+              - generic [ref=e105]: A
+              - generic [ref=e106]:
+                - generic [ref=e107]: Administrador
+                - generic [ref=e108]: Administrador
+              - generic [ref=e109]: 
+            - text:  
+      - main [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - heading "Integración Siigo" [level=1] [ref=e113]
+            - paragraph [ref=e114]: Configura las credenciales de la API oficial de Siigo y sincroniza catálogos.
+          - link " Volver" [ref=e116] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/admin
+            - generic [ref=e117]: 
+            - text: Volver
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - generic [ref=e123]: 
+                - generic [ref=e124]:
+                  - heading "Credenciales API" [level=3] [ref=e125]
+                  - paragraph [ref=e126]:
+                    - text: Se obtienen en
+                    - link "developers.siigo.com" [ref=e127] [cursor=pointer]:
+                      - /url: https://developers.siigo.com/
+                    - text: .
+              - generic [ref=e128]:
+                - generic [ref=e129]:
+                  - generic [ref=e130]:
+                    - generic [ref=e131]:
+                      - generic [ref=e132]: 
+                      - text: Usuario (email) *
+                    - textbox " Usuario (email) *" [ref=e133]:
+                      - /placeholder: usuario@empresa.com
+                      - text: admin@admin.com
+                  - generic [ref=e134]:
+                    - generic [ref=e135]:
+                      - generic [ref=e136]: 
+                      - text: Ambiente *
+                    - combobox " Ambiente *" [ref=e137]:
+                      - option "Sandbox (pruebas)" [selected]
+                      - option "Producción"
+                - generic [ref=e138]:
+                  - generic [ref=e139]:
+                    - generic [ref=e140]: 
+                    - text: Access Key
+                  - generic [ref=e141]:
+                    - textbox " Access Key" [ref=e142]:
+                      - /placeholder: Pega el access key de Siigo
+                      - text: "12345678"
+                    - button "" [ref=e143] [cursor=pointer]:
+                      - generic [ref=e144]: 
+                      - text: 
+                  - paragraph [ref=e145]: Se guarda cifrado con Crypt::encryptString. Si dejas vacío, se conserva el actual.
+                - generic [ref=e146]:
+                  - generic [ref=e147]:
+                    - generic [ref=e148]: 
+                    - text: Partner ID (opcional)
+                  - textbox " Partner ID (opcional)" [ref=e149]:
+                    - /placeholder: Solo si Siigo te lo asignó como partner
+                  - paragraph [ref=e150]: Header Partner-Id enviado en cada request.
+                - generic [ref=e151]:
+                  - generic [ref=e152]:
+                    - generic [ref=e153]: 
+                    - heading "Datos de facturación electrónica" [level=4] [ref=e154]
+                  - paragraph [ref=e155]: Valores obligatorios al emitir una factura electrónica ante la DIAN. Los IDs los obtienes sincronizando catálogos (botón "Sincronizar catálogos") o consultándolos en Siigo Nube.
+                  - generic [ref=e156]:
+                    - generic [ref=e157]:
+                      - generic [ref=e158]:
+                        - generic [ref=e159]: 
+                        - text: NIT del emisor
+                      - textbox " NIT del emisor" [ref=e160]:
+                        - /placeholder: 901249576-9
+                      - paragraph [ref=e161]: NIT de la empresa (con o sin dígito de verificación).
+                    - generic [ref=e162]:
+                      - generic [ref=e163]:
+                        - generic [ref=e164]: 
+                        - text: Tipo documento ID
+                      - spinbutton " Tipo documento ID" [ref=e165]
+                      - paragraph [ref=e166]: ID del tipo 'Factura de venta electrónica' en Siigo.
+                    - generic [ref=e167]:
+                      - generic [ref=e168]:
+                        - generic [ref=e169]: 
+                        - text: Vendedor (Seller) ID
+                      - spinbutton " Vendedor (Seller) ID" [ref=e170]
+                      - paragraph [ref=e171]: ID del usuario vendedor por defecto.
+                    - generic [ref=e172]:
+                      - generic [ref=e173]:
+                        - generic [ref=e174]: 
+                        - text: Método de pago ID
+                      - spinbutton " Método de pago ID" [ref=e175]
+                      - paragraph [ref=e176]: ID del método de pago por defecto.
+                - generic [ref=e177]:
+                  - checkbox "Integración activa — se enviará factura electrónica cuando se marque en cada factura." [ref=e178]
+                  - generic [ref=e179]: Integración activa — se enviará factura electrónica cuando se marque en cada factura.
+                - generic [ref=e180]:
+                  - paragraph [ref=e181]: Aún sin sincronizar catálogos.
+                  - button " Guardar configuración" [ref=e182] [cursor=pointer]:
+                    - generic [ref=e183]: 
+                    - text: Guardar configuración
+            - generic [ref=e184]:
+              - heading "Acciones" [level=3] [ref=e185]
+              - generic [ref=e186]:
+                - button " Probar conexión" [ref=e187] [cursor=pointer]:
+                  - generic [ref=e188]: 
+                  - generic [ref=e189]: Probar conexión
+                - button " Sincronizar catálogos" [ref=e191] [cursor=pointer]:
+                  - generic [ref=e192]: 
+                  - generic [ref=e193]: Sincronizar catálogos
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - generic [ref=e198]: 
+              - generic [ref=e199]:
+                - generic [ref=e200]: "0"
+                - generic [ref=e201]: Tipos de documento
+            - generic [ref=e202]:
+              - generic [ref=e205]: 
+              - generic [ref=e206]:
+                - generic [ref=e207]: "0"
+                - generic [ref=e208]: Impuestos (Siigo)
+            - generic [ref=e209]:
+              - generic [ref=e212]: 
+              - generic [ref=e213]:
+                - generic [ref=e214]: "0"
+                - generic [ref=e215]: Tipos de pago (Siigo)
+            - generic [ref=e217]:
+              - generic [ref=e218]: 
+              - generic [ref=e219]:
+                - strong [ref=e220]: ¿Cómo funciona?
+                - paragraph [ref=e221]: Cada factura tiene un toggle "Generar factura electrónica". Si está activo y la integración está activa, la factura se envía a Siigo al emitirla y Siigo devuelve CUFE + número DIAN oficial.

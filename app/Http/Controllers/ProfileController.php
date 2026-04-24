@@ -51,7 +51,7 @@ class ProfileController extends Controller
 
         // Eliminar foto anterior si existe
         if ($user->profile_photo) {
-            $oldPhotoPath = public_path('uploads/profile-photos/' . $user->profile_photo);
+            $oldPhotoPath = public_path('uploads/profile-photos/'.$user->profile_photo);
             if (File::exists($oldPhotoPath)) {
                 File::delete($oldPhotoPath);
             }
@@ -59,13 +59,13 @@ class ProfileController extends Controller
 
         // Crear directorio si no existe
         $uploadPath = public_path('uploads/profile-photos');
-        if (!File::exists($uploadPath)) {
+        if (! File::exists($uploadPath)) {
             File::makeDirectory($uploadPath, 0755, true);
         }
 
         // Guardar nueva foto
         $file = $request->file('profile_photo');
-        $fileName = 'user_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $fileName = 'user_'.$user->id.'_'.time().'.'.$file->getClientOriginalExtension();
         $file->move($uploadPath, $fileName);
 
         $user->profile_photo = $fileName;
@@ -82,7 +82,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         if ($user->profile_photo) {
-            $photoPath = public_path('uploads/profile-photos/' . $user->profile_photo);
+            $photoPath = public_path('uploads/profile-photos/'.$user->profile_photo);
             if (File::exists($photoPath)) {
                 File::delete($photoPath);
             }

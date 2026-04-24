@@ -1,8 +1,8 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 echo "=== PROYECTOS EN BASE DE DATOS ===\n\n";
@@ -24,5 +24,5 @@ if ($proyectos->isEmpty()) {
             $proyecto->agricultor->name ?? 'N/A'
         );
     }
-    echo "Total proyectos: " . $proyectos->count() . "\n";
+    echo 'Total proyectos: '.$proyectos->count()."\n";
 }

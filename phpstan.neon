@@ -1,0 +1,24 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database/seeders
+        - database/factories
+        - routes
+
+    level: 5
+
+    ignoreErrors:
+        # Breeze: VerifyEmailController pasa User|null al evento Verified,
+        # pero el middleware 'auth' garantiza que $request->user() no es null en runtime
+        -
+            message: '#Parameter \#1 \$user of class Illuminate\\Auth\\Events\\Verified constructor expects#'
+            path: app/Http/Controllers/Auth/VerifyEmailController.php
+
+    excludePaths:
+        - ./vendor/*
+        - ./storage/*
+        - ./bootstrap/cache/*

@@ -1,0 +1,243 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - generic "Disponible en Fase 3" [ref=e29]:
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+                - generic [ref=e32]: Fase 3
+            - listitem [ref=e33]:
+              - generic "Disponible en Fase 4" [ref=e34]:
+                - generic [ref=e35]: 
+                - generic [ref=e36]: Clientes
+                - generic [ref=e37]: Fase 4
+        - generic [ref=e38]:
+          - generic [ref=e39]: Administración
+          - list [ref=e40]:
+            - listitem [ref=e41]:
+              - button " Configuración " [ref=e42] [cursor=pointer]:
+                - generic [ref=e43]: 
+                - generic [ref=e44]: Configuración
+                - generic [ref=e45]: 
+              - list [ref=e46]:
+                - listitem [ref=e47]:
+                  - link " Resumen" [ref=e48] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Resumen
+                - listitem [ref=e51]:
+                  - link " Empresa y banco" [ref=e52] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/empresa
+                    - generic [ref=e53]: 
+                    - generic [ref=e54]: Empresa y banco
+                - listitem [ref=e55]:
+                  - link " Monedas" [ref=e56] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/monedas
+                    - generic [ref=e57]: 
+                    - generic [ref=e58]: Monedas
+                - listitem [ref=e59]:
+                  - link " Impuestos" [ref=e60] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/impuestos
+                    - generic [ref=e61]: 
+                    - generic [ref=e62]: Impuestos
+                - listitem [ref=e63]:
+                  - link " Tipos de descuento" [ref=e64] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-descuento
+                    - generic [ref=e65]: 
+                    - generic [ref=e66]: Tipos de descuento
+                - listitem [ref=e67]:
+                  - link " Incoterms" [ref=e68] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Incoterms
+                - listitem [ref=e71]:
+                  - link " Puertos" [ref=e72] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/puertos
+                    - generic [ref=e73]: 
+                    - generic [ref=e74]: Puertos
+                - listitem [ref=e75]:
+                  - link " Tipos de pago" [ref=e76] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/tipos-pago
+                    - generic [ref=e77]: 
+                    - generic [ref=e78]: Tipos de pago
+            - listitem [ref=e79]:
+              - link " Integración Siigo" [ref=e80] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e81]: 
+                - generic [ref=e82]: Integración Siigo
+            - listitem [ref=e83]:
+              - generic "Disponible en Fase 5" [ref=e84]:
+                - generic [ref=e85]: 
+                - generic [ref=e86]: Plantillas de factura
+                - generic [ref=e87]: Fase 5
+        - generic [ref=e88]:
+          - generic [ref=e89]: Cuenta
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - link " Mi perfil" [ref=e92] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e93]: 
+                - generic [ref=e94]: Mi perfil
+      - button " Cerrar sesión" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: 
+        - generic [ref=e99]: Cerrar sesión
+    - generic [ref=e100]:
+      - banner [ref=e101]:
+        - text: 
+        - generic [ref=e102]:
+          - button "Cambiar tema" [ref=e103] [cursor=pointer]:
+            - generic [ref=e104]: 
+            - text: 
+          - generic [ref=e105]:
+            - button "A Administrador Administrador " [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: A
+              - generic [ref=e108]:
+                - generic [ref=e109]: Administrador
+                - generic [ref=e110]: Administrador
+              - generic [ref=e111]: 
+            - text:  
+      - main [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - heading "Incoterms" [level=1] [ref=e115]
+            - paragraph [ref=e116]: Términos de comercio internacional utilizados en facturación.
+          - generic [ref=e117]:
+            - link " Volver" [ref=e118] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin
+              - generic [ref=e119]: 
+              - text: Volver
+            - link " Nuevo incoterm" [ref=e120] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/admin/incoterms/create
+              - generic [ref=e121]: 
+              - text: Nuevo incoterm
+        - table [ref=e124]:
+          - rowgroup [ref=e125]:
+            - row "Código Descripción Activo Acciones" [ref=e126]:
+              - columnheader "Código" [ref=e127]
+              - columnheader "Descripción" [ref=e128]
+              - columnheader "Activo" [ref=e129]
+              - columnheader "Acciones" [ref=e130]
+          - rowgroup [ref=e131]:
+            - row "CIF Cost, Insurance and Freight — costo, seguro y flete Activo  Editar  Eliminar" [ref=e132]:
+              - cell "CIF" [ref=e133]
+              - cell "Cost, Insurance and Freight — costo, seguro y flete" [ref=e134]
+              - cell "Activo" [ref=e135]:
+                - generic [ref=e136]: Activo
+              - cell " Editar  Eliminar" [ref=e137]:
+                - generic [ref=e138]:
+                  - link " Editar" [ref=e139] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/3/edit
+                    - generic [ref=e140]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e142] [cursor=pointer]:
+                    - generic [ref=e143]: 
+                    - text: Eliminar
+            - row "CPT Carriage Paid To — transporte pagado hasta Activo  Editar  Eliminar" [ref=e144]:
+              - cell "CPT" [ref=e145]
+              - cell "Carriage Paid To — transporte pagado hasta" [ref=e146]
+              - cell "Activo" [ref=e147]:
+                - generic [ref=e148]: Activo
+              - cell " Editar  Eliminar" [ref=e149]:
+                - generic [ref=e150]:
+                  - link " Editar" [ref=e151] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/6/edit
+                    - generic [ref=e152]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e154] [cursor=pointer]:
+                    - generic [ref=e155]: 
+                    - text: Eliminar
+            - row "DAP Delivered At Place — entregado en lugar Activo  Editar  Eliminar" [ref=e156]:
+              - cell "DAP" [ref=e157]
+              - cell "Delivered At Place — entregado en lugar" [ref=e158]
+              - cell "Activo" [ref=e159]:
+                - generic [ref=e160]: Activo
+              - cell " Editar  Eliminar" [ref=e161]:
+                - generic [ref=e162]:
+                  - link " Editar" [ref=e163] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/5/edit
+                    - generic [ref=e164]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e166] [cursor=pointer]:
+                    - generic [ref=e167]: 
+                    - text: Eliminar
+            - row "DDP Delivered Duty Paid — entregado con derechos pagados Activo  Editar  Eliminar" [ref=e168]:
+              - cell "DDP" [ref=e169]
+              - cell "Delivered Duty Paid — entregado con derechos pagados" [ref=e170]
+              - cell "Activo" [ref=e171]:
+                - generic [ref=e172]: Activo
+              - cell " Editar  Eliminar" [ref=e173]:
+                - generic [ref=e174]:
+                  - link " Editar" [ref=e175] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/1/edit
+                    - generic [ref=e176]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e178] [cursor=pointer]:
+                    - generic [ref=e179]: 
+                    - text: Eliminar
+            - row "DPU Delivered At Place Unloaded — entregado descargado Activo  Editar  Eliminar" [ref=e180]:
+              - cell "DPU" [ref=e181]
+              - cell "Delivered At Place Unloaded — entregado descargado" [ref=e182]
+              - cell "Activo" [ref=e183]:
+                - generic [ref=e184]: Activo
+              - cell " Editar  Eliminar" [ref=e185]:
+                - generic [ref=e186]:
+                  - link " Editar" [ref=e187] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/7/edit
+                    - generic [ref=e188]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e190] [cursor=pointer]:
+                    - generic [ref=e191]: 
+                    - text: Eliminar
+            - row "EXW Ex Works — en fábrica Activo  Editar  Eliminar" [ref=e192]:
+              - cell "EXW" [ref=e193]
+              - cell "Ex Works — en fábrica" [ref=e194]
+              - cell "Activo" [ref=e195]:
+                - generic [ref=e196]: Activo
+              - cell " Editar  Eliminar" [ref=e197]:
+                - generic [ref=e198]:
+                  - link " Editar" [ref=e199] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/4/edit
+                    - generic [ref=e200]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e202] [cursor=pointer]:
+                    - generic [ref=e203]: 
+                    - text: Eliminar
+            - row "FOB Free On Board — libre a bordo Activo  Editar  Eliminar" [ref=e204]:
+              - cell "FOB" [ref=e205]
+              - cell "Free On Board — libre a bordo" [ref=e206]
+              - cell "Activo" [ref=e207]:
+                - generic [ref=e208]: Activo
+              - cell " Editar  Eliminar" [ref=e209]:
+                - generic [ref=e210]:
+                  - link " Editar" [ref=e211] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/admin/incoterms/2/edit
+                    - generic [ref=e212]: 
+                    - text: Editar
+                  - button " Eliminar" [ref=e214] [cursor=pointer]:
+                    - generic [ref=e215]: 
+                    - text: Eliminar

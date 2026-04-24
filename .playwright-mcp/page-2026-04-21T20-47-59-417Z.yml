@@ -1,0 +1,124 @@
+- generic [active] [ref=e1]:
+  - link "Saltar al contenido" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "CLC&CIA" [ref=e6]
+        - generic [ref=e7]: CLC&CIA
+      - navigation "Navegación principal" [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: General
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link " Inicio" [ref=e14] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e15]: 
+                - generic [ref=e16]: Inicio
+        - generic [ref=e17]:
+          - generic [ref=e18]: Operación
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - generic "Disponible en Fase 6" [ref=e21]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]: Facturas
+                - generic [ref=e24]: Fase 6
+        - generic [ref=e25]:
+          - generic [ref=e26]: Catálogos
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link " Productos" [ref=e29] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/productos
+                - generic [ref=e30]: 
+                - generic [ref=e31]: Productos
+            - listitem [ref=e32]:
+              - link " Clientes" [ref=e33] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes
+                - generic [ref=e34]: 
+                - generic [ref=e35]: Clientes
+        - generic [ref=e36]:
+          - generic [ref=e37]: Administración
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - button " Configuración " [ref=e40] [cursor=pointer]:
+                - generic [ref=e41]: 
+                - generic [ref=e42]: Configuración
+                - generic [ref=e43]: 
+              - text:        
+            - listitem [ref=e44]:
+              - link " Integración Siigo" [ref=e45] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/admin/siigo
+                - generic [ref=e46]: 
+                - generic [ref=e47]: Integración Siigo
+            - listitem [ref=e48]:
+              - generic "Disponible en Fase 5" [ref=e49]:
+                - generic [ref=e50]: 
+                - generic [ref=e51]: Plantillas de factura
+                - generic [ref=e52]: Fase 5
+        - generic [ref=e53]:
+          - generic [ref=e54]: Cuenta
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link " Mi perfil" [ref=e57] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/profile
+                - generic [ref=e58]: 
+                - generic [ref=e59]: Mi perfil
+      - button " Cerrar sesión" [ref=e62] [cursor=pointer]:
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Cerrar sesión
+    - generic [ref=e65]:
+      - banner [ref=e66]:
+        - text: 
+        - generic [ref=e67]:
+          - button "Cambiar tema" [ref=e68] [cursor=pointer]:
+            - text: 
+            - generic [ref=e69]: 
+          - generic [ref=e70]:
+            - button "A Administrador Administrador " [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: A
+              - generic [ref=e73]:
+                - generic [ref=e74]: Administrador
+                - generic [ref=e75]: Administrador
+              - generic [ref=e76]: 
+            - text:  
+      - main [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - heading "Clientes" [level=1] [ref=e81]
+              - paragraph [ref=e82]: Nacionales e internacionales, para facturación DIAN y documentos comerciales.
+            - generic [ref=e83]:
+              - link " Volver" [ref=e84] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/dashboard
+                - generic [ref=e85]: 
+                - text: Volver
+              - link " Nuevo cliente" [ref=e86] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/catalogos/clientes/create
+                - generic [ref=e87]: 
+                - text: Nuevo cliente
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]: 
+                - text: Buscar
+              - textbox " Buscar" [ref=e93]:
+                - /placeholder: Nombre, identificación o email…
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - generic [ref=e96]: 
+                - text: Tipo
+              - combobox " Tipo" [ref=e97]:
+                - option "Todos" [selected]
+                - option "Nacionales"
+                - option "Internacionales"
+            - button " Filtrar" [ref=e99] [cursor=pointer]:
+              - generic [ref=e100]: 
+              - text: Filtrar
+          - generic [ref=e101]:
+            - generic [ref=e103]: 
+            - heading "Aún no hay clientes" [level=3] [ref=e104]
+            - paragraph [ref=e105]: Empieza registrando tu primer cliente nacional o internacional.
+            - link " Crear primer cliente" [ref=e107] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/catalogos/clientes/create
+              - generic [ref=e108]: 
+              - text: Crear primer cliente

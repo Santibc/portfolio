@@ -1,18 +1,18 @@
 @props([
     'title',
-    'description' => null
+    'description' => null,
 ])
 
-<div class="page-header">
-    <div class="page-header-content">
-        <h1 class="page-title">{{ $title }}</h1>
-        @if($description)
-            <p class="page-description">{{ $description }}</p>
+<div class="flex flex-col gap-4 pb-6 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">{{ $title }}</h1>
+        @if ($description)
+            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ $description }}</p>
         @endif
     </div>
 
     @isset($actions)
-        <div class="page-header-actions">
+        <div class="flex flex-wrap items-center gap-2">
             {{ $actions }}
         </div>
     @endisset
