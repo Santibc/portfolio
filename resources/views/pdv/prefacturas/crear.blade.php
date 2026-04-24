@@ -108,47 +108,60 @@
         const descuentoMaximo = {{ $descuentoMaximo ?? 15 }};
         let searchTimeout;
 
-        // Product search (simplified version of venta/crear)
+        // Product search — endpoint devuelve filas atómicas (una por variante o producto sin variantes).
+        // Auto-agrega si el input es un código de barras con match exacto (lector no siempre manda Enter).
         document.getElementById('buscarProducto').addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const q = this.value.trim();
             const div = document.getElementById('resultadosBusqueda');
             if (q.length < 2) { div.classList.add('d-none'); return; }
+
+            const pareceCodigoBarras = /^\d{6,}$/.test(q);
+            const delay = pareceCodigoBarras ? 120 : 300;
+
             searchTimeout = setTimeout(() => {
                 fetch(`{{ route('pdv.ajax.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${document.getElementById('listaPrecio').value}&ubicacion_id=${document.getElementById('ubicacion').value}`)
                     .then(r => r.json())
-                    .then(productos => {
-                        div.innerHTML = productos.length === 0
+                    .then(filas => {
+                        if (pareceCodigoBarras) {
+                            const match = filas.find(f => f.codigo_barras && String(f.codigo_barras).trim() === q);
+                            if (match) {
+                                addProduct(match);
+                                return;
+                            }
+                        }
+                        div.innerHTML = filas.length === 0
                             ? '<div class="p-3 text-center text-muted">No encontrado</div>'
-                            : productos.map(p => `<div class="search-result-item p-2 border-bottom" onclick='addProduct(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-                                <strong>${p.nombre}</strong> <small class="text-muted">${p.referencia}</small>
-                                <span class="float-end fw-bold">$${parseFloat(p.precio||0).toFixed(2)}</span></div>`).join('');
+                            : filas.map(f => {
+                                const subRef = f.codigo_barras ? `${f.referencia} · <code>${f.codigo_barras}</code>` : f.referencia;
+                                return `<div class="search-result-item p-2 border-bottom" onclick='addProduct(${JSON.stringify(f).replace(/'/g,"&#39;")})'>
+                                    <strong>${f.nombre_completo}</strong> <small class="text-muted d-block">${subRef}</small>
+                                    <span class="float-end fw-bold">$${parseFloat(f.precio||0).toFixed(2)}</span></div>`;
+                            }).join('');
                         div.classList.remove('d-none');
                     });
-            }, 300);
+            }, delay);
         });
 
-        function addProduct(p) {
+        function addProduct(fila) {
             document.getElementById('resultadosBusqueda').classList.add('d-none');
             document.getElementById('buscarProducto').value = '';
-            if (p.tiene_variantes && p.variantes.length > 0) {
-                const v = p.variantes[0]; // Auto-select first variant for simplicity in prefactura
-                Swal.fire({
-                    title: 'Seleccionar variante',
-                    html: p.variantes.map(v => `<button class="btn btn-outline-primary m-1" onclick="addVariant(${p.id},'${p.nombre}','${p.referencia}',${v.id},'${v.referencia_variante||""}','${v.color||""}',${v.precio||p.precio},${v.stock_disponible})">${v.referencia_variante||v.sku} ${v.color?'('+v.color+')':''} - $${parseFloat(v.precio||p.precio).toFixed(2)}</button>`).join(''),
-                    showConfirmButton: false, showCancelButton: true,
-                });
-                return;
-            }
-            items.push({ producto_id: p.id, nombre: p.nombre, referencia: p.referencia, variante_producto_id: null, variante_nombre: '-', cantidad: 1, precio_unitario: parseFloat(p.precio)||0, precio_original: parseFloat(p.precio)||0, descuento_porcentaje: 0, descuento_valor: 0, stock_disponible: p.stock_disponible || null });
+            const precio = parseFloat(fila.precio) || 0;
+            items.push({
+                producto_id: fila.producto_id,
+                nombre: fila.nombre_producto,
+                referencia: fila.referencia,
+                variante_producto_id: fila.variante_producto_id || null,
+                variante_nombre: fila.nombre_variante || '-',
+                cantidad: 1,
+                precio_unitario: precio,
+                precio_original: precio,
+                descuento_porcentaje: 0,
+                descuento_valor: 0,
+                stock_disponible: fila.stock_disponible ?? null,
+            });
             renderItems();
         }
-
-        window.addVariant = function(pid, pname, pref, vid, vref, vcolor, vprice, vstock) {
-            Swal.close();
-            items.push({ producto_id: pid, nombre: pname, referencia: pref, variante_producto_id: vid, variante_nombre: vref + (vcolor ? ` (${vcolor})` : ''), cantidad: 1, precio_unitario: vprice, precio_original: vprice, descuento_porcentaje: 0, descuento_valor: 0, stock_disponible: vstock || null });
-            renderItems();
-        };
 
         function cambiarCantidad(index, valor) {
             const max = items[index].stock_disponible || 999999;

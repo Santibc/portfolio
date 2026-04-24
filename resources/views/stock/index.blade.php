@@ -101,23 +101,13 @@
               </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-3">
               <label class="form-label">Estado de Stock</label>
               <select id="filtroEstado" class="form-select">
                 <option value="">-- Todos --</option>
                 <option value="con_stock">Con Stock</option>
                 <option value="sin_stock">Sin Stock</option>
                 <option value="stock_bajo">Stock Bajo</option>
-              </select>
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label">Ubicación</label>
-              <select id="filtroUbicacion" class="form-select">
-                <option value="">-- Todas las ubicaciones --</option>
-                @foreach($ubicaciones as $ubicacion)
-                  <option value="{{ $ubicacion->id }}">{{ $ubicacion->nombre }}</option>
-                @endforeach
               </select>
             </div>
 
@@ -167,11 +157,9 @@
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
                 <th>Producto</th>
-                <th>Stock Actual</th>
-                <th>Disp./Reserv.</th>
-                <th>Mín/Máx</th>
-                <th>Ubicación</th>
-                <th>Ubic. Específica</th>
+                <th>Cod Barras</th>
+                <th>Stock Total</th>
+                <th>Disp./Reserv. (Total)</th>
                 <th>Acciones</th>
                 <th>Referencia</th>
                 <th>Nombre</th>
@@ -345,22 +333,16 @@
             </div>
             
             <div class="mb-3">
-              <label class="form-label">Ubicación</label>
-              <select name="ubicacion_id" id="config_ubicacion_id" class="form-select">
-                <option value="">-- Sin ubicación --</option>
-                @foreach($ubicaciones as $ubicacion)
-                  <option value="{{ $ubicacion->id }}">
-                    {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
-                  </option>
-                @endforeach
-              </select>
+              <label class="form-label">Ubicación de este registro</label>
+              <input type="text" class="form-control" id="config_ubicacion_nombre" readonly>
+              <small class="text-muted">La ubicación principal no se cambia desde aquí. Cada registro opera en su ubicación.</small>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Ubicación Específica</label>
               <input type="text" class="form-control" name="ubicacion" id="config_ubicacion"
                      placeholder="Ej: Pasillo A, Estante 3">
-              <small class="text-muted">Detalle de ubicación dentro de la bodega</small>
+              <small class="text-muted">Detalle dentro de la ubicación (pasillo, estante, etc.)</small>
             </div>
 
             <div class="mb-3">
@@ -383,6 +365,25 @@
             <button type="submit" class="btn btn-info">Guardar Configuración</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  {{-- Modal Ubicaciones (desglose de stock por ubicación + operaciones) --}}
+  <div class="modal fade" id="modalUbicaciones" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-geo-alt"></i> Stock por Ubicación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="contenidoUbicaciones">
+          <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -425,9 +426,78 @@
     </div>
   </div>
 
+  <!-- Modal escanear / capturar código de barras -->
+  <div class="modal fade" id="modalCodigoBarras" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-upc-scan"></i> Escanear Código de Barras</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="codigoActualWrapper" class="alert alert-info d-none mb-3">
+            <small class="d-block text-muted">Código actual:</small>
+            <strong id="codigoActualValor" style="font-size: 1.1rem;"></strong>
+            <div class="small text-muted mt-1">Escanea o escribe el nuevo código para reemplazarlo.</div>
+          </div>
+
+          <label class="form-label fw-bold">Lectura del código:</label>
+          <input type="text" id="inputCodigoBarras"
+                 class="form-control form-control-lg"
+                 autocomplete="off"
+                 inputmode="numeric"
+                 placeholder="Escanea o escribe el código...">
+          <div class="form-text">El guardado es automático al detectar el código (Enter o lectura del scanner).</div>
+
+          <div id="spinnerGuardandoCodigo" class="text-center mt-3 d-none">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden">Guardando...</span>
+            </div>
+            <span class="ms-2 text-muted">Guardando...</span>
+          </div>
+
+          <div id="mensajeCodigoBarras" class="alert alert-warning mt-3 d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnEliminarCodigoBarras" class="btn btn-outline-danger me-auto d-none" onclick="eliminarCodigoBarras()">
+            <i class="bi bi-trash"></i> Eliminar código
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal historial de código de barras -->
+  <div class="modal fade" id="modalCodigoBarrasHistorial" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-journal-text"></i> Historial de Código de Barras</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalCodigoBarrasHistorialContent">
+          <div class="text-center py-4">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @push('styles')
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+  <style>
+    /* Soporte para modales apilados (modal de ubicaciones + entrada/salida/ajuste/config encima) */
+    .modal-stacked { z-index: 1080 !important; }
+    .modal-backdrop-stacked { z-index: 1075 !important; }
+  </style>
   @endpush
 
   @push('scripts')
@@ -438,7 +508,9 @@
     const urlParams = new URLSearchParams(window.location.search);
     const productoId = urlParams.get('producto_id');
     const estadoFiltro = urlParams.get('estado');
-    const ubicacionFiltro = urlParams.get('ubicacion_id');
+
+    // Estado del modal de ubicaciones (para refrescar tras operaciones)
+    let ubicacionesContextoActual = null;
     
     // Configurar Select2 para búsqueda de productos
     $('.select2-productos').select2({
@@ -481,11 +553,6 @@
       $('#filtroEstado').val(estadoFiltro);
     }
 
-    // Si hay un filtro de ubicación, seleccionarlo
-    if (ubicacionFiltro) {
-      $('#filtroUbicacion').val(ubicacionFiltro);
-    }
-    
     // Configurar DataTable
     const table = $('#stock-table').DataTable({
       processing: true,
@@ -495,7 +562,6 @@
       ajax: {
         url: "{{ route('stock.index') }}",
         data: function(d) {
-          // Agregar filtros al request
           if (productoId) {
             d.producto_id = productoId;
           }
@@ -503,23 +569,17 @@
           if (estado) {
             d.estado = estado;
           }
-          const ubicacion = $('#filtroUbicacion').val();
-          if (ubicacion) {
-            d.ubicacion_id = ubicacion;
-          }
         }
       },
       columns: [
         { data: 'producto_info', name: 'producto_id' },
-        { data: 'stock_actual', orderable: false },
-        { data: 'disponible_reservado', orderable: false },
-        { data: 'stock_minimo_maximo', orderable: false },
-        { data: 'ubicacion', name: 'ubicacion' },
-        { data: 'ubicacion_especifica', name: 'ubicacion_especifica', orderable: false },
+        { data: 'codigo_barras', name: 'codigo_barras', orderable: false },
+        { data: 'stock_actual', orderable: false, searchable: false },
+        { data: 'disponible_reservado', orderable: false, searchable: false },
         { data: 'action', orderable: false, searchable: false },
-        { data: 'referencia', visible: false },
-        { data: 'nombre_producto', visible: false },
-        { data: 'variante_nombre', visible: false }
+        { data: 'referencia', visible: false, searchable: false },
+        { data: 'nombre_producto', visible: false, searchable: false },
+        { data: 'variante_nombre', visible: false, searchable: false }
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -531,7 +591,7 @@
           text: 'Excel',
           title: 'Inventario',
           exportOptions: {
-            columns: [7, 8, 9, 1, 2, 3, 4, 5]
+            columns: [5, 6, 7, 1, 2, 3]
           }
         },
         {
@@ -568,7 +628,6 @@
     window.aplicarFiltros = function() {
       const productoId = $('#filtroProducto').val();
       const estado = $('#filtroEstado').val();
-      const ubicacionId = $('#filtroUbicacion').val();
 
       let url = "{{ route('stock.index') }}";
       const params = [];
@@ -578,9 +637,6 @@
       }
       if (estado) {
         params.push('estado=' + estado);
-      }
-      if (ubicacionId) {
-        params.push('ubicacion_id=' + ubicacionId);
       }
 
       if (params.length > 0) {
@@ -629,7 +685,7 @@
         $('#config_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
         $('#config_stock_minimo').val(data.stock.stock_minimo);
         $('#config_stock_maximo').val(data.stock.stock_maximo);
-        $('#config_ubicacion_id').val(data.stock.ubicacion_id);
+        $('#config_ubicacion_nombre').val(data.ubicacion_nombre || 'Sin ubicación');
         $('#config_ubicacion').val(data.stock.ubicacion);
         $('#config_alerta').prop('checked', data.stock.alerta_stock_bajo);
         $('#config_notas').val(data.stock.notas);
@@ -644,13 +700,121 @@
       });
     };
 
-    window.verReservas = function(stockId) {
+    // Contexto del modal de reservas (para recargar tras liberar)
+    let reservasContextoActual = null;
+
+    window.verReservas = function(productoId, varianteId) {
+      reservasContextoActual = {
+        producto_id: productoId,
+        variante_producto_id: (varianteId && varianteId !== 'null') ? varianteId : null
+      };
       $('#contenidoReservas').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
       $('#modalReservas').modal('show');
-      $.get('/stock/reservas', { stock_id: stockId }, function(response) {
+      cargarReservas();
+    };
+
+    function cargarReservas() {
+      if (!reservasContextoActual) return;
+      const params = { producto_id: reservasContextoActual.producto_id };
+      if (reservasContextoActual.variante_producto_id) params.variante_producto_id = reservasContextoActual.variante_producto_id;
+      $.get('/stock/reservas', params, function(response) {
         $('#contenidoReservas').html(response.html);
       }).fail(function() {
         $('#contenidoReservas').html('<p class="text-center text-danger">Error al cargar las reservas.</p>');
+      });
+    }
+
+    $('#modalReservas').on('hidden.bs.modal', function() {
+      reservasContextoActual = null;
+    });
+
+    // Abre el modal con el desglose de stock por ubicación y los botones de operación
+    window.verUbicaciones = function(productoId, varianteId) {
+      ubicacionesContextoActual = {
+        producto_id: productoId,
+        variante_producto_id: (varianteId && varianteId !== 'null') ? varianteId : null
+      };
+      $('#contenidoUbicaciones').html('<div class="text-center py-4"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+      $('#modalUbicaciones').modal('show');
+      cargarUbicaciones();
+    };
+
+    function cargarUbicaciones() {
+      if (!ubicacionesContextoActual) return;
+      const params = { producto_id: ubicacionesContextoActual.producto_id };
+      if (ubicacionesContextoActual.variante_producto_id) {
+        params.variante_producto_id = ubicacionesContextoActual.variante_producto_id;
+      }
+      $.get("{{ route('stock.ubicaciones-ajax') }}", params, function(response) {
+        $('#contenidoUbicaciones').html(response.html);
+      }).fail(function() {
+        $('#contenidoUbicaciones').html('<p class="text-center text-danger">Error al cargar las ubicaciones.</p>');
+      });
+    }
+
+    // Refresca el modal de ubicaciones y la tabla principal después de una operación
+    window.refrescarTrasOperacion = function() {
+      if (ubicacionesContextoActual) {
+        cargarUbicaciones();
+      }
+      table.ajax.reload(null, false);
+    };
+
+    // Limpiar contexto al cerrar modal de ubicaciones
+    $('#modalUbicaciones').on('hidden.bs.modal', function() {
+      ubicacionesContextoActual = null;
+    });
+
+    // Soporte para modales apilados: cuando se abre un modal encima del de ubicaciones,
+    // elevar su z-index y el de su backdrop para que queden visibles arriba.
+    ['#modalEntrada', '#modalSalida', '#modalAjuste', '#modalConfiguracion'].forEach(function(sel) {
+      $(sel).on('shown.bs.modal', function() {
+        if ($('#modalUbicaciones').hasClass('show')) {
+          $(this).css('z-index', 1080);
+          // Mover el backdrop más reciente al z-index correcto
+          const backdrops = $('.modal-backdrop');
+          if (backdrops.length > 1) {
+            backdrops.last().css('z-index', 1075);
+          }
+          // Reasegurar foco
+          $('body').addClass('modal-open');
+        }
+      });
+      $(sel).on('hidden.bs.modal', function() {
+        $(this).css('z-index', '');
+        // Si el modal de ubicaciones sigue abierto, mantener body con modal-open
+        if ($('#modalUbicaciones').hasClass('show')) {
+          $('body').addClass('modal-open');
+        }
+      });
+    });
+
+    // Agregar una ubicación nueva al producto/variante actual
+    window.agregarUbicacionAlProducto = function(productoId, varianteId) {
+      const ubicacionId = $('#ubicacion-nueva-select').val();
+      if (!ubicacionId) {
+        if (typeof toastr !== 'undefined') toastr.warning('Selecciona una ubicación'); else alert('Selecciona una ubicación');
+        return;
+      }
+      $.ajax({
+        url: "{{ route('stock.agregar-ubicacion') }}",
+        method: 'POST',
+        data: {
+          _token: '{{ csrf_token() }}',
+          producto_id: productoId,
+          variante_producto_id: (varianteId && varianteId !== 'null') ? varianteId : null,
+          ubicacion_id: ubicacionId
+        },
+        success: function(response) {
+          if (response.success) {
+            if (typeof toastr !== 'undefined') toastr.success(response.message); else alert(response.message);
+            refrescarTrasOperacion();
+          }
+        },
+        error: function(xhr) {
+          const message = (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
+          if (typeof toastr !== 'undefined') toastr.error(message); else alert(message);
+        }
       });
     };
 
@@ -677,7 +841,7 @@
           }, function(response) {
             if (response.success) {
               Swal.fire('Reserva liberada', response.mensaje, 'success');
-              verReservas(stockId);
+              cargarReservas();
               if (typeof table !== 'undefined') {
                 table.ajax.reload(null, false);
               }
@@ -689,125 +853,51 @@
       });
     };
 
-    // Formulario de entrada
+    function enviarFormulario(formId, url, modalId) {
+      $.ajax({
+        url: url,
+        method: 'POST',
+        data: $(formId).serialize(),
+        success: function(response) {
+          if (response.success) {
+            $(modalId).modal('hide');
+            refrescarTrasOperacion();
+            if (typeof toastr !== 'undefined') {
+              toastr.success(response.message);
+            } else {
+              alert(response.message);
+            }
+          }
+        },
+        error: function(xhr) {
+          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
+          if (typeof toastr !== 'undefined') {
+            toastr.error(message);
+          } else {
+            alert(message);
+          }
+        }
+      });
+    }
+
     $('#formEntrada').on('submit', function(e) {
       e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.entrada') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalEntrada').modal('hide');
-            table.ajax.reload();
-            // Usar toastr si está disponible, sino alert
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
+      enviarFormulario('#formEntrada', "{{ route('stock.entrada') }}", '#modalEntrada');
     });
 
-    // Formulario de salida
     $('#formSalida').on('submit', function(e) {
       e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.salida') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalSalida').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
+      enviarFormulario('#formSalida', "{{ route('stock.salida') }}", '#modalSalida');
     });
 
-    // Formulario de ajuste
     $('#formAjuste').on('submit', function(e) {
       e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.ajuste') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalAjuste').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
+      enviarFormulario('#formAjuste', "{{ route('stock.ajuste') }}", '#modalAjuste');
     });
 
-    // Formulario de configuración
     $('#formConfiguracion').on('submit', function(e) {
       e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.configurar') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalConfiguracion').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
+      enviarFormulario('#formConfiguracion', "{{ route('stock.configurar') }}", '#modalConfiguracion');
     });
 
     // Inicializar stock
@@ -849,6 +939,228 @@
         e.preventDefault();
         limpiarFiltros();
       }
+    });
+  });
+
+  // ====== Código de Barras: escaneo rápido + historial (módulo Stock) ======
+  let stockIdEscaneado = null;
+  let lastInputTimeCb = 0;
+  let debounceTimerCb = null;
+  let enviandoCodigoCb = false;
+
+  function abrirModalCodigoBarras(stockId, codigoActual) {
+    stockIdEscaneado = stockId;
+    enviandoCodigoCb = false;
+
+    const $wrapper = $('#codigoActualWrapper');
+    const $btnEliminar = $('#btnEliminarCodigoBarras');
+    if (codigoActual && codigoActual.length > 0) {
+      $('#codigoActualValor').text(codigoActual);
+      $wrapper.removeClass('d-none');
+      $btnEliminar.removeClass('d-none').prop('disabled', false);
+    } else {
+      $wrapper.addClass('d-none');
+      $('#codigoActualValor').text('');
+      $btnEliminar.addClass('d-none').prop('disabled', false);
+    }
+
+    $('#inputCodigoBarras').val('').prop('disabled', false);
+    $('#spinnerGuardandoCodigo').addClass('d-none');
+    $('#mensajeCodigoBarras').addClass('d-none').text('');
+
+    $('#modalCodigoBarras').modal('show');
+  }
+
+  function eliminarCodigoBarras() {
+    if (!stockIdEscaneado) return;
+    if (enviandoCodigoCb) return;
+
+    const ejecutar = () => {
+      enviandoCodigoCb = true;
+      $('#btnEliminarCodigoBarras').prop('disabled', true);
+      $('#inputCodigoBarras').prop('disabled', true);
+      $('#spinnerGuardandoCodigo').removeClass('d-none');
+      $('#mensajeCodigoBarras').addClass('d-none').text('');
+
+      fetch(`/stock/${stockIdEscaneado}/codigo-barras`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+      })
+      .then(({ ok, status, data }) => {
+        $('#spinnerGuardandoCodigo').addClass('d-none');
+        $('#inputCodigoBarras').prop('disabled', false);
+        $('#btnEliminarCodigoBarras').prop('disabled', false);
+        enviandoCodigoCb = false;
+
+        if (ok && data.success) {
+          $('#modalCodigoBarras').modal('hide');
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              icon: 'success',
+              title: 'Código eliminado',
+              text: data.message || 'Código de barras eliminado correctamente.',
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 2000
+            });
+          }
+          $('#stock-table').DataTable().ajax.reload(null, false);
+        } else {
+          const msg = data.message || 'No se pudo eliminar el código de barras.';
+          $('#mensajeCodigoBarras').removeClass('d-none').text(msg);
+        }
+      })
+      .catch(() => {
+        $('#spinnerGuardandoCodigo').addClass('d-none');
+        $('#inputCodigoBarras').prop('disabled', false);
+        $('#btnEliminarCodigoBarras').prop('disabled', false);
+        enviandoCodigoCb = false;
+        $('#mensajeCodigoBarras').removeClass('d-none').text('Error de conexión. Intenta nuevamente.');
+      });
+    };
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: '¿Eliminar el código de barras?',
+        text: 'Se quitará el código actual y quedará registrado en el historial.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545'
+      }).then((result) => {
+        if (result.isConfirmed) ejecutar();
+      });
+    } else if (confirm('¿Eliminar el código de barras actual?')) {
+      ejecutar();
+    }
+  }
+
+  function enviarCodigoBarrasStock() {
+    if (enviandoCodigoCb) return;
+    const valor = ($('#inputCodigoBarras').val() || '').trim();
+    if (!valor) return;
+    if (!stockIdEscaneado) return;
+
+    enviandoCodigoCb = true;
+    $('#inputCodigoBarras').prop('disabled', true);
+    $('#spinnerGuardandoCodigo').removeClass('d-none');
+    $('#mensajeCodigoBarras').addClass('d-none').text('');
+
+    fetch(`/stock/${stockIdEscaneado}/codigo-barras`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ codigo_barras: valor })
+    })
+    .then(async (res) => {
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, data };
+    })
+    .then(({ ok, status, data }) => {
+      $('#spinnerGuardandoCodigo').addClass('d-none');
+      $('#inputCodigoBarras').prop('disabled', false);
+      enviandoCodigoCb = false;
+
+      if (ok && data.success) {
+        $('#modalCodigoBarras').modal('hide');
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Código guardado',
+            text: data.message || 'Código de barras guardado correctamente.',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+          });
+        }
+        $('#stock-table').DataTable().ajax.reload(null, false);
+      } else if (status === 422) {
+        const msg = data.message || 'No se pudo guardar el código de barras.';
+        $('#mensajeCodigoBarras').removeClass('d-none').text(msg);
+        $('#inputCodigoBarras').val('').focus();
+      } else {
+        $('#mensajeCodigoBarras').removeClass('d-none').text('Ocurrió un error al guardar. Intenta nuevamente.');
+        $('#inputCodigoBarras').focus();
+      }
+    })
+    .catch(() => {
+      $('#spinnerGuardandoCodigo').addClass('d-none');
+      $('#inputCodigoBarras').prop('disabled', false);
+      enviandoCodigoCb = false;
+      $('#mensajeCodigoBarras').removeClass('d-none').text('Error de conexión. Intenta nuevamente.');
+      $('#inputCodigoBarras').focus();
+    });
+  }
+
+  function verHistorialCodigoBarras(stockId) {
+    $('#modalCodigoBarrasHistorialContent').html(
+      '<div class="text-center py-4"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>'
+    );
+    $('#modalCodigoBarrasHistorial').modal('show');
+    $.get(`/stock/${stockId}/codigo-barras-historial-ajax`, function(data) {
+      $('#modalCodigoBarrasHistorialContent').html(data);
+    }).fail(function() {
+      $('#modalCodigoBarrasHistorialContent').html(
+        '<div class="alert alert-danger">No se pudo cargar el historial.</div>'
+      );
+    });
+  }
+
+  $(document).ready(function() {
+    const $modalCb = $('#modalCodigoBarras');
+
+    $modalCb.on('shown.bs.modal', function() {
+      $('#inputCodigoBarras').trigger('focus');
+    });
+
+    $modalCb.on('hidden.bs.modal', function() {
+      $('#inputCodigoBarras').val('').prop('disabled', false);
+      $('#spinnerGuardandoCodigo').addClass('d-none');
+      $('#mensajeCodigoBarras').addClass('d-none').text('');
+      $('#btnEliminarCodigoBarras').addClass('d-none').prop('disabled', false);
+      stockIdEscaneado = null;
+      enviandoCodigoCb = false;
+      if (debounceTimerCb) {
+        clearTimeout(debounceTimerCb);
+        debounceTimerCb = null;
+      }
+    });
+
+    $('#inputCodigoBarras').on('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (debounceTimerCb) {
+          clearTimeout(debounceTimerCb);
+          debounceTimerCb = null;
+        }
+        enviarCodigoBarrasStock();
+      }
+    });
+
+    $('#inputCodigoBarras').on('input', function() {
+      lastInputTimeCb = Date.now();
+      if (debounceTimerCb) clearTimeout(debounceTimerCb);
+      debounceTimerCb = setTimeout(function() {
+        const valor = ($('#inputCodigoBarras').val() || '').trim();
+        if (valor.length >= 6 && (Date.now() - lastInputTimeCb) >= 180) {
+          enviarCodigoBarrasStock();
+        }
+      }, 220);
     });
   });
   </script>

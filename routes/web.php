@@ -259,6 +259,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxil
     Route::get('/{id}/obtener', [App\Http\Controllers\StockController::class, 'obtenerStock'])->name('obtener');
     Route::get('/historial', [App\Http\Controllers\StockController::class, 'historial'])->name('historial');
     Route::get('/reservas', [App\Http\Controllers\StockController::class, 'reservas'])->name('reservas');
+    Route::get('/ubicaciones-ajax', [App\Http\Controllers\StockController::class, 'ubicacionesAjax'])->name('ubicaciones-ajax');
 
     // Reportes (lectura)
     Route::get('/reporte-movimientos', [App\Http\Controllers\StockController::class, 'reporteMovimientos'])->name('reporte-movimientos');
@@ -267,6 +268,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxil
     // PDFs de notas de movimiento
     Route::get('/movimiento/{id}/pdf', [App\Http\Controllers\StockController::class, 'generarNotaPdf'])->name('movimiento-pdf');
     Route::get('/movimiento/{id}/ver-pdf', [App\Http\Controllers\StockController::class, 'verNotaPdf'])->name('movimiento-ver-pdf');
+
+    // Historial de cambios de código de barras (lectura)
+    Route::get('/{id}/codigo-barras-historial-ajax', [App\Http\Controllers\StockController::class, 'historialCodigoBarras'])->name('codigo-barras.historial-ajax');
 });
 
 // Operaciones de stock (admin, inventarios y auxiliar_inventario)
@@ -275,8 +279,15 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,auxil
     Route::post('/salida', [App\Http\Controllers\StockController::class, 'salida'])->name('salida');
     Route::post('/ajuste', [App\Http\Controllers\StockController::class, 'ajuste'])->name('ajuste');
     Route::post('/configurar', [App\Http\Controllers\StockController::class, 'configurar'])->name('configurar');
+    Route::post('/agregar-ubicacion', [App\Http\Controllers\StockController::class, 'agregarUbicacion'])->name('agregar-ubicacion');
     Route::post('/importar', [App\Http\Controllers\StockController::class, 'importar'])->name('importar');
     Route::post('/inicializar-todos', [App\Http\Controllers\StockController::class, 'inicializarTodos'])->name('inicializar-todos');
+
+    // Guardar código de barras desde modal de escaneo
+    Route::post('/{id}/codigo-barras', [App\Http\Controllers\StockController::class, 'guardarCodigoBarras'])->name('codigo-barras.guardar');
+
+    // Eliminar código de barras desde modal
+    Route::delete('/{id}/codigo-barras', [App\Http\Controllers\StockController::class, 'eliminarCodigoBarras'])->name('codigo-barras.eliminar');
 });
 
 // ============================================================

@@ -1,0 +1,283 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - link "Miracle Beauty Experts" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img "Miracle Beauty Experts" [ref=e6]
+    - navigation [ref=e7]:
+      - link " Inicio" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e9]: 
+        - generic [ref=e10]: Inicio
+      - link " Métricas" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard-metricas
+        - generic [ref=e12]: 
+        - generic [ref=e13]: Métricas
+      - link " Usuarios" [ref=e14] [cursor=pointer]:
+        - /url: /usuarios
+        - generic [ref=e15]: 
+        - generic [ref=e16]: Usuarios
+      - link " Cotizaciones" [ref=e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/solicitudes
+        - generic [ref=e18]: 
+        - generic [ref=e19]: Cotizaciones
+      - link " Clientes" [ref=e20] [cursor=pointer]:
+        - /url: /clientes
+        - generic [ref=e21]: 
+        - generic [ref=e22]: Clientes
+      - link " Catálogo" [ref=e23] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/catalogo
+        - generic [ref=e24]: 
+        - generic [ref=e25]: Catálogo
+      - link " Links" [ref=e26] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/enlaces
+        - generic [ref=e27]: 
+        - generic [ref=e28]: Links
+      - link " Listas de Precios" [ref=e29] [cursor=pointer]:
+        - /url: /listas-precios
+        - generic [ref=e30]: 
+        - generic [ref=e31]: Listas de Precios
+      - paragraph [ref=e33]:
+        - generic [ref=e34]: 
+        - text: Inventario
+      - link " Categorías" [ref=e35] [cursor=pointer]:
+        - /url: /categorias
+        - generic [ref=e36]: 
+        - generic [ref=e37]: Categorías
+      - link " Productos" [ref=e38] [cursor=pointer]:
+        - /url: /productos
+        - generic [ref=e39]: 
+        - generic [ref=e40]: Productos
+      - link " Gestión de Stock" [ref=e41] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/stock
+        - generic [ref=e42]: 
+        - generic [ref=e43]: Gestión de Stock
+      - link " Traslados" [ref=e44] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e45]: 
+        - generic [ref=e46]: Traslados
+      - link " Ubicaciones" [ref=e47] [cursor=pointer]:
+        - /url: /ubicaciones
+        - generic [ref=e48]: 
+        - generic [ref=e49]: Ubicaciones
+      - link " Novedades" [ref=e50] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Novedades
+      - link " Importar Productos" [ref=e53] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/productos/historial-importaciones
+        - generic [ref=e54]: 
+        - generic [ref=e55]: Importar Productos
+      - paragraph [ref=e57]:
+        - generic [ref=e58]: 
+        - text: Punto de Venta
+      - link " Dashboard PdV" [ref=e59] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv
+        - generic [ref=e60]: 
+        - generic [ref=e61]: Dashboard PdV
+      - link " Config. Cajas" [ref=e62] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/cajas
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Config. Cajas
+      - link " Config. SIIGO" [ref=e65] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/siigo/configuracion
+        - generic [ref=e66]: 
+        - generic [ref=e67]: Config. SIIGO
+      - link " Nueva Venta" [ref=e68] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas/crear
+        - generic [ref=e69]: 
+        - generic [ref=e70]: Nueva Venta
+      - link " Historial Ventas" [ref=e71] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas
+        - generic [ref=e72]: 
+        - generic [ref=e73]: Historial Ventas
+      - link " Prefacturas" [ref=e74] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/prefacturas/pendientes
+        - generic [ref=e75]: 
+        - generic [ref=e76]: Prefacturas
+      - link " Vales" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/vales
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Vales
+      - link " Reportes PdV" [ref=e80] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/reportes
+        - generic [ref=e81]: 
+        - generic [ref=e82]: Reportes PdV
+      - link " Novedades" [ref=e83] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e84]: 
+        - generic [ref=e85]: Novedades
+      - link " Stock" [ref=e86] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/stock
+        - generic [ref=e87]: 
+        - generic [ref=e88]: Stock
+      - link " Traslados" [ref=e89] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e90]: 
+        - generic [ref=e91]: Traslados
+    - button " Salir" [ref=e94] [cursor=pointer]:
+      - generic [ref=e95]: 
+      - generic [ref=e96]: Salir
+  - generic [ref=e97]:
+    - banner [ref=e98]:
+      - button "" [ref=e99] [cursor=pointer]:
+        - generic [ref=e100]: 
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: Admin
+          - generic [ref=e104]: admin@admin.com
+        - img "Avatar" [ref=e105]
+    - main [ref=e106]:
+      - generic [ref=e107]:
+        - generic [ref=e109]:
+          - link "" [ref=e110] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/pdv/prefacturas
+            - generic [ref=e111]: 
+          - heading " Crear Prefactura" [level=4] [ref=e112]:
+            - generic [ref=e113]: 
+            - text: Crear Prefactura
+        - generic [ref=e114]:
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - combobox [ref=e118]:
+                - option "Suma de PV C EXP" [selected]
+                - option "Suma de PV DISTRIBUIDOR"
+                - option "Suma de PV MEGADISTRIBUIDOR"
+                - option "Suma de PV ALFRED DUQUE"
+                - option "Suma de PV LISTA VIP"
+                - option "Suma de PV M.F."
+                - option "Suma de PV F.G."
+              - combobox [ref=e120]:
+                - option "Tienda Centro" [selected]
+              - textbox "Buscar cliente (opcional)" [ref=e122]
+            - text: 
+            - generic [ref=e123]:
+              - textbox "Buscar producto por nombre o referencia..." [ref=e124]: "1001"
+              - generic [ref=e152]:
+                - generic [ref=e153] [cursor=pointer]:
+                  - strong [ref=e154]: Esmalte semipermanente x 15ml - 1 - Belén
+                  - generic [ref=e155]:
+                    - text: 1 ·
+                    - code [ref=e156]: "5752842501294"
+                  - generic [ref=e157]: $15000.00
+                - generic [ref=e158] [cursor=pointer]:
+                  - strong [ref=e159]: Esmalte semipermanente x 15ml - 2 - Eva
+                  - generic [ref=e160]: "2"
+                  - generic [ref=e161]: $15000.00
+                - generic [ref=e162] [cursor=pointer]:
+                  - strong [ref=e163]: Esmalte semipermanente x 15ml - 3 - Maria
+                  - generic [ref=e164]: "3"
+                  - generic [ref=e165]: $15000.00
+                - generic [ref=e166] [cursor=pointer]:
+                  - strong [ref=e167]: Esmalte semipermanente x 15ml - 4 - Genesis
+                  - generic [ref=e168]: "4"
+                  - generic [ref=e169]: $15000.00
+                - generic [ref=e170] [cursor=pointer]:
+                  - strong [ref=e171]: Esmalte semipermanente x 15ml - 5 - Esther
+                  - generic [ref=e172]: "5"
+                  - generic [ref=e173]: $15000.00
+                - generic [ref=e174] [cursor=pointer]:
+                  - strong [ref=e175]: Esmalte semipermanente x 15ml - 6 - Ruth
+                  - generic [ref=e176]: "6"
+                  - generic [ref=e177]: $15000.00
+                - generic [ref=e178] [cursor=pointer]:
+                  - strong [ref=e179]: Esmalte semipermanente x 15ml - 7 - Samara
+                  - generic [ref=e180]: "7"
+                  - generic [ref=e181]: $15000.00
+                - generic [ref=e182] [cursor=pointer]:
+                  - strong [ref=e183]: Esmalte semipermanente x 15ml - 8 - Inés
+                  - generic [ref=e184]: "8"
+                  - generic [ref=e185]: $15000.00
+                - generic [ref=e186] [cursor=pointer]:
+                  - strong [ref=e187]: Esmalte semipermanente x 15ml - 9 - Brigida
+                  - generic [ref=e188]: "9"
+                  - generic [ref=e189]: $15000.00
+                - generic [ref=e190] [cursor=pointer]:
+                  - strong [ref=e191]: Esmalte semipermanente x 15ml - 10 - Regina
+                  - generic [ref=e192]: "10"
+                  - generic [ref=e193]: $15000.00
+                - generic [ref=e194] [cursor=pointer]:
+                  - strong [ref=e195]: Esmalte semipermanente x 15ml - 11 - Berenice
+                  - generic [ref=e196]: "11"
+                  - generic [ref=e197]: $15000.00
+                - generic [ref=e198] [cursor=pointer]:
+                  - strong [ref=e199]: Esmalte semipermanente x 15ml - 12 - Francisca
+                  - generic [ref=e200]: "12"
+                  - generic [ref=e201]: $15000.00
+                - generic [ref=e202] [cursor=pointer]:
+                  - strong [ref=e203]: Esmalte semipermanente x 15ml - 13 - Nohemi
+                  - generic [ref=e204]: "13"
+                  - generic [ref=e205]: $15000.00
+                - generic [ref=e206] [cursor=pointer]:
+                  - strong [ref=e207]: Esmalte semipermanente x 15ml - 14 - Irene
+                  - generic [ref=e208]: "14"
+                  - generic [ref=e209]: $15000.00
+                - generic [ref=e210] [cursor=pointer]:
+                  - strong [ref=e211]: Esmalte semipermanente x 15ml - 15 - Ana
+                  - generic [ref=e212]: "15"
+                  - generic [ref=e213]: $15000.00
+                - generic [ref=e214] [cursor=pointer]:
+                  - strong [ref=e215]: Esmalte semipermanente x 15ml - 16 - Raquel
+                  - generic [ref=e216]: "16"
+                  - generic [ref=e217]: $15000.00
+                - generic [ref=e218] [cursor=pointer]:
+                  - strong [ref=e219]: Esmalte semipermanente x 15ml - 17 - Dalila
+                  - generic [ref=e220]: "17"
+                  - generic [ref=e221]: $15000.00
+                - generic [ref=e222] [cursor=pointer]:
+                  - strong [ref=e223]: Esmalte semipermanente x 15ml - 18 - Margarita
+                  - generic [ref=e224]: "18"
+                  - generic [ref=e225]: $15000.00
+                - generic [ref=e226] [cursor=pointer]:
+                  - strong [ref=e227]: Esmalte semipermanente x 15ml - 19 - Priscila
+                  - generic [ref=e228]: "19"
+                  - generic [ref=e229]: $15000.00
+                - generic [ref=e230] [cursor=pointer]:
+                  - strong [ref=e231]: Esmalte semipermanente x 15ml - 20 - Otilia
+                  - generic [ref=e232]: "20"
+                  - generic [ref=e233]: $15000.00
+                - generic [ref=e234] [cursor=pointer]:
+                  - strong [ref=e235]: Esmalte semipermanente x 15ml - 21 - Lidia
+                  - generic [ref=e236]: "21"
+                  - generic [ref=e237]: $15000.00
+                - generic [ref=e238] [cursor=pointer]:
+                  - strong [ref=e239]: Esmalte semipermanente x 15ml - 22 - Beatriz
+                  - generic [ref=e240]: "22"
+                  - generic [ref=e241]: $15000.00
+                - generic [ref=e242] [cursor=pointer]:
+                  - strong [ref=e243]: Esmalte semipermanente x 15ml - 23 - Apolonia
+                  - generic [ref=e244]: "23"
+                  - generic [ref=e245]: $15000.00
+                - generic [ref=e246] [cursor=pointer]:
+                  - strong [ref=e247]: Esmalte semipermanente x 15ml - 24 - Rosalia
+                  - generic [ref=e248]: "24"
+                  - generic [ref=e249]: $15000.00
+                - generic [ref=e250] [cursor=pointer]:
+                  - strong [ref=e251]: Esmalte semipermanente x 15ml - 25 - Magdalena
+                  - generic [ref=e252]: "25"
+                  - generic [ref=e253]: $15000.00
+            - table [ref=e127]:
+              - rowgroup [ref=e128]:
+                - row "Producto Variante Cant. Precio Desc % Subtotal" [ref=e129]:
+                  - columnheader [ref=e130]
+                  - columnheader "Producto" [ref=e131]
+                  - columnheader "Variante" [ref=e132]
+                  - columnheader "Cant." [ref=e133]
+                  - columnheader "Precio" [ref=e134]
+                  - columnheader "Desc %" [ref=e135]
+                  - columnheader "Subtotal" [ref=e136]
+              - rowgroup [ref=e137]:
+                - row "Agregue productos a la prefactura" [ref=e138]:
+                  - cell "Agregue productos a la prefactura" [ref=e139]
+          - generic [ref=e140]:
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e144]: "Subtotal:"
+                - generic [ref=e145]: $0.00
+              - separator [ref=e146]
+              - generic [ref=e147]:
+                - generic [ref=e148]: "TOTAL:"
+                - generic [ref=e149]: $0.00
+            - textbox "Observaciones (opcional)" [ref=e151]
+            - button " Crear Prefactura" [disabled]:
+              - generic: 
+              - text: Crear Prefactura

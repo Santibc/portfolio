@@ -16,6 +16,7 @@ class VarianteProducto extends Model
         'referencia_variante',
         'color',
         'sku',
+        'codigo_barras',
         'activo'
     ];
 
@@ -72,5 +73,11 @@ public function stock()
     public function scopeActivas($query)
     {
         return $query->where('activo', true);
+    }
+
+    public function codigosBarrasLogs()
+    {
+        return $this->hasMany(CodigoBarrasLog::class, 'variante_producto_id')
+                    ->orderBy('created_at', 'desc');
     }
 }

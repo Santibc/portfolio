@@ -9,6 +9,8 @@ use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
 use App\Models\Ubicacion;
 use App\Models\ReservaStock;
+use App\Models\CodigoBarrasLog;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -20,140 +22,180 @@ class StockController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = StockProducto::with(['producto', 'variante', 'ubicacionRelacion'])
+            $query = StockProducto::select(
+                    'stock_productos.producto_id',
+                    'stock_productos.variante_producto_id',
+                    DB::raw('MIN(stock_productos.id) as stock_id_representativo'),
+                    DB::raw('SUM(stock_productos.cantidad_disponible) as total_disponible'),
+                    DB::raw('SUM(stock_productos.cantidad_reservada) as total_reservado'),
+                    DB::raw('SUM(stock_productos.cantidad_disponible - stock_productos.cantidad_reservada) as stock_total'),
+                    DB::raw('MIN(stock_productos.stock_minimo) as stock_minimo_min'),
+                    DB::raw('MAX(stock_productos.alerta_stock_bajo) as alerta_stock_bajo')
+                )
+                ->with(['producto', 'variante'])
                 ->whereHas('producto', function($q) {
                     $q->where('eliminado', false);
                 })
-                ->select('stock_productos.*');
+                // Si el producto tiene variantes, ocultar la fila agregada sin variante
+                ->where(function($q) {
+                    $q->whereNotNull('stock_productos.variante_producto_id')
+                      ->orWhereHas('producto', function($sub) {
+                          $sub->where('tiene_variantes', false);
+                      });
+                })
+                ->groupBy('stock_productos.producto_id', 'stock_productos.variante_producto_id');
 
             // Filtrar por producto si se especifica
             if ($request->has('producto_id') && $request->producto_id) {
-                $query->where('producto_id', $request->producto_id);
+                $query->where('stock_productos.producto_id', $request->producto_id);
             }
-            
-            // Filtrar por estado de stock
+
+            // Filtrar por estado de stock (usando HAVING sobre los totales agregados)
             if ($request->has('estado') && $request->estado) {
                 switch ($request->estado) {
                     case 'con_stock':
-                        $query->conStock();
+                        $query->havingRaw('SUM(stock_productos.cantidad_disponible - stock_productos.cantidad_reservada) > 0');
                         break;
                     case 'sin_stock':
-                        $query->sinStock();
+                        $query->havingRaw('SUM(stock_productos.cantidad_disponible - stock_productos.cantidad_reservada) <= 0');
                         break;
                     case 'stock_bajo':
-                        $query->conStockBajo();
+                        $query->havingRaw('SUM(stock_productos.cantidad_disponible - stock_productos.cantidad_reservada) <= MIN(stock_productos.stock_minimo) AND MAX(stock_productos.alerta_stock_bajo) = 1');
                         break;
                 }
             }
 
-            // Filtrar por ubicación
-            if ($request->has('ubicacion_id') && $request->ubicacion_id) {
-                $query->where('ubicacion_id', $request->ubicacion_id);
-            } else {
-                // Por defecto excluir stock de ubicaciones tipo tienda
-                $query->where(function($q) {
-                    $q->whereNull('ubicacion_id')
-                      ->orWhereHas('ubicacionRelacion', function($sub) {
-                          $sub->where('tipo', '!=', 'tienda');
-                      });
-                });
-            }
-
             return DataTables::of($query)
-                ->addColumn('producto_info', function($stock) {
-                    $info = '<strong>' . $stock->producto->referencia . '</strong><br>';
-                    $info .= $stock->producto->nombre;
-                    if ($stock->variante) {
-                        $info .= '<br><small class="text-muted">' . $stock->variante->nombre_variante . '</small>';
+                ->addColumn('producto_info', function($row) {
+                    $info = '<strong>' . e($row->producto->referencia) . '</strong><br>';
+                    $info .= e($row->producto->nombre);
+                    if ($row->variante) {
+                        $info .= '<br><small class="text-muted">' . e($row->variante->nombre_variante) . '</small>';
                     }
                     return $info;
                 })
-                ->addColumn('stock_actual', function($stock) {
-                    $badge = $stock->stock_bajo ? 'danger' : ($stock->stock_real > 0 ? 'success' : 'warning');
-                    return '<span class="badge bg-'.$badge.'">' . $stock->stock_real . '</span>';
-                })
-                ->addColumn('disponible_reservado', function($stock) {
-                    return 'Disponible: ' . $stock->cantidad_disponible . '<br>Reservado: ' . $stock->cantidad_reservada;
-                })
-                ->addColumn('stock_minimo_maximo', function($stock) {
-                    $info = 'Mínimo: ' . $stock->stock_minimo;
-                    if ($stock->stock_maximo) {
-                        $info .= '<br>Máximo: ' . $stock->stock_maximo;
+                ->addColumn('codigo_barras', function($row) {
+                    $codigoBarras = $row->variante
+                        ? $row->variante->codigo_barras
+                        : $row->producto->codigo_barras;
+                    if ($codigoBarras) {
+                        return '<small class="text-dark"><i class="bi bi-upc-scan"></i> <code>' . e($codigoBarras) . '</code></small>';
                     }
-                    return $info;
+                    return '<span class="text-muted">—</span>';
                 })
-                ->addColumn('ubicacion', function($stock) {
-                    if ($stock->ubicacionRelacion) {
-                        return $stock->ubicacionRelacion->nombre;
+                ->addColumn('stock_actual', function($row) {
+                    $total = (int) $row->stock_total;
+                    $minimo = (int) $row->stock_minimo_min;
+                    $alerta = (int) $row->alerta_stock_bajo === 1;
+
+                    if ($total <= 0) {
+                        $badge = 'danger';
+                    } elseif ($alerta && $total <= $minimo) {
+                        $badge = 'warning';
+                    } else {
+                        $badge = 'success';
                     }
-                    return '<span class="text-muted">-</span>';
+                    return '<span class="badge bg-'.$badge.'" style="font-size: 0.95rem;">' . $total . '</span>';
                 })
-                ->addColumn('ubicacion_especifica', function($stock) {
-                    return $stock->ubicacion ?: '<span class="text-muted">-</span>';
+                ->addColumn('disponible_reservado', function($row) {
+                    return 'Disponible: ' . (int) $row->total_disponible . '<br>Reservado: ' . (int) $row->total_reservado;
                 })
-                ->addColumn('action', function($stock) {
+                ->addColumn('action', function($row) {
+                    $productoId = $row->producto_id;
+                    $varianteId = $row->variante_producto_id ?: 'null';
+                    $stockIdRep = $row->stock_id_representativo;
+                    $reservadoTotal = (int) $row->total_reservado;
+
                     $buttons = '<div class="btn-group btn-group-sm">';
 
-                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario'])) {
-                        // Botón entrada
-                        $buttons .= '<button type="button" class="btn btn-success" onclick="entradaStock('.$stock->id.')" title="Entrada">
-                                        <i class="bi bi-plus-circle"></i>
-                                    </button>';
-
-                        // Botón salida
-                        $buttons .= '<button type="button" class="btn btn-danger" onclick="salidaStock('.$stock->id.')" title="Salida">
-                                        <i class="bi bi-dash-circle"></i>
-                                    </button>';
-                    }
-
-                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
-                        // Botón ajuste
-                        $buttons .= '<button type="button" class="btn btn-warning" onclick="ajusteStock('.$stock->id.')" title="Ajuste">
-                                        <i class="bi bi-gear"></i>
-                                    </button>';
-
-                        // Botón configuración
-                        $buttons .= '<button type="button" class="btn btn-info" onclick="configurarStock('.$stock->id.')" title="Configurar">
-                                        <i class="bi bi-sliders"></i>
-                                    </button>';
-                    }
-
-                    // Botón reservas (siempre visible para ver historial)
-                    $badgeClass = $stock->cantidad_reservada < 0 ? 'bg-danger' : ($stock->cantidad_reservada > 0 ? 'bg-primary' : 'bg-secondary');
-                    $btnClass = $stock->cantidad_reservada < 0 ? 'btn btn-outline-danger' : ($stock->cantidad_reservada > 0 ? 'btn btn-outline-primary' : 'btn btn-outline-secondary');
-                    $buttons .= '<button type="button" class="'.$btnClass.'" onclick="verReservas('.$stock->id.')" title="Ver Reservas ('.$stock->cantidad_reservada.')">
-                                    <i class="bi bi-bookmark-check"></i>
-                                    <span class="badge '.$badgeClass.'">'.$stock->cantidad_reservada.'</span>
+                    // Botón principal: Ver ubicaciones (abre modal con operaciones por ubicación)
+                    $buttons .= '<button type="button" class="btn btn-primary" onclick="verUbicaciones('.$productoId.', '.$varianteId.')" title="Ver ubicaciones y operar stock">
+                                    <i class="bi bi-geo-alt"></i> Ubicaciones
                                 </button>';
 
-                    // Botón historial
-                    $buttons .= '<button type="button" class="btn btn-secondary" onclick="verHistorial('.$stock->producto_id.', '.($stock->variante_producto_id ?: 'null').')" title="Historial">
+                    // Botón reservas (por producto/variante, agregado de todas las ubicaciones)
+                    $badgeClass = $reservadoTotal < 0 ? 'bg-danger' : ($reservadoTotal > 0 ? 'bg-primary' : 'bg-secondary');
+                    $btnClass = $reservadoTotal < 0 ? 'btn btn-outline-danger' : ($reservadoTotal > 0 ? 'btn btn-outline-primary' : 'btn btn-outline-secondary');
+                    $buttons .= '<button type="button" class="'.$btnClass.'" onclick="verReservas('.$productoId.', '.$varianteId.')" title="Ver Reservas ('.$reservadoTotal.')">
+                                    <i class="bi bi-bookmark-check"></i>
+                                    <span class="badge '.$badgeClass.'">'.$reservadoTotal.'</span>
+                                </button>';
+
+                    // Botón historial movimientos (por producto/variante)
+                    $buttons .= '<button type="button" class="btn btn-secondary" onclick="verHistorial('.$productoId.', '.$varianteId.')" title="Historial">
                                     <i class="bi bi-clock-history"></i>
                                 </button>';
+
+                    // Botón escanear código de barras (aplica al producto/variante, usamos stock_id representativo)
+                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'inventarios', 'auxiliar_inventario'])) {
+                        $codigoBarrasActual = $row->variante
+                            ? $row->variante->codigo_barras
+                            : $row->producto->codigo_barras;
+                        $codigoEscapado = e($codigoBarrasActual ?? '');
+                        $buttons .= '<button type="button" class="btn btn-dark" onclick="abrirModalCodigoBarras('.$stockIdRep.', \''.$codigoEscapado.'\')" title="Escanear Código de Barras">
+                                        <i class="bi bi-upc-scan"></i>
+                                    </button>';
+
+                        // Botón historial código de barras
+                        $buttons .= '<button type="button" class="btn btn-outline-dark" onclick="verHistorialCodigoBarras('.$stockIdRep.')" title="Historial Código de Barras">
+                                        <i class="bi bi-journal-text"></i>
+                                    </button>';
+                    }
 
                     $buttons .= '</div>';
                     return $buttons;
                 })
-                ->addColumn('referencia', function($stock) {
-                    return $stock->producto->referencia;
+                ->addColumn('referencia', function($row) {
+                    return $row->producto->referencia;
                 })
-                ->addColumn('nombre_producto', function($stock) {
-                    return $stock->producto->nombre;
+                ->addColumn('nombre_producto', function($row) {
+                    return $row->producto->nombre;
                 })
-                ->addColumn('variante_nombre', function($stock) {
-                    return $stock->variante ? $stock->variante->nombre_variante : '';
+                ->addColumn('variante_nombre', function($row) {
+                    return $row->variante ? $row->variante->nombre_variante : '';
                 })
                 ->filterColumn('producto_id', function($query, $keyword) {
-                    $query->whereHas('producto', function($q) use ($keyword) {
-                        $q->where('referencia', 'like', "%{$keyword}%")
-                          ->orWhere('nombre', 'like', "%{$keyword}%");
-                    })->orWhereHas('variante', function($q) use ($keyword) {
-                        $q->where('referencia_variante', 'like', "%{$keyword}%")
-                          ->orWhere('color', 'like', "%{$keyword}%")
-                          ->orWhere('sku', 'like', "%{$keyword}%");
+                    $query->where(function($q) use ($keyword) {
+                        // Texto del producto (referencia/nombre): aplica a todos los stocks del producto
+                        $q->whereHas('producto', function($sub) use ($keyword) {
+                            $sub->where('referencia', 'like', "%{$keyword}%")
+                                ->orWhere('nombre', 'like', "%{$keyword}%");
+                        })
+                        // Datos de la variante: solo stocks con esa variante
+                        ->orWhereHas('variante', function($sub) use ($keyword) {
+                            $sub->where('referencia_variante', 'like', "%{$keyword}%")
+                                ->orWhere('color', 'like', "%{$keyword}%")
+                                ->orWhere('sku', 'like', "%{$keyword}%")
+                                ->orWhere('codigo_barras', 'like', "%{$keyword}%");
+                        })
+                        // Código de barras del producto: solo stock sin variante
+                        ->orWhere(function($sub) use ($keyword) {
+                            $sub->whereNull('stock_productos.variante_producto_id')
+                                ->whereHas('producto', function($p) use ($keyword) {
+                                    $p->where('codigo_barras', 'like', "%{$keyword}%");
+                                });
+                        });
                     });
                 })
-                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'stock_minimo_maximo', 'ubicacion', 'ubicacion_especifica', 'action'])
+                ->filterColumn('codigo_barras', function($query, $keyword) {
+                    $query->where(function($q) use ($keyword) {
+                        // Stock sin variante → matchea contra producto.codigo_barras
+                        $q->where(function($sub) use ($keyword) {
+                            $sub->whereNull('stock_productos.variante_producto_id')
+                                ->whereHas('producto', function($p) use ($keyword) {
+                                    $p->where('codigo_barras', 'like', "%{$keyword}%");
+                                });
+                        })
+                        // Stock con variante → matchea contra variante.codigo_barras
+                        ->orWhere(function($sub) use ($keyword) {
+                            $sub->whereNotNull('stock_productos.variante_producto_id')
+                                ->whereHas('variante', function($v) use ($keyword) {
+                                    $v->where('codigo_barras', 'like', "%{$keyword}%");
+                                });
+                        });
+                    });
+                })
+                ->rawColumns(['producto_info', 'stock_actual', 'disponible_reservado', 'codigo_barras', 'action'])
                 ->make(true);
         }
 
@@ -170,6 +212,85 @@ class StockController extends Controller
         $ubicaciones = Ubicacion::activas()->orderBy('nombre')->get();
 
         return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'ubicaciones'));
+    }
+
+    // AJAX: retorna el HTML con el desglose de stock por ubicación para un producto/variante
+    public function ubicacionesAjax(Request $request)
+    {
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id',
+            'variante_producto_id' => 'nullable|exists:variantes_productos,id',
+        ]);
+
+        $productoId = $request->producto_id;
+        $varianteId = $request->variante_producto_id;
+
+        $producto = Producto::findOrFail($productoId);
+        $variante = $varianteId ? VarianteProducto::find($varianteId) : null;
+
+        $stocks = StockProducto::with(['ubicacionRelacion'])
+            ->where('producto_id', $productoId)
+            ->when($varianteId, function($q) use ($varianteId) {
+                $q->where('variante_producto_id', $varianteId);
+            }, function($q) {
+                $q->whereNull('variante_producto_id');
+            })
+            ->orderBy('ubicacion_id')
+            ->get();
+
+        // Ubicaciones activas donde aún no hay registro para este producto/variante
+        $ubicacionesExistentes = $stocks->pluck('ubicacion_id')->filter()->all();
+        $ubicacionesDisponibles = Ubicacion::activas()
+            ->whereNotIn('id', $ubicacionesExistentes)
+            ->orderBy('nombre')
+            ->get();
+
+        $html = view('stock.partials._ubicaciones_modal', compact(
+            'stocks', 'ubicacionesDisponibles', 'producto', 'variante'
+        ))->render();
+
+        return response()->json(['html' => $html]);
+    }
+
+    // Crear un registro de stock en una ubicación donde el producto/variante aún no existe
+    public function agregarUbicacion(Request $request)
+    {
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id',
+            'variante_producto_id' => 'nullable|exists:variantes_productos,id',
+            'ubicacion_id' => 'required|exists:ubicaciones,id',
+        ]);
+
+        $existente = StockProducto::where('producto_id', $request->producto_id)
+            ->where('ubicacion_id', $request->ubicacion_id)
+            ->when($request->variante_producto_id, function($q) use ($request) {
+                $q->where('variante_producto_id', $request->variante_producto_id);
+            }, function($q) {
+                $q->whereNull('variante_producto_id');
+            })
+            ->first();
+
+        if ($existente) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe un registro de stock para este producto en esa ubicación.'
+            ], 422);
+        }
+
+        StockProducto::create([
+            'producto_id' => $request->producto_id,
+            'variante_producto_id' => $request->variante_producto_id,
+            'ubicacion_id' => $request->ubicacion_id,
+            'cantidad_disponible' => 0,
+            'cantidad_reservada' => 0,
+            'stock_minimo' => 0,
+            'alerta_stock_bajo' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ubicación agregada. Ya puedes registrar entradas de stock en ella.'
+        ]);
     }
 
     // Entrada de stock
@@ -283,14 +404,13 @@ class StockController extends Controller
         }
     }
 
-    // Configurar parámetros de stock
+    // Configurar parámetros de stock (por ubicación específica - stock_id fijo)
     public function configurar(Request $request)
     {
         $request->validate([
             'stock_id' => 'required|exists:stock_productos,id',
             'stock_minimo' => 'required|integer|min:0',
             'stock_maximo' => 'nullable|integer|min:0',
-            'ubicacion_id' => 'nullable|exists:ubicaciones,id',
             'ubicacion' => 'nullable|string|max:255',
             'alerta_stock_bajo' => 'boolean',
             'notas' => 'nullable|string'
@@ -302,7 +422,6 @@ class StockController extends Controller
             $stock->update([
                 'stock_minimo' => $request->stock_minimo,
                 'stock_maximo' => $request->stock_maximo,
-                'ubicacion_id' => $request->ubicacion_id,
                 'ubicacion' => $request->ubicacion,
                 'alerta_stock_bajo' => $request->alerta_stock_bajo ?? true,
                 'notas' => $request->notas
@@ -344,13 +463,27 @@ class StockController extends Controller
         return response()->json(['html' => $html]);
     }
 
-    // Ver reservas de stock
+    // Ver reservas de stock (agregado de todas las ubicaciones del producto/variante)
     public function reservas(Request $request)
     {
-        $stockId = $request->stock_id;
+        // Soporta llamada legacy por stock_id, pero prefiere producto_id + variante_producto_id
+        if ($request->filled('producto_id')) {
+            $productoId = $request->producto_id;
+            $varianteId = $request->variante_producto_id;
+
+            $stockIds = StockProducto::where('producto_id', $productoId)
+                ->when($varianteId, function($q) use ($varianteId) {
+                    $q->where('variante_producto_id', $varianteId);
+                }, function($q) {
+                    $q->whereNull('variante_producto_id');
+                })
+                ->pluck('id');
+        } else {
+            $stockIds = collect([$request->stock_id])->filter();
+        }
 
         $reservas = ReservaStock::with(['solicitudCotizacion.cliente', 'itemSolicitud'])
-            ->where('stock_producto_id', $stockId)
+            ->whereIn('stock_producto_id', $stockIds)
             ->orderByRaw("FIELD(estado, 'activa', 'aplicada', 'expirada', 'liberada_manual')")
             ->orderBy('created_at', 'desc')
             ->limit(50)
@@ -367,6 +500,9 @@ class StockController extends Controller
             ];
         });
 
+        // Para compatibilidad con la vista (que usa $stockId para acciones)
+        $stockId = $stockIds->first();
+
         $html = view('stock.reservas', compact('reservas', 'cotizacionesActivas', 'stockId'))->render();
 
         return response()->json(['html' => $html]);
@@ -375,12 +511,13 @@ class StockController extends Controller
     // Obtener datos de stock para edición
     public function obtenerStock($id)
     {
-        $stock = StockProducto::with(['producto', 'variante'])->findOrFail($id);
-        
+        $stock = StockProducto::with(['producto', 'variante', 'ubicacionRelacion'])->findOrFail($id);
+
         return response()->json([
             'stock' => $stock,
             'producto_nombre' => $stock->producto->nombre,
-            'variante_nombre' => $stock->variante ? $stock->variante->nombre_variante : null
+            'variante_nombre' => $stock->variante ? $stock->variante->nombre_variante : null,
+            'ubicacion_nombre' => $stock->ubicacionRelacion ? $stock->ubicacionRelacion->nombre : null,
         ]);
     }
 
@@ -590,5 +727,131 @@ class StockController extends Controller
         $pdf = Pdf::loadView($vista, compact('movimiento', 'numero', 'fecha'));
 
         return $pdf->stream();
+    }
+
+    /**
+     * Guardar/actualizar el código de barras asociado a un registro de stock.
+     * Si el stock tiene variante, el código se guarda en la variante; si no, en el producto.
+     */
+    public function guardarCodigoBarras(Request $request, $stockId)
+    {
+        $stock = StockProducto::with(['producto', 'variante'])->findOrFail($stockId);
+        $variante = $stock->variante;
+        $producto = $stock->producto;
+
+        // Reglas: único globalmente entre productos y entre variantes, ignorando el registro actual
+        try {
+            $request->validate([
+                'codigo_barras' => [
+                    'required','string','max:50',
+                    $variante
+                        ? Rule::unique('variantes_productos','codigo_barras')->ignore($variante->id)
+                        : Rule::unique('productos','codigo_barras')->ignore($producto->id),
+                    // Cruzar unicidad con la otra tabla (no se debe repetir entre productos y variantes)
+                    function ($attribute, $value, $fail) use ($variante, $producto) {
+                        if ($variante) {
+                            $existeEnProducto = Producto::where('codigo_barras', $value)->exists();
+                            if ($existeEnProducto) {
+                                $fail('Ya existe un producto con este código de barras.');
+                            }
+                        } else {
+                            $existeEnVariante = VarianteProducto::where('codigo_barras', $value)
+                                ->where('producto_id', '!=', $producto->id)
+                                ->exists();
+                            if ($existeEnVariante) {
+                                $fail('Ya existe una variante con este código de barras.');
+                            }
+                        }
+                    },
+                ],
+            ], [
+                'codigo_barras.required' => 'Debe ingresar un código de barras.',
+                'codigo_barras.max' => 'El código de barras no debe superar los 50 caracteres.',
+                'codigo_barras.unique' => 'Ya existe otro registro con este código de barras.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $nuevo = trim($request->input('codigo_barras'));
+
+        if ($variante) {
+            $anterior = $variante->codigo_barras;
+            $variante->update(['codigo_barras' => $nuevo]);
+            CodigoBarrasLog::registrar($producto, $anterior, $nuevo, 'modal_escaneo', $variante);
+        } else {
+            $anterior = $producto->codigo_barras;
+            $producto->update(['codigo_barras' => $nuevo]);
+            CodigoBarrasLog::registrar($producto, $anterior, $nuevo, 'modal_escaneo');
+        }
+
+        return response()->json([
+            'success' => true,
+            'codigo_barras' => $nuevo,
+            'message' => 'Código de barras guardado correctamente.',
+        ]);
+    }
+
+    /**
+     * Eliminar el código de barras del producto o variante asociado al stock.
+     * Si no hay código actual, retorna 422.
+     */
+    public function eliminarCodigoBarras($stockId)
+    {
+        $stock = StockProducto::with(['producto', 'variante'])->findOrFail($stockId);
+        $variante = $stock->variante;
+        $producto = $stock->producto;
+
+        if ($variante) {
+            $anterior = $variante->codigo_barras;
+            if (!$anterior) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La variante no tiene código de barras asignado.',
+                ], 422);
+            }
+            $variante->update(['codigo_barras' => null]);
+            CodigoBarrasLog::registrar($producto, $anterior, null, 'modal_eliminacion', $variante);
+        } else {
+            $anterior = $producto->codigo_barras;
+            if (!$anterior) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El producto no tiene código de barras asignado.',
+                ], 422);
+            }
+            $producto->update(['codigo_barras' => null]);
+            CodigoBarrasLog::registrar($producto, $anterior, null, 'modal_eliminacion');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Código de barras eliminado correctamente.',
+        ]);
+    }
+
+    /**
+     * Historial de cambios del código de barras para el registro de stock indicado.
+     */
+    public function historialCodigoBarras($stockId)
+    {
+        $stock = StockProducto::with(['producto', 'variante'])->findOrFail($stockId);
+
+        if ($stock->variante) {
+            $logs = $stock->variante->codigosBarrasLogs()->with('usuario')->get();
+            $codigoActual = $stock->variante->codigo_barras;
+            $titulo = $stock->producto->referencia . ' — ' . $stock->producto->nombre
+                . ' / ' . $stock->variante->nombre_variante;
+        } else {
+            $logs = $stock->producto->codigosBarrasLogs()->with('usuario')->get();
+            $codigoActual = $stock->producto->codigo_barras;
+            $titulo = $stock->producto->referencia . ' — ' . $stock->producto->nombre;
+        }
+
+        return view('stock.partials._codigo_barras_historial', compact('logs', 'codigoActual', 'titulo'));
     }
 }

@@ -111,15 +111,12 @@ class VentaPdvController extends Controller
         $user = auth()->user();
         $sesion = $this->cajaService->obtenerSesionActivaDeUsuario($user->id);
 
-        if (!$sesion && !$user->hasRole('admin')) {
+        if (!$sesion) {
             return redirect()->route('pdv.dashboard')
                 ->with('error', 'Debe abrir una caja antes de realizar ventas');
         }
 
-        // Si admin sin sesión, usar ubicación de la primera caja activa
-        $ubicacionIdDefault = $sesion
-            ? $sesion->caja->ubicacion_id
-            : (\App\Models\Caja::activas()->first()->ubicacion_id ?? null);
+        $ubicacionIdDefault = $sesion->caja->ubicacion_id;
 
         $listasPrecioPdvConfig = ConfiguracionPdv::obtener('listas_precio_pdv', '');
         $listasPrecioIds = array_filter(explode(',', $listasPrecioPdvConfig));

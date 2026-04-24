@@ -1,0 +1,498 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - link "Miracle Beauty Experts" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img "Miracle Beauty Experts" [ref=e6]
+    - navigation [ref=e7]:
+      - link " Inicio" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e9]: 
+        - generic [ref=e10]: Inicio
+      - link " Métricas" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard-metricas
+        - generic [ref=e12]: 
+        - generic [ref=e13]: Métricas
+      - link " Usuarios" [ref=e14] [cursor=pointer]:
+        - /url: /usuarios
+        - generic [ref=e15]: 
+        - generic [ref=e16]: Usuarios
+      - link " Cotizaciones" [ref=e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/solicitudes
+        - generic [ref=e18]: 
+        - generic [ref=e19]: Cotizaciones
+      - link " Clientes" [ref=e20] [cursor=pointer]:
+        - /url: /clientes
+        - generic [ref=e21]: 
+        - generic [ref=e22]: Clientes
+      - link " Catálogo" [ref=e23] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/catalogo
+        - generic [ref=e24]: 
+        - generic [ref=e25]: Catálogo
+      - link " Links" [ref=e26] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/enlaces
+        - generic [ref=e27]: 
+        - generic [ref=e28]: Links
+      - link " Listas de Precios" [ref=e29] [cursor=pointer]:
+        - /url: /listas-precios
+        - generic [ref=e30]: 
+        - generic [ref=e31]: Listas de Precios
+      - paragraph [ref=e33]:
+        - generic [ref=e34]: 
+        - text: Inventario
+      - link " Categorías" [ref=e35] [cursor=pointer]:
+        - /url: /categorias
+        - generic [ref=e36]: 
+        - generic [ref=e37]: Categorías
+      - link " Productos" [ref=e38] [cursor=pointer]:
+        - /url: /productos
+        - generic [ref=e39]: 
+        - generic [ref=e40]: Productos
+      - link " Gestión de Stock" [ref=e41] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/stock
+        - generic [ref=e42]: 
+        - generic [ref=e43]: Gestión de Stock
+      - link " Traslados" [ref=e44] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e45]: 
+        - generic [ref=e46]: Traslados
+      - link " Ubicaciones" [ref=e47] [cursor=pointer]:
+        - /url: /ubicaciones
+        - generic [ref=e48]: 
+        - generic [ref=e49]: Ubicaciones
+      - link " Novedades" [ref=e50] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Novedades
+      - link " Importar Productos" [ref=e53] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/productos/historial-importaciones
+        - generic [ref=e54]: 
+        - generic [ref=e55]: Importar Productos
+      - paragraph [ref=e57]:
+        - generic [ref=e58]: 
+        - text: Punto de Venta
+      - link " Dashboard PdV" [ref=e59] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv
+        - generic [ref=e60]: 
+        - generic [ref=e61]: Dashboard PdV
+      - link " Config. Cajas" [ref=e62] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/cajas
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Config. Cajas
+      - link " Config. SIIGO" [ref=e65] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/siigo/configuracion
+        - generic [ref=e66]: 
+        - generic [ref=e67]: Config. SIIGO
+      - link " Nueva Venta" [ref=e68] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas/crear
+        - generic [ref=e69]: 
+        - generic [ref=e70]: Nueva Venta
+      - link " Historial Ventas" [ref=e71] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas
+        - generic [ref=e72]: 
+        - generic [ref=e73]: Historial Ventas
+      - link " Prefacturas" [ref=e74] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/prefacturas/pendientes
+        - generic [ref=e75]: 
+        - generic [ref=e76]: Prefacturas
+      - link " Vales" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/vales
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Vales
+      - link " Reportes PdV" [ref=e80] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/reportes
+        - generic [ref=e81]: 
+        - generic [ref=e82]: Reportes PdV
+      - link " Novedades" [ref=e83] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e84]: 
+        - generic [ref=e85]: Novedades
+      - link " Stock" [ref=e86] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/stock
+        - generic [ref=e87]: 
+        - generic [ref=e88]: Stock
+      - link " Traslados" [ref=e89] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e90]: 
+        - generic [ref=e91]: Traslados
+    - button " Salir" [ref=e94] [cursor=pointer]:
+      - generic [ref=e95]: 
+      - generic [ref=e96]: Salir
+  - generic [ref=e97]:
+    - banner [ref=e98]:
+      - button "" [ref=e99] [cursor=pointer]:
+        - generic [ref=e100]: 
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: Admin
+          - generic [ref=e104]: admin@admin.com
+        - img "Avatar" [ref=e105]
+    - main [ref=e106]:
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - generic [ref=e112]:
+            - heading " Con Stock" [level=6] [ref=e113]:
+              - generic [ref=e114]: 
+              - text: Con Stock
+            - paragraph [ref=e115]: "8"
+          - generic [ref=e118]:
+            - heading " Stock Bajo" [level=6] [ref=e119]:
+              - generic [ref=e120]: 
+              - text: Stock Bajo
+            - paragraph [ref=e121]: "111"
+          - generic [ref=e124]:
+            - heading " Sin Stock" [level=6] [ref=e125]:
+              - generic [ref=e126]: 
+              - text: Sin Stock
+            - paragraph [ref=e127]: "112"
+          - generic [ref=e130]:
+            - heading " Total Items" [level=6] [ref=e131]:
+              - generic [ref=e132]: 
+              - text: Total Items
+            - paragraph [ref=e133]: "510"
+        - generic [ref=e134]:
+          - link " Nuevo Traslado" [ref=e135] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/traslados/form
+            - generic [ref=e136]: 
+            - text: Nuevo Traslado
+          - link " Ver Traslados" [ref=e137] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/traslados
+            - generic [ref=e138]: 
+            - text: Ver Traslados
+        - generic [ref=e139]:
+          - heading " Filtros" [level=5] [ref=e141]:
+            - generic [ref=e142]: 
+            - text: Filtros
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: Buscar Producto
+              - combobox [ref=e147]
+              - combobox "-- Todos los productos --" [ref=e150] [cursor=pointer]:
+                - textbox "-- Todos los productos --" [ref=e151]
+            - generic [ref=e152]:
+              - generic [ref=e153]: Estado de Stock
+              - combobox [ref=e154]:
+                - option "-- Todos --" [selected]
+                - option "Con Stock"
+                - option "Sin Stock"
+                - option "Stock Bajo"
+            - group [ref=e156]:
+              - button " Aplicar" [ref=e157] [cursor=pointer]:
+                - generic [ref=e158]: 
+                - text: Aplicar
+              - button " Limpiar" [ref=e159] [cursor=pointer]:
+                - generic [ref=e160]: 
+                - text: Limpiar
+        - generic [ref=e162]:
+          - heading "Control de Stock" [level=4] [ref=e163]
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e167]:
+                - button "Filas▼" [ref=e168] [cursor=pointer]
+                - button "Columnas▼" [ref=e169] [cursor=pointer]
+                - button "Excel" [ref=e170] [cursor=pointer]
+                - button "Inicializar Stock" [ref=e171] [cursor=pointer]
+              - generic [ref=e172]:
+                - generic [ref=e173]: "Buscar:"
+                - searchbox "Buscar:" [active] [ref=e174]: "1001"
+            - generic [ref=e175]:
+              - table [ref=e184]:
+                - rowgroup [ref=e185]:
+                  - 'row "Producto Producto: Activate to invert sorting Cod Barras Stock Total Disp./Reserv. (Total) Acciones" [ref=e186]':
+                    - 'columnheader "Producto Producto: Activate to invert sorting" [ref=e187] [cursor=pointer]':
+                      - generic [ref=e188]:
+                        - generic [ref=e189]: Producto
+                        - 'button "Producto: Activate to invert sorting" [ref=e190]'
+                    - columnheader "Cod Barras" [ref=e191]:
+                      - generic [ref=e193]: Cod Barras
+                    - columnheader "Stock Total" [ref=e194]:
+                      - generic [ref=e196]: Stock Total
+                    - columnheader "Disp./Reserv. (Total)" [ref=e197]:
+                      - generic [ref=e199]: Disp./Reserv. (Total)
+                    - columnheader "Acciones" [ref=e200]:
+                      - generic [ref=e202]: Acciones
+              - table [ref=e204]:
+                - rowgroup:
+                  - 'row "Producto Producto: Activate to invert sorting Cod Barras Stock Total Disp./Reserv. (Total) Acciones"':
+                    - 'columnheader "Producto Producto: Activate to invert sorting"':
+                      - generic [ref=e455] [cursor=pointer]:
+                        - generic [ref=e456]: Producto
+                        - 'button "Producto: Activate to invert sorting" [ref=e457]'
+                    - columnheader "Cod Barras":
+                      - generic [ref=e459]: Cod Barras
+                    - columnheader "Stock Total":
+                      - generic [ref=e461]: Stock Total
+                    - columnheader "Disp./Reserv. (Total)":
+                      - generic [ref=e463]: Disp./Reserv. (Total)
+                    - columnheader "Acciones":
+                      - generic [ref=e465]: Acciones
+                - rowgroup [ref=e207]:
+                  - 'row "1001 Esmalte semipermanente x 15ml — 0 Disponible: 0 Reservado: 0  Ubicaciones  0   " [ref=e466]':
+                    - cell "1001 Esmalte semipermanente x 15ml" [ref=e467]:
+                      - strong [ref=e468]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                    - cell "—" [ref=e469]
+                    - cell "0" [ref=e470]:
+                      - generic [ref=e471]: "0"
+                    - 'cell "Disponible: 0 Reservado: 0" [ref=e472]':
+                      - text: "Disponible: 0"
+                      - text: "Reservado: 0"
+                    - cell " Ubicaciones  0   " [ref=e473]:
+                      - generic [ref=e474]:
+                        - button " Ubicaciones" [ref=e475] [cursor=pointer]:
+                          - generic [ref=e476]: 
+                          - text: Ubicaciones
+                        - button " 0" [ref=e477] [cursor=pointer]:
+                          - generic [ref=e478]: 
+                          - generic [ref=e479]: "0"
+                        - button "" [ref=e480] [cursor=pointer]:
+                          - generic [ref=e481]: 
+                        - button "" [ref=e482] [cursor=pointer]:
+                          - generic [ref=e483]: 
+                        - button "" [ref=e484] [cursor=pointer]:
+                          - generic [ref=e485]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 1 - Belén  5752842501294 444 Disponible: 444 Reservado: 0  Ubicaciones  0   " [ref=e486]':
+                    - cell "1001 Esmalte semipermanente x 15ml 1 - Belén" [ref=e487]:
+                      - strong [ref=e488]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 1 - Belén
+                    - cell " 5752842501294" [ref=e489]:
+                      - generic [ref=e490]:
+                        - generic [ref=e491]: 
+                        - code [ref=e492]: "5752842501294"
+                    - cell "444" [ref=e493]:
+                      - generic [ref=e494]: "444"
+                    - 'cell "Disponible: 444 Reservado: 0" [ref=e495]':
+                      - text: "Disponible: 444"
+                      - text: "Reservado: 0"
+                    - cell " Ubicaciones  0   " [ref=e496]:
+                      - generic [ref=e497]:
+                        - button " Ubicaciones" [ref=e498] [cursor=pointer]:
+                          - generic [ref=e499]: 
+                          - text: Ubicaciones
+                        - button " 0" [ref=e500] [cursor=pointer]:
+                          - generic [ref=e501]: 
+                          - generic [ref=e502]: "0"
+                        - button "" [ref=e503] [cursor=pointer]:
+                          - generic [ref=e504]: 
+                        - button "" [ref=e505] [cursor=pointer]:
+                          - generic [ref=e506]: 
+                        - button "" [ref=e507] [cursor=pointer]:
+                          - generic [ref=e508]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 2 - Eva — 1 Disponible: 13 Reservado: 12  Ubicaciones  12   " [ref=e509]':
+                    - cell "1001 Esmalte semipermanente x 15ml 2 - Eva" [ref=e510]:
+                      - strong [ref=e511]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 2 - Eva
+                    - cell "—" [ref=e512]
+                    - cell "1" [ref=e513]:
+                      - generic [ref=e514]: "1"
+                    - 'cell "Disponible: 13 Reservado: 12" [ref=e515]':
+                      - text: "Disponible: 13"
+                      - text: "Reservado: 12"
+                    - cell " Ubicaciones  12   " [ref=e516]:
+                      - generic [ref=e517]:
+                        - button " Ubicaciones" [ref=e518] [cursor=pointer]:
+                          - generic [ref=e519]: 
+                          - text: Ubicaciones
+                        - button " 12" [ref=e520] [cursor=pointer]:
+                          - generic [ref=e521]: 
+                          - generic [ref=e522]: "12"
+                        - button "" [ref=e523] [cursor=pointer]:
+                          - generic [ref=e524]: 
+                        - button "" [ref=e525] [cursor=pointer]:
+                          - generic [ref=e526]: 
+                        - button "" [ref=e527] [cursor=pointer]:
+                          - generic [ref=e528]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 3 - Maria — 3648 Disponible: 3688 Reservado: 40  Ubicaciones  40   " [ref=e529]':
+                    - cell "1001 Esmalte semipermanente x 15ml 3 - Maria" [ref=e530]:
+                      - strong [ref=e531]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 3 - Maria
+                    - cell "—" [ref=e532]
+                    - cell "3648" [ref=e533]:
+                      - generic [ref=e534]: "3648"
+                    - 'cell "Disponible: 3688 Reservado: 40" [ref=e535]':
+                      - text: "Disponible: 3688"
+                      - text: "Reservado: 40"
+                    - cell " Ubicaciones  40   " [ref=e536]:
+                      - generic [ref=e537]:
+                        - button " Ubicaciones" [ref=e538] [cursor=pointer]:
+                          - generic [ref=e539]: 
+                          - text: Ubicaciones
+                        - button " 40" [ref=e540] [cursor=pointer]:
+                          - generic [ref=e541]: 
+                          - generic [ref=e542]: "40"
+                        - button "" [ref=e543] [cursor=pointer]:
+                          - generic [ref=e544]: 
+                        - button "" [ref=e545] [cursor=pointer]:
+                          - generic [ref=e546]: 
+                        - button "" [ref=e547] [cursor=pointer]:
+                          - generic [ref=e548]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 4 - Genesis — 566 Disponible: 578 Reservado: 12  Ubicaciones  12   " [ref=e549]':
+                    - cell "1001 Esmalte semipermanente x 15ml 4 - Genesis" [ref=e550]:
+                      - strong [ref=e551]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 4 - Genesis
+                    - cell "—" [ref=e552]
+                    - cell "566" [ref=e553]:
+                      - generic [ref=e554]: "566"
+                    - 'cell "Disponible: 578 Reservado: 12" [ref=e555]':
+                      - text: "Disponible: 578"
+                      - text: "Reservado: 12"
+                    - cell " Ubicaciones  12   " [ref=e556]:
+                      - generic [ref=e557]:
+                        - button " Ubicaciones" [ref=e558] [cursor=pointer]:
+                          - generic [ref=e559]: 
+                          - text: Ubicaciones
+                        - button " 12" [ref=e560] [cursor=pointer]:
+                          - generic [ref=e561]: 
+                          - generic [ref=e562]: "12"
+                        - button "" [ref=e563] [cursor=pointer]:
+                          - generic [ref=e564]: 
+                        - button "" [ref=e565] [cursor=pointer]:
+                          - generic [ref=e566]: 
+                        - button "" [ref=e567] [cursor=pointer]:
+                          - generic [ref=e568]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 5 - Esther — 0 Disponible: 0 Reservado: 0  Ubicaciones  0   " [ref=e569]':
+                    - cell "1001 Esmalte semipermanente x 15ml 5 - Esther" [ref=e570]:
+                      - strong [ref=e571]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 5 - Esther
+                    - cell "—" [ref=e572]
+                    - cell "0" [ref=e573]:
+                      - generic [ref=e574]: "0"
+                    - 'cell "Disponible: 0 Reservado: 0" [ref=e575]':
+                      - text: "Disponible: 0"
+                      - text: "Reservado: 0"
+                    - cell " Ubicaciones  0   " [ref=e576]:
+                      - generic [ref=e577]:
+                        - button " Ubicaciones" [ref=e578] [cursor=pointer]:
+                          - generic [ref=e579]: 
+                          - text: Ubicaciones
+                        - button " 0" [ref=e580] [cursor=pointer]:
+                          - generic [ref=e581]: 
+                          - generic [ref=e582]: "0"
+                        - button "" [ref=e583] [cursor=pointer]:
+                          - generic [ref=e584]: 
+                        - button "" [ref=e585] [cursor=pointer]:
+                          - generic [ref=e586]: 
+                        - button "" [ref=e587] [cursor=pointer]:
+                          - generic [ref=e588]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 6 - Ruth — 997 Disponible: 997 Reservado: 0  Ubicaciones  0   " [ref=e589]':
+                    - cell "1001 Esmalte semipermanente x 15ml 6 - Ruth" [ref=e590]:
+                      - strong [ref=e591]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 6 - Ruth
+                    - cell "—" [ref=e592]
+                    - cell "997" [ref=e593]:
+                      - generic [ref=e594]: "997"
+                    - 'cell "Disponible: 997 Reservado: 0" [ref=e595]':
+                      - text: "Disponible: 997"
+                      - text: "Reservado: 0"
+                    - cell " Ubicaciones  0   " [ref=e596]:
+                      - generic [ref=e597]:
+                        - button " Ubicaciones" [ref=e598] [cursor=pointer]:
+                          - generic [ref=e599]: 
+                          - text: Ubicaciones
+                        - button " 0" [ref=e600] [cursor=pointer]:
+                          - generic [ref=e601]: 
+                          - generic [ref=e602]: "0"
+                        - button "" [ref=e603] [cursor=pointer]:
+                          - generic [ref=e604]: 
+                        - button "" [ref=e605] [cursor=pointer]:
+                          - generic [ref=e606]: 
+                        - button "" [ref=e607] [cursor=pointer]:
+                          - generic [ref=e608]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 7 - Samara — 1390 Disponible: 1390 Reservado: 0  Ubicaciones  0   " [ref=e609]':
+                    - cell "1001 Esmalte semipermanente x 15ml 7 - Samara" [ref=e610]:
+                      - strong [ref=e611]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 7 - Samara
+                    - cell "—" [ref=e612]
+                    - cell "1390" [ref=e613]:
+                      - generic [ref=e614]: "1390"
+                    - 'cell "Disponible: 1390 Reservado: 0" [ref=e615]':
+                      - text: "Disponible: 1390"
+                      - text: "Reservado: 0"
+                    - cell " Ubicaciones  0   " [ref=e616]:
+                      - generic [ref=e617]:
+                        - button " Ubicaciones" [ref=e618] [cursor=pointer]:
+                          - generic [ref=e619]: 
+                          - text: Ubicaciones
+                        - button " 0" [ref=e620] [cursor=pointer]:
+                          - generic [ref=e621]: 
+                          - generic [ref=e622]: "0"
+                        - button "" [ref=e623] [cursor=pointer]:
+                          - generic [ref=e624]: 
+                        - button "" [ref=e625] [cursor=pointer]:
+                          - generic [ref=e626]: 
+                        - button "" [ref=e627] [cursor=pointer]:
+                          - generic [ref=e628]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 8 - Inés — 500 Disponible: 512 Reservado: 12  Ubicaciones  12   " [ref=e629]':
+                    - cell "1001 Esmalte semipermanente x 15ml 8 - Inés" [ref=e630]:
+                      - strong [ref=e631]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 8 - Inés
+                    - cell "—" [ref=e632]
+                    - cell "500" [ref=e633]:
+                      - generic [ref=e634]: "500"
+                    - 'cell "Disponible: 512 Reservado: 12" [ref=e635]':
+                      - text: "Disponible: 512"
+                      - text: "Reservado: 12"
+                    - cell " Ubicaciones  12   " [ref=e636]:
+                      - generic [ref=e637]:
+                        - button " Ubicaciones" [ref=e638] [cursor=pointer]:
+                          - generic [ref=e639]: 
+                          - text: Ubicaciones
+                        - button " 12" [ref=e640] [cursor=pointer]:
+                          - generic [ref=e641]: 
+                          - generic [ref=e642]: "12"
+                        - button "" [ref=e643] [cursor=pointer]:
+                          - generic [ref=e644]: 
+                        - button "" [ref=e645] [cursor=pointer]:
+                          - generic [ref=e646]: 
+                        - button "" [ref=e647] [cursor=pointer]:
+                          - generic [ref=e648]: 
+                  - 'row "1001 Esmalte semipermanente x 15ml 9 - Brigida — 516 Disponible: 528 Reservado: 12  Ubicaciones  12   " [ref=e649]':
+                    - cell "1001 Esmalte semipermanente x 15ml 9 - Brigida" [ref=e650]:
+                      - strong [ref=e651]: "1001"
+                      - text: Esmalte semipermanente x 15ml
+                      - text: 9 - Brigida
+                    - cell "—" [ref=e652]
+                    - cell "516" [ref=e653]:
+                      - generic [ref=e654]: "516"
+                    - 'cell "Disponible: 528 Reservado: 12" [ref=e655]':
+                      - text: "Disponible: 528"
+                      - text: "Reservado: 12"
+                    - cell " Ubicaciones  12   " [ref=e656]:
+                      - generic [ref=e657]:
+                        - button " Ubicaciones" [ref=e658] [cursor=pointer]:
+                          - generic [ref=e659]: 
+                          - text: Ubicaciones
+                        - button " 12" [ref=e660] [cursor=pointer]:
+                          - generic [ref=e661]: 
+                          - generic [ref=e662]: "12"
+                        - button "" [ref=e663] [cursor=pointer]:
+                          - generic [ref=e664]: 
+                        - button "" [ref=e665] [cursor=pointer]:
+                          - generic [ref=e666]: 
+                        - button "" [ref=e667] [cursor=pointer]:
+                          - generic [ref=e668]: 
+              - generic:
+                - generic:
+                  - table
+            - generic [ref=e434]:
+              - status [ref=e435]: Mostrando 1 a 10 de 81 registros (filtrado de un total de 510 registros)
+              - navigation "pagination" [ref=e438]:
+                - link "First" [disabled] [ref=e669]: Primero
+                - link "Previous" [disabled] [ref=e670]: Anterior
+                - link "1" [ref=e671] [cursor=pointer]
+                - link "2" [ref=e672] [cursor=pointer]
+                - link "3" [ref=e673] [cursor=pointer]
+                - link "4" [ref=e674] [cursor=pointer]
+                - link "5" [ref=e675] [cursor=pointer]
+                - text: …
+                - link "9" [ref=e676] [cursor=pointer]
+                - link "Next" [ref=e677] [cursor=pointer]: Siguiente
+                - link "Last" [ref=e678] [cursor=pointer]: Último
+      - text:     

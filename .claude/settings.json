@@ -10,7 +10,12 @@
       "WebFetch(domain:siigonube.portaldeclientes.siigo.com)",
       "WebFetch(domain:www.postman.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Read(//f:/xamppPro80/htdocs/**)"
+      "Read(//f:/xamppPro80/htdocs/**)",
+      "Bash(mysql -u root -proot miracle -e \"DESCRIBE stock_productos;\")",
+      "mcp__playwright__browser_handle_dialog"
+    ],
+    "additionalDirectories": [
+      "f:\\xamppPro80\\htdocs\\miracle\\resources\\views\\productos\\partials"
     ]
   }
 }

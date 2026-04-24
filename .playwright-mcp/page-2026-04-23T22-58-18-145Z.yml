@@ -1,0 +1,17 @@
+- generic [ref=e2]:
+  - img "Miracle Beauty Experts" [ref=e3]
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: Correo
+      - textbox "Correo" [active] [ref=e8]: admin@admin.com
+    - generic [ref=e9]:
+      - generic [ref=e10]: Contraseña
+      - textbox "Contraseña" [ref=e11]: "12345678"
+    - generic [ref=e13]:
+      - checkbox "Recordarme" [ref=e14]
+      - generic [ref=e15]: Recordarme
+    - generic [ref=e16]:
+      - link "Recuperar contraseña" [ref=e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/forgot-password
+      - button "Ingresar" [ref=e18] [cursor=pointer]
+  - paragraph [ref=e19]: © 2026 Miracle Beauty Experts

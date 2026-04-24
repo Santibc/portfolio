@@ -1,0 +1,224 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - link "Miracle Beauty Experts" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img "Miracle Beauty Experts" [ref=e6]
+    - navigation [ref=e7]:
+      - link " Inicio" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e9]: 
+        - generic [ref=e10]: Inicio
+      - link " Métricas" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard-metricas
+        - generic [ref=e12]: 
+        - generic [ref=e13]: Métricas
+      - link " Usuarios" [ref=e14] [cursor=pointer]:
+        - /url: /usuarios
+        - generic [ref=e15]: 
+        - generic [ref=e16]: Usuarios
+      - link " Cotizaciones" [ref=e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/solicitudes
+        - generic [ref=e18]: 
+        - generic [ref=e19]: Cotizaciones
+      - link " Clientes" [ref=e20] [cursor=pointer]:
+        - /url: /clientes
+        - generic [ref=e21]: 
+        - generic [ref=e22]: Clientes
+      - link " Catálogo" [ref=e23] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/catalogo
+        - generic [ref=e24]: 
+        - generic [ref=e25]: Catálogo
+      - link " Links" [ref=e26] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/enlaces
+        - generic [ref=e27]: 
+        - generic [ref=e28]: Links
+      - link " Listas de Precios" [ref=e29] [cursor=pointer]:
+        - /url: /listas-precios
+        - generic [ref=e30]: 
+        - generic [ref=e31]: Listas de Precios
+      - paragraph [ref=e33]:
+        - generic [ref=e34]: 
+        - text: Inventario
+      - link " Categorías" [ref=e35] [cursor=pointer]:
+        - /url: /categorias
+        - generic [ref=e36]: 
+        - generic [ref=e37]: Categorías
+      - link " Productos" [ref=e38] [cursor=pointer]:
+        - /url: /productos
+        - generic [ref=e39]: 
+        - generic [ref=e40]: Productos
+      - link " Gestión de Stock" [ref=e41] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/stock
+        - generic [ref=e42]: 
+        - generic [ref=e43]: Gestión de Stock
+      - link " Traslados" [ref=e44] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e45]: 
+        - generic [ref=e46]: Traslados
+      - link " Ubicaciones" [ref=e47] [cursor=pointer]:
+        - /url: /ubicaciones
+        - generic [ref=e48]: 
+        - generic [ref=e49]: Ubicaciones
+      - link " Novedades" [ref=e50] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Novedades
+      - link " Importar Productos" [ref=e53] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/productos/historial-importaciones
+        - generic [ref=e54]: 
+        - generic [ref=e55]: Importar Productos
+      - paragraph [ref=e57]:
+        - generic [ref=e58]: 
+        - text: Punto de Venta
+      - link " Dashboard PdV" [ref=e59] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv
+        - generic [ref=e60]: 
+        - generic [ref=e61]: Dashboard PdV
+      - link " Config. Cajas" [ref=e62] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/cajas
+        - generic [ref=e63]: 
+        - generic [ref=e64]: Config. Cajas
+      - link " Config. SIIGO" [ref=e65] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/siigo/configuracion
+        - generic [ref=e66]: 
+        - generic [ref=e67]: Config. SIIGO
+      - link " Nueva Venta" [ref=e68] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas/crear
+        - generic [ref=e69]: 
+        - generic [ref=e70]: Nueva Venta
+      - link " Historial Ventas" [ref=e71] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/ventas
+        - generic [ref=e72]: 
+        - generic [ref=e73]: Historial Ventas
+      - link " Prefacturas" [ref=e74] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/prefacturas/pendientes
+        - generic [ref=e75]: 
+        - generic [ref=e76]: Prefacturas
+      - link " Vales" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/vales
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Vales
+      - link " Reportes PdV" [ref=e80] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/reportes
+        - generic [ref=e81]: 
+        - generic [ref=e82]: Reportes PdV
+      - link " Novedades" [ref=e83] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/novedades-stock
+        - generic [ref=e84]: 
+        - generic [ref=e85]: Novedades
+      - link " Stock" [ref=e86] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/pdv/stock
+        - generic [ref=e87]: 
+        - generic [ref=e88]: Stock
+      - link " Traslados" [ref=e89] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/traslados
+        - generic [ref=e90]: 
+        - generic [ref=e91]: Traslados
+    - button " Salir" [ref=e94] [cursor=pointer]:
+      - generic [ref=e95]: 
+      - generic [ref=e96]: Salir
+  - generic [ref=e97]:
+    - banner [ref=e98]:
+      - button "" [ref=e99] [cursor=pointer]:
+        - generic [ref=e100]: 
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: Admin
+          - generic [ref=e104]: admin@admin.com
+        - img "Avatar" [ref=e105]
+    - main [ref=e106]:
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - generic [ref=e112]:
+            - heading " Con Stock" [level=6] [ref=e113]:
+              - generic [ref=e114]: 
+              - text: Con Stock
+            - paragraph [ref=e115]: "-"
+          - generic [ref=e118]:
+            - heading " Stock Bajo" [level=6] [ref=e119]:
+              - generic [ref=e120]: 
+              - text: Stock Bajo
+            - paragraph [ref=e121]: "111"
+          - generic [ref=e124]:
+            - heading " Sin Stock" [level=6] [ref=e125]:
+              - generic [ref=e126]: 
+              - text: Sin Stock
+            - paragraph [ref=e127]: "112"
+          - generic [ref=e130]:
+            - heading " Total Items" [level=6] [ref=e131]:
+              - generic [ref=e132]: 
+              - text: Total Items
+            - paragraph [ref=e133]: "-"
+        - generic [ref=e134]:
+          - link " Nuevo Traslado" [ref=e135] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/traslados/form
+            - generic [ref=e136]: 
+            - text: Nuevo Traslado
+          - link " Ver Traslados" [ref=e137] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/traslados
+            - generic [ref=e138]: 
+            - text: Ver Traslados
+        - generic [ref=e139]:
+          - heading " Filtros" [level=5] [ref=e141]:
+            - generic [ref=e142]: 
+            - text: Filtros
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: Buscar Producto
+              - combobox [ref=e147]
+              - combobox "-- Todos los productos --" [ref=e150] [cursor=pointer]:
+                - textbox "-- Todos los productos --" [ref=e151]
+            - generic [ref=e152]:
+              - generic [ref=e153]: Estado de Stock
+              - combobox [ref=e154]:
+                - option "-- Todos --" [selected]
+                - option "Con Stock"
+                - option "Sin Stock"
+                - option "Stock Bajo"
+            - group [ref=e156]:
+              - button " Aplicar" [ref=e157] [cursor=pointer]:
+                - generic [ref=e158]: 
+                - text: Aplicar
+              - button " Limpiar" [ref=e159] [cursor=pointer]:
+                - generic [ref=e160]: 
+                - text: Limpiar
+        - generic [ref=e162]:
+          - heading "Control de Stock" [level=4] [ref=e163]
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e167]:
+                - button "Filas▼" [ref=e168] [cursor=pointer]
+                - button "Columnas▼" [ref=e169] [cursor=pointer]
+                - button "Excel" [ref=e170] [cursor=pointer]
+                - button "Inicializar Stock" [ref=e171] [cursor=pointer]
+              - generic [ref=e172]:
+                - generic [ref=e173]: "Buscar:"
+                - searchbox "Buscar:" [ref=e174]
+            - generic [ref=e175]:
+              - status [ref=e176]: Procesando...
+              - table [ref=e183]:
+                - rowgroup [ref=e184]:
+                  - 'row "Producto Producto: Activate to invert sorting Stock Total Disp./Reserv. (Total) Acciones" [ref=e185]':
+                    - 'columnheader "Producto Producto: Activate to invert sorting" [ref=e186] [cursor=pointer]':
+                      - generic [ref=e187]:
+                        - generic [ref=e188]: Producto
+                        - 'button "Producto: Activate to invert sorting" [ref=e189]'
+                    - columnheader "Stock Total" [ref=e190]:
+                      - generic [ref=e192]: Stock Total
+                    - columnheader "Disp./Reserv. (Total)" [ref=e193]:
+                      - generic [ref=e195]: Disp./Reserv. (Total)
+                    - columnheader "Acciones" [ref=e196]:
+                      - generic [ref=e198]: Acciones
+              - table [ref=e200]:
+                - rowgroup [ref=e203]:
+                  - row "Cargando..." [ref=e204]:
+                    - cell "Cargando..." [ref=e205]
+              - generic:
+                - generic:
+                  - table
+            - generic:
+              - status
+              - generic:
+                - generic:
+                  - navigation "pagination"
+      - text:     

@@ -7,6 +7,7 @@ use App\Models\ItemVentaPdv;
 use App\Models\DevolucionParcialPdv;
 use App\Models\ItemDevolucionParcialPdv;
 use App\Models\Producto;
+use App\Models\VarianteProducto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\SesionCaja;
@@ -202,59 +203,121 @@ class VentaPdvServiceV2
         return $resultado;
     }
 
-    public function buscarProductos(string $termino, int $ubicacionId, ?int $listaPrecioId = null, int $limite = 20): array
+    public function buscarProductos(string $termino, int $ubicacionId, ?int $listaPrecioId = null, int $limiteFilas = 25): array
     {
+        $terminoTrim = trim($termino);
+        $pareceCodigoBarras = preg_match('/^\d{6,}$/', $terminoTrim) === 1;
+
         $productos = Producto::activos()
-            ->where(function ($query) use ($termino) {
-                $query->where('nombre', 'like', "%{$termino}%")
-                    ->orWhere('referencia', 'like', "%{$termino}%");
+            ->where(function ($query) use ($terminoTrim) {
+                $query->where('nombre', 'like', "%{$terminoTrim}%")
+                    ->orWhere('referencia', 'like', "%{$terminoTrim}%")
+                    ->orWhere('codigo_barras', 'like', "%{$terminoTrim}%")
+                    ->orWhereHas('variantes', function ($q) use ($terminoTrim) {
+                        $q->where('codigo_barras', 'like', "%{$terminoTrim}%")
+                          ->orWhere('sku', 'like', "%{$terminoTrim}%")
+                          ->orWhere('referencia_variante', 'like', "%{$terminoTrim}%")
+                          ->orWhere('color', 'like', "%{$terminoTrim}%");
+                    });
             })
             ->with(['variantes', 'precios', 'stock' => function ($query) use ($ubicacionId) {
-                $query->where('ubicacion_id', $ubicacionId);
+                $query->where('ubicacion_id', $ubicacionId)->whereNull('variante_producto_id');
             }])
-            ->limit($limite)
+            ->limit(40)
             ->get();
 
-        return $productos->map(function ($producto) use ($ubicacionId, $listaPrecioId) {
-            $precio = $listaPrecioId
-                ? $producto->getPrecioPorLista($listaPrecioId)
-                : ($producto->precios->first()->precio ?? 0);
-
-            $stockDisponible = 0;
-            if ($producto->controlar_stock) {
-                $stock = $producto->stock->first();
-                $stockDisponible = $stock ? ($stock->cantidad_disponible - $stock->cantidad_reservada) : 0;
+        $filas = [];
+        foreach ($productos as $producto) {
+            if ($producto->tiene_variantes) {
+                if ($producto->variantes->isEmpty()) {
+                    continue;
+                }
+                foreach ($producto->variantes as $variante) {
+                    $filas[] = $this->filaDesdeVariante($producto, $variante, $ubicacionId, $listaPrecioId);
+                }
+            } else {
+                $filas[] = $this->filaDesdeProducto($producto, $listaPrecioId);
             }
+        }
 
-            return [
-                'id' => $producto->id,
-                'referencia' => $producto->referencia,
-                'nombre' => $producto->nombre,
-                'precio' => $precio,
-                'stock_disponible' => $stockDisponible,
-                'controla_stock' => $producto->controlar_stock,
-                'permite_sin_stock' => $producto->permitir_venta_sin_stock,
-                'tiene_variantes' => $producto->tiene_variantes,
-                'variantes' => $producto->tiene_variantes ? $producto->variantes->map(function ($v) use ($producto, $ubicacionId, $listaPrecioId) {
-                    $stockVariante = StockProducto::where('producto_id', $producto->id)
-                        ->where('variante_producto_id', $v->id)
-                        ->where('ubicacion_id', $ubicacionId)
-                        ->first();
+        if ($pareceCodigoBarras) {
+            usort($filas, function ($a, $b) use ($terminoTrim) {
+                $ma = $a['codigo_barras'] === $terminoTrim ? 1 : 0;
+                $mb = $b['codigo_barras'] === $terminoTrim ? 1 : 0;
+                return $mb - $ma;
+            });
+        }
 
-                    $precioVariante = $listaPrecioId ? $v->precios()->where('lista_precio_id', $listaPrecioId)->first() : null;
+        return array_slice($filas, 0, $limiteFilas);
+    }
 
-                    return [
-                        'id' => $v->id,
-                        'sku' => $v->sku,
-                        'referencia_variante' => $v->referencia_variante,
-                        'color' => $v->color,
-                        'precio' => $precioVariante ? $precioVariante->precio : null,
-                        'stock_disponible' => $stockVariante ? ($stockVariante->cantidad_disponible - $stockVariante->cantidad_reservada) : 0,
-                    ];
-                }) : [],
-                'imagen_url' => $producto->url_imagen_principal,
-            ];
-        })->toArray();
+    private function filaDesdeProducto(Producto $producto, ?int $listaPrecioId): array
+    {
+        $precio = $listaPrecioId
+            ? $producto->getPrecioPorLista($listaPrecioId)
+            : ($producto->precios->first()->precio ?? 0);
+
+        $stockDisponible = 0;
+        if ($producto->controlar_stock) {
+            $stock = $producto->stock->first();
+            $stockDisponible = $stock ? ($stock->cantidad_disponible - $stock->cantidad_reservada) : 0;
+        }
+
+        return [
+            'producto_id'          => $producto->id,
+            'variante_producto_id' => null,
+            'referencia'           => $producto->referencia,
+            'nombre_completo'      => $producto->nombre,
+            'nombre_producto'      => $producto->nombre,
+            'nombre_variante'      => null,
+            'codigo_barras'        => $producto->codigo_barras,
+            'sku'                  => null,
+            'precio'               => (float) ($precio ?? 0),
+            'stock_disponible'     => $stockDisponible,
+            'controla_stock'       => (bool) $producto->controlar_stock,
+            'permite_sin_stock'    => (bool) $producto->permitir_venta_sin_stock,
+            'tiene_variante'       => false,
+            'imagen_url'           => $producto->url_imagen_principal,
+        ];
+    }
+
+    private function filaDesdeVariante(Producto $producto, VarianteProducto $variante, int $ubicacionId, ?int $listaPrecioId): array
+    {
+        $precio = $listaPrecioId
+            ? $variante->getPrecioFinal($listaPrecioId)
+            : ($producto->precios->first()->precio ?? 0);
+
+        $stockDisponible = 0;
+        if ($producto->controlar_stock) {
+            $stockVariante = StockProducto::where('producto_id', $producto->id)
+                ->where('variante_producto_id', $variante->id)
+                ->where('ubicacion_id', $ubicacionId)
+                ->first();
+            $stockDisponible = $stockVariante
+                ? ($stockVariante->cantidad_disponible - $stockVariante->cantidad_reservada)
+                : 0;
+        }
+
+        $nombreVariante = $variante->nombre_variante;
+
+        return [
+            'producto_id'          => $producto->id,
+            'variante_producto_id' => $variante->id,
+            'referencia'           => $variante->referencia_variante ?: $producto->referencia,
+            'nombre_completo'      => $nombreVariante !== ''
+                ? "{$producto->nombre} - {$nombreVariante}"
+                : $producto->nombre,
+            'nombre_producto'      => $producto->nombre,
+            'nombre_variante'      => $nombreVariante !== '' ? $nombreVariante : null,
+            'codigo_barras'        => $variante->codigo_barras ?: $producto->codigo_barras,
+            'sku'                  => $variante->sku,
+            'precio'               => (float) ($precio ?? 0),
+            'stock_disponible'     => $stockDisponible,
+            'controla_stock'       => (bool) $producto->controlar_stock,
+            'permite_sin_stock'    => (bool) $producto->permitir_venta_sin_stock,
+            'tiene_variante'       => true,
+            'imagen_url'           => $producto->url_imagen_principal,
+        ];
     }
 
     private function crearItemYDescontarStock(VentaPdv $venta, array $item): ItemVentaPdv

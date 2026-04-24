@@ -17,6 +17,7 @@ class Producto extends Model
         'nombre',
         'descripcion',
         'marca',
+        'codigo_barras',
         'unidad_venta',
         'unidad_empaque',
         'extension',
@@ -118,6 +119,13 @@ class Producto extends Model
     public function itemsSolicitudCotizacion()
     {
         return $this->hasMany(ItemSolicitudCotizacion::class, 'producto_id');
+    }
+
+    public function codigosBarrasLogs()
+    {
+        return $this->hasMany(CodigoBarrasLog::class, 'producto_id')
+                    ->whereNull('variante_producto_id')
+                    ->orderBy('created_at', 'desc');
     }
 
     // Obtener precio por lista de precios

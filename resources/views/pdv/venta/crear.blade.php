@@ -303,19 +303,6 @@
         </div>
     </div>
 
-    {{-- Modal: Variant Selector --}}
-    <div class="modal fade" id="modalVariantes" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-grid me-2"></i>Seleccionar Variante</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="variantesContent"></div>
-            </div>
-        </div>
-    </div>
-
     {{-- Modal: New Client --}}
     <div class="modal fade" id="modalNuevoCliente" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -426,7 +413,6 @@
         // State
         let items = [];
         let clienteSeleccionado = null;
-        let productoTemporal = null;
         let pinCallback = null;
         let autorizadorDescuento = null;
         let autorizadorPrecio = null;
@@ -444,43 +430,107 @@
         const buscarInput = document.getElementById('buscarProducto');
         const resultadosDiv = document.getElementById('resultadosBusqueda');
 
+        // Autofocus al cargar la vista: lector de códigos de barras listo para escribir
+        if (buscarInput) {
+            buscarInput.focus();
+        }
+
+        function renderResultadosProductos(filas) {
+            if (filas.length === 0) {
+                resultadosDiv.innerHTML = '<div class="p-3 text-center text-muted">No se encontraron productos</div>';
+            } else {
+                resultadosDiv.innerHTML = filas.map(f => {
+                    const stockClass = f.stock_disponible > 5 ? 'stock-badge-ok' : (f.stock_disponible > 0 ? 'stock-badge-low' : 'stock-badge-zero');
+                    const stockText  = f.controla_stock ? `Stock: ${f.stock_disponible}` : 'Sin control';
+                    const subRef     = f.codigo_barras
+                        ? `${f.referencia} · <code>${f.codigo_barras}</code>`
+                        : f.referencia;
+                    return `<div class="search-result-item p-2 border-bottom d-flex justify-content-between align-items-center"
+                                onclick='agregarFilaDirecto(${JSON.stringify(f).replace(/'/g, "&#39;")})'>
+                        <div>
+                            <div class="fw-semibold">${f.nombre_completo}</div>
+                            <small class="text-muted">${subRef}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">$${parseFloat(f.precio || 0).toFixed(2)}</div>
+                            <small class="badge ${stockClass}">${stockText}</small>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            resultadosDiv.classList.remove('d-none');
+        }
+
+        function buscarProductosFetch(q) {
+            const listaPrecioId = document.getElementById('listaPrecio').value;
+            const ubicacionId = {{ $ubicacionIdDefault ?? 0 }};
+            return fetch(`{{ route('pdv.ventas.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${listaPrecioId}&ubicacion_id=${ubicacionId}`)
+                .then(r => r.json());
+        }
+
+        // Devuelve la fila con match exacto por código de barras (o null).
+        // El servicio ya prioriza variantes al tope cuando el término parece EAN.
+        function encontrarMatchExactoCodigoBarras(filas, codigo) {
+            const codigoTrim = String(codigo).trim();
+            if (!codigoTrim) return null;
+            return filas.find(f => f.codigo_barras && String(f.codigo_barras).trim() === codigoTrim) || null;
+        }
+
         buscarInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const q = this.value.trim();
             if (q.length < 2) { resultadosDiv.classList.add('d-none'); return; }
 
+            // Si parece código de barras (numérico, 6+ dígitos) reducir el debounce —
+            // el lector escribe rápido y no siempre manda Enter, así que tras una breve
+            // pausa auto-agregamos si hay match exacto.
+            const pareceCodigoBarras = /^\d{6,}$/.test(q);
+            const delay = pareceCodigoBarras ? 120 : 300;
+
             searchTimeout = setTimeout(() => {
-                const listaPrecioId = document.getElementById('listaPrecio').value;
-                const ubicacionId = {{ $ubicacionIdDefault ?? 0 }};
-                fetch(`{{ route('pdv.ventas.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${listaPrecioId}&ubicacion_id=${ubicacionId}`)
-                    .then(r => r.json())
-                    .then(productos => {
-                        if (productos.length === 0) {
-                            resultadosDiv.innerHTML = '<div class="p-3 text-center text-muted">No se encontraron productos</div>';
-                        } else {
-                            resultadosDiv.innerHTML = productos.map(p => {
-                                const stockClass = p.stock_disponible > 5 ? 'stock-badge-ok' : (p.stock_disponible > 0 ? 'stock-badge-low' : 'stock-badge-zero');
-                                const stockText = p.controla_stock ? `Stock: ${p.stock_disponible}` : 'Sin control';
-                                return `<div class="search-result-item p-2 border-bottom d-flex justify-content-between align-items-center"
-                                            onclick='seleccionarProducto(${JSON.stringify(p).replace(/'/g, "&#39;")})'>
-                                    <div>
-                                        <div class="fw-semibold">${p.nombre}</div>
-                                        <small class="text-muted">${p.referencia}${p.tiene_variantes ? ' <span class="badge bg-light text-dark">Con variantes</span>' : ''}</small>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="fw-bold">$${parseFloat(p.precio || 0).toFixed(2)}</div>
-                                        <small class="badge ${stockClass}">${stockText}</small>
-                                    </div>
-                                </div>`;
-                            }).join('');
+                buscarProductosFetch(q).then(filas => {
+                    if (pareceCodigoBarras) {
+                        const match = encontrarMatchExactoCodigoBarras(filas, q);
+                        if (match) {
+                            agregarItem(match);
+                            buscarInput.value = '';
+                            resultadosDiv.classList.add('d-none');
+                            buscarInput.focus();
+                            return;
                         }
-                        resultadosDiv.classList.remove('d-none');
-                    });
-            }, 300);
+                    }
+                    renderResultadosProductos(filas);
+                });
+            }, delay);
         });
 
+        // Enter: el lector de códigos de barras envía Enter al final. Si hay match exacto
+        // por código de barras, agrega el producto/variante directo y limpia el input.
+        // Si no hay match exacto, muestra los resultados como búsqueda manual.
         buscarInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') resultadosDiv.classList.add('d-none');
+            if (e.key === 'Escape') {
+                resultadosDiv.classList.add('d-none');
+                return;
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                const q = this.value.trim();
+                if (q.length < 2) return;
+
+                buscarProductosFetch(q).then(filas => {
+                    const match = encontrarMatchExactoCodigoBarras(filas, q);
+                    if (match) {
+                        // Agregar directo al carrito — ya no hay modal intermedio
+                        agregarItem(match);
+                        buscarInput.value = '';
+                        resultadosDiv.classList.add('d-none');
+                        buscarInput.focus();
+                    } else {
+                        renderResultadosProductos(filas);
+                    }
+                });
+            }
         });
 
         document.addEventListener('click', function(e) {
@@ -492,48 +542,20 @@
             }
         });
 
-        // Select Product
-        function seleccionarProducto(producto) {
+        // Agregar fila directa al carrito (desde clic en dropdown o match exacto de barras)
+        function agregarFilaDirecto(fila) {
             resultadosDiv.classList.add('d-none');
             buscarInput.value = '';
-
-            if (producto.tiene_variantes && producto.variantes.length > 0) {
-                productoTemporal = producto;
-                mostrarModalVariantes(producto);
-            } else {
-                agregarItem(producto, null);
-            }
-        }
-
-        function mostrarModalVariantes(producto) {
-            const html = producto.variantes.map(v => {
-                const stockClass = v.stock_disponible > 5 ? 'stock-badge-ok' : (v.stock_disponible > 0 ? 'stock-badge-low' : 'stock-badge-zero');
-                return `<div class="variant-chip p-3 rounded mb-2 d-flex justify-content-between align-items-center"
-                            onclick="seleccionarVariante(${v.id}, '${(v.referencia_variante || '').replace(/'/g, '')}', '${(v.color || '').replace(/'/g, '')}', ${v.precio || producto.precio}, ${v.stock_disponible})">
-                    <div>
-                        <div class="fw-semibold">${v.referencia_variante || v.sku}</div>
-                        ${v.color ? `<small class="text-muted">${v.color}</small>` : ''}
-                    </div>
-                    <div class="text-end">
-                        <div class="fw-bold">$${parseFloat(v.precio || producto.precio).toFixed(2)}</div>
-                        <small class="badge ${stockClass}">Stock: ${v.stock_disponible}</small>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('variantesContent').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('modalVariantes')).show();
-        }
-
-        function seleccionarVariante(varianteId, ref, color, precio, stock) {
-            bootstrap.Modal.getInstance(document.getElementById('modalVariantes')).hide();
-            agregarItem(productoTemporal, { id: varianteId, referencia_variante: ref, color: color, precio: precio, stock_disponible: stock });
+            agregarItem(fila);
+            buscarInput.focus();
         }
 
         // Add Item
-        function agregarItem(producto, variante) {
+        function agregarItem(fila) {
+            const varianteId = fila.variante_producto_id || null;
             const existente = items.findIndex(i =>
-                i.producto_id === producto.id &&
-                (variante ? i.variante_producto_id === variante.id : !i.variante_producto_id)
+                i.producto_id === fila.producto_id &&
+                (i.variante_producto_id || null) === varianteId
             );
 
             if (existente >= 0) {
@@ -542,20 +564,20 @@
                 return;
             }
 
-            const precio = variante ? (variante.precio || producto.precio) : producto.precio;
+            const precio = parseFloat(fila.precio) || 0;
             items.push({
-                producto_id: producto.id,
-                variante_producto_id: variante ? variante.id : null,
-                nombre: producto.nombre,
-                referencia: producto.referencia,
-                variante_nombre: variante ? (variante.referencia_variante + (variante.color ? ` (${variante.color})` : '')) : '-',
+                producto_id: fila.producto_id,
+                variante_producto_id: varianteId,
+                nombre: fila.nombre_producto,
+                referencia: fila.referencia,
+                variante_nombre: fila.nombre_variante || '-',
                 cantidad: 1,
-                precio_unitario: parseFloat(precio) || 0,
-                precio_original: parseFloat(precio) || 0,
+                precio_unitario: precio,
+                precio_original: precio,
                 descuento_porcentaje: 0,
                 descuento_valor: 0,
-                stock_disponible: variante ? variante.stock_disponible : producto.stock_disponible,
-                controla_stock: producto.controla_stock,
+                stock_disponible: fila.stock_disponible,
+                controla_stock: fila.controla_stock,
                 iva: 0,
             });
 
