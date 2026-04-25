@@ -462,8 +462,9 @@ class SolicitudCotizacion extends Model
             return false;
         }
 
-        $esCredito = $this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito');
-        if ($esCredito && $this->pagos()->exists()) {
+        // Cualquier forma de pago a Crédito (30/60/90) bloquea la edición de inmediato,
+        // incluso si aún no hay pagos registrados o si antes hubo un pago parcial.
+        if ($this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito')) {
             return false;
         }
 
