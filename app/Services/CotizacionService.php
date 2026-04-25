@@ -136,7 +136,27 @@ class CotizacionService
             'advertencias' => [],
         ];
 
-        if (!auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) && !$solicitud->esEditable()) {
+        $user = auth()->user();
+        $esVendedorPuro = $user
+            && $user->hasRole('vendedor')
+            && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']);
+
+        if ($esVendedorPuro) {
+            if (!$solicitud->puedeEditarVendedor()) {
+                $resultado['exito'] = false;
+                $resultado['errores'][] = 'La cotización no puede ser editada en su estado actual';
+                return $resultado;
+            }
+
+            // Defensa en profundidad: ignorar cualquier precio_manual o cambio en descuento/flete
+            if (!empty($datos['items']) && is_array($datos['items'])) {
+                foreach ($datos['items'] as $i => $item) {
+                    unset($datos['items'][$i]['precio_manual']);
+                }
+            }
+            $datos['descuento_total'] = $solicitud->descuento_total;
+            $datos['valor_flete'] = $solicitud->valor_flete;
+        } elseif (!$user->hasAnyRole(['facturacion', 'auxiliar_administrativo']) && !$solicitud->esEditable()) {
             $resultado['exito'] = false;
             $resultado['errores'][] = 'La cotización no puede ser editada en su estado actual';
             return $resultado;

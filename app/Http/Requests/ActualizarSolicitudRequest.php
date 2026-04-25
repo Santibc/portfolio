@@ -17,21 +17,29 @@ class ActualizarSolicitudRequest extends FormRequest
     {
         $solicitud = $this->route('solicitud');
 
-        if (!$solicitud instanceof SolicitudCotizacion) {
+        if (!$solicitud instanceof SolicitudCotizacion || !auth()->check()) {
             return false;
         }
 
-        if (!auth()->check()) {
-            return false;
+        $user = auth()->user();
+
+        // Vendedor puro: solo si la cotización es suya y cumple reglas de pago
+        $esVendedorPuro = $user->hasRole('vendedor')
+            && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']);
+
+        if ($esVendedorPuro) {
+            $esSuya = $solicitud->created_by == $user->id
+                || ($solicitud->cliente && $solicitud->cliente->vendedor_id == $user->id);
+            return $esSuya && $solicitud->puedeEditarVendedor();
         }
 
-        // Solo roles administrativos pueden editar (vendedor NO)
-        if (!auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+        // Solo roles administrativos pueden editar
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
             return false;
         }
 
         // Facturación y auxiliar_administrativo pueden editar siempre, los demás solo si es editable
-        return auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo']) || $solicitud->esEditable();
+        return $user->hasAnyRole(['facturacion', 'auxiliar_administrativo']) || $solicitud->esEditable();
     }
 
     /**

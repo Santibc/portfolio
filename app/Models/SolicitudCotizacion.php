@@ -451,6 +451,26 @@ class SolicitudCotizacion extends Model
     }
 
     /**
+     * Determina si un vendedor puede editar la cotización según las reglas de pago.
+     * - Si hay algún pago APROBADO: no puede editar.
+     * - Si la cotización es a Crédito y existe cualquier pago registrado: no puede editar.
+     * - Caso contrario: puede editar.
+     */
+    public function puedeEditarVendedor(): bool
+    {
+        if ($this->pagos()->where('estado', PagoSolicitud::ESTADO_APROBADO)->exists()) {
+            return false;
+        }
+
+        $esCredito = $this->forma_pago_factura && str_contains($this->forma_pago_factura, 'Crédito');
+        if ($esCredito && $this->pagos()->exists()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Verifica si la cotización puede ser eliminada
      */
     public function esEliminable(): bool

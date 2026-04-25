@@ -225,11 +225,14 @@ class SolicitudController extends Controller
                                 </button>';
 
                     if (!$isAuxiliar) {
-                        // Botón editar: admin, facturación, auxiliar_administrativo e inventarios (vendedor NO puede editar)
-                        $puedeEditar = !$isVendedor && (
-                            auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo'])
-                            || ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'inventarios']))
-                        );
+                        // Botón editar: admin/facturación/auxiliar_administrativo/inventarios siempre según su lógica.
+                        // Vendedor: solo si la cotización es suya y cumple reglas de pago.
+                        if ($isVendedor) {
+                            $puedeEditar = $esSuya && $s->puedeEditarVendedor();
+                        } else {
+                            $puedeEditar = auth()->user()->hasAnyRole(['facturacion', 'auxiliar_administrativo'])
+                                || ($s->esEditable() && auth()->user()->hasAnyRole(['admin', 'inventarios']));
+                        }
                         if ($puedeEditar) {
                             $buttons .= '<a href="'.route('solicitudes.edit', $s->id).'" class="btn btn-outline-primary btn-sm"
                                             title="Editar Cotización">
@@ -1491,15 +1494,27 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar permisos - admin, facturación e inventarios pueden editar (vendedor NO)
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
-            abort(403, 'No tiene permisos para editar cotizaciones');
-        }
+        $esVendedorPuro = $user->hasRole('vendedor')
+            && !$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios']);
 
-        // Verificar que sea editable (facturación y auxiliar_administrativo pueden editar siempre)
-        if (!$user->hasAnyRole(['facturacion', 'auxiliar_administrativo']) && !$solicitud->esEditable()) {
-            return redirect()->route('solicitudes')
-                           ->with('error', 'Esta cotización no puede ser editada');
+        if ($esVendedorPuro) {
+            $esSuya = $solicitud->created_by == $user->id
+                || ($solicitud->cliente && $solicitud->cliente->vendedor_id == $user->id);
+
+            if (!$esSuya || !$solicitud->puedeEditarVendedor()) {
+                abort(403, 'No tiene permisos para editar esta cotización');
+            }
+        } else {
+            // Verificar permisos - admin, facturación e inventarios pueden editar
+            if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios'])) {
+                abort(403, 'No tiene permisos para editar cotizaciones');
+            }
+
+            // Verificar que sea editable (facturación y auxiliar_administrativo pueden editar siempre)
+            if (!$user->hasAnyRole(['facturacion', 'auxiliar_administrativo']) && !$solicitud->esEditable()) {
+                return redirect()->route('solicitudes')
+                               ->with('error', 'Esta cotización no puede ser editada');
+            }
         }
 
         $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'reservas']);
