@@ -105,6 +105,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,factu
 Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,facturacion,cajero_principal,auxiliar_venta,vendedor'])
     ->prefix('productos')->group(function () {
     Route::get('/siigo/productos', [ProductosController::class, 'siigoProductosAjax'])->name('productos.siigo.listar');
+    Route::post('/siigo/sincronizar', [ProductosController::class, 'siigoSincronizarCatalogo'])->name('productos.siigo.sincronizar');
     Route::get('/{producto}/siigo/homologacion', [ProductosController::class, 'siigoHomologacionAjax'])->name('productos.siigo.homologacion');
     Route::post('/{producto}/siigo/homologar', [ProductosController::class, 'siigoHomologarProducto'])->name('productos.siigo.homologar');
 });

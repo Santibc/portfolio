@@ -71,6 +71,11 @@
         <a href="{{ route('traslados') }}" class="btn btn-outline-secondary ms-2">
           <i class="bi bi-list-ul me-1"></i> Ver Traslados
         </a>
+        @if(auth()->user()->hasRole(['admin', 'auxiliar_administrativo', 'facturacion']))
+        <button type="button" class="btn btn-outline-dark ms-2" id="btnRecargarCatalogoSiigo">
+          <i class="bi bi-arrow-repeat me-1"></i> Recargar catálogo SIIGO
+        </button>
+        @endif
       </div>
       @endif
 
@@ -1205,7 +1210,57 @@
   (function() {
     const URL_LISTAR_SIIGO = "{{ route('productos.siigo.listar') }}";
     const URL_HOMOLOGACION_BASE = "{{ url('productos') }}";
+    const URL_SINCRONIZAR_SIIGO = "{{ route('productos.siigo.sincronizar') }}";
     const CSRF = $('meta[name="csrf-token"]').attr('content');
+
+    // Botón "Recargar catálogo SIIGO"
+    $('#btnRecargarCatalogoSiigo').on('click', function() {
+      const $btn = $(this);
+      const htmlOriginal = $btn.html();
+      Swal.fire({
+        title: '¿Recargar catálogo SIIGO?',
+        text: 'Esto consultará la API de SIIGO y registrará los productos nuevos en la base local. Puede demorar varios segundos.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, recargar',
+        cancelButtonText: 'Cancelar',
+      }).then(function(res) {
+        if (!res.isConfirmed) return;
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Sincronizando...');
+        Swal.fire({
+          title: 'Sincronizando catálogo SIIGO',
+          html: 'Esto puede demorar un momento, no cierre la ventana.',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        $.ajax({
+          url: URL_SINCRONIZAR_SIIGO,
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': CSRF },
+          timeout: 600000,
+        })
+        .done(function(resp) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Catálogo actualizado',
+            text: resp.message || 'Catálogo SIIGO sincronizado.',
+          });
+        })
+        .fail(function(xhr) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al sincronizar',
+            text: xhr.responseJSON?.message || 'No se pudo sincronizar el catálogo.',
+          });
+        })
+        .always(function() {
+          $btn.prop('disabled', false).html(htmlOriginal);
+        });
+      });
+    });
 
     let estadoSiigo = {
       productoId: null,

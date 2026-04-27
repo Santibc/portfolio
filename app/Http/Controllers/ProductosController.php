@@ -697,9 +697,8 @@ public function actualizarPreciosExcel(Request $request)
     /**
      * Listar productos del catálogo de SIIGO para el modal de homologación.
      *
-     * SIIGO solo permite filtrar por `code` exacto, así que para soportar búsquedas
-     * tipo LIKE por código, nombre o referencia, descargamos el catálogo completo
-     * (cacheado 5 minutos) y filtramos en memoria.
+     * Consulta la tabla local `siigo_productos_cache` con LIKE en code, name y reference.
+     * Si la tabla está vacía, dispara una sincronización inicial.
      */
     public function siigoProductosAjax(Request $request, SiigoConfigService $siigoConfig)
     {
@@ -709,61 +708,43 @@ public function actualizarPreciosExcel(Request $request)
             $pageSize = (int) $request->input('page_size', 25);
             $pageSize = max(1, min($pageSize, 100));
 
-            $todos = \Illuminate\Support\Facades\Cache::remember(
-                'siigo_productos_catalogo',
-                300,
-                function () use ($siigoConfig) {
-                    $acumulados = [];
-                    $pagina = 1;
-                    $maxPaginas = 200; // tope de seguridad: 200 * 100 = 20.000 productos
-                    do {
-                        $resp = $siigoConfig->obtenerProductos([
-                            'page' => $pagina,
-                            'page_size' => 100,
-                            'active' => true,
-                        ]);
-                        $batch = $resp['results'] ?? [];
-                        if (empty($batch)) break;
-                        foreach ($batch as $p) {
-                            $acumulados[] = [
-                                'id' => $p['id'] ?? null,
-                                'code' => $p['code'] ?? null,
-                                'name' => $p['name'] ?? '',
-                                'reference' => $p['reference'] ?? null,
-                                'account_group' => $p['account_group']['name'] ?? null,
-                                'type' => $p['type'] ?? null,
-                                'active' => $p['active'] ?? null,
-                            ];
-                        }
-                        $totalDisponible = $resp['total_results'] ?? count($acumulados);
-                        if (count($acumulados) >= $totalDisponible) break;
-                        $pagina++;
-                    } while ($pagina <= $maxPaginas);
-                    return $acumulados;
-                }
-            );
-
-            $filtrados = $todos;
-            if ($q !== '') {
-                $needle = mb_strtolower($q);
-                $filtrados = array_values(array_filter($todos, function ($p) use ($needle) {
-                    foreach (['code', 'name', 'reference'] as $campo) {
-                        $v = $p[$campo] ?? null;
-                        if ($v !== null && mb_strpos(mb_strtolower((string) $v), $needle) !== false) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }));
+            // Si la tabla está vacía, hacer sync inicial bloqueante
+            if (\App\Models\SiigoProductoCache::count() === 0) {
+                $siigoConfig->sincronizarCatalogoSiigo();
             }
 
-            $total = count($filtrados);
-            $offset = ($page - 1) * $pageSize;
-            $pagina = array_slice($filtrados, $offset, $pageSize);
+            $query = \App\Models\SiigoProductoCache::query()->where('active', true);
+
+            if ($q !== '') {
+                $like = '%' . $q . '%';
+                $query->where(function ($w) use ($like) {
+                    $w->where('code', 'like', $like)
+                      ->orWhere('name', 'like', $like)
+                      ->orWhere('reference', 'like', $like);
+                });
+            }
+
+            $total = (clone $query)->count();
+            $registros = $query->orderBy('code')
+                ->skip(($page - 1) * $pageSize)
+                ->take($pageSize)
+                ->get();
+
+            $results = $registros->map(function ($r) {
+                return [
+                    'id' => $r->siigo_id,
+                    'code' => $r->code,
+                    'name' => $r->name ?? '',
+                    'reference' => $r->reference,
+                    'account_group' => $r->account_group_name,
+                    'type' => $r->type,
+                    'active' => $r->active,
+                ];
+            })->all();
 
             return response()->json([
                 'success' => true,
-                'results' => $pagina,
+                'results' => $results,
                 'page' => $page,
                 'page_size' => $pageSize,
                 'total_results' => $total,
@@ -774,6 +755,28 @@ public function actualizarPreciosExcel(Request $request)
                 'success' => false,
                 'message' => 'No se pudo consultar el catálogo de SIIGO: ' . $e->getMessage(),
                 'results' => [],
+            ], 500);
+        }
+    }
+
+    /**
+     * Sincronizar (recargar) el catálogo de productos de SIIGO contra la tabla local.
+     */
+    public function siigoSincronizarCatalogo(SiigoConfigService $siigoConfig)
+    {
+        try {
+            $resultado = $siigoConfig->sincronizarCatalogoSiigo();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Catálogo SIIGO actualizado. Insertados: {$resultado['insertados']}, actualizados: {$resultado['actualizados']}, total: {$resultado['total']}.",
+                'data' => $resultado,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('SIIGO sincronizarCatalogo error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo sincronizar el catálogo de SIIGO: ' . $e->getMessage(),
             ], 500);
         }
     }

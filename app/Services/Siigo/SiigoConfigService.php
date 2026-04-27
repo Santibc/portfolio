@@ -3,6 +3,8 @@
 namespace App\Services\Siigo;
 
 use App\Models\ConfiguracionPdv;
+use App\Models\SiigoProductoCache;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class SiigoConfigService
@@ -70,6 +72,76 @@ class SiigoConfigService
         } catch (Exception $e) {
             return [];
         }
+    }
+
+    /**
+     * Sincronizar el catálogo completo de productos de SIIGO con la tabla local
+     * `siigo_productos_cache`. Pagina hasta agotar el listado y hace upsert por
+     * `siigo_id` o `code`.
+     *
+     * @return array{insertados:int, actualizados:int, total:int, duracion_ms:int}
+     */
+    public function sincronizarCatalogoSiigo(): array
+    {
+        $inicio = microtime(true);
+        $totalLeidos = 0;
+        $insertados = 0;
+        $actualizados = 0;
+        $vistos = [];
+
+        $pagina = 1;
+        $maxPaginas = 500; // tope: 500 * 100 = 50.000 productos
+
+        do {
+            $resp = $this->obtenerProductos([
+                'page' => $pagina,
+                'page_size' => 100,
+                'active' => true,
+            ]);
+            $batch = $resp['results'] ?? [];
+            if (empty($batch)) break;
+
+            foreach ($batch as $p) {
+                $code = $p['code'] ?? null;
+                if (!$code) continue;
+
+                $datos = [
+                    'siigo_id' => $p['id'] ?? null,
+                    'code' => substr((string) $code, 0, 50),
+                    'name' => $p['name'] ?? '',
+                    'reference' => $p['reference'] ?? null,
+                    'account_group_name' => $p['account_group']['name'] ?? null,
+                    'type' => $p['type'] ?? null,
+                    'active' => $p['active'] ?? true,
+                    'last_sync_at' => now(),
+                ];
+
+                $registro = SiigoProductoCache::where('siigo_id', $datos['siigo_id'])
+                    ->orWhere('code', $datos['code'])
+                    ->first();
+
+                if ($registro) {
+                    $registro->fill($datos)->save();
+                    $actualizados++;
+                } else {
+                    SiigoProductoCache::create($datos);
+                    $insertados++;
+                }
+                $vistos[] = $datos['code'];
+                $totalLeidos++;
+            }
+
+            $totalDisponible = $resp['total_results'] ?? $totalLeidos;
+            if ($totalLeidos >= $totalDisponible) break;
+            $pagina++;
+        } while ($pagina <= $maxPaginas);
+
+        return [
+            'insertados' => $insertados,
+            'actualizados' => $actualizados,
+            'total' => $totalLeidos,
+            'duracion_ms' => (int) ((microtime(true) - $inicio) * 1000),
+        ];
     }
 
     /**
