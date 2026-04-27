@@ -17,7 +17,8 @@ class VarianteProducto extends Model
         'color',
         'sku',
         'codigo_barras',
-        'activo'
+        'activo',
+        'siigo_product_code'
     ];
 
     protected $casts = [

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use App\Services\Siigo\SiigoConfigService;
 
 class ProductosController extends Controller
 {
@@ -691,6 +692,171 @@ public function actualizarPreciosExcel(Request $request)
         $html .= '</div>';
         
         return response($html);
+    }
+
+    /**
+     * Listar productos del catálogo de SIIGO para el modal de homologación.
+     *
+     * SIIGO solo permite filtrar por `code` exacto, así que para soportar búsquedas
+     * tipo LIKE por código, nombre o referencia, descargamos el catálogo completo
+     * (cacheado 5 minutos) y filtramos en memoria.
+     */
+    public function siigoProductosAjax(Request $request, SiigoConfigService $siigoConfig)
+    {
+        try {
+            $q = trim((string) $request->input('q', ''));
+            $page = max(1, (int) $request->input('page', 1));
+            $pageSize = (int) $request->input('page_size', 25);
+            $pageSize = max(1, min($pageSize, 100));
+
+            $todos = \Illuminate\Support\Facades\Cache::remember(
+                'siigo_productos_catalogo',
+                300,
+                function () use ($siigoConfig) {
+                    $acumulados = [];
+                    $pagina = 1;
+                    $maxPaginas = 200; // tope de seguridad: 200 * 100 = 20.000 productos
+                    do {
+                        $resp = $siigoConfig->obtenerProductos([
+                            'page' => $pagina,
+                            'page_size' => 100,
+                            'active' => true,
+                        ]);
+                        $batch = $resp['results'] ?? [];
+                        if (empty($batch)) break;
+                        foreach ($batch as $p) {
+                            $acumulados[] = [
+                                'id' => $p['id'] ?? null,
+                                'code' => $p['code'] ?? null,
+                                'name' => $p['name'] ?? '',
+                                'reference' => $p['reference'] ?? null,
+                                'account_group' => $p['account_group']['name'] ?? null,
+                                'type' => $p['type'] ?? null,
+                                'active' => $p['active'] ?? null,
+                            ];
+                        }
+                        $totalDisponible = $resp['total_results'] ?? count($acumulados);
+                        if (count($acumulados) >= $totalDisponible) break;
+                        $pagina++;
+                    } while ($pagina <= $maxPaginas);
+                    return $acumulados;
+                }
+            );
+
+            $filtrados = $todos;
+            if ($q !== '') {
+                $needle = mb_strtolower($q);
+                $filtrados = array_values(array_filter($todos, function ($p) use ($needle) {
+                    foreach (['code', 'name', 'reference'] as $campo) {
+                        $v = $p[$campo] ?? null;
+                        if ($v !== null && mb_strpos(mb_strtolower((string) $v), $needle) !== false) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }));
+            }
+
+            $total = count($filtrados);
+            $offset = ($page - 1) * $pageSize;
+            $pagina = array_slice($filtrados, $offset, $pageSize);
+
+            return response()->json([
+                'success' => true,
+                'results' => $pagina,
+                'page' => $page,
+                'page_size' => $pageSize,
+                'total_results' => $total,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('SIIGO obtenerProductos error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo consultar el catálogo de SIIGO: ' . $e->getMessage(),
+                'results' => [],
+            ], 500);
+        }
+    }
+
+    /**
+     * Devolver el estado actual de homologación SIIGO de un producto y sus variantes.
+     */
+    public function siigoHomologacionAjax(Producto $producto)
+    {
+        $producto->loadMissing('variantes');
+
+        return response()->json([
+            'producto' => [
+                'id' => $producto->id,
+                'referencia' => $producto->referencia,
+                'nombre' => $producto->nombre,
+                'tiene_variantes' => (bool) $producto->tiene_variantes,
+                'siigo_product_code' => $producto->siigo_product_code,
+            ],
+            'variantes' => $producto->variantes->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'sku' => $v->sku,
+                    'referencia_variante' => $v->referencia_variante,
+                    'color' => $v->color,
+                    'siigo_product_code' => $v->siigo_product_code,
+                ];
+            })->values(),
+        ]);
+    }
+
+    /**
+     * Persistir el código SIIGO en el producto (sin variantes) o en la variante indicada.
+     */
+    public function siigoHomologarProducto(Request $request, Producto $producto)
+    {
+        $data = $request->validate([
+            'variante_id' => 'nullable|integer|exists:variantes_productos,id',
+            'siigo_code' => 'nullable|string|max:50',
+        ]);
+
+        $codigo = $data['siigo_code'] !== null ? trim($data['siigo_code']) : null;
+        $codigo = $codigo === '' ? null : $codigo;
+
+        if ($producto->tiene_variantes) {
+            if (empty($data['variante_id'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este producto tiene variantes; debe especificar la variante a homologar.',
+                ], 422);
+            }
+
+            $variante = VarianteProducto::where('id', $data['variante_id'])
+                ->where('producto_id', $producto->id)
+                ->firstOrFail();
+
+            $variante->siigo_product_code = $codigo;
+            $variante->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Variante homologada con SIIGO correctamente.',
+                'variante_id' => $variante->id,
+                'siigo_product_code' => $variante->siigo_product_code,
+            ]);
+        }
+
+        if (!empty($data['variante_id'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Este producto no tiene variantes; no debe enviarse variante_id.',
+            ], 422);
+        }
+
+        $producto->siigo_product_code = $codigo;
+        $producto->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Producto homologado con SIIGO correctamente.',
+            'producto_id' => $producto->id,
+            'siigo_product_code' => $producto->siigo_product_code,
+        ]);
     }
 
     public function eliminar($id)

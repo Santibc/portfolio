@@ -142,6 +142,22 @@ class StockController extends Controller
                                     </button>';
                     }
 
+                    // Botón homologar con SIIGO (admin/auxiliar/facturación)
+                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion'])) {
+                        $siigoCodeActual = $row->variante
+                            ? ($row->variante->siigo_product_code ?? null)
+                            : ($row->producto->siigo_product_code ?? null);
+                        $homologado = !empty($siigoCodeActual);
+                        $btnSiigoClass = $homologado ? 'btn btn-success' : 'btn btn-outline-secondary';
+                        $titleSiigo = $homologado
+                            ? 'Homologado SIIGO: '.e($siigoCodeActual)
+                            : 'Homologar con SIIGO';
+                        $varianteIdSiigo = $row->variante_producto_id ?: 'null';
+                        $buttons .= '<button type="button" class="'.$btnSiigoClass.'" onclick="homologarSiigo('.$productoId.', '.$varianteIdSiigo.')" title="'.$titleSiigo.'">
+                                        <i class="bi bi-link-45deg"></i>
+                                    </button>';
+                    }
+
                     $buttons .= '</div>';
                     return $buttons;
                 })

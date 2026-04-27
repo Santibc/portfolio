@@ -2,6 +2,8 @@
     @section('title', 'Nueva Venta')
 
     @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <style>
         .pos-container { min-height: calc(100vh - 120px); }
         .pos-search-input { font-size: 1.1rem; padding: .75rem 1rem; }
@@ -139,13 +141,12 @@
                                         <th>Variante</th>
                                         <th class="text-center">Cant.</th>
                                         <th class="text-end">P. Unit.</th>
-                                        <th class="text-center">Desc. %</th>
                                         <th class="text-end">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody id="itemsBody">
                                     <tr id="sinProductos">
-                                        <td colspan="8" class="text-center text-muted py-5">
+                                        <td colspan="7" class="text-center text-muted py-5">
                                             <i class="bi bi-cart display-4 d-block mb-2"></i>
                                             Busque y agregue productos a la venta
                                         </td>
@@ -574,11 +575,10 @@
                 cantidad: 1,
                 precio_unitario: precio,
                 precio_original: precio,
-                descuento_porcentaje: 0,
-                descuento_valor: 0,
                 stock_disponible: fila.stock_disponible,
                 controla_stock: fila.controla_stock,
                 iva: 0,
+                siigo_product_code: fila.siigo_product_code || null,
             });
 
             renderItems();
@@ -590,20 +590,25 @@
             const tbody = document.getElementById('itemsBody');
 
             if (items.length === 0) {
-                tbody.innerHTML = `<tr id="sinProductos"><td colspan="8" class="text-center text-muted py-5">
+                tbody.innerHTML = `<tr id="sinProductos"><td colspan="7" class="text-center text-muted py-5">
                     <i class="bi bi-cart display-4 d-block mb-2"></i>Busque y agregue productos a la venta</td></tr>`;
                 actualizarTotales();
                 return;
             }
 
             tbody.innerHTML = items.map((item, i) => {
-                const subtotal = (item.precio_unitario * item.cantidad) - item.descuento_valor;
+                const subtotal = item.precio_unitario * item.cantidad;
                 const stockWarning = item.controla_stock && item.cantidad > item.stock_disponible
                     ? '<i class="bi bi-exclamation-triangle text-danger ms-1" title="Stock insuficiente"></i>' : '';
 
-                return `<tr>
+                const homologado = !!item.siigo_product_code;
+                const homologarBtn = homologado
+                    ? `<span class="badge bg-success" title="SIIGO: ${item.siigo_product_code}"><i class="bi bi-link-45deg"></i></span>`
+                    : `<button class="btn btn-sm btn-warning" title="Producto NO homologado con SIIGO. Click para homologar." onclick="homologarSiigo(${item.producto_id}, ${item.variante_producto_id || 'null'})"><i class="bi bi-exclamation-triangle"></i> Homologar SIIGO</button>`;
+
+                return `<tr class="${homologado ? '' : 'table-warning'}">
                     <td><button class="btn btn-sm btn-outline-danger border-0" onclick="eliminarItem(${i})"><i class="bi bi-trash"></i></button></td>
-                    <td>${item.nombre}</td>
+                    <td>${item.nombre} ${homologarBtn}</td>
                     <td><small class="text-muted">${item.referencia}</small></td>
                     <td><small>${item.variante_nombre}</small></td>
                     <td class="text-center">
@@ -613,10 +618,6 @@
                     <td class="text-end">
                         <input type="number" class="form-control form-control-sm price-input" value="${item.precio_unitario.toFixed(2)}"
                                min="0" step="0.01" onchange="cambiarPrecio(${i}, this.value)">
-                    </td>
-                    <td class="text-center">
-                        <input type="number" class="form-control form-control-sm disc-input" value="${item.descuento_porcentaje}"
-                               min="0" max="100" step="0.5" onchange="cambiarDescuento(${i}, this.value)">
                     </td>
                     <td class="text-end fw-semibold">$${subtotal.toFixed(2)}</td>
                 </tr>`;
@@ -639,7 +640,6 @@
             const nuevoPrecio = parseFloat(valor) || 0;
             const aplicar = () => {
                 items[index].precio_unitario = nuevoPrecio;
-                items[index].descuento_valor = (nuevoPrecio * items[index].cantidad) * (items[index].descuento_porcentaje / 100);
                 renderItems();
             };
             if (nuevoPrecio !== items[index].precio_original) {
@@ -652,31 +652,13 @@
             aplicar();
         }
 
-        function cambiarDescuento(index, valor) {
-            const porcentaje = Math.min(100, Math.max(0, parseFloat(valor) || 0));
-
-            if (porcentaje > descuentoMaximo) {
-                solicitarPin(`Descuento de ${porcentaje}% supera el máximo permitido (${descuentoMaximo}%)`, function(autorizadorId) {
-                    autorizadorDescuento = autorizadorId;
-                    items[index].descuento_porcentaje = porcentaje;
-                    items[index].descuento_valor = (items[index].precio_unitario * items[index].cantidad) * (porcentaje / 100);
-                    renderItems();
-                });
-                return;
-            }
-
-            items[index].descuento_porcentaje = porcentaje;
-            items[index].descuento_valor = (items[index].precio_unitario * items[index].cantidad) * (porcentaje / 100);
-            renderItems();
-        }
-
         // Update Totals
         function actualizarTotales() {
             let subtotal = 0;
             let totalItems = 0;
 
             items.forEach(item => {
-                subtotal += (item.precio_unitario * item.cantidad) - item.descuento_valor;
+                subtotal += item.precio_unitario * item.cantidad;
                 totalItems += item.cantidad;
             });
 
@@ -696,7 +678,18 @@
                 document.getElementById('ivaDisplay').textContent = '$' + iva.toFixed(2);
             }
 
-            document.getElementById('btnProcesar').disabled = items.length === 0;
+            const itemsSinHomologar = items.filter(it => !it.siigo_product_code);
+            const btnProc = document.getElementById('btnProcesar');
+            if (items.length === 0) {
+                btnProc.disabled = true;
+                btnProc.title = '';
+            } else if (itemsSinHomologar.length > 0) {
+                btnProc.disabled = true;
+                btnProc.title = 'Hay ' + itemsSinHomologar.length + ' producto(s) sin homologar con SIIGO. Homologue antes de procesar.';
+            } else {
+                btnProc.disabled = false;
+                btnProc.title = '';
+            }
 
             // Update change calculation
             calcularCambio();
@@ -974,6 +967,18 @@
         function procesarVenta() {
             if (items.length === 0) return;
 
+            const sinHomologar = items.filter(it => !it.siigo_product_code);
+            if (sinHomologar.length > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Productos sin homologar',
+                    html: 'Los siguientes productos no están homologados con SIIGO y no pueden facturarse electrónicamente:<br><ul class="text-start mt-2">' +
+                        sinHomologar.map(it => '<li>' + (it.nombre || '') + ' (' + (it.referencia || '') + ')</li>').join('') +
+                        '</ul>Homologue cada producto antes de procesar la venta.',
+                });
+                return;
+            }
+
             const total = parseFloat(document.getElementById('totalDisplay').textContent.replace('$', '').replace(',', '')) || 0;
             const metodo = document.querySelector('input[name="metodoPago"]:checked').value;
 
@@ -998,7 +1003,7 @@
 
             const descGlobalInput = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
             const descGlobalTipo = document.getElementById('descuentoGlobalTipo').value;
-            const subtotal = items.reduce((s, i) => s + (i.precio_unitario * i.cantidad) - i.descuento_valor, 0);
+            const subtotal = items.reduce((s, i) => s + (i.precio_unitario * i.cantidad), 0);
             const descuentoGlobal = descGlobalTipo === '%' ? subtotal * (descGlobalInput / 100) : descGlobalInput;
 
             const datos = {
@@ -1008,8 +1013,6 @@
                     cantidad: i.cantidad,
                     precio_unitario: i.precio_unitario,
                     precio_original: i.precio_original,
-                    descuento_porcentaje: i.descuento_porcentaje,
-                    descuento_valor: i.descuento_valor,
                     iva: i.iva,
                 })),
                 cliente_id: clienteSeleccionado ? clienteSeleccionado.id : null,
@@ -1191,7 +1194,6 @@
                     if (idx >= 0) {
                         items[idx].precio_unitario = p.precio;
                         items[idx].precio_original = p.precio;
-                        items[idx].descuento_valor = (p.precio * items[idx].cantidad) * (items[idx].descuento_porcentaje / 100);
                     }
                 });
                 renderItems();
@@ -1261,5 +1263,219 @@
         // Focus search on load
         buscarInput.focus();
     </script>
+
+    {{-- Select2 + Modal Homologación SIIGO --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+    (function() {
+        const URL_LISTAR_SIIGO = "{{ route('productos.siigo.listar') }}";
+        const URL_HOMOLOGACION_BASE = "{{ url('productos') }}";
+        const CSRF = $('meta[name="csrf-token"]').attr('content');
+
+        let estadoSiigo = {
+            productoId: null,
+            varianteId: null,
+            tieneVariantes: false,
+            siigoCodeActual: null,
+        };
+
+        window.homologarSiigo = function(productoId, varianteId) {
+            estadoSiigo.productoId = productoId;
+            estadoSiigo.varianteId = (varianteId === null || varianteId === 'null') ? null : varianteId;
+
+            const $info = $('#siigoHomologarInfo');
+            const $msg = $('#siigoHomologarMensaje').addClass('d-none').removeClass('alert-success alert-danger').text('');
+            const $btnQuitar = $('#btnSiigoQuitarHomologacion').addClass('d-none');
+            $info.html('<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div> Cargando datos del producto...</div>');
+
+            $('#modalSiigoHomologar').modal('show');
+
+            $.get(URL_HOMOLOGACION_BASE + '/' + productoId + '/siigo/homologacion')
+                .done(function(data) {
+                    estadoSiigo.tieneVariantes = !!data.producto.tiene_variantes;
+
+                    let infoHtml = '<div class="card"><div class="card-body py-2">';
+                    infoHtml += '<div><strong>' + escapeHtml(data.producto.referencia) + '</strong> — ' + escapeHtml(data.producto.nombre) + '</div>';
+
+                    if (estadoSiigo.tieneVariantes) {
+                        const variante = (data.variantes || []).find(v => String(v.id) === String(estadoSiigo.varianteId));
+                        if (!variante) {
+                            infoHtml += '<div class="text-danger small mt-1">Variante no encontrada.</div>';
+                            estadoSiigo.siigoCodeActual = null;
+                        } else {
+                            const detalle = [variante.referencia_variante, variante.color, variante.sku].filter(Boolean).join(' / ');
+                            infoHtml += '<div class="text-muted small mt-1"><i class="bi bi-tag"></i> Variante: ' + escapeHtml(detalle || ('ID ' + variante.id)) + '</div>';
+                            estadoSiigo.siigoCodeActual = variante.siigo_product_code || null;
+                        }
+                    } else {
+                        estadoSiigo.siigoCodeActual = data.producto.siigo_product_code || null;
+                    }
+
+                    if (estadoSiigo.siigoCodeActual) {
+                        infoHtml += '<div class="mt-2"><span class="badge bg-success">Homologado</span> Código SIIGO actual: <code>' + escapeHtml(estadoSiigo.siigoCodeActual) + '</code></div>';
+                        $btnQuitar.removeClass('d-none');
+                    } else {
+                        infoHtml += '<div class="mt-2"><span class="badge bg-secondary">Sin homologar</span></div>';
+                    }
+                    infoHtml += '</div></div>';
+                    $info.html(infoHtml);
+
+                    inicializarSelectSiigo();
+                })
+                .fail(function(xhr) {
+                    $info.html('<div class="alert alert-danger mb-0">No se pudo cargar el producto: ' + escapeHtml(xhr.responseJSON?.message || xhr.statusText) + '</div>');
+                });
+        };
+
+        function inicializarSelectSiigo() {
+            const $select = $('#selectSiigoProducto');
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+            $select.empty();
+
+            $select.select2({
+                dropdownParent: $('#modalSiigoHomologar'),
+                theme: 'bootstrap-5',
+                placeholder: 'Buscar por código, nombre o referencia...',
+                allowClear: true,
+                minimumInputLength: 0,
+                ajax: {
+                    url: URL_LISTAR_SIIGO,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term || '',
+                            page: params.page || 1,
+                            page_size: 25,
+                        };
+                    },
+                    processResults: function(data, params) {
+                        params.page = params.page || 1;
+                        const results = (data.results || []).map(p => {
+                            const partes = ['[' + (p.code || '') + ']', p.name || ''];
+                            if (p.reference && p.reference !== p.code) partes.push('· ref: ' + p.reference);
+                            return {
+                                id: p.code,
+                                text: partes.join(' '),
+                                raw: p,
+                            };
+                        });
+                        const totalCargado = ((params.page - 1) * (data.page_size || 25)) + results.length;
+                        const totalDisponible = data.total_results || results.length;
+                        return {
+                            results: results,
+                            pagination: { more: totalCargado < totalDisponible },
+                        };
+                    },
+                    cache: false,
+                },
+            });
+
+            if (estadoSiigo.siigoCodeActual) {
+                const opt = new Option('[' + estadoSiigo.siigoCodeActual + '] (código actual)', estadoSiigo.siigoCodeActual, true, true);
+                $select.append(opt).trigger('change');
+            }
+        }
+
+        $('#btnSiigoGuardarHomologacion').on('click', function() {
+            const codigo = $('#selectSiigoProducto').val();
+            enviarHomologacion(codigo, false);
+        });
+
+        $('#btnSiigoQuitarHomologacion').on('click', function() {
+            if (!confirm('¿Quitar la homologación SIIGO actual?')) return;
+            enviarHomologacion(null, true);
+        });
+
+        function enviarHomologacion(codigo, esLimpiar) {
+            const $msg = $('#siigoHomologarMensaje').addClass('d-none').removeClass('alert-success alert-danger').text('');
+            const $btnGuardar = $('#btnSiigoGuardarHomologacion').prop('disabled', true);
+            const $btnQuitar = $('#btnSiigoQuitarHomologacion').prop('disabled', true);
+
+            const payload = { siigo_code: codigo || null };
+            if (estadoSiigo.tieneVariantes && estadoSiigo.varianteId) {
+                payload.variante_id = estadoSiigo.varianteId;
+            }
+
+            $.ajax({
+                url: URL_HOMOLOGACION_BASE + '/' + estadoSiigo.productoId + '/siigo/homologar',
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF },
+                data: payload,
+            })
+            .done(function(resp) {
+                $msg.removeClass('d-none').addClass('alert-success').text(resp.message || 'Guardado correctamente.');
+
+                // Actualizar items en el carrito que correspondan
+                const nuevoCodigo = resp.siigo_product_code || null;
+                items.forEach(it => {
+                    const matchVariante = estadoSiigo.varianteId
+                        ? String(it.variante_producto_id) === String(estadoSiigo.varianteId)
+                        : (!it.variante_producto_id && String(it.producto_id) === String(estadoSiigo.productoId));
+                    const matchProducto = !estadoSiigo.varianteId && String(it.producto_id) === String(estadoSiigo.productoId);
+                    if (matchVariante || matchProducto) {
+                        it.siigo_product_code = nuevoCodigo;
+                    }
+                });
+                if (typeof renderItems === 'function') renderItems();
+
+                setTimeout(function() {
+                    $('#modalSiigoHomologar').modal('hide');
+                }, 600);
+            })
+            .fail(function(xhr) {
+                const m = xhr.responseJSON?.message || 'Error al guardar la homologación.';
+                $msg.removeClass('d-none').addClass('alert-danger').text(m);
+            })
+            .always(function() {
+                $btnGuardar.prop('disabled', false);
+                $btnQuitar.prop('disabled', false);
+            });
+        }
+
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+    })();
+    </script>
     @endpush
+
+    {{-- Modal Homologación SIIGO --}}
+    <div class="modal fade" id="modalSiigoHomologar" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-link-45deg"></i> Homologar producto con SIIGO</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="siigoHomologarInfo" class="mb-3"></div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Producto en SIIGO</label>
+              <select id="selectSiigoProducto" class="form-select" style="width:100%"></select>
+              <small class="text-muted">
+                Busca por código, nombre o referencia. La lista se carga del catálogo de SIIGO.
+              </small>
+            </div>
+
+            <div id="siigoHomologarMensaje" class="alert d-none"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnSiigoQuitarHomologacion">
+              <i class="bi bi-x-circle"></i> Quitar homologación
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btnSiigoGuardarHomologacion">
+              <i class="bi bi-save"></i> Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 </x-app-layout>

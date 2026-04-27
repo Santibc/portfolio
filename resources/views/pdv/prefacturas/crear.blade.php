@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="position-relative mb-3">
-                    <input type="text" id="buscarProducto" class="form-control form-control-lg" placeholder="Buscar producto por nombre o referencia...">
+                    <input type="text" id="buscarProducto" class="form-control form-control-lg" placeholder="Buscar producto por nombre o referencia..." autocomplete="off">
                     <div id="resultadosBusqueda" class="search-results bg-white rounded-bottom d-none"></div>
                 </div>
 
@@ -62,12 +62,11 @@
                                     <th>Variante</th>
                                     <th class="text-center">Cant.</th>
                                     <th class="text-end">Precio</th>
-                                    <th class="text-center">Desc %</th>
                                     <th class="text-end">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody id="itemsBody">
-                                <tr><td colspan="7" class="text-center text-muted py-4">Agregue productos a la prefactura</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">Agregue productos a la prefactura</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -105,12 +104,18 @@
         let items = [];
         let clienteSeleccionado = null;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        const descuentoMaximo = {{ $descuentoMaximo ?? 15 }};
         let searchTimeout;
+
+        const buscarInput = document.getElementById('buscarProducto');
+
+        // Autofocus al cargar: lector de códigos de barras listo para escribir
+        if (buscarInput) {
+            buscarInput.focus();
+        }
 
         // Product search — endpoint devuelve filas atómicas (una por variante o producto sin variantes).
         // Auto-agrega si el input es un código de barras con match exacto (lector no siempre manda Enter).
-        document.getElementById('buscarProducto').addEventListener('input', function() {
+        buscarInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const q = this.value.trim();
             const div = document.getElementById('resultadosBusqueda');
@@ -143,9 +148,32 @@
             }, delay);
         });
 
+        // Enter del lector de códigos de barras: si hay match exacto, agregar directo
+        buscarInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('resultadosBusqueda').classList.add('d-none');
+                return;
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                const q = this.value.trim();
+                if (q.length < 2) return;
+
+                fetch(`{{ route('pdv.ajax.buscar-productos') }}?q=${encodeURIComponent(q)}&lista_precio_id=${document.getElementById('listaPrecio').value}&ubicacion_id=${document.getElementById('ubicacion').value}`)
+                    .then(r => r.json())
+                    .then(filas => {
+                        const match = filas.find(f => f.codigo_barras && String(f.codigo_barras).trim() === q);
+                        if (match) {
+                            addProduct(match);
+                        }
+                    });
+            }
+        });
+
         function addProduct(fila) {
             document.getElementById('resultadosBusqueda').classList.add('d-none');
-            document.getElementById('buscarProducto').value = '';
+            buscarInput.value = '';
             const precio = parseFloat(fila.precio) || 0;
             items.push({
                 producto_id: fila.producto_id,
@@ -156,11 +184,10 @@
                 cantidad: 1,
                 precio_unitario: precio,
                 precio_original: precio,
-                descuento_porcentaje: 0,
-                descuento_valor: 0,
                 stock_disponible: fila.stock_disponible ?? null,
             });
             renderItems();
+            buscarInput.focus();
         }
 
         function cambiarCantidad(index, valor) {
@@ -173,21 +200,11 @@
             renderItems();
         }
 
-        function cambiarDescuento(index, valor) {
-            const porcentaje = Math.min(descuentoMaximo, Math.max(0, parseFloat(valor) || 0));
-            if (parseFloat(valor) > descuentoMaximo) {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: `Descuento máximo permitido: ${descuentoMaximo}%`, showConfirmButton: false, timer: 2000 });
-            }
-            items[index].descuento_porcentaje = porcentaje;
-            items[index].descuento_valor = (items[index].precio_unitario * items[index].cantidad) * (porcentaje / 100);
-            renderItems();
-        }
-
         function renderItems() {
             const tbody = document.getElementById('itemsBody');
-            if (items.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Agregue productos</td></tr>'; updateTotals(); return; }
+            if (items.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Agregue productos</td></tr>'; updateTotals(); return; }
             tbody.innerHTML = items.map((item, i) => {
-                const sub = (item.precio_unitario * item.cantidad) - item.descuento_valor;
+                const sub = item.precio_unitario * item.cantidad;
                 const maxStock = item.stock_disponible || 999999;
                 return `<tr>
                     <td><button class="btn btn-sm btn-outline-danger border-0" onclick="items.splice(${i},1);renderItems();"><i class="bi bi-trash"></i></button></td>
@@ -195,7 +212,6 @@
                     <td><small>${item.variante_nombre}</small></td>
                     <td class="text-center"><input type="number" class="form-control form-control-sm" style="width:70px;" value="${item.cantidad}" min="1" max="${maxStock}" onchange="cambiarCantidad(${i}, this.value)"> <small class="text-muted">Stock: ${item.stock_disponible || '?'}</small></td>
                     <td class="text-end">$${item.precio_unitario.toFixed(2)}</td>
-                    <td class="text-center"><input type="number" class="form-control form-control-sm" style="width:70px;" value="${item.descuento_porcentaje}" min="0" max="${descuentoMaximo}" onchange="cambiarDescuento(${i}, this.value)"></td>
                     <td class="text-end fw-semibold">$${sub.toFixed(2)}</td>
                 </tr>`;
             }).join('');
@@ -203,7 +219,7 @@
         }
 
         function updateTotals() {
-            const subtotal = items.reduce((s,i) => s + (i.precio_unitario * i.cantidad) - i.descuento_valor, 0);
+            const subtotal = items.reduce((s,i) => s + (i.precio_unitario * i.cantidad), 0);
             document.getElementById('subtotalDisplay').textContent = '$' + subtotal.toFixed(2);
             document.getElementById('totalDisplay').textContent = '$' + subtotal.toFixed(2);
             document.getElementById('btnGuardar').disabled = items.length === 0;
@@ -243,7 +259,7 @@
                     cliente_id: clienteSeleccionado?.id || null,
                     nombre_cliente: clienteSeleccionado?.nombre || null,
                     observaciones: document.getElementById('observaciones').value,
-                    items: items.map(i => ({ producto_id: i.producto_id, variante_producto_id: i.variante_producto_id, cantidad: i.cantidad, precio_unitario: i.precio_unitario, precio_original: i.precio_original, descuento_porcentaje: i.descuento_porcentaje, descuento_valor: i.descuento_valor })),
+                    items: items.map(i => ({ producto_id: i.producto_id, variante_producto_id: i.variante_producto_id, cantidad: i.cantidad, precio_unitario: i.precio_unitario, precio_original: i.precio_original })),
                 }),
             }).then(r => r.json()).then(data => {
                 if (data.exito) {

@@ -72,6 +72,41 @@ class SiigoConfigService
         }
     }
 
+    /**
+     * Listar productos del catálogo de SIIGO con paginación y filtros opcionales.
+     * Filtros admitidos por la API: code, page, page_size, active, type, account_group, ids,
+     * created_start, created_end, date_start, date_end, updated_start, updated_end.
+     */
+    public function obtenerProductos(array $filtros = []): array
+    {
+        $query = [];
+
+        if (!empty($filtros['code'])) {
+            $query['code'] = $filtros['code'];
+        }
+        if (!empty($filtros['type'])) {
+            $query['type'] = $filtros['type'];
+        }
+        if (array_key_exists('active', $filtros)) {
+            $query['active'] = $filtros['active'] ? 'true' : 'false';
+        }
+
+        $query['page'] = (int) ($filtros['page'] ?? 1);
+        $query['page_size'] = min((int) ($filtros['page_size'] ?? 25), 100);
+
+        $response = $this->api->get('/v1/products', $query);
+
+        $results = $response['results'] ?? (is_array($response) && !isset($response['pagination']) ? $response : []);
+        $pagination = $response['pagination'] ?? [];
+
+        return [
+            'results' => is_array($results) ? $results : [],
+            'page' => $pagination['page'] ?? $query['page'],
+            'page_size' => $pagination['page_size'] ?? $query['page_size'],
+            'total_results' => $pagination['total_results'] ?? count($results ?? []),
+        ];
+    }
+
     public function guardarConfiguracion(array $data): void
     {
         $claves = [

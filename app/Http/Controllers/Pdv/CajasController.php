@@ -80,7 +80,7 @@ class CajasController extends Controller
 
     public function configuracion()
     {
-        $configuraciones = ConfiguracionPdv::all();
+        $configuraciones = ConfiguracionPdv::where('clave', 'not like', 'siigo_%')->get();
         $usuariosPin = User::role(['admin', 'cajero_principal'])
             ->get(['id', 'name', 'email', 'pin_pdv']);
         $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
@@ -92,6 +92,9 @@ class CajasController extends Controller
     public function guardarConfiguracion(Request $request)
     {
         foreach ($request->except('_token') as $clave => $valor) {
+            if (str_starts_with($clave, 'siigo_')) {
+                continue;
+            }
             ConfiguracionPdv::establecer($clave, $valor);
         }
 

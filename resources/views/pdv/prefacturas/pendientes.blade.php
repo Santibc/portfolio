@@ -14,6 +14,16 @@
 
         <div class="row g-3" id="prefacturasGrid">
             @forelse($prefacturas as $pf)
+                @php
+                    $itemsSinHomologar = $pf->items->filter(function ($it) {
+                        $codigo = $it->variante
+                            ? ($it->variante->siigo_product_code ?? $it->producto->siigo_product_code ?? null)
+                            : ($it->producto->siigo_product_code ?? null);
+                        return empty($codigo);
+                    });
+                    $tieneSinHomologar = $itemsSinHomologar->isNotEmpty();
+                    $cantidadSinHomologar = $itemsSinHomologar->count();
+                @endphp
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--miracle-lilac) !important;">
                         <div class="card-body">
@@ -24,6 +34,12 @@
                             <p class="mb-1"><i class="bi bi-person me-1"></i>{{ $pf->nombre_cliente_display }}</p>
                             <p class="mb-1"><i class="bi bi-person-badge me-1"></i>Creó: {{ $pf->usuarioCreador->name ?? '-' }}</p>
                             <p class="mb-2"><i class="bi bi-box me-1"></i>{{ $pf->items->count() }} producto(s)</p>
+                            @if($tieneSinHomologar)
+                                <div class="alert alert-warning py-1 px-2 mb-2 small">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    {{ $cantidadSinHomologar }} producto(s) sin homologar con SIIGO
+                                </div>
+                            @endif
                             <div class="fs-4 fw-bold mb-3" style="color: var(--miracle-pink);">
                                 ${{ number_format($pf->total, 2) }}
                             </div>
@@ -31,7 +47,7 @@
                                 <a href="{{ route('pdv.ventas.crear', ['prefactura_id' => $pf->id]) }}" class="btn btn-sm btn-success flex-fill">
                                     <i class="bi bi-pencil-square me-1"></i>Editar y Procesar
                                 </a>
-                                <button class="btn btn-sm btn-outline-success" onclick="aceptarPrefactura({{ $pf->id }})" title="Aceptar sin editar">
+                                <button class="btn btn-sm btn-outline-success" onclick="aceptarPrefactura({{ $pf->id }}, {{ $tieneSinHomologar ? 'true' : 'false' }}, {{ $cantidadSinHomologar }})" title="Aceptar sin editar">
                                     <i class="bi bi-check-lg"></i>
                                 </button>
                                 <button class="btn btn-outline-info btn-sm" onclick="verDetalle({{ $pf->id }})">
@@ -72,7 +88,18 @@
             });
         }
 
-        function aceptarPrefactura(id) {
+        function aceptarPrefactura(id, tieneSinHomologar = false, cantidadSinHomologar = 0) {
+            if (tieneSinHomologar) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Productos sin homologar con SIIGO',
+                    html: `Esta prefactura tiene <strong>${cantidadSinHomologar}</strong> producto(s) sin homologar con SIIGO y no se puede facturar electrónicamente.<br><br>` +
+                          `Debe darle al botón <strong><i class="bi bi-pencil-square"></i> Editar y Procesar</strong> y homologar los productos pendientes antes de generar la factura.`,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ffc107',
+                });
+                return;
+            }
             Swal.fire({
                 title: 'Aceptar Prefactura',
                 html: `

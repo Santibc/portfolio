@@ -490,6 +490,41 @@
     </div>
   </div>
 
+  {{-- Modal Homologación SIIGO --}}
+  <div class="modal fade" id="modalSiigoHomologar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-link-45deg"></i> Homologar producto con SIIGO</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="siigoHomologarInfo" class="mb-3"></div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Producto en SIIGO</label>
+            <select id="selectSiigoProducto" class="form-select" style="width:100%"></select>
+            <small class="text-muted">
+              Busca por código del producto en SIIGO. La lista se carga desde
+              <code>GET /v1/products</code>.
+            </small>
+          </div>
+
+          <div id="siigoHomologarMensaje" class="alert d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger me-auto d-none" id="btnSiigoQuitarHomologacion">
+            <i class="bi bi-x-circle"></i> Quitar homologación
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnSiigoGuardarHomologacion">
+            <i class="bi bi-save"></i> Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   @push('styles')
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
@@ -1163,6 +1198,176 @@
       }, 220);
     });
   });
+  </script>
+
+  {{-- Homologación SIIGO --}}
+  <script>
+  (function() {
+    const URL_LISTAR_SIIGO = "{{ route('productos.siigo.listar') }}";
+    const URL_HOMOLOGACION_BASE = "{{ url('productos') }}";
+    const CSRF = $('meta[name="csrf-token"]').attr('content');
+
+    let estadoSiigo = {
+      productoId: null,
+      varianteId: null,
+      tieneVariantes: false,
+      siigoCodeActual: null,
+    };
+
+    window.homologarSiigo = function(productoId, varianteId) {
+      estadoSiigo.productoId = productoId;
+      estadoSiigo.varianteId = (varianteId === null || varianteId === 'null') ? null : varianteId;
+
+      const $info = $('#siigoHomologarInfo');
+      const $msg = $('#siigoHomologarMensaje').addClass('d-none').removeClass('alert-success alert-danger').text('');
+      const $btnQuitar = $('#btnSiigoQuitarHomologacion').addClass('d-none');
+      $info.html('<div class="text-center py-2"><div class="spinner-border spinner-border-sm"></div> Cargando datos del producto...</div>');
+
+      $('#modalSiigoHomologar').modal('show');
+
+      $.get(URL_HOMOLOGACION_BASE + '/' + productoId + '/siigo/homologacion')
+        .done(function(data) {
+          estadoSiigo.tieneVariantes = !!data.producto.tiene_variantes;
+
+          let infoHtml = '<div class="card"><div class="card-body py-2">';
+          infoHtml += '<div><strong>' + escapeHtml(data.producto.referencia) + '</strong> — ' + escapeHtml(data.producto.nombre) + '</div>';
+
+          if (estadoSiigo.tieneVariantes) {
+            const variante = (data.variantes || []).find(v => String(v.id) === String(estadoSiigo.varianteId));
+            if (!variante) {
+              infoHtml += '<div class="text-danger small mt-1">Variante no encontrada.</div>';
+              estadoSiigo.siigoCodeActual = null;
+            } else {
+              const detalle = [variante.referencia_variante, variante.color, variante.sku].filter(Boolean).join(' / ');
+              infoHtml += '<div class="text-muted small mt-1"><i class="bi bi-tag"></i> Variante: ' + escapeHtml(detalle || ('ID ' + variante.id)) + '</div>';
+              estadoSiigo.siigoCodeActual = variante.siigo_product_code || null;
+            }
+          } else {
+            estadoSiigo.siigoCodeActual = data.producto.siigo_product_code || null;
+          }
+
+          if (estadoSiigo.siigoCodeActual) {
+            infoHtml += '<div class="mt-2"><span class="badge bg-success">Homologado</span> Código SIIGO actual: <code>' + escapeHtml(estadoSiigo.siigoCodeActual) + '</code></div>';
+            $btnQuitar.removeClass('d-none');
+          } else {
+            infoHtml += '<div class="mt-2"><span class="badge bg-secondary">Sin homologar</span></div>';
+          }
+          infoHtml += '</div></div>';
+          $info.html(infoHtml);
+
+          inicializarSelectSiigo();
+        })
+        .fail(function(xhr) {
+          $info.html('<div class="alert alert-danger mb-0">No se pudo cargar el producto: ' + escapeHtml(xhr.responseJSON?.message || xhr.statusText) + '</div>');
+        });
+    };
+
+    function inicializarSelectSiigo() {
+      const $select = $('#selectSiigoProducto');
+      if ($select.hasClass('select2-hidden-accessible')) {
+        $select.select2('destroy');
+      }
+      $select.empty();
+
+      $select.select2({
+        dropdownParent: $('#modalSiigoHomologar'),
+        theme: 'bootstrap-5',
+        placeholder: 'Buscar por código, nombre o referencia...',
+        allowClear: true,
+        minimumInputLength: 0,
+        ajax: {
+          url: URL_LISTAR_SIIGO,
+          dataType: 'json',
+          delay: 250,
+          data: function(params) {
+            return {
+              q: params.term || '',
+              page: params.page || 1,
+              page_size: 25,
+            };
+          },
+          processResults: function(data, params) {
+            params.page = params.page || 1;
+            const results = (data.results || []).map(p => {
+              const partes = ['[' + (p.code || '') + ']', p.name || ''];
+              if (p.reference && p.reference !== p.code) partes.push('· ref: ' + p.reference);
+              return {
+                id: p.code,
+                text: partes.join(' '),
+                raw: p,
+              };
+            });
+            const totalCargado = ((params.page - 1) * (data.page_size || 25)) + results.length;
+            const totalDisponible = data.total_results || results.length;
+            return {
+              results: results,
+              pagination: { more: totalCargado < totalDisponible },
+            };
+          },
+          cache: false,
+        },
+      });
+
+      if (estadoSiigo.siigoCodeActual) {
+        const opt = new Option('[' + estadoSiigo.siigoCodeActual + '] (código actual)', estadoSiigo.siigoCodeActual, true, true);
+        $select.append(opt).trigger('change');
+      }
+    }
+
+    $('#btnSiigoGuardarHomologacion').on('click', function() {
+      const codigo = $('#selectSiigoProducto').val();
+      enviarHomologacion(codigo, false);
+    });
+
+    $('#btnSiigoQuitarHomologacion').on('click', function() {
+      if (!confirm('¿Quitar la homologación SIIGO actual?')) return;
+      enviarHomologacion(null, true);
+    });
+
+    function enviarHomologacion(codigo, esLimpiar) {
+      const $msg = $('#siigoHomologarMensaje').addClass('d-none').removeClass('alert-success alert-danger').text('');
+      const $btnGuardar = $('#btnSiigoGuardarHomologacion').prop('disabled', true);
+      const $btnQuitar = $('#btnSiigoQuitarHomologacion').prop('disabled', true);
+
+      const payload = {
+        siigo_code: codigo || null,
+      };
+      if (estadoSiigo.tieneVariantes && estadoSiigo.varianteId) {
+        payload.variante_id = estadoSiigo.varianteId;
+      }
+
+      $.ajax({
+        url: URL_HOMOLOGACION_BASE + '/' + estadoSiigo.productoId + '/siigo/homologar',
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': CSRF },
+        data: payload,
+      })
+      .done(function(resp) {
+        $msg.removeClass('d-none').addClass('alert-success').text(resp.message || 'Guardado correctamente.');
+        if ($('#stock-table').length && $.fn.DataTable.isDataTable('#stock-table')) {
+          $('#stock-table').DataTable().ajax.reload(null, false);
+        }
+        setTimeout(function() {
+          $('#modalSiigoHomologar').modal('hide');
+        }, 600);
+      })
+      .fail(function(xhr) {
+        const m = xhr.responseJSON?.message || 'Error al guardar la homologación.';
+        $msg.removeClass('d-none').addClass('alert-danger').text(m);
+      })
+      .always(function() {
+        $btnGuardar.prop('disabled', false);
+        $btnQuitar.prop('disabled', false);
+      });
+    }
+
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+  })();
   </script>
   @endpush
 </x-app-layout>

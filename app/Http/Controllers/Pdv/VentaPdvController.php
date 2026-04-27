@@ -176,6 +176,9 @@ class VentaPdvController extends Controller
                     'stock_disponible' => $stockDisponible,
                     'controla_stock' => $i->producto->controlar_stock ?? false,
                     'iva' => (float) ($i->iva ?? 0),
+                    'siigo_product_code' => $i->variante
+                        ? ($i->variante->siigo_product_code ?? $i->producto->siigo_product_code ?? null)
+                        : ($i->producto->siigo_product_code ?? null),
                 ];
             })->toArray();
         }

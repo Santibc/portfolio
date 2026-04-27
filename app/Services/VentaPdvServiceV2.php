@@ -278,6 +278,7 @@ class VentaPdvServiceV2
             'permite_sin_stock'    => (bool) $producto->permitir_venta_sin_stock,
             'tiene_variante'       => false,
             'imagen_url'           => $producto->url_imagen_principal,
+            'siigo_product_code'   => $producto->siigo_product_code,
         ];
     }
 
@@ -317,6 +318,7 @@ class VentaPdvServiceV2
             'permite_sin_stock'    => (bool) $producto->permitir_venta_sin_stock,
             'tiene_variante'       => true,
             'imagen_url'           => $producto->url_imagen_principal,
+            'siigo_product_code'   => $variante->siigo_product_code ?? $producto->siigo_product_code,
         ];
     }
 

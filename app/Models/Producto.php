@@ -26,7 +26,8 @@ class Producto extends Model
         'tiene_variantes',
         'controlar_stock',
         'permitir_venta_sin_stock',
-        'eliminado'
+        'eliminado',
+        'siigo_product_code'
     ];
 
     protected $casts = [

@@ -623,8 +623,15 @@ class SiigoFacturacionService
             $variante = $item->variante;
 
             $code = $variante
-                ? ($variante->sku ?? $variante->referencia_variante ?? $producto->referencia ?? 'PROD-' . $item->producto_id)
-                : ($producto->referencia ?? 'PROD-' . $item->producto_id);
+                ? ($variante->siigo_product_code
+                    ?? $producto->siigo_product_code
+                    ?? $variante->sku
+                    ?? $variante->referencia_variante
+                    ?? $producto->referencia
+                    ?? 'PROD-' . $item->producto_id)
+                : ($producto->siigo_product_code
+                    ?? $producto->referencia
+                    ?? 'PROD-' . $item->producto_id);
 
             $description = $producto->nombre ?? 'Producto';
             if ($variante) {
@@ -742,8 +749,15 @@ class SiigoFacturacionService
             $variante = $itemDev->variante;
 
             $code = $variante
-                ? ($variante->sku ?? $variante->referencia_variante ?? $producto->referencia ?? 'PROD-' . $itemDev->producto_id)
-                : ($producto->referencia ?? 'PROD-' . $itemDev->producto_id);
+                ? ($variante->siigo_product_code
+                    ?? $producto->siigo_product_code
+                    ?? $variante->sku
+                    ?? $variante->referencia_variante
+                    ?? $producto->referencia
+                    ?? 'PROD-' . $itemDev->producto_id)
+                : ($producto->siigo_product_code
+                    ?? $producto->referencia
+                    ?? 'PROD-' . $itemDev->producto_id);
 
             $description = $producto->nombre ?? 'Producto';
             if ($variante) {

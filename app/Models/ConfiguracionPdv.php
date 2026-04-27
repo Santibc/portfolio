@@ -23,7 +23,7 @@ class ConfiguracionPdv extends Model
     {
         self::updateOrCreate(
             ['clave' => $clave],
-            ['valor' => $valor]
+            ['valor' => $valor ?? '']
         );
         Cache::forget("config_pdv_{$clave}");
     }

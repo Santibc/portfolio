@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Prefactura;
 use App\Models\ItemPrefactura;
 use App\Models\SesionCaja;
-use App\Models\ConfiguracionPdv;
 use App\Models\StockProducto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,21 +25,11 @@ class PrefacturaService
             return ['exito' => false, 'mensaje' => 'No se puede crear una prefactura sin productos'];
         }
 
-        $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
-
-        foreach ($items as $item) {
-            $descPorcentaje = $item['descuento_porcentaje'] ?? 0;
-            if ($descPorcentaje > $descuentoMaximo) {
-                throw new \Exception("Descuento de {$descPorcentaje}% supera el máximo permitido ({$descuentoMaximo}%)");
-            }
-        }
-
         DB::beginTransaction();
         try {
             $subtotal = 0;
             foreach ($items as $item) {
-                $descuento = $item['descuento_valor'] ?? 0;
-                $subtotal += ($item['precio_unitario'] * $item['cantidad']) - $descuento;
+                $subtotal += $item['precio_unitario'] * $item['cantidad'];
             }
 
             $descuentoGlobal = $datos['descuento_global'] ?? 0;

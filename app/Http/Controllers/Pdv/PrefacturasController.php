@@ -59,7 +59,15 @@ class PrefacturasController extends Controller
 
     public function crear()
     {
-        $listasPrecios = ListaPrecio::where('activo', true)->get();
+        $listasPrecioPdvConfig = ConfiguracionPdv::obtener('listas_precio_pdv', '');
+        $listasPrecioIds = array_filter(explode(',', $listasPrecioPdvConfig));
+
+        if (!empty($listasPrecioIds)) {
+            $listasPrecios = ListaPrecio::where('activo', true)->whereIn('id', $listasPrecioIds)->orderBy('orden')->get();
+        } else {
+            $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
+        }
+
         $ubicaciones = Ubicacion::activas()->tiendas()->get();
         $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
 
@@ -99,7 +107,12 @@ class PrefacturasController extends Controller
     {
         $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
 
-        $query = Prefactura::with('usuarioCreador', 'cliente', 'items')
+        $query = Prefactura::with([
+                'usuarioCreador',
+                'cliente',
+                'items.producto:id,siigo_product_code',
+                'items.variante:id,siigo_product_code',
+            ])
             ->pendientes()
             ->orderByDesc('created_at');
 

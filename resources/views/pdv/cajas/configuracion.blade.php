@@ -11,6 +11,19 @@
                     <h4 class="fw-bold mb-0"><i class="bi bi-gear me-2"></i>Configuracion General PdV</h4>
                 </div>
 
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
                 <div class="row">
                     {{-- Columna izquierda: Parametros generales --}}
                     <div class="col-md-6 mb-4">
@@ -19,7 +32,7 @@
                                 <h6 class="fw-bold mb-0"><i class="bi bi-sliders me-2"></i>Parametros Generales</h6>
                             </div>
                             <div class="card-body">
-                                <form action="{{ route('pdv.cajas.configuracion.guardar') }}" method="POST">
+                                <form id="configPdvForm" action="{{ route('pdv.cajas.configuracion.guardar') }}" method="POST">
                                     @csrf
                                     @foreach($configuraciones as $config)
                                         @if($config->clave === 'listas_precio_pdv') @continue @endif
@@ -159,7 +172,7 @@
     @push('scripts')
     <script>
         // Sincronizar checkboxes de listas de precio con hidden input
-        document.querySelector('form').addEventListener('submit', function() {
+        document.getElementById('configPdvForm').addEventListener('submit', function() {
             const checked = Array.from(document.querySelectorAll('.lista-precio-check:checked'))
                 .map(cb => cb.value).join(',');
             document.getElementById('listasPrecioPdvHidden').value = checked;
