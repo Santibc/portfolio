@@ -235,6 +235,14 @@ class VentaPdvController extends Controller
             'prefactura_id' => $request->input('prefactura_id'),
         ];
 
+        // Carry vendedora_prefactura from prefactura when processing
+        if ($request->input('prefactura_id')) {
+            $prefacturaOrigen = Prefactura::find($request->input('prefactura_id'));
+            if ($prefacturaOrigen && $prefacturaOrigen->vendedora_prefactura) {
+                $datosVenta['vendedora_prefactura'] = $prefacturaOrigen->vendedora_prefactura;
+            }
+        }
+
         // Handle comprobante upload
         if ($request->hasFile('archivo_comprobante')) {
             $file = $request->file('archivo_comprobante');

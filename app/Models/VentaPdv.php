@@ -36,6 +36,7 @@ class VentaPdv extends Model
         'estado',
         'notas',
         'usuario_id',
+        'vendedora_prefactura',
         'descuento_autorizado_por',
         'precio_autorizado_por',
         'anulada_por',

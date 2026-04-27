@@ -11,6 +11,14 @@ class Prefactura extends Model
 
     protected $table = 'prefacturas';
 
+    public const VENDEDORAS_PREFACTURA = [
+        'Michell Ballesteros',
+        'Andrea Caballero',
+        'Yurany Salazar',
+        'Maribel Garzón',
+        'Mariana Domínguez',
+    ];
+
     protected $fillable = [
         'numero_prefactura',
         'cliente_id',
@@ -24,6 +32,7 @@ class Prefactura extends Model
         'estado',
         'observaciones',
         'usuario_creador_id',
+        'vendedora_prefactura',
         'usuario_cajero_id',
         'venta_pdv_id',
         'motivo_anulacion',

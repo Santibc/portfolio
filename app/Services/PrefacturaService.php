@@ -48,6 +48,7 @@ class PrefacturaService
                 'total' => round($total, 2),
                 'observaciones' => $datos['observaciones'] ?? null,
                 'usuario_creador_id' => $usuarioId,
+                'vendedora_prefactura' => $datos['vendedora_prefactura'] ?? null,
             ]);
 
             foreach ($items as $item) {
@@ -112,6 +113,7 @@ class PrefacturaService
                 'comprobante_pago' => $datosModificados['comprobante_pago'] ?? null,
                 'notas' => $prefactura->observaciones,
                 'prefactura_id' => $prefactura->id,
+                'vendedora_prefactura' => $prefactura->vendedora_prefactura,
             ];
 
             // Use modified items or original

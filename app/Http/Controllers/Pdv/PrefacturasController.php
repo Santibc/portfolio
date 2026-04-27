@@ -70,8 +70,9 @@ class PrefacturasController extends Controller
 
         $ubicaciones = Ubicacion::activas()->tiendas()->get();
         $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
+        $vendedorasPrefactura = Prefactura::VENDEDORAS_PREFACTURA;
 
-        return view('pdv.prefacturas.crear', compact('listasPrecios', 'ubicaciones', 'descuentoMaximo'));
+        return view('pdv.prefacturas.crear', compact('listasPrecios', 'ubicaciones', 'descuentoMaximo', 'vendedorasPrefactura'));
     }
 
     public function guardar(Request $request)
@@ -79,6 +80,7 @@ class PrefacturasController extends Controller
         $request->validate([
             'lista_precio_id' => 'required|exists:listas_precios,id',
             'ubicacion_id' => 'required|exists:ubicaciones,id',
+            'vendedora_prefactura' => 'required|in:' . implode(',', Prefactura::VENDEDORAS_PREFACTURA),
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
@@ -86,7 +88,7 @@ class PrefacturasController extends Controller
         ]);
 
         $resultado = $this->prefacturaService->crear(
-            $request->only(['cliente_id', 'nombre_cliente', 'lista_precio_id', 'ubicacion_id', 'descuento_global', 'iva', 'observaciones']),
+            $request->only(['cliente_id', 'nombre_cliente', 'lista_precio_id', 'ubicacion_id', 'descuento_global', 'iva', 'observaciones', 'vendedora_prefactura']),
             $request->items,
             auth()->id()
         );
@@ -133,6 +135,7 @@ class PrefacturasController extends Controller
                         'total' => $p->total,
                         'items_count' => $p->items->count(),
                         'creador' => $p->usuarioCreador->name ?? '-',
+                        'vendedora' => $p->vendedora_prefactura,
                         'creada' => $p->created_at->diffForHumans(),
                     ];
                 }),

@@ -78,6 +78,7 @@ class VentaPdvServiceV2
                 'comprobante_pago' => $datosVenta['comprobante_pago'] ?? null,
                 'notas' => $datosVenta['notas'] ?? null,
                 'usuario_id' => $usuarioId,
+                'vendedora_prefactura' => $datosVenta['vendedora_prefactura'] ?? null,
                 'descuento_autorizado_por' => $datosVenta['descuento_autorizado_por'] ?? null,
                 'precio_autorizado_por' => $datosVenta['precio_autorizado_por'] ?? null,
                 'estado' => 'completada',

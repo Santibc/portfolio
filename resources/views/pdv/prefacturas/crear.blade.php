@@ -20,21 +20,29 @@
         <div class="row g-3">
             <div class="col-lg-8">
                 <div class="row g-2 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <select id="listaPrecio" class="form-select" required>
                             @foreach($listasPrecios as $lp)
                                 <option value="{{ $lp->id }}">{{ $lp->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <select id="ubicacion" class="form-select" required>
                             @foreach($ubicaciones as $ub)
                                 <option value="{{ $ub->id }}">{{ $ub->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 position-relative">
+                    <div class="col-md-3">
+                        <select id="vendedoraPrefactura" class="form-select" required>
+                            <option value="">Vendedora...</option>
+                            @foreach($vendedorasPrefactura as $vendedora)
+                                <option value="{{ $vendedora }}">{{ $vendedora }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 position-relative">
                         <input type="text" id="buscarCliente" class="form-control" placeholder="Buscar cliente (opcional)">
                         <div id="resultadosCliente" class="search-results bg-white rounded-bottom d-none"></div>
                     </div>
@@ -249,6 +257,11 @@
 
         function guardarPrefactura() {
             if (items.length === 0) return;
+            const vendedora = document.getElementById('vendedoraPrefactura').value;
+            if (!vendedora) {
+                Swal.fire('Falta vendedora', 'Seleccione la vendedora antes de crear la prefactura', 'warning');
+                return;
+            }
             document.getElementById('btnGuardar').disabled = true;
             fetch('{{ route("pdv.prefacturas.guardar") }}', {
                 method: 'POST',
@@ -258,12 +271,13 @@
                     ubicacion_id: document.getElementById('ubicacion').value,
                     cliente_id: clienteSeleccionado?.id || null,
                     nombre_cliente: clienteSeleccionado?.nombre || null,
+                    vendedora_prefactura: vendedora,
                     observaciones: document.getElementById('observaciones').value,
                     items: items.map(i => ({ producto_id: i.producto_id, variante_producto_id: i.variante_producto_id, cantidad: i.cantidad, precio_unitario: i.precio_unitario, precio_original: i.precio_original })),
                 }),
             }).then(r => r.json()).then(data => {
                 if (data.exito) {
-                    Swal.fire('Creada', data.mensaje, 'success').then(() => window.location.href = '{{ route("pdv.prefacturas.index") }}');
+                    Swal.fire('Creada', data.mensaje, 'success').then(() => window.location.reload());
                 } else {
                     Swal.fire('Error', data.mensaje, 'error');
                     document.getElementById('btnGuardar').disabled = false;

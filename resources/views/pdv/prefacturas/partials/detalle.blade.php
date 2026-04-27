@@ -6,6 +6,9 @@
     <div class="row g-3 mb-3">
         <div class="col-md-4"><small class="text-muted d-block">Cliente</small><strong>{{ $prefactura->nombre_cliente_display }}</strong></div>
         <div class="col-md-4"><small class="text-muted d-block">Creada por</small><strong>{{ $prefactura->usuarioCreador->name ?? '-' }}</strong></div>
+        @if($prefactura->vendedora_prefactura)
+            <div class="col-md-4"><small class="text-muted d-block">Vendedora</small><strong>{{ $prefactura->vendedora_prefactura }}</strong></div>
+        @endif
         <div class="col-md-4"><small class="text-muted d-block">Estado</small>{!! $prefactura->estado_badge !!}</div>
         <div class="col-md-4"><small class="text-muted d-block">Fecha</small><strong>{{ $prefactura->created_at->format('d/m/Y h:i A') }}</strong></div>
         @if($prefactura->usuarioCajero)

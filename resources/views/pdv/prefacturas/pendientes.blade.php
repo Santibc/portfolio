@@ -33,6 +33,9 @@
                             </div>
                             <p class="mb-1"><i class="bi bi-person me-1"></i>{{ $pf->nombre_cliente_display }}</p>
                             <p class="mb-1"><i class="bi bi-person-badge me-1"></i>Creó: {{ $pf->usuarioCreador->name ?? '-' }}</p>
+                            @if($pf->vendedora_prefactura)
+                                <p class="mb-1"><i class="bi bi-person-heart me-1"></i>Vendedora: <strong>{{ $pf->vendedora_prefactura }}</strong></p>
+                            @endif
                             <p class="mb-2"><i class="bi bi-box me-1"></i>{{ $pf->items->count() }} producto(s)</p>
                             @if($tieneSinHomologar)
                                 <div class="alert alert-warning py-1 px-2 mb-2 small">

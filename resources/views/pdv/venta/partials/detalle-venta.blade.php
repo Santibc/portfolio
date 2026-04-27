@@ -16,6 +16,12 @@
             <small class="text-muted d-block">Cajero</small>
             <strong>{{ $venta->usuario->name ?? '-' }}</strong>
         </div>
+        @if($venta->vendedora_prefactura)
+        <div class="col-md-4 mt-2">
+            <small class="text-muted d-block">Vendedora Prefactura</small>
+            <strong>{{ $venta->vendedora_prefactura }}</strong>
+        </div>
+        @endif
     </div>
     <div class="row mb-3">
         <div class="col-md-3">
