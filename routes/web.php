@@ -514,6 +514,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta'])
         Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
         Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');
         Route::post('/obtener-precios', [VentaPdvController::class, 'obtenerPrecios'])->name('obtener-precios');
+        Route::post('/cliente-rapido', [VentaPdvController::class, 'crearClienteRapido'])->name('cliente-rapido');
     });
 
 Route::middleware(['auth', 'role:admin,cajero_principal'])

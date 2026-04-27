@@ -221,7 +221,14 @@ class VentaPdvServiceV2
                           ->orWhere('color', 'like', "%{$terminoTrim}%");
                     });
             })
-            ->with(['variantes', 'precios', 'stock' => function ($query) use ($ubicacionId) {
+            ->with(['variantes' => function ($q) use ($terminoTrim) {
+                $q->where(function ($qq) use ($terminoTrim) {
+                    $qq->where('codigo_barras', 'like', "%{$terminoTrim}%")
+                       ->orWhere('sku', 'like', "%{$terminoTrim}%")
+                       ->orWhere('referencia_variante', 'like', "%{$terminoTrim}%")
+                       ->orWhere('color', 'like', "%{$terminoTrim}%");
+                });
+            }, 'precios', 'stock' => function ($query) use ($ubicacionId) {
                 $query->where('ubicacion_id', $ubicacionId)->whereNull('variante_producto_id');
             }])
             ->limit(40)
@@ -230,6 +237,15 @@ class VentaPdvServiceV2
         $filas = [];
         foreach ($productos as $producto) {
             if ($producto->tiene_variantes) {
+                $productoCoincidePorCamposPropios =
+                    stripos((string) $producto->nombre, $terminoTrim) !== false
+                    || stripos((string) $producto->referencia, $terminoTrim) !== false
+                    || stripos((string) $producto->codigo_barras, $terminoTrim) !== false;
+
+                if ($productoCoincidePorCamposPropios && $producto->variantes->isEmpty()) {
+                    $producto->load('variantes');
+                }
+
                 if ($producto->variantes->isEmpty()) {
                     continue;
                 }

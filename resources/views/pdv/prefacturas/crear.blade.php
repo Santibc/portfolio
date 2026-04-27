@@ -43,15 +43,32 @@
                         </select>
                     </div>
                     <div class="col-md-3 position-relative">
-                        <input type="text" id="buscarCliente" class="form-control" placeholder="Buscar cliente (opcional)">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                            <input type="text" id="buscarCliente" class="form-control" placeholder="CC, NIT, Nombre, Tel, Email..." autocomplete="off">
+                            <button class="btn btn-outline-secondary" type="button" onclick="mostrarModalNuevoCliente()" title="Nuevo cliente">
+                                <i class="bi bi-person-plus"></i>
+                            </button>
+                        </div>
                         <div id="resultadosCliente" class="search-results bg-white rounded-bottom d-none"></div>
                     </div>
                 </div>
 
                 <div id="clienteInfo" class="mb-3 d-none">
-                    <div class="alert alert-info py-2 d-flex justify-content-between align-items-center mb-0">
-                        <span><strong id="clienteNombre"></strong> <small class="text-muted" id="clienteDoc"></small></span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="quitarCliente()"><i class="bi bi-x"></i></button>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong id="clienteNombre"></strong>
+                                <span class="text-muted ms-2" id="clienteDocumento"></span>
+                                <span class="text-muted ms-2" id="clienteTelefono"></span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-light text-dark" id="clienteListaPrecio"></span>
+                                <button class="btn btn-sm btn-outline-danger" onclick="quitarCliente()">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -103,6 +120,42 @@
                 <button class="btn w-100 py-3 text-white" style="background: var(--miracle-pink);" onclick="guardarPrefactura()" id="btnGuardar" disabled>
                     <i class="bi bi-check-circle me-2"></i>Crear Prefactura
                 </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal: Nuevo Cliente --}}
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Nuevo Cliente</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" id="nuevoClienteNombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Documento / NIT</label>
+                        <input type="text" id="nuevoClienteDocumento" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Teléfono</label>
+                        <input type="text" id="nuevoClienteTelefono" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" id="nuevoClienteEmail" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn text-white" style="background: var(--miracle-pink);" onclick="guardarNuevoCliente()">
+                        <i class="bi bi-check me-1"></i>Guardar Cliente
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -295,26 +348,107 @@
         }
 
         // Client search
-        document.getElementById('buscarCliente').addEventListener('input', function() {
-            const q = this.value.trim(); const div = document.getElementById('resultadosCliente');
+        const buscarClienteInput = document.getElementById('buscarCliente');
+        let clienteSearchTimeout;
+
+        buscarClienteInput.addEventListener('input', function() {
+            clearTimeout(clienteSearchTimeout);
+            const q = this.value.trim();
+            const div = document.getElementById('resultadosCliente');
             if (q.length < 2) { div.classList.add('d-none'); return; }
-            fetch(`{{ route('pdv.ajax.buscar-clientes') }}?q=${encodeURIComponent(q)}`).then(r => r.json()).then(clientes => {
-                div.innerHTML = clientes.map(c => `<div class="search-result-item p-2 border-bottom" onclick="selCliente(${c.id},'${c.nombre.replace(/'/g,"")}','${c.documento||""}',${c.lista_precio_id||'null'})">${c.nombre} <small class="text-muted">${c.documento||''}</small></div>`).join('');
-                div.classList.remove('d-none');
-            });
+
+            clienteSearchTimeout = setTimeout(() => {
+                fetch(`{{ route('pdv.ajax.buscar-clientes') }}?q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(clientes => {
+                        if (clientes.length === 0) {
+                            div.innerHTML = '<div class="p-3 text-center text-muted">No se encontraron clientes</div>';
+                        } else {
+                            div.innerHTML = clientes.map(c => `
+                                <div class="search-result-item p-2 border-bottom" onclick='asignarCliente(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
+                                    <strong>${c.nombre}</strong>
+                                    <small class="text-muted d-block">${c.documento || ''} ${c.telefono ? '· ' + c.telefono : ''}</small>
+                                    <small class="text-muted">${c.lista_precio_nombre || ''}</small>
+                                </div>
+                            `).join('');
+                        }
+                        div.classList.remove('d-none');
+                    });
+            }, 300);
         });
 
-        window.selCliente = function(id, nombre, doc, lpId) {
-            clienteSeleccionado = { id, nombre, documento: doc, lista_precio_id: lpId };
-            document.getElementById('clienteInfo').classList.remove('d-none');
-            document.getElementById('clienteNombre').textContent = nombre;
-            document.getElementById('clienteDoc').textContent = doc;
-            document.getElementById('resultadosCliente').classList.add('d-none');
-            document.getElementById('buscarCliente').value = '';
-            if (lpId) document.getElementById('listaPrecio').value = lpId;
-        };
+        // Cerrar resultados al hacer click fuera
+        document.addEventListener('click', function(e) {
+            if (!buscarClienteInput.contains(e.target)) {
+                document.getElementById('resultadosCliente').classList.add('d-none');
+            }
+        });
 
-        function quitarCliente() { clienteSeleccionado = null; document.getElementById('clienteInfo').classList.add('d-none'); }
+        function asignarCliente(cliente) {
+            clienteSeleccionado = cliente;
+            document.getElementById('clienteInfo').classList.remove('d-none');
+            document.getElementById('clienteNombre').textContent = cliente.nombre;
+            document.getElementById('clienteDocumento').textContent = cliente.documento || '';
+            document.getElementById('clienteTelefono').textContent = cliente.telefono || '';
+            document.getElementById('clienteListaPrecio').textContent = cliente.lista_precio_nombre || '';
+            document.getElementById('resultadosCliente').classList.add('d-none');
+            buscarClienteInput.value = '';
+
+            if (cliente.lista_precio_id) {
+                const select = document.getElementById('listaPrecio');
+                const optionExists = Array.from(select.options).some(o => o.value == cliente.lista_precio_id);
+                if (!optionExists) {
+                    const opt = document.createElement('option');
+                    opt.value = cliente.lista_precio_id;
+                    opt.textContent = (cliente.lista_precio_nombre || 'Lista cliente') + ' (del cliente)';
+                    select.appendChild(opt);
+                }
+                if (select.value != cliente.lista_precio_id) {
+                    select.value = cliente.lista_precio_id;
+                    select.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+
+        function quitarCliente() {
+            clienteSeleccionado = null;
+            document.getElementById('clienteInfo').classList.add('d-none');
+        }
+
+        function mostrarModalNuevoCliente() {
+            document.getElementById('nuevoClienteNombre').value = '';
+            document.getElementById('nuevoClienteDocumento').value = '';
+            document.getElementById('nuevoClienteTelefono').value = '';
+            document.getElementById('nuevoClienteEmail').value = '';
+            new bootstrap.Modal(document.getElementById('modalNuevoCliente')).show();
+        }
+
+        function guardarNuevoCliente() {
+            const nombre = document.getElementById('nuevoClienteNombre').value.trim();
+            if (!nombre) { Swal.fire('Error', 'El nombre es obligatorio', 'warning'); return; }
+
+            fetch('{{ route("pdv.ajax.cliente-rapido") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    documento: document.getElementById('nuevoClienteDocumento').value,
+                    telefono: document.getElementById('nuevoClienteTelefono').value,
+                    email: document.getElementById('nuevoClienteEmail').value,
+                    lista_precio_id: document.getElementById('listaPrecio').value,
+                }),
+            })
+            .then(r => {
+                if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Error al crear cliente'); });
+                return r.json();
+            })
+            .then(cliente => {
+                bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente')).hide();
+                asignarCliente(cliente);
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Cliente creado', showConfirmButton: false, timer: 1500 });
+            })
+            .catch(err => Swal.fire('Error', err.message || 'No se pudo crear el cliente', 'error'));
+        }
 
         function guardarPrefactura() {
             if (items.length === 0) return;
