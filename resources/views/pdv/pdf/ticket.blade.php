@@ -86,7 +86,7 @@
 
     {{-- Encabezado: logo + datos empresa --}}
     <div class="center">
-        <img src="{{ public_path('images/logo.png') }}" alt="Miracle Beauty Experts" class="logo">
+        <img src="{{ public_path('images/logo-black.png') }}" alt="Miracle Beauty Experts" class="logo">
     </div>
     <div class="center empresa">MIRACLE BEAUTY EXPERTS</div>
     <div class="center info-empresa">Dirección: Cr 21 # 9 - 10 Local 202</div>

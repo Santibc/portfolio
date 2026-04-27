@@ -23,7 +23,7 @@
             <tbody>
                 @foreach($prefactura->items as $item)
                     <tr>
-                        <td>{{ $item->producto->nombre ?? '-' }}</td>
+                        <td>{{ $item->producto->nombre ?? '-' }}@if($item->variante) - {{ $item->variante->nombre_variante }}@endif</td>
                         <td>{{ $item->variante ? $item->variante->referencia_variante : '-' }}</td>
                         <td class="text-center">{{ $item->cantidad }}</td>
                         <td class="text-end">${{ number_format($item->precio_unitario, 2) }}</td>
