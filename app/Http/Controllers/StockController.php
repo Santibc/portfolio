@@ -140,7 +140,7 @@ class StockController extends Controller
                             ? $row->variante->codigo_barras
                             : $row->producto->codigo_barras;
                         $codigoEscapado = e($codigoBarrasActual ?? '');
-                        $buttons .= '<button type="button" class="btn btn-dark" onclick="abrirModalCodigoBarras('.$stockIdRep.', \''.$codigoEscapado.'\')" title="Escanear Código de Barras">
+                        $buttons .= '<button type="button" class="btn btn-dark" data-stock-id="'.$stockIdRep.'" data-codigo-actual="'.$codigoEscapado.'" onclick="abrirModalCodigoBarras(parseInt(this.dataset.stockId, 10), this.dataset.codigoActual)" title="Escanear Código de Barras">
                                         <i class="bi bi-upc-scan"></i>
                                     </button>';
 

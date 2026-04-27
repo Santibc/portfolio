@@ -1197,7 +1197,7 @@
       if (debounceTimerCb) clearTimeout(debounceTimerCb);
       debounceTimerCb = setTimeout(function() {
         const valor = ($('#inputCodigoBarras').val() || '').trim();
-        if (valor.length >= 6 && (Date.now() - lastInputTimeCb) >= 180) {
+        if (valor.length >= 3 && (Date.now() - lastInputTimeCb) >= 180) {
           enviarCodigoBarrasStock();
         }
       }, 220);
