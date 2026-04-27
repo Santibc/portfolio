@@ -6,9 +6,9 @@
         @page { margin: 0; padding: 0; }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             margin: 0;
-            padding: 3mm 8mm 3mm 3mm;
+            padding: 3mm 2mm 3mm 2mm;
             box-sizing: border-box;
             color: #000;
         }
@@ -23,33 +23,33 @@
         table { width: 100%; border-collapse: collapse; }
         td { padding: 1px 0; vertical-align: top; }
 
-        .logo { width: 50mm; height: auto; margin: 0 auto 2px; display: block; }
+        .logo { width: 42mm; height: auto; margin: 0 auto 2px; display: block; }
 
-        .empresa { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
-        .info-empresa { font-size: 8.5px; line-height: 1.35; }
+        .empresa { font-size: 11px; font-weight: bold; letter-spacing: 0.3px; }
+        .info-empresa { font-size: 8px; line-height: 1.3; }
 
-        .redes-titulo { font-size: 8.5px; margin-top: 3px; }
+        .redes-titulo { font-size: 8px; margin-top: 2px; }
         .redes-tabla { width: auto; margin: 2px auto 0; }
-        .redes-tabla td { font-size: 9px; padding: 1px 4px; }
-        .ico-red { width: 11px; height: 11px; vertical-align: middle; }
-        .red-icono { width: 16px; }
+        .redes-tabla td { font-size: 8px; padding: 1px 3px; }
+        .ico-red { width: 10px; height: 10px; vertical-align: middle; }
+        .red-icono { width: 14px; }
         .red-texto { vertical-align: middle; }
 
-        .meta td { font-size: 9px; padding: 1px 0; }
+        .meta td { font-size: 8px; padding: 1px 0; }
         .meta .label { font-weight: bold; }
 
         .items thead td {
-            font-size: 8.5px;
+            font-size: 7.5px;
             font-weight: bold;
             border-bottom: 1px solid #000;
             border-top: 1px solid #000;
             padding: 3px 0;
         }
-        .items tbody td { font-size: 9px; padding: 2px 0; }
+        .items tbody td { font-size: 8px; padding: 2px 0; }
 
-        .totales td { font-size: 9.5px; padding: 1px 2px; }
+        .totales td { font-size: 8.5px; padding: 1px 2px; }
         .total-final td {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             border-top: 1px solid #000;
             padding-top: 4px;
@@ -57,19 +57,19 @@
 
         .pago-titulo {
             text-align: center;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
             margin: 4px 0 2px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
-        .pago td { font-size: 9px; padding: 1px 0; }
+        .pago td { font-size: 8px; padding: 1px 0; }
 
         .gracias {
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             margin-top: 6px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .watermark {

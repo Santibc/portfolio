@@ -399,7 +399,7 @@ class VentaPdvController extends Controller
             ->findOrFail($id);
 
         $pdf = Pdf::loadView('pdv.pdf.ticket', compact('venta'))
-            ->setPaper([0, 0, 226.77, 850], 'portrait');
+            ->setPaper([0, 0, 204, 850], 'portrait');
 
         return $pdf->stream("ticket-{$venta->numero_venta}.pdf");
     }
@@ -730,6 +730,55 @@ class VentaPdvController extends Controller
                 'numero_factura' => $resultado['numero'] ?? null,
             ],
             'mensaje' => $resultado['mensaje'],
+        ]);
+    }
+
+    /**
+     * Actualiza el estado de todas las facturas SIIGO que aún no tienen CUFE.
+     * Se ejecuta automáticamente al cargar el listado de ventas.
+     */
+    public function actualizarEstadosPendientes()
+    {
+        $query = FacturaSiigo::whereNotNull('siigo_invoice_id')
+            ->whereNull('cufe');
+
+        if (!auth()->user()->hasRole('admin')) {
+            $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
+            if ($sesion) {
+                $query->whereHas('ventaPdv', fn($q) => $q->where('caja_id', $sesion->caja_id));
+            }
+        }
+
+        $facturas = $query->get();
+
+        if ($facturas->isEmpty()) {
+            return response()->json(['exito' => true, 'actualizadas' => 0, 'total' => 0, 'mensaje' => 'Sin facturas pendientes.']);
+        }
+
+        $siigoService = app(SiigoFacturacionService::class);
+        $actualizadas = 0;
+        $errores = 0;
+
+        foreach ($facturas as $factura) {
+            try {
+                $estadoAnterior = $factura->estado_dian;
+                $cufeAnterior = $factura->cufe;
+                $siigoService->consultarEstado($factura);
+                $factura->refresh();
+                if ($factura->cufe !== $cufeAnterior || $factura->estado_dian !== $estadoAnterior) {
+                    $actualizadas++;
+                }
+            } catch (\Exception $e) {
+                $errores++;
+            }
+        }
+
+        return response()->json([
+            'exito' => true,
+            'total' => $facturas->count(),
+            'actualizadas' => $actualizadas,
+            'errores' => $errores,
+            'mensaje' => "Se procesaron {$facturas->count()} factura(s). Actualizadas: {$actualizadas}.",
         ]);
     }
 

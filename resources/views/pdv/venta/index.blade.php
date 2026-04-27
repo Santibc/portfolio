@@ -15,6 +15,11 @@
             </div>
         </div>
 
+        <div id="bannerActualizacionEstados" class="alert alert-info py-2 small d-none">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <span id="bannerActualizacionEstadosText">Actualizando estados de facturas SIIGO pendientes...</span>
+        </div>
+
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
                 <div class="row g-2">
@@ -168,7 +173,49 @@
             });
 
             $('#filtroEstado, #filtroCaja, #filtroMetodo, #filtroDesde, #filtroHasta').change(() => tabla.ajax.reload());
+
+            actualizarEstadosFacturasPendientes();
         });
+
+        function actualizarEstadosFacturasPendientes() {
+            const banner = document.getElementById('bannerActualizacionEstados');
+            const bannerText = document.getElementById('bannerActualizacionEstadosText');
+            banner.classList.remove('d-none', 'alert-success', 'alert-warning', 'alert-danger');
+            banner.classList.add('alert-info');
+            bannerText.textContent = 'Actualizando estados de facturas SIIGO pendientes...';
+
+            fetch('{{ route("pdv.ventas.actualizar-estados-pendientes") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+            })
+            .then(r => r.json())
+            .then(data => {
+                banner.querySelector('.spinner-border')?.remove();
+                if (!data.exito) {
+                    banner.classList.replace('alert-info', 'alert-danger');
+                    bannerText.textContent = data.mensaje || 'Error al actualizar estados.';
+                    return;
+                }
+                if (data.total === 0) {
+                    banner.classList.add('d-none');
+                    return;
+                }
+                banner.classList.replace('alert-info', data.actualizadas > 0 ? 'alert-success' : 'alert-warning');
+                bannerText.textContent = `Estados consultados: ${data.total}. Actualizadas: ${data.actualizadas}.` + (data.errores ? ` Errores: ${data.errores}.` : '');
+                if (data.actualizadas > 0) {
+                    tabla.ajax.reload(null, false);
+                }
+                setTimeout(() => banner.classList.add('d-none'), 5000);
+            })
+            .catch(() => {
+                banner.querySelector('.spinner-border')?.remove();
+                banner.classList.replace('alert-info', 'alert-danger');
+                bannerText.textContent = 'Error de conexión al actualizar estados de facturas.';
+            });
+        }
 
         function limpiarFiltros() {
             $('#filtroEstado, #filtroCaja, #filtroMetodo').val('');

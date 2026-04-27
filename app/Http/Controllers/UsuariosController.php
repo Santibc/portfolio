@@ -7,9 +7,10 @@ use App\Models\User;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\UserCreationService;
-use Spatie\Permission\Models\Role;      
+use Spatie\Permission\Models\Role;
 use App\Services\CalendlyUserImporter;
 use App\Services\UserSynchronizationService;
+use App\Models\Ubicacion;
 
 class UsuariosController extends Controller
 {
@@ -63,8 +64,9 @@ class UsuariosController extends Controller
     {
         $user  = $user ?? new User();
         $roles = Role::where('name', '!=', 'cliente')->pluck('name','name');
+        $ubicaciones = Ubicacion::activas()->orderBy('nombre')->get();
 
-        return view('usuarios.usuarios_form', compact('user','roles'));
+        return view('usuarios.usuarios_form', compact('user','roles','ubicaciones'));
     }
 
     public function guardar(Request $request)
@@ -78,7 +80,8 @@ class UsuariosController extends Controller
                 Rule::unique('users')->ignore($user?->id)
             ],
             'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
-             'role'     => ['required','exists:roles,name'],   
+             'role'     => ['required','exists:roles,name'],
+             'ubicacion_id' => ['nullable', 'exists:ubicaciones,id'],
         ];
 
         $messages = [
@@ -96,10 +99,12 @@ class UsuariosController extends Controller
             $this->userService->update($user, $data);
             // Actualizar estado activo solo en edición
             $user->activo = $request->has('activo') ? 1 : 0;
+            $user->ubicacion_id = $data['ubicacion_id'] ?? null;
             $user->save();
         } else {
             $user = $this->userService->create($data);
             $user->activo = 1; // Nuevo usuario siempre activo
+            $user->ubicacion_id = $data['ubicacion_id'] ?? null;
             $user->save();
         }
         $user->syncRoles($data['role']);

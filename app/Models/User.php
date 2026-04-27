@@ -25,7 +25,8 @@ class User extends Authenticatable
         'telefono',
         'activo',
         'ultimo_login',
-        'pin_pdv'
+        'pin_pdv',
+        'ubicacion_id'
     ];
 
     /**
@@ -53,6 +54,11 @@ class User extends Authenticatable
         public function clientes()
     {
         return $this->hasMany(Cliente::class, 'vendedor_id');
+    }
+
+    public function ubicacion()
+    {
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
 
     public function enlacesCreados()

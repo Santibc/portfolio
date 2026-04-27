@@ -75,6 +75,27 @@
                             @enderror
                         </div>
 
+                        {{-- Ubicación / Sede --}}
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">
+                                Sede / Ubicación
+                                <small class="text-muted">(opcional)</small>
+                            </label>
+                            <select name="ubicacion_id" class="form-control">
+                                <option value="">— Sin sede asignada (ve todas) —</option>
+                                @foreach($ubicaciones as $ubicacion)
+                                    <option value="{{ $ubicacion->id }}"
+                                        {{ (string) old('ubicacion_id', $user->ubicacion_id) === (string) $ubicacion->id ? 'selected' : '' }}>
+                                        {{ $ubicacion->nombre }} ({{ ucfirst($ubicacion->tipo) }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Si se asigna, el usuario solo verá el stock de su sede</small>
+                            @error('ubicacion_id')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
                         {{-- Estado Activo (solo en edición) --}}
                         @if($user->exists)
                         <div class="col-12 col-md-6 mb-3">

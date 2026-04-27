@@ -182,12 +182,31 @@
         function addProduct(fila) {
             document.getElementById('resultadosBusqueda').classList.add('d-none');
             buscarInput.value = '';
+
+            const varianteId = fila.variante_producto_id || null;
+            const existente = items.findIndex(i =>
+                i.producto_id === fila.producto_id &&
+                (i.variante_producto_id || null) === varianteId
+            );
+
+            if (existente >= 0) {
+                const max = items[existente].stock_disponible || 999999;
+                if (items[existente].cantidad + 1 > max) {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: `Stock disponible: ${max} unidades`, showConfirmButton: false, timer: 2000 });
+                } else {
+                    items[existente].cantidad++;
+                }
+                renderItems();
+                buscarInput.focus();
+                return;
+            }
+
             const precio = parseFloat(fila.precio) || 0;
             items.push({
                 producto_id: fila.producto_id,
                 nombre: fila.nombre_producto,
                 referencia: fila.referencia,
-                variante_producto_id: fila.variante_producto_id || null,
+                variante_producto_id: varianteId,
                 variante_nombre: fila.nombre_variante || '-',
                 cantidad: 1,
                 precio_unitario: precio,
@@ -197,6 +216,48 @@
             renderItems();
             buscarInput.focus();
         }
+
+        // Cambio de lista de precios: actualiza precios de los productos ya agregados
+        document.getElementById('listaPrecio').addEventListener('change', function() {
+            if (items.length === 0) return;
+
+            const listaPrecioId = this.value;
+            const payload = items.map(i => ({
+                producto_id: i.producto_id,
+                variante_producto_id: i.variante_producto_id,
+            }));
+
+            fetch('{{ route("pdv.ajax.obtener-precios") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ lista_precio_id: listaPrecioId, items: payload }),
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(precios => {
+                precios.forEach(p => {
+                    const idx = items.findIndex(i =>
+                        i.producto_id == p.producto_id &&
+                        (i.variante_producto_id || null) == (p.variante_producto_id || null)
+                    );
+                    if (idx >= 0) {
+                        items[idx].precio_unitario = p.precio;
+                        items[idx].precio_original = p.precio;
+                    }
+                });
+                renderItems();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Precios actualizados', showConfirmButton: false, timer: 1500 });
+            })
+            .catch(() => {
+                Swal.fire('Error', 'No se pudieron actualizar los precios', 'error');
+            });
+        });
 
         function cambiarCantidad(index, valor) {
             const max = items[index].stock_disponible || 999999;

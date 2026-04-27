@@ -21,6 +21,9 @@ class StockController extends Controller
     // Vista principal de gestión de stock
     public function index(Request $request)
     {
+        // Si el usuario tiene una sede asignada, restringimos a esa ubicación
+        $ubicacionUsuarioId = auth()->user()->ubicacion_id ?? null;
+
         if ($request->ajax()) {
             $query = StockProducto::select(
                     'stock_productos.producto_id',
@@ -44,6 +47,11 @@ class StockController extends Controller
                       });
                 })
                 ->groupBy('stock_productos.producto_id', 'stock_productos.variante_producto_id');
+
+            // Restringir a la sede del usuario si tiene una asignada
+            if ($ubicacionUsuarioId) {
+                $query->where('stock_productos.ubicacion_id', $ubicacionUsuarioId);
+            }
 
             // Filtrar por producto si se especifica
             if ($request->has('producto_id') && $request->producto_id) {
@@ -215,8 +223,12 @@ class StockController extends Controller
                 ->make(true);
         }
 
-        $productosConStockBajo = StockProducto::conStockBajo()->count();
-        $productosSinStock = StockProducto::sinStock()->count();
+        $productosConStockBajo = StockProducto::conStockBajo()
+            ->when($ubicacionUsuarioId, fn($q) => $q->where('ubicacion_id', $ubicacionUsuarioId))
+            ->count();
+        $productosSinStock = StockProducto::sinStock()
+            ->when($ubicacionUsuarioId, fn($q) => $q->where('ubicacion_id', $ubicacionUsuarioId))
+            ->count();
 
         // Obtener información del producto si viene filtrado
         $productoFiltrado = null;
@@ -225,7 +237,11 @@ class StockController extends Controller
         }
 
         // Obtener ubicaciones activas para el filtro
-        $ubicaciones = Ubicacion::activas()->orderBy('nombre')->get();
+        // Si el usuario tiene sede asignada, solo mostrar la suya
+        $ubicaciones = Ubicacion::activas()
+            ->when($ubicacionUsuarioId, fn($q) => $q->where('id', $ubicacionUsuarioId))
+            ->orderBy('nombre')
+            ->get();
 
         return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'ubicaciones'));
     }
@@ -240,6 +256,7 @@ class StockController extends Controller
 
         $productoId = $request->producto_id;
         $varianteId = $request->variante_producto_id;
+        $ubicacionUsuarioId = auth()->user()->ubicacion_id ?? null;
 
         $producto = Producto::findOrFail($productoId);
         $variante = $varianteId ? VarianteProducto::find($varianteId) : null;
@@ -251,13 +268,16 @@ class StockController extends Controller
             }, function($q) {
                 $q->whereNull('variante_producto_id');
             })
+            ->when($ubicacionUsuarioId, fn($q) => $q->where('ubicacion_id', $ubicacionUsuarioId))
             ->orderBy('ubicacion_id')
             ->get();
 
         // Ubicaciones activas donde aún no hay registro para este producto/variante
+        // Si el usuario tiene una sede asignada, solo puede agregar registros en esa sede
         $ubicacionesExistentes = $stocks->pluck('ubicacion_id')->filter()->all();
         $ubicacionesDisponibles = Ubicacion::activas()
             ->whereNotIn('id', $ubicacionesExistentes)
+            ->when($ubicacionUsuarioId, fn($q) => $q->where('id', $ubicacionUsuarioId))
             ->orderBy('nombre')
             ->get();
 
@@ -276,6 +296,15 @@ class StockController extends Controller
             'variante_producto_id' => 'nullable|exists:variantes_productos,id',
             'ubicacion_id' => 'required|exists:ubicaciones,id',
         ]);
+
+        // Si el usuario tiene una sede asignada, solo puede agregar en esa sede
+        $ubicacionUsuarioId = auth()->user()->ubicacion_id ?? null;
+        if ($ubicacionUsuarioId && (int) $request->ubicacion_id !== (int) $ubicacionUsuarioId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para agregar stock en esa ubicación.'
+            ], 403);
+        }
 
         $existente = StockProducto::where('producto_id', $request->producto_id)
             ->where('ubicacion_id', $request->ubicacion_id)

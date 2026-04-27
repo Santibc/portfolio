@@ -457,6 +457,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
 Route::middleware(['auth', 'role:admin,cajero_principal'])
     ->prefix('pdv/ventas')->name('pdv.ventas.')->group(function () {
         Route::get('/', [VentaPdvController::class, 'index'])->name('index');
+        Route::post('/actualizar-estados-pendientes', [VentaPdvController::class, 'actualizarEstadosPendientes'])->name('actualizar-estados-pendientes');
         Route::get('/crear', [VentaPdvController::class, 'crear'])->name('crear');
         Route::post('/procesar', [VentaPdvController::class, 'procesarVenta'])->name('procesar');
         Route::get('/{id}/detalle', [VentaPdvController::class, 'detalle'])->name('detalle');
@@ -512,6 +513,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta'])
     ->prefix('pdv/ajax')->name('pdv.ajax.')->group(function () {
         Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
         Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');
+        Route::post('/obtener-precios', [VentaPdvController::class, 'obtenerPrecios'])->name('obtener-precios');
     });
 
 Route::middleware(['auth', 'role:admin,cajero_principal'])
