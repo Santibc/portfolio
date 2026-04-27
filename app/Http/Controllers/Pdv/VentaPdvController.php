@@ -91,7 +91,7 @@ class VentaPdvController extends Controller
                 })
                 ->addColumn('action', function ($v) {
                     $btn = '<button class="btn btn-sm btn-outline-info me-1" onclick="verDetalle(' . $v->id . ')" title="Detalle"><i class="bi bi-eye"></i></button>';
-                    $btn .= '<a href="' . route('pdv.ventas.ticket', $v->id) . '" class="btn btn-sm btn-outline-danger me-1" title="Ticket" target="_blank"><i class="bi bi-printer"></i></a>';
+                    $btn .= '<a href="' . route('pdv.ventas.ticket-print', $v->id) . '" class="btn btn-sm btn-outline-danger me-1" title="Imprimir ticket" target="_blank"><i class="bi bi-printer"></i></a>';
                     if ($v->estado === 'completada' && auth()->user()->hasRole('admin')) {
                         $btn .= '<button class="btn btn-sm btn-outline-warning me-1" onclick="devolucionParcial(' . $v->id . ')" title="Devolución Parcial"><i class="bi bi-arrow-return-left"></i></button>';
                         $btn .= '<button class="btn btn-sm btn-outline-danger" onclick="anularVenta(' . $v->id . ')" title="Anular"><i class="bi bi-x-circle"></i></button>';
@@ -402,6 +402,14 @@ class VentaPdvController extends Controller
             ->setPaper([0, 0, 204, 850], 'portrait');
 
         return $pdf->stream("ticket-{$venta->numero_venta}.pdf");
+    }
+
+    public function ticketPrint($id)
+    {
+        $venta = VentaPdv::with('items.producto', 'items.variante', 'usuario', 'cliente', 'caja.ubicacion')
+            ->findOrFail($id);
+
+        return view('pdv.pdf.ticket', ['venta' => $venta, 'mode' => 'html']);
     }
 
     public function buscarProductos(Request $request)

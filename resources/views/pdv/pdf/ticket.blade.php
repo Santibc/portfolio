@@ -1,9 +1,11 @@
+@php($mode = $mode ?? 'pdf')
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
+    <title>Ticket {{ $venta->numero_venta }}</title>
     <style>
-        @page { margin: 0; padding: 0; }
+        @page { size: 72mm auto; margin: 0; padding: 0; }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 9px;
@@ -86,7 +88,7 @@
 
     {{-- Encabezado: logo + datos empresa --}}
     <div class="center">
-        <img src="{{ public_path('images/logo-black.png') }}" alt="Miracle Beauty Experts" class="logo">
+        <img src="{{ $mode === 'pdf' ? public_path('images/logo-black.png') : asset('images/logo-black.png') }}" alt="Miracle Beauty Experts" class="logo">
     </div>
     <div class="center empresa">MIRACLE BEAUTY EXPERTS</div>
     <div class="center info-empresa">Dirección: Cr 21 # 9 - 10 Local 202</div>
@@ -97,13 +99,13 @@
     <table class="redes-tabla">
         <tr>
             <td class="right red-icono">
-                <img src="{{ public_path('images/icons/instagram.png') }}" class="ico-red" alt="IG">
+                <img src="{{ $mode === 'pdf' ? public_path('images/icons/instagram.png') : asset('images/icons/instagram.png') }}" class="ico-red" alt="IG">
             </td>
             <td class="left red-texto">@miracleinternacional</td>
         </tr>
         <tr>
             <td class="right red-icono">
-                <img src="{{ public_path('images/icons/facebook.png') }}" class="ico-red" alt="FB">
+                <img src="{{ $mode === 'pdf' ? public_path('images/icons/facebook.png') : asset('images/icons/facebook.png') }}" class="ico-red" alt="FB">
             </td>
             <td class="left red-texto">Miracle Beauty Experts</td>
         </tr>
@@ -255,5 +257,19 @@
 
     <div class="line-solid"></div>
     <div class="gracias">**GRACIAS POR SU COMPRA**</div>
+
+    @if($mode === 'html')
+    <script>
+        window.addEventListener('load', function () {
+            // Pequeño retraso para que las imágenes terminen de cargar antes de imprimir.
+            setTimeout(function () {
+                window.print();
+            }, 350);
+        });
+        window.addEventListener('afterprint', function () {
+            window.close();
+        });
+    </script>
+    @endif
 </body>
 </html>

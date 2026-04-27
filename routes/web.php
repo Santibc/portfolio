@@ -462,6 +462,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::post('/procesar', [VentaPdvController::class, 'procesarVenta'])->name('procesar');
         Route::get('/{id}/detalle', [VentaPdvController::class, 'detalle'])->name('detalle');
         Route::get('/{id}/ticket', [VentaPdvController::class, 'ticket'])->name('ticket');
+        Route::get('/{id}/ticket-print', [VentaPdvController::class, 'ticketPrint'])->name('ticket-print');
         // AJAX
         Route::get('/buscar-productos', [VentaPdvController::class, 'buscarProductos'])->name('buscar-productos');
         Route::get('/buscar-clientes', [VentaPdvController::class, 'buscarClientes'])->name('buscar-clientes');

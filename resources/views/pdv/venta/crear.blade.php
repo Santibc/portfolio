@@ -1068,7 +1068,7 @@
                 if (result.exito) {
                     ultimaVentaResult = result;
                     document.getElementById('exitoMensaje').textContent = result.mensaje;
-                    document.getElementById('btnImprimirTicket').href = `/pdv/ventas/${result.venta.id}/ticket`;
+                    document.getElementById('btnImprimirTicket').href = `/pdv/ventas/${result.venta.id}/ticket-print`;
 
                     if (siigoActivo) {
                         // Build client data for pre-filling the invoice form
