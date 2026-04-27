@@ -399,7 +399,7 @@ class VentaPdvController extends Controller
             ->findOrFail($id);
 
         $pdf = Pdf::loadView('pdv.pdf.ticket', compact('venta'))
-            ->setPaper([0, 0, 226.77, 600], 'portrait');
+            ->setPaper([0, 0, 226.77, 850], 'portrait');
 
         return $pdf->stream("ticket-{$venta->numero_venta}.pdf");
     }
