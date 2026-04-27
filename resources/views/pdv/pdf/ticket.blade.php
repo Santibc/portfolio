@@ -8,7 +8,7 @@
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 10px;
             margin: 0;
-            padding: 3mm 2mm;
+            padding: 3mm 8mm 3mm 3mm;
             box-sizing: border-box;
             color: #000;
         }
@@ -23,7 +23,7 @@
         table { width: 100%; border-collapse: collapse; }
         td { padding: 1px 0; vertical-align: top; }
 
-        .logo { width: 55mm; height: auto; margin: 0 auto 2px; display: block; }
+        .logo { width: 50mm; height: auto; margin: 0 auto 2px; display: block; }
 
         .empresa { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
         .info-empresa { font-size: 8.5px; line-height: 1.35; }
@@ -47,9 +47,9 @@
         }
         .items tbody td { font-size: 9px; padding: 2px 0; }
 
-        .totales td { font-size: 9.5px; padding: 1px 0; }
+        .totales td { font-size: 9.5px; padding: 1px 2px; }
         .total-final td {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             border-top: 1px solid #000;
             padding-top: 4px;
@@ -147,10 +147,10 @@
     <table class="items">
         <thead>
             <tr>
-                <td style="width: 48%;">DESCRIPCIÓN</td>
-                <td class="right" style="width: 20%;">PRECIO U</td>
-                <td class="right" style="width: 12%;">CANT</td>
-                <td class="right" style="width: 20%;">TOTAL</td>
+                <td style="width: 40%;">DESCRIPCIÓN</td>
+                <td class="right" style="width: 20%; padding-right:2px;">PRECIO U</td>
+                <td class="right" style="width: 12%; padding-right:2px;">CANT</td>
+                <td class="right" style="width: 28%; padding-right:2px;">TOTAL</td>
             </tr>
         </thead>
         <tbody>
@@ -166,10 +166,10 @@
                     }
                 @endphp
                 <tr>
-                    <td>{{ Str::limit($nombreItem, 28) }}</td>
-                    <td class="right">{{ number_format($item->precio_unitario, 0, ',', '.') }}</td>
-                    <td class="right">{{ $item->cantidad }}</td>
-                    <td class="right">{{ number_format($item->total, 0, ',', '.') }}</td>
+                    <td style="word-wrap:break-word;">{{ Str::limit($nombreItem, 20) }}</td>
+                    <td class="right" style="padding-right:2px;">{{ number_format($item->precio_unitario, 0, ',', '.') }}</td>
+                    <td class="right" style="padding-right:2px;">{{ $item->cantidad }}</td>
+                    <td class="right" style="padding-right:2px;">{{ number_format($item->total, 0, ',', '.') }}</td>
                 </tr>
                 @if(($item->descuento_porcentaje ?? 0) > 0 || ($item->descuento_valor ?? 0) > 0)
                     <tr>
@@ -188,16 +188,16 @@
         @if(($venta->iva ?? 0) > 0)
             <tr>
                 <td>Subtotal:</td>
-                <td class="right">${{ number_format($venta->subtotal, 0, ',', '.') }}</td>
+                <td class="right" style="padding-right:2px;">${{ number_format($venta->subtotal, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td>IVA:</td>
-                <td class="right">${{ number_format($venta->iva, 0, ',', '.') }}</td>
+                <td class="right" style="padding-right:2px;">${{ number_format($venta->iva, 0, ',', '.') }}</td>
             </tr>
         @endif
         <tr class="total-final">
             <td>Total</td>
-            <td class="right">${{ number_format($venta->total, 0, ',', '.') }}</td>
+            <td class="right" style="padding-right:2px;">${{ number_format($venta->total, 0, ',', '.') }}</td>
         </tr>
     </table>
 
@@ -234,20 +234,20 @@
     <div class="pago-titulo">--------- DETALLE DE PAGO ---------</div>
     <table class="pago">
         @if($descuento > 0)
-            <tr><td>Descuento</td><td class="right">{{ $fmt($descuento) }}</td></tr>
+            <tr><td>Descuento</td><td class="right" style="padding-right:2px;">{{ $fmt($descuento) }}</td></tr>
         @endif
         @if($metodo === 'efectivo' || $metodo === 'mixto')
-            <tr><td>Efectivo</td><td class="right">{{ $fmt($efectivo) }}</td></tr>
+            <tr><td>Efectivo</td><td class="right" style="padding-right:2px;">{{ $fmt($efectivo) }}</td></tr>
             @if($cambio > 0)
-                <tr><td>Su cambio</td><td class="right">{{ $fmt($cambio) }}</td></tr>
+                <tr><td>Su cambio</td><td class="right" style="padding-right:2px;">{{ $fmt($cambio) }}</td></tr>
             @endif
         @endif
         @if($metodo === 'transferencia' || $metodo === 'mixto')
-            <tr><td>{{ $etiquetaTransfer }}</td><td class="right">{{ $fmt($transferencia) }}</td></tr>
+            <tr><td>{{ $etiquetaTransfer }}</td><td class="right" style="padding-right:2px;">{{ $fmt($transferencia) }}</td></tr>
         @endif
         <tr>
             <td class="bold" style="border-top:1px dashed #000; padding-top:3px;">Total Pagado</td>
-            <td class="right bold" style="border-top:1px dashed #000; padding-top:3px;">
+            <td class="right bold" style="border-top:1px dashed #000; padding-top:3px; padding-right:2px;">
                 {{ $fmt($efectivo + $transferencia) }}
             </td>
         </tr>
