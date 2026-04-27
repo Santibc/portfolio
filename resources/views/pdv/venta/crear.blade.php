@@ -26,6 +26,16 @@
         .prefactura-badge { position: fixed; bottom: 20px; right: 20px; z-index: 1040; }
         .btn-miracle { background: var(--miracle-pink); color: white; border: none; }
         .btn-miracle:hover { background: var(--miracle-pink-hover); color: white; }
+        .scroll-top-btn {
+            position: fixed; bottom: 30px; right: 30px; z-index: 1050;
+            width: 50px; height: 50px; border-radius: 50%; border: none;
+            background: var(--miracle-pink); color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,.2);
+            display: none; align-items: center; justify-content: center;
+            font-size: 1.4rem; cursor: pointer; transition: opacity .2s, transform .2s;
+        }
+        .scroll-top-btn:hover { background: var(--miracle-pink-hover); transform: translateY(-3px); }
+        .scroll-top-btn.show { display: flex; }
     </style>
     @endpush
 
@@ -404,6 +414,11 @@
         </div>
     </div>
 
+    {{-- Scroll to top --}}
+    <button type="button" class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()" title="Subir">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
     {{-- SIIGO Invoice Modal --}}
     @if($siigoActivo)
         @include('pdv.venta.partials.modal-factura')
@@ -411,6 +426,17 @@
 
     @push('scripts')
     <script>
+        // Scroll to top button
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('scrollTopBtn');
+            if (!btn) return;
+            if (window.scrollY > 300) btn.classList.add('show');
+            else btn.classList.remove('show');
+        });
+
         // State
         let items = [];
         let clienteSeleccionado = null;
@@ -566,7 +592,7 @@
             }
 
             const precio = parseFloat(fila.precio) || 0;
-            items.push({
+            items.unshift({
                 producto_id: fila.producto_id,
                 variante_producto_id: varianteId,
                 nombre: fila.nombre_producto,
