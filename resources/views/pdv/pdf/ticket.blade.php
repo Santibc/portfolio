@@ -8,7 +8,7 @@
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 9px;
             margin: 0;
-            padding: 3mm 2mm 3mm 2mm;
+            padding: 3mm 4mm 3mm 2mm;
             box-sizing: border-box;
             color: #000;
         }
