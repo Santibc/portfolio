@@ -1,4 +1,3 @@
-@php($mode = $mode ?? 'pdf')
 <!DOCTYPE html>
 <html>
 <head>
@@ -115,8 +114,12 @@
 
     {{-- Meta: fecha / recibo / hora / vendedor --}}
     @php
-        $vendedor = $venta->vendedora_prefactura
-            ?: ($venta->usuario->name ?? 'VENDEDOR GENERAL');
+        $vendedor = 'VENDEDOR GENERAL';
+        if (!empty($venta->vendedora_prefactura)) {
+            $vendedor = $venta->vendedora_prefactura;
+        } elseif ($venta->usuario && !empty($venta->usuario->name)) {
+            $vendedor = $venta->usuario->name;
+        }
         $vendedor = strtoupper($vendedor);
     @endphp
     <table class="meta">

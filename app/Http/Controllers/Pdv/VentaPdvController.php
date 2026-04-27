@@ -398,7 +398,7 @@ class VentaPdvController extends Controller
         $venta = VentaPdv::with('items.producto', 'items.variante', 'usuario', 'cliente', 'caja.ubicacion')
             ->findOrFail($id);
 
-        $pdf = Pdf::loadView('pdv.pdf.ticket', compact('venta'))
+        $pdf = Pdf::loadView('pdv.pdf.ticket', ['venta' => $venta, 'mode' => 'pdf'])
             ->setPaper([0, 0, 204, 850], 'portrait');
 
         return $pdf->stream("ticket-{$venta->numero_venta}.pdf");
