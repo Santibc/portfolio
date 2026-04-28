@@ -191,7 +191,7 @@
                         </div>
                         @if($ivaPorcentaje > 0)
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">IVA ({{ $ivaPorcentaje }}%):</span>
+                            <span class="text-muted">IVA incluido ({{ $ivaPorcentaje }}%):</span>
                             <span class="fw-semibold" id="ivaDisplay">$0.00</span>
                         </div>
                         @endif
@@ -680,24 +680,28 @@
 
         // Update Totals
         function actualizarTotales() {
-            let subtotal = 0;
+            // Los precios del catálogo YA incluyen IVA. El subtotal mostrado es el monto
+            // con IVA (lo que el cliente ve sumado de las filas). El IVA se DESCOMPONE
+            // (no se suma encima). Total = Subtotal - Descuento global.
+            let subtotalConIva = 0;
             let totalItems = 0;
 
             items.forEach(item => {
-                subtotal += item.precio_unitario * item.cantidad;
+                subtotalConIva += item.precio_unitario * item.cantidad;
                 totalItems += item.cantidad;
             });
 
             const descGlobalInput = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
             const descGlobalTipo = document.getElementById('descuentoGlobalTipo').value;
-            let descuentoGlobal = descGlobalTipo === '%' ? subtotal * (descGlobalInput / 100) : descGlobalInput;
+            const descuentoGlobal = descGlobalTipo === '%' ? subtotalConIva * (descGlobalInput / 100) : descGlobalInput;
 
-            const baseIva = subtotal - descuentoGlobal;
-            const iva = ivaPorcentaje > 0 ? baseIva * (ivaPorcentaje / 100) : 0;
-            const total = baseIva + iva;
+            const totalConIva = subtotalConIva - descuentoGlobal;
+            const factor = 1 + ivaPorcentaje / 100;
+            const baseGravable = ivaPorcentaje > 0 ? totalConIva / factor : totalConIva;
+            const iva = totalConIva - baseGravable;
 
-            document.getElementById('subtotalDisplay').textContent = '$' + subtotal.toFixed(2);
-            document.getElementById('totalDisplay').textContent = '$' + total.toFixed(2);
+            document.getElementById('subtotalDisplay').textContent = '$' + subtotalConIva.toFixed(2);
+            document.getElementById('totalDisplay').textContent = '$' + totalConIva.toFixed(2);
             document.getElementById('itemsCountDisplay').textContent = `${totalItems} producto${totalItems !== 1 ? 's' : ''}`;
 
             if (document.getElementById('ivaDisplay')) {
@@ -1032,15 +1036,24 @@
             const subtotal = items.reduce((s, i) => s + (i.precio_unitario * i.cantidad), 0);
             const descuentoGlobal = descGlobalTipo === '%' ? subtotal * (descGlobalInput / 100) : descGlobalInput;
 
+            // IVA descompuesto del precio con IVA: 0.19 / 1.19 ≈ 0.1597
+            const ivaFactor = ivaPorcentaje > 0 ? (ivaPorcentaje / (100 + ivaPorcentaje)) : 0;
+
             const datos = {
-                items: items.map(i => ({
-                    producto_id: i.producto_id,
-                    variante_producto_id: i.variante_producto_id,
-                    cantidad: i.cantidad,
-                    precio_unitario: i.precio_unitario,
-                    precio_original: i.precio_original,
-                    iva: i.iva,
-                })),
+                items: items.map(i => {
+                    const lineaConIva = i.precio_unitario * i.cantidad;
+                    const ivaItem = ivaPorcentaje > 0
+                        ? Math.round(lineaConIva * ivaFactor * 100) / 100
+                        : 0;
+                    return {
+                        producto_id: i.producto_id,
+                        variante_producto_id: i.variante_producto_id,
+                        cantidad: i.cantidad,
+                        precio_unitario: i.precio_unitario,
+                        precio_original: i.precio_original,
+                        iva: ivaItem,
+                    };
+                }),
                 cliente_id: clienteSeleccionado ? clienteSeleccionado.id : null,
                 nombre_cliente: clienteSeleccionado ? clienteSeleccionado.nombre : 'Consumidor Final',
                 lista_precio_id: document.getElementById('listaPrecio').value,

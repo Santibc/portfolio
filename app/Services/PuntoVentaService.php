@@ -8,6 +8,7 @@ use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\Ubicacion;
+use App\Models\ConfiguracionPdv;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -221,24 +222,25 @@ class PuntoVentaService
      */
     public function calcularTotales(array $items, float $descuentoGlobal = 0): array
     {
-        $subtotal = 0;
-        $ivaTotal = 0;
+        // Los precios del catálogo YA incluyen IVA. Descomponer del total con IVA.
+        $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
+        $ivaFactor = $ivaPorcentaje > 0 ? ($ivaPorcentaje / (100 + $ivaPorcentaje)) : 0;
 
+        $subtotalConIva = 0;
         foreach ($items as $item) {
-            $precioItem = ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento'] ?? 0);
-            $subtotal += $precioItem;
-            // IVA del item si aplica (por ahora 0)
-            $ivaTotal += $item['iva'] ?? 0;
+            $lineaConIva = ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento'] ?? 0);
+            $subtotalConIva += $lineaConIva;
         }
 
-        $subtotalConDescuento = $subtotal - $descuentoGlobal;
-        $total = $subtotalConDescuento + $ivaTotal;
+        $totalConIva = $subtotalConIva - $descuentoGlobal;
+        $ivaTotal = $ivaPorcentaje > 0 ? round($totalConIva * $ivaFactor, 2) : 0;
+        $baseGravable = round($totalConIva - $ivaTotal, 2);
 
         return [
-            'subtotal' => round($subtotal, 2),
+            'subtotal' => $baseGravable,            // base gravable (sin IVA)
             'descuento' => round($descuentoGlobal, 2),
-            'iva' => round($ivaTotal, 2),
-            'total' => round($total, 2),
+            'iva' => $ivaTotal,
+            'total' => round($totalConIva, 2),
         ];
     }
 
@@ -251,9 +253,14 @@ class PuntoVentaService
      */
     private function crearItemYDescontarStock(VentaPdv $venta, array $item): ItemVentaPdv
     {
-        $subtotalItem = ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento'] ?? 0);
-        $ivaItem = $item['iva'] ?? 0;
-        $totalItem = $subtotalItem + $ivaItem;
+        // Los precios YA incluyen IVA. Descomponer del precio con IVA usando iva_porcentaje.
+        $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
+        $ivaFactor = $ivaPorcentaje > 0 ? ($ivaPorcentaje / (100 + $ivaPorcentaje)) : 0;
+
+        $lineaConIvaNeto = ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento'] ?? 0);
+        $ivaItem = $ivaPorcentaje > 0 ? round($lineaConIvaNeto * $ivaFactor, 2) : 0;
+        $subtotalItem = round($lineaConIvaNeto - $ivaItem, 2); // base gravable de la línea
+        $totalItem = round($lineaConIvaNeto, 2);
 
         $itemVenta = ItemVentaPdv::create([
             'venta_pdv_id' => $venta->id,

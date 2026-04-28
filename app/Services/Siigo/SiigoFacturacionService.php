@@ -719,9 +719,13 @@ class SiigoFacturacionService
         }
 
         $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
+        $ivaTasa = self::SIIGO_IVA_PORCENTAJE / 100;
 
-        // Replicate SIIGO's calculation: base * qty, apply discount, then add IVA on top
-        $totalItems = 0;
+        // Replicar el algoritmo de SIIGO: base * qty, descuento, redondear IVA POR LÍNEA y sumar.
+        // SIIGO redondea iva_línea = round(base_subtotal * 0.19, 2). Si aquí solo multiplicamos
+        // por 1.19 sin redondear, los milicentavos se acumulan y SIIGO rechaza con
+        // invalid_total_payments en facturas con muchos ítems.
+        $totalItems = 0.0;
         foreach ($venta->items as $item) {
             $precioBase = $taxId
                 ? $this->calcularPrecioBase((float) $item->precio_unitario)
@@ -731,13 +735,17 @@ class SiigoFacturacionService
             $descPorcentaje = (float) ($item->descuento_porcentaje ?? 0);
             if ($descPorcentaje > 0) {
                 $itemSubtotal -= $itemSubtotal * ($descPorcentaje / 100);
+                $itemSubtotal = round($itemSubtotal, 2);
             }
 
             if ($taxId) {
-                $itemSubtotal *= (1 + self::SIIGO_IVA_PORCENTAJE / 100);
+                $iva = round($itemSubtotal * $ivaTasa, 2);
+                $itemTotal = round($itemSubtotal + $iva, 2);
+            } else {
+                $itemTotal = round($itemSubtotal, 2);
             }
 
-            $totalItems += $itemSubtotal;
+            $totalItems += $itemTotal;
         }
 
         return [
@@ -851,8 +859,9 @@ class SiigoFacturacionService
         }
 
         $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
+        $ivaTasa = self::SIIGO_IVA_PORCENTAJE / 100;
 
-        $totalItems = 0;
+        $totalItems = 0.0;
         foreach ($devolucion->items as $itemDev) {
             $precioBase = $taxId
                 ? $this->calcularPrecioBase((float) $itemDev->precio_unitario)
@@ -862,13 +871,17 @@ class SiigoFacturacionService
             $descPorcentaje = (float) ($itemDev->descuento_porcentaje ?? 0);
             if ($descPorcentaje > 0) {
                 $itemSubtotal -= $itemSubtotal * ($descPorcentaje / 100);
+                $itemSubtotal = round($itemSubtotal, 2);
             }
 
             if ($taxId) {
-                $itemSubtotal *= (1 + self::SIIGO_IVA_PORCENTAJE / 100);
+                $iva = round($itemSubtotal * $ivaTasa, 2);
+                $itemTotal = round($itemSubtotal + $iva, 2);
+            } else {
+                $itemTotal = round($itemSubtotal, 2);
             }
 
-            $totalItems += $itemSubtotal;
+            $totalItems += $itemTotal;
         }
 
         return [

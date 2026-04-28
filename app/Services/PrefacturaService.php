@@ -6,6 +6,7 @@ use App\Models\Prefactura;
 use App\Models\ItemPrefactura;
 use App\Models\SesionCaja;
 use App\Models\StockProducto;
+use App\Models\ConfiguracionPdv;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -27,14 +28,19 @@ class PrefacturaService
 
         DB::beginTransaction();
         try {
-            $subtotal = 0;
+            // Los precios YA incluyen IVA. Descomponer del total con IVA.
+            $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
+            $ivaFactor = $ivaPorcentaje > 0 ? ($ivaPorcentaje / (100 + $ivaPorcentaje)) : 0;
+
+            $subtotalConIva = 0;
             foreach ($items as $item) {
-                $subtotal += $item['precio_unitario'] * $item['cantidad'];
+                $subtotalConIva += $item['precio_unitario'] * $item['cantidad'];
             }
 
             $descuentoGlobal = $datos['descuento_global'] ?? 0;
-            $iva = $datos['iva'] ?? 0;
-            $total = $subtotal - $descuentoGlobal + $iva;
+            $totalConIva = $subtotalConIva - $descuentoGlobal;
+            $iva = $ivaPorcentaje > 0 ? round($totalConIva * $ivaFactor, 2) : 0;
+            $subtotal = round($totalConIva - $iva, 2); // base gravable
 
             $prefactura = Prefactura::create([
                 'numero_prefactura' => Prefactura::generarNumeroPrefactura(),
@@ -42,16 +48,21 @@ class PrefacturaService
                 'nombre_cliente' => $datos['nombre_cliente'] ?? null,
                 'lista_precio_id' => $datos['lista_precio_id'],
                 'ubicacion_id' => $datos['ubicacion_id'],
-                'subtotal' => round($subtotal, 2),
+                'subtotal' => $subtotal,
                 'descuento_global' => round($descuentoGlobal, 2),
-                'iva' => round($iva, 2),
-                'total' => round($total, 2),
+                'iva' => $iva,
+                'total' => round($totalConIva, 2),
                 'observaciones' => $datos['observaciones'] ?? null,
                 'usuario_creador_id' => $usuarioId,
                 'vendedora_prefactura' => $datos['vendedora_prefactura'] ?? null,
             ]);
 
             foreach ($items as $item) {
+                $descuentoValor = $item['descuento_valor'] ?? 0;
+                $lineaConIvaNeto = ($item['precio_unitario'] * $item['cantidad']) - $descuentoValor;
+                $ivaItem = $ivaPorcentaje > 0 ? round($lineaConIvaNeto * $ivaFactor, 2) : 0;
+                $subtotalItem = round($lineaConIvaNeto - $ivaItem, 2);
+
                 ItemPrefactura::create([
                     'prefactura_id' => $prefactura->id,
                     'producto_id' => $item['producto_id'],
@@ -60,10 +71,10 @@ class PrefacturaService
                     'precio_unitario' => $item['precio_unitario'],
                     'precio_original' => $item['precio_original'] ?? $item['precio_unitario'],
                     'descuento_porcentaje' => $item['descuento_porcentaje'] ?? 0,
-                    'descuento_valor' => $item['descuento_valor'] ?? 0,
-                    'subtotal' => ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento_valor'] ?? 0),
-                    'iva' => $item['iva'] ?? 0,
-                    'total' => ($item['precio_unitario'] * $item['cantidad']) - ($item['descuento_valor'] ?? 0) + ($item['iva'] ?? 0),
+                    'descuento_valor' => $descuentoValor,
+                    'subtotal' => $subtotalItem,
+                    'iva' => $ivaItem,
+                    'total' => round($lineaConIvaNeto, 2),
                     'observaciones' => $item['observaciones'] ?? null,
                 ]);
             }

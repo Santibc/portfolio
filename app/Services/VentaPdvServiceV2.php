@@ -41,18 +41,30 @@ class VentaPdvServiceV2
 
             $numeroVenta = VentaPdv::generarNumeroVenta($ubicacionId);
 
-            // Calcular totales de items
-            $subtotal = 0;
-            $ivaTotal = 0;
-            foreach ($items as $item) {
-                $precioItem = $item['precio_unitario'] * $item['cantidad'];
+            // Los precios del catálogo YA incluyen IVA. Descomponer iva por línea
+            // (factor = 0.19/1.19 con iva=19%) y recalcular totales en server-side
+            // sin confiar en el iva enviado por el cliente.
+            $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
+            $ivaFactor = $ivaPorcentaje > 0 ? ($ivaPorcentaje / (100 + $ivaPorcentaje)) : 0;
+
+            $subtotalConIva = 0;
+            foreach ($items as $idx => $item) {
+                $lineaConIva = $item['precio_unitario'] * $item['cantidad'];
                 $descuentoItem = $item['descuento_valor'] ?? ($item['descuento'] ?? 0);
-                $subtotal += $precioItem - $descuentoItem;
-                $ivaTotal += $item['iva'] ?? 0;
+                $lineaConIvaNeto = $lineaConIva - $descuentoItem;
+                $subtotalConIva += $lineaConIvaNeto;
+
+                // Sobrescribir iva por ítem para que crearItemYDescontarStock lo use
+                $items[$idx]['iva'] = $ivaPorcentaje > 0
+                    ? round($lineaConIvaNeto * $ivaFactor, 2)
+                    : 0;
             }
 
             $descuentoGlobal = $datosVenta['descuento_global'] ?? 0;
-            $total = $subtotal - $descuentoGlobal + $ivaTotal;
+            $totalConIva = $subtotalConIva - $descuentoGlobal;
+            $ivaTotal = $ivaPorcentaje > 0 ? round($totalConIva * $ivaFactor, 2) : 0;
+            $subtotal = round($totalConIva - $ivaTotal, 2); // base gravable sin IVA
+            $total = round($totalConIva, 2);
 
             $venta = VentaPdv::create([
                 'numero_venta' => $numeroVenta,
@@ -342,9 +354,11 @@ class VentaPdvServiceV2
     private function crearItemYDescontarStock(VentaPdv $venta, array $item): ItemVentaPdv
     {
         $descuentoValor = $item['descuento_valor'] ?? ($item['descuento'] ?? 0);
-        $subtotalItem = ($item['precio_unitario'] * $item['cantidad']) - $descuentoValor;
-        $ivaItem = $item['iva'] ?? 0;
-        $totalItem = $subtotalItem + $ivaItem;
+        $lineaConIvaNeto = ($item['precio_unitario'] * $item['cantidad']) - $descuentoValor;
+        // El iva ya viene recalculado desde crearVenta (descompuesto del precio con IVA)
+        $ivaItem = round((float) ($item['iva'] ?? 0), 2);
+        $subtotalItem = round($lineaConIvaNeto - $ivaItem, 2); // base gravable de la línea
+        $totalItem = round($lineaConIvaNeto, 2);
 
         $itemVenta = ItemVentaPdv::create([
             'venta_pdv_id' => $venta->id,
