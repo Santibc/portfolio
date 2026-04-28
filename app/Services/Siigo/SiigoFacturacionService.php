@@ -654,8 +654,7 @@ class SiigoFacturacionService
                 $itemData['discount'] = round($descuentoPorcentaje, 2);
             }
 
-            // Add tax if configured
-            if ($taxId && (float) $item->iva > 0) {
+            if ($taxId) {
                 $itemData['taxes'] = [['id' => (int) $taxId]];
             }
 
@@ -779,7 +778,7 @@ class SiigoFacturacionService
                 $itemData['discount'] = round($descuentoPorcentaje, 2);
             }
 
-            if ($taxId && (float) $itemDev->iva > 0) {
+            if ($taxId) {
                 $itemData['taxes'] = [['id' => (int) $taxId]];
             }
 
