@@ -12,6 +12,8 @@ use Exception;
 
 class SiigoFacturacionService
 {
+    private const SIIGO_IVA_PORCENTAJE = 19.0;
+
     private SiigoApiClient $api;
 
     public function __construct(SiigoApiClient $api)
@@ -599,9 +601,6 @@ class SiigoFacturacionService
                 'identification' => $customerIdentification,
                 'branch_office' => 0,
             ],
-            // Indica a SIIGO que los precios de los ítems ya incluyen IVA, para que
-            // calcule la base imponible y el valor del IVA a partir del precio total.
-            'tax_included' => true,
             'stamp' => ['send' => true],
             'mail' => ['send' => $sendEmail],
             'observations' => "Venta PdV #{$venta->numero_venta}",
@@ -610,6 +609,17 @@ class SiigoFacturacionService
         ];
 
         return $payload;
+    }
+
+    /**
+     * Convertir precio del catálogo (con IVA incluido) a base gravable redondeada.
+     * Los productos en SIIGO Nube están homologados sin IVA, así que SIIGO suma
+     * el 19% por encima del precio enviado. Por eso se divide entre 1.19 para
+     * que al recalcular el total coincida con el precio del catálogo.
+     */
+    private function calcularPrecioBase(float $precioConIva): float
+    {
+        return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 2);
     }
 
     /**
@@ -645,7 +655,9 @@ class SiigoFacturacionService
                 'code' => substr($code, 0, 50), // SIIGO code max length
                 'description' => substr($description, 0, 250),
                 'quantity' => (int) $item->cantidad,
-                'price' => round((float) $item->precio_unitario, 2),
+                'price' => $taxId
+                    ? $this->calcularPrecioBase((float) $item->precio_unitario)
+                    : round((float) $item->precio_unitario, 2),
             ];
 
             // Add discount if any
@@ -687,16 +699,26 @@ class SiigoFacturacionService
             throw new Exception('No se ha configurado el tipo de pago en SIIGO para el método: ' . ($venta->metodo_pago ?? 'desconocido'));
         }
 
-        // Calculate total from items (as SIIGO sees them) - includes item discounts but NOT global discount
+        $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
+
+        // Replicate SIIGO's calculation: base * qty, apply discount, then add IVA on top
         $totalItems = 0;
         foreach ($venta->items as $item) {
-            $itemTotal = ((float) $item->precio_unitario * (int) $item->cantidad);
+            $precioBase = $taxId
+                ? $this->calcularPrecioBase((float) $item->precio_unitario)
+                : round((float) $item->precio_unitario, 2);
+
+            $itemSubtotal = $precioBase * (int) $item->cantidad;
             $descPorcentaje = (float) ($item->descuento_porcentaje ?? 0);
             if ($descPorcentaje > 0) {
-                $itemTotal -= $itemTotal * ($descPorcentaje / 100);
+                $itemSubtotal -= $itemSubtotal * ($descPorcentaje / 100);
             }
-            // Add IVA if applicable
-            $totalItems += $itemTotal + (float) ($item->iva ?? 0);
+
+            if ($taxId) {
+                $itemSubtotal *= (1 + self::SIIGO_IVA_PORCENTAJE / 100);
+            }
+
+            $totalItems += $itemSubtotal;
         }
 
         return [
@@ -770,7 +792,9 @@ class SiigoFacturacionService
                 'code' => substr($code, 0, 50),
                 'description' => substr($description, 0, 250),
                 'quantity' => (int) $itemDev->cantidad_devuelta,
-                'price' => round((float) $itemDev->precio_unitario, 2),
+                'price' => $taxId
+                    ? $this->calcularPrecioBase((float) $itemDev->precio_unitario)
+                    : round((float) $itemDev->precio_unitario, 2),
             ];
 
             $descuentoPorcentaje = (float) ($itemDev->descuento_porcentaje ?? 0);
@@ -807,15 +831,25 @@ class SiigoFacturacionService
             throw new Exception('No se ha configurado el tipo de pago en SIIGO para el método: ' . ($venta->metodo_pago ?? 'desconocido'));
         }
 
-        // Calculate total from devolucion items
+        $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
+
         $totalItems = 0;
         foreach ($devolucion->items as $itemDev) {
-            $itemTotal = (float) $itemDev->precio_unitario * (int) $itemDev->cantidad_devuelta;
+            $precioBase = $taxId
+                ? $this->calcularPrecioBase((float) $itemDev->precio_unitario)
+                : round((float) $itemDev->precio_unitario, 2);
+
+            $itemSubtotal = $precioBase * (int) $itemDev->cantidad_devuelta;
             $descPorcentaje = (float) ($itemDev->descuento_porcentaje ?? 0);
             if ($descPorcentaje > 0) {
-                $itemTotal -= $itemTotal * ($descPorcentaje / 100);
+                $itemSubtotal -= $itemSubtotal * ($descPorcentaje / 100);
             }
-            $totalItems += $itemTotal + (float) ($itemDev->iva ?? 0);
+
+            if ($taxId) {
+                $itemSubtotal *= (1 + self::SIIGO_IVA_PORCENTAJE / 100);
+            }
+
+            $totalItems += $itemSubtotal;
         }
 
         return [
