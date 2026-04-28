@@ -638,12 +638,22 @@ class SiigoFacturacionService
                 $description .= ' - ' . ($variante->referencia_variante ?? $variante->sku ?? '');
             }
 
+            $tieneIva = $taxId && (float) $item->iva > 0;
+
             $itemData = [
                 'code' => substr($code, 0, 50), // SIIGO code max length
                 'description' => substr($description, 0, 250),
                 'quantity' => (int) $item->cantidad,
-                'price' => round((float) $item->precio_unitario, 2),
             ];
+
+            // Si el precio ya incluye IVA, usar taxed_price para que SIIGO
+            // calcule la base imponible y el valor del IVA automáticamente.
+            // Si no hay IVA, enviar price normal.
+            if ($tieneIva) {
+                $itemData['taxed_price'] = round((float) $item->precio_unitario, 2);
+            } else {
+                $itemData['price'] = round((float) $item->precio_unitario, 2);
+            }
 
             // Add discount if any
             $descuentoPorcentaje = (float) ($item->descuento_porcentaje ?? 0);
@@ -652,7 +662,7 @@ class SiigoFacturacionService
             }
 
             // Add tax if configured
-            if ($taxId && (float) $item->iva > 0) {
+            if ($tieneIva) {
                 $itemData['taxes'] = [['id' => (int) $taxId]];
             }
 
