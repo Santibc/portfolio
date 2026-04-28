@@ -293,18 +293,37 @@ class SiigoFacturacionService
             throw new Exception('Esta factura no se puede reintentar (máximo de intentos alcanzado o ya aprobada).');
         }
 
-        $payload = $factura->siigo_request;
-        if (!$payload) {
-            throw new Exception('No se encontró el payload original de la factura.');
-        }
+        if ($factura->tipo_documento === 'nota_credito') {
+            // Las notas crédito mantienen el payload original (referencian factura específica)
+            $payload = $factura->siigo_request;
+            if (!$payload) {
+                throw new Exception('No se encontró el payload original de la factura.');
+            }
+            $payload['date'] = now()->format('Y-m-d');
+            $endpoint = '/v1/credit-notes';
+        } else {
+            // Reconstruir payload desde la venta para aplicar la lógica actual de IVA/precios
+            $venta = $factura->ventaPdv;
+            if (!$venta) {
+                throw new Exception('No se pudo cargar la venta asociada a la factura.');
+            }
+            $venta->loadMissing(['items.producto', 'items.variante', 'cliente']);
 
-        // Update date to today
-        $payload['date'] = now()->format('Y-m-d');
+            $payloadOriginal = $factura->siigo_request ?? [];
+            $customerIdentification = $payloadOriginal['customer']['identification']
+                ?? $venta->cliente?->numero_identificacion
+                ?? $venta->cliente?->nit
+                ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
+            $sendEmail = (bool) ($payloadOriginal['mail']['send'] ?? false);
+            $emailDestino = $factura->email_destino;
+
+            $payload = $this->construirPayloadFactura($venta, $customerIdentification, $sendEmail, $emailDestino);
+            $endpoint = '/v1/invoices';
+        }
 
         try {
             $factura->incrementarIntento();
 
-            $endpoint = $factura->tipo_documento === 'nota_credito' ? '/v1/credit-notes' : '/v1/invoices';
             $response = $this->api->post($endpoint, $payload, $factura->id);
 
             $factura->update([
