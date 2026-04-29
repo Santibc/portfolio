@@ -55,7 +55,6 @@
                                     <table class="table table-sm">
                                         <tr><td class="text-muted">Base (apertura):</td><td class="fw-bold text-end">${{ number_format($resumen['monto_apertura'], 2) }}</td></tr>
                                         <tr><td class="text-muted">(+) Ventas efectivo:</td><td class="text-end">${{ number_format($resumen['ventas']['efectivo'], 2) }}</td></tr>
-                                        <tr><td class="text-muted">(-) Cambio entregado:</td><td class="text-end">-${{ number_format($resumen['ventas']['cambio_entregado'], 2) }}</td></tr>
                                         <tr><td class="text-muted">(-) Vales:</td><td class="text-end">-${{ number_format($resumen['vales']['total'], 2) }}</td></tr>
                                         <tr class="table-active"><td class="fw-bold">Efectivo esperado:</td><td class="fw-bold text-end fs-5">${{ number_format($resumen['monto_esperado_efectivo'], 2) }}</td></tr>
                                     </table>
