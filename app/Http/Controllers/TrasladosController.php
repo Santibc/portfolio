@@ -45,26 +45,47 @@ class TrasladosController extends Controller
                     $puedeAprobarRechazar = $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia']);
                     $btns = '<div class="d-flex gap-1">';
 
-                    if (!$esCajeroPrincipal) {
-                        // Edit button
-                        if (in_array($row->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO]) && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
-                            $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
-                        }
-                        // Send button
-                        if ($row->puedeEnviar() && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
-                            $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
-                        }
-                        // Cancel button
-                        if ($row->puedeCancelar() && $puedeAprobarRechazar) {
-                            $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelarTraslado(' . $row->id . ')" title="Cancelar"><i class="bi bi-x-lg"></i></button>';
-                        }
+                    $esCreador = $row->usuario_creador_id === $user->id;
+
+                    // Edit button - roles internos o el cajero sobre los traslados que él creó
+                    if (in_array($row->estado, [TrasladoStock::ESTADO_PENDIENTE, TrasladoStock::ESTADO_EN_TRANSITO])
+                        && ($user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])
+                            || ($esCajeroPrincipal && $esCreador))) {
+                        $btns .= '<a href="/traslados/form/' . $row->id . '" class="btn btn-sm btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
+                    }
+                    // Send button - roles internos o el cajero sobre los traslados que él creó
+                    if ($row->puedeEnviar()
+                        && ($user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])
+                            || ($esCajeroPrincipal && $esCreador))) {
+                        $btns .= '<button type="button" class="btn btn-sm btn-outline-primary" onclick="enviarTraslado(' . $row->id . ')" title="Enviar"><i class="bi bi-send"></i></button>';
+                    }
+                    // Cancel button - solo roles aprobadores
+                    if ($row->puedeCancelar() && $puedeAprobarRechazar && !$esCajeroPrincipal) {
+                        $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="cancelarTraslado(' . $row->id . ')" title="Cancelar"><i class="bi bi-x-lg"></i></button>';
                     }
 
-                    // Receive button - for non-cajero roles OR for cajero if destination matches their caja
-                    $puedeRecibir = $puedeAprobarRechazar;
-                    if ($esCajeroPrincipal && $ubicacionCajeroId && $row->ubicacion_destino_id == $ubicacionCajeroId) {
+                    // Receive button - depende del TIPO del destino
+                    $destinoTipo = optional($row->ubicacionDestino)->tipo;
+                    $destinoEsBodega = $destinoTipo === Ubicacion::TIPO_BODEGA;
+                    $destinoEsTienda = $destinoTipo === Ubicacion::TIPO_TIENDA;
+
+                    $puedeRecibir = false;
+                    if ($destinoEsBodega && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
                         $puedeRecibir = true;
                     }
+                    if ($destinoEsTienda && $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+                        $puedeRecibir = true;
+                    }
+                    // Cajero solo recibe en SU tienda (destino tienda); nunca en bodega
+                    if ($esCajeroPrincipal && $ubicacionCajeroId
+                        && $row->ubicacion_destino_id == $ubicacionCajeroId
+                        && $destinoEsTienda) {
+                        $puedeRecibir = true;
+                    }
+                    if ($esCajeroPrincipal && $destinoEsBodega) {
+                        $puedeRecibir = false;
+                    }
+
                     if ($row->puedeRecibir() && $puedeRecibir) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="recibirTraslado(' . $row->id . ')" title="Recibir"><i class="bi bi-check-lg"></i></button>';
                     }
@@ -126,8 +147,14 @@ class TrasladosController extends Controller
             }
 
             $ubicacionCajeroId = $caja->ubicacion_id;
-            $ubicacionesOrigen = Ubicacion::activas()->where('id', '!=', $ubicacionCajeroId)->get();
-            $ubicacionesDestino = Ubicacion::activas()->where('id', $ubicacionCajeroId)->get();
+
+            // Universo permitido: la tienda del cajero + todas las bodegas activas.
+            // La vista filtra dinámicamente el destino según el origen seleccionado.
+            $bodegas = Ubicacion::activas()->bodegas()->get();
+            $tiendaCajero = Ubicacion::activas()->where('id', $ubicacionCajeroId)->get();
+
+            $ubicacionesOrigen = $tiendaCajero->concat($bodegas)->unique('id')->values();
+            $ubicacionesDestino = $ubicacionesOrigen;
         } elseif (auth()->user()->hasRole('inventarios')) {
             $ubicacionesOrigen = Ubicacion::activas()->bodegas()->get();
             $ubicacionesDestino = Ubicacion::activas()->get();
@@ -732,13 +759,25 @@ class TrasladosController extends Controller
     public function recibir(Request $request, $id)
     {
         $user = auth()->user();
-        $traslado = TrasladoStock::with('items')->findOrFail($id);
+        $traslado = TrasladoStock::with(['items', 'ubicacionDestino'])->findOrFail($id);
+
+        $destino = $traslado->ubicacionDestino;
+        $destinoTipo = optional($destino)->tipo;
+        $destinoEsBodega = $destinoTipo === Ubicacion::TIPO_BODEGA;
+        $destinoEsTienda = $destinoTipo === Ubicacion::TIPO_TIENDA;
 
         $puedeRecibir = false;
-        if ($user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+
+        // Recepción en bodega: admin / auxiliar_administrativo / inventarios
+        if ($destinoEsBodega && $user->hasRole(['admin', 'auxiliar_administrativo', 'inventarios'])) {
             $puedeRecibir = true;
         }
-        if ($user->hasRole('cajero_principal')) {
+        // Recepción en tienda: admin / auxiliar_administrativo / centro_experiencia
+        if ($destinoEsTienda && $user->hasRole(['admin', 'auxiliar_administrativo', 'centro_experiencia'])) {
+            $puedeRecibir = true;
+        }
+        // Cajero solo puede recibir si la caja está en el destino y el destino es tienda
+        if ($user->hasRole('cajero_principal') && $destinoEsTienda) {
             $cajaEnDestino = Caja::where('ubicacion_id', $traslado->ubicacion_destino_id)
                 ->where('cajero_asignado_id', $user->id)
                 ->exists();

@@ -4,35 +4,26 @@
     <meta charset="utf-8">
     <title>Abrir Caja</title>
     <style>
-        @page { size: 72mm 8mm; margin: 0; padding: 0; }
+        @page { size: 72mm auto; margin: 0; padding: 0; }
         html, body {
             margin: 0;
             padding: 0;
-            width: 72mm;
-            height: 8mm;
             background: white;
             font-family: monospace;
         }
         .dot {
             font-size: 6px;
             color: #000;
-            text-align: center;
-            padding-top: 1mm;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
-<body>
-    <div class="dot">.</div>
-
-    <script>
+<body><span class="dot">.</span><script>
         window.addEventListener('load', function () {
-            setTimeout(function () {
-                window.print();
-            }, 200);
+            setTimeout(function () { window.print(); }, 200);
         });
-        window.addEventListener('afterprint', function () {
-            window.close();
-        });
-    </script>
-</body>
+        window.addEventListener('afterprint', function () { window.close(); });
+    </script></body>
 </html>

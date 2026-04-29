@@ -26,6 +26,7 @@
                   <option value="">Seleccione ubicaci&oacute;n de origen</option>
                   @foreach($ubicacionesOrigen as $ubicacion)
                     <option value="{{ $ubicacion->id }}"
+                      data-tipo="{{ $ubicacion->tipo }}"
                       {{ (old('ubicacion_origen_id', $traslado->ubicacion_origen_id)) == $ubicacion->id ? 'selected' : '' }}>
                       {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
                     </option>
@@ -34,23 +35,19 @@
               </div>
               <div class="col-md-6">
                 <label for="ubicacion_destino_id" class="block text-sm font-medium text-gray-700 mb-1">Ubicaci&oacute;n Destino *</label>
-                @if(isset($ubicacionCajeroId) && $ubicacionCajeroId)
-                  <select class="form-select bg-light" disabled>
-                    <option selected>{{ $ubicacionesDestino->first()->nombre }} ({{ $ubicacionesDestino->first()->tipo_nombre ?? $ubicacionesDestino->first()->tipo }})</option>
-                  </select>
-                  <input type="hidden" name="ubicacion_destino_id" id="ubicacion_destino_id" value="{{ $ubicacionCajeroId }}">
-                @else
-                  <select name="ubicacion_destino_id" id="ubicacion_destino_id"
-                    class="w-full px-3 py-2 border rounded-md" required>
-                    <option value="">Seleccione ubicaci&oacute;n de destino</option>
-                    @foreach($ubicacionesDestino as $ubicacion)
-                      <option value="{{ $ubicacion->id }}"
-                        {{ (old('ubicacion_destino_id', $traslado->ubicacion_destino_id)) == $ubicacion->id ? 'selected' : '' }}>
-                        {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
-                      </option>
-                    @endforeach
-                  </select>
-                @endif
+                <select name="ubicacion_destino_id" id="ubicacion_destino_id"
+                  class="w-full px-3 py-2 border rounded-md" required
+                  data-cajero-ubicacion="{{ $ubicacionCajeroId ?? '' }}">
+                  <option value="">Seleccione ubicaci&oacute;n de destino</option>
+                  @foreach($ubicacionesDestino as $ubicacion)
+                    <option value="{{ $ubicacion->id }}"
+                      data-tipo="{{ $ubicacion->tipo }}"
+                      data-es-cajero="{{ (isset($ubicacionCajeroId) && $ubicacion->id == $ubicacionCajeroId) ? '1' : '0' }}"
+                      {{ (old('ubicacion_destino_id', $traslado->ubicacion_destino_id)) == $ubicacion->id ? 'selected' : '' }}>
+                      {{ $ubicacion->nombre }} ({{ $ubicacion->tipo_nombre }})
+                    </option>
+                  @endforeach
+                </select>
               </div>
             </div>
 
@@ -142,6 +139,7 @@
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const ubicacionOrigenSelect = document.getElementById('ubicacion_origen_id');
+    const ubicacionDestinoSelect = document.getElementById('ubicacion_destino_id');
     const selProducto = document.getElementById('sel_producto');
     const selProductoBuscar = document.getElementById('sel_producto_buscar');
     const selVarianteContainer = document.getElementById('sel_variante_container');
@@ -156,6 +154,61 @@
     let itemIndex = 0;
     let productosData = [];
 
+    // Snapshot completo de las opciones de destino renderizadas por el servidor.
+    // Se usa para repoblar el selector cuando el cajero cambia de origen.
+    const ubicacionCajeroId = ubicacionDestinoSelect.dataset.cajeroUbicacion || '';
+    const esCajero = ubicacionCajeroId !== '';
+    const destinoOpcionesOriginales = Array.from(ubicacionDestinoSelect.querySelectorAll('option'))
+      .filter(o => o.value !== '')
+      .map(o => ({
+        value: o.value,
+        text: o.textContent,
+        tipo: o.dataset.tipo || '',
+        esCajero: o.dataset.esCajero === '1',
+      }));
+
+    function repoblarDestino(opciones, valorPreferido) {
+      const valorActual = valorPreferido || ubicacionDestinoSelect.value;
+      ubicacionDestinoSelect.innerHTML = '<option value="">Seleccione ubicaci&oacute;n de destino</option>';
+      opciones.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.value;
+        opt.textContent = o.text;
+        opt.dataset.tipo = o.tipo;
+        opt.dataset.esCajero = o.esCajero ? '1' : '0';
+        ubicacionDestinoSelect.appendChild(opt);
+      });
+      // Restaurar selección si sigue válida
+      if (valorActual && opciones.some(o => o.value === valorActual)) {
+        ubicacionDestinoSelect.value = valorActual;
+      } else if (opciones.length === 1) {
+        ubicacionDestinoSelect.value = opciones[0].value;
+      }
+    }
+
+    function ajustarDestinoSegunOrigen() {
+      if (!esCajero) return;
+
+      const opt = ubicacionOrigenSelect.options[ubicacionOrigenSelect.selectedIndex];
+      const tipoOrigen = opt ? (opt.dataset.tipo || '') : '';
+      const origenId = ubicacionOrigenSelect.value;
+
+      let opciones;
+      if (tipoOrigen === 'tienda') {
+        // Origen es la tienda del cajero -> destino solo bodegas
+        opciones = destinoOpcionesOriginales.filter(o => o.tipo === 'bodega');
+      } else if (tipoOrigen === 'bodega') {
+        // Origen es bodega -> destino solo la tienda del cajero
+        opciones = destinoOpcionesOriginales.filter(o => o.esCajero);
+      } else {
+        opciones = destinoOpcionesOriginales.slice();
+      }
+
+      // Excluir la ubicación de origen del destino
+      opciones = opciones.filter(o => o.value !== origenId);
+      repoblarDestino(opciones);
+    }
+
     // Cargar productos al cambiar ubicación de origen
     ubicacionOrigenSelect.addEventListener('change', async function() {
       const ubicacionId = this.value;
@@ -164,6 +217,8 @@
       selProductoBuscar.style.display = 'none';
       selProductoBuscar.value = '';
       resetAddRow();
+
+      ajustarDestinoSegunOrigen();
 
       if (!ubicacionId) {
         selProducto.innerHTML = '<option value="">Primero seleccione ubicaci&oacute;n de origen</option>';
