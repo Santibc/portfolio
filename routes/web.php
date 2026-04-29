@@ -428,6 +428,12 @@ Route::middleware(['auth', 'role:admin,cajero_principal,auxiliar_venta,vendedor'
         Route::get('/', [PdvDashboardController::class, 'index'])->name('dashboard');
     });
 
+// Abrir cajón monedero — Cajero Principal
+Route::middleware(['auth', 'role:admin,cajero_principal'])
+    ->prefix('pdv/caja')->name('pdv.caja.')->group(function () {
+        Route::get('/abrir-cajon', fn() => view('pdv.pdf.abrir-cajon'))->name('abrir-cajon');
+    });
+
 // Caja Configuration — Admin only
 Route::middleware(['auth', 'role:admin'])
     ->prefix('pdv/cajas')->name('pdv.cajas.')->group(function () {
@@ -450,7 +456,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::post('/cerrar', [SesionesCajaController::class, 'cerrar'])->name('cerrar');
         Route::get('/historial', [SesionesCajaController::class, 'historial'])->name('historial');
         Route::get('/{id}/resumen', [SesionesCajaController::class, 'resumen'])->name('resumen');
-        Route::get('/{id}/pdf', [SesionesCajaController::class, 'pdfCierre'])->name('pdf');
+        Route::get('/{id}/ticket-print', [SesionesCajaController::class, 'ticketPrintCierre'])->name('ticket-print');
     });
 
 // Ventas PdV — Cajero Principal + Admin
@@ -523,6 +529,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::get('/pendientes', [PrefacturasController::class, 'pendientes'])->name('pendientes');
         Route::post('/{id}/aceptar', [PrefacturasController::class, 'aceptar'])->name('aceptar');
         Route::post('/{id}/anular', [PrefacturasController::class, 'anular'])->name('anular');
+        Route::post('/{id}/actualizar', [PrefacturasController::class, 'actualizar'])->name('actualizar');
     });
 
 // Vales — Cajero Principal + Admin
@@ -532,6 +539,7 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::post('/guardar', [ValesCajaController::class, 'guardar'])->name('guardar');
         Route::post('/{id}/redimir', [ValesCajaController::class, 'redimir'])->name('redimir');
         Route::post('/{id}/anular', [ValesCajaController::class, 'anular'])->name('anular');
+        Route::get('/{id}/ticket-print', [ValesCajaController::class, 'ticketPrint'])->name('ticket-print');
         Route::get('/exportar-excel', [ValesCajaController::class, 'exportarExcel'])->name('exportar-excel');
         Route::get('/exportar-pdf', [ValesCajaController::class, 'exportarPdf'])->name('exportar-pdf');
     });

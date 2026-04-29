@@ -8,7 +8,6 @@ use App\Models\SesionCaja;
 use App\Services\CajaService;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class SesionesCajaController extends Controller
 {
@@ -117,7 +116,7 @@ class SesionesCajaController extends Controller
                 ->addColumn('action', function ($s) {
                     $btn = '<a href="' . route('pdv.sesiones.resumen', $s->id) . '" class="btn btn-sm btn-outline-info me-1" title="Ver resumen"><i class="bi bi-eye"></i></a>';
                     if ($s->estado === 'cerrada') {
-                        $btn .= '<a href="' . route('pdv.sesiones.pdf', $s->id) . '" class="btn btn-sm btn-outline-danger me-1" title="PDF"><i class="bi bi-file-pdf"></i></a>';
+                        $btn .= '<a href="' . route('pdv.sesiones.ticket-print', $s->id) . '" target="_blank" class="btn btn-sm btn-outline-primary me-1" title="Imprimir Ticket"><i class="bi bi-printer"></i></a>';
                     }
                     return $btn;
                 })
@@ -137,13 +136,11 @@ class SesionesCajaController extends Controller
         return view('pdv.sesiones.resumen', compact('sesion', 'resumen'));
     }
 
-    public function pdfCierre($id)
+    public function ticketPrintCierre($id)
     {
         $sesion = SesionCaja::with('caja.ubicacion', 'usuario', 'ventas.items', 'vales')->findOrFail($id);
         $resumen = $this->cajaService->calcularResumenCierre($id);
 
-        $pdf = Pdf::loadView('pdv.pdf.cierre-caja', compact('sesion', 'resumen'));
-
-        return $pdf->download("cierre-caja-{$sesion->caja->codigo}-{$sesion->cerrada_en->format('Y-m-d')}.pdf");
+        return view('pdv.pdf.cierre-ticket', compact('sesion', 'resumen'));
     }
 }

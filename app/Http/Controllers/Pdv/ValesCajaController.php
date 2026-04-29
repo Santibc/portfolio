@@ -43,7 +43,7 @@ class ValesCajaController extends Controller
                 ->addColumn('usuario_nombre', fn($v) => $v->usuario->name ?? '-')
                 ->addColumn('estado_badge', fn($v) => $v->estado_badge)
                 ->addColumn('action', function ($v) {
-                    $btn = '';
+                    $btn = '<a href="' . route('pdv.vales.ticket-print', $v->id) . '" target="_blank" class="btn btn-sm btn-outline-primary me-1" title="Imprimir Ticket"><i class="bi bi-printer"></i></a>';
                     if ($v->estado === 'pendiente') {
                         $btn .= '<button class="btn btn-sm btn-outline-success me-1" onclick="redimirVale(' . $v->id . ')" title="Redimir"><i class="bi bi-check-circle"></i></button>';
                         $btn .= '<button class="btn btn-sm btn-outline-danger" onclick="anularVale(' . $v->id . ')" title="Anular"><i class="bi bi-x-circle"></i></button>';
@@ -113,6 +113,13 @@ class ValesCajaController extends Controller
         $vale->anular(auth()->id(), $request->motivo_anulacion);
 
         return response()->json(['exito' => true, 'mensaje' => 'Vale anulado exitosamente']);
+    }
+
+    public function ticketPrint($id)
+    {
+        $vale = ValeCaja::with('caja.ubicacion', 'usuario', 'sesionCaja')->findOrFail($id);
+
+        return view('pdv.pdf.vale-ticket', compact('vale'));
     }
 
     public function exportarExcel(Request $request)

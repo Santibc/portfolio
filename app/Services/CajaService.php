@@ -83,12 +83,40 @@ class CajaService
         $ventasAnuladas = $sesion->ventas()->where('estado', 'anulada')->get();
         $valesActivos = $sesion->vales()->whereIn('estado', ['pendiente', 'redimido'])->get();
 
-        $totalEfectivo = $ventasCompletadas->sum('monto_efectivo');
-        $totalTransferencia = $ventasCompletadas->sum('monto_transferencia');
-        $totalCambio = $ventasCompletadas->sum('cambio');
-        $totalVales = $valesActivos->sum('monto');
+        $totalEfectivoNeto = $ventasCompletadas->sum(fn($v) => (float) ($v->monto_efectivo ?? 0) - (float) ($v->cambio ?? 0));
+        $totalTransferencia = (float) $ventasCompletadas->sum('monto_transferencia');
+        $totalVales = (float) $valesActivos->sum('monto');
 
-        $montoEsperadoEfectivo = $sesion->monto_apertura + $totalEfectivo - $totalCambio - $totalVales;
+        $montoEsperadoEfectivo = $sesion->monto_apertura + $totalEfectivoNeto - $totalVales;
+
+        $desglose = [
+            'efectivo'      => ['cantidad' => 0, 'total' => 0.0],
+            'transferencia' => ['cantidad' => 0, 'total' => 0.0],
+        ];
+
+        foreach ($ventasCompletadas as $venta) {
+            $efv = (float) ($venta->monto_efectivo ?? 0) - (float) ($venta->cambio ?? 0);
+            $trv = (float) ($venta->monto_transferencia ?? 0);
+
+            if ($venta->metodo_pago === 'mixto') {
+                if ($efv > 0) {
+                    $desglose['efectivo']['cantidad']++;
+                    $desglose['efectivo']['total'] += $efv;
+                }
+                if ($trv > 0) {
+                    $desglose['transferencia']['cantidad']++;
+                    $desglose['transferencia']['total'] += $trv;
+                }
+            } elseif ($venta->metodo_pago === 'efectivo') {
+                $desglose['efectivo']['cantidad']++;
+                $desglose['efectivo']['total'] += $efv > 0 ? $efv : (float) $venta->total;
+            } elseif ($venta->metodo_pago === 'transferencia') {
+                $desglose['transferencia']['cantidad']++;
+                $desglose['transferencia']['total'] += $trv > 0 ? $trv : (float) $venta->total;
+            }
+        }
+
+        $porMetodoPago = collect($desglose)->filter(fn($d) => $d['cantidad'] > 0);
 
         return [
             'sesion' => $sesion,
@@ -96,9 +124,8 @@ class CajaService
             'ventas' => [
                 'cantidad' => $ventasCompletadas->count(),
                 'total' => $ventasCompletadas->sum('total'),
-                'efectivo' => $totalEfectivo,
+                'efectivo' => $totalEfectivoNeto,
                 'transferencia' => $totalTransferencia,
-                'cambio_entregado' => $totalCambio,
             ],
             'anulaciones' => [
                 'cantidad' => $ventasAnuladas->count(),
@@ -109,10 +136,7 @@ class CajaService
                 'total' => $totalVales,
             ],
             'monto_esperado_efectivo' => round($montoEsperadoEfectivo, 2),
-            'por_metodo_pago' => $ventasCompletadas->groupBy('metodo_pago')->map(fn($g) => [
-                'cantidad' => $g->count(),
-                'total' => $g->sum('total'),
-            ]),
+            'por_metodo_pago' => $porMetodoPago,
             'por_tipo_transferencia' => $ventasCompletadas
                 ->whereNotNull('tipo_transferencia')
                 ->groupBy('tipo_transferencia')

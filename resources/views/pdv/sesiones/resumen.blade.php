@@ -8,8 +8,8 @@
             </h4>
             <div>
                 @if($sesion->estado === 'cerrada')
-                    <a href="{{ route('pdv.sesiones.pdf', $sesion->id) }}" class="btn btn-outline-danger me-2">
-                        <i class="bi bi-file-pdf me-1"></i>Descargar PDF
+                    <a href="{{ route('pdv.sesiones.ticket-print', $sesion->id) }}" target="_blank" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-printer me-1"></i>Imprimir Ticket
                     </a>
                 @endif
                 <a href="{{ route('pdv.sesiones.historial') }}" class="btn btn-outline-secondary">
@@ -101,7 +101,6 @@
                             <tbody>
                                 <tr><td class="ps-3">Base (apertura):</td><td class="text-end pe-3">${{ number_format($resumen['monto_apertura'], 2) }}</td></tr>
                                 <tr><td class="ps-3">(+) Ventas en efectivo:</td><td class="text-end pe-3">${{ number_format($resumen['ventas']['efectivo'], 2) }}</td></tr>
-                                <tr><td class="ps-3">(-) Cambio entregado:</td><td class="text-end pe-3 text-danger">-${{ number_format($resumen['ventas']['cambio_entregado'], 2) }}</td></tr>
                                 <tr><td class="ps-3">(-) Vales emitidos:</td><td class="text-end pe-3 text-danger">-${{ number_format($resumen['vales']['total'], 2) }}</td></tr>
                                 <tr class="table-active"><td class="ps-3 fw-bold">(=) Efectivo esperado:</td><td class="text-end pe-3 fw-bold">${{ number_format($resumen['monto_esperado_efectivo'], 2) }}</td></tr>
                                 @if($sesion->estado === 'cerrada')
@@ -141,7 +140,6 @@
                                         @switch($metodo)
                                             @case('efectivo') <i class="bi bi-cash text-success me-1"></i>Efectivo @break
                                             @case('transferencia') <i class="bi bi-bank text-info me-1"></i>Transferencia @break
-                                            @case('mixto') <i class="bi bi-arrow-left-right text-primary me-1"></i>Mixto @break
                                             @default {{ ucfirst($metodo) }}
                                         @endswitch
                                     </td>

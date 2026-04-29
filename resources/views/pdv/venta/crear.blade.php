@@ -310,6 +310,12 @@
                         <i class="bi bi-check-circle me-2"></i>Procesar Venta
                     @endif
                 </button>
+
+                @if(isset($prefactura) && $prefactura)
+                    <button id="btnGuardarPrefactura" class="btn btn-outline-primary btn-lg w-100 py-3 mt-2" onclick="guardarPrefactura()">
+                        <i class="bi bi-save me-2"></i>Guardar Prefactura
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -1153,6 +1159,71 @@
                 Swal.fire('Error', 'Error de conexión', 'error');
                 document.getElementById('btnProcesar').disabled = false;
                 document.getElementById('btnProcesar').innerHTML = '<i class="bi bi-check-circle me-2"></i>Procesar Venta';
+            });
+        }
+
+        function guardarPrefactura() {
+            if (!window.prefacturaId) return;
+            if (items.length === 0) {
+                Swal.fire('Error', 'Debe haber al menos un producto', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('btnGuardarPrefactura');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+
+            const descGlobalInput = parseFloat(document.getElementById('descuentoGlobal').value) || 0;
+            const descGlobalTipo = document.getElementById('descuentoGlobalTipo').value;
+            const subtotal = items.reduce((s, i) => s + (i.precio_unitario * i.cantidad), 0);
+            const descuentoGlobal = descGlobalTipo === '%' ? subtotal * (descGlobalInput / 100) : descGlobalInput;
+
+            const itemsPayload = items.map(i => ({
+                producto_id: i.producto_id,
+                variante_producto_id: i.variante_producto_id,
+                cantidad: i.cantidad,
+                precio_unitario: i.precio_unitario,
+                precio_original: i.precio_original,
+                descuento_porcentaje: i.descuento_porcentaje || 0,
+                descuento_valor: i.descuento_valor || 0,
+            }));
+
+            const formData = new FormData();
+            formData.append('items', JSON.stringify(itemsPayload));
+            formData.append('cliente_id', clienteSeleccionado ? clienteSeleccionado.id : '');
+            formData.append('nombre_cliente', clienteSeleccionado ? clienteSeleccionado.nombre : 'Consumidor Final');
+            formData.append('lista_precio_id', document.getElementById('listaPrecio').value);
+            formData.append('descuento_global', descuentoGlobal);
+            formData.append('observaciones', document.getElementById('notasVenta').value || '');
+
+            fetch('{{ url("pdv/prefacturas") }}/' + window.prefacturaId + '/actualizar', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: formData,
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.exito) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Prefactura guardada',
+                        text: result.mensaje,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        window.location.href = '{{ route("pdv.prefacturas.pendientes") }}';
+                    });
+                } else {
+                    Swal.fire('Error', result.mensaje || 'No se pudo guardar la prefactura', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', 'Error de conexión', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             });
         }
 

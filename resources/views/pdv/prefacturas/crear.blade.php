@@ -226,9 +226,13 @@
                             ? '<div class="p-3 text-center text-muted">No encontrado</div>'
                             : filas.map(f => {
                                 const subRef = f.codigo_barras ? `${f.referencia} · <code>${f.codigo_barras}</code>` : f.referencia;
-                                return `<div class="search-result-item p-2 border-bottom" onclick='addProduct(${JSON.stringify(f).replace(/'/g,"&#39;")})'>
-                                    <strong>${f.nombre_completo}</strong> <small class="text-muted d-block">${subRef}</small>
-                                    <span class="float-end fw-bold">$${parseFloat(f.precio||0).toFixed(2)}</span></div>`;
+                                return `<div class="search-result-item p-2 border-bottom d-flex justify-content-between align-items-center gap-2" onclick='addProduct(${JSON.stringify(f).replace(/'/g,"&#39;")})'>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <strong>${f.nombre_completo}</strong>
+                                        <small class="text-muted d-block">${subRef}</small>
+                                    </div>
+                                    <span class="fw-bold text-nowrap">$${parseFloat(f.precio||0).toFixed(2)}</span>
+                                </div>`;
                             }).join('');
                         div.classList.remove('d-none');
                     });

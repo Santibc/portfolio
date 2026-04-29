@@ -394,6 +394,14 @@
                 <i class="bi bi-list"></i>
             </button>
             <div class="d-flex align-items-center gap-2 header-user-info">
+                @if(Auth::user() && Auth::user()->hasRole('cajero_principal'))
+                    <a href="{{ route('pdv.caja.abrir-cajon') }}" target="_blank"
+                       class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 me-2"
+                       title="Abrir cajón monedero">
+                        <i class="bi bi-cash-stack"></i>
+                        <span class="d-none d-md-inline">Abrir Caja</span>
+                    </a>
+                @endif
                 <div class="text-end">
                     <div class="fw-semibold">{{ Auth::user()->name }}</div>
                     <div class="text-muted small">{{ Auth::user()->email }}</div>

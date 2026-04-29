@@ -31,7 +31,7 @@
                                 <h6 class="fw-bold mb-0">{{ $pf->numero_prefactura }}</h6>
                                 <small class="text-muted">{{ $pf->created_at->diffForHumans() }}</small>
                             </div>
-                            <p class="mb-1"><i class="bi bi-person me-1"></i>{{ $pf->nombre_cliente_display }}</p>
+                            <p class="mb-1"><i class="bi bi-person me-1"></i>{{ $pf->cliente->nombre ?? $pf->nombre_cliente ?? 'Sin cliente' }}</p>
                             <p class="mb-1"><i class="bi bi-person-badge me-1"></i>Creó: {{ $pf->usuarioCreador->name ?? '-' }}</p>
                             @if($pf->vendedora_prefactura)
                                 <p class="mb-1"><i class="bi bi-person-heart me-1"></i>Vendedora: <strong>{{ $pf->vendedora_prefactura }}</strong></p>

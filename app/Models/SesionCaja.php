@@ -88,14 +88,13 @@ class SesionCaja extends Model
 
         $this->total_ventas = $ventas->sum('total');
         $this->cantidad_ventas = $ventas->count();
-        $this->total_ventas_efectivo = $ventas->sum('monto_efectivo');
+        // total_ventas_efectivo se almacena como neto (recibido - cambio entregado)
+        $this->total_ventas_efectivo = $ventas->sum(fn($v) => (float) ($v->monto_efectivo ?? 0) - (float) ($v->cambio ?? 0));
         $this->total_ventas_transferencia = $ventas->sum('monto_transferencia');
         $this->total_anulaciones = $this->ventas()->anuladas()->sum('total');
         $this->total_vales = $this->vales()->whereIn('estado', ['pendiente', 'redimido'])->sum('monto');
 
-        // Expected cash = base + cash received - change given - vouchers
-        $totalCambio = $ventas->sum('cambio') ?? 0;
-        $this->monto_esperado_efectivo = $this->monto_apertura + $this->total_ventas_efectivo - $totalCambio - $this->total_vales;
+        $this->monto_esperado_efectivo = $this->monto_apertura + $this->total_ventas_efectivo - $this->total_vales;
 
         $this->save();
 

@@ -176,6 +176,82 @@ class PrefacturaService
         }
     }
 
+    public function actualizar(int $prefacturaId, array $datos, array $items): array
+    {
+        if (empty($items)) {
+            return ['exito' => false, 'mensaje' => 'No se puede guardar una prefactura sin productos'];
+        }
+
+        $prefactura = Prefactura::findOrFail($prefacturaId);
+
+        if ($prefactura->estado !== 'pendiente') {
+            return ['exito' => false, 'mensaje' => 'Solo se pueden modificar prefacturas pendientes'];
+        }
+
+        DB::beginTransaction();
+        try {
+            $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
+            $ivaFactor = $ivaPorcentaje > 0 ? ($ivaPorcentaje / (100 + $ivaPorcentaje)) : 0;
+
+            $subtotalConIva = 0;
+            foreach ($items as $item) {
+                $subtotalConIva += $item['precio_unitario'] * $item['cantidad'];
+            }
+
+            $descuentoGlobal = $datos['descuento_global'] ?? 0;
+            $totalConIva = $subtotalConIva - $descuentoGlobal;
+            $iva = $ivaPorcentaje > 0 ? round($totalConIva * $ivaFactor, 2) : 0;
+            $subtotal = round($totalConIva - $iva, 2);
+
+            $prefactura->update([
+                'cliente_id' => $datos['cliente_id'] ?? null,
+                'nombre_cliente' => $datos['nombre_cliente'] ?? null,
+                'lista_precio_id' => $datos['lista_precio_id'],
+                'subtotal' => $subtotal,
+                'descuento_global' => round($descuentoGlobal, 2),
+                'iva' => $iva,
+                'total' => round($totalConIva, 2),
+                'observaciones' => $datos['observaciones'] ?? null,
+            ]);
+
+            $prefactura->items()->delete();
+
+            foreach ($items as $item) {
+                $descuentoValor = $item['descuento_valor'] ?? 0;
+                $lineaConIvaNeto = ($item['precio_unitario'] * $item['cantidad']) - $descuentoValor;
+                $ivaItem = $ivaPorcentaje > 0 ? round($lineaConIvaNeto * $ivaFactor, 2) : 0;
+                $subtotalItem = round($lineaConIvaNeto - $ivaItem, 2);
+
+                ItemPrefactura::create([
+                    'prefactura_id' => $prefactura->id,
+                    'producto_id' => $item['producto_id'],
+                    'variante_producto_id' => $item['variante_producto_id'] ?? null,
+                    'cantidad' => $item['cantidad'],
+                    'precio_unitario' => $item['precio_unitario'],
+                    'precio_original' => $item['precio_original'] ?? $item['precio_unitario'],
+                    'descuento_porcentaje' => $item['descuento_porcentaje'] ?? 0,
+                    'descuento_valor' => $descuentoValor,
+                    'subtotal' => $subtotalItem,
+                    'iva' => $ivaItem,
+                    'total' => round($lineaConIvaNeto, 2),
+                    'observaciones' => $item['observaciones'] ?? null,
+                ]);
+            }
+
+            DB::commit();
+
+            return [
+                'exito' => true,
+                'prefactura' => $prefactura->fresh()->load('items.producto', 'items.variante'),
+                'mensaje' => "Prefactura {$prefactura->numero_prefactura} guardada exitosamente",
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error al actualizar prefactura: " . $e->getMessage());
+            return ['exito' => false, 'mensaje' => 'Error al guardar la prefactura: ' . $e->getMessage()];
+        }
+    }
+
     public function anular(int $prefacturaId, int $usuarioId, string $motivo): array
     {
         $prefactura = Prefactura::findOrFail($prefacturaId);

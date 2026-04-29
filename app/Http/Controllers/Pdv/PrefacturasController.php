@@ -186,6 +186,32 @@ class PrefacturasController extends Controller
         return response()->json($resultado, $resultado['exito'] ? 200 : 422);
     }
 
+    public function actualizar(Request $request, $id)
+    {
+        $items = $request->input('items');
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+            $request->merge(['items' => $items]);
+        }
+
+        $request->validate([
+            'lista_precio_id' => 'required|exists:listas_precios,id',
+            'items' => 'required|array|min:1',
+            'items.*.producto_id' => 'required|exists:productos,id',
+            'items.*.cantidad' => 'required|integer|min:1',
+            'items.*.precio_unitario' => 'required|numeric|min:0',
+        ]);
+
+        $datos = $request->only([
+            'cliente_id', 'nombre_cliente', 'lista_precio_id',
+            'descuento_global', 'observaciones',
+        ]);
+
+        $resultado = $this->prefacturaService->actualizar($id, $datos, $request->items);
+
+        return response()->json($resultado, $resultado['exito'] ? 200 : 422);
+    }
+
     public function detalle($id)
     {
         $prefactura = Prefactura::with('items.producto', 'items.variante', 'usuarioCreador', 'usuarioCajero', 'cliente')
