@@ -114,13 +114,6 @@
             </a>
         </div>
 
-        <div class="nav-item {{ request()->routeIs('operario.buscar*') ? 'active' : '' }}">
-            <a href="{{ route('operario.buscar') }}" class="nav-link">
-                <i class="bi bi-search"></i>
-                <span>Buscar Orden</span>
-            </a>
-        </div>
-
         <div class="nav-item {{ request()->routeIs('operario.complementar') ? 'active' : '' }}">
             <a href="{{ route('operario.complementar') }}" class="nav-link">
                 <i class="bi bi-plus-circle"></i>
@@ -144,6 +137,16 @@
             <a href="{{ route('recepcion.ordenes.index') }}" class="nav-link">
                 <i class="bi bi-search"></i>
                 <span>Buscar Ordenes</span>
+            </a>
+        </div>
+
+        {{-- SECCION CATALOGOS (solo Clientes para Contabilidad) --}}
+        <div class="nav-section-title">Catalogos</div>
+
+        <div class="nav-item {{ request()->routeIs('recepcion.clientes.*') ? 'active' : '' }}">
+            <a href="{{ route('recepcion.clientes.index') }}" class="nav-link">
+                <i class="bi bi-person-lines-fill"></i>
+                <span>Clientes</span>
             </a>
         </div>
     @endrole

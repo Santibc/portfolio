@@ -1127,7 +1127,7 @@ function agregarFilaPago(opts) {
         + (function () {
             var tipos = (window.TIPOS_PAGO && window.TIPOS_PAGO.length) ? window.TIPOS_PAGO : [{codigo:'efectivo', nombre:'Efectivo'}];
             return tipos.map(function (t) {
-                return '<option value="' + t.codigo + '">' + t.nombre + '</option>';
+                return '<option value="' + t.codigo + '">' + t.codigo + ' - ' + t.nombre + '</option>';
             }).join('');
           })()
         + '    </select>'
@@ -1312,6 +1312,16 @@ function guardarOrden(isAutoSave) {
     // Si no tiene cliente y es autosave, no guardar
     if (!data.cliente_id && isAutoSave) return;
 
+    // Validar sobrepago en guardado manual; en autosave abortar silenciosamente
+    var sobrepago = validarSobrepagoWizard();
+    if (!sobrepago.ok) {
+        if (!isAutoSave) {
+            Swal.fire('Error', sobrepago.mensaje, 'error');
+            irASeccion(5);
+        }
+        return;
+    }
+
     // Deshabilitar botones
     if (!isAutoSave) {
         $('#btnGuardar').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Guardando...');
@@ -1454,7 +1464,42 @@ function validarParaGenerar(data) {
     }
     if (!data.fecha_entrega) errores.push('Debe indicar la fecha de entrega.');
     if (!data.hora_entrega) errores.push('Debe indicar la hora de entrega.');
+
+    var sobrepago = validarSobrepagoWizard();
+    if (!sobrepago.ok) errores.push(sobrepago.mensaje);
+
     return errores;
+}
+
+/**
+ * Valida que la suma de abonos del wizard no exceda el total calculado de la orden.
+ * Devuelve { ok: true } o { ok: false, mensaje: '...' }.
+ */
+function validarSobrepagoWizard() {
+    var totalAbonado = 0;
+    $('#pagosContainer .pago-monto').each(function() {
+        totalAbonado += parseFloat($(this).val()) || 0;
+    });
+
+    var totalGeneral = 0;
+    $('#tbodyItems tr').each(function() {
+        var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
+        var precio = parseFloat($(this).find('.item-precio').val()) || 0;
+        var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
+        var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
+        var base = cantidad * precio;
+        var sub = base - (base * descPct / 100);
+        totalGeneral += sub + (sub * iva / 100);
+    });
+
+    if (totalAbonado > totalGeneral + 0.005) {
+        return {
+            ok: false,
+            mensaje: 'La suma de abonos ($' + totalAbonado.toLocaleString('es-CO') +
+                     ') excede el total de la orden ($' + totalGeneral.toLocaleString('es-CO') + ').',
+        };
+    }
+    return { ok: true };
 }
 
 // ==========================================

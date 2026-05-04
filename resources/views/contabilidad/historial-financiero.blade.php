@@ -2,6 +2,25 @@
 
 @section('title', 'Historial Financiero')
 
+@push('styles')
+<style>
+    [data-theme="dark"] #historialFinancieroTable tfoot tr.table-light,
+    [data-theme="dark"] #historialFinancieroTable tfoot tr.table-light > td {
+        background-color: #2a2a2a !important;
+        color: #e5e7eb !important;
+        border-color: #3a3a3a !important;
+        --bs-table-bg: #2a2a2a;
+        --bs-table-color: #e5e7eb;
+    }
+    [data-theme="dark"] #historialFinancieroTable tfoot tr.table-light .text-dark {
+        color: #f3f4f6 !important;
+    }
+    [data-theme="dark"] #historialFinancieroTable tfoot tr.table-light .text-muted {
+        color: #9ca3af !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Historial Financiero" description="Resumen financiero de todas las ordenes">

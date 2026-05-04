@@ -140,11 +140,13 @@ class ContabilidadController extends Controller
                     $verUrl = route('contabilidad.ordenes.show', $o);
                     $html = '<div class="action-buttons justify-content-end">';
                     $html .= '<a href="' . $verUrl . '" class="action-btn view" title="Ver Orden" data-tooltip="Ver"><i class="bi bi-eye"></i></a>';
+                    $disponible = $o->montoDisponibleNuevoPago();
                     $html .= '<button type="button" class="action-btn edit btn-agregar-pago" '
                         . 'data-orden-id="' . $o->id . '" '
                         . 'data-orden-numero="' . ($o->numero_orden ?? 'ID:' . $o->id) . '" '
                         . 'data-orden-cliente="' . ($o->cliente->nombre ?? '-') . '" '
                         . 'data-orden-saldo="' . number_format($o->saldo, 0, ',', '.') . '" '
+                        . 'data-orden-saldo-num="' . $disponible . '" '
                         . 'title="Agregar Pago" data-tooltip="Agregar Pago"><i class="bi bi-plus-circle"></i></button>';
                     $html .= '</div>';
                     return $html;
@@ -204,11 +206,14 @@ class ContabilidadController extends Controller
                     return $p->registradoPorUsuario->name ?? '-';
                 })
                 ->addColumn('acciones', function ($p) {
+                    $mapaPagos = TipoPago::mapaBadges();
+                    $etiquetaMetodo = $mapaPagos[$p->metodo_pago]['etiqueta']
+                        ?? ($mapaPagos[$p->metodo_pago]['nombre'] ?? ucfirst($p->metodo_pago));
                     $html = '<div class="action-buttons justify-content-end">';
                     $html .= '<button type="button" class="action-btn edit btn-aprobar-pago" '
                         . 'data-pago-id="' . $p->id . '" '
                         . 'data-pago-monto="' . number_format($p->monto, 0, ',', '.') . '" '
-                        . 'data-pago-metodo="' . ucfirst($p->metodo_pago) . '" '
+                        . 'data-pago-metodo="' . e($etiquetaMetodo) . '" '
                         . 'data-orden-numero="' . ($p->orden->numero_orden ?? '-') . '" '
                         . 'title="Aprobar" data-tooltip="Aprobar" style="width:36px;height:36px">'
                         . '<i class="bi bi-check-lg"></i></button>';
@@ -262,6 +267,15 @@ class ContabilidadController extends Controller
             return response()->json(['success' => false, 'message' => 'Este pago ya esta aprobado.'], 422);
         }
 
+        $disponible = $pago->orden->montoDisponibleAprobacion($pago->id);
+        if ((float) $pago->monto > $disponible + 0.005) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede aprobar: el monto del pago ($' . number_format($pago->monto, 0, ',', '.') .
+                             ') excede el saldo disponible de la orden ($' . number_format($disponible, 0, ',', '.') . '). Considere rechazarlo.',
+            ], 422);
+        }
+
         $valoresOriginales = $pago->getOriginal();
         $pago->update([
             'aprobado' => true,
@@ -304,12 +318,37 @@ class ContabilidadController extends Controller
             'pago_ids.*' => 'required|integer|exists:pagos,id',
         ]);
 
-        $pagos = Pago::where('aprobado', false)
+        $pagos = Pago::with('orden')
+            ->where('aprobado', false)
             ->whereIn('id', $request->input('pago_ids'))
             ->get();
 
         if ($pagos->isEmpty()) {
             return response()->json(['success' => false, 'message' => 'No hay pagos pendientes para aprobar.'], 422);
+        }
+
+        // Validar que la suma del lote por orden no exceda el saldo disponible.
+        // Si alguna orden quedaria con saldo negativo, se rechaza el lote completo.
+        $errores = [];
+        foreach ($pagos->groupBy('orden_id') as $ordenId => $pagosOrden) {
+            $orden = $pagosOrden->first()->orden;
+            if (!$orden) {
+                continue;
+            }
+            $sumaLote = (float) $pagosOrden->sum('monto');
+            $aprobadosActuales = (float) $orden->pagos()->where('aprobado', true)->sum('monto');
+            if (($aprobadosActuales + $sumaLote) > (float) $orden->total + 0.005) {
+                $disponible = max(0, (float) $orden->total - $aprobadosActuales);
+                $errores[] = 'Orden ' . ($orden->numero_orden ?? 'ID:' . $ordenId) .
+                             ': el lote suma $' . number_format($sumaLote, 0, ',', '.') .
+                             ' pero solo hay $' . number_format($disponible, 0, ',', '.') . ' disponibles.';
+            }
+        }
+        if (!empty($errores)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede aprobar el lote: ' . implode(' | ', $errores),
+            ], 422);
         }
 
         $aprobados = 0;
@@ -382,6 +421,14 @@ class ContabilidadController extends Controller
             'metodo_pago' => ['required', \Illuminate\Validation\Rule::in($codigosValidos)],
             'referencia_pago' => 'nullable|string|max:255',
         ]);
+
+        $disponible = $orden->montoDisponibleNuevoPago();
+        if ((float) $request->monto > $disponible + 0.005) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El monto excede el saldo disponible. Maximo: $' . number_format($disponible, 0, ',', '.'),
+            ], 422);
+        }
 
         $user = auth()->user();
 
@@ -599,6 +646,7 @@ class ContabilidadController extends Controller
                     'registrado_por' => $p->registradoPorUsuario->name ?? '-',
                     'aprobado' => $p->aprobado,
                     'aprobado_por' => $p->aprobadoPorUsuario->name ?? null,
+                    'fecha_aprobacion' => $p->aprobado && $p->updated_at ? $p->updated_at->format('d/m/Y H:i') : null,
                     'rechazado' => $p->trashed(),
                     'rechazado_por' => $p->rechazadoPorUsuario->name ?? null,
                     'motivo_rechazo' => $p->motivo_rechazo,
@@ -847,8 +895,9 @@ class ContabilidadController extends Controller
     protected function badgeMetodoPago(string $metodo): string
     {
         $mapa = TipoPago::mapaBadges();
-        $cfg = $mapa[$metodo] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($metodo)];
+        $cfg = $mapa[$metodo] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($metodo), 'etiqueta' => ucfirst($metodo)];
         $bgClass = $cfg['color'] === 'purple' ? 'bg-purple' : 'bg-' . $cfg['color'];
-        return '<span class="badge ' . $bgClass . ' bg-opacity-10 text-dark border"><i class="bi ' . $cfg['icono'] . ' me-1"></i>' . e($cfg['nombre']) . '</span>';
+        $texto = $cfg['etiqueta'] ?? $cfg['nombre'];
+        return '<span class="badge ' . $bgClass . ' bg-opacity-10 text-dark border"><i class="bi ' . $cfg['icono'] . ' me-1"></i>' . e($texto) . '</span>';
     }
 }

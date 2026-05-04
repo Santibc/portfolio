@@ -178,6 +178,28 @@ class ConfiguracionController extends Controller
         return response()->json(['success' => true, 'message' => 'Tipo de pago reactivado.']);
     }
 
+    /**
+     * Elimina (soft delete) un tipo de pago. No se borra de la BD: se marca
+     * deleted_at para que desaparezca de la tabla y de los selects, pero se
+     * conserva para que las ordenes historicas sigan mostrando su badge.
+     */
+    public function eliminarTipoPago($id)
+    {
+        $tipo = TipoPago::findOrFail($id);
+        $valoresOriginales = $tipo->getAttributes();
+
+        $tipo->delete();
+
+        $this->registrarActualizacion(
+            'configuracion.tipo_pago_eliminado',
+            "Se elimino el tipo de pago '{$tipo->nombre}' ({$tipo->codigo})",
+            $tipo,
+            $valoresOriginales
+        );
+
+        return response()->json(['success' => true, 'message' => 'Tipo de pago eliminado.']);
+    }
+
     public function update(Request $request)
     {
         $request->validate([
@@ -189,6 +211,7 @@ class ConfiguracionController extends Controller
             'direccion_empresa' => 'string|max:500|nullable',
             'telefono_empresa' => 'string|max:50|nullable',
             'nit_empresa' => 'string|max:50|nullable',
+            'color_texto_bienvenida' => 'string|regex:/^#[0-9a-fA-F]{6}$/|nullable',
             'porcentaje_iva_defecto' => 'numeric|min:0|max:100',
             'numeros_nequi' => 'array',
             'numeros_nequi.*' => 'string|max:20',
@@ -209,6 +232,7 @@ class ConfiguracionController extends Controller
 
         $clavesPermitidas = [
             'nombre_empresa', 'direccion_empresa', 'telefono_empresa', 'nit_empresa',
+            'color_texto_bienvenida',
             'porcentaje_iva_defecto', 'numeros_nequi',
             'timeout_autoguardado_recepcion', 'timeout_forzar_cierre',
             'dias_expiracion_borradores', 'dias_borradores_recientes',

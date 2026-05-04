@@ -21,7 +21,7 @@
                             <span class="fw-semibold" @if($pago->trashed()) style="text-decoration: line-through;" @endif>${{ number_format($pago->monto, 0, ',', '.') }}</span>
                             @php($_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? null)
                             <span class="badge bg-{{ $_tp['color'] ?? 'light' }}-subtle text-{{ $_tp['color'] ?? 'dark' }} border ms-1 small">
-                                @if($_tp)<i class="bi {{ $_tp['icono'] }} me-1"></i>@endif{{ $_tp['nombre'] ?? ucfirst($pago->metodo_pago) }}
+                                @if($_tp)<i class="bi {{ $_tp['icono'] }} me-1"></i>@endif{{ $_tp['etiqueta'] ?? ucfirst($pago->metodo_pago) }}
                             </span>
                             @if($pago->trashed())
                                 <span class="badge bg-danger ms-1 small">Rechazado</span>

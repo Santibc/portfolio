@@ -59,8 +59,11 @@ class OperarioController extends Controller
         $user = auth()->user();
 
         if ($request->ajax()) {
+            // Solo ordenes con piezas asignadas al operario que aun esten pendientes (<100%).
+            // Las piezas terminadas o liberadas a la cola no cuentan.
             $query = Orden::whereHas('piezas', function ($q) use ($user) {
-                $q->where('operario_actual_id', $user->id);
+                $q->where('operario_actual_id', $user->id)
+                  ->where('porcentaje_avance', '<', 100);
             })
             ->with(['cliente'])
             ->noAnuladas()
@@ -76,7 +79,10 @@ class OperarioController extends Controller
                 })
                 ->addColumn('mis_piezas', function ($orden) use ($user) {
                     $total = $orden->piezas->count();
-                    $mias = $orden->piezas->where('operario_actual_id', $user->id)->count();
+                    $mias = $orden->piezas
+                        ->where('operario_actual_id', $user->id)
+                        ->where('porcentaje_avance', '<', 100)
+                        ->count();
                     return "{$mias} de {$total}";
                 })
                 ->addColumn('estado', function ($orden) {
@@ -108,16 +114,19 @@ class OperarioController extends Controller
                 ->with('error', 'Esta orden no esta disponible para trabajar.');
         }
 
-        // Cargar piezas asignadas al operario actual
+        // Cargar piezas asignadas al operario actual que aun no esten al 100%.
+        // Las piezas terminadas se ocultan para que el operario no las vea
+        // al recargar la vista despues de "Actualizar Orden".
         $piezas = $orden->piezas()
             ->where('operario_actual_id', $user->id)
+            ->where('porcentaje_avance', '<', 100)
             ->with(['bosquejo', 'historialAvances.operario', 'fotos', 'asignaciones.asignadoDesde'])
             ->orderBy('orden_visual')
             ->get();
 
         if ($piezas->isEmpty()) {
             return redirect()->route('operario.ordenes-asignadas')
-                ->with('error', 'No tienes piezas asignadas en esta orden.');
+                ->with('error', 'No tienes piezas pendientes en esta orden.');
         }
 
         // Intentar adquirir bloqueo
@@ -140,10 +149,11 @@ class OperarioController extends Controller
             '#00BCD4', '#795548', '#607D8B', '#FF5722', '#3F51B5',
         ];
 
-        // Info de piezas de otros operarios para determinar si la orden se completa
+        // Info de piezas para determinar si la orden se completa.
+        // Cuenta TODAS las piezas al 100% (las propias ya filtradas y las de otros)
+        // ya que ninguna pieza al 100% se muestra ahora en la vista.
         $totalPiezasOrden = $orden->piezas()->count();
         $piezasOtros100 = $orden->piezas()
-            ->where('operario_actual_id', '!=', $user->id)
             ->where('porcentaje_avance', '>=', 100)
             ->count();
 

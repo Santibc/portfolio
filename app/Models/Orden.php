@@ -197,4 +197,29 @@ class Orden extends Model
         $prom = ($this->porcentaje_trabajo + $this->porcentaje_entrega + $this->porcentaje_pago) / 3;
         return (int) max(0, min(100, round($prom)));
     }
+
+    // === Helpers de validacion de pagos ===
+
+    /**
+     * Monto que aun se puede registrar como pago nuevo.
+     * Cuenta pagos visibles (aprobados + pendientes); los rechazados estan soft-deleted.
+     */
+    public function montoDisponibleNuevoPago(): float
+    {
+        $comprometido = (float) $this->pagos()->sum('monto');
+        return max(0, (float) $this->total - $comprometido);
+    }
+
+    /**
+     * Monto disponible para aprobar un pago especifico.
+     * Excluye el pago en aprobacion para no contarlo dos veces.
+     */
+    public function montoDisponibleAprobacion(?int $excluirPagoId = null): float
+    {
+        $query = $this->pagos()->where('aprobado', true);
+        if ($excluirPagoId) {
+            $query->where('id', '<>', $excluirPagoId);
+        }
+        return max(0, (float) $this->total - (float) $query->sum('monto'));
+    }
 }

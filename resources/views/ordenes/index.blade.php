@@ -20,6 +20,18 @@
     #ordenesTable tbody tr:hover td:last-child {
         background-color: #f5f5f5;
     }
+
+    [data-theme="dark"] #ordenesTable thead th:last-child,
+    [data-theme="dark"] #ordenesTable tbody td:last-child {
+        background-color: #1e1e1e;
+        box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.5);
+    }
+    [data-theme="dark"] #ordenesTable thead th:last-child {
+        background-color: #2a2a2a;
+    }
+    [data-theme="dark"] #ordenesTable tbody tr:hover td:last-child {
+        background-color: #2a2a2a;
+    }
 </style>
 @endpush
 

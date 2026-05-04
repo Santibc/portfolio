@@ -10,7 +10,10 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @php $fondoLogin = \App\Models\ConfiguracionSistema::get('imagen_fondo_login'); @endphp
+    @php
+        $fondoLogin = \App\Models\ConfiguracionSistema::get('imagen_fondo_login');
+        $colorTextoBienvenida = \App\Models\ConfiguracionSistema::get('color_texto_bienvenida', '#1f2937');
+    @endphp
     @if($fondoLogin)
     <style>
         body.fondo-custom {
@@ -24,12 +27,12 @@
         <!-- Logo -->
         <div class="mb-8 text-center">
             <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'SINDEN') }}" class="mx-auto mb-4" style="width: 150px; height: auto;">
-            <h1 class="text-5xl font-bold text-gray-800">{{ config('app.name', 'SINDEN') }}</h1>
+            <h1 class="text-5xl font-bold" style="color: {{ $colorTextoBienvenida }};">{{ config('app.name', 'SINDEN') }}</h1>
         </div>
 
         <!-- Mensaje principal -->
         <div class="text-center mb-8">
-            <h2 class="text-4xl font-semibold text-gray-700 mb-4">
+            <h2 class="text-4xl font-semibold mb-4" style="color: {{ $colorTextoBienvenida }};">
                 Bienvenido a {{ config('app.name', 'SINDEN') }}
             </h2>
         </div>

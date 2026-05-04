@@ -1323,8 +1323,11 @@
 .notif-panel-footer {
     padding: 10px 16px;
     border-top: 1px solid #e5e7eb;
-    text-align: center;
     background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
 }
 
 .notif-mark-all {
@@ -1341,6 +1344,22 @@
 
 .notif-mark-all:hover {
     background: rgba(71,85,105,0.1);
+}
+
+.notif-delete-all {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.notif-delete-all:hover {
+    background: rgba(220,53,69,0.1);
 }
 
 /* Notification Items */

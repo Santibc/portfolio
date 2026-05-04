@@ -340,6 +340,7 @@ var WIZARD_CONFIG = {
     csrfToken: '{{ csrf_token() }}'
 };
 window.TIPOS_PAGO = @json(($tiposPago ?? collect())->map(fn($t) => ['codigo' => $t->codigo, 'nombre' => $t->nombre]));
+window.TIPOS_PAGO_MAPA = @json($tiposPagoMapa ?? []);
 
 var ROUTES = {
     guardar: '{{ route("recepcion.ordenes.update", $orden) }}',

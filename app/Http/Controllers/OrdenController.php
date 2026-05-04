@@ -114,6 +114,14 @@ class OrdenController extends Controller
                 'orden_id' => $orden->id,
                 'bosquejos' => $orden->bosquejosSincronizados ?? [],
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errores = $e->errors();
+            $primerError = collect($errores)->flatten()->first();
+            return response()->json([
+                'success' => false,
+                'message' => $primerError ?: 'Datos invalidos.',
+                'errores' => $errores,
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -904,6 +912,14 @@ class OrdenController extends Controller
             'metodo_pago' => ['required', \Illuminate\Validation\Rule::in($codigosValidos)],
             'referencia_pago' => 'nullable|string|max:255',
         ]);
+
+        $disponible = $orden->montoDisponibleNuevoPago();
+        if ((float) $request->monto > $disponible + 0.005) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El monto excede el saldo disponible. Maximo: $' . number_format($disponible, 0, ',', '.'),
+            ], 422);
+        }
 
         $user = auth()->user();
         $autoAprueba = $user->hasAnyRole(['Administrador', 'Contabilidad']);

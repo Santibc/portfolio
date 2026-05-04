@@ -68,6 +68,18 @@
                             </div>
                         </div>
                         <div class="col-md-12">
+                            <label class="form-label fw-medium">Color del Texto en Pagina de Bienvenida</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="color" class="form-control form-control-color" style="width:60px;height:42px;" x-model="color_texto_bienvenida">
+                                <input type="text" class="form-control" style="max-width:160px;" x-model="color_texto_bienvenida" placeholder="#1f2937" maxlength="7">
+                                <div class="border rounded px-3 py-2 flex-grow-1" style="background:#f8f9fa;">
+                                    <div class="fw-bold" style="font-size:1.5rem;" :style="{ color: color_texto_bienvenida }">SINDEN</div>
+                                    <div :style="{ color: color_texto_bienvenida }">Bienvenido a SINDEN</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">Color que se aplica al titulo y mensaje de bienvenida en la pagina de inicio (antes de iniciar sesion).</small>
+                        </div>
+                        <div class="col-md-12">
                             <label class="form-label fw-medium">Imagen de Fondo (Login y Pagina de Inicio)</label>
                             <div class="d-flex align-items-start gap-3">
                                 <div x-show="imagen_fondo_login" class="border rounded p-2" style="min-width:150px;">
@@ -136,29 +148,42 @@
             <div class="collapse show" id="seccion-tipos-pago">
                 <div class="card-body px-4 pb-4 pt-2">
                     <p class="text-muted small mb-3">
-                        Define los metodos de pago disponibles en el sistema. Los tipos desactivados no aparecen en nuevos pagos pero los pagos historicos siguen mostrando su nombre/icono/color.
+                        Define los metodos de pago disponibles en el sistema. Los tipos desactivados no aparecen en nuevos pagos pero los pagos historicos siguen mostrando su tipo/icono/color. Los tipos eliminados desaparecen de esta tabla y de las opciones, pero se conservan en pagos historicos.
                     </p>
                     <div class="table-responsive">
                         <table class="table table-sm align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width:40px">#</th>
-                                    <th>Codigo</th>
-                                    <th>Nombre</th>
+                                    <th>Tipo</th>
+                                    <th>Numero</th>
                                     <th class="text-center">Vista previa</th>
                                     <th class="text-center" style="width:80px">Activo</th>
-                                    <th class="text-end" style="width:130px">Acciones</th>
+                                    <th class="text-end" style="width:160px">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $paletaPreview = [
+                                        'success'   => ['hex' => '#198754', 'bg' => 'rgba(25,135,84,.15)'],
+                                        'primary'   => ['hex' => '#0d6efd', 'bg' => 'rgba(13,110,253,.15)'],
+                                        'info'      => ['hex' => '#0dcaf0', 'bg' => 'rgba(13,202,240,.18)'],
+                                        'warning'   => ['hex' => '#b8860b', 'bg' => 'rgba(255,193,7,.22)'],
+                                        'danger'    => ['hex' => '#dc3545', 'bg' => 'rgba(220,53,69,.15)'],
+                                        'secondary' => ['hex' => '#6c757d', 'bg' => 'rgba(108,117,125,.18)'],
+                                        'purple'    => ['hex' => '#6f42c1', 'bg' => 'rgba(111,66,193,.15)'],
+                                        'dark'      => ['hex' => '#212529', 'bg' => 'rgba(33,37,41,.18)'],
+                                    ];
+                                @endphp
                                 @forelse($tiposPago as $tp)
+                                @php($_pp = $paletaPreview[$tp->color] ?? $paletaPreview['secondary'])
                                 <tr @class(['table-warning'=>!$tp->activo])>
                                     <td>{{ $tp->orden }}</td>
                                     <td><code>{{ $tp->codigo }}</code></td>
                                     <td>{{ $tp->nombre }}</td>
                                     <td class="text-center">
-                                        <span class="badge bg-{{ $tp->color }}-subtle text-{{ $tp->color }}">
-                                            <i class="bi {{ $tp->icono }} me-1"></i>{{ $tp->nombre }}
+                                        <span class="badge" style="background-color: {{ $_pp['bg'] }}; color: {{ $_pp['hex'] }}; border: 1px solid {{ $_pp['hex'] }}33;">
+                                            <i class="bi {{ $tp->icono }} me-1"></i>{{ $tp->codigo }} - {{ $tp->nombre }}
                                         </span>
                                     </td>
                                     <td class="text-center">
@@ -174,7 +199,7 @@
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         @if($tp->activo)
-                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                            <button type="button" class="btn btn-outline-warning btn-sm"
                                                     @click="desactivarTipo({{ $tp->id }}, '{{ $tp->nombre }}')" title="Desactivar">
                                                 <i class="bi bi-eye-slash"></i>
                                             </button>
@@ -184,6 +209,10 @@
                                                 <i class="bi bi-arrow-clockwise"></i>
                                             </button>
                                         @endif
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                                @click="eliminarTipo({{ $tp->id }}, '{{ $tp->codigo }} - {{ $tp->nombre }}')" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 @empty
@@ -209,13 +238,13 @@
                                 <div class="modal-body">
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label class="form-label fw-medium">Codigo</label>
+                                            <label class="form-label fw-medium">Tipo</label>
                                             <input type="text" class="form-control" x-model="tipoForm.codigo" placeholder="ej: daviplata" maxlength="50" :disabled="tipoForm.id">
                                             <small class="text-muted">Solo minusculas, numeros y _</small>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label fw-medium">Nombre</label>
-                                            <input type="text" class="form-control" x-model="tipoForm.nombre" placeholder="ej: Daviplata" maxlength="100">
+                                            <label class="form-label fw-medium">Numero</label>
+                                            <input type="text" class="form-control" x-model="tipoForm.nombre" placeholder="ej: 3001234567" maxlength="100">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label fw-medium">Icono (Bootstrap Icons)</label>
@@ -245,9 +274,9 @@
                                         <div class="col-md-6">
                                             <label class="form-label fw-medium">Vista previa</label>
                                             <div>
-                                                <span class="badge" :class="'bg-' + tipoForm.color + '-subtle text-' + tipoForm.color" style="font-size:1rem;">
+                                                <span class="badge" :style="estiloPreviewTipo(tipoForm.color)" style="font-size:1rem;">
                                                     <i class="bi me-1" :class="tipoForm.icono"></i>
-                                                    <span x-text="tipoForm.nombre || 'Vista previa'"></span>
+                                                    <span x-text="(tipoForm.codigo || 'tipo') + ' - ' + (tipoForm.nombre || 'numero')"></span>
                                                 </span>
                                             </div>
                                         </div>
@@ -484,6 +513,7 @@ function configuracionApp() {
         direccion_empresa: @json($configs['direccion_empresa']->valor ?? ''),
         telefono_empresa: @json($configs['telefono_empresa']->valor ?? ''),
         nit_empresa: @json($configs['nit_empresa']->valor ?? ''),
+        color_texto_bienvenida: @json($configs['color_texto_bienvenida']->valor ?? '#1f2937'),
 
         // Financiero
         porcentaje_iva_defecto: @json($configs['porcentaje_iva_defecto']->valor ?? '19.00'),
@@ -513,6 +543,24 @@ function configuracionApp() {
         // ─── Tipos de Pago ───────────────────────────
         tipoForm: { id: null, codigo: '', nombre: '', icono: 'bi-cash', color: 'secondary', orden: 0 },
         guardandoTipo: false,
+
+        // Paleta de colores para previews (resuelve los casos donde Bootstrap
+        // no expone clases -subtle, p.ej. purple, o cuando el navegador antiguo
+        // no las renderiza bien).
+        coloresPalette: {
+            success:   { hex: '#198754', bg: 'rgba(25,135,84,.15)' },
+            primary:   { hex: '#0d6efd', bg: 'rgba(13,110,253,.15)' },
+            info:      { hex: '#0dcaf0', bg: 'rgba(13,202,240,.18)' },
+            warning:   { hex: '#b8860b', bg: 'rgba(255,193,7,.22)' },
+            danger:    { hex: '#dc3545', bg: 'rgba(220,53,69,.15)' },
+            secondary: { hex: '#6c757d', bg: 'rgba(108,117,125,.18)' },
+            purple:    { hex: '#6f42c1', bg: 'rgba(111,66,193,.15)' },
+            dark:      { hex: '#212529', bg: 'rgba(33,37,41,.18)' },
+        },
+        estiloPreviewTipo(color) {
+            var p = this.coloresPalette[color] || this.coloresPalette.secondary;
+            return 'background-color:' + p.bg + '; color:' + p.hex + '; border:1px solid ' + p.hex + '33;';
+        },
 
         // ─── Tags: Nequi ─────────────────────────────
         agregarNequi() {
@@ -643,6 +691,31 @@ function configuracionApp() {
                 error: (xhr) => {
                     Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al reactivar.' });
                 }
+            });
+        },
+        eliminarTipo(id, etiqueta) {
+            Swal.fire({
+                title: 'Eliminar tipo de pago?',
+                html: '"<strong>' + etiqueta + '</strong>" se eliminara de la tabla y dejara de aparecer en nuevas ordenes.<br><small class="text-muted">Las ordenes historicas que ya lo tienen seguiran mostrandolo correctamente.</small>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Si, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    url: '{{ url("admin/configuracion/tipos-pago") }}/' + id + '/eliminar',
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    success: (data) => {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 2000 });
+                        setTimeout(() => location.reload(), 800);
+                    },
+                    error: (xhr) => {
+                        Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al eliminar.' });
+                    }
+                });
             });
         },
 
@@ -776,6 +849,7 @@ function configuracionApp() {
                     direccion_empresa: this.direccion_empresa || '',
                     telefono_empresa: this.telefono_empresa || '',
                     nit_empresa: this.nit_empresa || '',
+                    color_texto_bienvenida: this.color_texto_bienvenida || '#1f2937',
                     porcentaje_iva_defecto: parseFloat(this.porcentaje_iva_defecto) || 19,
                     numeros_nequi: this.numeros_nequi,
                     timeout_autoguardado_recepcion: parseInt(this.timeout_autoguardado_recepcion) || 5,

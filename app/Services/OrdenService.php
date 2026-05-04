@@ -608,6 +608,18 @@ class OrdenService
      */
     protected function sincronizarPagos(Orden $orden, array $pagos, User $user): void
     {
+        // Total recalculado a partir de items recien sincronizados (BD)
+        $totalCalculado = (float) $orden->items()->sum('subtotal') + (float) $orden->items()->sum('monto_iva');
+        $sumaSolicitada = (float) collect($pagos)->sum(fn($p) => floatval($p['monto'] ?? 0));
+        if ($sumaSolicitada > $totalCalculado + 0.005) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'pagos' => [
+                    'La suma de abonos ($' . number_format($sumaSolicitada, 0, ',', '.') .
+                    ') excede el total de la orden ($' . number_format($totalCalculado, 0, ',', '.') . ').',
+                ],
+            ]);
+        }
+
         $orden->pagos()->forceDelete();
 
         $autoAprueba = $user->hasAnyRole(['Administrador', 'Contabilidad']);

@@ -2,7 +2,18 @@
     .item-readonly {
         background-color: #f0f0f0 !important;
         cursor: not-allowed;
-        color: #555;
+        color: #555 !important;
+    }
+
+    [data-theme="dark"] .item-readonly {
+        background-color: #2a2a2a !important;
+        color: #d1d5db !important;
+        border-color: #3a3a3a !important;
+    }
+
+    [data-theme="dark"] .item-readonly::placeholder {
+        color: #9ca3af !important;
+        opacity: 1;
     }
 </style>
 {{-- Seccion 2: Items --}}

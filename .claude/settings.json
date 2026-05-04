@@ -21,7 +21,11 @@
       "Read(//c/Users/santi/.claude/**)",
       "Bash(printf 'test documento content')",
       "Read(//tmp/**)",
-      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root sinden -e \"SELECT id, orden_id, tipo_origen, ruta_archivo, ruta_miniatura FROM orden_bosquejos WHERE orden_id = 28;\")"
+      "Bash(/f/xamppPro80/mysql/bin/mysql.exe -u root sinden -e \"SELECT id, orden_id, tipo_origen, ruta_archivo, ruta_miniatura FROM orden_bosquejos WHERE orden_id = 28;\")",
+      "Bash(Find /f:/xamppPro80/htdocs/sinden/database/migrations -name \"*pago*\" -type f)",
+      "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/contabilidad.js)",
+      "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/orden-detalle.js)",
+      "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/orden-wizard.js)"
     ],
     "additionalDirectories": [
       "f:\\xamppPro80\\mysql\\bin",

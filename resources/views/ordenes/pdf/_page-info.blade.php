@@ -186,7 +186,7 @@
                     <tr>
                         <td>{{ $pago->created_at->timezone('America/Bogota')->format('d/m/Y') }}</td>
                         <td class="text-end fw-semibold">${{ number_format($pago->monto, 0, ',', '.') }}</td>
-                        <td>{{ ($tiposPagoMapa ?? [])[$pago->metodo_pago]['nombre'] ?? ucfirst($pago->metodo_pago) }}</td>
+                        <td>{{ ($tiposPagoMapa ?? [])[$pago->metodo_pago]['etiqueta'] ?? (($tiposPagoMapa ?? [])[$pago->metodo_pago]['nombre'] ?? ucfirst($pago->metodo_pago)) }}</td>
                         <td>{{ $pago->referencia_pago ?? '-' }}</td>
                         <td>{{ $pago->registradoPorUsuario->name ?? '-' }}</td>
                     </tr>

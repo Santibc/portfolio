@@ -39,4 +39,11 @@ class NotificacionController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function eliminarTodas()
+    {
+        Notificacion::where('usuario_id', auth()->id())->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

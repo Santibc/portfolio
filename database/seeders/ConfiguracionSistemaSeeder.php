@@ -107,6 +107,12 @@ class ConfiguracionSistemaSeeder extends Seeder
                 'descripcion' => 'Imagen de fondo para login y pagina de inicio',
             ],
             [
+                'clave' => 'color_texto_bienvenida',
+                'valor' => '#1f2937',
+                'tipo' => 'texto',
+                'descripcion' => 'Color del texto de la pagina de bienvenida (titulo y subtitulo)',
+            ],
+            [
                 'clave' => 'calibres_disponibles',
                 'valor' => json_encode([
                     ['calibre' => '#22', 'mm' => 0.76],

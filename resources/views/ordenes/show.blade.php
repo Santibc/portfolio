@@ -116,14 +116,15 @@
                     <label class="form-label fw-medium">Monto <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text">$</span>
-                        <input type="number" class="form-control" id="pagoMonto" min="1" step="1">
+                        <input type="number" class="form-control" id="pagoMonto" min="1" step="1" max="{{ $orden->montoDisponibleNuevoPago() }}">
                     </div>
+                    <small class="text-muted">Maximo permitido: ${{ number_format($orden->montoDisponibleNuevoPago(), 0, ',', '.') }}</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-medium">Metodo de Pago</label>
                     <select class="form-select" id="pagoMetodo">
                         @foreach(($tiposPago ?? collect()) as $tp)
-                            <option value="{{ $tp->codigo }}">{{ $tp->nombre }}</option>
+                            <option value="{{ $tp->codigo }}">{{ $tp->codigo }} - {{ $tp->nombre }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -255,6 +256,7 @@
 <script>
 var ORDEN_ID = {{ $orden->id }};
 var CSRF_TOKEN = '{{ csrf_token() }}';
+var ORDEN_SALDO_DISPONIBLE = {{ $orden->montoDisponibleNuevoPago() }};
 @php
     $esContabilidad = request()->is('contabilidad/*');
 @endphp

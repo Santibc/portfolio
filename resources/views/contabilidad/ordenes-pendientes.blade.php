@@ -102,13 +102,14 @@
                         <span class="input-group-text">$</span>
                         <input type="number" class="form-control" id="pagoMonto" min="1" step="100" placeholder="0" style="min-height:48px; font-size:1.1rem" required>
                     </div>
+                    <small class="text-muted">Maximo permitido: <span id="pagoMontoMax">$0</span></small>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Metodo de Pago *</label>
                     <select class="form-select" id="pagoMetodo" style="min-height:48px" required>
                         @foreach(($tiposPago ?? collect()) as $tp)
-                            <option value="{{ $tp->codigo }}">{{ $tp->nombre }}</option>
+                            <option value="{{ $tp->codigo }}">{{ $tp->codigo }} - {{ $tp->nombre }}</option>
                         @endforeach
                     </select>
                 </div>

@@ -56,18 +56,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ==========================================
-// RUTAS DE RECEPCION
+// RUTAS DE CLIENTES (Admin/Recepcion/Contabilidad)
 // ==========================================
-Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
+Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilidad'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
-        Route::get('/panel', RecepcionPanelController::class)->name('panel');
-
-        // Clientes
         Route::get('/clientes/autocomplete', [ClienteController::class, 'autocomplete'])->name('clientes.autocomplete');
         Route::get('/clientes/export-excel', [ClienteController::class, 'exportExcel'])->name('clientes.export-excel');
         Route::get('/clientes/export-pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export-pdf');
         Route::patch('/clientes/{cliente}/toggle-activo', [ClienteController::class, 'toggleActivo'])->name('clientes.toggle-activo')->middleware('role:Administrador');
         Route::resource('clientes', ClienteController::class);
+    });
+
+// ==========================================
+// RUTAS DE RECEPCION
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
+    ->prefix('recepcion')->name('recepcion.')->group(function () {
+        Route::get('/panel', RecepcionPanelController::class)->name('panel');
 
         // Catalogo Items
         Route::get('/items/autocomplete', [CatalogoItemController::class, 'autocomplete'])->name('items.autocomplete');
@@ -297,6 +302,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::put('/configuracion/tipos-pago/{tipo}', [ConfiguracionController::class, 'updateTipoPago'])->name('configuracion.tipos-pago.update');
     Route::delete('/configuracion/tipos-pago/{tipo}', [ConfiguracionController::class, 'destroyTipoPago'])->name('configuracion.tipos-pago.destroy');
     Route::post('/configuracion/tipos-pago/{tipo}/restore', [ConfiguracionController::class, 'restoreTipoPago'])->name('configuracion.tipos-pago.restore');
+    Route::delete('/configuracion/tipos-pago/{id}/eliminar', [ConfiguracionController::class, 'eliminarTipoPago'])->name('configuracion.tipos-pago.eliminar');
 
     // Tabla de Precios
     Route::get('/tabla-precios', [TablaPreciosController::class, 'index'])->name('tabla-precios.index');
@@ -318,6 +324,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
 // ==========================================
 Route::middleware(['auth'])->group(function () {
     Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::delete('/notificaciones/eliminar-todas', [\App\Http\Controllers\NotificacionController::class, 'eliminarTodas'])->name('notificaciones.eliminar-todas');
     Route::delete('/notificaciones/{id}', [\App\Http\Controllers\NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
     Route::post('/notificaciones/marcar-leidas', [\App\Http\Controllers\NotificacionController::class, 'marcarLeidas'])->name('notificaciones.marcar-leidas');
 });

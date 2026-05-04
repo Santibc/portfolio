@@ -91,11 +91,15 @@
                                 </small>
                             </div>
 
+                            @php
+                                $historialVisible = $pieza->historialAvances->whereNotNull('completado_en');
+                            @endphp
+
                             <div class="mt-2 d-flex gap-3">
                                 {{-- Historial de avances (colapsable) --}}
-                                @if($pieza->historialAvances->count() > 0)
+                                @if($historialVisible->count() > 0)
                                     <a class="small text-primary" data-bs-toggle="collapse" href="#historial{{ $pieza->id }}">
-                                        <i class="bi bi-clock-history me-1"></i>Ver avances ({{ $pieza->historialAvances->count() }})
+                                        <i class="bi bi-clock-history me-1"></i>Ver avances ({{ $historialVisible->count() }})
                                     </a>
                                 @endif
 
@@ -108,14 +112,14 @@
                             </div>
 
                             {{-- Historial de avances colapsable --}}
-                            @if($pieza->historialAvances->count() > 0)
+                            @if($historialVisible->count() > 0)
                                 <div class="collapse mt-2" id="historial{{ $pieza->id }}">
                                     <div class="historial-timeline">
-                                        @foreach($pieza->historialAvances->sortByDesc('created_at') as $avance)
+                                        @foreach($historialVisible->sortByDesc('completado_en') as $avance)
                                             <div class="historial-entry">
                                                 <div class="d-flex justify-content-between">
                                                     <span class="fw-medium small">{{ $avance->operario->name ?? '-' }}</span>
-                                                    <span class="text-muted small">{{ $avance->created_at->format('d/m/Y H:i') }}</span>
+                                                    <span class="text-muted small">{{ optional($avance->completado_en)->format('d/m/Y H:i') }}</span>
                                                 </div>
                                                 <span class="small">
                                                     {{ number_format($avance->porcentaje_desde, 0) }}% &rarr; {{ number_format($avance->porcentaje_hasta, 0) }}%

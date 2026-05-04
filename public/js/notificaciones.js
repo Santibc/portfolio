@@ -151,6 +151,44 @@
         });
     }
 
+    function eliminarTodas() {
+        $.ajax({
+            url: '/notificaciones/eliminar-todas',
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function() {
+                lastNotifIds = [];
+                $('#notifPanelBody').html('<div class="notif-empty">Sin notificaciones</div>');
+                updateBadge(0);
+            }
+        });
+    }
+
+    function confirmarEliminarTodas() {
+        if ($('#notifPanelBody .notif-item').length === 0) {
+            return;
+        }
+
+        if (window.Swal) {
+            window.Swal.fire({
+                title: 'Eliminar todas las notificaciones?',
+                text: 'Esta accion no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Si, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    eliminarTodas();
+                }
+            });
+        } else if (confirm('Eliminar todas las notificaciones?')) {
+            eliminarTodas();
+        }
+    }
+
     // =====================
     // HELPERS
     // =====================
@@ -210,6 +248,11 @@
         // Mark all read
         $('#notifMarkAll').on('click', function() {
             marcarTodasLeidas();
+        });
+
+        // Delete all
+        $('#notifDeleteAll').on('click', function() {
+            confirmarEliminarTodas();
         });
 
         // Initial fetch

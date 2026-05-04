@@ -107,6 +107,12 @@ function registrarPago() {
         return;
     }
 
+    var saldoMax = (typeof ORDEN_SALDO_DISPONIBLE !== 'undefined') ? parseFloat(ORDEN_SALDO_DISPONIBLE) : 0;
+    if (monto > saldoMax + 0.005) {
+        Swal.fire('Monto excede el saldo', 'El maximo permitido es $' + saldoMax.toLocaleString('es-CO') + '.', 'warning');
+        return;
+    }
+
     $('#btnRegistrarPago').prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Registrando...');
 
     $.ajax({
@@ -132,10 +138,18 @@ function registrarPago() {
                     ? '<span class="badge bg-success ms-1 small">Aprobado</span>'
                     : '<span class="badge bg-warning text-dark ms-1 small">Pendiente</span>';
 
+                var etiquetaMetodo = pago.metodo_pago;
+                if (window.TIPOS_PAGO_MAPA && window.TIPOS_PAGO_MAPA[pago.metodo_pago]) {
+                    var _tp = window.TIPOS_PAGO_MAPA[pago.metodo_pago];
+                    etiquetaMetodo = (_tp.etiqueta) ? _tp.etiqueta : (_tp.codigo + ' - ' + _tp.nombre);
+                } else {
+                    etiquetaMetodo = ucfirst(pago.metodo_pago);
+                }
+
                 var pagoHtml = '<div class="d-flex justify-content-between align-items-start py-2 border-bottom">'
                     + '<div>'
                     + '  <span class="fw-semibold">' + pago.monto + '</span>'
-                    + '  <span class="badge bg-light text-dark border ms-1 small">' + ucfirst(pago.metodo_pago) + '</span>'
+                    + '  <span class="badge bg-light text-dark border ms-1 small">' + etiquetaMetodo + '</span>'
                     + '  ' + badgeAprobado
                     + '  <div class="text-muted small">' + (pago.registrado_por || '-') + ' - Ahora</div>'
                     + (pago.referencia_pago ? '  <div class="text-muted small">Ref: ' + pago.referencia_pago + '</div>' : '')
@@ -163,6 +177,11 @@ function registrarPago() {
                     } else if (response.estado_pago === 'saldo_pendiente') {
                         $('#headerBadgePago').attr('class', 'status-badge danger').text('SALDO PEND.');
                     }
+                }
+
+                // Actualizar saldo disponible para validar el siguiente pago en esta sesion
+                if (typeof ORDEN_SALDO_DISPONIBLE !== 'undefined') {
+                    ORDEN_SALDO_DISPONIBLE = Math.max(0, parseFloat(ORDEN_SALDO_DISPONIBLE) - monto);
                 }
 
                 Swal.fire({ toast: true, position: 'top-end', icon: 'success',

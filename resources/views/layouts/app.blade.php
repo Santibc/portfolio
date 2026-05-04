@@ -168,6 +168,7 @@
                         </div>
                         <div class="notif-panel-footer">
                             <button class="notif-mark-all" id="notifMarkAll">Marcar todas como leidas</button>
+                            <button class="notif-delete-all" id="notifDeleteAll">Eliminar todas</button>
                         </div>
                     </div>
                 </div>

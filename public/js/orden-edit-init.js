@@ -156,7 +156,11 @@ function cargarPagos() {
         var metodo = pago.metodo_pago || (window.TIPOS_PAGO && window.TIPOS_PAGO[0] ? window.TIPOS_PAGO[0].codigo : 'efectivo');
         // Si el codigo historico ya no esta en el select (tipo desactivado/eliminado), agregarlo como option para preservar el valor.
         if (metodo && $metodoSel.find('option[value="' + metodo + '"]').length === 0) {
-            $metodoSel.append('<option value="' + metodo + '">' + metodo.charAt(0).toUpperCase() + metodo.slice(1) + ' (inactivo)</option>');
+            var etiquetaHist = metodo;
+            if (window.TIPOS_PAGO_MAPA && window.TIPOS_PAGO_MAPA[metodo]) {
+                etiquetaHist = window.TIPOS_PAGO_MAPA[metodo].codigo + ' - ' + window.TIPOS_PAGO_MAPA[metodo].nombre;
+            }
+            $metodoSel.append('<option value="' + metodo + '">' + etiquetaHist + ' (inactivo)</option>');
         }
         $metodoSel.val(metodo);
         $row.find('.pago-referencia').val(pago.referencia_pago || '');

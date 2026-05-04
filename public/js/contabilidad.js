@@ -68,7 +68,10 @@ function initOrdenesPendientesTable(config) {
     // Abrir modal agregar pago
     $(document).on('click', '.btn-agregar-pago', function() {
         var btn = $(this);
-        $('#pagoOrdenId').val(btn.data('orden-id'));
+        var saldoMax = parseFloat(btn.data('orden-saldo-num')) || 0;
+        $('#pagoOrdenId').val(btn.data('orden-id')).data('saldo-max', saldoMax);
+        $('#pagoMonto').attr('max', saldoMax).data('saldo-max', saldoMax);
+        $('#pagoMontoMax').text('$' + saldoMax.toLocaleString('es-CO'));
 
         // Build info HTML dynamically (Tailwind CDN strips empty divs)
         $('#infoPagoOrdenContainer').html(
@@ -76,6 +79,7 @@ function initOrdenesPendientesTable(config) {
             '<div class="fw-semibold">Orden ' + btn.data('orden-numero') + '</div>' +
             '<div class="small text-muted">' + btn.data('orden-cliente') + '</div>' +
             '<div class="mt-1">Saldo: <span class="fw-bold text-danger">$' + btn.data('orden-saldo') + '</span></div>' +
+            '<div class="small text-muted mt-1">Maximo permitido: <span class="fw-semibold">$' + saldoMax.toLocaleString('es-CO') + '</span></div>' +
             '</div>'
         );
 
@@ -97,6 +101,16 @@ function initOrdenesPendientesTable(config) {
 
         if (!monto || parseFloat(monto) <= 0) {
             Swal.fire({ icon: 'warning', title: 'Monto requerido', text: 'Ingrese un monto valido mayor a 0.' });
+            return;
+        }
+
+        var saldoMax = parseFloat($('#pagoOrdenId').data('saldo-max')) || 0;
+        if (parseFloat(monto) > saldoMax + 0.005) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Monto excede el saldo',
+                text: 'El maximo permitido es $' + saldoMax.toLocaleString('es-CO') + '.',
+            });
             return;
         }
 
@@ -545,8 +559,8 @@ function initHistorialFinancieroTable(config) {
 
                 var html = '<div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">';
                 html += '<thead class="table-light"><tr>';
-                html += '<th>#</th><th>Fecha</th><th class="text-end">Monto</th><th class="text-center">Metodo</th>';
-                html += '<th>Referencia</th><th>Registrado Por</th><th class="text-center">Estado</th>';
+                html += '<th>#</th><th class="text-end">Monto</th><th class="text-center">Metodo</th>';
+                html += '<th>Referencia</th><th>Creado Por</th><th class="text-center">Estado</th>';
                 html += '</tr></thead><tbody>';
 
                 for (var i = 0; i < res.pagos.length; i++) {
@@ -556,7 +570,7 @@ function initHistorialFinancieroTable(config) {
                     if (p.rechazado) {
                         estadoPago = '<span class="badge bg-danger bg-opacity-10 text-danger border">Rechazado</span>';
                         if (p.rechazado_por) {
-                            estadoPago += '<br><small class="text-muted">por ' + p.rechazado_por + '</small>';
+                            estadoPago += '<br><small class="text-muted">Rechazado por ' + p.rechazado_por + '</small>';
                         }
                         if (p.fecha_rechazo) {
                             estadoPago += '<br><small class="text-muted">' + p.fecha_rechazo + '</small>';
@@ -564,7 +578,10 @@ function initHistorialFinancieroTable(config) {
                     } else if (p.aprobado) {
                         estadoPago = '<span class="badge bg-success bg-opacity-10 text-success border">Aprobado</span>';
                         if (p.aprobado_por) {
-                            estadoPago += '<br><small class="text-muted">por ' + p.aprobado_por + '</small>';
+                            estadoPago += '<br><small class="text-muted">Aprobado por ' + p.aprobado_por + '</small>';
+                        }
+                        if (p.fecha_aprobacion) {
+                            estadoPago += '<br><small class="text-muted">' + p.fecha_aprobacion + '</small>';
                         }
                     } else {
                         estadoPago = '<span class="badge bg-warning bg-opacity-10 text-dark border">Pendiente</span>';
@@ -573,13 +590,15 @@ function initHistorialFinancieroTable(config) {
                     var rowStyle = p.rechazado ? ' style="opacity:0.55;"' : '';
                     var montoStyle = p.rechazado ? ' style="text-decoration:line-through;"' : '';
 
+                    var creadoPor = '<div>' + p.registrado_por + '</div>';
+                    creadoPor += '<small class="text-muted">' + p.fecha + '</small>';
+
                     html += '<tr' + rowStyle + '>';
                     html += '<td class="text-muted">' + (i + 1) + '</td>';
-                    html += '<td>' + p.fecha + '</td>';
                     html += '<td class="text-end fw-semibold"' + montoStyle + '>' + p.monto + '</td>';
                     html += '<td class="text-center">' + p.metodo_badge + '</td>';
                     html += '<td class="small">' + p.referencia_pago + '</td>';
-                    html += '<td class="small">' + p.registrado_por + '</td>';
+                    html += '<td class="small">' + creadoPor + '</td>';
                     html += '<td class="text-center">' + estadoPago + '</td>';
                     html += '</tr>';
                 }
