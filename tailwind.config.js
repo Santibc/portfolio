@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     // Rutas para tus vistas de Blade
     "./resources/**/*.blade.php",

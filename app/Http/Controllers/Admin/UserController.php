@@ -40,9 +40,14 @@ class UserController extends Controller
             }
         }
 
-        $usuarios = $query->orderBy('created_at', 'desc')->get();
+        // Ordenamiento por columna (default: nombre alfabético)
+        $sortableColumns = ['name', 'email', 'email_verified_at', 'created_at'];
+        $sort = in_array($request->get('sort'), $sortableColumns) ? $request->get('sort') : 'name';
+        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+
+        $usuarios = $query->orderBy($sort, $direction)->get();
         $roles = Role::all();
-        return view('admin.users.index', compact('usuarios', 'roles'));
+        return view('admin.users.index', compact('usuarios', 'roles', 'sort', 'direction'));
     }
 
     public function create()

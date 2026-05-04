@@ -7,6 +7,25 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
     <title>{{ config('app.name', 'SINDEN') }}</title>
 
+    {{-- Theme bootstrap (anti-FOUC) - DEBE ir antes de cualquier <link> CSS --}}
+    <script>
+        (function () {
+            var serverTheme = @json(Auth::user()?->theme);
+            var stored = localStorage.getItem('sinden-theme');
+            var preference = stored || (serverTheme ? serverTheme : 'auto');
+            var resolved = preference;
+            if (preference === 'auto') {
+                resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            // Sembrar localStorage si solo viene del server (mantiene consistencia)
+            if (!stored && serverTheme) localStorage.setItem('sinden-theme', serverTheme);
+            var html = document.documentElement;
+            html.setAttribute('data-theme', resolved);
+            html.setAttribute('data-bs-theme', resolved);
+            if (resolved === 'dark') html.classList.add('dark');
+        })();
+    </script>
+
     {{-- Fuentes --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -57,12 +76,27 @@
             --bs-alert-border-color: #e2e8f0;
             --bs-alert-color: #475569;
         }
+        [data-bs-theme="dark"] .alert-success {
+            --bs-alert-bg: #1e293b;
+            --bs-alert-border-color: #334155;
+            --bs-alert-color: #cbd5e1;
+        }
+        [data-bs-theme="dark"] .table-success {
+            --bs-table-bg: #1e293b;
+            --bs-table-border-color: #334155;
+            --bs-table-striped-bg: #1e293b;
+            --bs-table-color: #cbd5e1;
+        }
+        [data-bs-theme="dark"] .bg-success-subtle {
+            background-color: #1e293b !important;
+        }
     </style>
 
     {{-- Tailwind CSS (para componentes Blade - con preflight deshabilitado) --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             corePlugins: {
                 preflight: false,
             }
@@ -109,6 +143,12 @@
             </div>
 
             <div class="header-right">
+                {{-- Toggle modo oscuro --}}
+                <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema">
+                    <i class="bi bi-moon-fill"></i>
+                    <i class="bi bi-sun-fill"></i>
+                </button>
+
                 {{-- Indicador de conexion --}}
                 <span class="sinden-conexion-dot online" id="conexionDot" title="Conectado"></span>
 
@@ -201,6 +241,9 @@
 
     {{-- JavaScript --}}
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    {{-- Theme toggle (dark mode) --}}
+    <script src="{{ asset('js/theme-toggle.js') }}"></script>
 
     {{-- Bootstrap 5 JS (para modales) --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

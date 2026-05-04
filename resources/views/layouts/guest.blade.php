@@ -8,6 +8,21 @@
         <title>{{ config('app.name', 'SINDEN') }}</title>
         <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
 
+        <!-- Theme bootstrap (anti-FOUC) -->
+        <script>
+            (function () {
+                var stored = localStorage.getItem('sinden-theme') || 'auto';
+                var resolved = stored;
+                if (stored === 'auto') {
+                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                var html = document.documentElement;
+                html.setAttribute('data-theme', resolved);
+                html.setAttribute('data-bs-theme', resolved);
+                if (resolved === 'dark') html.classList.add('dark');
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -64,12 +79,22 @@
                 padding: 2rem;
             }
 
+            [data-theme="dark"] .sinden-auth-card {
+                background: #1e1e1e;
+                color: #e5e7eb;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            }
+
             .sinden-auth-title {
                 text-align: center;
                 font-size: 1.5rem;
                 font-weight: 600;
                 color: #1F2937;
                 margin-bottom: 1.5rem;
+            }
+
+            [data-theme="dark"] .sinden-auth-title {
+                color: #f3f4f6;
             }
 
             .sinden-footer {

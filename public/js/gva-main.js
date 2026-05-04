@@ -130,8 +130,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* =====================================================
-       SWEET ALERT DELETE CONFIRM
+       SWEET ALERT - tema-aware (lee data-theme del <html>)
     ====================================================== */
+    function isDarkMode() {
+        return document.documentElement.getAttribute("data-theme") === "dark";
+    }
+
+    function swalThemeOptions() {
+        if (isDarkMode()) {
+            return { background: "#1e1e1e", color: "#e5e7eb" };
+        }
+        return {};
+    }
+
     window.confirmDelete = function (
         formId,
         message = "¿Estás seguro de eliminar este registro?"
@@ -145,6 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cancelButtonColor: "#6B7280",
             confirmButtonText: "Sí, eliminar",
             cancelButtonText: "Cancelar",
+            ...swalThemeOptions(),
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById(formId).submit();
@@ -162,6 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showConfirmButton: false,
             timer: 3000,
             timerProgressBar: true,
+            ...swalThemeOptions(),
         });
 
         Toast.fire({

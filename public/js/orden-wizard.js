@@ -381,6 +381,7 @@ function buscarItemCatalogo(input) {
                 data.forEach(function(item) {
                     $results.append(
                         '<a href="#" class="list-group-item list-group-item-action py-1 small" '
+                        + 'style="white-space:nowrap;" '
                         + 'onclick="seleccionarItemCatalogo(' + idx + ', ' + JSON.stringify(item).replace(/"/g, '&quot;') + '); return false;">'
                         + '<strong>' + escapeHtml(item.codigo) + '</strong> - ' + escapeHtml(item.descripcion)
                         + '<br><small class="text-muted">' + formatCOP(item.precio_unitario) + ' | IVA: ' + item.porcentaje_iva + '%</small>'
@@ -388,6 +389,12 @@ function buscarItemCatalogo(input) {
                     );
                 });
             }
+            var inputRect = input.getBoundingClientRect();
+            $results.css({
+                width: 'auto',
+                'min-width': Math.max(inputRect.width, 320) + 'px',
+                'max-width': '480px'
+            });
             $results.show();
         });
     }, delay);
@@ -1062,6 +1069,7 @@ function buscarMaterialPieza(input) {
         filtrados.forEach(function(m) {
             $results.append(
                 '<a href="#" class="list-group-item list-group-item-action py-1 small" '
+                + 'style="white-space:nowrap;" '
                 + 'onclick="seleccionarMaterialPieza(' + idx + ', \'' + escapeHtml(m) + '\'); return false;">'
                 + escapeHtml(m)
                 + '</a>'
@@ -1070,11 +1078,14 @@ function buscarMaterialPieza(input) {
     }
     // Posicionar con fixed para que no se corte por overflow del table-responsive
     var inputRect = input.getBoundingClientRect();
+    var dropdownWidth = Math.max(inputRect.width, 220);
     $results.css({
         position: 'fixed',
         top: inputRect.bottom + 'px',
         left: inputRect.left + 'px',
-        width: inputRect.width + 'px'
+        width: 'auto',
+        'min-width': dropdownWidth + 'px',
+        'max-width': '320px'
     });
     $results.show();
 }

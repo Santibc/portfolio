@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -97,6 +98,22 @@ class ProfileController extends Controller
         }
 
         return Redirect::route('profile.edit')->with('success', 'Foto de perfil eliminada.');
+    }
+
+    /**
+     * Update the user's theme preference (light, dark, auto).
+     */
+    public function updateTheme(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'theme' => ['required', 'in:light,dark,auto'],
+        ]);
+
+        $user = $request->user();
+        $user->theme = $validated['theme'] === 'auto' ? null : $validated['theme'];
+        $user->save();
+
+        return response()->json(['theme' => $user->theme]);
     }
 
     /**

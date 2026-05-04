@@ -56,14 +56,40 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
+                @php
+                    $currentSort = $sort ?? 'name';
+                    $currentDir = $direction ?? 'asc';
+                    $sortLink = function ($column) use ($currentSort, $currentDir) {
+                        $newDir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
+                        return request()->fullUrlWithQuery(['sort' => $column, 'direction' => $newDir]);
+                    };
+                    $sortIcon = function ($column) use ($currentSort, $currentDir) {
+                        if ($currentSort !== $column) {
+                            return '<i class="bi bi-arrow-down-up text-muted ms-1" style="font-size: .75rem;"></i>';
+                        }
+                        return $currentDir === 'asc'
+                            ? '<i class="bi bi-arrow-up ms-1 text-primary"></i>'
+                            : '<i class="bi bi-arrow-down ms-1 text-primary"></i>';
+                    };
+                @endphp
                 <table class="table table-hover align-middle mb-0" id="usersTable">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">Usuario</th>
-                            <th>Email</th>
+                            <th class="ps-4">
+                                <a href="{{ $sortLink('name') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                    Usuario {!! $sortIcon('name') !!}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ $sortLink('email') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                    Email {!! $sortIcon('email') !!}
+                                </a>
+                            </th>
                             <th>Rol</th>
                             <th>
-                                Estado
+                                <a href="{{ $sortLink('email_verified_at') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                    Estado {!! $sortIcon('email_verified_at') !!}
+                                </a>
                                 <button type="button"
                                         class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline"
                                         data-bs-toggle="popover"
@@ -76,7 +102,11 @@
                                     <i class="bi bi-question-circle"></i>
                                 </button>
                             </th>
-                            <th>Registro</th>
+                            <th>
+                                <a href="{{ $sortLink('created_at') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
+                                    Registro {!! $sortIcon('created_at') !!}
+                                </a>
+                            </th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
