@@ -234,18 +234,6 @@ class SiigoFacturacionService
             throw new Exception('La factura original no tiene CUFE; no es factura electrónica DIAN. Use annulInvoice en su lugar.');
         }
 
-        // Verificar contra SIIGO que el GUID exista en este entorno (test/producción).
-        // Si la factura fue creada en otro entorno, el GUID no se encontrará y daría
-        // 'invoice has an invalid value' al crear la nota crédito.
-        try {
-            $this->api->get("/v1/invoices/{$invoiceGuid}");
-        } catch (Exception $e) {
-            throw new Exception(
-                "La factura {$facturaOriginal->numero_factura} no se encuentra en SIIGO con el GUID guardado ({$invoiceGuid}). " .
-                "Probablemente fue creada en otro entorno (test/producción). Detalle SIIGO: " . $e->getMessage()
-            );
-        }
-
         // Evitar duplicar nota crédito si ya existe una aprobada/pendiente
         $existente = $facturaOriginal->notasCredito()
             ->whereIn('estado_dian', ['aprobada', 'pendiente'])
@@ -270,10 +258,22 @@ class SiigoFacturacionService
 
         $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
 
+        // Para facturas electrónicas DIAN se referencia por invoice_data (cufe + prefix + number),
+        // no por GUID interno. SIIGO rechaza el GUID con "invalid_document" cuando la factura
+        // está validada por DIAN. Extraer prefix/number del numero_factura "FV-14047".
+        [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
+        $invoiceData = array_filter([
+            'prefix' => $invoicePrefix,
+            'number' => $invoiceNumber,
+            'date' => optional($facturaOriginal->fecha_emision)->format('Y-m-d'),
+            'cufe' => $facturaOriginal->cufe,
+        ], fn($v) => $v !== null && $v !== '');
+
         $payload = [
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
             'invoice' => $invoiceGuid,
+            'invoice_data' => $invoiceData,
             'customer' => [
                 'identification' => $customerIdentification,
                 'branch_office' => 0,
@@ -365,10 +365,20 @@ class SiigoFacturacionService
 
         $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
 
+        // Referencia DIAN por invoice_data (cufe + prefix + number) para facturas electrónicas.
+        [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
+        $invoiceData = array_filter([
+            'prefix' => $invoicePrefix,
+            'number' => $invoiceNumber,
+            'date' => optional($facturaOriginal->fecha_emision)->format('Y-m-d'),
+            'cufe' => $facturaOriginal->cufe,
+        ], fn($v) => $v !== null && $v !== '');
+
         $payload = [
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
             'invoice' => $invoiceGuid,
+            'invoice_data' => $invoiceData,
             'customer' => [
                 'identification' => $customerIdentification,
                 'branch_office' => 0,
@@ -450,9 +460,9 @@ class SiigoFacturacionService
             $venta->loadMissing(['items.producto', 'items.variante', 'cliente']);
 
             $payloadOriginal = $factura->siigo_request ?? [];
-            $customerIdentification = $payloadOriginal['customer']['identification']
-                ?? $venta->cliente?->numero_identificacion
-                ?? $venta->cliente?->nit
+            $clienteVenta = $venta->cliente;
+            $customerIdentification = ($payloadOriginal['customer']['identification'] ?? null)
+                ?? ($clienteVenta ? ($clienteVenta->numero_identificacion ?? $clienteVenta->nit ?? null) : null)
                 ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
             $sendEmail = (bool) ($payloadOriginal['mail']['send'] ?? false);
             $emailDestino = $factura->email_destino;
@@ -1043,5 +1053,21 @@ class SiigoFacturacionService
             $parts[0] ?? 'Cliente',
             $parts[1] ?? '',
         ];
+    }
+
+    /**
+     * Extraer prefix y number de un numero_factura tipo "FV-14047" → ["FV", 14047].
+     * Si no logra parsear, retorna [null, null].
+     */
+    private function extraerPrefixNumero(?string $numeroFactura): array
+    {
+        if (!$numeroFactura) return [null, null];
+
+        // Soporta "FV-14047", "FV-2-14047" (toma el último número)
+        if (preg_match('/^([A-Za-z]+)[-\s]+(?:\d+[-\s]+)?(\d+)$/', trim($numeroFactura), $m)) {
+            return [strtoupper($m[1]), (int) $m[2]];
+        }
+
+        return [null, null];
     }
 }
