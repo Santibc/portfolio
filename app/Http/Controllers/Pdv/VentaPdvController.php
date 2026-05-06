@@ -303,21 +303,41 @@ class VentaPdvController extends Controller
             'motivo_anulacion' => 'required|string|min:10',
         ]);
 
-        $venta = VentaPdv::with('facturaSiigo')->findOrFail($id);
-        $resultado = $this->ventaService->anularVenta($venta, auth()->id(), $request->motivo_anulacion);
+        $venta = VentaPdv::with('facturaSiigo.notasCredito')->findOrFail($id);
 
-        // Generate credit note if sale had an approved SIIGO invoice
-        if ($resultado['exito'] && $venta->facturaSiigo && $venta->facturaSiigo->estaAprobada()) {
+        if ($venta->estado === 'anulada') {
+            $msg = 'Esta venta ya está anulada';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['exito' => false, 'mensaje' => $msg], 422);
+            }
+            return redirect()->route('pdv.ventas.index')->with('error', $msg);
+        }
+
+        // Step 1: si la venta tiene factura aprobada en SIIGO, generar la nota
+        // crédito PRIMERO. Si SIIGO falla, NO se aplica la anulación local.
+        $notaCreditoInfo = null;
+        if ($venta->facturaSiigo && $venta->facturaSiigo->estaAprobada()) {
             try {
                 $siigoService = app(SiigoFacturacionService::class);
                 $notaCredito = $siigoService->crearNotaCredito($venta->facturaSiigo, $request->motivo_anulacion);
-                $resultado['nota_credito'] = [
+                $notaCreditoInfo = [
                     'estado' => $notaCredito->estado_dian,
                     'numero' => $notaCredito->numero_factura,
                 ];
             } catch (\Exception $e) {
-                $resultado['nota_credito_error'] = 'No se pudo generar la nota crédito: ' . $e->getMessage();
+                $msg = 'No se pudo generar la nota crédito en SIIGO. La anulación NO se aplicó. Detalle: ' . $e->getMessage();
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['exito' => false, 'mensaje' => $msg], 422);
+                }
+                return redirect()->route('pdv.ventas.index')->with('error', $msg);
             }
+        }
+
+        // Step 2: anulación local sólo si SIIGO no rechazó (o no aplicaba)
+        $resultado = $this->ventaService->anularVenta($venta, auth()->id(), $request->motivo_anulacion);
+
+        if ($resultado['exito'] && $notaCreditoInfo) {
+            $resultado['nota_credito'] = $notaCreditoInfo;
         }
 
         if ($request->ajax() || $request->wantsJson()) {

@@ -39,11 +39,45 @@ class ReportesPdvService
                 'cantidad' => $g->count(),
                 'total' => $g->sum('total'),
             ]),
-            'por_metodo_pago' => $ventas->groupBy('metodo_pago')->map(fn($g) => [
-                'cantidad' => $g->count(),
-                'total' => $g->sum('total'),
-            ]),
+            'por_metodo_pago' => $this->desglosarPorMetodoPago($ventas),
         ];
+    }
+
+    /**
+     * Distribuye las ventas por método de pago, separando las "mixtas" en sus
+     * partes de efectivo y transferencia. Una venta mixta cuenta +1 en cada
+     * categoría donde aporta valor > 0.
+     */
+    protected function desglosarPorMetodoPago($ventas): \Illuminate\Support\Collection
+    {
+        $desglose = [
+            'efectivo'      => ['cantidad' => 0, 'total' => 0.0],
+            'transferencia' => ['cantidad' => 0, 'total' => 0.0],
+        ];
+
+        foreach ($ventas as $venta) {
+            $efv = (float) ($venta->monto_efectivo ?? 0) - (float) ($venta->cambio ?? 0);
+            $trv = (float) ($venta->monto_transferencia ?? 0);
+
+            if ($venta->metodo_pago === 'mixto') {
+                if ($efv > 0) {
+                    $desglose['efectivo']['cantidad']++;
+                    $desglose['efectivo']['total'] += $efv;
+                }
+                if ($trv > 0) {
+                    $desglose['transferencia']['cantidad']++;
+                    $desglose['transferencia']['total'] += $trv;
+                }
+            } elseif ($venta->metodo_pago === 'efectivo') {
+                $desglose['efectivo']['cantidad']++;
+                $desglose['efectivo']['total'] += $efv > 0 ? $efv : (float) $venta->total;
+            } elseif ($venta->metodo_pago === 'transferencia') {
+                $desglose['transferencia']['cantidad']++;
+                $desglose['transferencia']['total'] += $trv > 0 ? $trv : (float) $venta->total;
+            }
+        }
+
+        return collect($desglose)->filter(fn($d) => $d['cantidad'] > 0);
     }
 
     public function reporteCierre(int $sesionId): array
@@ -65,7 +99,7 @@ class ReportesPdvService
                 'monto_apertura' => $sesion->monto_apertura,
                 'total_ventas' => $ventasCompletadas->sum('total'),
                 'cantidad_ventas' => $ventasCompletadas->count(),
-                'total_efectivo' => $ventasCompletadas->sum('monto_efectivo'),
+                'total_efectivo' => $ventasCompletadas->sum(fn($v) => (float) ($v->monto_efectivo ?? 0) - (float) ($v->cambio ?? 0)),
                 'total_transferencia' => $ventasCompletadas->sum('monto_transferencia'),
                 'total_vales' => $vales->sum('monto'),
                 'total_anulaciones' => $ventasAnuladas->sum('total'),
@@ -73,6 +107,7 @@ class ReportesPdvService
                 'monto_contado' => $sesion->monto_contado,
                 'diferencia' => $sesion->diferencia,
             ],
+            'por_metodo_pago' => $this->desglosarPorMetodoPago($ventasCompletadas),
         ];
     }
 
@@ -119,14 +154,15 @@ class ReportesPdvService
             ->groupBy('caja_id')
             ->map(function ($ventas) {
                 $caja = $ventas->first()->caja;
+                $desglose = $this->desglosarPorMetodoPago($ventas);
                 return [
                     'caja_id' => $caja->id ?? null,
                     'caja_nombre' => $caja->nombre ?? 'Sin caja',
                     'cantidad_ventas' => $ventas->count(),
                     'total_ventas' => $ventas->sum('total'),
                     'promedio' => $ventas->avg('total'),
-                    'total_efectivo' => $ventas->sum('monto_efectivo'),
-                    'total_transferencia' => $ventas->sum('monto_transferencia'),
+                    'total_efectivo' => $desglose['efectivo']['total'] ?? 0,
+                    'total_transferencia' => $desglose['transferencia']['total'] ?? 0,
                 ];
             })
             ->values()

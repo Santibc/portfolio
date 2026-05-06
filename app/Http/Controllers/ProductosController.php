@@ -65,6 +65,9 @@ class ProductosController extends Controller
                 })
                 ->addColumn('variantes', fn($p) => $p->tiene_variantes ? 'Sí' : 'No')
                 ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
+                ->addColumn('fecha_vencimiento_fmt', function($p) {
+                    return $p->fecha_vencimiento ? $p->fecha_vencimiento->format('d/m/Y') : '-';
+                })
                 ->addColumn('action', function($p) {
                     $url = route('productos.form', $p->id);
 
@@ -153,6 +156,7 @@ class ProductosController extends Controller
             'unidad_venta' => ['required','string','max:100'],
             'unidad_empaque' => ['required','string','max:100'],
             'extension' => ['nullable','string','max:100'],
+            'fecha_vencimiento' => ['nullable','date'],
             'categoria_id' => ['required','exists:categorias,id'],
             'controlar_stock' => ['boolean'],  // NUEVO
             'permitir_venta_sin_stock' => ['boolean'],  // NUEVO

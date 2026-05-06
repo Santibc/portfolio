@@ -46,9 +46,9 @@ class SolicitudController extends Controller
     
     public function index(Request $request)
     {
-        // Verificar que el usuario sea admin, vendedor, facturación o auxiliar inventario
+        // Verificar que el usuario sea admin, vendedor, facturación, auxiliar inventario o garantías
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
+        if (!$user->hasRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario', 'garantias'])) {
             abort(403, 'No tienes permisos para acceder a este módulo.');
         }
 
@@ -179,7 +179,7 @@ class SolicitudController extends Controller
                            . '<i class="bi ' . $s->icono_estado_envio . ' me-1"></i>'
                            . $s->etiqueta_estado_envio . '</span>';
 
-                    // Agregar botón de gestión de envío si el usuario tiene permisos
+                    // Agregar botón de gestión de envío si el usuario tiene permisos (no aplica para rol garantias puro)
                     if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
                         $archivoGuiaJs = addslashes($s->archivo_guia ?? '');
                         $badge .= ' <button type="button" class="btn btn-sm btn-link p-0"
@@ -212,6 +212,7 @@ class SolicitudController extends Controller
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
                     $isAuxiliar = auth()->user()->hasRole('auxiliar_inventario');
                     $isVendedor = auth()->user()->hasRole('vendedor') && !auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo']);
+                    $isGarantiasOnly = auth()->user()->hasRole('garantias') && !auth()->user()->hasRole('admin');
 
                     // Determinar si la cotización es "propia" del vendedor
                     $esSuya = $isVendedor
@@ -224,7 +225,7 @@ class SolicitudController extends Controller
                                    <i class="bi bi-eye"></i>
                                 </button>';
 
-                    if (!$isAuxiliar) {
+                    if (!$isAuxiliar && !$isGarantiasOnly) {
                         // Botón editar: admin/facturación/auxiliar_administrativo/inventarios siempre según su lógica.
                         // Vendedor: solo si la cotización es suya y cumple reglas de pago.
                         if ($isVendedor) {
@@ -255,7 +256,7 @@ class SolicitudController extends Controller
                                    <i class="bi bi-file-earmark-pdf"></i>
                                 </a>';
 
-                    if (!$isAuxiliar) {
+                    if (!$isAuxiliar && !$isGarantiasOnly) {
                         // Botón registrar pago (solo si puede registrar pago)
                         if ($s->puedeRegistrarPago()) {
                             $buttons .= '<a href="'.route('pagos.create', $s->id).'" class="btn btn-outline-success btn-sm"
@@ -350,8 +351,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor, facturación o auxiliar inventario
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
+        // Verificar que sea admin, vendedor, facturación, auxiliar inventario o garantías
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario', 'garantias'])) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
 
@@ -359,7 +360,7 @@ class SolicitudController extends Controller
 
         $isAuxiliar = $user->hasRole('auxiliar_inventario');
 
-        $solicitud->load(['cliente', 'cliente.listaPrecio', 'cliente.ciudad.departamento', 'cliente.pais', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor', 'historialEstados.usuario', 'reservas.liberadaPor']);
+        $solicitud->load(['cliente', 'cliente.listaPrecio', 'cliente.ciudad.departamento', 'cliente.pais', 'items.producto', 'items.varianteProducto', 'enlaceAcceso', 'sucursal.ciudad', 'pagos.registradoPor', 'pagos.aprobadoPor', 'stockDescontadoPor', 'createdBy', 'aplicadaPor', 'rechazadaPor', 'editadaPor', 'historialEstados.usuario', 'reservas.liberadaPor']);
 
         $html = '<div class="row">';
 
@@ -451,6 +452,28 @@ class SolicitudController extends Controller
         }
         if ($solicitud->fecha_vencimiento) {
             $html .= '<tr><td><strong>Fecha Vencimiento:</strong></td><td>' . $solicitud->fecha_vencimiento->format('d/m/Y') . '</td></tr>';
+        }
+
+        // Sucursal de entrega
+        if ($solicitud->sucursal) {
+            $detalleSucursal = e($solicitud->sucursal->nombre);
+            $extras = [];
+            if ($solicitud->sucursal->direccion) {
+                $extras[] = e($solicitud->sucursal->direccion);
+            }
+            if ($solicitud->sucursal->ciudad) {
+                $extras[] = e($solicitud->sucursal->ciudad->nombre);
+            }
+            if ($solicitud->sucursal->telefono) {
+                $extras[] = 'Tel: ' . e($solicitud->sucursal->telefono);
+            }
+            if ($solicitud->sucursal->contacto) {
+                $extras[] = 'Contacto: ' . e($solicitud->sucursal->contacto);
+            }
+            if (!empty($extras)) {
+                $detalleSucursal .= '<br><small class="text-muted">' . implode(' — ', $extras) . '</small>';
+            }
+            $html .= '<tr><td><strong>Sucursal de Entrega:</strong></td><td>' . $detalleSucursal . '</td></tr>';
         }
 
         $html .= '</table>';
@@ -926,6 +949,28 @@ class SolicitudController extends Controller
 
         $html .= '</div>';
 
+        // Sección de Garantías
+        $garantiasPendientes = \App\Models\Garantia::with(['producto', 'variante', 'documentos'])
+            ->where('cliente_id', $solicitud->cliente_id)
+            ->pendientes()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $garantiasLiberadasEnEsta = \App\Models\Garantia::with(['producto', 'variante', 'usuarioLiberador'])
+            ->where('solicitud_cotizacion_id', $solicitud->id)
+            ->liberadas()
+            ->orderBy('liberado_en', 'desc')
+            ->get();
+
+        $puedeLiberar = $user->hasAnyRole(['admin', 'garantias']);
+
+        $html .= view('garantias._seccion_solicitud', [
+            'garantiasPendientes' => $garantiasPendientes,
+            'garantiasLiberadasEnEsta' => $garantiasLiberadasEnEsta,
+            'puedeLiberar' => $puedeLiberar,
+            'solicitudId' => $solicitud->id,
+        ])->render();
+
         // Si es AJAX (modal del index), retornar HTML raw
         if ($request->ajax()) {
             return response($html);
@@ -1051,6 +1096,7 @@ class SolicitudController extends Controller
                 'cliente.ciudad.departamento',
                 'cliente.pais',
                 'items.producto.imagenPrincipal',
+                'sucursal.ciudad',
                 'aplicadaPor'
             ]);
 
@@ -1155,6 +1201,7 @@ class SolicitudController extends Controller
                 'cliente.ciudad',
                 'cliente.ciudad.departamento',
                 'items.producto.imagenPrincipal',
+                'sucursal.ciudad',
                 'rechazadaPor'
             ]);
 
@@ -1432,6 +1479,7 @@ class SolicitudController extends Controller
             'cliente.ciudad.departamento',
             'cliente.pais',
             'items.producto.imagenPrincipal',
+            'sucursal.ciudad',
             'aplicadaPor',
             'createdBy',
             'pagos.registradoPor'

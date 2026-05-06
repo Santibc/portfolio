@@ -77,7 +77,8 @@ class CatalogoController extends Controller
             'cliente_id' => 'required|exists:clientes,id'
         ]);
 
-        $cliente = Cliente::with('sucursalesActivas')->findOrFail($request->cliente_id);
+        $cliente = Cliente::with(['sucursalesActivas', 'garantiasPendientes.documentos', 'garantiasPendientes.producto', 'garantiasPendientes.variante'])
+            ->findOrFail($request->cliente_id);
 
         $categorias = Categoria::activas()->get();
         $enlace = null; // No hay enlace en el flujo B

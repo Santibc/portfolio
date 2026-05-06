@@ -120,6 +120,11 @@ class RolesAndPermissionsSeeder extends Seeder
             // Configuración
             'configuracion.ver',
             'configuracion.editar',
+
+            // Módulo Garantías
+            'garantias.ver',
+            'garantias.crear',
+            'garantias.liberar',
         ];
 
         // Crear todos los permisos
@@ -240,6 +245,16 @@ class RolesAndPermissionsSeeder extends Seeder
                 'reportes.ver',
                 'reportes.exportar',
             ])),
+
+            // Garantías - Solo módulo de garantías + lectura de cotizaciones
+            'garantias' => [
+                'dashboard.ver',
+                'garantias.ver',
+                'garantias.crear',
+                'garantias.liberar',
+                'cotizaciones.ver',
+                'cotizaciones.exportar',
+            ],
         ];
 
         // Crear roles y asignar permisos

@@ -804,6 +804,56 @@
       });
   }
 
+  @hasanyrole('admin|garantias')
+  $(document).on('click', '.btn-liberar-garantia-solicitud', function() {
+    document.getElementById('liberarGarantiaSolicitudGarantiaId').value = this.dataset.garantiaId;
+    document.getElementById('liberarGarantiaSolicitudSolicitudId').value = this.dataset.solicitudId || '';
+    document.getElementById('liberarGarantiaSolicitudObservacion').value = '';
+    new bootstrap.Modal(document.getElementById('modalLiberarGarantiaSolicitud')).show();
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('btnConfirmarLiberarGarantiaSolicitud');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const garantiaId = document.getElementById('liberarGarantiaSolicitudGarantiaId').value;
+      const solicitudId = document.getElementById('liberarGarantiaSolicitudSolicitudId').value;
+      const observacion = document.getElementById('liberarGarantiaSolicitudObservacion').value.trim();
+      if (observacion.length < 5) {
+        Swal.fire('Observación requerida', 'Debes ingresar una observación de al menos 5 caracteres.', 'warning');
+        return;
+      }
+      const body = { observacion_liberacion: observacion };
+      if (solicitudId) body.solicitud_cotizacion_id = solicitudId;
+
+      fetch(`/garantias/${garantiaId}/liberar`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.message || 'Error al liberar');
+        return data;
+      })
+      .then(data => {
+        bootstrap.Modal.getInstance(document.getElementById('modalLiberarGarantiaSolicitud')).hide();
+        Swal.fire('Garantía liberada', data.mensaje, 'success').then(() => {
+          if (solicitudId) {
+            verDetalle(solicitudId);
+          }
+          $('#solicitudes-table').DataTable().ajax.reload(null, false);
+        });
+      })
+      .catch(err => Swal.fire('Error', err.message, 'error'));
+    });
+  });
+  @endhasanyrole
+
   </script>
   @endpush
 
@@ -842,6 +892,33 @@
       </div>
     </div>
   </div>
+
+  @hasanyrole('admin|garantias')
+  <!-- Modal Liberar Garantía (desde detalle de cotización) -->
+  <div class="modal fade" id="modalLiberarGarantiaSolicitud" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Liberar garantía</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="liberarGarantiaSolicitudGarantiaId">
+          <input type="hidden" id="liberarGarantiaSolicitudSolicitudId">
+          <div class="mb-3">
+            <label class="form-label">Observación de liberación <span class="text-danger">*</span></label>
+            <textarea id="liberarGarantiaSolicitudObservacion" class="form-control" rows="4" placeholder="Describe el motivo o resultado..."></textarea>
+            <small class="text-muted">Mínimo 5 caracteres.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnConfirmarLiberarGarantiaSolicitud"><i class="bi bi-unlock"></i> Liberar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endhasanyrole
 
   <!-- Modal para Exportar Excel -->
   <div class="modal fade" id="modalExportarExcel" tabindex="-1">

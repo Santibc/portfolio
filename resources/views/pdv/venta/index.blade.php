@@ -244,7 +244,11 @@
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
                         body: JSON.stringify({ motivo_anulacion: result.value }),
                     }).then(r => r.json()).then(data => {
-                        Swal.fire(data.exito ? 'Anulada' : 'Error', data.mensaje, data.exito ? 'success' : 'error');
+                        let msg = data.mensaje;
+                        if (data.nota_credito) {
+                            msg += `\nNota Crédito: ${data.nota_credito.numero || 'Pendiente'} (${data.nota_credito.estado})`;
+                        }
+                        Swal.fire(data.exito ? 'Anulada' : 'Error', msg, data.exito ? 'success' : 'error');
                         tabla.ajax.reload();
                     });
                 }

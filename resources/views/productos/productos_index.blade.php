@@ -35,6 +35,7 @@
                 <th>Unidad Venta</th>
                 <th>Unidad Empaque</th>
                 <th>Extensión</th>
+                <th>Fecha Vencimiento</th>
                 <th>Variantes</th>
                 <th>Activo</th>
               </tr>
@@ -66,6 +67,7 @@
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
         { data:'extension',    name:'extension' },
+        { data:'fecha_vencimiento_fmt', name:'fecha_vencimiento' },
         { data:'variantes',    name:'tiene_variantes' },
         { data:'activo',       name:'activo' },
       ],

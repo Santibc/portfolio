@@ -148,6 +148,17 @@ class Cliente extends Model
         return $this->hasMany(DocumentoCliente::class, 'cliente_id');
     }
 
+    public function garantias()
+    {
+        return $this->hasMany(Garantia::class, 'cliente_id');
+    }
+
+    public function garantiasPendientes()
+    {
+        return $this->hasMany(Garantia::class, 'cliente_id')
+            ->where('estado', Garantia::ESTADO_PENDIENTE);
+    }
+
     public function scopeActivos($query)
     {
         return $query->where('activo', true);

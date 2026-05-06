@@ -133,11 +133,6 @@ class VentaPdvServiceV2
             return ['exito' => false, 'mensaje' => 'Esta venta ya está anulada'];
         }
 
-        // Check if session is closed
-        if ($venta->sesionCaja && !$venta->sesionCaja->estaAbierta()) {
-            return ['exito' => false, 'mensaje' => 'No se puede anular una venta de una sesión cerrada'];
-        }
-
         DB::beginTransaction();
         try {
             foreach ($venta->items as $item) {
@@ -150,10 +145,12 @@ class VentaPdvServiceV2
 
             $venta->anular($usuarioId, $motivo);
 
-            // Update session totals
+            // Update session totals only when session is still open.
+            // If the session is already closed (cuadre histórico), leave its totals untouched
+            // so the historical balance remains intact; the anulación queda registrada en la venta.
             if ($venta->sesion_caja_id) {
                 $sesion = $venta->sesionCaja;
-                if ($sesion) {
+                if ($sesion && $sesion->estaAbierta()) {
                     $sesion->increment('total_anulaciones', $venta->total);
                     $sesion->decrement('total_ventas', $venta->total);
                     $sesion->decrement('cantidad_ventas');

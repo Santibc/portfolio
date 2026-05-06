@@ -113,6 +113,15 @@
               @error('extension') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            {{-- Fecha de Vencimiento --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Fecha de Vencimiento</label>
+              <input name="fecha_vencimiento" type="date"
+                     class="form-control @error('fecha_vencimiento') is-invalid @enderror"
+                     value="{{ old('fecha_vencimiento', optional($producto->fecha_vencimiento)->format('Y-m-d')) }}">
+              @error('fecha_vencimiento') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
             {{-- Categoría --}}
             <div class="col-md-4 mb-3">
               <label class="form-label">Categoría <span class="text-danger">*</span></label>

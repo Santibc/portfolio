@@ -21,6 +21,7 @@ class Producto extends Model
         'unidad_venta',
         'unidad_empaque',
         'extension',
+        'fecha_vencimiento',
         'categoria_id',
         'activo',
         'tiene_variantes',
@@ -36,6 +37,7 @@ class Producto extends Model
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
         'eliminado' => 'boolean',
+        'fecha_vencimiento' => 'date',
     ];
 
     public function categoria()

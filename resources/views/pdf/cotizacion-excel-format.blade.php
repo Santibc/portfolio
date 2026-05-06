@@ -331,6 +331,36 @@
                 </div>
             </td>
         </tr>
+        @if($solicitud->sucursal)
+        <tr>
+            <td colspan="2" style="vertical-align: top; padding-top: 6px;">
+                <div class="dato-row">
+                    <span class="dato-label">Sucursal Entrega</span>
+                    <span class="dato-valor">
+                        {{ $solicitud->sucursal->nombre }}
+                        @php
+                            $extrasSucursal = [];
+                            if (!empty($solicitud->sucursal->direccion)) {
+                                $extrasSucursal[] = $solicitud->sucursal->direccion;
+                            }
+                            if ($solicitud->sucursal->ciudad) {
+                                $extrasSucursal[] = $solicitud->sucursal->ciudad->nombre;
+                            }
+                            if (!empty($solicitud->sucursal->telefono)) {
+                                $extrasSucursal[] = 'Tel: ' . $solicitud->sucursal->telefono;
+                            }
+                            if (!empty($solicitud->sucursal->contacto)) {
+                                $extrasSucursal[] = 'Contacto: ' . $solicitud->sucursal->contacto;
+                            }
+                        @endphp
+                        @if(!empty($extrasSucursal))
+                            — {{ implode(' / ', $extrasSucursal) }}
+                        @endif
+                    </span>
+                </div>
+            </td>
+        </tr>
+        @endif
     </table>
 
     {{-- TABLA DE PRODUCTOS --}}

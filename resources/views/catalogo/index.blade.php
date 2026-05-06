@@ -317,6 +317,12 @@
               <option value="9">Mostrar 9</option>
               <option value="12">Mostrar 12</option>
             </select>
+            @if(isset($cliente) && $cliente->garantiasPendientes && $cliente->garantiasPendientes->count() > 0)
+              <button type="button" class="btn btn-danger position-relative me-2" id="btnGarantiasPendientes" title="Garantías pendientes">
+                <i class="bi bi-exclamation-triangle-fill"></i> Garantías
+                <span class="badge rounded-pill bg-light text-danger cart-badge">{{ $cliente->garantiasPendientes->count() }}</span>
+              </button>
+            @endif
             <button class="btn btn-primary position-relative" id="btnCarrito">
               <i class="bi bi-cart"></i> Carrito
               <span class="badge rounded-pill bg-danger cart-badge" id="cartCount" style="display:none;">0</span>
@@ -324,6 +330,14 @@
           </div>
         </div>
       </div>
+
+      @if(isset($cliente) && $cliente->garantiasPendientes && $cliente->garantiasPendientes->count() > 0)
+        @include('garantias._modal_garantias_pendientes', [
+          'garantiasPendientes' => $cliente->garantiasPendientes,
+          'puedeLiberar' => false,
+          'solicitudId' => null,
+        ])
+      @endif
 
       {{-- Productos --}}
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -1258,6 +1272,12 @@ window.cargarProductos = function(page=1){
 
     $('#btnCarrito').click(()=>$('#cartSidebar').addClass('show'));
     $('#closeCart').click(()=>$('#cartSidebar').removeClass('show'));
+
+    @if(isset($cliente) && $cliente->garantiasPendientes && $cliente->garantiasPendientes->count() > 0)
+    $('#btnGarantiasPendientes').click(function() {
+      new bootstrap.Modal(document.getElementById('modalGarantiasPendientes')).show();
+    });
+    @endif
     $('#busquedaProducto').on('keyup',debounce(()=>cargarProductos(1),500));
     $('#filtroCategoria').change(()=>cargarProductos(1));
 

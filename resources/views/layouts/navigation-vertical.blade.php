@@ -69,6 +69,11 @@
                 <i class="bi bi-graph-up-arrow"></i>
                 <span>Métricas</span>
             </a>
+            <a href="{{ route('metricas.productos.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('metricas.productos.*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-bar-chart-steps"></i>
+                <span>Métricas Productos</span>
+            </a>
         @endif
 
         {{-- Usuarios (para admin, auxiliar_administrativo, inventarios y facturación) --}}
@@ -80,8 +85,8 @@
             </a>
         @endif
 
-        {{-- Cotizaciones (para vendedor, admin, auxiliar_administrativo, facturación y auxiliar inventario) --}}
-        @if(auth()->user()->hasRole(['vendedor', 'admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario']))
+        {{-- Cotizaciones (para vendedor, admin, auxiliar_administrativo, facturación, auxiliar inventario y garantías) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin', 'auxiliar_administrativo', 'facturacion', 'inventarios', 'auxiliar_inventario', 'garantias']))
             <a href="{{ route('solicitudes') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>
@@ -168,11 +173,6 @@
                 <i class="bi bi-geo-alt"></i>
                 <span>Ubicaciones</span>
             </a>
-            <a href="{{ route('novedades-stock') }}"
-               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('novedades-stock*') ? 'active' : 'text-dark' }}">
-                <i class="bi bi-exclamation-triangle"></i>
-                <span>Novedades</span>
-            </a>
             <a href="{{ route('productos.importacion.historial') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos/historial-importaciones*') || request()->is('productos/importacion*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-upload"></i>
@@ -233,11 +233,6 @@
                     <i class="bi bi-bar-chart"></i>
                     <span>Reportes PdV</span>
                 </a>
-                <a href="{{ route('novedades-stock') }}"
-                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('novedades-stock*') ? 'active' : 'text-dark' }}">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>Novedades</span>
-                </a>
                 <a href="{{ route('pdv.stock.index') }}"
                    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.stock.*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-box-seam"></i>
@@ -281,6 +276,19 @@
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('portal.historial') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clock-history"></i>
                 <span>Mis Pedidos</span>
+            </a>
+        @endif
+
+        @if(auth()->user()->hasRole(['admin', 'garantias']))
+            <div class="border-top my-2" style="border-color: var(--miracle-lilac) !important;"></div>
+            <p class="nav-link mb-1 text-muted small fw-semibold text-uppercase">
+                <i class="bi bi-shield-check me-1"></i>
+                <span>Garantías</span>
+            </p>
+            <a href="{{ route('garantias.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('garantias.*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-shield-check"></i>
+                <span>Garantías</span>
             </a>
         @endif
     </nav>

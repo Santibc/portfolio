@@ -75,12 +75,6 @@ class ReportesPdvController extends Controller
         return view('pdv.reportes.vales', compact('datos', 'cajas'));
     }
 
-    public function reporteNovedades(Request $request)
-    {
-        $cajas = Caja::all();
-        return view('pdv.reportes.novedades', compact('cajas'));
-    }
-
     public function reportePrefacturas(Request $request)
     {
         $datos = $this->reportesService->reportePrefacturas($request->all());

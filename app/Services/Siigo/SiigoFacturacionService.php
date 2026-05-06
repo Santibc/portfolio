@@ -153,12 +153,26 @@ class SiigoFacturacionService
     }
 
     /**
-     * Crear nota crédito electrónica para una factura ya emitida.
+     * Crear nota crédito electrónica para una factura ya emitida (anulación total).
+     *
+     * Usa reason = 2 (Anulación de factura electrónica) según códigos DIAN —
+     * el SDK oficial de Siigo expone este enum como DianReason 1..6.
+     *
+     * Si SIIGO devuelve error, re-lanza la excepción para que el caller
+     * pueda decidir no aplicar la anulación local.
      */
     public function crearNotaCredito(FacturaSiigo $facturaOriginal, string $motivo): FacturaSiigo
     {
         if (!$facturaOriginal->siigo_invoice_id) {
             throw new Exception('La factura original no tiene ID de SIIGO.');
+        }
+
+        // Evitar duplicar nota crédito si ya existe una aprobada/pendiente
+        $existente = $facturaOriginal->notasCredito()
+            ->whereIn('estado_dian', ['aprobada', 'pendiente'])
+            ->first();
+        if ($existente) {
+            return $existente;
         }
 
         $venta = $facturaOriginal->ventaPdv;
@@ -173,7 +187,7 @@ class SiigoFacturacionService
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
             'invoice' => $facturaOriginal->siigo_invoice_id,
-            'reason' => 1, // Devolución parcial o total
+            'reason' => 2, // DIAN: Anulación de factura electrónica
             'observations' => $motivo,
             'items' => $this->construirItems($venta),
             'payments' => $this->construirPayments($venta),
@@ -209,11 +223,18 @@ class SiigoFacturacionService
 
             $this->procesarEstadoRespuesta($factura, $response);
 
-            return $factura->fresh();
+            $facturaFresh = $factura->fresh();
+
+            // DIAN rechazada → tratar como error para no aplicar la anulación local
+            if ($facturaFresh->estado_dian === 'rechazada') {
+                throw new Exception('SIIGO/DIAN rechazó la nota crédito: ' . ($facturaFresh->errores ?? 'sin detalle'));
+            }
+
+            return $facturaFresh;
         } catch (Exception $e) {
             $factura->marcarError($e->getMessage());
             Log::error("SIIGO crearNotaCredito error: {$e->getMessage()}");
-            return $factura->fresh();
+            throw $e;
         }
     }
 

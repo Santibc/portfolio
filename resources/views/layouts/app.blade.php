@@ -12,6 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    {{-- DataTables Buttons (faltante en el bundle: arregla el dropdown de "Filas"/"Columnas") --}}
+    <link href="https://cdn.datatables.net/buttons/3.2.3/css/buttons.dataTables.min.css" rel="stylesheet">
     {{-- Google Fonts - Miracle Brand --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -373,6 +375,119 @@
                 padding: 0.5rem 0.75rem;
                 font-size: 0.85rem;
             }
+        }
+
+        /* DataTables Buttons - integración con theme Miracle */
+        div.dt-button-collection {
+            background-color: #fff;
+            border: 1px solid var(--miracle-lilac);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 16px rgba(56, 46, 101, 0.12);
+            padding: 0.25rem;
+            min-width: 8rem;
+            z-index: 2050 !important;
+        }
+        div.dt-button-collection button.dt-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.4rem 0.75rem;
+            margin: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0.35rem;
+            color: var(--miracle-dark);
+            text-decoration: none !important;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+        div.dt-button-collection button.dt-button:hover {
+            background-color: var(--miracle-lilac-light);
+            color: var(--miracle-dark);
+        }
+        div.dt-button-collection button.dt-button.dt-button-active,
+        div.dt-button-collection button.dt-button.active {
+            background-color: var(--miracle-pink-light);
+            color: var(--miracle-pink);
+            font-weight: 600;
+            text-decoration: none !important;
+        }
+        div.dt-button-background {
+            background: rgba(56, 46, 101, 0.15);
+        }
+        /* Botones principales del toolbar */
+        div.dt-buttons {
+            display: inline-flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        div.dt-buttons .dt-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.85rem;
+            margin: 0;
+            background-color: #fff;
+            border: 1px solid var(--miracle-lilac);
+            border-radius: 0.5rem;
+            color: var(--miracle-dark);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none !important;
+            box-shadow: 0 1px 2px rgba(56, 46, 101, 0.05);
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        div.dt-buttons .dt-button:hover,
+        div.dt-buttons .dt-button:focus {
+            background-color: var(--miracle-lilac-light);
+            border-color: var(--miracle-lilac);
+            color: var(--miracle-dark);
+            box-shadow: 0 2px 6px rgba(188, 169, 245, 0.25);
+            outline: none;
+        }
+        div.dt-buttons .dt-button.btn-outline-success,
+        div.dt-buttons .buttons-excel {
+            border-color: var(--miracle-aqua);
+            color: #2d7a78;
+        }
+        div.dt-buttons .dt-button.btn-outline-success:hover,
+        div.dt-buttons .buttons-excel:hover {
+            background-color: var(--miracle-aqua);
+            color: #fff;
+        }
+        div.dt-buttons .dt-button i,
+        div.dt-buttons .dt-button .bi {
+            font-size: 0.95rem;
+        }
+        /* Caret del dropdown (Filas, Columnas) */
+        div.dt-buttons .dt-button.buttons-collection::after,
+        div.dt-buttons .dt-button.buttons-page-length::after,
+        div.dt-buttons .dt-button.buttons-colvis::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid currentColor;
+            margin-left: 0.35rem;
+            opacity: 0.7;
+        }
+        /* Buscador de DataTables */
+        div.dt-container .dt-search input,
+        div.dt-container input.dt-input[type="search"] {
+            border: 1px solid var(--miracle-lilac);
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        div.dt-container .dt-search input:focus,
+        div.dt-container input.dt-input[type="search"]:focus {
+            border-color: var(--miracle-pink);
+            outline: none;
+            box-shadow: 0 0 0 0.15rem rgba(255, 132, 213, 0.2);
         }
     </style>
 </head>

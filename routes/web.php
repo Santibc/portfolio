@@ -17,7 +17,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 use App\Http\Controllers\ListaPreciosController;
 use App\Http\Controllers\UbicacionesController;
 use App\Http\Controllers\TrasladosController;
-use App\Http\Controllers\NovedadesStockController;
+use App\Http\Controllers\GarantiaController;
 use App\Http\Controllers\PortalClienteController;
 use App\Http\Controllers\PuntoVentaController;
 use App\Http\Controllers\Pdv\PdvDashboardController;
@@ -54,6 +54,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('reportes')->name('reportes.')
     Route::get('/ventas-excel', [HomeController::class, 'exportarVentasExcel'])->name('ventas.excel');
     Route::get('/metricas-pdf', [HomeController::class, 'exportarMetricasPdf'])->name('metricas.pdf');
 });
+
+// ============================================================
+// MÉTRICAS DE PRODUCTOS (solo admin)
+// ============================================================
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('metricas-productos')
+    ->name('metricas.productos.')
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\MetricasProductosController::class, 'index'])->name('index');
+        Route::get('/kpis', [\App\Http\Controllers\MetricasProductosController::class, 'kpis'])->name('kpis');
+        Route::get('/graficas', [\App\Http\Controllers\MetricasProductosController::class, 'graficas'])->name('graficas');
+        Route::get('/graficas/data', [\App\Http\Controllers\MetricasProductosController::class, 'graficasData'])->name('graficas.data');
+    });
 
 Route::middleware('auth')->group(function () {
     // Perfil - Todos los usuarios autenticados
@@ -182,9 +195,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor'])->grou
 });
 
 // ============================================================
-// COTIZACIONES/SOLICITUDES - Lectura (Admin, Vendedor, Facturación y Auxiliar Inventario)
+// COTIZACIONES/SOLICITUDES - Lectura (Admin, Vendedor, Facturación, Auxiliar Inventario y Garantías)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturacion,inventarios,auxiliar_inventario'])->group(function () {
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,vendedor,facturacion,inventarios,auxiliar_inventario,garantias'])->group(function () {
     // Listado principal
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
 
@@ -232,6 +245,10 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inven
     Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('solicitudes.edit');
     Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'update'])->name('solicitudes.update');
     Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'destroy'])->name('solicitudes.destroy');
+});
+
+// Logs de cotizaciones — accesible para roles administrativos y garantías (lectura de auditoría)
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,facturacion,inventarios,vendedor,garantias'])->group(function () {
     Route::get('/solicitudes/{solicitud}/logs', [SolicitudController::class, 'logs'])->name('solicitudes.logs');
 });
 
@@ -337,17 +354,17 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,cajer
 });
 
 // ============================================================
-// NOVEDADES DE STOCK (Admin e Inventarios)
+// GARANTÍAS (Admin y Garantías)
 // ============================================================
-Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios,cajero_principal'])->group(function () {
-    Route::get('novedades-stock', [NovedadesStockController::class, 'index'])->name('novedades-stock');
-    Route::get('novedades-stock/form/{id?}', [NovedadesStockController::class, 'form'])->name('novedades-stock.form');
-    Route::post('novedades-stock/guardar', [NovedadesStockController::class, 'guardar'])->name('novedades-stock.guardar');
-    Route::post('novedades-stock/{id}/cerrar', [NovedadesStockController::class, 'cerrar'])->name('novedades-stock.cerrar');
-    Route::get('novedades-stock/{id}/detalle', [NovedadesStockController::class, 'detalle'])->name('novedades-stock.detalle');
-    Route::get('novedades-stock/variantes/{productoId}', [NovedadesStockController::class, 'getVariantesPorProducto'])->name('novedades-stock.variantes');
-    Route::get('novedades-stock/stock-disponible', [NovedadesStockController::class, 'getStockDisponible'])->name('novedades-stock.stock-disponible');
-    Route::get('novedades-stock/dashboard', [NovedadesStockController::class, 'dashboard'])->name('novedades-stock.dashboard');
+Route::middleware(['auth', 'role:admin,garantias'])->prefix('garantias')->group(function () {
+    Route::get('/', [GarantiaController::class, 'index'])->name('garantias.index');
+    Route::get('/crear', [GarantiaController::class, 'create'])->name('garantias.crear');
+    Route::post('/', [GarantiaController::class, 'store'])->name('garantias.store');
+    Route::get('/buscar-productos', [GarantiaController::class, 'buscarProductos'])->name('garantias.buscar-productos');
+    Route::get('/cliente/{id}/pendientes', [GarantiaController::class, 'garantiasPendientesCliente'])->name('garantias.cliente.pendientes');
+    Route::get('/documentos/{id}/descargar', [GarantiaController::class, 'descargarDocumento'])->name('garantias.documentos.descargar');
+    Route::get('/{id}', [GarantiaController::class, 'show'])->name('garantias.show');
+    Route::post('/{id}/liberar', [GarantiaController::class, 'liberar'])->name('garantias.liberar');
 });
 
 // ============================================================
@@ -553,7 +570,6 @@ Route::middleware(['auth', 'role:admin,cajero_principal'])
         Route::get('/top-productos', [ReportesPdvController::class, 'topProductos'])->name('top-productos');
         Route::get('/comparativa-cajas', [ReportesPdvController::class, 'comparativaCajas'])->name('comparativa-cajas');
         Route::get('/vales', [ReportesPdvController::class, 'reporteVales'])->name('vales');
-        Route::get('/novedades', [ReportesPdvController::class, 'reporteNovedades'])->name('novedades');
         Route::get('/prefacturas', [ReportesPdvController::class, 'reportePrefacturas'])->name('prefacturas');
         Route::get('/exportar', [ReportesPdvController::class, 'exportar'])->name('exportar');
     });
