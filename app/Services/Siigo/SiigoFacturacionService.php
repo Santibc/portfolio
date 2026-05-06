@@ -264,7 +264,7 @@ class SiigoFacturacionService
         [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
         $invoiceData = array_filter([
             'prefix' => $invoicePrefix,
-            'number' => $invoiceNumber,
+            'number' => $invoiceNumber !== null ? (string) $invoiceNumber : null,
             'date' => optional($facturaOriginal->fecha_emision)->format('Y-m-d'),
             'cufe' => $facturaOriginal->cufe,
         ], fn($v) => $v !== null && $v !== '');
@@ -369,7 +369,7 @@ class SiigoFacturacionService
         [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
         $invoiceData = array_filter([
             'prefix' => $invoicePrefix,
-            'number' => $invoiceNumber,
+            'number' => $invoiceNumber !== null ? (string) $invoiceNumber : null,
             'date' => optional($facturaOriginal->fecha_emision)->format('Y-m-d'),
             'cufe' => $facturaOriginal->cufe,
         ], fn($v) => $v !== null && $v !== '');
