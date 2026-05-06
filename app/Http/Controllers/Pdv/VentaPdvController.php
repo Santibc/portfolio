@@ -313,19 +313,20 @@ class VentaPdvController extends Controller
             return redirect()->route('pdv.ventas.index')->with('error', $msg);
         }
 
-        // Step 1: si la venta tiene factura aprobada en SIIGO, generar la nota
-        // crédito PRIMERO. Si SIIGO falla, NO se aplica la anulación local.
+        // Step 1: si la venta tiene factura registrada en SIIGO con id, anularla allá
+        // PRIMERO (nota crédito si tiene CUFE, annul si no). Si SIIGO falla, NO se aplica
+        // la anulación local.
         $notaCreditoInfo = null;
-        if ($venta->facturaSiigo && $venta->facturaSiigo->estaAprobada()) {
+        if ($venta->facturaSiigo && $venta->facturaSiigo->siigo_invoice_id) {
             try {
                 $siigoService = app(SiigoFacturacionService::class);
-                $notaCredito = $siigoService->crearNotaCredito($venta->facturaSiigo, $request->motivo_anulacion);
+                $resultadoSiigo = $siigoService->anularFacturaSiigo($venta->facturaSiigo, $request->motivo_anulacion);
                 $notaCreditoInfo = [
-                    'estado' => $notaCredito->estado_dian,
-                    'numero' => $notaCredito->numero_factura,
+                    'estado' => $resultadoSiigo->estado_dian,
+                    'numero' => $resultadoSiigo->numero_factura ?? $venta->facturaSiigo->numero_factura,
                 ];
             } catch (\Exception $e) {
-                $msg = 'No se pudo generar la nota crédito en SIIGO. La anulación NO se aplicó. Detalle: ' . $e->getMessage();
+                $msg = 'No se pudo anular la factura en SIIGO. La anulación NO se aplicó. Detalle: ' . $e->getMessage();
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json(['exito' => false, 'mensaje' => $msg], 422);
                 }

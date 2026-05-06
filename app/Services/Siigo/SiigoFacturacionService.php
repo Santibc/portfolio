@@ -153,6 +153,61 @@ class SiigoFacturacionService
     }
 
     /**
+     * Anular una factura en SIIGO eligiendo el endpoint correcto:
+     *  - Si la factura tiene CUFE (validada por DIAN) → POST /v1/credit-notes (nota crédito reason=2)
+     *  - Si la factura NO tiene CUFE (no enviada/no aprobada por DIAN) → POST /v1/invoices/{id}/annul
+     *
+     * Según la documentación oficial de Siigo, una factura electrónica aprobada
+     * por la DIAN no se puede anular directamente: hay que emitir nota crédito.
+     * El endpoint annul aplica solo a facturas no validadas todavía por DIAN.
+     *
+     * Devuelve el FacturaSiigo del documento de anulación creado (nota crédito o registro de annul).
+     * Re-lanza la excepción si SIIGO devuelve error.
+     */
+    public function anularFacturaSiigo(FacturaSiigo $facturaOriginal, string $motivo): FacturaSiigo
+    {
+        if (!$facturaOriginal->siigo_invoice_id) {
+            throw new Exception('La factura original no tiene ID de SIIGO.');
+        }
+
+        // Factura validada por DIAN (con CUFE) → emitir nota crédito
+        if (!empty($facturaOriginal->cufe)) {
+            return $this->crearNotaCredito($facturaOriginal, $motivo);
+        }
+
+        // Factura sin CUFE → usar endpoint annul de Siigo
+        return $this->annulInvoice($facturaOriginal, $motivo);
+    }
+
+    /**
+     * Anular una factura NO electrónica (sin CUFE) vía POST /v1/invoices/{id}/annul.
+     */
+    public function annulInvoice(FacturaSiigo $facturaOriginal, string $motivo): FacturaSiigo
+    {
+        $invoiceGuid = $facturaOriginal->siigo_invoice_id;
+
+        if (!preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', (string) $invoiceGuid)) {
+            throw new Exception("El siigo_invoice_id no tiene formato GUID válido (recibido: '{$invoiceGuid}').");
+        }
+
+        try {
+            $facturaOriginal->incrementarIntento();
+            $response = $this->api->post("/v1/invoices/{$invoiceGuid}/annul", [], $facturaOriginal->id);
+
+            $facturaOriginal->update([
+                'siigo_response' => $response,
+                'estado_dian' => 'anulada',
+                'errores' => null,
+            ]);
+
+            return $facturaOriginal->fresh();
+        } catch (Exception $e) {
+            Log::error("SIIGO annulInvoice error para {$invoiceGuid}: {$e->getMessage()}");
+            throw $e;
+        }
+    }
+
+    /**
      * Crear nota crédito electrónica para una factura ya emitida (anulación total).
      *
      * Usa reason = 2 (Anulación de factura electrónica) según códigos DIAN —
@@ -174,9 +229,9 @@ class SiigoFacturacionService
             throw new Exception("El siigo_invoice_id de la factura original no tiene formato GUID válido (recibido: '{$invoiceGuid}'). Verifique que la factura original sí fue aprobada por SIIGO.");
         }
 
-        // Solo se puede emitir nota crédito sobre una factura aprobada por DIAN
-        if (!$facturaOriginal->estaAprobada()) {
-            throw new Exception('La factura original no está aprobada en DIAN; no se puede generar nota crédito.');
+        // Para emitir nota crédito DIAN la factura original debe tener CUFE
+        if (empty($facturaOriginal->cufe)) {
+            throw new Exception('La factura original no tiene CUFE; no es factura electrónica DIAN. Use annulInvoice en su lugar.');
         }
 
         // Evitar duplicar nota crédito si ya existe una aprobada/pendiente

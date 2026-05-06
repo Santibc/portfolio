@@ -57,7 +57,8 @@
       "Bash(F:/xamppPro80/php/php.exe -r ' *)",
       "Bash(\"F:/xamppPro80/mysql/bin/mysql.exe\" -u root miracle_prod_100 -e \"SELECT COUNT\\(*\\) as total, SUM\\(CASE WHEN aplicada_en IS NULL THEN 1 ELSE 0 END\\) as sin_fecha, MIN\\(aplicada_en\\) as min_fecha, MAX\\(aplicada_en\\) as max_fecha FROM solicitudes_cotizacion WHERE estado='aplicada';\")",
       "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); [print\\(f['name'], f['type']\\) for f in data]\")",
-      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); [print\\(f['name']\\) for f in data]\")"
+      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); [print\\(f['name']\\) for f in data]\")",
+      "Bash(python -c \"import sys, json; print\\(json.load\\(sys.stdin\\).get\\('default_branch'\\)\\)\")"
     ],
     "additionalDirectories": [
       "f:\\xamppPro80\\htdocs\\miracle\\resources\\views\\productos\\partials",
