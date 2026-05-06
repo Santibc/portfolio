@@ -163,8 +163,20 @@ class SiigoFacturacionService
      */
     public function crearNotaCredito(FacturaSiigo $facturaOriginal, string $motivo): FacturaSiigo
     {
-        if (!$facturaOriginal->siigo_invoice_id) {
+        $invoiceGuid = $facturaOriginal->siigo_invoice_id;
+
+        if (!$invoiceGuid) {
             throw new Exception('La factura original no tiene ID de SIIGO.');
+        }
+
+        // Validar formato GUID estándar (00000000-0000-0000-0000-000000000000).
+        if (!preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $invoiceGuid)) {
+            throw new Exception("El siigo_invoice_id de la factura original no tiene formato GUID válido (recibido: '{$invoiceGuid}'). Verifique que la factura original sí fue aprobada por SIIGO.");
+        }
+
+        // Solo se puede emitir nota crédito sobre una factura aprobada por DIAN
+        if (!$facturaOriginal->estaAprobada()) {
+            throw new Exception('La factura original no está aprobada en DIAN; no se puede generar nota crédito.');
         }
 
         // Evitar duplicar nota crédito si ya existe una aprobada/pendiente
@@ -176,23 +188,39 @@ class SiigoFacturacionService
         }
 
         $venta = $facturaOriginal->ventaPdv;
-        $venta->loadMissing(['items.producto', 'items.variante']);
+        $venta->loadMissing(['items.producto', 'items.variante', 'cliente']);
 
         $creditNoteTypeId = (int) ConfiguracionPdv::obtener('siigo_credit_note_type_id');
         if (!$creditNoteTypeId) {
             throw new Exception('No se ha configurado el tipo de documento para notas crédito en SIIGO.');
         }
 
+        // El customer en SIIGO se identifica con la misma identificación de la factura original.
+        $customerIdentification = $venta->cliente?->numero_identificacion
+            ?? $venta->cliente?->nit
+            ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
+            ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
+
+        $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
+
         $payload = [
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
-            'invoice' => $facturaOriginal->siigo_invoice_id,
+            'invoice' => $invoiceGuid,
+            'customer' => [
+                'identification' => $customerIdentification,
+                'branch_office' => 0,
+            ],
             'reason' => 2, // DIAN: Anulación de factura electrónica
             'observations' => $motivo,
             'items' => $this->construirItems($venta),
             'payments' => $this->construirPayments($venta),
             'stamp' => ['send' => true],
         ];
+
+        if ($sellerId) {
+            $payload['seller'] = $sellerId;
+        }
 
         $factura = FacturaSiigo::create([
             'venta_pdv_id' => $venta->id,
@@ -243,27 +271,51 @@ class SiigoFacturacionService
      */
     public function crearNotaCreditoParcial(FacturaSiigo $facturaOriginal, DevolucionParcialPdv $devolucion, string $motivo): FacturaSiigo
     {
-        if (!$facturaOriginal->siigo_invoice_id) {
+        $invoiceGuid = $facturaOriginal->siigo_invoice_id;
+
+        if (!$invoiceGuid) {
             throw new Exception('La factura original no tiene ID de SIIGO.');
         }
+        if (!preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $invoiceGuid)) {
+            throw new Exception("El siigo_invoice_id de la factura original no tiene formato GUID válido (recibido: '{$invoiceGuid}').");
+        }
+        if (!$facturaOriginal->estaAprobada()) {
+            throw new Exception('La factura original no está aprobada en DIAN; no se puede generar nota crédito parcial.');
+        }
 
-        $devolucion->loadMissing(['items.producto', 'items.variante']);
+        $devolucion->loadMissing(['items.producto', 'items.variante', 'ventaPdv.cliente']);
 
         $creditNoteTypeId = (int) ConfiguracionPdv::obtener('siigo_credit_note_type_id');
         if (!$creditNoteTypeId) {
             throw new Exception('No se ha configurado el tipo de documento para notas crédito en SIIGO.');
         }
 
+        $venta = $devolucion->ventaPdv;
+        $customerIdentification = $venta?->cliente?->numero_identificacion
+            ?? $venta?->cliente?->nit
+            ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
+            ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
+
+        $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
+
         $payload = [
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
-            'invoice' => $facturaOriginal->siigo_invoice_id,
-            'reason' => 1, // Devolución parcial de bienes
+            'invoice' => $invoiceGuid,
+            'customer' => [
+                'identification' => $customerIdentification,
+                'branch_office' => 0,
+            ],
+            'reason' => 1, // DIAN: Devolución parcial de bienes
             'observations' => $motivo,
             'items' => $this->construirItemsDesdeDevolucion($devolucion),
             'payments' => $this->construirPaymentsDesdeDevolucion($devolucion->ventaPdv, $devolucion),
             'stamp' => ['send' => true],
         ];
+
+        if ($sellerId) {
+            $payload['seller'] = $sellerId;
+        }
 
         $factura = FacturaSiigo::create([
             'venta_pdv_id' => $devolucion->venta_pdv_id,
