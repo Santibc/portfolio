@@ -226,12 +226,24 @@ class SiigoFacturacionService
 
         // Validar formato GUID estándar (00000000-0000-0000-0000-000000000000).
         if (!preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $invoiceGuid)) {
-            throw new Exception("El siigo_invoice_id de la factura original no tiene formato GUID válido (recibido: '{$invoiceGuid}'). Verifique que la factura original sí fue aprobada por SIIGO.");
+            throw new Exception("El siigo_invoice_id no tiene formato GUID válido (recibido: '{$invoiceGuid}').");
         }
 
         // Para emitir nota crédito DIAN la factura original debe tener CUFE
         if (empty($facturaOriginal->cufe)) {
             throw new Exception('La factura original no tiene CUFE; no es factura electrónica DIAN. Use annulInvoice en su lugar.');
+        }
+
+        // Verificar contra SIIGO que el GUID exista en este entorno (test/producción).
+        // Si la factura fue creada en otro entorno, el GUID no se encontrará y daría
+        // 'invoice has an invalid value' al crear la nota crédito.
+        try {
+            $this->api->get("/v1/invoices/{$invoiceGuid}");
+        } catch (Exception $e) {
+            throw new Exception(
+                "La factura {$facturaOriginal->numero_factura} no se encuentra en SIIGO con el GUID guardado ({$invoiceGuid}). " .
+                "Probablemente fue creada en otro entorno (test/producción). Detalle SIIGO: " . $e->getMessage()
+            );
         }
 
         // Evitar duplicar nota crédito si ya existe una aprobada/pendiente
@@ -251,8 +263,8 @@ class SiigoFacturacionService
         }
 
         // El customer en SIIGO se identifica con la misma identificación de la factura original.
-        $customerIdentification = $venta->cliente?->numero_identificacion
-            ?? $venta->cliente?->nit
+        $cliente = $venta->cliente;
+        $customerIdentification = ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
             ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
             ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
 
@@ -346,8 +358,8 @@ class SiigoFacturacionService
         }
 
         $venta = $devolucion->ventaPdv;
-        $customerIdentification = $venta?->cliente?->numero_identificacion
-            ?? $venta?->cliente?->nit
+        $cliente = $venta ? $venta->cliente : null;
+        $customerIdentification = ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
             ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
             ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
 
