@@ -297,6 +297,10 @@ class SiigoFacturacionService
             ? ['invoice_data' => $invoiceData]
             : ['invoice' => $invoiceGuid];
 
+        if (!$sellerId) {
+            throw new Exception('SIIGO requiere un seller para crear la nota crédito. Configure siigo_seller_id en la configuración.');
+        }
+
         $payload = array_merge([
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
@@ -305,16 +309,12 @@ class SiigoFacturacionService
                 'identification' => $customerIdentification,
                 'branch_office' => $customerBranch,
             ],
+            'seller' => $sellerId, // Requerido por SIIGO
             'reason' => 2, // DIAN: Anulación de factura electrónica
             'observations' => $motivo,
             'items' => $items,
             'payments' => $payments,
-            'stamp' => ['send' => true],
         ]);
-
-        if ($sellerId) {
-            $payload['seller'] = $sellerId;
-        }
 
         $factura = FacturaSiigo::create([
             'venta_pdv_id' => $venta->id,
@@ -385,12 +385,18 @@ class SiigoFacturacionService
         }
 
         $venta = $devolucion->ventaPdv;
+        $payloadOriginal = $facturaOriginal->siigo_request ?? [];
         $cliente = $venta ? $venta->cliente : null;
-        $customerIdentification = ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
-            ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
+        $customerIdentification = ($payloadOriginal['customer']['identification'] ?? null)
+            ?? ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
             ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
+        $customerBranch = $payloadOriginal['customer']['branch_office'] ?? 0;
 
-        $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
+        $sellerId = (int) ($payloadOriginal['seller'] ?? ConfiguracionPdv::obtener('siigo_seller_id'));
+
+        if (!$sellerId) {
+            throw new Exception('SIIGO requiere un seller para crear la nota crédito parcial. Configure siigo_seller_id en la configuración.');
+        }
 
         // Referencia DIAN por invoice_data (cufe + prefix + number) para facturas electrónicas.
         [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
@@ -405,24 +411,26 @@ class SiigoFacturacionService
             ? ['invoice_data' => $invoiceData]
             : ['invoice' => $invoiceGuid];
 
+        // Items: SIIGO no acepta seller dentro de items en NC
+        $itemsParcial = array_map(function ($item) {
+            unset($item['seller'], $item['warehouse']);
+            return $item;
+        }, $this->construirItemsDesdeDevolucion($devolucion));
+
         $payload = array_merge([
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
         ], $invoiceField, [
             'customer' => [
                 'identification' => $customerIdentification,
-                'branch_office' => 0,
+                'branch_office' => $customerBranch,
             ],
+            'seller' => $sellerId, // Requerido por SIIGO
             'reason' => 1, // DIAN: Devolución parcial de bienes
             'observations' => $motivo,
-            'items' => $this->construirItemsDesdeDevolucion($devolucion),
+            'items' => $itemsParcial,
             'payments' => $this->construirPaymentsDesdeDevolucion($devolucion->ventaPdv, $devolucion),
-            'stamp' => ['send' => true],
         ]);
-
-        if ($sellerId) {
-            $payload['seller'] = $sellerId;
-        }
 
         $factura = FacturaSiigo::create([
             'venta_pdv_id' => $devolucion->venta_pdv_id,
