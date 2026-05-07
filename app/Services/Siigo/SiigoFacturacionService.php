@@ -265,14 +265,23 @@ class SiigoFacturacionService
         // Seller: el mismo de la factura original (si existía)
         $sellerId = (int) ($payloadOriginal['seller'] ?? ConfiguracionPdv::obtener('siigo_seller_id'));
 
-        // Items y payments: replicar los del request original tal cual.
-        // Esto garantiza coincidencia exacta de códigos, precios, cantidades,
-        // descuentos, taxes y método/valor de pago con la factura emitida.
+        // Items: replicar los del request original tal cual (códigos, cantidades,
+        // precios, taxes y descuentos). Removemos `seller` por item ya que SIIGO
+        // espera seller solo a nivel global en notas crédito.
         $items = !empty($payloadOriginal['items'])
-            ? $payloadOriginal['items']
+            ? array_map(function ($item) {
+                unset($item['seller'], $item['warehouse']);
+                return $item;
+            }, $payloadOriginal['items'])
             : $this->construirItems($venta);
+
+        // Payments: replicar valor y método del original, pero ajustar due_date
+        // a la fecha de la NC (no aceptar fechas anteriores a la NC).
         $payments = !empty($payloadOriginal['payments'])
-            ? $payloadOriginal['payments']
+            ? array_map(function ($pago) {
+                $pago['due_date'] = now()->format('Y-m-d');
+                return $pago;
+            }, $payloadOriginal['payments'])
             : $this->construirPayments($venta);
 
         // Para facturas electrónicas DIAN se referencia por invoice_data (cufe + prefix + number).
