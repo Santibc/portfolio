@@ -269,11 +269,17 @@ class SiigoFacturacionService
             'cufe' => $facturaOriginal->cufe,
         ], fn($v) => $v !== null && $v !== '');
 
-        $payload = [
+        // Si tenemos invoice_data (CUFE + prefix + number) usamos solo ese campo;
+        // SIIGO rechaza el GUID con 'invalid_document' cuando la factura está validada por DIAN.
+        // Si no hay datos para invoice_data, caemos al GUID como fallback.
+        $invoiceField = !empty($invoiceData)
+            ? ['invoice_data' => $invoiceData]
+            : ['invoice' => $invoiceGuid];
+
+        $payload = array_merge([
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
-            'invoice' => $invoiceGuid,
-            'invoice_data' => $invoiceData,
+        ], $invoiceField, [
             'customer' => [
                 'identification' => $customerIdentification,
                 'branch_office' => 0,
@@ -283,7 +289,7 @@ class SiigoFacturacionService
             'items' => $this->construirItems($venta),
             'payments' => $this->construirPayments($venta),
             'stamp' => ['send' => true],
-        ];
+        ]);
 
         if ($sellerId) {
             $payload['seller'] = $sellerId;
@@ -374,11 +380,14 @@ class SiigoFacturacionService
             'cufe' => $facturaOriginal->cufe,
         ], fn($v) => $v !== null && $v !== '');
 
-        $payload = [
+        $invoiceField = !empty($invoiceData)
+            ? ['invoice_data' => $invoiceData]
+            : ['invoice' => $invoiceGuid];
+
+        $payload = array_merge([
             'document' => ['id' => $creditNoteTypeId],
             'date' => now()->format('Y-m-d'),
-            'invoice' => $invoiceGuid,
-            'invoice_data' => $invoiceData,
+        ], $invoiceField, [
             'customer' => [
                 'identification' => $customerIdentification,
                 'branch_office' => 0,
@@ -388,7 +397,7 @@ class SiigoFacturacionService
             'items' => $this->construirItemsDesdeDevolucion($devolucion),
             'payments' => $this->construirPaymentsDesdeDevolucion($devolucion->ventaPdv, $devolucion),
             'stamp' => ['send' => true],
-        ];
+        ]);
 
         if ($sellerId) {
             $payload['seller'] = $sellerId;
