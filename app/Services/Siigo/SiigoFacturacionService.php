@@ -250,17 +250,32 @@ class SiigoFacturacionService
             throw new Exception('No se ha configurado el tipo de documento para notas crédito en SIIGO.');
         }
 
-        // El customer en SIIGO se identifica con la misma identificación de la factura original.
+        // PRIORIDAD: replicar exactamente lo que se envió en la factura original
+        // (customer, items, payments). Si la NC envía datos distintos a los de la
+        // factura original, SIIGO devuelve 500 unhandled_error.
+        $payloadOriginal = $facturaOriginal->siigo_request ?? [];
+
+        // Customer: tomar el del request original; fallback al cliente actual / consumidor final
         $cliente = $venta->cliente;
-        $customerIdentification = ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
-            ?? ($facturaOriginal->siigo_request['customer']['identification'] ?? null)
+        $customerIdentification = ($payloadOriginal['customer']['identification'] ?? null)
+            ?? ($cliente ? ($cliente->numero_identificacion ?? $cliente->nit ?? null) : null)
             ?? ConfiguracionPdv::obtener('siigo_consumidor_final_nit', '222222222222');
+        $customerBranch = $payloadOriginal['customer']['branch_office'] ?? 0;
 
-        $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
+        // Seller: el mismo de la factura original (si existía)
+        $sellerId = (int) ($payloadOriginal['seller'] ?? ConfiguracionPdv::obtener('siigo_seller_id'));
 
-        // Para facturas electrónicas DIAN se referencia por invoice_data (cufe + prefix + number),
-        // no por GUID interno. SIIGO rechaza el GUID con "invalid_document" cuando la factura
-        // está validada por DIAN. Extraer prefix/number del numero_factura "FV-14047".
+        // Items y payments: replicar los del request original tal cual.
+        // Esto garantiza coincidencia exacta de códigos, precios, cantidades,
+        // descuentos, taxes y método/valor de pago con la factura emitida.
+        $items = !empty($payloadOriginal['items'])
+            ? $payloadOriginal['items']
+            : $this->construirItems($venta);
+        $payments = !empty($payloadOriginal['payments'])
+            ? $payloadOriginal['payments']
+            : $this->construirPayments($venta);
+
+        // Para facturas electrónicas DIAN se referencia por invoice_data (cufe + prefix + number).
         [$invoicePrefix, $invoiceNumber] = $this->extraerPrefixNumero($facturaOriginal->numero_factura);
         $invoiceData = array_filter([
             'prefix' => $invoicePrefix,
@@ -269,9 +284,6 @@ class SiigoFacturacionService
             'cufe' => $facturaOriginal->cufe,
         ], fn($v) => $v !== null && $v !== '');
 
-        // Si tenemos invoice_data (CUFE + prefix + number) usamos solo ese campo;
-        // SIIGO rechaza el GUID con 'invalid_document' cuando la factura está validada por DIAN.
-        // Si no hay datos para invoice_data, caemos al GUID como fallback.
         $invoiceField = !empty($invoiceData)
             ? ['invoice_data' => $invoiceData]
             : ['invoice' => $invoiceGuid];
@@ -282,12 +294,12 @@ class SiigoFacturacionService
         ], $invoiceField, [
             'customer' => [
                 'identification' => $customerIdentification,
-                'branch_office' => 0,
+                'branch_office' => $customerBranch,
             ],
             'reason' => 2, // DIAN: Anulación de factura electrónica
             'observations' => $motivo,
-            'items' => $this->construirItems($venta),
-            'payments' => $this->construirPayments($venta),
+            'items' => $items,
+            'payments' => $payments,
             'stamp' => ['send' => true],
         ]);
 
