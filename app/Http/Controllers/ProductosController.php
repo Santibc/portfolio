@@ -36,9 +36,6 @@ class ProductosController extends Controller
             if ($request->filled('marca_filtro')) {
                 $query->where('marca', $request->marca_filtro);
             }
-            if ($request->filled('tiene_variantes')) {
-                $query->where('tiene_variantes', (int) $request->tiene_variantes);
-            }
             // Filtro de stock: con / sin / bajo
             if ($request->filled('stock_filtro')) {
                 switch ($request->stock_filtro) {

@@ -44,15 +44,6 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-3">
-              <label class="form-label small mb-1">Variantes</label>
-              <select id="filtroVariantes" class="form-select select2-search"
-                      data-placeholder="Todas" data-allow-clear="1">
-                <option value=""></option>
-                <option value="1">Con variantes</option>
-                <option value="0">Sin variantes</option>
-              </select>
-            </div>
             <div class="col-md-4">
               <label class="form-label small mb-1">Stock</label>
               <select id="filtroStock" class="form-select select2-search"
@@ -101,7 +92,6 @@
         data: function (d) {
           d.categoria_id      = $('#filtroCategoria').val();
           d.marca_filtro      = $('#filtroMarca').val();
-          d.tiene_variantes   = $('#filtroVariantes').val();
           d.stock_filtro      = $('#filtroStock').val();
         }
       },
@@ -143,7 +133,7 @@
     });
 
     // Auto-aplicar filtros al cambiar
-    $('#filtroCategoria, #filtroMarca, #filtroVariantes, #filtroStock')
+    $('#filtroCategoria, #filtroMarca, #filtroStock')
       .on('change', function () { table.ajax.reload(); });
 
     table.on('buttons-action', () => {
