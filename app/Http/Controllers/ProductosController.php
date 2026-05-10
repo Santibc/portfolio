@@ -29,6 +29,51 @@ class ProductosController extends Controller
                             ->where('eliminado', false)
                             ->select('productos.*');
 
+            // Filtros desde la UI
+            if ($request->filled('categoria_id')) {
+                $query->where('categoria_id', $request->categoria_id);
+            }
+            if ($request->filled('marca_filtro')) {
+                $query->where('marca', $request->marca_filtro);
+            }
+            if ($request->filled('tiene_variantes')) {
+                $query->where('tiene_variantes', (int) $request->tiene_variantes);
+            }
+            if ($request->filled('controlar_stock')) {
+                $query->where('controlar_stock', (int) $request->controlar_stock);
+            }
+            if ($request->filled('activo_filtro')) {
+                $query->where('activo', (int) $request->activo_filtro);
+            }
+            // Filtro de stock: con / sin / bajo
+            if ($request->filled('stock_filtro')) {
+                switch ($request->stock_filtro) {
+                    case 'con_stock':
+                        $query->where('controlar_stock', true)
+                              ->whereHas('stock', function ($q) {
+                                  $q->whereRaw('cantidad_disponible - cantidad_reservada > 0');
+                              });
+                        break;
+                    case 'sin_stock':
+                        $query->where('controlar_stock', true)
+                              ->where(function ($q) {
+                                  $q->whereDoesntHave('stock')
+                                    ->orWhereHas('stock', function ($qq) {
+                                        $qq->havingRaw('SUM(cantidad_disponible - cantidad_reservada) <= 0')
+                                           ->groupBy('producto_id');
+                                    });
+                              });
+                        break;
+                    case 'bajo':
+                        $query->where('controlar_stock', true)
+                              ->whereHas('stock', function ($q) {
+                                  $q->whereColumn('cantidad_disponible', '<=', 'stock_minimo')
+                                    ->where('cantidad_disponible', '>', 0);
+                              });
+                        break;
+                }
+            }
+
             return DataTables::of($query)
                 ->addColumn('marca', fn($p) => $p->marca ?: '-')
                 ->addColumn('categoria', fn($p) => $p->categoria?->nombre)
@@ -97,7 +142,12 @@ class ProductosController extends Controller
                 ->make(true);
         }
 
-        return view('productos.productos_index');
+        $categorias = Categoria::activas()->orderBy('nombre')->get(['id', 'nombre']);
+        $marcas     = Producto::where('eliminado', false)
+                                ->whereNotNull('marca')->where('marca', '!=', '')
+                                ->orderBy('marca')->pluck('marca')->unique()->values();
+
+        return view('productos.productos_index', compact('categorias', 'marcas'));
     }
 
     public function form(Producto $producto = null)

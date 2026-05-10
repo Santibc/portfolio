@@ -18,6 +18,71 @@
         </div>
       @endif
 
+      {{-- Filtros --}}
+      <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-3">
+        <div class="p-4">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label small mb-1">Categoría</label>
+              <select id="filtroCategoria" class="form-select select2-search"
+                      data-placeholder="Todas" data-allow-clear="1">
+                <option value=""></option>
+                @foreach($categorias ?? [] as $cat)
+                  <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Marca</label>
+              <select id="filtroMarca" class="form-select select2-search"
+                      data-placeholder="Todas" data-allow-clear="1">
+                <option value=""></option>
+                @foreach($marcas ?? [] as $marca)
+                  <option value="{{ $marca }}">{{ $marca }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Variantes</label>
+              <select id="filtroVariantes" class="form-select select2-search"
+                      data-placeholder="Todas" data-allow-clear="1">
+                <option value=""></option>
+                <option value="1">Con variantes</option>
+                <option value="0">Sin variantes</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Control stock</label>
+              <select id="filtroControlarStock" class="form-select select2-search"
+                      data-placeholder="Todos" data-allow-clear="1">
+                <option value=""></option>
+                <option value="1">Controla stock</option>
+                <option value="0">No controla</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small mb-1">Stock</label>
+              <select id="filtroStock" class="form-select select2-search"
+                      data-placeholder="Todos" data-allow-clear="1">
+                <option value=""></option>
+                <option value="con_stock">Con stock</option>
+                <option value="bajo">Stock bajo</option>
+                <option value="sin_stock">Sin stock</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <label class="form-label small mb-1">Estado</label>
+              <select id="filtroActivo" class="form-select select2-search"
+                      data-placeholder="Todos" data-allow-clear="1">
+                <option value=""></option>
+                <option value="1" selected>Activos</option>
+                <option value="0">Inactivos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           <h4 class="text-2xl font-semibold mb-4">Listado de Productos</h4>
@@ -53,7 +118,17 @@
       serverSide: true,
       responsive: true,
       scrollX: true,
-      ajax: "{{ route('productos') }}",
+      ajax: {
+        url: "{{ route('productos') }}",
+        data: function (d) {
+          d.categoria_id      = $('#filtroCategoria').val();
+          d.marca_filtro      = $('#filtroMarca').val();
+          d.tiene_variantes   = $('#filtroVariantes').val();
+          d.controlar_stock   = $('#filtroControlarStock').val();
+          d.stock_filtro      = $('#filtroStock').val();
+          d.activo_filtro     = $('#filtroActivo').val();
+        }
+      },
       columns: [
         { data:'action',       orderable:false, searchable:false },
         { data:'imagen',       orderable:false, searchable:false },
@@ -90,6 +165,13 @@
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]
     });
+
+    // Auto-aplicar filtros al cambiar
+    $('#filtroCategoria, #filtroMarca, #filtroVariantes, #filtroControlarStock, #filtroStock, #filtroActivo')
+      .on('change', function () { table.ajax.reload(); });
+
+    // Disparar el filtro inicial "Activos = 1" en la primera carga
+    $('#filtroActivo').trigger('change');
 
     table.on('buttons-action', () => {
       setTimeout(() => {
