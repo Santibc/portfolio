@@ -91,8 +91,9 @@
             
             <div class="col-md-3">
               <label class="form-label">Estado de Stock</label>
-              <select id="filtroEstado" class="form-select">
-                <option value="">-- Todos --</option>
+              <select id="filtroEstado" class="form-select select2-search"
+                      data-placeholder="-- Todos --" data-allow-clear="1">
+                <option value=""></option>
                 <option value="con_stock">Con Stock</option>
                 <option value="sin_stock">Sin Stock</option>
                 <option value="stock_bajo">Stock Bajo</option>
@@ -431,14 +432,11 @@
       ajax: {
         url: "{{ route('stock.index') }}",
         data: function(d) {
-          // Agregar filtros al request
-          if (productoId) {
-            d.producto_id = productoId;
-          }
-          const estado = $('#filtroEstado').val();
-          if (estado) {
-            d.estado = estado;
-          }
+          // Leer SIEMPRE los valores actuales de los selects, no la URL inicial.
+          const pid = $('#filtroProducto').val();
+          const est = $('#filtroEstado').val();
+          if (pid) d.producto_id = pid;
+          if (est) d.estado      = est;
         }
       },
       columns: [
@@ -484,31 +482,25 @@
       }
     });
 
-    // Función para aplicar filtros
+    // Auto-aplicar filtros al cambiar (Select2 dispara "change" igual que un select normal)
+    $('#filtroProducto, #filtroEstado').on('change', function () {
+      table.ajax.reload();
+    });
+
+    // Botón Aplicar (recarga la tabla sin navegar)
     window.aplicarFiltros = function() {
-      const productoId = $('#filtroProducto').val();
-      const estado = $('#filtroEstado').val();
-      
-      let url = "{{ route('stock.index') }}";
-      const params = [];
-      
-      if (productoId) {
-        params.push('producto_id=' + productoId);
-      }
-      if (estado) {
-        params.push('estado=' + estado);
-      }
-      
-      if (params.length > 0) {
-        url += '?' + params.join('&');
-      }
-      
-      window.location.href = url;
+      table.ajax.reload();
     };
 
-    // Función para limpiar filtros
+    // Botón Limpiar (reset visual + recarga tabla, sin recargar la página)
     window.limpiarFiltros = function() {
-      window.location.href = "{{ route('stock.index') }}";
+      $('#filtroProducto').val(null).trigger('change');
+      $('#filtroEstado').val('').trigger('change');
+      // Si la URL trae ?producto_id=... también limpiarla del navegador
+      if (window.location.search) {
+        history.replaceState(null, '', '{{ route("stock.index") }}');
+      }
+      table.ajax.reload();
     };
 
     // Funciones para los modales
