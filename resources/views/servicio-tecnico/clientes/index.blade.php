@@ -3,24 +3,24 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-4 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Clientes</h5>
-                <a href="{{ route('st.clientes.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
-                </a>
-            </div>
+            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="text-2xl font-semibold mb-0">Listado de Clientes</h4>
+                        <a href="{{ route('st.clientes.create') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                        </a>
+                    </div>
 
-            {{-- Filtros --}}
-            <div class="card shadow-sm mb-3">
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-5">
-                            <label class="form-label">Buscar (nombre, documento, email)</label>
+                    {{-- Filtros --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label small mb-1">Buscar (nombre, documento, email)</label>
                             <input type="text" id="filtroBusqueda" class="form-control"
                                    placeholder="Escribe para filtrar...">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Tipo de cliente</label>
+                            <label class="form-label small mb-1">Tipo de cliente</label>
                             <select id="filtroTipoCliente" class="form-select select2-search"
                                     data-placeholder="Todos" data-allow-clear="1">
                                 <option value=""></option>
@@ -29,16 +29,7 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">Estado</label>
-                            <select id="filtroActivo" class="form-select select2-search"
-                                    data-placeholder="Todos" data-allow-clear="1">
-                                <option value=""></option>
-                                <option value="1" selected>Activos</option>
-                                <option value="0">Inactivos</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Tipo doc.</label>
+                            <label class="form-label small mb-1">Tipo doc.</label>
                             <select id="filtroTipoDoc" class="form-select select2-search"
                                     data-placeholder="Todos" data-allow-clear="1">
                                 <option value=""></option>
@@ -48,12 +39,22 @@
                                 <option value="Pasaporte">Pasaporte</option>
                             </select>
                         </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Estado</label>
+                            <select id="filtroActivo" class="form-select select2-search"
+                                    data-placeholder="Todos" data-allow-clear="1">
+                                <option value=""></option>
+                                <option value="1" selected>Activos</option>
+                                <option value="0">Inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-                <div class="p-6">
                     <table id="clientesTable" class="table-responsive w-full text-sm text-left">
                         <thead class="text-xs uppercase bg-gray-100">
                             <tr>
@@ -117,6 +118,14 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#filtroBusqueda').on('input', function () {
         clearTimeout(bTimer);
         bTimer = setTimeout(function () { table.ajax.reload(); }, 300);
+    });
+
+    // Limpiar filtros
+    $('#btnLimpiarFiltros').on('click', function () {
+        $('#filtroBusqueda').val('');
+        $('#filtroTipoCliente').val(null).trigger('change');
+        $('#filtroTipoDoc').val(null).trigger('change');
+        $('#filtroActivo').val('1').trigger('change'); // vuelve al default "Activos"
     });
 
     // Cargar inicialmente con activo=1
