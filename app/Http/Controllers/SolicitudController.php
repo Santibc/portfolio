@@ -59,6 +59,19 @@ class SolicitudController extends Controller
                 });
             }
 
+            // Filtro por cliente
+            if ($request->filled('cliente_id')) {
+                $query->where('cliente_id', $request->cliente_id);
+            }
+
+            // Filtro por rango de fechas (sobre created_at)
+            if ($request->filled('fecha_desde')) {
+                $query->whereDate('created_at', '>=', $request->fecha_desde);
+            }
+            if ($request->filled('fecha_hasta')) {
+                $query->whereDate('created_at', '<=', $request->fecha_hasta);
+            }
+
             // Admin ve todas las solicitudes (si no hay filtro), vendedor ve solo las suyas
 
             return DataTables::of($query)

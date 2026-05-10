@@ -40,11 +40,18 @@
             @endif
           </div>
 
-          {{-- Filtro de Vendedor (solo para admin) --}}
-          @if(auth()->user()->hasRole('admin'))
-          <div class="row mb-3">
+          {{-- Filtros --}}
+          <div class="row g-3 mb-3">
             <div class="col-md-4">
-              <label class="form-label">Filtrar por Vendedor:</label>
+              <label class="form-label small mb-1">Cliente</label>
+              <select id="filtroCliente" class="form-select cliente-select2-ajax"
+                      data-placeholder="Todos los clientes">
+                <option value=""></option>
+              </select>
+            </div>
+            @if(auth()->user()->hasRole('admin'))
+            <div class="col-md-3">
+              <label class="form-label small mb-1">Vendedor</label>
               <select id="filtroVendedor" class="form-select select2-search"
                       data-placeholder="Todos los vendedores" data-allow-clear="1">
                 <option value=""></option>
@@ -53,8 +60,21 @@
                 @endforeach
               </select>
             </div>
+            @endif
+            <div class="col-md-{{ auth()->user()->hasRole('admin') ? '2' : '3' }}">
+              <label class="form-label small mb-1">Fecha desde</label>
+              <input type="date" id="filtroFechaDesde" class="form-control">
+            </div>
+            <div class="col-md-{{ auth()->user()->hasRole('admin') ? '2' : '3' }}">
+              <label class="form-label small mb-1">Fecha hasta</label>
+              <input type="date" id="filtroFechaHasta" class="form-control">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+              <button type="button" id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </div>
           </div>
-          @endif
 
           <table id="solicitudes-table" class="table-responsive w-full text-sm text-left">
             <thead class="text-xs uppercase bg-gray-100">
@@ -105,6 +125,9 @@
       ajax: {
         url: "{{ route('solicitudes') }}",
         data: function(d) {
+          d.cliente_id    = $('#filtroCliente').val();
+          d.fecha_desde   = $('#filtroFechaDesde').val();
+          d.fecha_hasta   = $('#filtroFechaHasta').val();
           // Solo enviar filtro de vendedor si existe (es decir, si es admin)
           if ($('#filtroVendedor').length) {
             d.vendedor_id = $('#filtroVendedor').val();
@@ -189,12 +212,39 @@
       }, 50);
     });
 
-    // Filtro de vendedor (solo si existe en la página, es decir, si es admin)
-    if ($('#filtroVendedor').length) {
-      $('#filtroVendedor').on('change', function() {
-        table.ajax.reload();
-      });
-    }
+    // Cliente con buscador AJAX
+    var $filtroCliente = $('#filtroCliente');
+    $filtroCliente.select2({
+      theme: 'bootstrap-5',
+      width: '100%',
+      placeholder: $filtroCliente.data('placeholder'),
+      allowClear: true,
+      ajax: {
+        url: "{{ route('clientes.buscar-ajax') }}",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { q: params.term, page: params.page || 1 }; },
+        processResults: function (data, params) {
+          params.page = params.page || 1;
+          return data;
+        },
+        cache: true
+      }
+    });
+
+    // Auto-aplicar todos los filtros al cambiar
+    $('#filtroCliente, #filtroVendedor, #filtroFechaDesde, #filtroFechaHasta').on('change', function() {
+      table.ajax.reload();
+    });
+
+    // Limpiar filtros
+    $('#btnLimpiarFiltros').on('click', function() {
+      $('#filtroCliente').val(null).trigger('change');
+      $('#filtroVendedor').val(null).trigger('change');
+      $('#filtroFechaDesde').val('');
+      $('#filtroFechaHasta').val('');
+      table.ajax.reload();
+    });
   });
 
   // Funciones para los modales
