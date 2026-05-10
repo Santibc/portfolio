@@ -15,9 +15,27 @@
         <div class="card-body">
             <form method="GET" action="{{ route('st.equipos.index') }}" class="row g-3">
                 <div class="col-md-3">
+                    <label for="cliente_id" class="form-label">Cliente</label>
+                    @php
+                        $clienteFiltroLabel = '';
+                        if (request('cliente_id')) {
+                            $cf = \App\Models\Cliente::find(request('cliente_id'));
+                            if ($cf) $clienteFiltroLabel = $cf->nombre_contacto . ' — ' . $cf->numero_identificacion;
+                        }
+                    @endphp
+                    <select name="cliente_id" id="cliente_id"
+                            class="form-select cliente-select2-ajax"
+                            data-selected-id="{{ request('cliente_id') }}"
+                            data-selected-label="{{ $clienteFiltroLabel }}"
+                            data-placeholder="Todos los clientes">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label for="tipo_equipo" class="form-label">Tipo de Equipo</label>
-                    <select name="tipo_equipo" id="tipo_equipo" class="form-select">
-                        <option value="">Todos</option>
+                    <select name="tipo_equipo" id="tipo_equipo" class="form-select select2-search"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="Cámara IP" {{ request('tipo_equipo') == 'Cámara IP' ? 'selected' : '' }}>Cámara IP</option>
                         <option value="Cámara Análoga" {{ request('tipo_equipo') == 'Cámara Análoga' ? 'selected' : '' }}>Cámara Análoga</option>
                         <option value="DVR" {{ request('tipo_equipo') == 'DVR' ? 'selected' : '' }}>DVR</option>
@@ -26,20 +44,22 @@
                         <option value="Otro" {{ request('tipo_equipo') == 'Otro' ? 'selected' : '' }}>Otro</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="estado" class="form-label">Estado</label>
-                    <select name="estado" id="estado" class="form-select">
-                        <option value="">Todos</option>
+                    <select name="estado" id="estado" class="form-select select2-search"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="operativo" {{ request('estado') == 'operativo' ? 'selected' : '' }}>Operativo</option>
                         <option value="en_reparacion" {{ request('estado') == 'en_reparacion' ? 'selected' : '' }}>En Reparación</option>
                         <option value="fuera_servicio" {{ request('estado') == 'fuera_servicio' ? 'selected' : '' }}>Fuera de Servicio</option>
                         <option value="en_bodega" {{ request('estado') == 'en_bodega' ? 'selected' : '' }}>En Bodega</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="en_garantia" class="form-label">Garantía</label>
-                    <select name="en_garantia" id="en_garantia" class="form-select">
-                        <option value="">Todos</option>
+                    <select name="en_garantia" id="en_garantia" class="form-select select2-search"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="1" {{ request('en_garantia') == '1' ? 'selected' : '' }}>En Garantía</option>
                         <option value="0" {{ request('en_garantia') == '0' ? 'selected' : '' }}>Sin Garantía</option>
                     </select>
@@ -87,12 +107,38 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#equiposTable').DataTable({
+    // Filtro de cliente con Select2 + AJAX
+    var $cliente = $('.cliente-select2-ajax');
+    $cliente.select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: $cliente.data('placeholder') || 'Todos los clientes',
+        allowClear: true,
+        ajax: {
+            url: "{{ route('clientes.buscar-ajax') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { return { q: params.term, page: params.page || 1 }; },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return data;
+            },
+            cache: true
+        }
+    });
+    var preId = $cliente.data('selected-id');
+    var preLabel = $cliente.data('selected-label');
+    if (preId && preLabel) {
+        $cliente.append(new Option(preLabel, preId, true, true)).trigger('change');
+    }
+
+    var equiposTable = $('#equiposTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
             url: '{{ route("st.equipos.index") }}',
             data: function(d) {
+                d.cliente_id = $('#cliente_id').val();
                 d.tipo_equipo = $('#tipo_equipo').val();
                 d.estado = $('#estado').val();
                 d.en_garantia = $('#en_garantia').val();
@@ -100,7 +146,7 @@ $(document).ready(function() {
         },
         columns: [
             { data: 'tipo_equipo', name: 'tipo_equipo' },
-            { data: 'cliente', name: 'cliente.nombre_completo', orderable: false },
+            { data: 'cliente', name: 'cliente.nombre_contacto', orderable: false },
             { data: 'marca_modelo', name: 'marca', orderable: false },
             { data: 'numero_serie', name: 'numero_serie' },
             { data: 'ip_mac', name: 'ip_address', orderable: false },
@@ -111,6 +157,11 @@ $(document).ready(function() {
         ],
         order: [[0, 'asc']],
         language: { url: '{{ asset("js/datatables/es-ES.json") }}' }
+    });
+
+    // Auto-aplicar filtros al cambiar (sin necesidad del botón "Buscar")
+    $('#cliente_id, #tipo_equipo, #estado, #en_garantia').on('change', function () {
+        equiposTable.ajax.reload();
     });
 
     // Eliminar equipo

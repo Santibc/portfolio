@@ -86,11 +86,11 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Ciudad</label>
-                                <input type="text" name="ciudad" class="form-control" value="{{ $cliente->ciudad ?? '' }}">
+                                <input type="text" name="ciudad" class="form-control" value="{{ old('ciudad', $cliente->ciudad_texto ?? '') }}">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Departamento</label>
-                                <input type="text" name="departamento" class="form-control" value="{{ $cliente->departamento ?? '' }}">
+                                <input type="text" name="departamento" class="form-control" value="{{ old('departamento', $cliente->departamento_texto ?? '') }}">
                             </div>
                         </div>
 

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\STCliente;
+use App\Models\Cliente;
 use App\Models\STTecnico;
 use App\Models\STEquipo;
 use App\Models\STOrdenServicio;
@@ -114,13 +114,28 @@ class ServicioTecnicoSeeder extends Seeder
             ];
 
             foreach ($clientes as $cliente) {
-                STCliente::create($cliente);
+                // Mapear nombres de st_clientes (legacy) a las columnas unificadas en clientes
+                Cliente::create([
+                    'numero_identificacion' => $cliente['numero_documento'],
+                    'tipo_documento'        => $cliente['tipo_documento'] ?? null,
+                    'nombre_contacto'       => $cliente['nombre_completo'],
+                    'razon_social'          => $cliente['razon_social'] ?? null,
+                    'email'                 => $cliente['email'] ?? null,
+                    'telefono'              => $cliente['telefono'] ?? null,
+                    'celular'               => $cliente['celular'] ?? null,
+                    'direccion'             => $cliente['direccion'] ?? null,
+                    'ciudad_texto'          => $cliente['ciudad'] ?? null,
+                    'departamento_texto'    => $cliente['departamento'] ?? null,
+                    'tipo_cliente'          => $cliente['tipo_cliente'] ?? 'particular',
+                    'observaciones'         => $cliente['observaciones'] ?? null,
+                    'activo'                => $cliente['activo'] ?? true,
+                ]);
             }
 
             // 3. Crear Equipos
             $equipos = [
                 [
-                    'st_cliente_id' => 1,
+                    'cliente_id' => 1,
                     'tipo_equipo' => 'Cámara IP',
                     'marca' => 'Hikvision',
                     'modelo' => 'DS-2CD2143G0-I',
@@ -137,7 +152,7 @@ class ServicioTecnicoSeeder extends Seeder
                     'activo' => true
                 ],
                 [
-                    'st_cliente_id' => 1,
+                    'cliente_id' => 1,
                     'tipo_equipo' => 'NVR',
                     'marca' => 'Hikvision',
                     'modelo' => 'DS-7608NI-K2/8P',
@@ -154,7 +169,7 @@ class ServicioTecnicoSeeder extends Seeder
                     'activo' => true
                 ],
                 [
-                    'st_cliente_id' => 2,
+                    'cliente_id' => 2,
                     'tipo_equipo' => 'Cámara Analógica',
                     'marca' => 'Dahua',
                     'modelo' => 'HAC-HFW1200R',
@@ -171,7 +186,7 @@ class ServicioTecnicoSeeder extends Seeder
                     'activo' => true
                 ],
                 [
-                    'st_cliente_id' => 3,
+                    'cliente_id' => 3,
                     'tipo_equipo' => 'DVR',
                     'marca' => 'Dahua',
                     'modelo' => 'XVR5116HS-I2',
@@ -261,7 +276,7 @@ class ServicioTecnicoSeeder extends Seeder
             $ordenes = [
                 [
                     'numero_orden' => 'ST-2025-000001',
-                    'st_cliente_id' => 2,
+                    'cliente_id' => 2,
                     'st_equipo_id' => 3,
                     'st_tecnico_id' => 1,
                     'tipo_servicio' => 'Reparación',
@@ -278,7 +293,7 @@ class ServicioTecnicoSeeder extends Seeder
                 ],
                 [
                     'numero_orden' => 'ST-2025-000002',
-                    'st_cliente_id' => 1,
+                    'cliente_id' => 1,
                     'st_equipo_id' => 2,
                     'st_tecnico_id' => 2,
                     'tipo_servicio' => 'Mantenimiento Preventivo',
@@ -296,7 +311,7 @@ class ServicioTecnicoSeeder extends Seeder
                 ],
                 [
                     'numero_orden' => 'ST-2025-000003',
-                    'st_cliente_id' => 3,
+                    'cliente_id' => 3,
                     'st_equipo_id' => 4,
                     'st_tecnico_id' => null,
                     'tipo_servicio' => 'Diagnóstico',

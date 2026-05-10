@@ -60,29 +60,37 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                                <select name="st_cliente_id" id="clienteSelect" class="form-select @error('st_cliente_id') is-invalid @enderror" required>
-                                    <option value="">Seleccione un cliente</option>
-                                    @foreach($clientes as $cliente)
-                                        <option value="{{ $cliente->id }}" {{ old('st_cliente_id', isset($orden) ? $orden->st_cliente_id : '') == $cliente->id ? 'selected' : '' }}>
-                                            {{ $cliente->nombre_completo }} - {{ $cliente->numero_documento }}
-                                        </option>
-                                    @endforeach
+                                @php
+                                    $cId    = old('cliente_id', isset($orden) ? $orden->cliente_id : '');
+                                    $cLabel = '';
+                                    if (isset($orden) && $orden->cliente) {
+                                        $cLabel = $orden->cliente->nombre_contacto . ' — ' . $orden->cliente->numero_identificacion;
+                                    }
+                                @endphp
+                                <select name="cliente_id" id="clienteSelect"
+                                        class="form-select cliente-select2-ajax @error('cliente_id') is-invalid @enderror" required
+                                        data-selected-id="{{ $cId }}"
+                                        data-selected-label="{{ $cLabel }}">
+                                    <option value=""></option>
                                 </select>
-                                @error('st_cliente_id')
+                                @error('cliente_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Equipo</label>
-                                <select name="st_equipo_id" id="equipoSelect" class="form-select @error('st_equipo_id') is-invalid @enderror">
-                                    <option value="">Seleccione un equipo</option>
-                                    @if(isset($equipos))
-                                        @foreach($equipos as $equipo)
-                                            <option value="{{ $equipo->id }}" {{ old('st_equipo_id', isset($orden) ? $orden->st_equipo_id : '') == $equipo->id ? 'selected' : '' }}>
-                                                {{ $equipo->marca }} {{ $equipo->modelo }} - S/N: {{ $equipo->numero_serie }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                @php
+                                    $eId    = old('st_equipo_id', isset($orden) ? $orden->st_equipo_id : '');
+                                    $eLabel = '';
+                                    if (isset($orden) && $orden->equipo) {
+                                        $eLabel = trim($orden->equipo->marca . ' ' . $orden->equipo->modelo) . ' — S/N: ' . $orden->equipo->numero_serie;
+                                    }
+                                @endphp
+                                <select name="st_equipo_id" id="equipoSelect"
+                                        class="form-select equipo-select2-ajax @error('st_equipo_id') is-invalid @enderror"
+                                        data-selected-id="{{ $eId }}"
+                                        data-selected-label="{{ $eLabel }}">
+                                    <option value=""></option>
                                 </select>
                                 @error('st_equipo_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -242,34 +250,67 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Cuando cambia el cliente, cargar sus equipos
-    $('#clienteSelect').on('change', function() {
-        const clienteId = $(this).val();
-        const equipoSelect = $('#equipoSelect');
-
-        equipoSelect.html('<option value="">Cargando...</option>');
-
-        if (clienteId) {
-            $.ajax({
-                url: `/servicio-tecnico/equipos-cliente/${clienteId}`,
-                type: 'GET',
-                success: function(data) {
-                    equipoSelect.html('<option value="">Seleccione un equipo</option>');
-                    data.forEach(function(equipo) {
-                        equipoSelect.append(`
-                            <option value="${equipo.id}">
-                                ${equipo.marca} ${equipo.modelo} - S/N: ${equipo.numero_serie}
-                            </option>
-                        `);
-                    });
-                },
-                error: function() {
-                    equipoSelect.html('<option value="">Error al cargar equipos</option>');
-                }
-            });
-        } else {
-            equipoSelect.html('<option value="">Seleccione un equipo</option>');
+    // ===== Cliente con Select2 + buscador AJAX =====
+    var $cliente = $('.cliente-select2-ajax');
+    $cliente.select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Buscar cliente por nombre, documento o email...',
+        ajax: {
+            url: "{{ route('clientes.buscar-ajax') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { return { q: params.term, page: params.page || 1 }; },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return data;
+            },
+            cache: true
         }
+    });
+
+    // Pre-cargar selección si viene de edición
+    var preClienteId    = $cliente.data('selected-id');
+    var preClienteLabel = $cliente.data('selected-label');
+    if (preClienteId && preClienteLabel) {
+        $cliente.append(new Option(preClienteLabel, preClienteId, true, true)).trigger('change');
+    }
+
+    // ===== Equipo con Select2 + buscador AJAX, filtrado por cliente =====
+    var $equipo = $('.equipo-select2-ajax');
+    $equipo.select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Buscar equipo (selecciona un cliente primero)...',
+        allowClear: true,
+        ajax: {
+            url: "{{ route('st.equipos.buscar-ajax') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    q: params.term,
+                    page: params.page || 1,
+                    cliente_id: $cliente.val()
+                };
+            },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return data;
+            },
+            cache: false
+        }
+    });
+
+    var preEquipoId    = $equipo.data('selected-id');
+    var preEquipoLabel = $equipo.data('selected-label');
+    if (preEquipoId && preEquipoLabel) {
+        $equipo.append(new Option(preEquipoLabel, preEquipoId, true, true)).trigger('change');
+    }
+
+    // Cuando cambia el cliente, limpiar equipo seleccionado para forzar nueva búsqueda
+    $cliente.on('change', function () {
+        $equipo.val(null).trigger('change');
     });
 });
 </script>

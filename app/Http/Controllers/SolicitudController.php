@@ -4,7 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SolicitudCotizacion;
+use App\Models\ItemSolicitudCotizacion;
 use App\Models\Cliente;
+use App\Models\Producto;
+use App\Models\VarianteProducto;
+use App\Models\PrecioProducto;
+use App\Models\PrecioVariante;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use Yajra\DataTables\Facades\DataTables;
@@ -91,7 +96,7 @@ class SolicitudController extends Controller
                     }
                     return '<span class="badge bg-'.$class.'">'.$text.'</span>';
                 })
-                ->addColumn('action', function($s) {
+                ->addColumn('action', function($s) use ($user) {
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
 
                     // Botón ver detalle (desde aquí se puede aprobar o rechazar)
@@ -99,6 +104,14 @@ class SolicitudController extends Controller
                                         title="Ver Detalle" onclick="verDetalle('.$s->id.')">
                                    <i class="bi bi-eye"></i>
                                 </button>';
+
+                    // Botón editar (solo pendientes y según permisos)
+                    if ($this->puedeEditar($s, $user)) {
+                        $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm"
+                                            title="Editar Cotización" onclick="editarCotizacion('.$s->id.')">
+                                       <i class="bi bi-pencil-square"></i>
+                                    </button>';
+                    }
 
                     // Botón descargar PDF
                     $buttons .= '<a href="'.route('solicitudes.pdf', $s->id).'" class="btn btn-outline-danger btn-sm"
@@ -346,6 +359,436 @@ class SolicitudController extends Controller
         $html .= '</div>';
         
         return response($html);
+    }
+
+    /**
+     * Valida que un precio nuevo no esté por debajo del precio_minimo_venta del producto.
+     * Devuelve string con el mensaje de error, o null si pasa.
+     */
+    private function validarPrecioMinimo(Producto $producto, ?float $precio): ?string
+    {
+        if (is_null($precio) || is_null($producto->precio_minimo_venta)) {
+            return null;
+        }
+        if ((float) $precio < (float) $producto->precio_minimo_venta) {
+            return 'El producto "' . $producto->nombre . '" tiene un precio mínimo de venta de $'
+                . number_format($producto->precio_minimo_venta, 2)
+                . ' y se intentó asignar $' . number_format($precio, 2) . '.';
+        }
+        return null;
+    }
+
+    /**
+     * ¿El usuario puede editar esta cotización?
+     * - Solo cotizaciones en estado "pendiente"
+     * - admin: cualquier cotización
+     * - vendedor: solo cotizaciones de sus clientes asignados
+     */
+    private function puedeEditar(SolicitudCotizacion $solicitud, $user): bool
+    {
+        if ($solicitud->estado !== 'pendiente') {
+            return false;
+        }
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+        if ($user->hasRole('vendedor')) {
+            return $solicitud->cliente->vendedor_id == $user->id;
+        }
+        return false;
+    }
+
+    /**
+     * ¿El usuario puede editar precios? Solo admin.
+     */
+    private function puedeEditarPrecios($user): bool
+    {
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Vista de edición (HTML para modal)
+     */
+    public function editar(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        if (!$this->puedeEditar($solicitud, $user)) {
+            return response()->json([
+                'error' => 'No tiene permisos para editar esta cotización o ya no está pendiente.'
+            ], 403);
+        }
+
+        $solicitud->load(['cliente.listaPrecio', 'items.producto', 'items.varianteProducto']);
+        $puedeEditarPrecios = $this->puedeEditarPrecios($user);
+
+        return view('solicitudes._editar_modal', compact('solicitud', 'puedeEditarPrecios'));
+    }
+
+    /**
+     * Actualizar cotización (notas + items existentes en bloque)
+     */
+    public function actualizar(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        if (!$this->puedeEditar($solicitud, $user)) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para editar esta cotización.'
+            ], 403);
+        }
+
+        $puedeEditarPrecios = $this->puedeEditarPrecios($user);
+
+        $request->validate([
+            'notas_cliente'           => 'nullable|string|max:2000',
+            'observaciones_admin'     => 'nullable|string|max:2000',
+            'items'                   => 'nullable|array',
+            'items.*.id'              => 'required|integer|exists:items_solicitud_cotizacion,id',
+            'items.*.cantidad'        => 'required|integer|min:1',
+            'items.*.precio_unitario' => 'nullable|numeric|min:0',
+        ]);
+
+        // Pre-validar precio mínimo en bloque (antes de tocar nada)
+        if ($puedeEditarPrecios) {
+            foreach ($request->input('items', []) as $itemData) {
+                if (!isset($itemData['precio_unitario'])) {
+                    continue;
+                }
+                $item = ItemSolicitudCotizacion::with('producto')
+                    ->where('solicitud_cotizacion_id', $solicitud->id)
+                    ->where('id', $itemData['id'])
+                    ->first();
+                if (!$item || !$item->producto) {
+                    continue;
+                }
+                $err = $this->validarPrecioMinimo($item->producto, (float) $itemData['precio_unitario']);
+                if ($err) {
+                    return response()->json(['success' => false, 'mensaje' => $err], 422);
+                }
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $solicitud->update([
+                'notas_cliente'       => $request->input('notas_cliente', $solicitud->notas_cliente),
+                'observaciones_admin' => $user->hasRole('admin')
+                    ? $request->input('observaciones_admin', $solicitud->observaciones_admin)
+                    : $solicitud->observaciones_admin,
+            ]);
+
+            foreach ($request->input('items', []) as $itemData) {
+                $item = ItemSolicitudCotizacion::where('solicitud_cotizacion_id', $solicitud->id)
+                    ->where('id', $itemData['id'])
+                    ->first();
+                if (!$item) {
+                    continue;
+                }
+
+                $cantidadNueva = (int) $itemData['cantidad'];
+                $payload = ['cantidad' => $cantidadNueva];
+
+                if ($puedeEditarPrecios && isset($itemData['precio_unitario'])) {
+                    $precioNuevo = (float) $itemData['precio_unitario'];
+                    if ((float) $item->precio_unitario !== $precioNuevo) {
+                        $payload['precio_unitario']            = $precioNuevo;
+                        $payload['precio_editado_manualmente'] = true;
+                        if (is_null($item->precio_original)) {
+                            $payload['precio_original'] = $item->precio_unitario;
+                        }
+                    }
+                }
+
+                $item->update($payload);
+            }
+
+            $solicitud->refresh();
+            $solicitud->calcularMontoTotal();
+
+            DB::commit();
+
+            return response()->json([
+                'success'      => true,
+                'mensaje'      => 'Cotización actualizada correctamente.',
+                'monto_total'  => $solicitud->monto_total,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error actualizando cotización: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al actualizar: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar un item de la cotización
+     */
+    public function eliminarItem(SolicitudCotizacion $solicitud, ItemSolicitudCotizacion $item)
+    {
+        $user = Auth::user();
+
+        if (!$this->puedeEditar($solicitud, $user)) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para editar esta cotización.'
+            ], 403);
+        }
+
+        if ($item->solicitud_cotizacion_id !== $solicitud->id) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'El item no pertenece a esta cotización.'
+            ], 422);
+        }
+
+        if ($solicitud->items()->count() <= 1) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'La cotización debe tener al menos un producto.'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $item->delete();
+            $solicitud->refresh();
+            $solicitud->calcularMontoTotal();
+
+            DB::commit();
+
+            return response()->json([
+                'success'     => true,
+                'mensaje'     => 'Producto eliminado de la cotización.',
+                'monto_total' => $solicitud->monto_total,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al eliminar: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Agregar un nuevo item (producto / variante) a la cotización
+     */
+    public function agregarItem(Request $request, SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        if (!$this->puedeEditar($solicitud, $user)) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para editar esta cotización.'
+            ], 403);
+        }
+
+        $request->validate([
+            'producto_id'          => 'required|integer|exists:productos,id',
+            'variante_producto_id' => 'nullable|integer|exists:variantes_producto,id',
+            'cantidad'             => 'required|integer|min:1',
+            'precio_unitario'      => 'nullable|numeric|min:0',
+        ]);
+
+        $producto = Producto::with('imagenPrincipal')->findOrFail($request->producto_id);
+        $variante = $request->variante_producto_id
+            ? VarianteProducto::find($request->variante_producto_id)
+            : null;
+
+        // Resolver precio: si admin lo manda, úsalo; si no, usar lista de precio del cliente
+        $precioUnit = null;
+        $editadoManual = false;
+
+        if ($this->puedeEditarPrecios($user) && $request->filled('precio_unitario')) {
+            $precioUnit = (float) $request->precio_unitario;
+            $editadoManual = true;
+        } else {
+            $listaId = $solicitud->cliente->lista_precio_id;
+            if ($listaId) {
+                $precioBase = PrecioProducto::where('producto_id', $producto->id)
+                    ->where('lista_precio_id', $listaId)
+                    ->where('activo', true)
+                    ->value('precio');
+
+                if ($precioBase !== null) {
+                    $precioUnit = (float) $precioBase;
+                    if ($variante) {
+                        $ajuste = PrecioVariante::where('variante_producto_id', $variante->id)
+                            ->where('lista_precio_id', $listaId)
+                            ->where('activo', true)
+                            ->value('ajuste_precio');
+                        if ($ajuste !== null) {
+                            $precioUnit += (float) $ajuste;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (is_null($precioUnit)) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No se pudo determinar el precio del producto para la lista del cliente. Asigne uno manualmente.'
+            ], 422);
+        }
+
+        $errMin = $this->validarPrecioMinimo($producto, $precioUnit);
+        if ($errMin) {
+            return response()->json(['success' => false, 'mensaje' => $errMin], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $infoVariante = null;
+            if ($variante) {
+                $infoVariante = trim(($variante->talla ? 'Talla: ' . $variante->talla : '')
+                    . ($variante->talla && $variante->color ? ' - ' : '')
+                    . ($variante->color ? 'Color: ' . $variante->color : ''));
+            }
+
+            ItemSolicitudCotizacion::create([
+                'solicitud_cotizacion_id'   => $solicitud->id,
+                'producto_id'               => $producto->id,
+                'variante_producto_id'      => $variante?->id,
+                'cantidad'                  => (int) $request->cantidad,
+                'precio_unitario'           => $precioUnit,
+                'precio_editado_manualmente'=> $editadoManual,
+                'precio_original'           => $editadoManual ? null : $precioUnit,
+                'referencia_producto'       => $variante?->sku ?? $producto->referencia,
+                'nombre_producto'           => $producto->nombre,
+                'marca_producto'            => $producto->marca ?? null,
+                'info_variante'             => $infoVariante,
+            ]);
+
+            $solicitud->refresh();
+            $solicitud->calcularMontoTotal();
+
+            DB::commit();
+
+            return response()->json([
+                'success'     => true,
+                'mensaje'     => 'Producto agregado a la cotización.',
+                'monto_total' => $solicitud->monto_total,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al agregar producto: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Buscar productos para autocompletar al agregar items.
+     * Si se pasa solicitud_id, devuelve también el precio calculado
+     * según la lista de precios del cliente.
+     */
+    public function buscarProductos(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole('admin') && !$user->hasRole('vendedor')) {
+            abort(403);
+        }
+
+        $q = trim((string) $request->input('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $listaId = null;
+        if ($request->filled('solicitud_id')) {
+            $solicitud = SolicitudCotizacion::with('cliente')->find($request->solicitud_id);
+            if ($solicitud) {
+                $listaId = $solicitud->cliente->lista_precio_id;
+            }
+        }
+
+        $productos = Producto::with(['variantes' => function($qb) {
+                $qb->where('activo', true);
+            }])
+            ->where('activo', true)
+            ->where(function($qb) use ($q) {
+                $qb->where('referencia', 'like', "%{$q}%")
+                   ->orWhere('nombre', 'like', "%{$q}%");
+            })
+            ->orderBy('nombre')
+            ->limit(20)
+            ->get();
+
+        // Pre-cargar precios base por producto en una sola consulta
+        $preciosBase = [];
+        if ($listaId && $productos->isNotEmpty()) {
+            $preciosBase = PrecioProducto::whereIn('producto_id', $productos->pluck('id'))
+                ->where('lista_precio_id', $listaId)
+                ->where('activo', true)
+                ->pluck('precio', 'producto_id')
+                ->toArray();
+        }
+
+        // Pre-cargar ajustes de variante en una sola consulta
+        $ajustesVariante = [];
+        if ($listaId) {
+            $varianteIds = $productos->flatMap->variantes->pluck('id');
+            if ($varianteIds->isNotEmpty()) {
+                $ajustesVariante = PrecioVariante::whereIn('variante_producto_id', $varianteIds)
+                    ->where('lista_precio_id', $listaId)
+                    ->where('activo', true)
+                    ->pluck('ajuste_precio', 'variante_producto_id')
+                    ->toArray();
+            }
+        }
+
+        $out = [];
+        foreach ($productos as $p) {
+            $precioBase = $preciosBase[$p->id] ?? null;
+
+            if ($p->variantes && $p->variantes->count() > 0) {
+                foreach ($p->variantes as $v) {
+                    $info = trim(($v->talla ? 'Talla: ' . $v->talla : '')
+                        . ($v->talla && $v->color ? ' - ' : '')
+                        . ($v->color ? 'Color: ' . $v->color : ''));
+
+                    $precio = null;
+                    if (!is_null($precioBase)) {
+                        $precio = (float) $precioBase + (float) ($ajustesVariante[$v->id] ?? 0);
+                    }
+
+                    $sufijo = $info ? " ({$info})" : '';
+                    $sufijoPrecio = !is_null($precio) ? ' — $' . number_format($precio, 2) : '';
+
+                    $out[] = [
+                        'id'                   => $p->id,
+                        'variante_producto_id' => $v->id,
+                        'referencia'           => $v->sku ?? $p->referencia,
+                        'nombre'               => $p->nombre,
+                        'info_variante'        => $info ?: null,
+                        'precio'               => $precio,
+                        'label'                => $p->referencia . ' — ' . $p->nombre . $sufijo . $sufijoPrecio,
+                    ];
+                }
+            } else {
+                $precio = !is_null($precioBase) ? (float) $precioBase : null;
+                $sufijoPrecio = !is_null($precio) ? ' — $' . number_format($precio, 2) : '';
+
+                $out[] = [
+                    'id'                   => $p->id,
+                    'variante_producto_id' => null,
+                    'referencia'           => $p->referencia,
+                    'nombre'               => $p->nombre,
+                    'info_variante'        => null,
+                    'precio'               => $precio,
+                    'label'                => $p->referencia . ' — ' . $p->nombre . $sufijoPrecio,
+                ];
+            }
+        }
+
+        return response()->json($out);
     }
 
     /**

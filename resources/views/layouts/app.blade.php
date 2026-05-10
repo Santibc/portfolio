@@ -12,6 +12,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    {{-- Select2 (selectores con buscador) --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
    @stack('styles')
     <style>
         body {
@@ -155,6 +158,26 @@
     {{-- JS --}}
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+      // Inicializar todos los selects con clase .select2-search automáticamente
+      $(function() {
+        $('.select2-search').each(function() {
+          var $sel = $(this);
+          $sel.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: $sel.data('placeholder') || 'Buscar...',
+            allowClear: !!$sel.data('allow-clear'),
+            language: {
+              noResults: function() { return 'Sin resultados'; },
+              searching: function() { return 'Buscando...'; },
+              inputTooShort: function(args) { return 'Escribe al menos ' + args.minimum + ' caracteres'; }
+            }
+          });
+        });
+      });
+    </script>
 
     <script>
         const sidebar = document.querySelector('.sidebar');

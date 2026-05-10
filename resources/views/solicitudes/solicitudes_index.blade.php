@@ -45,8 +45,9 @@
           <div class="row mb-3">
             <div class="col-md-4">
               <label class="form-label">Filtrar por Vendedor:</label>
-              <select id="filtroVendedor" class="form-select">
-                <option value="">Todos los vendedores</option>
+              <select id="filtroVendedor" class="form-select select2-search"
+                      data-placeholder="Todos los vendedores" data-allow-clear="1">
+                <option value=""></option>
                 @foreach($vendedores as $vendedor)
                   <option value="{{ $vendedor->id }}">{{ $vendedor->name }}</option>
                 @endforeach
@@ -299,8 +300,199 @@
     form.submit();
     $('#modalExportarExcel').modal('hide');
   }
+
+  // ===== Edición de cotización =====
+  function editarCotizacion(solicitudId) {
+    $('#modalEditarContent').html('<div class="text-center"><div class="spinner-border" role="status"></div></div>');
+    $('#modalEditar').modal('show');
+
+    $.get(`/solicitudes/${solicitudId}/editar`, function(html) {
+      $('#modalEditarContent').html(html);
+      bindEdicionEventos(solicitudId);
+    }).fail(function(xhr) {
+      $('#modalEditarContent').html(
+        '<div class="alert alert-danger">' +
+        (xhr.responseJSON?.error || 'Error al cargar el formulario.') + '</div>'
+      );
+    });
+  }
+
+  function recalcularSubtotalesEdicion() {
+    let total = 0;
+    $('#tablaItemsEditar tbody tr').each(function() {
+      const $tr = $(this);
+      const cantidad = parseFloat($tr.find('.item-cantidad').val()) || 0;
+      const precio = parseFloat($tr.find('.item-precio').val()) || 0;
+      const sub = cantidad * precio;
+      $tr.find('.item-subtotal').text('$' + sub.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+      total += sub;
+    });
+    $('#editarMontoTotal').text('$' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+  }
+
+  function bindEdicionEventos(solicitudId) {
+    // Recalcular subtotales en vivo
+    $('#tablaItemsEditar').on('input', '.item-cantidad, .item-precio', recalcularSubtotalesEdicion);
+
+    // Eliminar item
+    $('#tablaItemsEditar').on('click', '.btn-eliminar-item', function() {
+      const itemId = $(this).data('item-id');
+      const $tr = $(this).closest('tr');
+      if (!confirm('¿Eliminar este producto de la cotización?')) return;
+
+      $.ajax({
+        url: `/solicitudes/${solicitudId}/items/${itemId}`,
+        method: 'DELETE',
+        data: { _token: '{{ csrf_token() }}' }
+      }).done(function(resp) {
+        if (resp.success) {
+          $tr.remove();
+          recalcularSubtotalesEdicion();
+        } else {
+          alert(resp.mensaje || 'No se pudo eliminar.');
+        }
+      }).fail(function(xhr) {
+        alert(xhr.responseJSON?.mensaje || 'Error al eliminar.');
+      });
+    });
+
+    // Buscador de productos (autocomplete)
+    let buscarTimer = null;
+    $('#buscarProductoInput').on('input', function() {
+      const q = $(this).val();
+      $('#nuevoProductoId').val('');
+      $('#nuevoVarianteId').val('');
+      $('#btnAgregarItem').prop('disabled', true);
+
+      if (q.length < 2) {
+        $('#buscarProductoResultados').empty();
+        return;
+      }
+      clearTimeout(buscarTimer);
+      buscarTimer = setTimeout(() => {
+        $.get('/solicitudes/buscar-productos', { q: q, solicitud_id: solicitudId }, function(items) {
+          const $list = $('#buscarProductoResultados').empty();
+          if (!items.length) {
+            $list.append('<div class="list-group-item text-muted small">Sin resultados</div>');
+            return;
+          }
+          items.forEach(it => {
+            const $a = $('<a href="#" class="list-group-item list-group-item-action small"></a>')
+              .text(it.label)
+              .on('click', function(ev) {
+                ev.preventDefault();
+                $('#buscarProductoInput').val(it.label);
+                $('#nuevoProductoId').val(it.id);
+                $('#nuevoVarianteId').val(it.variante_producto_id || '');
+                $('#btnAgregarItem').prop('disabled', false);
+                $('#buscarProductoResultados').empty();
+
+                // Autocompletar precio si admin (campo existe) y la búsqueda lo trajo
+                if (it.precio !== null && it.precio !== undefined) {
+                  $('#nuevoPrecio').val(parseFloat(it.precio).toFixed(2));
+                  $('#nuevoPrecioHint').text('Precio según lista del cliente: $' +
+                    parseFloat(it.precio).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+                } else {
+                  $('#nuevoPrecio').val('');
+                  $('#nuevoPrecioHint').text('Sin precio en la lista del cliente — ingresa uno manualmente.');
+                }
+              });
+            $list.append($a);
+          });
+        });
+      }, 250);
+    });
+
+    // Cerrar lista al hacer click fuera
+    $(document).on('click.editarBuscar', function(e) {
+      if (!$(e.target).closest('#buscarProductoInput, #buscarProductoResultados').length) {
+        $('#buscarProductoResultados').empty();
+      }
+    });
+
+    // Agregar item
+    $('#btnAgregarItem').on('click', function() {
+      const productoId = $('#nuevoProductoId').val();
+      const varianteId = $('#nuevoVarianteId').val();
+      const cantidad = parseInt($('#nuevoCantidad').val()) || 0;
+      const precio = $('#nuevoPrecio').val();
+
+      if (!productoId || cantidad < 1) {
+        alert('Selecciona un producto y una cantidad válida.');
+        return;
+      }
+
+      const data = {
+        _token: '{{ csrf_token() }}',
+        producto_id: productoId,
+        variante_producto_id: varianteId || null,
+        cantidad: cantidad,
+      };
+      if (precio) data.precio_unitario = precio;
+
+      $.post(`/solicitudes/${solicitudId}/items`, data, function(resp) {
+        if (resp.success) {
+          // Recargar el modal entero para reflejar el nuevo item
+          editarCotizacion(solicitudId);
+        } else {
+          alert(resp.mensaje || 'No se pudo agregar.');
+        }
+      }).fail(function(xhr) {
+        alert(xhr.responseJSON?.mensaje || 'Error al agregar producto.');
+      });
+    });
+
+    // Guardar cambios (notas + items existentes)
+    $('#btnGuardarEdicion').on('click', function() {
+      const $btn = $(this);
+      $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+
+      const formData = $('#formEditarCotizacion').serialize();
+
+      $.ajax({
+        url: `/solicitudes/${solicitudId}`,
+        method: 'POST',
+        data: formData + '&_method=PUT',
+      }).done(function(resp) {
+        if (resp.success) {
+          $('#modalEditar').modal('hide');
+          $('.max-w-7xl').prepend(
+            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+            resp.mensaje +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
+          );
+          $('#solicitudes-table').DataTable().ajax.reload(null, false);
+        } else {
+          alert(resp.mensaje || 'No se pudo guardar.');
+        }
+      }).fail(function(xhr) {
+        alert(xhr.responseJSON?.mensaje || 'Error al guardar.');
+      }).always(function() {
+        $btn.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar cambios');
+      });
+    });
+  }
   </script>
   @endpush
+
+  <!-- Modal para editar cotización -->
+  <div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Cotización</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalEditarContent">
+          <div class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal para ver detalle -->
   <div class="modal fade" id="modalDetalle" tabindex="-1">

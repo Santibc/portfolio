@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\ServicioTecnico;
 
 use App\Http\Controllers\Controller;
-use App\Models\STCliente;
+use App\Models\Cliente;
 use App\Models\STEquipo;
 use App\Models\STOrdenServicio;
 use App\Models\STTecnico;
@@ -25,6 +25,9 @@ class STOrdenServicioController extends Controller
             $query = STOrdenServicio::with(['cliente', 'equipo', 'tecnico']);
 
             // Filtros
+            if ($request->filled('cliente_id')) {
+                $query->where('cliente_id', $request->cliente_id);
+            }
             if ($request->filled('estado')) {
                 $query->where('estado', $request->estado);
             }
@@ -87,7 +90,7 @@ class STOrdenServicioController extends Controller
                 })
                 ->filterColumn('cliente_nombre', function($query, $keyword) {
                     $query->whereHas('cliente', function($q) use ($keyword) {
-                        $q->where('nombre_completo', 'like', "%{$keyword}%");
+                        $q->where('nombre_contacto', 'like', "%{$keyword}%");
                     });
                 })
                 ->filterColumn('tecnico_nombre', function($query, $keyword) {
@@ -105,7 +108,7 @@ class STOrdenServicioController extends Controller
 
     public function create()
     {
-        $clientes = STCliente::activos()->orderBy('nombre_completo')->get();
+        $clientes = Cliente::activos()->orderBy('nombre_contacto')->get();
         $tecnicos = STTecnico::activos()->orderBy('nombre_completo')->get();
 
         // Generar número de orden
@@ -119,7 +122,7 @@ class STOrdenServicioController extends Controller
     {
         $validated = $request->validate([
             'numero_orden' => 'required|string|unique:st_ordenes_servicio,numero_orden',
-            'st_cliente_id' => 'required|exists:st_clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'st_equipo_id' => 'nullable|exists:st_equipos,id',
             'st_tecnico_id' => 'nullable|exists:st_tecnicos,id',
             'tipo_servicio' => 'required|string',
@@ -187,9 +190,9 @@ class STOrdenServicioController extends Controller
 
     public function edit(STOrdenServicio $orden)
     {
-        $clientes = STCliente::activos()->orderBy('nombre_completo')->get();
+        $clientes = Cliente::activos()->orderBy('nombre_contacto')->get();
         $tecnicos = STTecnico::activos()->orderBy('nombre_completo')->get();
-        $equipos = STEquipo::where('st_cliente_id', $orden->st_cliente_id)->get();
+        $equipos = STEquipo::where('cliente_id', $orden->cliente_id)->get();
 
         return view('servicio-tecnico.ordenes.form', compact('orden', 'clientes', 'tecnicos', 'equipos'));
     }
@@ -197,7 +200,7 @@ class STOrdenServicioController extends Controller
     public function update(Request $request, STOrdenServicio $orden)
     {
         $validated = $request->validate([
-            'st_cliente_id' => 'required|exists:st_clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'st_equipo_id' => 'nullable|exists:st_equipos,id',
             'st_tecnico_id' => 'nullable|exists:st_tecnicos,id',
             'tipo_servicio' => 'required|string',
@@ -269,7 +272,7 @@ class STOrdenServicioController extends Controller
 
     public function getEquiposByCliente($clienteId)
     {
-        $equipos = STEquipo::where('st_cliente_id', $clienteId)
+        $equipos = STEquipo::where('cliente_id', $clienteId)
             ->activos()
             ->get();
 

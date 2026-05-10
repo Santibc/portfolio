@@ -22,8 +22,9 @@
             <form method="GET" action="{{ route('st.repuestos.index') }}" class="row g-3">
                 <div class="col-md-3">
                     <label for="categoria" class="form-label">Categoría</label>
-                    <select name="categoria" id="categoria" class="form-select">
-                        <option value="">Todas</option>
+                    <select name="categoria" id="categoria" class="form-select select2-search"
+                            data-placeholder="Todas" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="Lente" {{ request('categoria') == 'Lente' ? 'selected' : '' }}>Lente</option>
                         <option value="Sensor" {{ request('categoria') == 'Sensor' ? 'selected' : '' }}>Sensor</option>
                         <option value="Fuente de poder" {{ request('categoria') == 'Fuente de poder' ? 'selected' : '' }}>Fuente de poder</option>
@@ -42,8 +43,9 @@
                 </div>
                 <div class="col-md-3">
                     <label for="stock_bajo" class="form-label">Stock</label>
-                    <select name="stock_bajo" id="stock_bajo" class="form-select">
-                        <option value="">Todos</option>
+                    <select name="stock_bajo" id="stock_bajo" class="form-select select2-search"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="1" {{ request('stock_bajo') == '1' ? 'selected' : '' }}>Stock Bajo</option>
                         <option value="0" {{ request('stock_bajo') == '0' ? 'selected' : '' }}>Stock Normal</option>
                     </select>
@@ -127,7 +129,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#repuestosTable').DataTable({
+    var repuestosTable = $('#repuestosTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -151,6 +153,14 @@ $(document).ready(function() {
         ],
         order: [[0, 'asc']],
         language: { url: '{{ asset("js/datatables/es-ES.json") }}' }
+    });
+
+    // Auto-aplicar filtros al cambiar / escribir
+    $('#categoria, #stock_bajo').on('change', function () { repuestosTable.ajax.reload(); });
+    var buscarTimer = null;
+    $('#buscar').on('input', function () {
+        clearTimeout(buscarTimer);
+        buscarTimer = setTimeout(function () { repuestosTable.ajax.reload(); }, 300);
     });
 
     // Eliminar repuesto

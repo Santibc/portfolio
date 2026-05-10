@@ -12,7 +12,7 @@ class STEquipo extends Model
     protected $table = 'st_equipos';
 
     protected $fillable = [
-        'st_cliente_id',
+        'cliente_id',
         'tipo_equipo',
         'marca',
         'modelo',
@@ -41,7 +41,7 @@ class STEquipo extends Model
     // Relaciones
     public function cliente()
     {
-        return $this->belongsTo(STCliente::class, 'st_cliente_id');
+        return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
     public function ordenesServicio()

@@ -17,6 +17,7 @@ class Producto extends Model
         'nombre',
         'descripcion',
         'marca',
+        'precio_minimo_venta',
         'unidad_venta',
         'unidad_empaque',
         'extension',
@@ -34,6 +35,7 @@ class Producto extends Model
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
         'eliminado' => 'boolean',
+        'precio_minimo_venta' => 'decimal:2',
     ];
 
     public function categoria()

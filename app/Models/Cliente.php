@@ -13,19 +13,61 @@ class Cliente extends Model
 
     protected $fillable = [
         'numero_identificacion',
+        'tipo_documento',
         'nombre_contacto',
+        'razon_social',
         'email',
         'telefono',
-  'ciudad_id',
+        'celular',
+        'direccion',
+        'ciudad_texto',
+        'departamento_texto',
+        'tipo_cliente',
+        'observaciones',
+        'ciudad_id',
         'vendedor_id',
         'lista_precio_id',
         'activo',
-         'pais_id'
+        'pais_id',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
+
+    // Relaciones de Servicio Técnico (clientes unificados)
+    public function equipos()
+    {
+        return $this->hasMany(STEquipo::class, 'cliente_id');
+    }
+
+    public function ordenesServicio()
+    {
+        return $this->hasMany(STOrdenServicio::class, 'cliente_id');
+    }
+
+    // Accessors de compatibilidad con vistas heredadas del módulo ST
+    public function getNombreCompletoFormateadoAttribute()
+    {
+        if ($this->tipo_cliente === 'empresa' && !empty($this->razon_social)) {
+            return $this->razon_social;
+        }
+        return $this->nombre_contacto;
+    }
+
+    public function getNombreCompletoAttribute()
+    {
+        return $this->nombre_contacto;
+    }
+
+    public function getNumeroDocumentoAttribute()
+    {
+        return $this->numero_identificacion;
+    }
+
+    // Nota: NO se agregan accessors para `ciudad`/`departamento` porque
+    // sobrescribirían la relación Eloquent `ciudad()` del catálogo.
+    // Las vistas de ST deben usar `ciudad_texto` y `departamento_texto`.
     public function pais()
     {
         return $this->belongsTo(Pais::class);

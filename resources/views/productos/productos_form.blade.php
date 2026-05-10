@@ -81,6 +81,23 @@
               @error('marca') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            {{-- Precio mínimo de venta (solo admin) --}}
+            @if(auth()->user()->hasRole('admin'))
+            <div class="col-md-4 mb-3">
+              <label class="form-label">
+                Precio mínimo de venta
+                <i class="bi bi-info-circle" data-bs-toggle="tooltip"
+                   title="Si se define, ningún precio en cotización podrá quedar por debajo de este valor. Déjalo vacío para no aplicar restricción."></i>
+              </label>
+              <input name="precio_minimo_venta" type="number" step="0.01" min="0"
+                     class="form-control @error('precio_minimo_venta') is-invalid @enderror"
+                     value="{{ old('precio_minimo_venta', $producto->precio_minimo_venta) }}"
+                     placeholder="Sin restricción">
+              @error('precio_minimo_venta') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Restricción de venta — opcional.</small>
+            </div>
+            @endif
+
             {{-- Unidad de Venta --}}
             <div class="col-md-4 mb-3">
               <label class="form-label">Unidad de Venta <span class="text-danger">*</span></label>

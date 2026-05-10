@@ -4,12 +4,60 @@ namespace App\Http\Controllers\ServicioTecnico;
 
 use App\Http\Controllers\Controller;
 use App\Models\STEquipo;
-use App\Models\STCliente;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class STEquipoController extends Controller
 {
+    /**
+     * Endpoint AJAX para Select2: busca equipos.
+     * Si se pasa cliente_id, filtra por cliente.
+     */
+    public function buscarAjax(Request $request)
+    {
+        $q         = trim((string) $request->input('q', ''));
+        $clienteId = $request->input('cliente_id');
+        $page      = max(1, (int) $request->input('page', 1));
+        $per       = 20;
+
+        $query = STEquipo::query()->where('activo', true);
+
+        if ($clienteId) {
+            $query->where('cliente_id', $clienteId);
+        }
+
+        if ($q !== '') {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('numero_serie', 'like', "%{$q}%")
+                   ->orWhere('marca', 'like', "%{$q}%")
+                   ->orWhere('modelo', 'like', "%{$q}%")
+                   ->orWhere('tipo_equipo', 'like', "%{$q}%");
+            });
+        }
+
+        $total = $query->count();
+        $items = $query->orderBy('marca')->orderBy('modelo')
+            ->skip(($page - 1) * $per)
+            ->take($per)
+            ->get(['id', 'tipo_equipo', 'marca', 'modelo', 'numero_serie']);
+
+        $results = $items->map(function ($e) {
+            $partes = array_filter([$e->marca, $e->modelo, $e->tipo_equipo]);
+            $label  = implode(' ', $partes);
+            if ($e->numero_serie) {
+                $label .= ' — S/N: ' . $e->numero_serie;
+            }
+            return ['id' => $e->id, 'text' => $label];
+        });
+
+        return response()->json([
+            'results'    => $results,
+            'pagination' => ['more' => ($page * $per) < $total],
+        ]);
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -21,6 +69,10 @@ class STEquipoController extends Controller
             $query = STEquipo::with('cliente')->select('st_equipos.*');
 
             // Aplicar filtros
+            if ($request->filled('cliente_id')) {
+                $query->where('cliente_id', $request->cliente_id);
+            }
+
             if ($request->filled('tipo_equipo')) {
                 $query->where('tipo_equipo', $request->tipo_equipo);
             }
@@ -99,7 +151,7 @@ class STEquipoController extends Controller
      */
     public function create()
     {
-        $clientes = STCliente::activos()->orderBy('nombre_completo')->get();
+        $clientes = Cliente::activos()->orderBy('nombre_contacto')->get();
         return view('servicio-tecnico.equipos.create', compact('clientes'));
     }
 
@@ -112,7 +164,7 @@ class STEquipoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'st_cliente_id' => 'required|exists:st_clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'tipo_equipo' => 'required|string|max:100',
             'marca' => 'nullable|string|max:100',
             'modelo' => 'nullable|string|max:100',
@@ -159,7 +211,7 @@ class STEquipoController extends Controller
     public function edit($id)
     {
         $equipo = STEquipo::findOrFail($id);
-        $clientes = STCliente::activos()->orderBy('nombre_completo')->get();
+        $clientes = Cliente::activos()->orderBy('nombre_contacto')->get();
 
         return view('servicio-tecnico.equipos.create', compact('equipo', 'clientes'));
     }
@@ -176,7 +228,7 @@ class STEquipoController extends Controller
         $equipo = STEquipo::findOrFail($id);
 
         $validated = $request->validate([
-            'st_cliente_id' => 'required|exists:st_clientes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'tipo_equipo' => 'required|string|max:100',
             'marca' => 'nullable|string|max:100',
             'modelo' => 'nullable|string|max:100',

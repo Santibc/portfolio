@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\ServicioTecnico;
 
 use App\Http\Controllers\Controller;
-use App\Models\STCliente;
+use App\Models\Cliente;
 use App\Models\STEquipo;
 use App\Models\STOrdenServicio;
 use App\Models\STRepuesto;
@@ -25,7 +25,7 @@ class DashboardSTController extends Controller
             'ordenes_retrasadas' => STOrdenServicio::where('fecha_promesa_entrega', '<', now())
                 ->whereNotIn('estado', ['completada', 'entregada', 'cancelada'])
                 ->count(),
-            'clientes_total' => STCliente::activos()->count(),
+            'clientes_total' => Cliente::activos()->count(),
             'equipos_total' => STEquipo::activos()->count(),
             'equipos_en_reparacion' => STEquipo::where('estado', 'en_reparacion')->count(),
             'tecnicos_activos' => STTecnico::activos()->count(),

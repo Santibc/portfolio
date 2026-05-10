@@ -13,7 +13,7 @@ class STOrdenServicio extends Model
 
     protected $fillable = [
         'numero_orden',
-        'st_cliente_id',
+        'cliente_id',
         'st_equipo_id',
         'st_tecnico_id',
         'tipo_servicio',
@@ -51,7 +51,7 @@ class STOrdenServicio extends Model
     // Relaciones
     public function cliente()
     {
-        return $this->belongsTo(STCliente::class, 'st_cliente_id');
+        return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
     public function equipo()

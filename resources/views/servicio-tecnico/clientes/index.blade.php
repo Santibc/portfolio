@@ -3,10 +3,53 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-4 text-end">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Clientes</h5>
                 <a href="{{ route('st.clientes.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Nuevo Cliente
                 </a>
+            </div>
+
+            {{-- Filtros --}}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Buscar (nombre, documento, email)</label>
+                            <input type="text" id="filtroBusqueda" class="form-control"
+                                   placeholder="Escribe para filtrar...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo de cliente</label>
+                            <select id="filtroTipoCliente" class="form-select select2-search"
+                                    data-placeholder="Todos" data-allow-clear="1">
+                                <option value=""></option>
+                                <option value="particular">Particular</option>
+                                <option value="empresa">Empresa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Estado</label>
+                            <select id="filtroActivo" class="form-select select2-search"
+                                    data-placeholder="Todos" data-allow-clear="1">
+                                <option value=""></option>
+                                <option value="1" selected>Activos</option>
+                                <option value="0">Inactivos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tipo doc.</label>
+                            <select id="filtroTipoDoc" class="form-select select2-search"
+                                    data-placeholder="Todos" data-allow-clear="1">
+                                <option value=""></option>
+                                <option value="CC">CC</option>
+                                <option value="NIT">NIT</option>
+                                <option value="CE">CE</option>
+                                <option value="Pasaporte">Pasaporte</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -41,12 +84,20 @@ document.addEventListener('DOMContentLoaded', function() {
         serverSide: true,
         responsive: true,
         scrollX: true,
-        ajax: '{{ route("st.clientes.index") }}',
+        ajax: {
+            url: '{{ route("st.clientes.index") }}',
+            data: function (d) {
+                d.busqueda = $('#filtroBusqueda').val();
+                d.tipo_cliente = $('#filtroTipoCliente').val();
+                d.tipo_documento = $('#filtroTipoDoc').val();
+                d.activo = $('#filtroActivo').val();
+            }
+        },
         columns: [
             { data: 'id', name: 'id' },
             { data: 'tipo_documento', name: 'tipo_documento' },
-            { data: 'numero_documento', name: 'numero_documento' },
-            { data: 'nombre_completo', name: 'nombre_completo' },
+            { data: 'numero_documento', name: 'numero_identificacion' },
+            { data: 'nombre_completo', name: 'nombre_contacto' },
             { data: 'celular', name: 'celular' },
             { data: 'email', name: 'email' },
             { data: 'tipo_cliente_badge', name: 'tipo_cliente', orderable: false },
@@ -56,6 +107,20 @@ document.addEventListener('DOMContentLoaded', function() {
         ],
         language: { url: '{{ asset("js/datatables/es-ES.json") }}' }
     });
+
+    // Auto-aplicar filtros
+    $('#filtroTipoCliente, #filtroActivo, #filtroTipoDoc').on('change', function () {
+        table.ajax.reload();
+    });
+
+    var bTimer = null;
+    $('#filtroBusqueda').on('input', function () {
+        clearTimeout(bTimer);
+        bTimer = setTimeout(function () { table.ajax.reload(); }, 300);
+    });
+
+    // Cargar inicialmente con activo=1
+    $('#filtroActivo').trigger('change');
 });
 
 function eliminar(id) {

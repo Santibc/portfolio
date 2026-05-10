@@ -62,6 +62,60 @@ HTML;
         return view('clientes.clientes_index');
     }
 
+    /**
+     * Endpoint AJAX para Select2: busca clientes por nombre/identificación/email.
+     * Devuelve formato { results: [...], pagination: { more: bool } }.
+     */
+    public function buscarAjax(Request $request)
+    {
+        $q    = trim((string) $request->input('q', ''));
+        $page = max(1, (int) $request->input('page', 1));
+        $per  = 20;
+
+        $query = Cliente::query()->where('activo', true);
+
+        if ($q !== '') {
+            $query->where(function ($qb) use ($q) {
+                $qb->where('nombre_contacto', 'like', "%{$q}%")
+                   ->orWhere('numero_identificacion', 'like', "%{$q}%")
+                   ->orWhere('email', 'like', "%{$q}%")
+                   ->orWhere('razon_social', 'like', "%{$q}%");
+            });
+        }
+
+        // Si es vendedor (no admin), restringir a sus clientes
+        $user = auth()->user();
+        if ($user && $user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            $query->where('vendedor_id', $user->id);
+        }
+
+        $total = $query->count();
+        $items = $query->orderBy('nombre_contacto')
+            ->skip(($page - 1) * $per)
+            ->take($per)
+            ->get(['id', 'numero_identificacion', 'nombre_contacto', 'razon_social', 'lista_precio_id']);
+
+        $results = $items->map(function ($c) {
+            $label = $c->nombre_contacto;
+            if ($c->numero_identificacion) {
+                $label .= ' — ' . $c->numero_identificacion;
+            }
+            if ($c->razon_social && $c->razon_social !== $c->nombre_contacto) {
+                $label .= ' (' . $c->razon_social . ')';
+            }
+            return [
+                'id'               => $c->id,
+                'text'             => $label,
+                'has_lista_precio' => !is_null($c->lista_precio_id),
+            ];
+        });
+
+        return response()->json([
+            'results'    => $results,
+            'pagination' => ['more' => ($page * $per) < $total],
+        ]);
+    }
+
     public function form(Cliente $cliente = null)
     {
         $cliente    = $cliente ?? new Cliente();

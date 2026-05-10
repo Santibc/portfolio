@@ -269,14 +269,25 @@
       <div class="p-4 row align-items-center">
         <div class="col-md-4">
           <label class="form-label">Filtrar por Categoría</label>
-          <select class="form-select" id="filtroCategoria">
-            <option value="">Todas las categorías</option>
+          <select class="form-select select2-search" id="filtroCategoria"
+                  data-placeholder="Todas las categorías" data-allow-clear="1">
+            <option value=""></option>
             @foreach($categorias as $categoria)
               <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
             @endforeach
           </select>
         </div>
-        <div class="col-md-8 text-end">
+        <div class="col-md-3">
+          <label class="form-label">Filtrar por Marca</label>
+          <select class="form-select select2-search" id="filtroMarca"
+                  data-placeholder="Todas las marcas" data-allow-clear="1">
+            <option value=""></option>
+            @foreach($marcas ?? [] as $marca)
+              <option value="{{ $marca }}">{{ $marca }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="col-md-5 text-end">
           <button class="btn btn-outline-secondary me-2" id="btnToggleView">
             <i class="bi bi-view-list"></i> Ver como carrusel
           </button>
@@ -536,6 +547,7 @@ $(function(){
       _token:'{{csrf_token()}}',
       page, busqueda:$('#busquedaProducto').val(),
       categoria_id:$('#filtroCategoria').val(),
+      marca:$('#filtroMarca').val(),
       cliente_id:clienteId, enlace_token:enlaceToken
     },resp=>{
       const prods = resp.productos.data;
@@ -982,6 +994,7 @@ $(function(){
   $('#closeCart').click(()=>$('#cartSidebar').removeClass('show'));
   $('#busquedaProducto').on('keyup',debounce(()=>cargarProductos(1),500));
   $('#filtroCategoria').change(()=>cargarProductos(1));
+  $('#filtroMarca').change(()=>cargarProductos(1));
 
   function mostrarNotificacion(msg,t='info'){
     const $t = $(`<div class="toast" role="alert" style="position:fixed;top:20px;right:20px;z-index:1060">

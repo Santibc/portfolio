@@ -34,8 +34,10 @@ class CatalogoController extends Controller
         
         $cliente = $enlace->cliente;
         $categorias = Categoria::activas()->get();
-        
-        return view('catalogo.index_cliente', compact('enlace', 'cliente', 'categorias'));
+        $marcas     = Producto::activos()->whereNotNull('marca')->where('marca', '!=', '')
+                                ->orderBy('marca')->pluck('marca')->unique()->values();
+
+        return view('catalogo.index_cliente', compact('enlace', 'cliente', 'categorias', 'marcas'));
     }
     
     /**
@@ -74,10 +76,22 @@ class CatalogoController extends Controller
 
         $cliente = Cliente::findOrFail($request->cliente_id);
 
+        // Validar que el cliente esté listo para cotizar.
+        // Caso típico: cliente unificado desde Servicio Técnico sin lista de precios asignada.
+        if (!$cliente->lista_precio_id) {
+            return redirect()->route('catalogo')->with('cliente_incompleto', [
+                'nombre'   => $cliente->nombre_contacto,
+                'edit_url' => route('clientes.form', $cliente->id),
+                'falta'    => 'lista de precios',
+            ]);
+        }
+
         $categorias = Categoria::activas()->get();
+        $marcas     = Producto::activos()->whereNotNull('marca')->where('marca', '!=', '')
+                                ->orderBy('marca')->pluck('marca')->unique()->values();
         $enlace = null; // No hay enlace en el flujo B
 
-        return view('catalogo.index', compact('cliente', 'categorias', 'enlace'));
+        return view('catalogo.index', compact('cliente', 'categorias', 'marcas', 'enlace'));
     }
     
     /**
@@ -103,6 +117,11 @@ class CatalogoController extends Controller
         // Filtro por categoría
         if ($request->has('categoria_id') && $request->categoria_id) {
             $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Filtro por marca
+        if ($request->filled('marca')) {
+            $query->where('marca', $request->marca);
         }
         
         // Búsqueda por nombre o referencia
@@ -493,6 +512,16 @@ class CatalogoController extends Controller
                         $precioUnitario = $producto->getPrecioPorLista($listaPrecioId) ?? 0;
                     }
                     $precioOriginal = $precioUnitario;
+                }
+
+                // Validar precio mínimo de venta (restricción definida por admin en el producto)
+                if (!is_null($producto->precio_minimo_venta)
+                    && (float) $precioUnitario < (float) $producto->precio_minimo_venta) {
+                    throw new \Exception(
+                        'El producto "' . $producto->nombre . '" tiene un precio mínimo de venta de $'
+                        . number_format($producto->precio_minimo_venta, 2)
+                        . ' y se intentó asignar $' . number_format($precioUnitario, 2) . '.'
+                    );
                 }
 
                 $precioTotal = $precioUnitario * $item['cantidad'];

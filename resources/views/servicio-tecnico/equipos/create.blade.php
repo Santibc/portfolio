@@ -22,18 +22,14 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label for="st_cliente_id" class="form-label">Cliente <span class="text-danger">*</span></label>
-                                <select name="st_cliente_id" id="st_cliente_id"
-                                        class="form-select @error('st_cliente_id') is-invalid @enderror" required>
-                                    <option value="">Seleccione un cliente</option>
-                                    @foreach($clientes ?? [] as $cliente)
-                                        <option value="{{ $cliente->id }}"
-                                                {{ (old('st_cliente_id', $equipo->st_cliente_id ?? '') == $cliente->id) ? 'selected' : '' }}>
-                                            {{ $cliente->nombre_completo_formateado }} - {{ $cliente->numero_documento }}
-                                        </option>
-                                    @endforeach
+                                <label for="cliente_id" class="form-label">Cliente <span class="text-danger">*</span></label>
+                                <select name="cliente_id" id="cliente_id"
+                                        class="form-select cliente-select2-ajax @error('cliente_id') is-invalid @enderror" required
+                                        data-selected-id="{{ old('cliente_id', $equipo->cliente_id ?? '') }}"
+                                        data-selected-label="{{ old('cliente_id') ? '' : (isset($equipo) && $equipo->cliente ? ($equipo->cliente->nombre_contacto . ' — ' . $equipo->cliente->numero_identificacion) : '') }}">
+                                    <option value=""></option>
                                 </select>
-                                @error('st_cliente_id')
+                                @error('cliente_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -261,6 +257,47 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Cliente con Select2 + búsqueda AJAX
+    $('.cliente-select2-ajax').each(function () {
+        var $sel = $(this);
+        $sel.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Buscar cliente por nombre, documento o email...',
+            minimumInputLength: 0,
+            ajax: {
+                url: "{{ route('clientes.buscar-ajax') }}",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { q: params.term, page: params.page || 1 };
+                },
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return data;
+                },
+                cache: true
+            }
+        });
+
+        // Pre-cargar selección si viene un id (edición)
+        var preId    = $sel.data('selected-id');
+        var preLabel = $sel.data('selected-label');
+        if (preId && preLabel) {
+            var opt = new Option(preLabel, preId, true, true);
+            $sel.append(opt).trigger('change');
+        } else if (preId) {
+            // Resolver el label vía AJAX si no nos pasaron uno
+            $.get("{{ route('clientes.buscar-ajax') }}", { q: '' }, function (data) {
+                var found = (data.results || []).find(function (r) { return r.id == preId; });
+                if (found) {
+                    var opt = new Option(found.text, found.id, true, true);
+                    $sel.append(opt).trigger('change');
+                }
+            });
+        }
+    });
+
     // Mostrar/ocultar campo de vencimiento de garantía
     function toggleVencimientoGarantia() {
         if ($('#en_garantia').is(':checked')) {
@@ -289,7 +326,7 @@ $(document).ready(function() {
         }
 
         // Validar cliente
-        if ($('#st_cliente_id').val() === '') {
+        if ($('#cliente_id').val() === '') {
             valid = false;
             mensaje += '- Debe seleccionar un cliente\n';
         }

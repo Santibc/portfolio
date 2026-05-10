@@ -16,9 +16,18 @@
         <div class="card-body">
             <form id="filtrosForm" class="row g-3">
                 <div class="col-md-3">
+                    <label class="form-label">Cliente</label>
+                    <select name="cliente_id" id="filtroCliente"
+                            class="form-select cliente-select2-ajax"
+                            data-placeholder="Todos los clientes">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Estado</label>
-                    <select name="estado" class="form-select" id="filtroEstado">
-                        <option value="">Todos</option>
+                    <select name="estado" class="form-select select2-search" id="filtroEstado"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="recibida">Recibida</option>
                         <option value="asignada">Asignada</option>
                         <option value="en_proceso">En Proceso</option>
@@ -28,10 +37,11 @@
                         <option value="cancelada">Cancelada</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Prioridad</label>
-                    <select name="prioridad" class="form-select" id="filtroPrioridad">
-                        <option value="">Todas</option>
+                    <select name="prioridad" class="form-select select2-search" id="filtroPrioridad"
+                            data-placeholder="Todas" data-allow-clear="1">
+                        <option value=""></option>
                         <option value="baja">Baja</option>
                         <option value="media">Media</option>
                         <option value="alta">Alta</option>
@@ -40,14 +50,15 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Técnico</label>
-                    <select name="tecnico_id" class="form-select" id="filtroTecnico">
-                        <option value="">Todos</option>
+                    <select name="tecnico_id" class="form-select select2-search" id="filtroTecnico"
+                            data-placeholder="Todos" data-allow-clear="1">
+                        <option value=""></option>
                         @foreach($tecnicos as $tecnico)
                             <option value="{{ $tecnico->id }}">{{ $tecnico->nombre_completo }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-2 d-flex align-items-end">
                     <button type="button" class="btn btn-secondary w-100" onclick="limpiarFiltros()">
                         <i class="bi bi-x-circle"></i> Limpiar
                     </button>
@@ -82,12 +93,33 @@
 let table;
 
 $(document).ready(function() {
+    // Filtro Cliente con buscador AJAX
+    var $filtroCliente = $('#filtroCliente');
+    $filtroCliente.select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: $filtroCliente.data('placeholder'),
+        allowClear: true,
+        ajax: {
+            url: "{{ route('clientes.buscar-ajax') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) { return { q: params.term, page: params.page || 1 }; },
+            processResults: function (data, params) {
+                params.page = params.page || 1;
+                return data;
+            },
+            cache: true
+        }
+    });
+
     table = $('#ordenesTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
             url: '{{ route("st.ordenes.index") }}',
             data: function(d) {
+                d.cliente_id = $('#filtroCliente').val();
                 d.estado = $('#filtroEstado').val();
                 d.prioridad = $('#filtroPrioridad').val();
                 d.tecnico_id = $('#filtroTecnico').val();
@@ -109,13 +141,15 @@ $(document).ready(function() {
     });
 
     // Aplicar filtros al cambiar
-    $('#filtroEstado, #filtroPrioridad, #filtroTecnico').on('change', function() {
+    $('#filtroCliente, #filtroEstado, #filtroPrioridad, #filtroTecnico').on('change', function() {
         table.ajax.reload();
     });
 });
 
 function limpiarFiltros() {
     $('#filtrosForm')[0].reset();
+    // Resetear visualmente los Select2
+    $('#filtroCliente, #filtroEstado, #filtroPrioridad, #filtroTecnico').val(null).trigger('change');
     table.ajax.reload();
 }
 

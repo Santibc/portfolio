@@ -135,6 +135,8 @@ class ProductosController extends Controller
             ],
             'nombre' => ['required','string','max:255'],
             'descripcion' => ['nullable','string'],
+            'marca' => ['nullable','string','max:255'],
+            'precio_minimo_venta' => ['nullable','numeric','min:0'],
             'unidad_venta' => ['required','string','max:100'],
             'unidad_empaque' => ['required','string','max:100'],
             'extension' => ['nullable','string','max:100'],
@@ -182,6 +184,12 @@ class ProductosController extends Controller
             $data['activo'] = true;
             
             $esNuevo = !$producto->exists;  // NUEVO
+
+            // Solo admin puede modificar precio_minimo_venta
+            if (array_key_exists('precio_minimo_venta', $data) && !auth()->user()->hasRole('admin')) {
+                unset($data['precio_minimo_venta']);
+            }
+
             $producto->fill($data)->save();
             
             // Guardar variantes

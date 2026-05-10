@@ -100,6 +100,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/enlaces/{enlace}/cambiar-estado', [App\Http\Controllers\EnlacesController::class, 'cambiarEstado'])->name('enlaces.cambiar-estado');
 });
 
+// Endpoints AJAX para selectores con buscador (Select2)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/clientes/buscar-ajax', [ClientesController::class, 'buscarAjax'])->name('clientes.buscar-ajax');
+    Route::get('/st/equipos/buscar-ajax', [App\Http\Controllers\ServicioTecnico\STEquipoController::class, 'buscarAjax'])->name('st.equipos.buscar-ajax');
+});
+
 // Catálogo público con token (sin autenticación)
 Route::get('/catalogo/{token}', [App\Http\Controllers\CatalogoController::class, 'mostrarPorToken'])->name('catalogo.token');
 
@@ -120,6 +126,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
     Route::post('/solicitudes/{solicitud}/rechazar', [SolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
+
+    // Edición de cotizaciones (admin/vendedor según permisos)
+    Route::get('/solicitudes/{solicitud}/editar', [SolicitudController::class, 'editar'])->name('solicitudes.editar');
+    Route::put('/solicitudes/{solicitud}', [SolicitudController::class, 'actualizar'])->name('solicitudes.actualizar');
+    Route::post('/solicitudes/{solicitud}/items', [SolicitudController::class, 'agregarItem'])->name('solicitudes.items.agregar');
+    Route::delete('/solicitudes/{solicitud}/items/{item}', [SolicitudController::class, 'eliminarItem'])->name('solicitudes.items.eliminar');
+    Route::get('/solicitudes/buscar-productos', [SolicitudController::class, 'buscarProductos'])->name('solicitudes.buscar-productos');
 });
 
 

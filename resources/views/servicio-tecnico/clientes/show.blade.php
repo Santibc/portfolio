@@ -74,11 +74,11 @@
                 </div>
                 <div class="col-md-6">
                     <h6 class="text-muted mb-1">Ciudad</h6>
-                    <p class="mb-0">{{ $cliente->ciudad ?? 'No especificada' }}</p>
+                    <p class="mb-0">{{ $cliente->ciudad_texto ?? optional($cliente->ciudad)->nombre ?? 'No especificada' }}</p>
                 </div>
                 <div class="col-md-6">
                     <h6 class="text-muted mb-1">Departamento</h6>
-                    <p class="mb-0">{{ $cliente->departamento ?? 'No especificado' }}</p>
+                    <p class="mb-0">{{ $cliente->departamento_texto ?? optional(optional($cliente->ciudad)->departamento)->nombre ?? 'No especificado' }}</p>
                 </div>
                 @if($cliente->observaciones)
                 <div class="col-12">
