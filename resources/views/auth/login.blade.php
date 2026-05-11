@@ -1,46 +1,42 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <h2 class="text-xl font-bold text-cream-900 dark:text-cream-50 mb-1">Iniciar sesion</h2>
+    <p class="text-sm text-cream-600 dark:text-cream-400 mb-6">Bienvenido de nuevo. Ingresa tus credenciales.</p>
 
-    <form method="POST" action="{{ route('login') }}">
+    @if (session('status'))
+        <x-alert variant="success" class="mb-4">{{ session('status') }}</x-alert>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" class="space-y-4">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Correo')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <x-input name="email" type="email" label="Correo" :value="old('email')" icon="mail" autofocus required autocomplete="username" />
+
+        <div x-data="{ show: false }">
+            <label class="block text-sm font-medium text-cream-800 dark:text-cream-200 mb-1.5">Contrasena</label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-cream-500">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </span>
+                <input :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password" class="block w-full rounded-xl border-cream-300 bg-white pl-10 pr-10 py-2.5 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100" />
+                <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-3 text-cream-500 hover:text-cream-700">
+                    <i data-lucide="eye" class="w-4 h-4" x-show="!show"></i>
+                    <i data-lucide="eye-off" class="w-4 h-4" x-show="show" x-cloak></i>
+                </button>
+            </div>
+            @error('email')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Contraseña')" />
-
-            <x-password-input id="password" class="block mt-1 w-full"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Recordarme') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between">
+            <x-checkbox name="remember" label="Recordarme" />
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Recuperar contraseña') }}
+                <a href="{{ route('password.request') }}" class="text-xs text-primary-700 hover:text-primary-800 dark:text-primary-300">
+                    Olvidaste la contrasena?
                 </a>
             @endif
-
-            <x-primary-button class="ml-3">
-                {{ __('Ingresar') }}
-            </x-primary-button>
         </div>
+
+        <x-button type="submit" variant="primary" iconRight="arrow-right" class="w-full">
+            Ingresar
+        </x-button>
     </form>
 </x-guest-layout>

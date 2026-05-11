@@ -1,33 +1,28 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('
-        ¡Gracias por registrarte! Antes de empezar, ¿podrías verificar tu dirección de correo electrónico haciendo clic en el enlace que te acabamos de enviar? Si no recibiste el correo, con gusto te enviaremos otro.') }}
-    </div>
+    <h2 class="text-xl font-bold text-cream-900 dark:text-cream-50 mb-1">Verifica tu correo</h2>
+    <p class="text-sm text-cream-600 dark:text-cream-400 mb-6">
+        Te enviamos un enlace de verificacion a tu correo. Si no llego, podemos enviarlo de nuevo.
+    </p>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-slate-600 dark:text-slate-400">
-            {{ __('
-            Se ha enviado un nuevo enlace de verificación a la dirección de correo electrónico que proporcionó durante el registro.') }}
-        </div>
+        <x-alert variant="success" class="mb-4">
+            Hemos enviado un nuevo enlace a tu correo.
+        </x-alert>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="flex items-center justify-between gap-3">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Reenviar correo electrónico de verificación') }}
-                </x-primary-button>
-            </div>
+            <x-button type="submit" variant="primary" icon="send">
+                Reenviar enlace
+            </x-button>
         </form>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                {{ __('Finalizar la sesión') }}
-            </button>
+            <x-button type="submit" variant="ghost">
+                Cerrar sesion
+            </x-button>
         </form>
     </div>
 </x-guest-layout>

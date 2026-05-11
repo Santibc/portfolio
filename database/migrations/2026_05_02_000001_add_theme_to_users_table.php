@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('theme', 10)->nullable()->after('ultimo_login');
+            $table->string('theme', 10)->nullable()->after('profile_photo');
         });
     }
 

@@ -1,12 +1,209 @@
-@import 'datatables.net-dt';
+/* Fuentes Bunny (Plus Jakarta Sans + Caveat) - sin tracking de Google */
+@import url('https://fonts.bunny.net/css?family=plus-jakarta-sans:300,400,500,600,700,800&family=caveat:600,700&display=swap');
+
+/* TomSelect base */
+@import 'tom-select/dist/css/tom-select.css';
+
+/* Las variantes de Preline (hs-overlay-open, hs-dropdown-open, etc.) las
+   registramos como plugin Tailwind en tailwind.config.js — el archivo
+   preline/variants.css usa sintaxis @custom-variant de Tailwind v4 y nosotros
+   estamos en v3, asi que NO se importa aqui. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Importar estilos de DataTables */
 
-.ph-1 {
-  padding: 2rem !important;
+/* =====================================================
+   Base
+===================================================== */
+@layer base {
+  html {
+    @apply antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream-50 text-cream-900 font-sans;
+  }
+
+  .dark body {
+    @apply bg-surface-dark text-cream-100;
+  }
+
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+
+  .dark ::selection {
+    @apply bg-primary-700 text-primary-50;
+  }
+
+  /* Scrollbar bonito */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cream-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cream-500 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cream-600;
+  }
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-cream-900;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-cream-700 rounded-full;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cream-600;
+  }
+
+  /* Headings con Plus Jakarta */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight text-cream-900;
+  }
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-cream-100;
+  }
+
+  /* Tipografía marca */
+  .brand-script {
+    @apply font-brand;
+  }
+
+  /* Focus ring consistente */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-cream-50;
+  }
+  .dark :focus-visible {
+    @apply ring-offset-surface-dark;
+  }
 }
-#users-table_wrapper {
-    padding: 1.5rem; /* O el valor que desees, por ejemplo, 24px */
+
+/* =====================================================
+   Componentes utilitarios
+===================================================== */
+@layer components {
+  .skeleton {
+    @apply animate-pulse rounded-xl bg-cream-200;
+  }
+  .dark .skeleton {
+    @apply bg-cream-800;
+  }
+
+  .surface-card {
+    @apply bg-white border border-cream-200 rounded-2xl shadow-soft;
+  }
+  .dark .surface-card {
+    @apply bg-cream-900/60 border-cream-800;
+  }
+
+  .surface-elevated {
+    @apply bg-white border border-cream-200 rounded-2xl shadow-soft-lg;
+  }
+  .dark .surface-elevated {
+    @apply bg-cream-900/80 border-cream-800;
+  }
+
+  .divider {
+    @apply h-px w-full bg-cream-200;
+  }
+  .dark .divider {
+    @apply bg-cream-800;
+  }
+
+  /* Hover lift utility */
+  .hover-lift {
+    @apply transition-all duration-200 ease-out;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-0.5 shadow-soft-lg;
+  }
+}
+
+/* =====================================================
+   TomSelect — palette fit + esconder select original
+===================================================== */
+/* El select original mejorado por TomSelect debe quedar escondido (defensivo) */
+select.tomselected,
+select.ts-hidden-accessible,
+.ts-hidden-accessible {
+  display: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.ts-wrapper.single .ts-control,
+.ts-wrapper.multi .ts-control {
+  border-radius: 0.75rem;
+  border-color: #d7c4b5;
+  background-color: #ffffff;
+  box-shadow: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  min-height: 42px;
+  color: #3e2723;
+}
+.dark .ts-wrapper.single .ts-control,
+.dark .ts-wrapper.multi .ts-control {
+  border-color: #75605a;
+  background-color: rgb(62 39 35 / 0.4);
+  color: #fbf5e9;
+}
+.ts-wrapper.focus .ts-control {
+  border-color: #aab808;
+  box-shadow: 0 0 0 3px rgb(170 184 8 / 0.3);
+}
+.ts-wrapper input {
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+.ts-dropdown {
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 40px -8px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.06);
+  border: 1px solid #f5e9d2;
+  margin-top: 0.25rem;
+  background-color: #ffffff;
+  color: #3e2723;
+}
+.dark .ts-dropdown {
+  background-color: #3e2723;
+  border-color: #75605a;
+  color: #fbf5e9;
+}
+.ts-dropdown .option {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.ts-dropdown .active {
+  background-color: #f7faea;
+  color: #3d4310;
+}
+.dark .ts-dropdown .active {
+  background-color: rgb(170 184 8 / 0.2);
+  color: #ecf2c1;
+}
+
+/* Tags multi-select */
+.ts-wrapper.multi .ts-control > div {
+  background-color: #ecf2c1;
+  color: #5d6716;
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 0;
+}
+.dark .ts-wrapper.multi .ts-control > div {
+  background-color: rgb(170 184 8 / 0.4);
+  color: #ecf2c1;
 }

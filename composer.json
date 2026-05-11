@@ -1,8 +1,8 @@
 {
-    "name": "laravel/laravel",
+    "name": "sopas/sopas-y-sopitas",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "description": "Sopas y Sopitas - aplicacion web base sobre Laravel 9.",
+    "keywords": ["laravel", "sopas-y-sopitas"],
     "license": "MIT",
     "require": {
         "php": "^8.0.2",

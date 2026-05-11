@@ -80,7 +80,18 @@
       "mcp__playwright__browser_resize",
       "mcp__playwright__browser_hover",
       "mcp__context7__query-docs",
-      "Bash(find f:/xamppPro80/htdocs/sinden -type f \\\\\\(-name *.css -o -name *.scss \\\\\\))"
+      "Bash(find f:/xamppPro80/htdocs/sinden -type f \\\\\\(-name *.css -o -name *.scss \\\\\\))",
+      "WebSearch",
+      "WebFetch(domain:preline.co)",
+      "WebFetch(domain:flowbite.com)",
+      "WebFetch(domain:apexcharts.com)",
+      "WebFetch(domain:tom-select.js.org)",
+      "Bash(npm uninstall *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\agromarket\\\\resources\\\\views\" -Directory)",
+      "Bash(Select-Object Name)",
+      "PowerShell(head -30)"
     ],
     "deny": [],
     "ask": []
