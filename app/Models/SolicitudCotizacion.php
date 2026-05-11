@@ -652,13 +652,15 @@ class SolicitudCotizacion extends Model
             throw new \Exception('Este pago ya fue procesado');
         }
 
-        $pago->update([
-            'estado' => PagoSolicitud::ESTADO_APROBADO,
-            'aprobado_por' => $aprobadoPor,
-            'aprobado_en' => now(),
-        ]);
+        \DB::transaction(function () use ($pago, $aprobadoPor) {
+            $pago->update([
+                'estado' => PagoSolicitud::ESTADO_APROBADO,
+                'aprobado_por' => $aprobadoPor,
+                'aprobado_en' => now(),
+            ]);
 
-        $this->recalcularPagos();
+            $this->recalcularPagos();
+        });
     }
 
     /**

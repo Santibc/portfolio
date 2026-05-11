@@ -637,13 +637,15 @@ class CotizacionService
         DB::beginTransaction();
 
         try {
-            // Crear nueva solicitud
+            // Crear nueva solicitud directamente en estado APLICADA
             $nuevaSolicitud = SolicitudCotizacion::create([
                 'numero_solicitud' => $this->generarNumeroSolicitud(),
                 'cliente_id' => $solicitudOriginal->cliente_id,
                 'enlace_acceso_id' => null, // Nueva cotización, sin enlace
                 'created_by' => $usuarioId,
-                'estado' => SolicitudCotizacion::ESTADO_PENDIENTE,
+                'estado' => SolicitudCotizacion::ESTADO_APLICADA,
+                'aplicada_en' => now(),
+                'aplicada_por' => $usuarioId,
                 'monto_total' => 0,
                 'valor_flete' => $solicitudOriginal->valor_flete,
                 'descuento_total' => $solicitudOriginal->descuento_total,
@@ -690,10 +692,18 @@ class CotizacionService
 
             $nuevaSolicitud->update(['monto_total' => max(0, $montoTotal)]);
 
-            // Crear reservas para la nueva cotización
-            $this->reservaService->reservarParaCotizacion($nuevaSolicitud);
+            // Registrar en historial el estado inicial APLICADA
+            HistorialEstadoSolicitud::create([
+                'solicitud_cotizacion_id' => $nuevaSolicitud->id,
+                'tipo_cambio' => HistorialEstadoSolicitud::TIPO_ESTADO,
+                'estado_anterior' => SolicitudCotizacion::ESTADO_PENDIENTE,
+                'estado_nuevo' => SolicitudCotizacion::ESTADO_APLICADA,
+                'observaciones' => "Clonada de {$solicitudOriginal->numero_solicitud} (aplicada automáticamente)",
+                'user_id' => $usuarioId,
+            ]);
 
-            $resultado['solicitud'] = $nuevaSolicitud->fresh(['items', 'cliente', 'reservas']);
+            // No se crean reservas: la cotización clonada nace aplicada
+            $resultado['solicitud'] = $nuevaSolicitud->fresh(['items', 'cliente']);
 
             DB::commit();
 
