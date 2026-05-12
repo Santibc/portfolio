@@ -191,7 +191,9 @@
                             </div>
 
                             <div class="col-md-6" id="vencimiento_garantia_div" style="display: none;">
-                                <label for="vencimiento_garantia" class="form-label">Fecha de Vencimiento de Garantía</label>
+                                <label for="vencimiento_garantia" class="form-label">
+                                    Fecha de Vencimiento de Garantía <small class="text-muted">(opcional)</small>
+                                </label>
                                 <input type="date" name="vencimiento_garantia" id="vencimiento_garantia"
                                        class="form-control @error('vencimiento_garantia') is-invalid @enderror"
                                        value="{{ old('vencimiento_garantia', isset($equipo->vencimiento_garantia) ? $equipo->vencimiento_garantia->format('Y-m-d') : '') }}">
@@ -298,15 +300,15 @@ $(document).ready(function() {
         }
     });
 
-    // Mostrar/ocultar campo de vencimiento de garantía
+    // Mostrar/ocultar campo de vencimiento de garantía (siempre opcional)
     function toggleVencimientoGarantia() {
         if ($('#en_garantia').is(':checked')) {
             $('#vencimiento_garantia_div').slideDown();
-            $('#vencimiento_garantia').prop('required', true);
         } else {
             $('#vencimiento_garantia_div').slideUp();
-            $('#vencimiento_garantia').prop('required', false);
+            $('#vencimiento_garantia').val('');
         }
+        $('#vencimiento_garantia').prop('required', false);
     }
 
     $('#en_garantia').on('change', toggleVencimientoGarantia);
