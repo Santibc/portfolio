@@ -58,7 +58,7 @@
               <option value="">-- Seleccionar --</option>
               @foreach($departamentos as $id => $nombre)
                 <option value="{{ $id }}"
-                  {{ old('departamento_id',$cliente->ciudad->departamento_id ?? '') == $id ? 'selected':'' }}>
+                  {{ old('departamento_id', optional($cliente->ciudad)->departamento_id) == $id ? 'selected':'' }}>
                   {{ $nombre }}
                 </option>
               @endforeach
@@ -71,9 +71,9 @@
             <label class="form-label">Ciudad <span class="text-danger">*</span></label>
             <select id="ciudad-select" name="ciudad_id" class="form-select select2">
               <option value="">-- Seleccionar --</option>
-              {{-- Si editamos, pre-cargamos --}}
-              @if($cliente->exists)
-                @foreach(\App\Models\Ciudad::where('departamento_id',$cliente->ciudad->departamento_id)->pluck('nombre','id') as $id=>$ciudad)
+              {{-- Si editamos y el cliente tiene ciudad asociada, pre-cargamos las ciudades de su departamento --}}
+              @if($cliente->exists && optional($cliente->ciudad)->departamento_id)
+                @foreach(\App\Models\Ciudad::where('departamento_id', $cliente->ciudad->departamento_id)->pluck('nombre','id') as $id=>$ciudad)
                   <option value="{{ $id }}"
                     {{ old('ciudad_id',$cliente->ciudad_id)==$id ? 'selected':'' }}>
                     {{ $ciudad }}
@@ -82,6 +82,11 @@
               @endif
             </select>
             @error('ciudad_id')<small class="text-danger">{{ $message }}</small>@enderror
+            @if($cliente->exists && !$cliente->ciudad_id && $cliente->ciudad_texto)
+              <small class="text-muted d-block">
+                Ciudad registrada como texto: <em>{{ $cliente->ciudad_texto }}</em>. Selecciona una del listado para normalizarla.
+              </small>
+            @endif
           </div>
 
               {{-- Vendedor --}}
