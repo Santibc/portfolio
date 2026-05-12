@@ -376,17 +376,10 @@
                 @php
                     $totalGeneral += $item->precio_total;
                 @endphp
-                @php
-                    $partesDescripcion = array_filter([
-                        $item->marca_producto ?? $item->producto?->marca,
-                        $item->producto?->categoria?->nombre,
-                    ]);
-                    $descripcionTexto = implode(' - ', $partesDescripcion);
-                @endphp
                 <tr>
                     <td class="col-referencia">{{ $item->nombre_producto }}</td>
                     <td class="col-descripcion">
-                        {{ $descripcionTexto ?: '-' }}
+                        {{ $item->producto?->descripcion ?: '-' }}
                         @if($item->info_variante)
                             <br><small>{{ $item->info_variante }}</small>
                         @endif

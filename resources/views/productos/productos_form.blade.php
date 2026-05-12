@@ -72,17 +72,9 @@
               <textarea name="descripcion" rows="3"
                         class="form-control @error('descripcion') is-invalid @enderror">{{ old('descripcion',$producto->descripcion) }}</textarea>
               @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-              @php
-                $vistaPdfDesc = trim(implode(' - ', array_filter([
-                    old('marca', $producto->marca),
-                    optional($producto->categoria)->nombre,
-                    old('descripcion', $producto->descripcion),
-                ])));
-              @endphp
               <small class="text-muted d-block mt-1">
                 <i class="bi bi-info-circle"></i>
-                Vista en PDF (columna <strong>DESCRIPCION</strong>):
-                <em id="previewDescripcionPdf">{{ $vistaPdfDesc ?: '—' }}</em>
+                Este texto aparece tal cual en la columna <strong>DESCRIPCION</strong> del PDF.
               </small>
             </div>
 
@@ -497,18 +489,6 @@
   @push('scripts')
   <script>
   $(document).ready(function() {
-    // Preview en vivo de cómo se ve la "Descripción" en el PDF (marca - categoría - descripción)
-    function refrescarPreviewDescripcion() {
-      var marca       = $('input[name="marca"]').val() || '';
-      var $cat        = $('select[name="categoria_id"] option:selected');
-      var categoria   = ($cat.val() ? $cat.text() : '').trim();
-      var descripcion = $('textarea[name="descripcion"]').val() || '';
-      var partes = [marca, categoria, descripcion].map(function (s) { return s.trim(); }).filter(Boolean);
-      $('#previewDescripcionPdf').text(partes.length ? partes.join(' - ') : '—');
-    }
-    $('input[name="marca"], select[name="categoria_id"], textarea[name="descripcion"]')
-      .on('input change', refrescarPreviewDescripcion);
-
     // Función para mostrar/ocultar campos de stock
     function toggleStockFields() {
       const controlarStock = $('#controlar_stock').is(':checked');
