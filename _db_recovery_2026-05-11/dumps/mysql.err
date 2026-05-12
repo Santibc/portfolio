@@ -1,0 +1,1 @@
+mysqldump.exe: Error 1030: Got error 176 "Read page with wrong checksum" from storage engine Aria when dumping table `db` at row: 0

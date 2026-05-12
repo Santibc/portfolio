@@ -694,32 +694,44 @@ class VentaPdvController extends Controller
         }
 
         $siigoService = app(SiigoFacturacionService::class);
+        $factura = $venta->facturaSiigo;
+        $filename = "factura-{$factura->numero_factura}.pdf";
 
+        // Estrategia 1: intentar el endpoint oficial /v1/invoices/{id}/pdf (devuelve base64).
         try {
-            $response = $siigoService->obtenerPdf($venta->facturaSiigo);
-
+            $response = $siigoService->obtenerPdf($factura);
             if ($response->successful()) {
                 $body = $response->json();
-                $filename = "factura-{$venta->facturaSiigo->numero_factura}.pdf";
-
-                // SIIGO returns PDF as base64 encoded in JSON: { id, cufe, base64 }
                 if (isset($body['base64'])) {
                     $pdfContent = base64_decode($body['base64']);
                     return response($pdfContent, 200)
                         ->header('Content-Type', 'application/pdf')
                         ->header('Content-Disposition', "inline; filename=\"{$filename}\"");
                 }
-
-                // Fallback: direct PDF response
-                return response($response->body(), 200)
-                    ->header('Content-Type', 'application/pdf')
-                    ->header('Content-Disposition', "inline; filename=\"{$filename}\"");
+                // Si vino el PDF binario directo
+                $contentType = $response->header('Content-Type');
+                if ($contentType && stripos($contentType, 'pdf') !== false) {
+                    return response($response->body(), 200)
+                        ->header('Content-Type', 'application/pdf')
+                        ->header('Content-Disposition', "inline; filename=\"{$filename}\"");
+                }
             }
+        } catch (\Exception $e) {
+            // Continuamos al fallback
+        }
 
-            return response()->json(['exito' => false, 'mensaje' => 'No se pudo obtener el PDF.'], 500);
+        // Estrategia 2 (fallback): redirigir al public_url de SIIGO obtenido del detalle.
+        // SIIGO devuelve "public_url" en /v1/invoices/{id} y es la vista pública del documento.
+        try {
+            $publicUrl = $siigoService->obtenerPublicUrl($factura);
+            if ($publicUrl) {
+                return redirect()->away($publicUrl);
+            }
         } catch (\Exception $e) {
             return response()->json(['exito' => false, 'mensaje' => $e->getMessage()], 500);
         }
+
+        return response()->json(['exito' => false, 'mensaje' => 'No se pudo obtener el PDF.'], 500);
     }
 
     public function reenviarFacturaEmail($id)

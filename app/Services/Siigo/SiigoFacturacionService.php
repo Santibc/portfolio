@@ -573,6 +573,24 @@ class SiigoFacturacionService
     }
 
     /**
+     * Obtener la URL pública del documento en SIIGO (vista DocumentView).
+     * SIIGO devuelve este campo en el detalle de la factura: documentview.siigo.com/document?data=...
+     */
+    public function obtenerPublicUrl(FacturaSiigo $factura): ?string
+    {
+        if (!$factura->siigo_invoice_id) {
+            throw new Exception('La factura no tiene ID de SIIGO.');
+        }
+
+        $endpoint = $factura->tipo_documento === 'nota_credito'
+            ? "/v1/credit-notes/{$factura->siigo_invoice_id}"
+            : "/v1/invoices/{$factura->siigo_invoice_id}";
+
+        $detalle = $this->api->get($endpoint, [], $factura->id);
+        return $detalle['public_url'] ?? null;
+    }
+
+    /**
      * Reenviar email de la factura.
      */
     public function reenviarEmail(FacturaSiigo $factura): bool
