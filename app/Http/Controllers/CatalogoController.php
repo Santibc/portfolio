@@ -556,7 +556,8 @@ class CatalogoController extends Controller
                     'cliente.vendedor',
                     'cliente.ciudad',
                     'cliente.ciudad.departamento',
-                    'items.producto.imagenPrincipal'
+                    'items.producto.imagenPrincipal',
+                'items.producto.categoria'
                 ]);
 
                 if ($cliente->email) {

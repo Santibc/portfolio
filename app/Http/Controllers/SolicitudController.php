@@ -926,6 +926,7 @@ class SolicitudController extends Controller
                 'cliente.ciudad.departamento',
                 'cliente.pais',
                 'items.producto.imagenPrincipal',
+                'items.producto.categoria',
                 'aplicadaPor'
             ]);
 
@@ -1019,6 +1020,7 @@ class SolicitudController extends Controller
                 'cliente.ciudad',
                 'cliente.ciudad.departamento',
                 'items.producto.imagenPrincipal',
+                'items.producto.categoria',
                 'rechazadaPor'
             ]);
 
@@ -1181,6 +1183,7 @@ class SolicitudController extends Controller
             'cliente.ciudad.departamento',
             'cliente.pais',
             'items.producto.imagenPrincipal',
+                'items.producto.categoria',
             'aplicadaPor'
         ]);
 
