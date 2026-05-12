@@ -20,6 +20,9 @@
             <a href="{{ route('st.ordenes.edit', $orden) }}" class="btn btn-warning">
                 <i class="bi bi-pencil"></i> Editar
             </a>
+            <a href="{{ route('st.ordenes.pdf', $orden) }}" class="btn btn-danger" target="_blank">
+                <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+            </a>
             <a href="{{ route('st.ordenes.index') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Volver
             </a>

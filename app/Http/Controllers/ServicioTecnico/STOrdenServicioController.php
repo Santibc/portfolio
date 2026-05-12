@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Yajra\DataTables\Facades\DataTables;
 
 class STOrdenServicioController extends Controller
@@ -47,6 +48,9 @@ class STOrdenServicioController extends Controller
                             </a>
                             <a href="' . route('st.ordenes.edit', $orden->id) . '" class="btn btn-warning" title="Editar">
                                 <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="' . route('st.ordenes.pdf', $orden->id) . '" class="btn btn-danger" title="Descargar PDF" target="_blank">
+                                <i class="bi bi-file-earmark-pdf"></i>
                             </a>
                             <button type="button" class="btn btn-primary" onclick="cambiarEstado(' . $orden->id . ')" title="Cambiar Estado">
                                 <i class="bi bi-arrow-repeat"></i>
@@ -169,6 +173,27 @@ class STOrdenServicioController extends Controller
 
         return redirect()->route('st.ordenes.show', $orden->id)
             ->with('success', 'Orden de servicio creada exitosamente');
+    }
+
+    /**
+     * Genera el PDF de la orden de servicio (para imprimir y firmar).
+     */
+    public function generarPdf(STOrdenServicio $orden)
+    {
+        $orden->load([
+            'cliente',
+            'equipo',
+            'tecnico',
+            'diagnosticos.tecnico',
+            'repuestosUsados.repuesto',
+            'usuario',
+        ]);
+
+        $pdf = Pdf::loadView('pdf.orden-servicio', compact('orden'));
+        $pdf->setPaper('letter', 'portrait');
+
+        $nombreArchivo = 'orden-servicio-' . $orden->numero_orden . '.pdf';
+        return $pdf->stream($nombreArchivo);
     }
 
     public function show(STOrdenServicio $orden)
