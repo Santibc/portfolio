@@ -43,24 +43,27 @@
         </div>
         <div class="card-body">
           <div class="row">
-            {{-- Referencia --}}
-            <div class="col-md-4 mb-3">
+            {{-- Referencia (campo nombre del producto: lo que aparece en "REFERENCIA CODIGO" del PDF) --}}
+            <div class="col-md-8 mb-3">
               <label class="form-label">Referencia <span class="text-danger">*</span></label>
+              <input name="nombre" type="text"
+                     class="form-control @error('nombre') is-invalid @enderror"
+                     value="{{ old('nombre',$producto->nombre) }}"
+                     placeholder="Ej: DH-HAC-T1A21N-U-A"
+                     required>
+              @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Este texto aparece en la columna <strong>REFERENCIA CODIGO</strong> del PDF de cotización.</small>
+            </div>
+
+            {{-- Código interno (SKU autogenerado) --}}
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Código interno (SKU) <span class="text-danger">*</span></label>
               <input name="referencia" type="text"
                      class="form-control @error('referencia') is-invalid @enderror"
                      value="{{ old('referencia',$producto->referencia) }}"
                      required>
               @error('referencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            {{-- Nombre --}}
-            <div class="col-md-8 mb-3">
-              <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
-              <input name="nombre" type="text"
-                     class="form-control @error('nombre') is-invalid @enderror"
-                     value="{{ old('nombre',$producto->nombre) }}"
-                     required>
-              @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <small class="text-muted">Identificador único en el sistema.</small>
             </div>
 
             {{-- Descripción --}}
@@ -69,6 +72,18 @@
               <textarea name="descripcion" rows="3"
                         class="form-control @error('descripcion') is-invalid @enderror">{{ old('descripcion',$producto->descripcion) }}</textarea>
               @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              @php
+                $vistaPdfDesc = trim(implode(' - ', array_filter([
+                    old('marca', $producto->marca),
+                    optional($producto->categoria)->nombre,
+                    old('descripcion', $producto->descripcion),
+                ])));
+              @endphp
+              <small class="text-muted d-block mt-1">
+                <i class="bi bi-info-circle"></i>
+                Vista en PDF (columna <strong>DESCRIPCION</strong>):
+                <em id="previewDescripcionPdf">{{ $vistaPdfDesc ?: '—' }}</em>
+              </small>
             </div>
 
             {{-- Marca --}}
@@ -482,6 +497,18 @@
   @push('scripts')
   <script>
   $(document).ready(function() {
+    // Preview en vivo de cómo se ve la "Descripción" en el PDF (marca - categoría - descripción)
+    function refrescarPreviewDescripcion() {
+      var marca       = $('input[name="marca"]').val() || '';
+      var $cat        = $('select[name="categoria_id"] option:selected');
+      var categoria   = ($cat.val() ? $cat.text() : '').trim();
+      var descripcion = $('textarea[name="descripcion"]').val() || '';
+      var partes = [marca, categoria, descripcion].map(function (s) { return s.trim(); }).filter(Boolean);
+      $('#previewDescripcionPdf').text(partes.length ? partes.join(' - ') : '—');
+    }
+    $('input[name="marca"], select[name="categoria_id"], textarea[name="descripcion"]')
+      .on('input change', refrescarPreviewDescripcion);
+
     // Función para mostrar/ocultar campos de stock
     function toggleStockFields() {
       const controlarStock = $('#controlar_stock').is(':checked');
