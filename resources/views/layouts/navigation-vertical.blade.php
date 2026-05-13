@@ -1,3 +1,21 @@
+@php
+    // Contador de solicitudes pendientes para badge en el menú
+    $solicitudesPendientesCount = 0;
+    try {
+        $userActual = auth()->user();
+        if ($userActual && $userActual->hasAnyRole(['admin', 'vendedor'])) {
+            $q = \App\Models\SolicitudCotizacion::pendientes();
+            if ($userActual->hasRole('vendedor') && !$userActual->hasRole('admin')) {
+                $q->whereHas('cliente', function ($c) use ($userActual) {
+                    $c->where('vendedor_id', $userActual->id);
+                });
+            }
+            $solicitudesPendientesCount = $q->count();
+        }
+    } catch (\Throwable $e) {
+        $solicitudesPendientesCount = 0;
+    }
+@endphp
 <div class="d-flex flex-column h-100">
     {{-- Logo --}}
     <div class="d-flex justify-content-center align-items-center py-3 border-bottom">
@@ -49,6 +67,13 @@
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('solicitudes*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-clipboard-data"></i>
                 <span>Solicitudes</span>
+                @if($solicitudesPendientesCount > 0)
+                    <span class="badge rounded-pill bg-danger ms-auto" title="Solicitudes pendientes" id="badgeSolicitudesPendientes">
+                        {{ $solicitudesPendientesCount > 99 ? '99+' : $solicitudesPendientesCount }}
+                    </span>
+                @else
+                    <span class="badge rounded-pill bg-danger ms-auto d-none" id="badgeSolicitudesPendientes">0</span>
+                @endif
             </a>
             <a href="{{ route('enlaces') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('enlaces*') ? 'active' : 'text-dark' }}">

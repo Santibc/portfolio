@@ -54,6 +54,23 @@ class SolicitudCotizacion extends Model
         return $this->items->sum('cantidad');
     }
 
+    /**
+     * Código corto único basado en el id (p.ej. OE-00042).
+     * Reemplaza el numero_solicitud largo para nombres de archivo y referencias.
+     */
+    public function getCodigoCortoAttribute(): string
+    {
+        return 'OE-' . str_pad((string) $this->id, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Nombre de archivo del PDF (sin extensión).
+     */
+    public function getNombreArchivoPdfAttribute(): string
+    {
+        return 'Solicitud Offi-Esco ' . $this->codigo_corto;
+    }
+
     public function calcularMontoTotal()
     {
         $this->monto_total = $this->items->sum('precio_total');

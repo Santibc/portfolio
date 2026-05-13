@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\LeadsController;
 use App\Http\Controllers\LlamadasController;
@@ -27,7 +27,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 
 Route::redirect('/', '/login'); // 302 por defecto
 
-Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -122,6 +122,7 @@ Route::post('/catalogo/solicitud', [CatalogoController::class, 'guardarSolicitud
 // Rutas de Gestión de Solicitudes
 Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
+    Route::get('/solicitudes/pendientes-count', [SolicitudController::class, 'pendientesCount'])->name('solicitudes.pendientes-count');
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
 });

@@ -11,6 +11,10 @@ use App\Models\SolicitudCotizacion;
 use App\Models\ItemSolicitudCotizacion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NuevaSolicitudCreada;
+use App\Models\User;
 
 class CatalogoController extends Controller
 {
@@ -495,13 +499,32 @@ class CatalogoController extends Controller
             
             // Actualizar monto total
             $solicitud->update(['monto_total' => $montoTotal]);
-            
+
             DB::commit();
-            
+
+            // Notificar a administradores y al vendedor del cliente (no detiene la respuesta si falla)
+            try {
+                $solicitud->load(['cliente.vendedor', 'items']);
+                $destinatarios = User::role('admin')->pluck('email')->all();
+                if ($cliente->vendedor && $cliente->vendedor->email) {
+                    $destinatarios[] = $cliente->vendedor->email;
+                }
+                $destinatarios = array_values(array_unique(array_filter($destinatarios)));
+
+                if (!empty($destinatarios)) {
+                    Mail::to($destinatarios)->send(new NuevaSolicitudCreada($solicitud));
+                }
+            } catch (\Throwable $e) {
+                Log::error('No se pudo notificar nueva solicitud: ' . $e->getMessage(), [
+                    'solicitud_id' => $solicitud->id,
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'mensaje' => 'Solicitud de cotización creada exitosamente.',
-                'numero_solicitud' => $solicitud->numero_solicitud
+                'numero_solicitud' => $solicitud->numero_solicitud,
+                'codigo_corto' => $solicitud->codigo_corto,
             ]);
             
         } catch (\Exception $e) {

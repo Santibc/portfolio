@@ -206,6 +206,29 @@
 
         // También actualizar en el redimensionamiento de la ventana
         window.addEventListener('resize', updateLayout);
+
+        // Auto-refresh del badge de solicitudes pendientes cada 60s
+        (function() {
+            const badge = document.getElementById('badgeSolicitudesPendientes');
+            if (!badge) return;
+            const url = "{{ \Illuminate\Support\Facades\Route::has('solicitudes.pendientes-count') ? route('solicitudes.pendientes-count') : '' }}";
+            if (!url) return;
+            async function refreshBadge() {
+                try {
+                    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const n = parseInt(data.count) || 0;
+                    if (n > 0) {
+                        badge.textContent = n > 99 ? '99+' : n;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                } catch (_) { /* ignorar */ }
+            }
+            setInterval(refreshBadge, 60000);
+        })();
     </script>
 
     @stack('scripts')

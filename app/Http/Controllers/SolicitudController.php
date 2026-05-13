@@ -23,6 +23,27 @@ class SolicitudController extends Controller
     {
         $this->middleware('auth');
     }
+
+    /**
+     * Devuelve cantidad de solicitudes pendientes para el usuario actual.
+     * Usado por el badge del menú lateral (refresco JS).
+     */
+    public function pendientesCount()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->hasAnyRole(['admin', 'vendedor'])) {
+            return response()->json(['count' => 0]);
+        }
+
+        $q = SolicitudCotizacion::pendientes();
+        if ($user->hasRole('vendedor') && !$user->hasRole('admin')) {
+            $q->whereHas('cliente', function ($c) use ($user) {
+                $c->where('vendedor_id', $user->id);
+            });
+        }
+
+        return response()->json(['count' => $q->count()]);
+    }
     
     public function index(Request $request)
     {
@@ -522,7 +543,7 @@ class SolicitudController extends Controller
         $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
         $pdf->setPaper('letter', 'portrait');
         
-        return $pdf->download('solicitud-' . $solicitud->numero_solicitud . '.pdf');
+        return $pdf->download($solicitud->nombre_archivo_pdf . '.pdf');
     }
     
     /**
