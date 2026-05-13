@@ -891,6 +891,58 @@
                                         @endif
                                     </div>
 
+                                    <hr>
+                                    <h6 class="text-primary"><i class="bi bi-google"></i> Google Maps & Notifications</h6>
+
+                                    <div class="row">
+                                        <div class="col-md-8 mb-3">
+                                            <label class="form-label">Google Maps API Key <span class="text-danger">*</span></label>
+                                            <input type="text" name="google_maps_api_key" class="form-control font-monospace"
+                                                   value="{{ $layoutConfig->google_maps_api_key ?? '' }}"
+                                                   placeholder="AIzaSy...">
+                                            <small class="form-text text-muted">
+                                                Required for the address autocomplete in the booking calculator and the polygon drawing in the Blocked Zones admin.
+                                                Restrict it by HTTP referrer in <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank">Google Cloud Console</a> before going to production.
+                                            </small>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Country code (for autocomplete)</label>
+                                            <input type="text" name="google_maps_country" class="form-control"
+                                                   value="{{ $layoutConfig->google_maps_country ?? 'au' }}"
+                                                   maxlength="5" placeholder="au">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin notification email</label>
+                                        <input type="email" name="admin_notification_email" class="form-control"
+                                               value="{{ $layoutConfig->admin_notification_email ?? '' }}"
+                                               placeholder="admin@example.com">
+                                        <small class="form-text text-muted">All new booking requests will be sent to this address. If empty, the system uses the MAIL_FROM_ADDRESS.</small>
+                                    </div>
+
+                                    <hr>
+                                    <h6 class="text-primary"><i class="bi bi-search"></i> SEO Global</h6>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Google Search Console — Meta verification code</label>
+                                        <input type="text" name="google_search_console_verification" class="form-control"
+                                               value="{{ $layoutConfig->google_search_console_verification ?? '' }}"
+                                               placeholder="Solo el valor de content (sin las comillas ni el meta tag)">
+                                        <small class="form-text text-muted">Se renderiza en todas las páginas como &lt;meta name="google-site-verification" content="..."&gt;</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Default OG Image (fallback para todas las páginas)</label>
+                                        <input type="file" name="default_og_image" class="form-control" accept="image/jpeg,image/png">
+                                        @if ($layoutConfig && $layoutConfig->default_og_image_path)
+                                            <div class="mt-2">
+                                                <img src="{{ asset($layoutConfig->default_og_image_path) }}"
+                                                     alt="Default OG image" style="max-height: 100px; border:1px solid #dee2e6; border-radius:4px;">
+                                            </div>
+                                        @endif
+                                    </div>
+
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-check-lg me-1"></i>Guardar Configuración del Layout
                                     </button>
@@ -1035,7 +1087,7 @@
                             </div>
                             <div class="card-body">
                                 <form action="{{ route('admin.landing.seo.update') }}" method="POST"
-                                    id="seoForm">
+                                    id="seoForm" enctype="multipart/form-data">
                                     @csrf
 
                                     <!-- Selector de Página -->
@@ -1155,6 +1207,102 @@
 
                                                     <strong>Configuración SEO Activa</strong>
                                                 </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- ==== Sección Avanzada: Open Graph, Twitter Card, Schema ==== --}}
+                                    <hr class="my-4">
+                                    <h6 class="mb-3 text-primary"><i class="bi bi-share-fill"></i> Open Graph (Facebook, LinkedIn, WhatsApp)</h6>
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" name="og_title" id="og_title" class="form-control" maxlength="150" value="{{ old('og_title') }}" placeholder="OG title">
+                                                <label for="og_title">OG Title</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-3">
+                                                <select name="og_type" id="og_type" class="form-select">
+                                                    @foreach(['website','article','business.business','product'] as $t)
+                                                        <option value="{{ $t }}" @selected(old('og_type', 'website') === $t)>{{ $t }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label for="og_type">OG Type</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-floating mb-3">
+                                                <textarea name="og_description" id="og_description" class="form-control" style="height:90px" placeholder="OG description">{{ old('og_description') }}</textarea>
+                                                <label for="og_description">OG Description</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">OG Image (1200×630 recomendado)</label>
+                                                <input type="file" name="og_image" class="form-control" accept="image/jpeg,image/png">
+                                                <div id="og_image_preview_wrap" class="mt-2" style="display:none;">
+                                                    <img id="og_image_preview" src="" alt="OG image" style="max-height:120px;border:1px solid #dee2e6;border-radius:4px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4">
+                                    <h6 class="mb-3 text-info"><i class="bi bi-twitter"></i> Twitter Card</h6>
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-3">
+                                                <select name="twitter_card" id="twitter_card" class="form-select">
+                                                    @foreach(['summary','summary_large_image','app','player'] as $tc)
+                                                        <option value="{{ $tc }}" @selected(old('twitter_card', 'summary_large_image') === $tc)>{{ $tc }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label for="twitter_card">Twitter Card</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" name="twitter_title" id="twitter_title" class="form-control" maxlength="150" value="{{ old('twitter_title') }}" placeholder="Twitter title">
+                                                <label for="twitter_title">Twitter Title</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-floating mb-3">
+                                                <textarea name="twitter_description" id="twitter_description" class="form-control" style="height:80px" placeholder="Twitter description">{{ old('twitter_description') }}</textarea>
+                                                <label for="twitter_description">Twitter Description</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Twitter Image (opcional, si difiere de OG)</label>
+                                                <input type="file" name="twitter_image" class="form-control" accept="image/jpeg,image/png">
+                                                <div id="twitter_image_preview_wrap" class="mt-2" style="display:none;">
+                                                    <img id="twitter_image_preview" src="" alt="Twitter image" style="max-height:120px;border:1px solid #dee2e6;border-radius:4px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4">
+                                    <h6 class="mb-3 text-success"><i class="bi bi-code-square"></i> Schema Markup (JSON-LD)</h6>
+                                    <div class="row">
+                                        <div class="col-lg-4">
+                                            <div class="form-floating mb-3">
+                                                <select name="schema_type" id="schema_type" class="form-select">
+                                                    @foreach(['LocalBusiness','Organization','Service','Article','BreadcrumbList'] as $st)
+                                                        <option value="{{ $st }}" @selected(old('schema_type', 'LocalBusiness') === $st)>{{ $st }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label for="schema_type">Schema Type</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label for="schema_data" class="form-label">Schema JSON (opcional — déjalo vacío para usar valores por defecto basados en el tipo)</label>
+                                                <textarea name="schema_data" id="schema_data" class="form-control font-monospace" rows="6"
+                                                    placeholder='{"name":"My Cleaning","priceRange":"$$"}'>{{ old('schema_data') }}</textarea>
+                                                <small class="text-muted">Si está vacío, el sistema generará un schema básico para el tipo seleccionado, usando los datos del footer (LandingLayoutConfig).</small>
                                             </div>
                                         </div>
                                     </div>
@@ -1753,6 +1901,10 @@
                     if (input) {
                         if (input.type === 'checkbox') {
                             input.checked = Boolean(data[key]);
+                        } else if (input.type === 'file') {
+                            // Skip — files cannot be re-populated programmatically
+                        } else if (key === 'schema_data') {
+                            input.value = data[key] ? JSON.stringify(data[key], null, 2) : '';
                         } else if (input.tagName === 'TEXTAREA') {
                             input.value = data[key] || '';
                         } else {
@@ -1760,6 +1912,24 @@
                         }
                     }
                 });
+
+                // Mostrar previews de imágenes existentes (og y twitter)
+                const ogPreviewWrap = document.getElementById('og_image_preview_wrap');
+                const ogPreview = document.getElementById('og_image_preview');
+                if (data.og_image_path) {
+                    ogPreview.src = '{{ asset('') }}' + data.og_image_path;
+                    ogPreviewWrap.style.display = 'block';
+                } else if (ogPreviewWrap) {
+                    ogPreviewWrap.style.display = 'none';
+                }
+                const twPreviewWrap = document.getElementById('twitter_image_preview_wrap');
+                const twPreview = document.getElementById('twitter_image_preview');
+                if (data.twitter_image_path) {
+                    twPreview.src = '{{ asset('') }}' + data.twitter_image_path;
+                    twPreviewWrap.style.display = 'block';
+                } else if (twPreviewWrap) {
+                    twPreviewWrap.style.display = 'none';
+                }
 
                 // Update character counters
                 updateCharacterCounters();

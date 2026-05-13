@@ -443,11 +443,16 @@ class AdminLandingPageController extends Controller
             'footer_email' => 'required|email',
             'copyright_company' => 'required|string|max:255',
             'footer_description' => 'nullable|string',
-            'footer_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'footer_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'google_search_console_verification' => 'nullable|string|max:255',
+            'default_og_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'google_maps_api_key' => 'nullable|string|max:255',
+            'google_maps_country' => 'nullable|string|max:5',
+            'admin_notification_email' => 'nullable|email|max:150',
         ]);
 
         $layoutConfig = LandingLayoutConfig::first();
-        $data = $request->except('footer_logo');
+        $data = $request->except(['footer_logo', 'default_og_image']);
 
         // Manejar subida de imagen del logo del footer
         if ($request->hasFile('footer_logo')) {
@@ -474,6 +479,21 @@ class AdminLandingPageController extends Controller
             $data['footer_logo_path'] = 'images/layout/' . $fileName;
         }
 
+        // Default OG image (público para todas las páginas sin OG específico)
+        if ($request->hasFile('default_og_image')) {
+            if ($layoutConfig && $layoutConfig->default_og_image_path && file_exists(public_path($layoutConfig->default_og_image_path))) {
+                @unlink(public_path($layoutConfig->default_og_image_path));
+            }
+            $folder = public_path('seo_images');
+            if (!is_dir($folder)) {
+                @mkdir($folder, 0755, true);
+            }
+            $file = $request->file('default_og_image');
+            $filename = 'default_og_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($folder, $filename);
+            $data['default_og_image_path'] = 'seo_images/' . $filename;
+        }
+
         if ($layoutConfig) {
             $layoutConfig->update($data);
         } else {
@@ -490,9 +510,11 @@ class AdminLandingPageController extends Controller
             ['name' => 'Inicio', 'slug' => 'home', 'url_path' => '/'],
             ['name' => 'Nosotros', 'slug' => 'nosotros', 'url_path' => '/nosotros'],
             ['name' => 'Equipo', 'slug' => 'equipo', 'url_path' => '/equipo'],
+            ['name' => 'Servicios', 'slug' => 'servicios', 'url_path' => '/servicios'],
             ['name' => 'Contacto', 'slug' => 'contacto', 'url_path' => '/contacto'],
+            ['name' => 'Services Calculator', 'slug' => 'services-calculator', 'url_path' => '/services-calculator'],
         ];
-        
+
         foreach ($landingPages as $pageData) {
             Page::firstOrCreate(
                 ['slug' => $pageData['slug']],
@@ -500,7 +522,7 @@ class AdminLandingPageController extends Controller
             );
         }
     }
-    
+
     public function updateSeo(Request $request)
     {
         $request->validate([
@@ -511,20 +533,70 @@ class AdminLandingPageController extends Controller
             'canonical_url' => 'nullable|url|max:500',
             'robots' => ['required', Rule::in(['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'])],
             'focus_keyword' => 'nullable|string|max:100',
+            'og_title' => 'nullable|string|max:150',
+            'og_description' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'og_type' => 'nullable|string|max:50',
+            'twitter_card' => 'nullable|string|max:50',
+            'twitter_title' => 'nullable|string|max:150',
+            'twitter_description' => 'nullable|string',
+            'twitter_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'schema_type' => 'nullable|string|max:50',
+            'schema_data' => 'nullable|string',
             'is_active' => 'boolean'
         ]);
-        
-        $data = $request->only(['page_id', 'meta_title', 'meta_description', 'meta_keywords', 'canonical_url', 'robots', 'focus_keyword']);
+
+        $data = $request->only([
+            'page_id', 'meta_title', 'meta_description', 'meta_keywords', 'canonical_url',
+            'robots', 'focus_keyword',
+            'og_title', 'og_description', 'og_type',
+            'twitter_card', 'twitter_title', 'twitter_description',
+            'schema_type',
+        ]);
         $data['is_active'] = $request->has('is_active');
-        
+
+        // schema_data viene como JSON string desde el textarea
+        if ($request->filled('schema_data')) {
+            $decoded = json_decode($request->input('schema_data'), true);
+            $data['schema_data'] = json_last_error() === JSON_ERROR_NONE ? $decoded : null;
+        } else {
+            $data['schema_data'] = null;
+        }
+
         $seo = Seo::where('page_id', $request->page_id)->first();
-        
+
+        // Upload de imágenes a public/seo_images/ (NO usar Storage facade ni storage:link)
+        $folder = public_path('seo_images');
+        if (!is_dir($folder)) {
+            @mkdir($folder, 0755, true);
+        }
+
+        if ($request->hasFile('og_image')) {
+            if ($seo && $seo->og_image_path && file_exists(public_path($seo->og_image_path))) {
+                @unlink(public_path($seo->og_image_path));
+            }
+            $file = $request->file('og_image');
+            $filename = 'og_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($folder, $filename);
+            $data['og_image_path'] = 'seo_images/' . $filename;
+        }
+
+        if ($request->hasFile('twitter_image')) {
+            if ($seo && $seo->twitter_image_path && file_exists(public_path($seo->twitter_image_path))) {
+                @unlink(public_path($seo->twitter_image_path));
+            }
+            $file = $request->file('twitter_image');
+            $filename = 'tw_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($folder, $filename);
+            $data['twitter_image_path'] = 'seo_images/' . $filename;
+        }
+
         if ($seo) {
             $seo->update($data);
         } else {
             Seo::create($data);
         }
-        
+
         return redirect()->back()->with('success', 'Configuración SEO actualizada correctamente.');
     }
     

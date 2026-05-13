@@ -25,7 +25,7 @@ class CleaningOrderController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $orders = CleaningOrder::with(['district', 'coupon', 'transaction'])
+            $orders = CleaningOrder::with(['coupon', 'transaction'])
                 ->select('cleaning_orders.*');
 
             return DataTables::of($orders)
@@ -77,7 +77,7 @@ class CleaningOrderController extends Controller
      */
     public function show(CleaningOrder $cleaningOrder)
     {
-        $cleaningOrder->load(['district', 'coupon', 'transaction']);
+        $cleaningOrder->load(['coupon', 'transaction', 'confirmedBy']);
         return view('admin.cleaning-orders.show', compact('cleaningOrder'));
     }
 
@@ -94,6 +94,12 @@ class CleaningOrderController extends Controller
             'status' => 'required|in:pending,processing,paid,confirmed,scheduled,in_progress,completed,cancelled,refunded',
             'admin_notes' => 'nullable|string|max:1000',
         ]);
+
+        // Track who confirmed the order
+        if (in_array($request->status, ['confirmed', 'paid'], true) && !$cleaningOrder->confirmed_by_user_id) {
+            $cleaningOrder->confirmed_by_user_id = $request->user()?->id;
+            $cleaningOrder->save();
+        }
 
         $success = $this->orderService->updateOrderStatus(
             $cleaningOrder,
@@ -115,13 +121,66 @@ class CleaningOrderController extends Controller
     }
 
     /**
+     * Upload manual payment proof. File goes to public/payment_proofs/ directly.
+     */
+    public function uploadPaymentProof(Request $request, CleaningOrder $cleaningOrder)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'payment_method_manual' => 'nullable|string|max:50',
+            'payment_reference' => 'nullable|string|max:255',
+        ]);
+
+        // Delete previous file if exists
+        if ($cleaningOrder->payment_proof_path && file_exists(public_path($cleaningOrder->payment_proof_path))) {
+            @unlink(public_path($cleaningOrder->payment_proof_path));
+        }
+
+        $file = $request->file('file');
+        $filename = 'proof_' . $cleaningOrder->id . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $folder = public_path('payment_proofs');
+
+        if (!is_dir($folder)) {
+            @mkdir($folder, 0755, true);
+        }
+
+        $file->move($folder, $filename);
+
+        $cleaningOrder->update([
+            'payment_proof_path' => 'payment_proofs/' . $filename,
+            'payment_proof_uploaded_at' => now(),
+            'payment_method_manual' => $request->payment_method_manual,
+            'payment_reference' => $request->payment_reference,
+        ]);
+
+        return back()->with('success', 'Payment proof uploaded successfully.');
+    }
+
+    public function deletePaymentProof(CleaningOrder $cleaningOrder)
+    {
+        if ($cleaningOrder->payment_proof_path && file_exists(public_path($cleaningOrder->payment_proof_path))) {
+            @unlink(public_path($cleaningOrder->payment_proof_path));
+        }
+
+        $cleaningOrder->update([
+            'payment_proof_path' => null,
+            'payment_proof_uploaded_at' => null,
+            'payment_method_manual' => null,
+            'payment_reference' => null,
+        ]);
+
+        return back()->with('success', 'Payment proof removed.');
+    }
+
+    /**
      * Remove the specified resource from storage.
-     *
-     * @param  CleaningOrder  $cleaningOrder
-     * @return \Illuminate\Http\Response
      */
     public function destroy(CleaningOrder $cleaningOrder)
     {
+        if ($cleaningOrder->payment_proof_path && file_exists(public_path($cleaningOrder->payment_proof_path))) {
+            @unlink(public_path($cleaningOrder->payment_proof_path));
+        }
+
         $cleaningOrder->delete();
 
         return response()->json([

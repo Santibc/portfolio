@@ -17,7 +17,13 @@ class CleaningOrder extends Model
         'email',
         'phone',
         'street_address',
-        'district_id',
+        'latitude',
+        'longitude',
+        'formatted_address',
+        'place_id',
+        'postcode',
+        'suburb',
+        'state',
         'unit_apt',
         'preferred_date',
         'preferred_time',
@@ -49,6 +55,11 @@ class CleaningOrder extends Model
         'status',
         'notes',
         'admin_notes',
+        'payment_proof_path',
+        'payment_proof_uploaded_at',
+        'payment_method_manual',
+        'payment_reference',
+        'confirmed_by_user_id',
         'paid_at',
         'confirmed_at',
         'completed_at',
@@ -65,21 +76,19 @@ class CleaningOrder extends Model
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total' => 'decimal:2',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
         'preferred_date' => 'date',
         'paid_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'completed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'payment_proof_uploaded_at' => 'datetime',
     ];
 
     /**
      * Relationships
      */
-    public function district()
-    {
-        return $this->belongsTo(District::class);
-    }
-
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
@@ -100,14 +109,24 @@ class CleaningOrder extends Model
 
     public function getFullAddressAttribute()
     {
+        if ($this->formatted_address) {
+            return $this->unit_apt ? "{$this->unit_apt}, {$this->formatted_address}" : $this->formatted_address;
+        }
+
         $address = $this->street_address;
         if ($this->unit_apt) {
             $address = "{$this->unit_apt}, {$address}";
         }
-        if ($this->district) {
-            $address .= ", {$this->district->name} ({$this->district->state} {$this->district->postcode})";
+        $locality = trim(implode(' ', array_filter([$this->suburb, $this->state, $this->postcode])));
+        if ($locality !== '') {
+            $address .= ", {$locality}";
         }
         return $address;
+    }
+
+    public function confirmedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'confirmed_by_user_id');
     }
 
     public function getStatusLabelAttribute()

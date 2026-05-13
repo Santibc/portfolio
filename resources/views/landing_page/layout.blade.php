@@ -5,20 +5,8 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    {{-- Lógica SEO del template anterior --}}
-    <title>{{ $seo->meta_title ?? ($layoutConfig->site_title ?? 'Clean Me') }}</title>
-    <meta name="description"
-        content="{{ $seo->meta_description ?? 'Professional cleaning services for residential and commercial spaces in Wisconsin' }}">
-    <meta name="keywords"
-        content="{{ $seo->meta_keywords ?? 'cleaning services, house cleaning, commercial cleaning, Wisconsin, deep cleaning' }}">
-
-    @if ($seo && $seo->canonical_url)
-        <link rel="canonical" href="{{ $seo->canonical_url }}">
-    @endif
-
-    @if ($seo && $seo->robots)
-        <meta name="robots" content="{{ $seo->robots }}">
-    @endif
+    {{-- SEO meta tags + Open Graph + Twitter Card + JSON-LD --}}
+    @include('landing_page.partials.seo-meta', ['seo' => $seo ?? null, 'layoutConfig' => $layoutConfig ?? null])
 
     <!-- Favicons -->
     <link href="{{ asset('images/logo.png') }}" rel="icon">

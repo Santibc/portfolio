@@ -25,12 +25,12 @@
             <span>Landing Page</span>
         </a>
 
-        {{-- Districts --}}
-        <a href="{{ route('admin.districts.index') }}"
-           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/districts*') ? 'active' : 'text-dark' }}"
-           title="Districts">
-            <i class="bi bi-geo-alt-fill"></i>
-            <span>Districts</span>
+        {{-- Blocked Zones --}}
+        <a href="{{ route('admin.blocked-zones.index') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/blocked-zones*') ? 'active' : 'text-dark' }}"
+           title="Blocked Zones">
+            <i class="bi bi-shield-slash-fill"></i>
+            <span>Blocked Zones</span>
         </a>
 
         {{-- Coupons --}}

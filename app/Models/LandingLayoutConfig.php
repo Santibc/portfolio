@@ -26,6 +26,11 @@ class LandingLayoutConfig extends Model
         'copyright_company',
         'footer_description',
         'footer_logo_path',
+        'google_search_console_verification',
+        'default_og_image_path',
+        'google_maps_api_key',
+        'google_maps_country',
+        'admin_notification_email',
         'is_active'
     ];
     

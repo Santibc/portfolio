@@ -40,7 +40,14 @@ Route::post('/contact/send', [AdminLandingPageController::class, 'sendContactEma
 // API para validar cupones
 Route::post('/api/coupon/validate', [App\Http\Controllers\Api\CouponController::class, 'validateCoupon'])->name('api.coupon.validate');
 
-// Cleaning Orders - Frontend
+// API para validar disponibilidad de servicio (Google Maps + zonas bloqueadas)
+Route::post('/api/service-availability', [App\Http\Controllers\Api\ServiceAvailabilityController::class, 'check'])->name('api.service.availability');
+
+// Cleaning Orders - Frontend (nuevo flujo sin pago)
+Route::post('/services-calculator/booking', [App\Http\Controllers\CleaningOrderController::class, 'submitBooking'])->name('cleaning-order.booking');
+Route::get('/booking/confirmed/{orderNumber}', [App\Http\Controllers\CleaningOrderController::class, 'bookingConfirmed'])->name('cleaning-order.booking-confirmed');
+
+// Cleaning Orders - Stripe (LATENTE: mantenido pero no enlazado desde el frontend)
 Route::post('/services-calculator/checkout', [App\Http\Controllers\CleaningOrderController::class, 'checkout'])->name('cleaning-order.checkout');
 Route::get('/order/success', [App\Http\Controllers\CleaningOrderController::class, 'success'])->name('cleaning-order.success');
 Route::get('/order/cancel', [App\Http\Controllers\CleaningOrderController::class, 'cancel'])->name('cleaning-order.cancel');
@@ -57,16 +64,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
 
-    // Rutas de administración de Districts, Coupons y Cleaning Orders
+    // Rutas de administración de Blocked Zones, Coupons y Cleaning Orders
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::post('districts/{district}/toggle-status', [App\Http\Controllers\Admin\DistrictController::class, 'toggleStatus'])->name('districts.toggle-status');
-        Route::resource('districts', App\Http\Controllers\Admin\DistrictController::class);
+        // Blocked Zones (reemplaza el viejo módulo de Districts)
+        Route::post('blocked-zones/{blocked_zone}/toggle-status', [App\Http\Controllers\Admin\ServiceBlockedZoneController::class, 'toggleStatus'])->name('blocked-zones.toggle-status');
+        Route::resource('blocked-zones', App\Http\Controllers\Admin\ServiceBlockedZoneController::class)->parameters(['blocked-zones' => 'blocked_zone']);
+
         Route::post('coupons/{coupon}/toggle-status', [App\Http\Controllers\Admin\CouponController::class, 'toggleStatus'])->name('coupons.toggle-status');
         Route::resource('coupons', App\Http\Controllers\Admin\CouponController::class);
 
         // Cleaning Orders Management
         Route::resource('cleaning-orders', App\Http\Controllers\Admin\CleaningOrderController::class);
-        Route::post('cleaning-orders/{order}/update-status', [App\Http\Controllers\Admin\CleaningOrderController::class, 'updateStatus'])->name('cleaning-orders.update-status');
+        Route::post('cleaning-orders/{cleaning_order}/update-status', [App\Http\Controllers\Admin\CleaningOrderController::class, 'updateStatus'])->name('cleaning-orders.update-status');
+        Route::post('cleaning-orders/{cleaning_order}/payment-proof', [App\Http\Controllers\Admin\CleaningOrderController::class, 'uploadPaymentProof'])->name('cleaning-orders.payment-proof.upload');
+        Route::delete('cleaning-orders/{cleaning_order}/payment-proof', [App\Http\Controllers\Admin\CleaningOrderController::class, 'deletePaymentProof'])->name('cleaning-orders.payment-proof.delete');
     });
 
     // Rutas de administración de Landing Page

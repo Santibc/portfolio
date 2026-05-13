@@ -19,6 +19,18 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">@foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach</ul>
+        </div>
+    @endif
+
     <div class="row">
         <!-- Left Column -->
         <div class="col-lg-8">
@@ -43,8 +55,105 @@
                             <p><strong>Service Address:</strong><br>
                                 {{ $cleaningOrder->full_address }}
                             </p>
+                            @if($cleaningOrder->latitude && $cleaningOrder->longitude)
+                                <p class="mb-0">
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ $cleaningOrder->latitude }},{{ $cleaningOrder->longitude }}"
+                                       target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-geo-alt-fill"></i> Open in Google Maps
+                                    </a>
+                                </p>
+                            @endif
+                            @if($cleaningOrder->suburb || $cleaningOrder->state || $cleaningOrder->postcode)
+                                <p class="text-muted small mt-2 mb-0">
+                                    Suburb: <strong>{{ $cleaningOrder->suburb ?? '—' }}</strong> |
+                                    State: <strong>{{ $cleaningOrder->state ?? '—' }}</strong> |
+                                    Postcode: <strong>{{ $cleaningOrder->postcode ?? '—' }}</strong>
+                                </p>
+                            @endif
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Manual Payment / Comprobante -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-receipt"></i> Manual Payment / Receipt</h6>
+                    @if($cleaningOrder->payment_proof_path)
+                        <span class="badge bg-success">Receipt uploaded</span>
+                    @else
+                        <span class="badge bg-warning">No receipt yet</span>
+                    @endif
+                </div>
+                <div class="card-body">
+                    @if($cleaningOrder->payment_proof_path)
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Method:</strong> {{ ucfirst(str_replace('_', ' ', $cleaningOrder->payment_method_manual ?? '—')) }}</p>
+                                <p class="mb-1"><strong>Reference:</strong> {{ $cleaningOrder->payment_reference ?? '—' }}</p>
+                                <p class="mb-1"><strong>Uploaded:</strong>
+                                    @if($cleaningOrder->payment_proof_uploaded_at)
+                                        {{ $cleaningOrder->payment_proof_uploaded_at->format('M d, Y h:i A') }}
+                                    @endif
+                                </p>
+                                <a href="{{ asset($cleaningOrder->payment_proof_path) }}" target="_blank" class="btn btn-sm btn-primary mt-2">
+                                    <i class="bi bi-eye"></i> View receipt
+                                </a>
+                                <form method="POST" action="{{ route('admin.cleaning-orders.payment-proof.delete', $cleaningOrder) }}" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
+                                            onclick="return confirm('Remove this receipt?')">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                @php
+                                    $ext = strtolower(pathinfo($cleaningOrder->payment_proof_path, PATHINFO_EXTENSION));
+                                @endphp
+                                @if(in_array($ext, ['jpg','jpeg','png']))
+                                    <img src="{{ asset($cleaningOrder->payment_proof_path) }}" alt="Receipt"
+                                         style="max-width:100%; max-height:280px; border:1px solid #dee2e6; border-radius:6px;">
+                                @else
+                                    <div class="border rounded p-4 bg-light">
+                                        <i class="bi bi-file-pdf text-danger" style="font-size:4rem;"></i>
+                                        <div class="text-muted small">PDF file</div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="small text-muted mb-2">Replace the receipt by uploading a new one below.</p>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.cleaning-orders.payment-proof.upload', $cleaningOrder) }}" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Method</label>
+                                <select name="payment_method_manual" class="form-select">
+                                    <option value="bank_transfer" @selected($cleaningOrder->payment_method_manual==='bank_transfer')>Bank transfer</option>
+                                    <option value="cash" @selected($cleaningOrder->payment_method_manual==='cash')>Cash</option>
+                                    <option value="card_terminal" @selected($cleaningOrder->payment_method_manual==='card_terminal')>Card terminal</option>
+                                    <option value="other" @selected($cleaningOrder->payment_method_manual==='other')>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Reference</label>
+                                <input type="text" name="payment_reference" class="form-control" maxlength="255"
+                                       value="{{ $cleaningOrder->payment_reference }}" placeholder="Tx ID or note">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">File (jpg/png/pdf, ≤5MB)</label>
+                                <input type="file" name="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-cloud-upload"></i> Upload Receipt
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 

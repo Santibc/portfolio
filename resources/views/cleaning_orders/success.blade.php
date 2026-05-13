@@ -59,9 +59,9 @@
                                         <strong>Location:</strong>
                                     </div>
                                     <div class="col-6">
-                                        {{ $order->street_address }}
-                                        @if($order->district)
-                                            <br>{{ $order->district->name }}, {{ $order->district->state }}
+                                        {{ $order->formatted_address ?? $order->street_address }}
+                                        @if($order->suburb || $order->state || $order->postcode)
+                                            <br>{{ trim(implode(' ', array_filter([$order->suburb, $order->state, $order->postcode]))) }}
                                         @endif
                                     </div>
                                 </div>

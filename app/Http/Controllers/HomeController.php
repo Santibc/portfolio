@@ -95,7 +95,6 @@ class HomeController extends Controller
         $pricingConfig = LandingPricingConfig::first();
         $pricingRanges = LandingPricingRange::orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
-        $districts = \App\Models\District::active()->get();
         $serviceExtras = \App\Models\ServiceExtra::where('is_active', true)->orderBy('order')->get();
         $roomTypePrices = \App\Models\RoomTypePrice::where('is_active', true)->orderBy('order')->get();
 
@@ -110,7 +109,7 @@ class HomeController extends Controller
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
         return view('landing_page.services_calculator', compact(
-            'pricingConfig', 'pricingRanges', 'layoutConfig', 'seo', 'districts',
+            'pricingConfig', 'pricingRanges', 'layoutConfig', 'seo',
             'serviceExtras', 'roomTypePrices', 'cleanerPrice', 'hourPrice',
             'normalMultiplier', 'deepMultiplier'
         ));

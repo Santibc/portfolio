@@ -2,22 +2,121 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingRequestAdmin;
+use App\Mail\BookingRequestCustomer;
 use App\Models\CleaningOrder;
 use App\Services\CleaningOrderService;
+use App\Services\ServiceAvailabilityService;
 use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class CleaningOrderController extends Controller
 {
     protected $orderService;
     protected $stripeService;
+    protected $availabilityService;
 
-    public function __construct(CleaningOrderService $orderService, StripeService $stripeService)
-    {
+    public function __construct(
+        CleaningOrderService $orderService,
+        StripeService $stripeService,
+        ServiceAvailabilityService $availabilityService
+    ) {
         $this->orderService = $orderService;
         $this->stripeService = $stripeService;
+        $this->availabilityService = $availabilityService;
+    }
+
+    /**
+     * Submit a booking request without payment.
+     * Creates the order, dispatches notifications and returns redirect URL.
+     */
+    public function submitBooking(Request $request)
+    {
+        try {
+            $data = $request->all();
+
+            // Re-validate service availability server-side (defense in depth)
+            $availability = $this->availabilityService->check(
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null,
+                $data['postcode'] ?? null,
+                $data['suburb'] ?? null
+            );
+
+            if (!$availability['allowed']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $availability['reason'] ?? "Sorry, we don't service this area.",
+                ], 422);
+            }
+
+            $result = $this->orderService->createOrder($data);
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['error'] ?? 'Failed to create booking',
+                ], 400);
+            }
+
+            $order = $result['order'];
+
+            // Send notification emails (best effort — don't fail the request if mail breaks)
+            try {
+                Mail::to($order->email)->send(new BookingRequestCustomer($order));
+            } catch (\Throwable $e) {
+                Log::warning('Customer booking email failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
+            try {
+                $layoutConfig = \App\Models\LandingLayoutConfig::first();
+                $adminEmail = $layoutConfig->admin_notification_email ?? config('mail.from.address');
+                if ($adminEmail) {
+                    Mail::to($adminEmail)->send(new BookingRequestAdmin($order));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Admin booking email failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'order_number' => $order->order_number,
+                'redirect_url' => route('cleaning-order.booking-confirmed', $order->order_number),
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Booking error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Booking confirmation page (no payment flow).
+     */
+    public function bookingConfirmed(string $orderNumber)
+    {
+        $order = CleaningOrder::where('order_number', $orderNumber)->firstOrFail();
+
+        $layoutConfig = \App\Models\LandingLayoutConfig::first();
+        $seo = null;
+
+        return view('cleaning_orders.booking_confirmed', compact('order', 'layoutConfig', 'seo'));
     }
 
     /**

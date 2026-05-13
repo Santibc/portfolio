@@ -57,27 +57,46 @@
                 <!-- Step 2: Service Location -->
                 <div class="calculator-step" id="step-2" style="display: none;">
                   <h4 class="mb-3">Service Location</h4>
-                  <p class="text-muted mb-4">Where should we provide the service?</p>
+                  <p class="text-muted mb-4">Start typing your address — we use Google Maps to confirm we service your area.</p>
                   <div class="row g-3">
                     <div class="col-12">
-                      <label for="street-address" class="form-label">Street Address <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control" id="street-address" placeholder="123 Main Street" required>
+                      <label for="street-address-container" class="form-label">Street Address <span class="text-danger">*</span></label>
+                      {{-- Google Maps PlaceAutocompleteElement (Places API New) se monta aquí dinámicamente --}}
+                      <div id="street-address-container" class="gmp-autocomplete-wrap"></div>
+                      {{-- Mantenemos un input fallback para que validateStep funcione con o sin SDK cargado --}}
+                      <input type="hidden" id="street-address">
+                      <small class="text-muted"><i class="bi bi-info-circle"></i> Pick one of the suggestions to validate the location.</small>
                     </div>
-                    <div class="col-md-6">
-                      <label for="district" class="form-label">District/Suburb <span class="text-danger">*</span></label>
-                      <select class="form-select" id="district" required>
-                        <option value="">Select a district...</option>
-                        @foreach($districts as $district)
-                          <option value="{{ $district->id }}" data-state="{{ $district->state }}" data-postcode="{{ $district->postcode }}">
-                            {{ $district->name }} ({{ $district->state }} {{ $district->postcode }})
-                          </option>
-                        @endforeach
-                      </select>
+
+                    <div class="col-12" id="detected-location-wrap" style="display:none;">
+                      <div class="alert alert-light border d-flex align-items-start gap-2 mb-0">
+                        <i class="bi bi-geo-alt-fill text-success fs-5"></i>
+                        <div>
+                          <strong>Detected location:</strong>
+                          <div id="detected-location" class="text-muted small"></div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label for="unit-apt" class="form-label">Unit/Apartment (Optional)</label>
+
+                    <div class="col-12" id="location-error" style="display:none;">
+                      <div class="alert alert-danger d-flex align-items-start gap-2 mb-0">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                        <div id="location-error-text">We currently don't service this area.</div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <label for="unit-apt" class="form-label">Unit / Apartment (Optional)</label>
                       <input type="text" class="form-control" id="unit-apt" placeholder="Unit 5B">
                     </div>
+
+                    <input type="hidden" id="loc-latitude">
+                    <input type="hidden" id="loc-longitude">
+                    <input type="hidden" id="loc-formatted-address">
+                    <input type="hidden" id="loc-place-id">
+                    <input type="hidden" id="loc-postcode">
+                    <input type="hidden" id="loc-suburb">
+                    <input type="hidden" id="loc-state">
                   </div>
                 </div>
 
@@ -395,11 +414,11 @@
                   </div>
 
                   <button type="button" class="btn-primary w-100 mb-2" id="proceed-payment-btn" style="display: none; text-align: center;">
-                    <i class="bi bi-credit-card"></i> Proceed to Payment
+                    <i class="bi bi-calendar-check"></i> Submit Booking Request
                   </button>
 
                   <small class="text-muted d-block text-center">
-                    <i class="bi bi-info-circle"></i> Final pricing may vary based on condition
+                    <i class="bi bi-info-circle"></i> No payment required. We'll contact you to confirm date and pricing.
                   </small>
 
                 </div>
@@ -429,9 +448,15 @@ document.addEventListener('DOMContentLoaded', function() {
         email: '',
         phone: '',
         streetAddress: '',
-        district: '',
-        districtName: '',
         unitApt: '',
+        latitude: null,
+        longitude: null,
+        formattedAddress: '',
+        placeId: '',
+        postcode: '',
+        suburb: '',
+        state: '',
+        locationConfirmed: false,
         preferredDate: '',
         preferredTime: '',
         parking: '',
@@ -543,8 +568,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!document.getElementById('street-address').value.trim()) {
                     message = 'Please enter your street address';
                     isValid = false;
-                } else if (!document.getElementById('district').value) {
-                    message = 'Please select a district';
+                } else if (!document.getElementById('loc-latitude').value || !document.getElementById('loc-longitude').value) {
+                    message = 'Please pick your address from the suggestion list so we can validate the location.';
+                    isValid = false;
+                } else if (!formData.locationConfirmed) {
+                    message = 'Sorry, we don\'t service this area. Please use a different address.';
                     isValid = false;
                 }
                 break;
@@ -631,10 +659,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             case 2:
                 formData.streetAddress = document.getElementById('street-address').value.trim();
-                formData.district = document.getElementById('district').value;
-                const selectedDistrict = document.getElementById('district').options[document.getElementById('district').selectedIndex];
-                formData.districtName = selectedDistrict.text;
                 formData.unitApt = document.getElementById('unit-apt').value.trim();
+                formData.latitude = parseFloat(document.getElementById('loc-latitude').value) || null;
+                formData.longitude = parseFloat(document.getElementById('loc-longitude').value) || null;
+                formData.formattedAddress = document.getElementById('loc-formatted-address').value;
+                formData.placeId = document.getElementById('loc-place-id').value;
+                formData.postcode = document.getElementById('loc-postcode').value;
+                formData.suburb = document.getElementById('loc-suburb').value;
+                formData.state = document.getElementById('loc-state').value;
                 break;
 
             case 3:
@@ -851,9 +883,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Address
         if (currentStep >= 2 && formData.streetAddress) {
             document.getElementById('summary-address-section').style.display = 'block';
-            let addressText = formData.streetAddress;
+            let addressText = formData.formattedAddress || formData.streetAddress;
             if (formData.unitApt) addressText = formData.unitApt + ', ' + addressText;
-            addressText += ', ' + formData.districtName;
             document.getElementById('summary-address').textContent = addressText;
         }
 
@@ -1018,21 +1049,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (type === 'danger') messageEl.classList.add('text-danger');
     }
 
-    // Proceed to Stripe Payment
+    // Submit booking request (no payment)
     document.getElementById('proceed-payment-btn').addEventListener('click', function() {
         const btn = this;
+        const originalHtml = '<i class="bi bi-calendar-check"></i> Submit Booking Request';
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...';
 
-        // Prepare order data
         const orderData = {
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
             phone: formData.phone,
             street_address: formData.streetAddress,
-            district_id: formData.district,
             unit_apt: formData.unitApt,
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+            formatted_address: formData.formattedAddress,
+            place_id: formData.placeId,
+            postcode: formData.postcode,
+            suburb: formData.suburb,
+            state: formData.state,
             preferred_date: formData.preferredDate,
             preferred_time: formData.preferredTime,
             date_flexible: formData.dateFlexible,
@@ -1056,43 +1093,39 @@ document.addEventListener('DOMContentLoaded', function() {
             extras: collectExtrasData()
         };
 
-        // Send to backend
-        fetch('{{ route("cleaning-order.checkout") }}', {
+        fetch('{{ route("cleaning-order.booking") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
             },
             body: JSON.stringify(orderData)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.session_url) {
-                // Redirect to Stripe Checkout
-                window.location.href = data.session_url;
-            } else {
-                // Show detailed error messages
-                let errorMessage = data.message || 'Failed to create payment session.';
-
-                // If validation errors exist, show them
-                if (data.errors) {
-                    errorMessage += '\n\nValidation errors:\n';
-                    Object.keys(data.errors).forEach(field => {
-                        errorMessage += `- ${field}: ${data.errors[field].join(', ')}\n`;
-                    });
-                }
-
-                console.error('Payment error:', data);
-                alert(errorMessage);
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-credit-card"></i> Proceed to Payment';
+        .then(response => response.json().then(data => ({ status: response.status, data })))
+        .then(({ status, data }) => {
+            if (data.success && data.redirect_url) {
+                window.location.href = data.redirect_url;
+                return;
             }
+
+            let errorMessage = data.message || 'Could not submit your booking. Please try again.';
+            if (data.errors) {
+                errorMessage += '\n\nValidation errors:\n';
+                Object.keys(data.errors).forEach(field => {
+                    errorMessage += `- ${field}: ${data.errors[field].join(', ')}\n`;
+                });
+            }
+            console.error('Booking error:', data);
+            alert(errorMessage);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         })
         .catch(error => {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-credit-card"></i> Proceed to Payment';
+            btn.innerHTML = originalHtml;
         });
     });
 
@@ -1114,8 +1147,144 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return extras;
     }
+
+    // ===== Google Maps Places Autocomplete (Places API New) + service availability =====
+    function resetLocationFields() {
+        ['loc-latitude','loc-longitude','loc-formatted-address','loc-place-id','loc-postcode','loc-suburb','loc-state']
+            .forEach(id => document.getElementById(id).value = '');
+        document.getElementById('street-address').value = '';
+        formData.locationConfirmed = false;
+        document.getElementById('detected-location-wrap').style.display = 'none';
+        document.getElementById('location-error').style.display = 'none';
+    }
+
+    function showLocationError(msg) {
+        const wrap = document.getElementById('location-error');
+        document.getElementById('location-error-text').textContent = msg;
+        wrap.style.display = 'block';
+        document.getElementById('detected-location-wrap').style.display = 'none';
+        formData.locationConfirmed = false;
+    }
+
+    function showLocationOk(formattedAddress, suburb, state, postcode) {
+        document.getElementById('location-error').style.display = 'none';
+        const detected = [suburb, state, postcode].filter(Boolean).join(' ');
+        document.getElementById('detected-location').textContent = formattedAddress + (detected ? ' — ' + detected : '');
+        document.getElementById('detected-location-wrap').style.display = 'block';
+        formData.locationConfirmed = true;
+    }
+
+    window.initServicesCalculatorMap = async function() {
+        const container = document.getElementById('street-address-container');
+        if (!container) return;
+
+        try {
+            const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+
+            const placeAutocomplete = new PlaceAutocompleteElement({
+                includedRegionCodes: ['{{ $layoutConfig->google_maps_country ?? 'au' }}'],
+            });
+            placeAutocomplete.id = 'gmp-street-address';
+            placeAutocomplete.style.width = '100%';
+
+            container.appendChild(placeAutocomplete);
+
+            placeAutocomplete.addEventListener('gmp-select', async (event) => {
+                try {
+                    const place = event.placePrediction.toPlace();
+                    await place.fetchFields({
+                        fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'id']
+                    });
+
+                    if (!place.location) {
+                        resetLocationFields();
+                        showLocationError('Could not get the location of this address. Please try another.');
+                        return;
+                    }
+
+                    const lat = place.location.lat();
+                    const lng = place.location.lng();
+                    let postcode = '', suburb = '', state = '';
+
+                    (place.addressComponents || []).forEach(c => {
+                        const types = c.types || [];
+                        if (types.includes('postal_code')) postcode = c.longText || c.shortText;
+                        if (types.includes('locality')) suburb = c.longText || c.shortText;
+                        if (!suburb && types.includes('sublocality_level_1')) suburb = c.longText || c.shortText;
+                        if (types.includes('administrative_area_level_1')) state = c.shortText || c.longText;
+                    });
+
+                    document.getElementById('street-address').value = place.formattedAddress || '';
+                    document.getElementById('loc-latitude').value = lat;
+                    document.getElementById('loc-longitude').value = lng;
+                    document.getElementById('loc-formatted-address').value = place.formattedAddress || '';
+                    document.getElementById('loc-place-id').value = place.id || '';
+                    document.getElementById('loc-postcode').value = postcode;
+                    document.getElementById('loc-suburb').value = suburb;
+                    document.getElementById('loc-state').value = state;
+
+                    const r = await fetch('{{ route('api.service.availability') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ latitude: lat, longitude: lng, postcode, suburb })
+                    });
+                    const data = await r.json();
+                    if (data.allowed) {
+                        showLocationOk(place.formattedAddress || '', suburb, state, postcode);
+                    } else {
+                        showLocationError(data.message || "We don't service this area.");
+                    }
+                } catch (err) {
+                    console.error('Place fetch error:', err);
+                    showLocationError('Could not validate the address right now. Please try again.');
+                }
+            });
+        } catch (err) {
+            console.error('Failed to load Google Maps Places:', err);
+        }
+    };
 });
 </script>
+@if(!empty($layoutConfig->google_maps_api_key))
+{{-- Bootstrap loader recomendado por Google para la API moderna (Places API New) --}}
+<script>
+(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+    key: "{{ $layoutConfig->google_maps_api_key }}",
+    v: "weekly"
+});
+window.addEventListener('load', () => window.initServicesCalculatorMap && window.initServicesCalculatorMap());
+</script>
+<style>
+/* Ajustar el PlaceAutocompleteElement para integrarlo con Bootstrap */
+.gmp-autocomplete-wrap gmp-place-autocomplete {
+    width: 100%;
+    display: block;
+}
+.gmp-autocomplete-wrap gmp-place-autocomplete::part(input) {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.gmp-autocomplete-wrap gmp-place-autocomplete::part(input):focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+}
+</style>
+@else
+<script>console.warn('Google Maps API key is not configured. Set it in /admin/landing → Layout tab.');</script>
+@endif
 
 <style>
 .service-type-card {
