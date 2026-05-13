@@ -8,52 +8,63 @@ use App\Models\User;
 use App\Models\ListaPrecio;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
-use App\Models\Departamento;
+
 class ClientesController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Cliente::with(['vendedor', 'listaPrecio',
-                        'pais',        // <-- relación país
-            'ciudad',      // <-- relación ciudad
-            ])->select('clientes.*');
+            $query = Cliente::with(['vendedor', 'listaPrecio'])->select('clientes.*');
 
             return DataTables::of($query)
-                        ->addColumn('pais', fn($c) => $c->pais?->nombre)
-            ->addColumn('ciudad', fn($c) => $c->ciudad?->nombre)
                 ->addColumn('vendedor', fn($c) => $c->vendedor?->name)
                 ->addColumn('lista_precio', fn($c) => $c->listaPrecio?->nombre)
-                ->addColumn('activo', fn($c) => $c->activo ? 'Sí' : 'No')
-                ->addColumn('action', function($c) {
-                    $url = route('clientes.form', $c->id);
-                    return <<<HTML
-<div class="d-flex justify-content-center">
-  <a href="{$url}" class="btn btn-outline-info btn-sm" title="Editar">
-    <i class="bi bi-pencil"></i>
-  </a>
-</div>
-HTML;
+                ->addColumn('estado', function($c) {
+                    return $c->activo
+                        ? '<span class="badge bg-success">Activo</span>'
+                        : '<span class="badge bg-secondary">Inactivo</span>';
                 })
-                ->rawColumns(['action'])
+                ->addColumn('action', function($c) {
+                    $editUrl   = route('clientes.form', $c->id);
+                    $toggleUrl = route('clientes.toggle-activo', $c->id);
+                    $deleteUrl = route('clientes.eliminar', $c->id);
+                    $csrf      = csrf_token();
+
+                    $toggleIcon  = $c->activo ? 'bi-toggle-on' : 'bi-toggle-off';
+                    $toggleClass = $c->activo ? 'btn-outline-warning' : 'btn-outline-success';
+                    $toggleTitle = $c->activo ? 'Inactivar' : 'Activar';
+
+                    $html  = '<div class="d-flex justify-content-center align-items-center gap-1">';
+                    $html .= '<a href="'.$editUrl.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
+
+                    $html .= '<form method="POST" action="'.$toggleUrl.'" style="display:inline">';
+                    $html .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                    $html .= '<button type="submit" class="btn '.$toggleClass.' btn-sm" title="'.$toggleTitle.'"><i class="bi '.$toggleIcon.'"></i></button>';
+                    $html .= '</form>';
+
+                    $html .= '<form method="POST" action="'.$deleteUrl.'" style="display:inline" onsubmit="return confirm(\'¿Eliminar este cliente? Sus cotizaciones y datos relacionados se conservarán.\');">';
+                    $html .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                    $html .= '<input type="hidden" name="_method" value="DELETE">';
+                    $html .= '<button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>';
+                    $html .= '</form>';
+
+                    $html .= '</div>';
+                    return $html;
+                })
+                ->rawColumns(['action', 'estado'])
                 ->make(true);
         }
 
         return view('clientes.clientes_index');
     }
 
-    public function form(Cliente $cliente = null)
+    public function form(?Cliente $cliente = null)
     {
         $cliente    = $cliente ?? new Cliente();
         $vendedores = User::role('vendedor')->pluck('name', 'id');
         $listas     = ListaPrecio::activas()->pluck('nombre', 'id');
-            $departamentos = Departamento::orderBy('nombre')->pluck('nombre','id');
-    $pais_id       = 1;
 
-    return view('clientes.clientes_form', compact(
-        'cliente','departamentos','vendedores','listas','pais_id'
-    ));
-
+        return view('clientes.clientes_form', compact('cliente', 'vendedores', 'listas'));
     }
 
     public function guardar(Request $request)
@@ -62,24 +73,24 @@ HTML;
                  ? Cliente::findOrFail($request->id)
                  : new Cliente();
 
-$rules = [
-    'numero_identificacion' => [
-        'required','string','max:255',
-        Rule::unique('clientes')->ignore($cliente->id)
-    ],
-    'nombre_contacto'  => ['required','string','max:255'],
-    'email'            => [
-        'required','email','max:255',
-        Rule::unique('clientes')->ignore($cliente->id)
-    ],
-    'telefono'         => ['nullable','string','max:100'],
-    'pais_id'          => ['required','exists:paises,id'],        // ← Aquí
-    'departamento_id'  => ['required','exists:departamentos,id'],
-    'ciudad_id'        => ['required','exists:ciudades,id'],
-    'vendedor_id'      => ['required','exists:users,id'],
-    'lista_precio_id'  => ['required','exists:listas_precios,id'],
-];
-
+        $rules = [
+            'numero_identificacion' => [
+                'required', 'string', 'max:255',
+                Rule::unique('clientes')->ignore($cliente->id)
+            ],
+            'nombre_contacto'  => ['required', 'string', 'max:255'],
+            'nombre_empresa'   => ['nullable', 'string', 'max:255'],
+            'email'            => [
+                'required', 'email', 'max:255',
+                Rule::unique('clientes')->ignore($cliente->id)
+            ],
+            'telefono'         => ['nullable', 'string', 'max:100'],
+            'pais'             => ['required', 'string', 'max:255'],
+            'ciudad'           => ['required', 'string', 'max:255'],
+            'vendedor_id'      => ['required', 'exists:users,id'],
+            'lista_precio_id'  => ['required', 'exists:listas_precios,id'],
+            'activo'           => ['nullable', 'boolean'],
+        ];
 
         $messages = [
             'required' => 'Este campo es obligatorio.',
@@ -89,13 +100,26 @@ $rules = [
             'exists'   => 'El valor seleccionado no es válido.',
         ];
 
-        $data = $request->validate($rules,$messages);
+        $data = $request->validate($rules, $messages);
+        $data['activo'] = $request->boolean('activo', true);
 
-
-
-    $cliente->fill($data)->save();
+        $cliente->fill($data)->save();
 
         return redirect()->route('clientes')
-                         ->with('success','Cliente guardado correctamente.');
+                         ->with('success', 'Cliente guardado correctamente.');
+    }
+
+    public function toggleActivo(Cliente $cliente)
+    {
+        $cliente->update(['activo' => ! $cliente->activo]);
+
+        $msg = $cliente->activo ? 'Cliente activado.' : 'Cliente inactivado.';
+        return back()->with('success', $msg);
+    }
+
+    public function eliminar(Cliente $cliente)
+    {
+        $cliente->delete();
+        return redirect()->route('clientes')->with('success', 'Cliente eliminado.');
     }
 }

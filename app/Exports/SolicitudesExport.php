@@ -65,7 +65,7 @@ class ResumenSheet implements FromCollection, WithHeadings, WithMapping, WithTit
             $solicitud->cliente->nombre_contacto,
             $solicitud->cliente->email,
             $solicitud->cliente->telefono,
-            $solicitud->cliente->ciudad->nombre . ', ' . $solicitud->cliente->pais->nombre,
+            trim(($solicitud->cliente->ciudad ?? '') . ', ' . ($solicitud->cliente->pais ?? ''), ', '),
             $solicitud->cliente->vendedor->name,
             $solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista',
             $solicitud->total_items,

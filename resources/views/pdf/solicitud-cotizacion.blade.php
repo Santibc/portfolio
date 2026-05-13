@@ -204,7 +204,7 @@
                 </div>
                 <div class="info-row">
                     <div class="info-col">
-                        <span class="info-label">Ciudad:</span> {{ $solicitud->cliente->ciudad->nombre }}, {{ $solicitud->cliente->pais->nombre }}
+                        <span class="info-label">Ciudad:</span> {{ trim(($solicitud->cliente->ciudad ?? '') . ', ' . ($solicitud->cliente->pais ?? ''), ', ') }}
                     </div>
                 </div>
             </div>

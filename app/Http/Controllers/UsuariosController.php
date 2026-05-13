@@ -7,9 +7,7 @@ use App\Models\User;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\UserCreationService;
-use Spatie\Permission\Models\Role;      
-use App\Services\CalendlyUserImporter;
-use App\Services\UserSynchronizationService;
+use Spatie\Permission\Models\Role;
 
 class UsuariosController extends Controller
 {
@@ -18,7 +16,7 @@ class UsuariosController extends Controller
 
     public function __construct()
     {
-        $this->userService = new UserCreationService();;
+        $this->userService = new UserCreationService();
     }
 
     public function index(Request $request)
@@ -28,23 +26,43 @@ class UsuariosController extends Controller
 
             return DataTables::of($users)
                     ->addColumn('roles', function($u) {
-                        // toma el primer rol o concatena varios
                         return $u->getRoleNames()
                                 ->map(fn($r) => ucfirst($r))
                                 ->join(', ');
                     })
-                ->addColumn('action', function ($user) {
-                    $editUrl = route('usuarios.form', $user->id);
+                    ->addColumn('estado', function($u) {
+                        return $u->activo
+                            ? '<span class="badge bg-success">Activo</span>'
+                            : '<span class="badge bg-secondary">Inactivo</span>';
+                    })
+                    ->addColumn('action', function ($user) {
+                        $editUrl    = route('usuarios.form', $user->id);
+                        $toggleUrl  = route('usuarios.toggle-activo', $user->id);
+                        $deleteUrl  = route('usuarios.eliminar', $user->id);
+                        $csrf       = csrf_token();
 
-                    $buttons = '<div class="d-flex justify-content-center align-items-center">';
-                    $buttons .= '<a href="' . $editUrl . '" class="btn btn-outline-info btn-sm" title="Editar">';
-                    $buttons .= '<i class="bi bi-pencil"></i>';
-                    $buttons .= '</a>';
-                    $buttons .= '</div>';
+                        $toggleIcon  = $user->activo ? 'bi-toggle-on' : 'bi-toggle-off';
+                        $toggleClass = $user->activo ? 'btn-outline-warning' : 'btn-outline-success';
+                        $toggleTitle = $user->activo ? 'Inactivar' : 'Activar';
 
-                    return $buttons;
-                })
-                ->rawColumns(['action'])
+                        $html  = '<div class="d-flex justify-content-center align-items-center gap-1">';
+                        $html .= '<a href="'.$editUrl.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
+
+                        $html .= '<form method="POST" action="'.$toggleUrl.'" style="display:inline">';
+                        $html .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                        $html .= '<button type="submit" class="btn '.$toggleClass.' btn-sm" title="'.$toggleTitle.'"><i class="bi '.$toggleIcon.'"></i></button>';
+                        $html .= '</form>';
+
+                        $html .= '<form method="POST" action="'.$deleteUrl.'" style="display:inline" onsubmit="return confirm(\'¿Eliminar este usuario? Sus datos relacionados (cotizaciones, clientes, etc.) se conservarán.\');">';
+                        $html .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                        $html .= '<input type="hidden" name="_method" value="DELETE">';
+                        $html .= '<button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>';
+                        $html .= '</form>';
+
+                        $html .= '</div>';
+                        return $html;
+                    })
+                ->rawColumns(['action', 'estado'])
                 ->make(true);
         }
 
@@ -53,10 +71,10 @@ class UsuariosController extends Controller
 
 
 
-    public function form(User $user = null)
+    public function form(?User $user = null)
     {
         $user  = $user ?? new User();
-        $roles = Role::pluck('name','name');      // ← lista de roles (clave and valor = nombre)
+        $roles = Role::pluck('name','name');
 
         return view('usuarios.usuarios_form', compact('user','roles'));
     }
@@ -72,7 +90,8 @@ class UsuariosController extends Controller
                 Rule::unique('users')->ignore($user?->id)
             ],
             'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
-             'role'     => ['required','exists:roles,name'],   
+            'role'     => ['required','exists:roles,name'],
+            'activo'   => ['nullable', 'boolean'],
         ];
 
         $messages = [
@@ -84,14 +103,36 @@ class UsuariosController extends Controller
         ];
 
         $data = $request->validate($rules, $messages);
+        $data['activo'] = $request->boolean('activo');
 
-        // 1) Crear o actualizar usuario
         if ($user) {
             $this->userService->update($user, $data);
         } else {
             $user = $this->userService->create($data);
         }
-   $user->syncRoles($data['role']);
+        $user->syncRoles($data['role']);
         return redirect()->route('usuarios')->with('success', 'Usuario guardado correctamente.');
+    }
+
+    public function toggleActivo(User $user)
+    {
+        if ($user->id === 1 || $user->id === auth()->id()) {
+            return back()->with('error', 'No puedes cambiar el estado de este usuario.');
+        }
+
+        $user->update(['activo' => ! $user->activo]);
+
+        $msg = $user->activo ? 'Usuario activado.' : 'Usuario inactivado.';
+        return back()->with('success', $msg);
+    }
+
+    public function eliminar(User $user)
+    {
+        if ($user->id === 1 || $user->id === auth()->id()) {
+            return back()->with('error', 'No puedes eliminar este usuario.');
+        }
+
+        $user->delete();
+        return redirect()->route('usuarios')->with('success', 'Usuario eliminado.');
     }
 }

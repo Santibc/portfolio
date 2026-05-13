@@ -356,15 +356,13 @@ class SolicitudController extends Controller
             
             // Cargar relaciones necesarias para el PDF
             $solicitud->load([
-                'cliente', 
-                'cliente.listaPrecio', 
+                'cliente',
+                'cliente.listaPrecio',
                 'cliente.vendedor',
-                'cliente.ciudad',
-                'cliente.pais',
-                'items.producto.imagenPrincipal', 
+                'items.producto.imagenPrincipal',
                 'aplicadaPor'
             ]);
-            
+
             // Generar PDF
             $pdf = PDF::loadView('pdf.solicitud-cotizacion', compact('solicitud'));
             $pdf->setPaper('letter', 'portrait');
@@ -514,12 +512,10 @@ class SolicitudController extends Controller
         
         // Cargar relaciones necesarias
         $solicitud->load([
-            'cliente', 
-            'cliente.listaPrecio', 
+            'cliente',
+            'cliente.listaPrecio',
             'cliente.vendedor',
-            'cliente.ciudad',
-            'cliente.pais',
-            'items.producto.imagenPrincipal', 
+            'items.producto.imagenPrincipal',
             'aplicadaPor'
         ]);
         

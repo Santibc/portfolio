@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+    Route::post('/usuarios/{user}/toggle-activo', [UsuariosController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
+    Route::delete('/usuarios/{user}', [UsuariosController::class, 'eliminar'])->name('usuarios.eliminar');
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
@@ -53,6 +55,12 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
     // Guardar
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])
         ->name('clientes.guardar');
+
+    // Toggle activo / eliminar
+    Route::post('clientes/{cliente}/toggle-activo', [ClientesController::class, 'toggleActivo'])
+        ->name('clientes.toggle-activo');
+    Route::delete('clientes/{cliente}', [ClientesController::class, 'eliminar'])
+        ->name('clientes.eliminar');
 
             // Listado & AJAX
     Route::get('categorias', [CategoriasController::class, 'index'])

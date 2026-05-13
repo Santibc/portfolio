@@ -8,7 +8,7 @@
     </div>
 
     {{-- Navegación --}}
-    <nav class="nav flex-column px-2 py-3">
+    <nav class="d-flex flex-column flex-nowrap px-2 py-3 flex-grow-1 overflow-y-auto" style="min-height: 0;">
         <a href="/dashboard"
            class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('dashboard') ? 'active' : 'text-dark' }}">
             <i class="bi bi-house"></i>

@@ -32,8 +32,8 @@
                   <label class="form-label">Ciudad</label>
                   <select class="form-select" id="filtroCiudad">
                     <option value="">Todas las ciudades</option>
-                    @foreach($clientes->pluck('ciudad')->unique()->filter() as $ciudad)
-                      <option value="{{ $ciudad->id }}">{{ $ciudad->nombre }}</option>
+                    @foreach($clientes->pluck('ciudad')->filter()->unique()->sort() as $ciudad)
+                      <option value="{{ strtolower($ciudad) }}">{{ $ciudad }}</option>
                     @endforeach
                   </select>
                 </div>
@@ -58,16 +58,16 @@
 
           <div class="row" id="clientesContainer">
             @forelse($clientes as $cliente)
-              <div class="col-md-4 mb-4 cliente-card" 
+              <div class="col-md-4 mb-4 cliente-card"
                    data-nombre="{{ strtolower($cliente->nombre_contacto) }}"
-                   data-ciudad="{{ $cliente->ciudad?->id }}"
+                   data-ciudad="{{ strtolower($cliente->ciudad ?? '') }}"
                    data-lista="{{ $cliente->lista_precio_id }}">
                 <div class="card h-100">
                   <div class="card-body">
                     <h5 class="card-title">{{ $cliente->nombre_contacto }}</h5>
                     <p class="card-text">
                       <small class="text-muted">
-                        <i class="bi bi-geo-alt"></i> {{ $cliente->ciudad?->nombre ?? 'Sin ciudad' }}<br>
+                        <i class="bi bi-geo-alt"></i> {{ $cliente->ciudad ?: 'Sin ciudad' }}<br>
                         <i class="bi bi-telephone"></i> {{ $cliente->telefono }}<br>
                         <i class="bi bi-envelope"></i> {{ $cliente->email }}<br>
                         <i class="bi bi-tag"></i> Lista: {{ $cliente->listaPrecio?->nombre ?? 'Sin lista' }}
