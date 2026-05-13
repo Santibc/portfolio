@@ -114,16 +114,19 @@ class CatalogoController extends Controller
             ->select('productos.*'); // Asegurarse de que se incluyan todos los campos, incluyendo unidad_venta
         
         // Filtro por categoría
-        if ($request->has('categoria_id') && $request->categoria_id) {
-            $query->where('categoria_id', $request->categoria_id);
+        if ($request->filled('categoria_id')) {
+            $query->where('categoria_id', $request->input('categoria_id'));
         }
-        
+
         // Búsqueda por nombre o referencia
-        if ($request->has('busqueda') && $request->busqueda) {
-            $query->buscar($request->busqueda);
+        $busqueda = trim((string) $request->input('busqueda', ''));
+        if ($busqueda !== '') {
+            $query->buscar($busqueda);
         }
         
-        $productos = $query->orderBy('nombre')->paginate(12);
+        // Si hay filtro de categoría, paginar de 12 en 12. Si no, mostrar todos.
+        $perPage = $request->filled('categoria_id') ? 12 : 10000;
+        $productos = $query->orderBy('nombre')->paginate($perPage);
         
         // Obtener configuración de visualización
         $listaPrecioId = null;

@@ -93,14 +93,19 @@
               @error('unidad_empaque') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            {{-- Extensión (Color o Motivo) --}}
+            {{-- ¿Maneja extensión? --}}
             <div class="col-md-3 mb-3">
-              <label class="form-label">Extensión (Color/Motivo)</label>
-              <input name="extension" type="text"
-                     class="form-control @error('extension') is-invalid @enderror"
-                     value="{{ old('extension',$producto->extension) }}"
-                     placeholder="Ej: Azul, Floral">
-              @error('extension') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              <label class="form-label">¿Maneja extensión?</label>
+              <div class="form-check mt-2">
+                <input type="hidden" name="tiene_extension" value="0">
+                <input class="form-check-input" type="checkbox"
+                       name="tiene_extension" id="tiene_extension"
+                       value="1"
+                       {{ old('tiene_extension', $producto->tiene_extension) ? 'checked' : '' }}>
+                <label class="form-check-label" for="tiene_extension">
+                  Sí, maneja extensión
+                </label>
+              </div>
             </div>
 
             {{-- Categoría --}}
@@ -122,7 +127,7 @@
             <div class="col-md-12 mb-3">
               <div class="form-check">
                 <input type="hidden" name="tiene_variantes" value="0">
-                <input class="form-check-input" type="checkbox" 
+                <input class="form-check-input" type="checkbox"
                        name="tiene_variantes" id="tiene_variantes"
                        value="1"
                        {{ old('tiene_variantes',$producto->tiene_variantes) ? 'checked' : '' }}>
@@ -134,6 +139,25 @@
                 </small>
               </div>
             </div>
+
+            @if($producto->exists)
+              {{-- Activo --}}
+              <div class="col-md-12 mb-3">
+                <div class="form-check">
+                  <input type="hidden" name="activo" value="0">
+                  <input class="form-check-input" type="checkbox"
+                         name="activo" id="activo"
+                         value="1"
+                         {{ old('activo', $producto->activo) ? 'checked' : '' }}>
+                  <label class="form-check-label" for="activo">
+                    Producto activo
+                  </label>
+                  <small class="text-muted d-block">
+                    Si está desactivado, el producto no aparecerá en el catálogo.
+                  </small>
+                </div>
+              </div>
+            @endif
           </div>
         </div>
       </div>
@@ -269,21 +293,15 @@
                   @foreach($producto->variantes as $index => $variante)
                     <div class="variante-row mb-3">
                       <div class="row align-items-end">
-                        <div class="col-md-3">
-                          <label class="form-label">Talla</label>
-                          <input type="text" name="variantes[{{ $index }}][talla]" 
-                                 class="form-control" value="{{ $variante->talla }}"
-                                 placeholder="Ej: S, M, L, XL">
+                        <div class="col-md-5">
+                          <label class="form-label">Extensión</label>
+                          <input type="text" name="variantes[{{ $index }}][extension]"
+                                 class="form-control" value="{{ $variante->extension }}"
+                                 placeholder="Ej: Rojo, Floral, Talla M">
                         </div>
-                        <div class="col-md-3">
-                          <label class="form-label">Color</label>
-                          <input type="text" name="variantes[{{ $index }}][color]" 
-                                 class="form-control" value="{{ $variante->color }}"
-                                 placeholder="Ej: Rojo, Azul">
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                           <label class="form-label">SKU</label>
-                          <input type="text" name="variantes[{{ $index }}][sku]" 
+                          <input type="text" name="variantes[{{ $index }}][sku]"
                                  class="form-control" value="{{ $variante->sku }}"
                                  placeholder="Se genera automáticamente">
                         </div>
@@ -503,19 +521,14 @@
         const template = `
           <div class="variante-row mb-3">
             <div class="row align-items-end">
-              <div class="col-md-3">
-                <label class="form-label">Talla</label>
-                <input type="text" name="variantes[${varianteIndex}][talla]" 
-                       class="form-control" placeholder="Ej: S, M, L, XL">
+              <div class="col-md-5">
+                <label class="form-label">Extensión</label>
+                <input type="text" name="variantes[${varianteIndex}][extension]"
+                       class="form-control" placeholder="Ej: Rojo, Floral, Talla M">
               </div>
-              <div class="col-md-3">
-                <label class="form-label">Color</label>
-                <input type="text" name="variantes[${varianteIndex}][color]" 
-                       class="form-control" placeholder="Ej: Rojo, Azul">
-              </div>
-              <div class="col-md-4">
+              <div class="col-md-5">
                 <label class="form-label">SKU</label>
-                <input type="text" name="variantes[${varianteIndex}][sku]" 
+                <input type="text" name="variantes[${varianteIndex}][sku]"
                        class="form-control" placeholder="Se genera automáticamente">
               </div>
               <div class="col-md-2">

@@ -78,6 +78,9 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
+    Route::post('/{producto}/toggle-activo', [ProductosController::class, 'toggleActivo'])->name('productos.toggle-activo');
+    Route::delete('/{producto}', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
+    Route::post('/importar-excel', [ProductosController::class, 'importarExcel'])->name('productos.importar-excel');
     Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
@@ -129,6 +132,9 @@ Route::prefix('stock')->name('stock.')->group(function () {
     // Vistas principales
     Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
+
+    // Importación masiva desde Excel
+    Route::post('/importar-excel', [App\Http\Controllers\StockController::class, 'importarExcel'])->name('importar-excel');
     
     // Operaciones de stock
     Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');

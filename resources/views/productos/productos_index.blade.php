@@ -32,9 +32,9 @@
                 <th>Categoría</th>
                 <th>Unidad Venta</th>
                 <th>Unidad Empaque</th>
-                <th>Extensión</th>
+                <th>¿Maneja Extensión?</th>
                 <th>Variantes</th>
-                <th>Activo</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -61,9 +61,9 @@
         { data:'categoria',    orderable:false, searchable:false },
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
-        { data:'extension',    name:'extension' },
+        { data:'tiene_extension', name:'tiene_extension' },
         { data:'variantes',    name:'tiene_variantes' },
-        { data:'activo',       name:'activo' },
+        { data:'estado',       name:'activo' },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -75,10 +75,15 @@
           action: () => window.location.href = "{{ route('productos.form') }}"
         },
         {
-  text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios', 
-  className:'btn btn-outline-warning',
-  action: () => window.location.href = "{{ route('productos.historial-precios') }}"
-}
+          text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios',
+          className:'btn btn-outline-warning',
+          action: () => window.location.href = "{{ route('productos.historial-precios') }}"
+        },
+        {
+          text:'<i class="bi bi-upload"></i> Importar Excel',
+          className:'btn btn-outline-success',
+          action: () => $('#modalImportarProductos').modal('show')
+        }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]
@@ -166,6 +171,41 @@ function verStock(productoId) {
     </div>
   </div>
 </div>
+  <!-- Modal para importar productos + precios -->
+  <div class="modal fade" id="modalImportarProductos" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="{{ route('productos.importar-excel') }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <div class="modal-header">
+            <h5 class="modal-title">Importar Productos desde Excel</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Archivo Excel / CSV</label>
+              <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls,.csv" required>
+            </div>
+            <div class="alert alert-info small mb-0">
+              <strong>Columnas reconocidas (encabezado en la fila 1):</strong><br>
+              <code>referencia</code>, <code>nombre</code>, <code>descripcion</code>,
+              <code>unidad_venta</code>, <code>unidad_empaque</code>, <code>categoria</code>,
+              <code>tiene_extension</code>, <code>controlar_stock</code>,
+              <code>export1</code>, <code>export2</code>, <code>local1</code>, <code>local2</code>,
+              <code>local3</code>, <code>local4</code>.<br>
+              Si la referencia ya existe se actualiza; si no, se crea (requiere <code>nombre</code> y <code>categoria</code>).
+              Los valores booleanos aceptan: 1/0, Si/No, true/false.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Importar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal para actualizar precios desde Excel -->
   <div class="modal fade" id="modalActualizarPrecios" tabindex="-1">
     <div class="modal-dialog">

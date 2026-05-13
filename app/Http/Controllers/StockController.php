@@ -7,12 +7,55 @@ use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
+use App\Imports\StockImport;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
 class StockController extends Controller
 {
+    // Importar stock desde Excel
+    public function importarExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv|max:10240'
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo',
+            'archivo.mimes'    => 'El archivo debe ser Excel (.xlsx, .xls) o CSV',
+            'archivo.max'      => 'El archivo no debe superar los 10MB',
+        ]);
+
+        try {
+            $archivo = $request->file('archivo');
+            $nombreOriginal = $archivo->getClientOriginalName();
+            $nombreArchivo  = time() . '_' . $nombreOriginal;
+
+            $rutaPublic = public_path('uploads/importacion_stock');
+            if (!File::exists($rutaPublic)) File::makeDirectory($rutaPublic, 0755, true);
+
+            $archivo->move($rutaPublic, $nombreArchivo);
+            $ruta = 'uploads/importacion_stock/' . $nombreArchivo;
+
+            $import = new StockImport();
+            Excel::import($import, public_path($ruta));
+
+            if ($import->exito > 0 && $import->fallo === 0) {
+                return back()->with('success', "Stock actualizado: {$import->exito} registros.");
+            } elseif ($import->exito > 0) {
+                return back()->with('warning', "Parcial: {$import->exito} actualizados, {$import->fallo} con errores.")
+                             ->with('errores_stock', $import->errores);
+            }
+            return back()->with('error', 'No se pudo actualizar ningún registro.')
+                         ->with('errores_stock', $import->errores);
+        } catch (\Throwable $e) {
+            Log::error('Error import stock: ' . $e->getMessage());
+            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage());
+        }
+    }
+
     // Vista principal de gestión de stock
     public function index(Request $request)
     {

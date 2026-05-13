@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class Producto extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'productos';
 
@@ -18,7 +19,7 @@ class Producto extends Model
         'descripcion',
         'unidad_venta',
         'unidad_empaque',
-        'extension',
+        'tiene_extension',
         'categoria_id',
         'activo',
         'tiene_variantes',
@@ -28,6 +29,7 @@ class Producto extends Model
 
     protected $casts = [
         'activo' => 'boolean',
+        'tiene_extension' => 'boolean',
         'tiene_variantes' => 'boolean',
         'controlar_stock' => 'boolean',
         'permitir_venta_sin_stock' => 'boolean',
@@ -185,10 +187,14 @@ class Producto extends Model
 
     public function scopeBuscar($query, $termino)
     {
-        return $query->where(function($q) use ($termino) {
-            $q->where('nombre', 'like', "%{$termino}%")
-              ->orWhere('referencia', 'like', "%{$termino}%")
-              ->orWhere('descripcion', 'like', "%{$termino}%");
+        $termino = trim((string) $termino);
+        if ($termino === '') {
+            return $query;
+        }
+        $like = '%' . $termino . '%';
+        return $query->where(function ($q) use ($like) {
+            $q->where('nombre', 'like', $like)
+              ->orWhere('referencia', 'like', $like);
         });
     }
 
