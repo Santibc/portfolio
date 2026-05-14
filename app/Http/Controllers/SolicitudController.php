@@ -132,6 +132,14 @@ class SolicitudController extends Controller
                                    <i class="bi bi-file-earmark-pdf"></i>
                                 </a>';
 
+                    // Botón eliminar (solo admin)
+                    if ($user->hasRole('admin')) {
+                        $buttons .= '<button type="button" class="btn btn-outline-dark btn-sm"
+                                            title="Eliminar Cotización" onclick="eliminarCotizacion('.$s->id.')">
+                                       <i class="bi bi-trash"></i>
+                                    </button>';
+                    }
+
                     $buttons .= '</div>';
 
                     return $buttons;
@@ -1155,6 +1163,37 @@ class SolicitudController extends Controller
         ];
     }
     
+    /**
+     * Eliminar (soft delete) una cotización. Solo admin.
+     */
+    public function eliminar(SolicitudCotizacion $solicitud)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin')) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'No tiene permisos para eliminar cotizaciones.'
+            ], 403);
+        }
+
+        try {
+            $numero = $solicitud->numero_solicitud;
+            $solicitud->delete(); // soft delete porque el modelo usa SoftDeletes
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => "Cotización {$numero} eliminada correctamente."
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar cotización: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al eliminar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Descargar PDF de solicitud
      */

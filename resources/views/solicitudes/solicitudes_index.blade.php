@@ -344,6 +344,49 @@
     });
   }
   
+  // Eliminar cotización (solo admin)
+  function eliminarCotizacion(solicitudId) {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: '¿Eliminar cotización?',
+        text: 'Esta acción ocultará la cotización del listado (soft delete).',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) ejecutarEliminarCotizacion(solicitudId);
+      });
+    } else {
+      if (confirm('¿Eliminar esta cotización?')) {
+        ejecutarEliminarCotizacion(solicitudId);
+      }
+    }
+  }
+
+  function ejecutarEliminarCotizacion(solicitudId) {
+    $.ajax({
+      url: `/solicitudes/${solicitudId}`,
+      method: 'DELETE',
+      data: { _token: '{{ csrf_token() }}' }
+    }).done(function(resp) {
+      if (resp.success) {
+        $('.max-w-7xl').prepend(
+          '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+          resp.mensaje +
+          '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
+        );
+        $('#solicitudes-table').DataTable().ajax.reload(null, false);
+      } else {
+        alert(resp.mensaje || 'No se pudo eliminar.');
+      }
+    }).fail(function(xhr) {
+      alert(xhr.responseJSON?.mensaje || 'Error al eliminar la cotización.');
+    });
+  }
+
   // Función para exportar Excel con filtros
   function exportarExcel() {
     const form = $('#formExportarExcel');

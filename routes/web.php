@@ -133,6 +133,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/solicitudes/{solicitud}/items', [SolicitudController::class, 'agregarItem'])->name('solicitudes.items.agregar');
     Route::delete('/solicitudes/{solicitud}/items/{item}', [SolicitudController::class, 'eliminarItem'])->name('solicitudes.items.eliminar');
     Route::get('/solicitudes/buscar-productos', [SolicitudController::class, 'buscarProductos'])->name('solicitudes.buscar-productos');
+
+    // Eliminar cotización (soft delete, solo admin)
+    Route::delete('/solicitudes/{solicitud}', [SolicitudController::class, 'eliminar'])->name('solicitudes.eliminar');
 });
 
 
