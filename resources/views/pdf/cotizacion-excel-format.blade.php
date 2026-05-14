@@ -166,52 +166,69 @@
             border-collapse: collapse;
             margin-top: 15px;
             margin-bottom: 15px;
+            table-layout: fixed; /* fuerza a que los anchos % se respeten */
         }
 
         .productos-table th {
             background-color: #000000;
             color: #FFFFFF;
-            font-size: 11pt;
+            font-size: 9.5pt;
             font-weight: bold;
-            padding: 8px 5px;
+            padding: 7px 4px;
             border: 1px solid #000000;
             text-align: center;
+            vertical-align: middle;
+            line-height: 1.15;
         }
 
         .productos-table td {
             border: 1px solid #000000;
             padding: 6px 5px;
             vertical-align: middle;
-            font-size: 10pt;
+            font-size: 9pt;
+            line-height: 1.3;
+            word-wrap: break-word;
         }
 
         .productos-table .col-referencia {
-            width: 15%;
+            width: 18%;
             font-weight: bold;
+            font-size: 8.5pt;
+            word-break: break-all; /* parte códigos largos como HDD,WD102PURP,... */
+            overflow-wrap: anywhere;
         }
 
         .productos-table .col-descripcion {
-            width: 40%;
+            width: 38%;
+            text-align: left;
+            font-size: 9pt;
         }
 
         .productos-table .col-foto {
-            width: 10%;
+            width: 11%;
             text-align: center;
         }
 
         .productos-table .col-cantidad {
-            width: 10%;
+            width: 9%;
             text-align: center;
         }
 
         .productos-table .col-precio {
-            width: 12.5%;
+            width: 12%;
             text-align: right;
+            white-space: nowrap;
         }
 
         .productos-table .col-subtotal {
-            width: 12.5%;
+            width: 12%;
             text-align: right;
+            white-space: nowrap;
+        }
+
+        /* Filas alternadas para mejor lectura */
+        .productos-table tbody tr:nth-child(even) td {
+            background-color: #f7f7f7;
         }
 
         .producto-img {
