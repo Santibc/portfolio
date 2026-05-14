@@ -314,6 +314,8 @@ class SiigoFacturacionService
             'observations' => $motivo,
             'items' => $items,
             'payments' => $payments,
+            'stamp' => ['send' => true], // Envía automáticamente a DIAN (status pasa de Draft a Sending → Accepted con CUDE)
+            'mail' => ['send' => false],
         ]);
 
         $factura = FacturaSiigo::create([
@@ -345,6 +347,12 @@ class SiigoFacturacionService
 
             $this->procesarEstadoRespuesta($factura, $response);
 
+            // SIIGO responde con stamp.status='Sending' al inicio (DIAN procesa async).
+            // Hacemos polling corto (hasta ~6s) para obtener el CUDE final antes de devolver.
+            if ($factura->fresh()->estado_dian === 'pendiente' && !empty($response['id'])) {
+                $this->esperarRespuestaDian($factura, $response['id'], 'credit-notes');
+            }
+
             $facturaFresh = $factura->fresh();
 
             // DIAN rechazada → tratar como error para no aplicar la anulación local
@@ -357,6 +365,32 @@ class SiigoFacturacionService
             $factura->marcarError($e->getMessage());
             Log::error("SIIGO crearNotaCredito error: {$e->getMessage()}");
             throw $e;
+        }
+    }
+
+    /**
+     * Polling corto del estado DIAN tras crear un documento electrónico.
+     * SIIGO devuelve status='Sending' inicialmente y DIAN tarda ~2-5s en aprobar.
+     * Bloquea la request hasta obtener CUFE/CUDE o agotar intentos.
+     */
+    private function esperarRespuestaDian(FacturaSiigo $factura, string $siigoId, string $tipo, int $maxIntentos = 4, int $segundosEntre = 2): void
+    {
+        $endpoint = $tipo === 'credit-notes'
+            ? "/v1/credit-notes/{$siigoId}"
+            : "/v1/invoices/{$siigoId}";
+
+        for ($i = 0; $i < $maxIntentos; $i++) {
+            sleep($segundosEntre);
+            try {
+                $detalle = $this->api->get($endpoint, [], $factura->id);
+                $this->procesarEstadoRespuesta($factura, $detalle);
+                $estado = $factura->fresh()->estado_dian;
+                if (in_array($estado, ['aprobada', 'rechazada'])) {
+                    return;
+                }
+            } catch (Exception $e) {
+                Log::warning("SIIGO esperarRespuestaDian iteración $i error: {$e->getMessage()}");
+            }
         }
     }
 
@@ -430,6 +464,8 @@ class SiigoFacturacionService
             'observations' => $motivo,
             'items' => $itemsParcial,
             'payments' => $this->construirPaymentsDesdeDevolucion($devolucion->ventaPdv, $devolucion),
+            'stamp' => ['send' => true], // Envía automáticamente a DIAN
+            'mail' => ['send' => false],
         ]);
 
         $factura = FacturaSiigo::create([
@@ -460,6 +496,11 @@ class SiigoFacturacionService
             ]);
 
             $this->procesarEstadoRespuesta($factura, $response);
+
+            // Polling corto a DIAN para obtener CUDE antes de retornar
+            if ($factura->fresh()->estado_dian === 'pendiente' && !empty($response['id'])) {
+                $this->esperarRespuestaDian($factura, $response['id'], 'credit-notes');
+            }
 
             // Vincular nota crédito con la devolución
             $devolucion->update(['factura_siigo_id' => $factura->id]);
