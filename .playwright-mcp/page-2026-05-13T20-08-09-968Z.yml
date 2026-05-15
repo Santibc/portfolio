@@ -1,0 +1,118 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Clean Me" [ref=e4] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000
+        - img "Clean Me" [ref=e5]
+      - navigation [ref=e6]:
+        - list [ref=e7]:
+          - listitem [ref=e8]:
+            - link "Home" [ref=e9] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000
+          - listitem [ref=e10]:
+            - link "About" [ref=e11] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/nosotros
+          - listitem [ref=e12]:
+            - link "Services" [ref=e13] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/servicios
+          - listitem [ref=e14]:
+            - link "BOOK" [ref=e15] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/services-calculator
+          - listitem [ref=e16]:
+            - link "Contact" [ref=e17] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/contacto
+        - text: 
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "Get Your Quote" [level=2] [ref=e21]
+        - paragraph [ref=e22]: Complete the steps below to receive an instant quote
+      - generic [ref=e24]:
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - generic [ref=e30]: Step 1 of 10
+              - generic [ref=e31]: 10% Complete
+            - progressbar [ref=e33]
+          - generic [ref=e34]:
+            - heading "Personal Information" [level=4] [ref=e35]
+            - paragraph [ref=e36]: Let's start with your contact details
+            - generic [ref=e37]:
+              - generic [ref=e38]:
+                - generic [ref=e39]: First Name *
+                - textbox "First Name *" [ref=e40]
+              - generic [ref=e41]:
+                - generic [ref=e42]: Last Name *
+                - textbox "Last Name *" [ref=e43]
+              - generic [ref=e44]:
+                - generic [ref=e45]: Email *
+                - textbox "Email *" [ref=e46]
+              - generic [ref=e47]:
+                - generic [ref=e48]: Phone *
+                - textbox "Phone *" [ref=e49]
+          - text:               
+          - generic [ref=e50]:
+            - text: 
+            - button "Next " [ref=e51] [cursor=pointer]:
+              - text: Next
+              - generic [ref=e52]: 
+        - generic [ref=e54]:
+          - heading "Quote Summary" [level=5] [ref=e56]
+          - generic [ref=e57]:
+            - generic [ref=e58]:
+              - generic [ref=e59]: 
+              - paragraph [ref=e60]: Complete the steps to see your quote
+            - text:  
+  - contentinfo [ref=e61]:
+    - generic [ref=e63]:
+      - generic [ref=e65]:
+        - link "Clean Me Adelaide" [ref=e66] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000
+          - img "Clean Me Adelaide" [ref=e67]
+        - paragraph [ref=e68]: Excellence and professionalism in residential and commercial cleaning services.
+        - generic [ref=e69]:
+          - link "" [ref=e70] [cursor=pointer]:
+            - /url: https://www.facebook.com/share/1Fjv9BSfbo/?mibextid=wwXIfr
+            - generic [ref=e71]: 
+          - link "" [ref=e72] [cursor=pointer]:
+            - /url: https://www.tiktok.com/@clean.me.adelaide?_r=1&_t=ZS-91EuhvjjYMZ
+            - generic [ref=e73]: 
+          - link "" [ref=e74] [cursor=pointer]:
+            - /url: https://www.instagram.com/cleanmeadelaide?igsh=ems3NTIxcnd5YWpn&utm_source=qr
+            - generic [ref=e75]: 
+      - generic [ref=e77]:
+        - heading "Company" [level=4] [ref=e78]
+        - list [ref=e79]:
+          - listitem [ref=e80]:
+            - link " Home" [ref=e81] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000
+              - generic [ref=e82]: 
+              - text: Home
+          - listitem [ref=e83]:
+            - link " About" [ref=e84] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/nosotros
+              - generic [ref=e85]: 
+              - text: About
+          - listitem [ref=e86]:
+            - link " Services" [ref=e87] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/servicios
+              - generic [ref=e88]: 
+              - text: Services
+          - listitem [ref=e89]:
+            - link " Contact" [ref=e90] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/contacto
+              - generic [ref=e91]: 
+              - text: Contact
+      - generic [ref=e93]:
+        - heading "Contact Us" [level=4] [ref=e94]
+        - paragraph [ref=e95]:
+          - strong [ref=e96]: "Email:"
+          - text: support@cleanmeadelaide.au
+          - strong [ref=e97]: "Phone:"
+          - text: "0416405131"
+          - strong [ref=e98]: "Location:"
+          - text: Adelaide
+    - paragraph [ref=e100]:
+      - text: © Copyright
+      - strong [ref=e101]: Clean Me Adelaide
+      - text: All Rights Reserved

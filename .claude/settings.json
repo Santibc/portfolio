@@ -12,7 +12,9 @@
       "Read(//tmp/**)",
       "Bash(curl -s \"https://maps.googleapis.com/maps/api/place/autocomplete/json?input=melb&components=country:au&key=AIzaSyADXrk3l7280rhvJ1SBElllG8BkKq5ZHnQ\")",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "Bash(curl -s -X POST 'https://places.googleapis.com/v1/places/ChIJ3S-JXmauEmsRUcIaWtf4MzE?key=AIzaSyADXrk3l7280rhvJ1SBElllG8BkKq5ZHnQ&fields=id,formattedAddress,location' -H 'Content-Type: application/json')",
+      "Bash(curl -s -X POST https://places.googleapis.com/v1/places:autocomplete?key=AIzaSyADXrk3l7280rhvJ1SBElllG8BkKq5ZHnQ -H 'Content-Type: application/json' -d '{\"input\":\"melb\",\"includedRegionCodes\":[\"au\"]}')"
     ]
   }
 }
