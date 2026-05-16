@@ -1378,6 +1378,26 @@
                                                 profunda</small>
                                         </div>
                                     </div>
+
+                                    <hr>
+                                    <h6 class="text-primary mb-3"><i class="bi bi-clock-history me-1"></i>Franja horaria del booking (Step 3)</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Hora desde</label>
+                                            <input type="time" name="booking_time_start" class="form-control"
+                                                value="{{ \Carbon\Carbon::parse($pricingConfig->booking_time_start ?? '08:00')->format('H:i') }}"
+                                                step="3600" required>
+                                            <small class="text-muted">Primera hora seleccionable por el cliente.</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Hora hasta</label>
+                                            <input type="time" name="booking_time_end" class="form-control"
+                                                value="{{ \Carbon\Carbon::parse($pricingConfig->booking_time_end ?? '20:00')->format('H:i') }}"
+                                                step="3600" required>
+                                            <small class="text-muted">Última hora seleccionable. El selector mostrará cada hora exacta entre ambas.</small>
+                                        </div>
+                                    </div>
+
                                     <div class="alert alert-info mb-0">
                                         <strong><i class="bi bi-info-circle me-1"></i>Fórmula de Cálculo:</strong><br>
                                         <code>Precio Total = (Habitaciones) + (Limpiadores × Horas × Precio Base) +

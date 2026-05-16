@@ -896,24 +896,24 @@ class AdminLandingPageController extends Controller
             'hour_price' => 'required|numeric|min:0',
             'normal_service_price' => 'required|numeric|min:0',
             'deep_service_price' => 'required|numeric|min:0',
+            'booking_time_start' => 'required|date_format:H:i',
+            'booking_time_end' => 'required|date_format:H:i|after:booking_time_start',
         ]);
 
-        $pricingConfig = LandingPricingConfig::first();
+        $data = [
+            'cleaner_price' => $request->cleaner_price,
+            'hour_price' => $request->hour_price,
+            'normal_service_price' => $request->normal_service_price,
+            'deep_service_price' => $request->deep_service_price,
+            'booking_time_start' => $request->booking_time_start . ':00',
+            'booking_time_end' => $request->booking_time_end . ':00',
+        ];
 
+        $pricingConfig = LandingPricingConfig::first();
         if ($pricingConfig) {
-            $pricingConfig->update([
-                'cleaner_price' => $request->cleaner_price,
-                'hour_price' => $request->hour_price,
-                'normal_service_price' => $request->normal_service_price,
-                'deep_service_price' => $request->deep_service_price,
-            ]);
+            $pricingConfig->update($data);
         } else {
-            LandingPricingConfig::create([
-                'cleaner_price' => $request->cleaner_price,
-                'hour_price' => $request->hour_price,
-                'normal_service_price' => $request->normal_service_price,
-                'deep_service_price' => $request->deep_service_price,
-            ]);
+            LandingPricingConfig::create($data);
         }
 
         return redirect()->back()->with('success', 'Configuración de precios base actualizada correctamente.');

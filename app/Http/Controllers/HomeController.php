@@ -103,6 +103,7 @@ class HomeController extends Controller
         $hourPrice = $pricingConfig->hour_price ?? 30;
         $normalMultiplier = $pricingConfig->normal_service_price ?? 0;
         $deepMultiplier = $pricingConfig->deep_service_price ?? 50;
+        $bookingTimeSlots = $pricingConfig ? $pricingConfig->getBookingTimeSlots() : (new LandingPricingConfig())->getBookingTimeSlots();
 
         // Cargar SEO para la página services-calculator (solo si está activo)
         $page = Page::where('slug', 'services-calculator')->first();
@@ -111,7 +112,7 @@ class HomeController extends Controller
         return view('landing_page.services_calculator', compact(
             'pricingConfig', 'pricingRanges', 'layoutConfig', 'seo',
             'serviceExtras', 'roomTypePrices', 'cleanerPrice', 'hourPrice',
-            'normalMultiplier', 'deepMultiplier'
+            'normalMultiplier', 'deepMultiplier', 'bookingTimeSlots'
         ));
     }
 }

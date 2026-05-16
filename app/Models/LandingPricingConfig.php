@@ -26,7 +26,34 @@ class LandingPricingConfig extends Model
         'window_clean_exterior',
         'recurring_weekly_discount',
         'recurring_biweekly_discount',
+        'booking_time_start',
+        'booking_time_end',
     ];
+
+    /**
+     * Genera array de slots ['HH:00 AM/PM', ...] entre booking_time_start y booking_time_end (cada hora exacta).
+     */
+    public function getBookingTimeSlots(): array
+    {
+        $start = $this->booking_time_start ?? '08:00:00';
+        $end = $this->booking_time_end ?? '20:00:00';
+
+        // Tomar solo la hora (entero) de cada valor
+        $startHour = (int) substr($start, 0, 2);
+        $endHour = (int) substr($end, 0, 2);
+
+        if ($endHour < $startHour) {
+            return [];
+        }
+
+        $slots = [];
+        for ($h = $startHour; $h <= $endHour; $h++) {
+            $period = $h < 12 ? 'AM' : 'PM';
+            $display = $h === 0 ? 12 : ($h > 12 ? $h - 12 : $h);
+            $slots[] = sprintf('%d:00 %s', $display, $period);
+        }
+        return $slots;
+    }
 
     protected $casts = [
         'cleaner_price' => 'decimal:2',
