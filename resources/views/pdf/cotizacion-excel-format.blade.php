@@ -417,6 +417,11 @@
             <span class="total-label">Flete:</span>
             <span class="total-valor">$ {{ number_format($solicitud->valor_flete, 0) }}</span>
         </div>
+        @elseif($solicitud->cliente && $solicitud->cliente->aplica_flete)
+        <div class="total-row">
+            <span class="total-label">Flete:</span>
+            <span class="total-valor">Aplica flete</span>
+        </div>
         @endif
         @if($solicitud->descuento_total && $solicitud->descuento_total > 0)
         <div class="total-row">
@@ -466,6 +471,88 @@
             <span style="font-size: 9pt;">{{ $pago->notas }}</span>
         </div>
         @endforeach
+    </div>
+    @endif
+
+    {{-- GARANTÍAS VINCULADAS --}}
+    @if(isset($garantiasVinculadas) && $garantiasVinculadas->isNotEmpty())
+    <div style="margin-top: 14px; margin-bottom: 10px; page-break-inside: avoid;">
+        <div style="background-color: #382E65; color: #FFFFFF; padding: 6px 12px; font-size: 10pt; font-weight: bold; border-radius: 4px 4px 0 0;">
+            GARANTÍAS VINCULADAS A ESTA COTIZACIÓN
+        </div>
+        <div style="border: 1px solid #BCA9F5; border-top: 0; padding: 8px 12px; border-radius: 0 0 4px 4px;">
+            @foreach($garantiasVinculadas as $g)
+                @php
+                    $esLiberada = $g->estado === \App\Models\Garantia::ESTADO_LIBERADO;
+                    $colorBorde = $esLiberada ? '#28A745' : '#FFC107';
+                    $estadoTexto = $esLiberada ? 'LIBERADA' : 'PENDIENTE';
+                    $estadoBg = $esLiberada ? '#28A745' : '#FFC107';
+                    $estadoColor = $esLiberada ? '#FFFFFF' : '#333333';
+                @endphp
+                <div style="border-left: 4px solid {{ $colorBorde }}; padding: 6px 10px; margin-bottom: 8px; background-color: #FAFAFA;">
+                    <table style="width: 100%; font-size: 9pt; margin-bottom: 4px;">
+                        <tr>
+                            <td style="vertical-align: top;">
+                                <strong style="color: #382E65;">Garantía #{{ $g->id }}</strong>
+                                — {{ $g->producto?->nombre ?? '—' }}@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
+                            </td>
+                            <td style="width: 90px; text-align: right; vertical-align: top;">
+                                <span style="background-color: {{ $estadoBg }}; color: {{ $estadoColor }}; padding: 2px 8px; border-radius: 3px; font-size: 8pt; font-weight: bold;">{{ $estadoTexto }}</span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="font-size: 9pt; margin-bottom: 2px;"><strong>Tipo:</strong> {{ $g->tipoLegible() }}</div>
+                    <div style="font-size: 8.5pt; color: #555; margin-bottom: 4px;">
+                        Registrada el {{ $g->created_at?->format('d/m/Y H:i') }}
+                        @if($g->usuarioCreador) por {{ $g->usuarioCreador->name }}@endif
+                    </div>
+
+                    @if($g->observacion_creacion)
+                    <div style="background-color: #E7F1FF; padding: 5px 8px; margin-bottom: 4px; border-radius: 3px; font-size: 8.5pt;">
+                        <strong>Observación de creación:</strong> {{ $g->observacion_creacion }}
+                    </div>
+                    @endif
+
+                    @if($esLiberada)
+                        @if($g->observacion_liberacion)
+                        <div style="background-color: #E8F5E9; padding: 5px 8px; margin-bottom: 4px; border-radius: 3px; font-size: 8.5pt;">
+                            <strong>Observación de liberación:</strong> {{ $g->observacion_liberacion }}
+                        </div>
+                        @endif
+                        <div style="font-size: 8.5pt; color: #555; margin-bottom: 4px;">
+                            Liberada el {{ $g->liberado_en?->format('d/m/Y H:i') }}
+                            @if($g->usuarioLiberador) por {{ $g->usuarioLiberador->name }}@endif
+                        </div>
+
+                        @if($g->productosLiberacion && $g->productosLiberacion->isNotEmpty())
+                        <div style="margin-top: 4px;">
+                            <strong style="font-size: 9pt; color: #382E65;">Productos descontados de stock:</strong>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 3px; font-size: 8.5pt;">
+                                <thead>
+                                    <tr style="background-color: #F0E7FF;">
+                                        <th style="border: 1px solid #BCA9F5; padding: 3px 6px; text-align: left;">Producto</th>
+                                        <th style="border: 1px solid #BCA9F5; padding: 3px 6px; text-align: left;">Variante</th>
+                                        <th style="border: 1px solid #BCA9F5; padding: 3px 6px; text-align: left;">Ubicación</th>
+                                        <th style="border: 1px solid #BCA9F5; padding: 3px 6px; text-align: center; width: 50px;">Cant.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($g->productosLiberacion as $p)
+                                    <tr>
+                                        <td style="border: 1px solid #BCA9F5; padding: 3px 6px;">{{ $p->producto?->nombre ?? '—' }}</td>
+                                        <td style="border: 1px solid #BCA9F5; padding: 3px 6px;">{{ $p->variante?->nombre_variante ?? '—' }}</td>
+                                        <td style="border: 1px solid #BCA9F5; padding: 3px 6px;">{{ $p->ubicacionRelacion?->nombre ?? '—' }}</td>
+                                        <td style="border: 1px solid #BCA9F5; padding: 3px 6px; text-align: center;">{{ $p->cantidad }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @endif
+                    @endif
+                </div>
+            @endforeach
+        </div>
     </div>
     @endif
 

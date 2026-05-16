@@ -361,6 +361,8 @@ Route::middleware(['auth', 'role:admin,garantias'])->prefix('garantias')->group(
     Route::get('/crear', [GarantiaController::class, 'create'])->name('garantias.crear');
     Route::post('/', [GarantiaController::class, 'store'])->name('garantias.store');
     Route::get('/buscar-productos', [GarantiaController::class, 'buscarProductos'])->name('garantias.buscar-productos');
+    Route::get('/productos-por-ubicacion/{ubicacionId}', [GarantiaController::class, 'productosPorUbicacion'])->name('garantias.productos-por-ubicacion');
+    Route::get('/variantes-por-ubicacion/{productoId}/{ubicacionId}', [GarantiaController::class, 'variantesPorProductoYUbicacion'])->name('garantias.variantes-por-ubicacion');
     Route::get('/cliente/{id}/pendientes', [GarantiaController::class, 'garantiasPendientesCliente'])->name('garantias.cliente.pendientes');
     Route::get('/documentos/{id}/descargar', [GarantiaController::class, 'descargarDocumento'])->name('garantias.documentos.descargar');
     Route::get('/{id}', [GarantiaController::class, 'show'])->name('garantias.show');

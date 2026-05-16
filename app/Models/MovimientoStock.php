@@ -98,6 +98,7 @@ class MovimientoStock extends Model
             'ajuste_inventario' => 'Ajuste de Inventario',
             'cotizacion' => 'Cotización',
             'traslado' => 'Traslado',
+            'garantia' => 'Garantía',
             default => 'Otro'
         };
     }

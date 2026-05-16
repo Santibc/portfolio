@@ -407,6 +407,11 @@
                         <span class="label">Flete</span>
                         <span class="valor">$ {{ number_format($solicitud->valor_flete, 0, ',', '.') }}</span>
                     </div>
+                    @elseif($solicitud->cliente && $solicitud->cliente->aplica_flete)
+                    <div class="total-row-item">
+                        <span class="label">Flete</span>
+                        <span class="valor">Aplica flete</span>
+                    </div>
                     @endif
                     @if($solicitud->descuento_total && $solicitud->descuento_total > 0)
                     <div class="total-row-item">

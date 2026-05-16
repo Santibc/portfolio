@@ -82,8 +82,9 @@ class CatalogoController extends Controller
 
         $categorias = Categoria::activas()->get();
         $enlace = null; // No hay enlace en el flujo B
+        $ubicaciones = \App\Models\Ubicacion::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'tipo']);
 
-        return view('catalogo.index', compact('cliente', 'categorias', 'enlace'));
+        return view('catalogo.index', compact('cliente', 'categorias', 'enlace', 'ubicaciones'));
     }
     
     /**

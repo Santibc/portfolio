@@ -344,7 +344,9 @@ class SolicitudController extends Controller
                   );
         })->orderBy('name')->get();
 
-        return view('solicitudes.solicitudes_index', compact('totalAntiguas', 'vendedores'));
+        $ubicaciones = \App\Models\Ubicacion::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'tipo']);
+
+        return view('solicitudes.solicitudes_index', compact('totalAntiguas', 'vendedores', 'ubicaciones'));
     }
     
     public function detalle(Request $request, SolicitudCotizacion $solicitud)
@@ -390,7 +392,9 @@ class SolicitudController extends Controller
 
         // Información de flete
         if ($solicitud->cliente->aplica_flete) {
-            $valorFlete = $solicitud->cliente->valor_flete ? '$' . number_format($solicitud->cliente->valor_flete, 2) : 'No definido';
+            $valorFlete = ($solicitud->cliente->valor_flete && $solicitud->cliente->valor_flete > 0)
+                ? '$' . number_format($solicitud->cliente->valor_flete, 2)
+                : 'Valor variable según entrega';
             $html .= '<tr><td><strong>Flete:</strong></td><td><span class="badge bg-success">Aplica</span> — ' . $valorFlete . '</td></tr>';
         } else {
             $html .= '<tr><td><strong>Flete:</strong></td><td><span class="badge bg-secondary">No aplica</span></td></tr>';
@@ -555,11 +559,17 @@ class SolicitudController extends Controller
         $html .= '<th>$' . number_format($subtotal, 2) . '</th>';
         $html .= '</tr>';
 
-        // Mostrar flete si existe
+        // Mostrar flete si existe valor o si el cliente aplica flete (aunque sea sin valor)
+        $aplicaFleteCliente = (bool) $solicitud->cliente->aplica_flete;
         if ($flete > 0) {
             $html .= '<tr>';
             $html .= '<td colspan="' . $colspanTotal . '" class="text-end">Flete:</td>';
             $html .= '<td>$' . number_format($flete, 2) . '</td>';
+            $html .= '</tr>';
+        } elseif ($aplicaFleteCliente) {
+            $html .= '<tr>';
+            $html .= '<td colspan="' . $colspanTotal . '" class="text-end">Flete:</td>';
+            $html .= '<td><span class="badge bg-info">Aplica flete</span></td>';
             $html .= '</tr>';
         }
 
@@ -956,7 +966,12 @@ class SolicitudController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $garantiasLiberadasEnEsta = \App\Models\Garantia::with(['producto', 'variante', 'usuarioLiberador'])
+        $garantiasLiberadasEnEsta = \App\Models\Garantia::with([
+                'producto', 'variante', 'usuarioLiberador',
+                'productosLiberacion.producto',
+                'productosLiberacion.variante',
+                'productosLiberacion.ubicacionRelacion',
+            ])
             ->where('solicitud_cotizacion_id', $solicitud->id)
             ->liberadas()
             ->orderBy('liberado_en', 'desc')
@@ -1100,8 +1115,20 @@ class SolicitudController extends Controller
                 'aplicadaPor'
             ]);
 
+            $garantiasVinculadas = \App\Models\Garantia::with([
+                    'producto', 'variante', 'usuarioCreador', 'usuarioLiberador',
+                    'documentos',
+                    'productosLiberacion.producto',
+                    'productosLiberacion.variante',
+                    'productosLiberacion.ubicacionRelacion',
+                ])
+                ->where('solicitud_cotizacion_id', $solicitud->id)
+                ->orderBy('liberado_en', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
             // Generar PDF con nuevo formato
-            $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+            $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud', 'garantiasVinculadas'));
             $pdf->setPaper('letter', 'portrait');
             
             // Envío de email al cliente cuando se aprueba la cotización
@@ -1456,8 +1483,8 @@ class SolicitudController extends Controller
     {
         $user = Auth::user();
 
-        // Verificar que sea admin, vendedor, facturación o auxiliar inventario
-        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario'])) {
+        // Verificar que sea admin, vendedor, facturación, auxiliar inventario o garantías
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo', 'vendedor', 'facturacion', 'inventarios', 'auxiliar_inventario', 'garantias'])) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
 
@@ -1485,7 +1512,19 @@ class SolicitudController extends Controller
             'pagos.registradoPor'
         ]);
 
-        $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud'));
+        $garantiasVinculadas = \App\Models\Garantia::with([
+                'producto', 'variante', 'usuarioCreador', 'usuarioLiberador',
+                'documentos',
+                'productosLiberacion.producto',
+                'productosLiberacion.variante',
+                'productosLiberacion.ubicacionRelacion',
+            ])
+            ->where('solicitud_cotizacion_id', $solicitud->id)
+            ->orderBy('liberado_en', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud', 'garantiasVinculadas'));
         $pdf->setPaper('letter', 'portrait');
 
         return $pdf->download('cotizacion-' . $solicitud->numero_solicitud . '.pdf');

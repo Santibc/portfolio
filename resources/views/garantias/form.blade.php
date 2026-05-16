@@ -94,6 +94,12 @@
             </div>
 
             <div class="mb-3">
+              <label for="observacion_creacion" class="form-label fw-semibold">Observación <small class="text-muted fw-normal">(opcional)</small></label>
+              <textarea name="observacion_creacion" id="observacion_creacion" class="form-control" rows="3" maxlength="1000" placeholder="Notas u observaciones sobre la garantía...">{{ old('observacion_creacion') }}</textarea>
+              <small class="text-muted">Máximo 1000 caracteres.</small>
+            </div>
+
+            <div class="mb-3">
               <label for="documentos" class="form-label fw-semibold">Documentos adjuntos <span class="text-danger">*</span></label>
               <input type="file" name="documentos[]" id="documentos" class="form-control" multiple required>
               <small class="text-muted">Puedes adjuntar uno o más archivos de cualquier tipo. Máximo 10MB cada uno.</small>

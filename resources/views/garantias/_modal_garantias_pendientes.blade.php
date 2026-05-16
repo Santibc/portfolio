@@ -26,6 +26,19 @@
                 </div>
                 <p class="mb-1"><strong>Tipo:</strong> {{ $g->tipoLegible() }}</p>
                 <p class="mb-1 text-muted small">Registrada el {{ $g->created_at?->format('d/m/Y H:i') }}</p>
+                @if($g->observacion_creacion)
+                  <div class="alert alert-info py-2 mb-2">
+                    <strong><i class="bi bi-chat-left-text"></i> Observación de creación:</strong>
+                    <div class="mt-1">{{ $g->observacion_creacion }}</div>
+                  </div>
+                @endif
+                @if($g->estaLiberada() && $g->observacion_liberacion)
+                  <div class="alert alert-success py-2 mb-2">
+                    <strong><i class="bi bi-check-circle"></i> Observación de liberación:</strong>
+                    <div class="mt-1">{{ $g->observacion_liberacion }}</div>
+                    <div class="small text-muted mt-1">Liberada por {{ $g->usuarioLiberador?->name ?? '—' }} el {{ $g->liberado_en?->format('d/m/Y H:i') }}</div>
+                  </div>
+                @endif
                 <div class="mt-2">
                   <strong class="d-block mb-1">Documentos:</strong>
                   @if($g->documentos->isEmpty())
@@ -58,7 +71,7 @@
 
 @if($puedeLiberar)
 <div class="modal fade" id="modalLiberarGarantiaCotizacion" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Liberar garantía</h5>
@@ -72,6 +85,8 @@
           <textarea id="liberar-garantia-observacion" class="form-control" rows="4" placeholder="Describe el motivo o resultado..."></textarea>
           <small class="text-muted">Mínimo 5 caracteres.</small>
         </div>
+
+        @include('garantias._productos_cambio', ['prefix' => 'cotizacion', 'ubicaciones' => $ubicaciones ?? collect()])
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -82,13 +97,21 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('js/garantias/productos-cambio.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  let garProdCotizacion = null;
+  if (window.GarantiaProductosCambio) {
+    garProdCotizacion = window.GarantiaProductosCambio('cotizacion');
+    garProdCotizacion.init();
+  }
+
   document.querySelectorAll('.btn-liberar-garantia').forEach(btn => {
     btn.addEventListener('click', function() {
       document.getElementById('liberar-garantia-cotizacion-id').value = this.dataset.garantiaId;
       document.getElementById('liberar-solicitud-id').value = this.dataset.solicitudId || '';
       document.getElementById('liberar-garantia-observacion').value = '';
+      if (garProdCotizacion) garProdCotizacion.reset();
       const modalPendientes = bootstrap.Modal.getInstance(document.getElementById('modalGarantiasPendientes'));
       if (modalPendientes) modalPendientes.hide();
       new bootstrap.Modal(document.getElementById('modalLiberarGarantiaCotizacion')).show();
@@ -103,8 +126,16 @@ document.addEventListener('DOMContentLoaded', function() {
       Swal.fire('Observación requerida', 'Debes ingresar una observación de al menos 5 caracteres.', 'warning');
       return;
     }
+    if (garProdCotizacion) {
+      const val = garProdCotizacion.validate();
+      if (!val.ok) {
+        Swal.fire('Datos incompletos', val.error, 'warning');
+        return;
+      }
+    }
     const body = { observacion_liberacion: observacion };
     if (solicitudId) body.solicitud_cotizacion_id = solicitudId;
+    if (garProdCotizacion) Object.assign(body, garProdCotizacion.getPayload());
 
     fetch(`/garantias/${garantiaId}/liberar`, {
       method: 'POST',

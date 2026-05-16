@@ -221,6 +221,7 @@
                                     $porcentajeIva = $solicitud->porcentaje_iva ?? 0;
                                     $valorIva = $solicitud->valor_iva ?? 0;
                                     $totalConIva = $solicitud->monto_total + $valorIva;
+                                    $aplicaFleteCliente = (bool) ($solicitud->cliente->aplica_flete ?? false);
                                 @endphp
                                 <tr>
                                     <th colspan="5" class="text-end">Subtotal:</th>
@@ -231,6 +232,12 @@
                                     <tr>
                                         <td colspan="5" class="text-end">Flete:</td>
                                         <td class="text-end">${{ number_format($flete, 2) }}</td>
+                                        <td></td>
+                                    </tr>
+                                @elseif($aplicaFleteCliente)
+                                    <tr>
+                                        <td colspan="5" class="text-end">Flete:</td>
+                                        <td class="text-end"><span class="badge bg-info">Aplica flete</span></td>
                                         <td></td>
                                     </tr>
                                 @endif

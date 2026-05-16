@@ -160,6 +160,11 @@
                                     <span>Flete:</span>
                                     <span>${{ number_format($solicitud->valor_flete, 0, ',', '.') }}</span>
                                 </div>
+                            @elseif($solicitud->cliente && $solicitud->cliente->aplica_flete)
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Flete:</span>
+                                    <span class="badge bg-info">Aplica flete</span>
+                                </div>
                             @endif
                             @if($solicitud->descuento_total > 0)
                                 <div class="d-flex justify-content-between mb-2 text-success">

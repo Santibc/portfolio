@@ -113,6 +113,9 @@
   @endpush
 
   @push('scripts')
+  @hasanyrole('admin|garantias')
+  <script src="{{ asset('js/garantias/productos-cambio.js') }}"></script>
+  @endhasanyrole
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const table = $('#solicitudes-table').DataTable({
@@ -805,10 +808,19 @@
   }
 
   @hasanyrole('admin|garantias')
+  let garProdSolicitud = null;
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.GarantiaProductosCambio) {
+      garProdSolicitud = window.GarantiaProductosCambio('solicitud');
+      garProdSolicitud.init();
+    }
+  });
+
   $(document).on('click', '.btn-liberar-garantia-solicitud', function() {
     document.getElementById('liberarGarantiaSolicitudGarantiaId').value = this.dataset.garantiaId;
     document.getElementById('liberarGarantiaSolicitudSolicitudId').value = this.dataset.solicitudId || '';
     document.getElementById('liberarGarantiaSolicitudObservacion').value = '';
+    if (garProdSolicitud) garProdSolicitud.reset();
     new bootstrap.Modal(document.getElementById('modalLiberarGarantiaSolicitud')).show();
   });
 
@@ -823,8 +835,16 @@
         Swal.fire('Observación requerida', 'Debes ingresar una observación de al menos 5 caracteres.', 'warning');
         return;
       }
+      if (garProdSolicitud) {
+        const val = garProdSolicitud.validate();
+        if (!val.ok) {
+          Swal.fire('Datos incompletos', val.error, 'warning');
+          return;
+        }
+      }
       const body = { observacion_liberacion: observacion };
       if (solicitudId) body.solicitud_cotizacion_id = solicitudId;
+      if (garProdSolicitud) Object.assign(body, garProdSolicitud.getPayload());
 
       fetch(`/garantias/${garantiaId}/liberar`, {
         method: 'POST',
@@ -896,7 +916,7 @@
   @hasanyrole('admin|garantias')
   <!-- Modal Liberar Garantía (desde detalle de cotización) -->
   <div class="modal fade" id="modalLiberarGarantiaSolicitud" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Liberar garantía</h5>
@@ -910,6 +930,8 @@
             <textarea id="liberarGarantiaSolicitudObservacion" class="form-control" rows="4" placeholder="Describe el motivo o resultado..."></textarea>
             <small class="text-muted">Mínimo 5 caracteres.</small>
           </div>
+
+          @include('garantias._productos_cambio', ['prefix' => 'solicitud', 'ubicaciones' => $ubicaciones ?? collect()])
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

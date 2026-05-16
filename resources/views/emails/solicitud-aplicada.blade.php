@@ -142,6 +142,11 @@
                     <td colspan="3" style="text-align: right;">Flete:</td>
                     <td style="text-align: right;">${{ number_format($flete, 2) }}</td>
                 </tr>
+                @elseif($solicitud->cliente && $solicitud->cliente->aplica_flete)
+                <tr>
+                    <td colspan="3" style="text-align: right;">Flete:</td>
+                    <td style="text-align: right;">Aplica flete</td>
+                </tr>
                 @endif
                 {{-- Descuento --}}
                 @if($descuento > 0)

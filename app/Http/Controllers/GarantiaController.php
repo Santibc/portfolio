@@ -5,11 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Garantia;
 use App\Models\GarantiaDocumento;
+use App\Models\GarantiaProductoLiberacion;
+use App\Models\MovimientoStock;
 use App\Models\Producto;
+use App\Models\StockProducto;
+use App\Models\Ubicacion;
 use App\Models\VarianteProducto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class GarantiaController extends Controller
@@ -50,6 +55,9 @@ class GarantiaController extends Controller
             $puedeLiberar = auth()->user()->hasAnyRole(['admin', 'garantias']);
 
             return DataTables::of($query)
+                ->addColumn('id_badge', function ($row) {
+                    return '<span class="badge bg-secondary">#' . $row->id . '</span>';
+                })
                 ->addColumn('cliente_nombre', function ($row) {
                     return $row->cliente->nombre_completo ?? 'N/A';
                 })
@@ -96,14 +104,15 @@ class GarantiaController extends Controller
                     $btns .= '</div>';
                     return $btns;
                 })
-                ->rawColumns(['action', 'tipo_badge', 'estado_badge'])
+                ->rawColumns(['action', 'id_badge', 'tipo_badge', 'estado_badge'])
                 ->make(true);
         }
 
         $clientes = Cliente::activos()->orderBy('nombre_contacto')->get(['id', 'nombre_contacto', 'razon_social', 'tipo_cliente']);
         $tipos = Garantia::tiposDisponibles();
+        $ubicaciones = Ubicacion::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'tipo']);
 
-        return view('garantias.index', compact('clientes', 'tipos'));
+        return view('garantias.index', compact('clientes', 'tipos', 'ubicaciones'));
     }
 
     public function create()
@@ -122,6 +131,7 @@ class GarantiaController extends Controller
             'variante_producto_id' => 'nullable|exists:variantes_productos,id',
             'tipo' => 'required|in:cambio_producto,descuento,nota_credito,otro',
             'tipo_otro_descripcion' => 'required_if:tipo,otro|nullable|max:500',
+            'observacion_creacion' => 'nullable|string|max:1000',
             'documentos' => 'required|array|min:1',
             'documentos.*' => 'file|max:10240',
         ], [
@@ -138,6 +148,7 @@ class GarantiaController extends Controller
                 'variante_producto_id' => $request->variante_producto_id,
                 'tipo' => $request->tipo,
                 'tipo_otro_descripcion' => $request->tipo === Garantia::TIPO_OTRO ? $request->tipo_otro_descripcion : null,
+                'observacion_creacion' => $request->filled('observacion_creacion') ? trim($request->observacion_creacion) : null,
                 'estado' => Garantia::ESTADO_PENDIENTE,
                 'usuario_creador_id' => auth()->id(),
             ]);
@@ -206,6 +217,9 @@ class GarantiaController extends Controller
             'usuarioCreador',
             'usuarioLiberador',
             'documentos',
+            'productosLiberacion.producto',
+            'productosLiberacion.variante',
+            'productosLiberacion.ubicacionRelacion',
         ])->findOrFail($id);
 
         return response()->json([
@@ -216,6 +230,7 @@ class GarantiaController extends Controller
             'tipo' => $garantia->tipo,
             'tipo_legible' => $garantia->tipoLegible(),
             'tipo_otro_descripcion' => $garantia->tipo_otro_descripcion,
+            'observacion_creacion' => $garantia->observacion_creacion,
             'estado' => $garantia->estado,
             'observacion_liberacion' => $garantia->observacion_liberacion,
             'usuario_creador' => $garantia->usuarioCreador?->name,
@@ -235,6 +250,14 @@ class GarantiaController extends Controller
                     'url_descarga' => route('garantias.documentos.descargar', $doc->id),
                 ];
             }),
+            'productos_liberacion' => $garantia->productosLiberacion->map(function ($p) {
+                return [
+                    'producto' => $p->producto?->nombre,
+                    'variante' => $p->variante?->nombre_variante,
+                    'ubicacion' => $p->ubicacionRelacion?->nombre,
+                    'cantidad' => (int) $p->cantidad,
+                ];
+            }),
         ]);
     }
 
@@ -243,28 +266,202 @@ class GarantiaController extends Controller
         $request->validate([
             'observacion_liberacion' => 'required|string|min:5|max:1000',
             'solicitud_cotizacion_id' => 'nullable|exists:solicitudes_cotizacion,id',
+            'items' => 'nullable|array',
+            'ubicacion_id' => 'required_with:items|exists:ubicaciones,id',
+            'items.*.producto_id' => 'required|integer|exists:productos,id',
+            'items.*.variante_producto_id' => [
+                'nullable',
+                'integer',
+                'exists:variantes_productos,id',
+            ],
+            'items.*.cantidad' => 'required|integer|min:1',
         ], [
             'observacion_liberacion.required' => 'La observación es obligatoria para liberar la garantía.',
             'observacion_liberacion.min' => 'La observación debe tener al menos 5 caracteres.',
+            'ubicacion_id.required_with' => 'Debes seleccionar una ubicación cuando agregas productos de cambio.',
         ]);
 
-        $garantia = Garantia::findOrFail($id);
+        $items = $request->input('items', []) ?: [];
+        $ubicacionId = $request->input('ubicacion_id');
 
-        if ($garantia->estaLiberada()) {
-            return response()->json(['error' => 'La garantía ya está liberada.'], 422);
+        foreach ($items as $idx => $item) {
+            if (!empty($item['variante_producto_id'])) {
+                $pertenece = VarianteProducto::where('id', $item['variante_producto_id'])
+                    ->where('producto_id', $item['producto_id'])
+                    ->exists();
+                if (!$pertenece) {
+                    return response()->json([
+                        'error' => "La variante seleccionada no pertenece al producto (item " . ($idx + 1) . ").",
+                    ], 422);
+                }
+            }
         }
 
-        $garantia->update([
-            'estado' => Garantia::ESTADO_LIBERADO,
-            'observacion_liberacion' => $request->observacion_liberacion,
-            'usuario_liberador_id' => auth()->id(),
-            'liberado_en' => now(),
-            'solicitud_cotizacion_id' => $request->solicitud_cotizacion_id ?: $garantia->solicitud_cotizacion_id,
-        ]);
+        try {
+            DB::transaction(function () use ($id, $request, $items, $ubicacionId) {
+                $garantia = Garantia::lockForUpdate()->findOrFail($id);
+
+                if ($garantia->estaLiberada()) {
+                    throw new \RuntimeException('La garantía ya está liberada.');
+                }
+
+                $stocks = [];
+                foreach ($items as $idx => $item) {
+                    $stock = StockProducto::where('producto_id', $item['producto_id'])
+                        ->where('ubicacion_id', $ubicacionId)
+                        ->where(function ($q) use ($item) {
+                            if (!empty($item['variante_producto_id'])) {
+                                $q->where('variante_producto_id', $item['variante_producto_id']);
+                            } else {
+                                $q->whereNull('variante_producto_id');
+                            }
+                        })
+                        ->lockForUpdate()
+                        ->first();
+
+                    $disponibleReal = $stock ? ($stock->cantidad_disponible - $stock->cantidad_reservada) : 0;
+                    if (!$stock || $disponibleReal < (int) $item['cantidad']) {
+                        $producto = Producto::find($item['producto_id']);
+                        $nombre = $producto?->nombre ?? ('ID ' . $item['producto_id']);
+                        throw new \RuntimeException("Stock insuficiente para '{$nombre}'. Disponible: {$disponibleReal}, solicitado: {$item['cantidad']}.");
+                    }
+
+                    $stocks[$idx] = $stock;
+                }
+
+                $garantia->update([
+                    'estado' => Garantia::ESTADO_LIBERADO,
+                    'observacion_liberacion' => $request->observacion_liberacion,
+                    'usuario_liberador_id' => auth()->id(),
+                    'liberado_en' => now(),
+                    'solicitud_cotizacion_id' => $request->solicitud_cotizacion_id ?: $garantia->solicitud_cotizacion_id,
+                ]);
+
+                foreach ($items as $idx => $item) {
+                    $stock = $stocks[$idx];
+                    $cantidad = (int) $item['cantidad'];
+                    $stockAnterior = $stock->cantidad_disponible;
+                    $stock->cantidad_disponible = $stockAnterior - $cantidad;
+                    $stock->save();
+
+                    $movimiento = MovimientoStock::create([
+                        'producto_id' => $stock->producto_id,
+                        'variante_producto_id' => $stock->variante_producto_id,
+                        'ubicacion_id' => $ubicacionId,
+                        'tipo_movimiento' => 'salida',
+                        'cantidad' => $cantidad,
+                        'stock_anterior' => $stockAnterior,
+                        'stock_nuevo' => $stock->cantidad_disponible,
+                        'referencia_documento' => 'GAR-' . $garantia->id,
+                        'origen' => 'garantia',
+                        'motivo' => 'Cambio por garantía #' . $garantia->id,
+                        'usuario_id' => auth()->id() ?? 1,
+                    ]);
+
+                    GarantiaProductoLiberacion::create([
+                        'garantia_id' => $garantia->id,
+                        'producto_id' => $stock->producto_id,
+                        'variante_producto_id' => $stock->variante_producto_id,
+                        'ubicacion_id' => $ubicacionId,
+                        'cantidad' => $cantidad,
+                        'movimiento_stock_id' => $movimiento->id,
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            \Log::warning('Error al liberar garantía', [
+                'garantia_id' => $id,
+                'mensaje' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
 
         return response()->json([
             'success' => true,
             'mensaje' => 'Garantía liberada correctamente.',
+        ]);
+    }
+
+    public function productosPorUbicacion($ubicacionId)
+    {
+        $stockItems = StockProducto::where('ubicacion_id', $ubicacionId)
+            ->whereRaw('(cantidad_disponible - cantidad_reservada) > 0')
+            ->get();
+
+        $productosIds = $stockItems->pluck('producto_id')->unique();
+
+        $productos = Producto::whereIn('id', $productosIds)
+            ->where('eliminado', false)
+            ->where('activo', true)
+            ->where('controlar_stock', true)
+            ->orderBy('nombre')
+            ->get()
+            ->map(function ($producto) use ($stockItems) {
+                $delProducto = $stockItems->where('producto_id', $producto->id);
+                $stockReal = $delProducto->sum('cantidad_disponible') - $delProducto->sum('cantidad_reservada');
+
+                if ($stockReal <= 0) {
+                    return null;
+                }
+
+                $tieneVariantesConStock = $delProducto->whereNotNull('variante_producto_id')->count() > 0;
+
+                return [
+                    'id' => $producto->id,
+                    'referencia' => $producto->referencia,
+                    'nombre' => $producto->nombre,
+                    'tiene_variantes' => (bool) $producto->tiene_variantes && $tieneVariantesConStock,
+                    'stock_disponible' => (int) $stockReal,
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return response()->json(['productos' => $productos]);
+    }
+
+    public function variantesPorProductoYUbicacion($productoId, $ubicacionId)
+    {
+        $producto = Producto::with('variantes')->findOrFail($productoId);
+
+        if (!$producto->tiene_variantes) {
+            return response()->json([
+                'tiene_variantes' => false,
+                'variantes' => [],
+            ]);
+        }
+
+        $stockItems = StockProducto::where('producto_id', $productoId)
+            ->where('ubicacion_id', $ubicacionId)
+            ->whereNotNull('variante_producto_id')
+            ->whereRaw('(cantidad_disponible - cantidad_reservada) > 0')
+            ->get();
+
+        $varianteIds = $stockItems->pluck('variante_producto_id')->unique();
+
+        $variantes = $producto->variantes()
+            ->whereIn('id', $varianteIds)
+            ->get()
+            ->map(function ($variante) use ($stockItems) {
+                $delVariante = $stockItems->where('variante_producto_id', $variante->id);
+                $stockReal = $delVariante->sum('cantidad_disponible') - $delVariante->sum('cantidad_reservada');
+
+                if ($stockReal <= 0) {
+                    return null;
+                }
+
+                return [
+                    'id' => $variante->id,
+                    'nombre_variante' => $variante->nombre_variante,
+                    'stock_disponible' => (int) $stockReal,
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return response()->json([
+            'tiene_variantes' => true,
+            'variantes' => $variantes,
         ]);
     }
 
@@ -354,6 +551,7 @@ class GarantiaController extends Controller
                     'variante' => $g->variante?->nombre_variante,
                     'tipo' => $g->tipo,
                     'tipo_legible' => $g->tipoLegible(),
+                    'observacion_creacion' => $g->observacion_creacion,
                     'fecha' => $g->created_at?->format('d/m/Y H:i'),
                     'usuario_creador' => $g->usuarioCreador?->name,
                     'documentos' => $g->documentos->map(fn($d) => [

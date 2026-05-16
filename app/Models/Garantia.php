@@ -17,6 +17,7 @@ class Garantia extends Model
         'variante_producto_id',
         'tipo',
         'tipo_otro_descripcion',
+        'observacion_creacion',
         'estado',
         'observacion_liberacion',
         'solicitud_cotizacion_id',
@@ -90,6 +91,11 @@ class Garantia extends Model
     public function documentos()
     {
         return $this->hasMany(GarantiaDocumento::class, 'garantia_id');
+    }
+
+    public function productosLiberacion()
+    {
+        return $this->hasMany(GarantiaProductoLiberacion::class, 'garantia_id');
     }
 
     public function scopePendientes($query)

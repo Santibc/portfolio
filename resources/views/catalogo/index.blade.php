@@ -407,12 +407,17 @@
                       placeholder="Ingrese cualquier observación sobre esta cotización..."></textarea>
             <div class="invalid-feedback">Las observaciones son obligatorias.</div>
           </div>
-          @if($cliente->aplica_flete && $cliente->valor_flete > 0)
+          @if($cliente->aplica_flete)
           <div class="mb-3 p-3 border rounded bg-light">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="chkFlete" checked>
               <label class="form-check-label fw-bold" for="chkFlete">
-                <i class="bi bi-truck me-1 text-success"></i>Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
+                <i class="bi bi-truck me-1 text-success"></i>
+                @if($cliente->valor_flete && $cliente->valor_flete > 0)
+                  Incluir flete: ${{ number_format($cliente->valor_flete, 0, ',', '.') }}
+                @else
+                  Aplica flete <small class="text-muted fw-normal">(valor variable según entrega)</small>
+                @endif
               </label>
             </div>
           </div>

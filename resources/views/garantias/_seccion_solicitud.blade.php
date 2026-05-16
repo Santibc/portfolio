@@ -22,6 +22,9 @@
                                 <strong>{{ $g->producto?->nombre ?? '—' }}</strong>@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
                                 <span class="badge bg-warning text-dark ms-2">Pendiente</span>
                                 <div class="small text-muted">{{ $g->tipoLegible() }} · Registrada el {{ $g->created_at?->format('d/m/Y H:i') }}</div>
+                                @if($g->observacion_creacion)
+                                    <div class="small mt-1"><strong>Observación de creación:</strong> {{ $g->observacion_creacion }}</div>
+                                @endif
                                 <div class="mt-1">
                                     @forelse($g->documentos as $doc)
                                         <a href="{{ asset($doc->ruta_relativa) }}" class="btn btn-sm btn-outline-primary me-1 mb-1" target="_blank" download="{{ $doc->nombre_original }}">
@@ -55,8 +58,25 @@
                         <strong>{{ $g->producto?->nombre ?? '—' }}</strong>@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
                         <span class="badge bg-success ms-2">Liberada</span>
                         <div class="small text-muted">{{ $g->tipoLegible() }}</div>
-                        <div class="small mt-1"><strong>Observación:</strong> {{ $g->observacion_liberacion }}</div>
+                        @if($g->observacion_creacion)
+                            <div class="small mt-1"><strong>Observación de creación:</strong> {{ $g->observacion_creacion }}</div>
+                        @endif
+                        <div class="small mt-1"><strong>Observación de liberación:</strong> {{ $g->observacion_liberacion }}</div>
                         <div class="small text-muted">Liberada por {{ $g->usuarioLiberador?->name ?? '—' }} el {{ $g->liberado_en?->format('d/m/Y H:i') }}</div>
+                        @if($g->productosLiberacion && $g->productosLiberacion->isNotEmpty())
+                            <div class="small mt-2">
+                                <strong><i class="bi bi-box-seam"></i> Productos descontados de stock:</strong>
+                                <ul class="mb-0 ps-3 mt-1">
+                                    @foreach($g->productosLiberacion as $p)
+                                        <li>
+                                            {{ $p->producto?->nombre ?? '—' }}@if($p->variante && $p->variante->nombre_variante) — {{ $p->variante->nombre_variante }}@endif
+                                            <span class="badge bg-secondary">x{{ $p->cantidad }}</span>
+                                            <span class="text-muted">({{ $p->ubicacionRelacion?->nombre ?? '—' }})</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach

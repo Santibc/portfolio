@@ -66,6 +66,7 @@
             <thead class="text-xs uppercase bg-gray-100">
               <tr>
                 <th>Acciones</th>
+                <th>ID</th>
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Producto</th>
@@ -82,7 +83,7 @@
   </div>
 
   <div class="modal fade" id="modalLiberar" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Liberar Garantía</h5>
@@ -95,6 +96,8 @@
             <textarea id="liberar-observacion" class="form-control" rows="4" placeholder="Describe el motivo o resultado de la liberación..." required></textarea>
             <small class="text-muted">Mínimo 5 caracteres.</small>
           </div>
+
+          @include('garantias._productos_cambio', ['prefix' => 'index', 'ubicaciones' => $ubicaciones ?? collect()])
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -120,8 +123,12 @@
   </div>
 
   @push('scripts')
+  <script src="{{ asset('js/garantias/productos-cambio.js') }}"></script>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const garProdIndex = window.GarantiaProductosCambio('index');
+    garProdIndex.init();
+
     const table = $('#garantias-table').DataTable({
       processing: true,
       serverSide: true,
@@ -139,6 +146,7 @@
       },
       columns: [
         { data: 'action', orderable: false, searchable: false },
+        { data: 'id_badge', name: 'id' },
         { data: 'fecha_creacion', name: 'created_at' },
         { data: 'cliente_nombre', name: 'cliente.nombre_contacto', orderable: false },
         { data: 'producto_nombre', name: 'producto.nombre', orderable: false },
@@ -146,7 +154,7 @@
         { data: 'estado_badge', name: 'estado' },
         { data: 'cotizacion_vinculada', name: 'solicitud.numero_solicitud', orderable: false },
       ],
-      order: [[1, 'desc']],
+      order: [[2, 'desc']],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
         { extend: 'pageLength', className: 'btn btn-outline-dark', text: 'Filas' },
@@ -171,6 +179,7 @@
     window.liberarGarantia = function(id) {
       document.getElementById('liberar-garantia-id').value = id;
       document.getElementById('liberar-observacion').value = '';
+      garProdIndex.reset();
       new bootstrap.Modal(document.getElementById('modalLiberar')).show();
     };
 
@@ -181,6 +190,13 @@
         Swal.fire('Observación requerida', 'Debes ingresar una observación de al menos 5 caracteres.', 'warning');
         return;
       }
+      const val = garProdIndex.validate();
+      if (!val.ok) {
+        Swal.fire('Datos incompletos', val.error, 'warning');
+        return;
+      }
+      const body = Object.assign({ observacion_liberacion: observacion }, garProdIndex.getPayload());
+
       fetch(`/garantias/${id}/liberar`, {
         method: 'POST',
         headers: {
@@ -188,7 +204,7 @@
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ observacion_liberacion: observacion })
+        body: JSON.stringify(body)
       })
       .then(async res => {
         const data = await res.json();
@@ -218,29 +234,75 @@
               </li>`).join('') + '</ul>';
           }
 
+          const escapeHtml = (str) => {
+            if (str === null || str === undefined) return '';
+            return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;')
+              .replace(/\n/g, '<br>');
+          };
+
+          let observacionCreacion = '';
+          if (g.observacion_creacion) {
+            observacionCreacion = `
+              <div class="alert alert-info mt-3 mb-0">
+                <h6 class="mb-2"><i class="bi bi-chat-left-text"></i> Observación de creación</h6>
+                <p class="mb-0">${escapeHtml(g.observacion_creacion)}</p>
+              </div>`;
+          }
+
+          let productosLiberacionHtml = '';
+          if (Array.isArray(g.productos_liberacion) && g.productos_liberacion.length > 0) {
+            productosLiberacionHtml = `
+              <div class="mt-3">
+                <h6 class="mb-2"><i class="bi bi-box-seam"></i> Productos descontados de stock</h6>
+                <div class="table-responsive">
+                  <table class="table table-sm table-bordered mb-0">
+                    <thead class="table-light">
+                      <tr><th>Producto</th><th>Variante</th><th>Ubicación</th><th class="text-center">Cantidad</th></tr>
+                    </thead>
+                    <tbody>
+                      ${g.productos_liberacion.map(p => `
+                        <tr>
+                          <td>${escapeHtml(p.producto) || '—'}</td>
+                          <td>${escapeHtml(p.variante) || '—'}</td>
+                          <td>${escapeHtml(p.ubicacion) || '—'}</td>
+                          <td class="text-center">${p.cantidad}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>`;
+          }
+
           let liberacion = '';
           if (g.estado === 'liberado') {
             liberacion = `
-              <div class="alert alert-success mt-3">
+              <div class="alert alert-success mt-3 mb-0">
                 <h6 class="mb-2"><i class="bi bi-check-circle"></i> Liberada</h6>
-                <p class="mb-1"><strong>Observación:</strong> ${g.observacion_liberacion ?? ''}</p>
-                <p class="mb-1"><strong>Liberada por:</strong> ${g.usuario_liberador ?? '—'}</p>
-                <p class="mb-0"><strong>Fecha:</strong> ${g.liberado_en ?? '—'}</p>
-                ${g.cotizacion ? `<p class="mb-0 mt-2"><strong>Cotización vinculada:</strong> <span class="badge bg-info">${g.cotizacion.numero}</span></p>` : ''}
+                <p class="mb-1"><strong>Observación de liberación:</strong><br>${escapeHtml(g.observacion_liberacion)}</p>
+                <p class="mb-1"><strong>Liberada por:</strong> ${escapeHtml(g.usuario_liberador) || '—'}</p>
+                <p class="mb-0"><strong>Fecha:</strong> ${escapeHtml(g.liberado_en) || '—'}</p>
+                ${g.cotizacion ? `<p class="mb-0 mt-2"><strong>Cotización vinculada:</strong> <span class="badge bg-info">${escapeHtml(g.cotizacion.numero)}</span></p>` : ''}
+                ${productosLiberacionHtml}
               </div>`;
           } else if (g.cotizacion) {
-            liberacion = `<div class="mt-3"><strong>Cotización vinculada:</strong> <span class="badge bg-info">${g.cotizacion.numero}</span></div>`;
+            liberacion = `<div class="mt-3"><strong>Cotización vinculada:</strong> <span class="badge bg-info">${escapeHtml(g.cotizacion.numero)}</span></div>`;
           }
 
           document.getElementById('verContent').innerHTML = `
             <div class="row g-3">
-              <div class="col-md-6"><strong>Cliente:</strong><br>${g.cliente ?? '—'}</div>
-              <div class="col-md-6"><strong>Producto:</strong><br>${g.producto ?? '—'}${g.variante ? ' — ' + g.variante : ''}</div>
-              <div class="col-md-6"><strong>Tipo:</strong><br>${g.tipo_legible}</div>
-              <div class="col-md-6"><strong>Estado:</strong><br><span class="badge bg-${g.estado === 'pendiente' ? 'warning text-dark' : 'success'}">${g.estado}</span></div>
-              <div class="col-md-6"><strong>Creada por:</strong><br>${g.usuario_creador ?? '—'}</div>
-              <div class="col-md-6"><strong>Fecha de creación:</strong><br>${g.created_at ?? '—'}</div>
+              <div class="col-md-6"><strong>Cliente:</strong><br>${escapeHtml(g.cliente) || '—'}</div>
+              <div class="col-md-6"><strong>Producto:</strong><br>${escapeHtml(g.producto) || '—'}${g.variante ? ' — ' + escapeHtml(g.variante) : ''}</div>
+              <div class="col-md-6"><strong>Tipo:</strong><br>${escapeHtml(g.tipo_legible)}</div>
+              <div class="col-md-6"><strong>Estado:</strong><br><span class="badge bg-${g.estado === 'pendiente' ? 'warning text-dark' : 'success'}">${escapeHtml(g.estado)}</span></div>
+              <div class="col-md-6"><strong>Creada por:</strong><br>${escapeHtml(g.usuario_creador) || '—'}</div>
+              <div class="col-md-6"><strong>Fecha de creación:</strong><br>${escapeHtml(g.created_at) || '—'}</div>
             </div>
+            ${observacionCreacion}
             <hr>
             <h6>Documentos adjuntos</h6>
             ${docs}
