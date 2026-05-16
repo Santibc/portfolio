@@ -31,7 +31,7 @@ class SolicitudCotizacion extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class, 'cliente_id');
+        return $this->belongsTo(Cliente::class, 'cliente_id')->withTrashed();
     }
 
     public function enlaceAcceso()

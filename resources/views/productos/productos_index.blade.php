@@ -80,9 +80,9 @@
           action: () => window.location.href = "{{ route('productos.historial-precios') }}"
         },
         {
-          text:'<i class="bi bi-upload"></i> Importar Excel',
+          text:'<i class="bi bi-box-seam"></i> Importar Stock',
           className:'btn btn-outline-success',
-          action: () => $('#modalImportarProductos').modal('show')
+          action: () => window.location.href = "{{ route('stock.index') }}"
         }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
@@ -171,41 +171,6 @@ function verStock(productoId) {
     </div>
   </div>
 </div>
-  <!-- Modal para importar productos + precios -->
-  <div class="modal fade" id="modalImportarProductos" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form action="{{ route('productos.importar-excel') }}" method="POST" enctype="multipart/form-data">
-          @csrf
-          <div class="modal-header">
-            <h5 class="modal-title">Importar Productos desde Excel</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Archivo Excel / CSV</label>
-              <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls,.csv" required>
-            </div>
-            <div class="alert alert-info small mb-0">
-              <strong>Columnas reconocidas (encabezado en la fila 1):</strong><br>
-              <code>referencia</code>, <code>nombre</code>, <code>descripcion</code>,
-              <code>unidad_venta</code>, <code>unidad_empaque</code>, <code>categoria</code>,
-              <code>tiene_extension</code>, <code>controlar_stock</code>,
-              <code>export1</code>, <code>export2</code>, <code>local1</code>, <code>local2</code>,
-              <code>local3</code>, <code>local4</code>.<br>
-              Si la referencia ya existe se actualiza; si no, se crea (requiere <code>nombre</code> y <code>categoria</code>).
-              Los valores booleanos aceptan: 1/0, Si/No, true/false.
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Importar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <!-- Modal para actualizar precios desde Excel -->
   <div class="modal fade" id="modalActualizarPrecios" tabindex="-1">
     <div class="modal-dialog">

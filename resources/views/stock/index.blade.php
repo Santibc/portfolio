@@ -61,15 +61,31 @@
 
       {{-- Importar Excel --}}
       <div class="card shadow">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h5 class="mb-0"><i class="bi bi-upload"></i> Importar / Actualizar inventario desde Excel</h5>
+          <a href="{{ route('stock.plantilla-importacion') }}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Descargar plantilla Excel
+          </a>
         </div>
         <div class="card-body">
+          <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+            <i class="bi bi-info-circle-fill mt-1"></i>
+            <div>
+              <strong>Esta importación solo actualiza el stock de productos y variantes que ya existen.</strong><br>
+              <small>
+                No crea productos nuevos. Si una referencia o SKU del Excel no existe en el sistema, esa fila se reportará como error.
+                Para dar de alta productos o variantes, usa primero
+                <a href="{{ route('productos.form') }}" class="alert-link">Productos → Nuevo</a>.
+              </small>
+            </div>
+          </div>
+
           <form action="{{ route('stock.importar-excel') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="mb-3">
               <label class="form-label">Archivo Excel / CSV</label>
               <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls,.csv" required>
+              <small class="text-muted">Descarga primero la plantilla, llénala y súbela aquí.</small>
             </div>
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-upload"></i> Subir e importar
@@ -79,9 +95,12 @@
           <hr>
 
           <h6 class="mt-3">Formato esperado</h6>
-          <p class="mb-2 text-muted">Encabezados en la fila 1. La columna <code>referencia</code> puede ser el código del producto o el SKU de una variante.</p>
+          <p class="mb-2 text-muted">
+            Encabezados en la fila 1. La columna <code>referencia</code> puede ser el código del producto o el SKU de una variante.
+            Las columnas marcadas en <span class="text-danger fw-bold">rojo</span> son obligatorias.
+          </p>
           <div class="table-responsive">
-            <table class="table table-sm table-bordered">
+            <table class="table table-sm table-bordered align-middle">
               <thead class="table-light">
                 <tr>
                   <th>Columna</th>
@@ -90,12 +109,36 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td><code>referencia</code></td><td>Sí</td><td>Referencia del producto o SKU de la variante.</td></tr>
-                <tr><td><code>cantidad</code></td><td>Sí</td><td>Cantidad disponible (entero positivo).</td></tr>
-                <tr><td><code>modo</code></td><td>No</td><td><code>set</code> (reemplaza, default), <code>sumar</code> o <code>restar</code>.</td></tr>
-                <tr><td><code>stock_minimo</code></td><td>No</td><td>Cantidad mínima para alerta de stock bajo.</td></tr>
-                <tr><td><code>stock_maximo</code></td><td>No</td><td>Cantidad máxima de referencia.</td></tr>
-                <tr><td><code>ubicacion</code></td><td>No</td><td>Ubicación física (bodega, estante, etc).</td></tr>
+                <tr class="table-danger">
+                  <td><code class="text-danger fw-bold">referencia</code></td>
+                  <td><span class="badge bg-danger">Sí</span></td>
+                  <td>Referencia del producto o SKU de la variante.</td>
+                </tr>
+                <tr class="table-danger">
+                  <td><code class="text-danger fw-bold">cantidad</code></td>
+                  <td><span class="badge bg-danger">Sí</span></td>
+                  <td>Cantidad (entero positivo). Se interpreta según la columna <code>modo</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>modo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td><code>set</code> (reemplaza, default), <code>sumar</code> o <code>restar</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>stock_minimo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cantidad mínima para alerta de stock bajo.</td>
+                </tr>
+                <tr>
+                  <td><code>stock_maximo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cantidad máxima de referencia.</td>
+                </tr>
+                <tr>
+                  <td><code>ubicacion</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Ubicación física (bodega, estante, etc).</td>
+                </tr>
               </tbody>
             </table>
           </div>

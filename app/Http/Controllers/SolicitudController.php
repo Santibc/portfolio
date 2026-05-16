@@ -64,10 +64,10 @@ class SolicitudController extends Controller
             
             return DataTables::of($query)
                 ->addColumn('cliente_nombre', function($s) {
-                    return $s->cliente->nombre_contacto;
+                    return $s->cliente?->nombre_contacto ?? 'Cliente eliminado';
                 })
                 ->addColumn('vendedor', function($s) {
-                    return $s->cliente->vendedor?->name ?? 'Sin vendedor';
+                    return $s->cliente?->vendedor?->name ?? 'Sin vendedor';
                 })
                 ->addColumn('fecha', function($s) {
                     return $s->created_at->format('d/m/Y H:i');
@@ -131,22 +131,22 @@ class SolicitudController extends Controller
     {
         // Verificar permisos
         $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        if ($user->hasRole('vendedor') && $solicitud->cliente?->vendedor_id !== $user->id) {
             return response()->json(['error' => 'No tiene permisos para ver esta solicitud'], 403);
         }
-        
+
         $solicitud->load(['cliente', 'cliente.listaPrecio', 'items.producto', 'items.varianteProducto', 'enlaceAcceso']);
-        
+
         $html = '<div class="row">';
-        
+
         // Información del cliente
         $html .= '<div class="col-md-6">';
         $html .= '<h6>Información del Cliente</h6>';
         $html .= '<table class="table table-sm">';
-        $html .= '<tr><td><strong>Cliente:</strong></td><td>' . $solicitud->cliente->nombre_contacto . '</td></tr>';
-        $html .= '<tr><td><strong>Email:</strong></td><td>' . $solicitud->cliente->email . '</td></tr>';
-        $html .= '<tr><td><strong>Teléfono:</strong></td><td>' . $solicitud->cliente->telefono . '</td></tr>';
-        $html .= '<tr><td><strong>Lista de Precios:</strong></td><td>' . ($solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista') . '</td></tr>';
+        $html .= '<tr><td><strong>Cliente:</strong></td><td>' . ($solicitud->cliente?->nombre_contacto ?? 'Cliente eliminado') . '</td></tr>';
+        $html .= '<tr><td><strong>Email:</strong></td><td>' . ($solicitud->cliente?->email ?? '—') . '</td></tr>';
+        $html .= '<tr><td><strong>Teléfono:</strong></td><td>' . ($solicitud->cliente?->telefono ?? '—') . '</td></tr>';
+        $html .= '<tr><td><strong>Lista de Precios:</strong></td><td>' . ($solicitud->cliente?->listaPrecio?->nombre ?? 'Sin lista') . '</td></tr>';
         $html .= '</table>';
         $html .= '</div>';
         
@@ -321,7 +321,7 @@ class SolicitudController extends Controller
     {
         // Verificar permisos
         $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        if ($user->hasRole('vendedor') && $solicitud->cliente?->vendedor_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'mensaje' => 'No tiene permisos para aplicar esta solicitud'
@@ -390,6 +390,9 @@ class SolicitudController extends Controller
             
             // Enviar email con PDF adjunto
             try {
+                if (!$solicitud->cliente?->email) {
+                    throw new \RuntimeException('Cliente sin correo (puede estar eliminado).');
+                }
                 Mail::to($solicitud->cliente->email)
                     ->send(new SolicitudAplicada($solicitud, $pdf));
                     
@@ -527,7 +530,7 @@ class SolicitudController extends Controller
     {
         // Verificar permisos
         $user = Auth::user();
-        if ($user->hasRole('vendedor') && $solicitud->cliente->vendedor_id !== $user->id) {
+        if ($user->hasRole('vendedor') && $solicitud->cliente?->vendedor_id !== $user->id) {
             abort(403, 'No tiene permisos para descargar este PDF');
         }
         

@@ -47,12 +47,19 @@ class StockImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
             $r = $this->normalizar($row->toArray());
             $ref = trim($r['referencia'] ?? $r['ref'] ?? $r['sku'] ?? '');
             $cantidadRaw = $r['cantidad'] ?? null;
+            $cantidadVacia = $cantidadRaw === null || $cantidadRaw === '';
+
+            // Filas completamente vacías (o de hojas con otro propósito como "Instrucciones")
+            // se ignoran silenciosamente — no son errores.
+            if ($ref === '' && $cantidadVacia) {
+                $fila++; continue;
+            }
 
             if ($ref === '') {
                 $this->fallar($fila, '', 'Referencia vacía');
                 $fila++; continue;
             }
-            if ($cantidadRaw === null || $cantidadRaw === '' || !is_numeric($cantidadRaw)) {
+            if ($cantidadVacia || !is_numeric($cantidadRaw)) {
                 $this->fallar($fila, $ref, 'Cantidad no válida');
                 $fila++; continue;
             }
@@ -120,7 +127,7 @@ class StockImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
                 'cantidad'             => abs($diferencia),
                 'stock_anterior'       => $stockAnterior,
                 'stock_nuevo'          => $stockNuevo,
-                'origen'               => 'importacion_excel',
+                'origen'               => 'otro',
                 'motivo'               => 'Importación desde Excel (modo: ' . $modo . ')',
                 'usuario_id'           => auth()->id() ?? 1,
             ]);

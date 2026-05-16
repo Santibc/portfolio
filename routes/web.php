@@ -73,6 +73,12 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
     // Guardar (crear / actualizar)
     Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])
          ->name('categorias.guardar');
+
+    // Toggle activo / Eliminar
+    Route::post('categorias/{categoria}/toggle-activo', [CategoriasController::class, 'toggleActivo'])
+         ->name('categorias.toggle-activo');
+    Route::delete('categorias/{categoria}', [CategoriasController::class, 'eliminar'])
+         ->name('categorias.eliminar');
 // Rutas de Productos - versión simplificada
 Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
@@ -136,6 +142,7 @@ Route::prefix('stock')->name('stock.')->group(function () {
 
     // Importación masiva desde Excel
     Route::post('/importar-excel', [App\Http\Controllers\StockController::class, 'importarExcel'])->name('importar-excel');
+    Route::get('/plantilla-importacion', [App\Http\Controllers\StockController::class, 'descargarPlantilla'])->name('plantilla-importacion');
     
     // Operaciones de stock
     Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');

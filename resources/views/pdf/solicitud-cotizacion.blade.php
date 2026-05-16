@@ -175,14 +175,14 @@
             <td style="width:50%; vertical-align:top; padding-right:8px;">
                 <div class="section-title">Cliente</div>
                 <table class="info-compact">
-                    <tr><td class="lbl">Nombre:</td><td class="val">{{ $solicitud->cliente->nombre_contacto }}</td></tr>
-                    @if($solicitud->cliente->nombre_empresa)
+                    <tr><td class="lbl">Nombre:</td><td class="val">{{ $solicitud->cliente?->nombre_contacto ?? 'Cliente eliminado' }}</td></tr>
+                    @if($solicitud->cliente?->nombre_empresa)
                     <tr><td class="lbl">Empresa:</td><td class="val">{{ $solicitud->cliente->nombre_empresa }}</td></tr>
                     @endif
-                    <tr><td class="lbl">NIT/CC:</td><td>{{ $solicitud->cliente->numero_identificacion }}</td></tr>
-                    <tr><td class="lbl">Email:</td><td>{{ $solicitud->cliente->email }}</td></tr>
-                    <tr><td class="lbl">Teléfono:</td><td>{{ $solicitud->cliente->telefono ?: '—' }}</td></tr>
-                    <tr><td class="lbl">Ubicación:</td><td>{{ trim(($solicitud->cliente->ciudad ?? '') . ', ' . ($solicitud->cliente->pais ?? ''), ', ') ?: '—' }}</td></tr>
+                    <tr><td class="lbl">NIT/CC:</td><td>{{ $solicitud->cliente?->numero_identificacion ?? '—' }}</td></tr>
+                    <tr><td class="lbl">Email:</td><td>{{ $solicitud->cliente?->email ?? '—' }}</td></tr>
+                    <tr><td class="lbl">Teléfono:</td><td>{{ $solicitud->cliente?->telefono ?: '—' }}</td></tr>
+                    <tr><td class="lbl">Ubicación:</td><td>{{ trim(($solicitud->cliente?->ciudad ?? '') . ', ' . ($solicitud->cliente?->pais ?? ''), ', ') ?: '—' }}</td></tr>
                 </table>
             </td>
             <td style="width:50%; vertical-align:top; padding-left:8px;">
@@ -196,11 +196,11 @@
                             </span>
                         </td>
                     </tr>
-                    <tr><td class="lbl">Vendedor:</td><td>{{ $solicitud->cliente->vendedor->name ?? '—' }}</td></tr>
-                    <tr><td class="lbl">Lista precio:</td><td>{{ $solicitud->cliente->listaPrecio?->nombre ?? '—' }}</td></tr>
+                    <tr><td class="lbl">Vendedor:</td><td>{{ $solicitud->cliente?->vendedor?->name ?? '—' }}</td></tr>
+                    <tr><td class="lbl">Lista precio:</td><td>{{ $solicitud->cliente?->listaPrecio?->nombre ?? '—' }}</td></tr>
                     @if($solicitud->estado === 'aplicada')
                     <tr><td class="lbl">Confirmada:</td><td>{{ $solicitud->aplicada_en->format('d/m/Y H:i') }}</td></tr>
-                    <tr><td class="lbl">Procesó:</td><td>{{ $solicitud->aplicadaPor->name }}</td></tr>
+                    <tr><td class="lbl">Procesó:</td><td>{{ $solicitud->aplicadaPor?->name ?? '—' }}</td></tr>
                     @endif
                 </table>
             </td>
