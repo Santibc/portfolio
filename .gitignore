@@ -16,3 +16,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/_db_recovery_2026-05-11/dumps/data_force.sql
+/_db_recovery_2026-05-11/dumps/miracle_prod_100.sql
