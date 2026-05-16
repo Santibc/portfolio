@@ -26,34 +26,49 @@
       {{-- Tarjetas resumen --}}
       <div class="row mb-4">
         <div class="col-md-4">
-          <div class="card border-warning">
+          <div class="card border-warning h-100">
             <div class="card-body">
-              <h6 class="card-title text-warning">
-                <i class="bi bi-exclamation-triangle"></i> Stock Bajo
+              <h6 class="card-title text-warning mb-1">
+                <i class="bi bi-exclamation-triangle"></i> Productos con stock bajo
               </h6>
-              <p class="card-text display-6">{{ $productosConStockBajo }}</p>
+              <p class="card-text display-6 mb-0">{{ $productosConStockBajo }}</p>
+              <small class="text-muted">
+                @if($productosConStockBajo === 0)
+                  Ningún producto está por debajo de su mínimo.
+                @else
+                  Por debajo del stock mínimo configurado.
+                @endif
+              </small>
             </div>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card border-danger">
+          <div class="card border-danger h-100">
             <div class="card-body">
-              <h6 class="card-title text-danger">
-                <i class="bi bi-x-circle"></i> Sin Stock
+              <h6 class="card-title text-danger mb-1">
+                <i class="bi bi-x-circle"></i> Productos sin stock
               </h6>
-              <p class="card-text display-6">{{ $productosSinStock }}</p>
+              <p class="card-text display-6 mb-0">{{ $productosSinStock }}</p>
+              <small class="text-muted">
+                @if($productosSinStock === 0)
+                  Todos los productos tienen unidades disponibles.
+                @else
+                  Con 0 unidades disponibles.
+                @endif
+              </small>
             </div>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card border-info">
+          <div class="card border-info h-100">
             <div class="card-body">
-              <h6 class="card-title text-info">
+              <h6 class="card-title text-info mb-2">
                 <i class="bi bi-clock-history"></i> Historial
               </h6>
               <a href="{{ route('stock.historial') }}" class="btn btn-outline-info">
                 Ver movimientos
               </a>
+              <small class="d-block text-muted mt-2">Entradas, salidas y ajustes.</small>
             </div>
           </div>
         </div>
