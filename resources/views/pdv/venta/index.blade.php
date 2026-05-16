@@ -164,7 +164,7 @@
                     { data: 'metodo_badge', name: 'metodo_pago', orderable: false },
                     { data: 'usuario_nombre', name: 'usuario_nombre', orderable: false },
                     { data: 'estado_badge', name: 'estado', orderable: false },
-                    { data: 'factura_badge', name: 'factura_badge', orderable: false, searchable: false },
+                    { data: 'factura_badge', name: 'factura_badge', orderable: false },
                     { data: 'created_at', name: 'created_at' },
                     { data: 'action', orderable: false, searchable: false },
                 ],

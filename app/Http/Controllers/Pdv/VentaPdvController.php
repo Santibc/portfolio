@@ -89,6 +89,11 @@ class VentaPdvController extends Controller
                     }
                     return $badge;
                 })
+                ->filterColumn('factura_badge', function ($query, $keyword) {
+                    $query->whereHas('facturaSiigo', function ($q) use ($keyword) {
+                        $q->where('numero_factura', 'like', "%{$keyword}%");
+                    });
+                })
                 ->addColumn('action', function ($v) {
                     $btn = '<button class="btn btn-sm btn-outline-info me-1" onclick="verDetalle(' . $v->id . ')" title="Detalle"><i class="bi bi-eye"></i></button>';
                     $btn .= '<a href="' . route('pdv.ventas.ticket-print', $v->id) . '" class="btn btn-sm btn-outline-danger me-1" title="Imprimir ticket" target="_blank"><i class="bi bi-printer"></i></a>';
