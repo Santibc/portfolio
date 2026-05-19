@@ -1,0 +1,378 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e50] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e51]
+            - generic [ref=e54]: Dashboard
+          - link "Métodos de pago" [ref=e55] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e56]
+            - generic [ref=e58]: Métodos de pago
+      - paragraph [ref=e59]: Cuenta
+      - link "Mi perfil" [ref=e60] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e61]
+        - generic [ref=e73]: Mi perfil
+      - paragraph [ref=e74]: Sistema
+      - link "Componentes UI" [ref=e75] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e76]
+        - generic [ref=e81]: Componentes UI
+    - button "Cerrar sesion" [ref=e84] [cursor=pointer]:
+      - img [ref=e85]
+      - text: Cerrar sesion
+  - banner [ref=e88]:
+    - generic [ref=e89]:
+      - button "Ocultar menu" [expanded] [ref=e90] [cursor=pointer]:
+        - img [ref=e91]
+      - generic [ref=e92]: Menú
+      - generic [ref=e93]:
+        - button "Cambiar tema" [ref=e94] [cursor=pointer]:
+          - img [ref=e96]
+        - button "A Admin admin" [ref=e99] [cursor=pointer]:
+          - generic [ref=e100]: A
+          - generic [ref=e101]:
+            - generic [ref=e102]: Admin
+            - generic [ref=e103]: admin
+          - img [ref=e104]
+  - main [ref=e106]:
+    - generic [ref=e107]:
+      - generic [ref=e108]:
+        - generic [ref=e110]:
+          - img [ref=e112]
+          - generic [ref=e117]:
+            - heading "Menú" [level=1] [ref=e118]
+            - paragraph [ref=e119]: Platos, combos y adiciones disponibles para la caja
+        - generic [ref=e120]:
+          - button "Categorías" [ref=e121] [cursor=pointer]:
+            - img [ref=e122]
+            - text: Categorías
+          - link "Nuevo item" [ref=e125] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items/create
+            - img [ref=e126]
+            - text: Nuevo item
+      - generic [ref=e128]:
+        - link "Todos" [ref=e129] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items
+        - link "Menú" [ref=e130] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=1
+        - link "Combos" [ref=e131] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=2
+        - link "Adiciones" [ref=e132] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=3
+      - generic [ref=e133]:
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - img "Ajiaco" [ref=e136]
+            - generic [ref=e137]: Menú
+          - generic [ref=e138]:
+            - heading "Ajiaco" [level=3] [ref=e139]
+            - paragraph [ref=e140]: $ 17.500
+            - generic [ref=e141]:
+              - link "Editar" [ref=e142] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/1/edit
+                - img [ref=e143]
+                - text: Editar
+              - button "Eliminar" [ref=e147] [cursor=pointer]:
+                - img [ref=e148]
+                - text: Eliminar
+        - generic [ref=e151]:
+          - generic [ref=e152]:
+            - img "Arroz" [ref=e153]
+            - generic [ref=e154]: Adiciones
+          - generic [ref=e155]:
+            - heading "Arroz" [level=3] [ref=e156]
+            - paragraph [ref=e157]: $ 3.000
+            - generic [ref=e158]:
+              - link "Editar" [ref=e159] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/17/edit
+                - img [ref=e160]
+                - text: Editar
+              - button "Eliminar" [ref=e164] [cursor=pointer]:
+                - img [ref=e165]
+                - text: Eliminar
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - img "Aguacate" [ref=e170]
+            - generic [ref=e171]: Adiciones
+          - generic [ref=e172]:
+            - heading "Aguacate" [level=3] [ref=e173]
+            - paragraph [ref=e174]: $ 2.500
+            - generic [ref=e175]:
+              - link "Editar" [ref=e176] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/18/edit
+                - img [ref=e177]
+                - text: Editar
+              - button "Eliminar" [ref=e181] [cursor=pointer]:
+                - img [ref=e182]
+                - text: Eliminar
+        - generic [ref=e185]:
+          - generic [ref=e186]:
+            - img "Ajiaco mondongo pollo con champiñones" [ref=e187]
+            - generic [ref=e188]: Combos
+          - generic [ref=e189]:
+            - heading "Ajiaco mondongo pollo con champiñones" [level=3] [ref=e190]
+            - paragraph [ref=e191]: $ 21.500
+            - generic [ref=e192]:
+              - link "Editar" [ref=e193] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/15/edit
+                - img [ref=e194]
+                - text: Editar
+              - button "Eliminar" [ref=e198] [cursor=pointer]:
+                - img [ref=e199]
+                - text: Eliminar
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - img "Ajiaco Pequeño" [ref=e204]
+            - generic [ref=e205]: Menú
+          - generic [ref=e206]:
+            - heading "Ajiaco Pequeño" [level=3] [ref=e207]
+            - paragraph [ref=e208]: $ 16.000
+            - generic [ref=e209]:
+              - link "Editar" [ref=e210] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/2/edit
+                - img [ref=e211]
+                - text: Editar
+              - button "Eliminar" [ref=e215] [cursor=pointer]:
+                - img [ref=e216]
+                - text: Eliminar
+        - generic [ref=e219]:
+          - generic [ref=e220]:
+            - img "Ajiaco mondongo arroz con pollo" [ref=e221]
+            - generic [ref=e222]: Combos
+          - generic [ref=e223]:
+            - heading "Ajiaco mondongo arroz con pollo" [level=3] [ref=e224]
+            - paragraph [ref=e225]: $ 21.500
+            - generic [ref=e226]:
+              - link "Editar" [ref=e227] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/16/edit
+                - img [ref=e228]
+                - text: Editar
+              - button "Eliminar" [ref=e232] [cursor=pointer]:
+                - img [ref=e233]
+                - text: Eliminar
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - img "Limonada" [ref=e238]
+            - generic [ref=e239]: Adiciones
+          - generic [ref=e240]:
+            - heading "Limonada" [level=3] [ref=e241]
+            - paragraph [ref=e242]: $ 1.800
+            - generic [ref=e243]:
+              - link "Editar" [ref=e244] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/19/edit
+                - img [ref=e245]
+                - text: Editar
+              - button "Eliminar" [ref=e249] [cursor=pointer]:
+                - img [ref=e250]
+                - text: Eliminar
+        - generic [ref=e253]:
+          - generic [ref=e254]:
+            - img "Mondongo" [ref=e255]
+            - generic [ref=e256]: Menú
+          - generic [ref=e257]:
+            - heading "Mondongo" [level=3] [ref=e258]
+            - paragraph [ref=e259]: $ 17.500
+            - generic [ref=e260]:
+              - link "Editar" [ref=e261] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/3/edit
+                - img [ref=e262]
+                - text: Editar
+              - button "Eliminar" [ref=e266] [cursor=pointer]:
+                - img [ref=e267]
+                - text: Eliminar
+        - generic [ref=e270]:
+          - generic [ref=e271]:
+            - img "Gaseosa" [ref=e272]
+            - generic [ref=e273]: Adiciones
+          - generic [ref=e274]:
+            - heading "Gaseosa" [level=3] [ref=e275]
+            - paragraph [ref=e276]: $ 3.500
+            - generic [ref=e277]:
+              - link "Editar" [ref=e278] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/20/edit
+                - img [ref=e279]
+                - text: Editar
+              - button "Eliminar" [ref=e283] [cursor=pointer]:
+                - img [ref=e284]
+                - text: Eliminar
+        - generic [ref=e287]:
+          - generic [ref=e288]:
+            - img "Sancocho de Pescado" [ref=e289]
+            - generic [ref=e290]: Menú
+          - generic [ref=e291]:
+            - heading "Sancocho de Pescado" [level=3] [ref=e292]
+            - paragraph [ref=e293]: $ 18.500
+            - generic [ref=e294]:
+              - link "Editar" [ref=e295] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/4/edit
+                - img [ref=e296]
+                - text: Editar
+              - button "Eliminar" [ref=e300] [cursor=pointer]:
+                - img [ref=e301]
+                - text: Eliminar
+        - generic [ref=e304]:
+          - generic [ref=e305]:
+            - img "Sancocho de Pollo" [ref=e306]
+            - generic [ref=e307]: Menú
+          - generic [ref=e308]:
+            - heading "Sancocho de Pollo" [level=3] [ref=e309]
+            - paragraph [ref=e310]: $ 18.500
+            - generic [ref=e311]:
+              - link "Editar" [ref=e312] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/5/edit
+                - img [ref=e313]
+                - text: Editar
+              - button "Eliminar" [ref=e317] [cursor=pointer]:
+                - img [ref=e318]
+                - text: Eliminar
+        - generic [ref=e321]:
+          - generic [ref=e322]:
+            - img "Viudo de Capaz" [ref=e323]
+            - generic [ref=e324]: Menú
+          - generic [ref=e325]:
+            - heading "Viudo de Capaz" [level=3] [ref=e326]
+            - paragraph [ref=e327]: $ 23.000
+            - generic [ref=e328]:
+              - link "Editar" [ref=e329] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/6/edit
+                - img [ref=e330]
+                - text: Editar
+              - button "Eliminar" [ref=e334] [cursor=pointer]:
+                - img [ref=e335]
+                - text: Eliminar
+        - generic [ref=e338]:
+          - generic [ref=e339]:
+            - img "Mazamorra chiquita" [ref=e340]
+            - generic [ref=e341]: Menú
+          - generic [ref=e342]:
+            - heading "Mazamorra chiquita" [level=3] [ref=e343]
+            - paragraph [ref=e344]: $ 18.000
+            - generic [ref=e345]:
+              - link "Editar" [ref=e346] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/7/edit
+                - img [ref=e347]
+                - text: Editar
+              - button "Eliminar" [ref=e351] [cursor=pointer]:
+                - img [ref=e352]
+                - text: Eliminar
+        - generic [ref=e355]:
+          - generic [ref=e356]:
+            - img "Mute" [ref=e357]
+            - generic [ref=e358]: Menú
+          - generic [ref=e359]:
+            - heading "Mute" [level=3] [ref=e360]
+            - paragraph [ref=e361]: $ 18.000
+            - generic [ref=e362]:
+              - link "Editar" [ref=e363] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/8/edit
+                - img [ref=e364]
+                - text: Editar
+              - button "Eliminar" [ref=e368] [cursor=pointer]:
+                - img [ref=e369]
+                - text: Eliminar
+        - generic [ref=e372]:
+          - generic [ref=e373]:
+            - img "Cuchuco con espinazo" [ref=e374]
+            - generic [ref=e375]: Menú
+          - generic [ref=e376]:
+            - heading "Cuchuco con espinazo" [level=3] [ref=e377]
+            - paragraph [ref=e378]: $ 18.500
+            - generic [ref=e379]:
+              - link "Editar" [ref=e380] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/9/edit
+                - img [ref=e381]
+                - text: Editar
+              - button "Eliminar" [ref=e385] [cursor=pointer]:
+                - img [ref=e386]
+                - text: Eliminar
+        - generic [ref=e389]:
+          - generic [ref=e390]:
+            - img "Frijoles con pezuña" [ref=e391]
+            - generic [ref=e392]: Menú
+          - generic [ref=e393]:
+            - heading "Frijoles con pezuña" [level=3] [ref=e394]
+            - paragraph [ref=e395]: $ 18.500
+            - generic [ref=e396]:
+              - link "Editar" [ref=e397] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/10/edit
+                - img [ref=e398]
+                - text: Editar
+              - button "Eliminar" [ref=e402] [cursor=pointer]:
+                - img [ref=e403]
+                - text: Eliminar
+        - generic [ref=e406]:
+          - generic [ref=e407]:
+            - img "Lengua en salsa" [ref=e408]
+            - generic [ref=e409]: Menú
+          - generic [ref=e410]:
+            - heading "Lengua en salsa" [level=3] [ref=e411]
+            - paragraph [ref=e412]: $ 18.500
+            - generic [ref=e413]:
+              - link "Editar" [ref=e414] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/11/edit
+                - img [ref=e415]
+                - text: Editar
+              - button "Eliminar" [ref=e419] [cursor=pointer]:
+                - img [ref=e420]
+                - text: Eliminar
+        - generic [ref=e423]:
+          - generic [ref=e424]:
+            - img "Pollo con champiñones" [ref=e425]
+            - generic [ref=e426]: Menú
+          - generic [ref=e427]:
+            - heading "Pollo con champiñones" [level=3] [ref=e428]
+            - paragraph [ref=e429]: $ 18.500
+            - generic [ref=e430]:
+              - link "Editar" [ref=e431] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/12/edit
+                - img [ref=e432]
+                - text: Editar
+              - button "Eliminar" [ref=e436] [cursor=pointer]:
+                - img [ref=e437]
+                - text: Eliminar
+        - generic [ref=e440]:
+          - generic [ref=e441]:
+            - img "Arroz con pollo" [ref=e442]
+            - generic [ref=e443]: Menú
+          - generic [ref=e444]:
+            - heading "Arroz con pollo" [level=3] [ref=e445]
+            - paragraph [ref=e446]: $ 18.500
+            - generic [ref=e447]:
+              - link "Editar" [ref=e448] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/menu-items/13/edit
+                - img [ref=e449]
+                - text: Editar
+              - button "Eliminar" [ref=e453] [cursor=pointer]:
+                - img [ref=e454]
+                - text: Eliminar

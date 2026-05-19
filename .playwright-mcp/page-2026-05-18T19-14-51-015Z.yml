@@ -1,0 +1,160 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e34] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e35]
+            - generic [ref=e41]: Productos
+          - link "Registrar" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e43]
+            - generic [ref=e47]: Registrar
+          - link "Lista mercado" [ref=e48] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e49]
+            - generic [ref=e52]: Lista mercado
+          - link "Plantilla" [ref=e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e54]
+            - generic [ref=e57]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Dashboard Mercado
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - generic [ref=e116]:
+        - img [ref=e118]
+        - generic [ref=e121]:
+          - heading "Dashboard Mercado" [level=1] [ref=e122]
+          - paragraph [ref=e123]: Auditoría de compras registradas
+      - link "Gráficas" [ref=e125] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard/graficas
+        - img [ref=e126]
+        - text: Gráficas
+    - generic [ref=e128]:
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - paragraph [ref=e132]: Total gastado
+          - paragraph [ref=e133]: $ 15.000
+        - img [ref=e135]
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - paragraph [ref=e140]: Registros
+          - paragraph [ref=e141]: "1"
+        - img [ref=e143]
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Productos distintos
+          - paragraph [ref=e148]: "1"
+        - img [ref=e150]
+      - generic [ref=e157]:
+        - generic [ref=e158]:
+          - paragraph [ref=e159]: Promedio / registro
+          - paragraph [ref=e160]: $ 15.000
+        - img [ref=e162]
+    - generic [ref=e166]:
+      - generic [ref=e167]:
+        - generic [ref=e168]: Desde
+        - textbox [ref=e169]: 2026-05-18
+      - generic [ref=e170]:
+        - generic [ref=e171]: Hasta
+        - textbox [ref=e172]: 2026-05-18
+      - link "Hoy" [ref=e173] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard
+        - img [ref=e174]
+        - text: Hoy
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - generic [ref=e178]:
+          - img [ref=e180]
+          - searchbox "Buscar..." [ref=e183]
+        - generic [ref=e184]: 1 registros
+      - table [ref=e186]:
+        - rowgroup [ref=e187]:
+          - row "Fecha Producto Tipo Cantidad Unitario Total Acciones" [ref=e188]:
+            - columnheader "Fecha" [ref=e189]:
+              - button "Fecha" [ref=e190] [cursor=pointer]
+            - columnheader "Producto" [ref=e191]
+            - columnheader "Tipo" [ref=e192]
+            - columnheader "Cantidad" [ref=e193]
+            - columnheader "Unitario" [ref=e194]
+            - columnheader "Total" [ref=e195]
+            - columnheader "Acciones" [ref=e196]
+        - rowgroup [ref=e197]:
+          - row "18 May, 14:14 Tomate Chonto Tomate Chonto Lista Plaza 5 kg $ 3.000 $ 15.000 Editar Eliminar" [ref=e198]:
+            - cell "18 May, 14:14" [ref=e199]
+            - cell "Tomate Chonto Tomate Chonto Lista" [ref=e200]:
+              - generic [ref=e201]:
+                - img "Tomate Chonto" [ref=e202]
+                - generic [ref=e203]: Tomate Chonto
+                - generic "Vino de Lista Mercado" [ref=e204]: Lista
+            - cell "Plaza" [ref=e205]:
+              - generic [ref=e206]: Plaza
+            - cell "5 kg" [ref=e207]
+            - cell "$ 3.000" [ref=e208]
+            - cell "$ 15.000" [ref=e209]
+            - cell "Editar Eliminar" [ref=e210]:
+              - generic [ref=e211]:
+                - link "Editar" [ref=e212] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/3/edit
+                  - img [ref=e213]
+                  - text: Editar
+                - button "Eliminar" [ref=e217] [cursor=pointer]:
+                  - img [ref=e218]
+                  - text: Eliminar
+      - generic [ref=e221]:
+        - generic [ref=e222]: Pagina 1 de 1
+        - generic [ref=e223]:
+          - button [disabled] [ref=e224]:
+            - img [ref=e225]
+          - button [disabled] [ref=e227]:
+            - img [ref=e228]

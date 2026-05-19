@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RegistroMercado extends Model
 {
@@ -16,6 +17,7 @@ class RegistroMercado extends Model
 
     protected $fillable = [
         'producto_mercado_id',
+        'mercado_id',
         'cantidad',
         'valor',
     ];
@@ -28,6 +30,16 @@ class RegistroMercado extends Model
     public function producto(): BelongsTo
     {
         return $this->belongsTo(ProductoMercado::class, 'producto_mercado_id');
+    }
+
+    public function mercado(): BelongsTo
+    {
+        return $this->belongsTo(Mercado::class, 'mercado_id');
+    }
+
+    public function mercadoItem(): HasOne
+    {
+        return $this->hasOne(MercadoItem::class, 'registro_mercado_id');
     }
 
     public function getValorFormateadoAttribute(): string

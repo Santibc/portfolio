@@ -28,11 +28,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body class="min-h-screen bg-cream-50 dark:bg-surface-dark text-cream-900 dark:text-cream-100 font-sans antialiased">
+<body x-data="{ sidebarCollapsed: localStorage.getItem('sopas-sidebar-collapsed') === '1' }"
+      x-init="$watch('sidebarCollapsed', v => localStorage.setItem('sopas-sidebar-collapsed', v ? '1' : '0'))"
+      class="min-h-screen bg-cream-50 dark:bg-surface-dark text-cream-900 dark:text-cream-100 font-sans antialiased">
 
-    {{-- ============== SIDEBAR (drawer mobile + fijo desktop) ============== --}}
+    {{-- ============== SIDEBAR (drawer mobile + fijo/colapsable desktop) ============== --}}
     <aside id="app-sidebar"
-        class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform fixed top-0 start-0 bottom-0 z-[60] w-72 lg:translate-x-0 lg:end-auto lg:bottom-0 bg-white dark:bg-cream-950/80 backdrop-blur border-e border-cream-200 dark:border-cream-800 flex flex-col">
+        :class="sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'"
+        class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform fixed top-0 start-0 bottom-0 z-[60] w-72 lg:end-auto lg:bottom-0 bg-white dark:bg-cream-950/80 backdrop-blur border-e border-cream-200 dark:border-cream-800 flex flex-col">
 
         {{-- Brand --}}
         <div class="px-6 py-5 flex items-center gap-3 border-b border-cream-200 dark:border-cream-800">
@@ -61,13 +64,23 @@
     </aside>
 
     {{-- ============== HEADER ============== --}}
-    <header class="lg:ms-72 sticky top-0 z-40 bg-cream-50/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-cream-200/80 dark:border-cream-800/80">
+    <header :class="sidebarCollapsed ? 'lg:ms-0' : 'lg:ms-72'"
+        class="sticky top-0 z-40 transition-all duration-300 bg-cream-50/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-cream-200/80 dark:border-cream-800/80">
         <div class="flex items-center justify-between gap-3 h-16 px-4 sm:px-6">
-            {{-- Mobile menu button --}}
+            {{-- Sidebar toggle (mobile: Preline overlay) --}}
             <button type="button"
                 class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl text-cream-700 hover:bg-cream-100 dark:text-cream-300 dark:hover:bg-cream-800 transition-colors"
                 data-hs-overlay="#app-sidebar"
                 aria-label="Abrir menu">
+                <x-icon name="menu" class="w-5 h-5" />
+            </button>
+
+            {{-- Sidebar toggle (desktop: colapsa/expande) --}}
+            <button type="button"
+                @click="sidebarCollapsed = !sidebarCollapsed"
+                class="hidden lg:inline-flex items-center justify-center w-10 h-10 rounded-xl text-cream-700 hover:bg-cream-100 dark:text-cream-300 dark:hover:bg-cream-800 transition-colors"
+                :aria-label="sidebarCollapsed ? 'Mostrar menu' : 'Ocultar menu'"
+                :aria-expanded="(!sidebarCollapsed).toString()">
                 <x-icon name="menu" class="w-5 h-5" />
             </button>
 
@@ -125,7 +138,8 @@
     </header>
 
     {{-- ============== MAIN ============== --}}
-    <main class="lg:ms-72 px-4 sm:px-6 py-6">
+    <main :class="sidebarCollapsed ? 'lg:ms-0' : 'lg:ms-72'"
+        class="px-4 sm:px-6 py-6 transition-all duration-300">
         {{-- Flash --}}
         @if (session('success'))
             <x-alert variant="success" dismissible class="mb-4" data-reveal>

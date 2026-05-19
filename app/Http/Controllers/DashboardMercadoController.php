@@ -34,7 +34,11 @@ class DashboardMercadoController extends Controller
                 ? '<img src="' . e($r->producto->imagen_url) . '" alt="' . e($r->producto->nombre) . '" class="w-9 h-9 rounded-lg object-cover border border-cream-200 dark:border-cream-700">'
                 : '<span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-cream-200 text-cream-500 dark:bg-cream-800 dark:text-cream-400"><i data-lucide="image" class="w-4 h-4"></i></span>';
 
-            $producto = '<div class="inline-flex items-center gap-2">' . $thumb . '<span class="font-medium">' . e($r->producto?->nombre ?? '—') . '</span></div>';
+            $listaBadge = $r->mercado_id
+                ? '<span class="inline-flex items-center font-semibold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200 text-[10px] px-1.5 py-0.5" title="Vino de Lista Mercado">Lista</span>'
+                : '';
+
+            $producto = '<div class="inline-flex items-center gap-2">' . $thumb . '<span class="font-medium">' . e($r->producto?->nombre ?? '—') . '</span>' . $listaBadge . '</div>';
 
             $tipo = $r->producto?->tipo
                 ? '<span class="inline-flex items-center font-semibold rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 text-[10px] px-1.5 py-0.5">' . e($r->producto->tipo->nombre) . '</span>'

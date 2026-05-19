@@ -1,0 +1,166 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link "Registrar" [ref=e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link "Lista mercado" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link "Plantilla" [ref=e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e54]
+            - generic [ref=e57]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Lista Mercado
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - img [ref=e115]
+      - generic [ref=e119]: Mercado iniciado. ¡Manos a la obra!
+      - button [ref=e120] [cursor=pointer]:
+        - img [ref=e121]
+    - generic [ref=e126]:
+      - img [ref=e128]
+      - generic [ref=e131]:
+        - heading "Lista Mercado" [level=1] [ref=e132]
+        - paragraph [ref=e133]: Mercado planificado por tipo de lugar
+    - generic [ref=e134]: Mercado iniciado. ¡Manos a la obra!
+    - generic [ref=e135]:
+      - link "Plantilla" [ref=e136] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+        - img [ref=e137]
+        - text: Plantilla
+      - button "Cancelar mercado" [ref=e141] [cursor=pointer]:
+        - img [ref=e142]
+        - text: Cancelar mercado
+      - button "Finalizar mercado" [ref=e146] [cursor=pointer]:
+        - img [ref=e147]
+        - text: Finalizar mercado
+    - paragraph [ref=e150]: Mercado iniciado hace 1 segundo
+    - generic [ref=e151]:
+      - link "Plaza 0/4 4 pendientes" [ref=e152] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/1
+        - generic [ref=e153]:
+          - heading "Plaza" [level=3] [ref=e154]:
+            - img [ref=e155]
+            - text: Plaza
+          - generic [ref=e158]: 0/4
+        - generic [ref=e162]:
+          - img [ref=e163]
+          - text: 4 pendientes
+      - link "Pollo 0/2 2 pendientes" [ref=e166] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/9
+        - generic [ref=e167]:
+          - heading "Pollo" [level=3] [ref=e168]:
+            - img [ref=e169]
+            - text: Pollo
+          - generic [ref=e172]: 0/2
+        - generic [ref=e176]:
+          - img [ref=e177]
+          - text: 2 pendientes
+      - link "Cerdo 0/1 1 pendientes" [ref=e180] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/10
+        - generic [ref=e181]:
+          - heading "Cerdo" [level=3] [ref=e182]:
+            - img [ref=e183]
+            - text: Cerdo
+          - generic [ref=e186]: 0/1
+        - generic [ref=e190]:
+          - img [ref=e191]
+          - text: 1 pendientes
+      - link "Makro 0/2 2 pendientes" [ref=e194] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/2
+        - generic [ref=e195]:
+          - heading "Makro" [level=3] [ref=e196]:
+            - img [ref=e197]
+            - text: Makro
+          - generic [ref=e200]: 0/2
+        - generic [ref=e204]:
+          - img [ref=e205]
+          - text: 2 pendientes
+      - link "Gaseosas 0/1 1 pendientes" [ref=e208] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/7
+        - generic [ref=e209]:
+          - heading "Gaseosas" [level=3] [ref=e210]:
+            - img [ref=e211]
+            - text: Gaseosas
+          - generic [ref=e214]: 0/1
+        - generic [ref=e218]:
+          - img [ref=e219]
+          - text: 1 pendientes
+      - link "Aseo 0/1 1 pendientes" [ref=e222] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/4
+        - generic [ref=e223]:
+          - heading "Aseo" [level=3] [ref=e224]:
+            - img [ref=e225]
+            - text: Aseo
+          - generic [ref=e228]: 0/1
+        - generic [ref=e232]:
+          - img [ref=e233]
+          - text: 1 pendientes
+      - link "Desechables 0/1 1 pendientes" [ref=e236] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/3
+        - generic [ref=e237]:
+          - heading "Desechables" [level=3] [ref=e238]:
+            - img [ref=e239]
+            - text: Desechables
+          - generic [ref=e242]: 0/1
+        - generic [ref=e246]:
+          - img [ref=e247]
+          - text: 1 pendientes

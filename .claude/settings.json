@@ -25,7 +25,11 @@
       "Bash(Find /f:/xamppPro80/htdocs/sinden/database/migrations -name \"*pago*\" -type f)",
       "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/contabilidad.js)",
       "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/orden-detalle.js)",
-      "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/orden-wizard.js)"
+      "Bash(node -c f:/xamppPro80/htdocs/sinden/public/js/orden-wizard.js)",
+      "PowerShell($p = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue; if \\($p\\) { \"PORT 8000 LISTENING pid=$\\($p.OwningProcess\\)\" } else { \"PORT 8000 NOT LISTENING\" })",
+      "Bash(Get-ChildItem -Path \"f:\\\\xamppPro80\\\\htdocs\\\\sopasysopitas\\\\routes\" -Name)",
+      "Bash(Get-ChildItem -Path \"f:\\\\xamppPro80\\\\htdocs\\\\sopasysopitas\" -Recurse -Include \"*productos-mercado*\", \"*registro-mercado*\", \"*mercado*\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object FullName)"
     ],
     "additionalDirectories": [
       "f:\\xamppPro80\\mysql\\bin",

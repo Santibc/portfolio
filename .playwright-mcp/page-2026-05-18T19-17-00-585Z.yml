@@ -1,0 +1,111 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link "Registrar" [ref=e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link "Lista mercado" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link "Plantilla" [ref=e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e54]
+            - generic [ref=e57]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Registrar item
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - generic [ref=e116]:
+        - img [ref=e118]
+        - generic [ref=e122]:
+          - heading "Pechuga de Pollo" [level=1] [ref=e123]
+          - paragraph [ref=e124]: Cantidad sugerida pre-llenada · puedes ajustarla
+      - link "Volver" [ref=e126] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/9
+        - img [ref=e127]
+        - text: Volver
+    - generic [ref=e129]:
+      - generic [ref=e130]:
+        - button "Pechuga de Pollo" [ref=e131] [cursor=pointer]:
+          - img "Pechuga de Pollo" [ref=e132]
+        - generic [ref=e133]:
+          - heading "Pechuga de Pollo" [level=2] [ref=e134]
+          - generic [ref=e135]:
+            - generic [ref=e136]: Pollo
+            - generic [ref=e137]: kg
+            - generic [ref=e138]:
+              - img [ref=e139]
+              - text: "Sugerido: 4"
+      - generic [ref=e140]:
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: Cantidad (kg) *
+            - spinbutton "Cantidad (kg) *" [active] [ref=e146]: "4"
+          - generic [ref=e147]:
+            - generic [ref=e148]: Valor total (COP) *
+            - generic [ref=e149]:
+              - generic: $
+              - textbox "Valor total (COP) *" [ref=e150]:
+                - /placeholder: "0"
+        - button "Registrar" [ref=e152] [cursor=pointer]:
+          - img [ref=e153]
+          - text: Registrar
+      - button "No lo compré (saltar)" [ref=e156] [cursor=pointer]:
+        - img [ref=e157]
+        - text: No lo compré (saltar)

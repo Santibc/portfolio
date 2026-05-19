@@ -247,7 +247,7 @@ El servidor de produccion (Hostinger shared hosting) **no soporta** `php artisan
 3. **Nombrar el archivo unico**: `{prefijo}_{id}_{time()}.{ext}`.
 4. **BD guarda solo el nombre** (string). Nunca el path completo, nunca `/storage/...`.
 5. **Eliminar archivo viejo** antes de subir uno nuevo: `File::exists()` + `File::delete()`.
-6. **Validar siempre**: `image, mimes:jpeg,png,jpg,gif,webp, max:2048` (o el equivalente para PDFs/docs).
+6. **Validar siempre**: `mimes:jpeg,png,jpg,gif,webp,avif, max:2048` (o el equivalente para PDFs/docs). NO uses la regla `image` de Laravel 9 — rechaza AVIF aunque agregues `avif` a `mimes`. La regla `mimes` ya valida tanto la extensión como el MIME real del archivo.
 7. **Accessor en el modelo**: `getXxxUrlAttribute(): string` retorna `asset('uploads/{modulo}/'.$this->columna)` o `''`.
 8. **Prohibido** `Storage::disk('public')`, `Storage::put`, `$file->storeAs(...)`, ni cualquier API que dependa de `storage:link`.
 

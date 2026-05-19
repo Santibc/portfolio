@@ -1,0 +1,220 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link "Registrar" [ref=e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link "Lista mercado" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link "Plantilla" [ref=e52] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e53]
+            - generic [ref=e56]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Plantilla — Lista Mercado
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - generic [ref=e116]:
+        - img [ref=e118]
+        - generic [ref=e121]:
+          - heading "Lista semanal" [level=1] [ref=e122]
+          - paragraph [ref=e123]: Productos que se compran semanalmente
+      - link "Volver" [ref=e125] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado
+        - img [ref=e126]
+        - text: Volver
+    - generic [ref=e128]:
+      - img [ref=e129]
+      - generic [ref=e131]:
+        - paragraph [ref=e132]: Mercado en progreso
+        - generic [ref=e133]:
+          - text: Termina el mercado actual para editar la lista.
+          - link "Ir al mercado" [ref=e134] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+          - text: .
+    - table [ref=e137]:
+      - rowgroup [ref=e138]:
+        - row "Producto Lugar Unidad Cantidad sugerida Acciones" [ref=e139]:
+          - columnheader "Producto" [ref=e140]
+          - columnheader "Lugar" [ref=e141]
+          - columnheader "Unidad" [ref=e142]
+          - columnheader "Cantidad sugerida" [ref=e143]
+          - columnheader "Acciones" [ref=e144]
+      - rowgroup [ref=e145]:
+        - row "Detergente Detergente Aseo litro 1 Bloqueado" [ref=e146]:
+          - cell "Detergente Detergente" [ref=e147]:
+            - generic [ref=e148]:
+              - img "Detergente" [ref=e149]
+              - generic [ref=e150]: Detergente
+          - cell "Aseo" [ref=e151]:
+            - generic [ref=e152]: Aseo
+          - cell "litro" [ref=e153]
+          - cell "1" [ref=e154]
+          - cell "Bloqueado" [ref=e155]
+        - row "Costilla de Cerdo Costilla de Cerdo Cerdo kg 2 Bloqueado" [ref=e156]:
+          - cell "Costilla de Cerdo Costilla de Cerdo" [ref=e157]:
+            - generic [ref=e158]:
+              - img "Costilla de Cerdo" [ref=e159]
+              - generic [ref=e160]: Costilla de Cerdo
+          - cell "Cerdo" [ref=e161]:
+            - generic [ref=e162]: Cerdo
+          - cell "kg" [ref=e163]
+          - cell "2" [ref=e164]
+          - cell "Bloqueado" [ref=e165]
+        - row "Servilletas Servilletas Desechables paquete 2 Bloqueado" [ref=e166]:
+          - cell "Servilletas Servilletas" [ref=e167]:
+            - generic [ref=e168]:
+              - img "Servilletas" [ref=e169]
+              - generic [ref=e170]: Servilletas
+          - cell "Desechables" [ref=e171]:
+            - generic [ref=e172]: Desechables
+          - cell "paquete" [ref=e173]
+          - cell "2" [ref=e174]
+          - cell "Bloqueado" [ref=e175]
+        - row "Coca-Cola 1.5L Coca-Cola 1.5L Gaseosas unidad 6 Bloqueado" [ref=e176]:
+          - cell "Coca-Cola 1.5L Coca-Cola 1.5L" [ref=e177]:
+            - generic [ref=e178]:
+              - img "Coca-Cola 1.5L" [ref=e179]
+              - generic [ref=e180]: Coca-Cola 1.5L
+          - cell "Gaseosas" [ref=e181]:
+            - generic [ref=e182]: Gaseosas
+          - cell "unidad" [ref=e183]
+          - cell "6" [ref=e184]
+          - cell "Bloqueado" [ref=e185]
+        - row "Aceite Vegetal Aceite Vegetal Makro galón 1 Bloqueado" [ref=e186]:
+          - cell "Aceite Vegetal Aceite Vegetal" [ref=e187]:
+            - generic [ref=e188]:
+              - img "Aceite Vegetal" [ref=e189]
+              - generic [ref=e190]: Aceite Vegetal
+          - cell "Makro" [ref=e191]:
+            - generic [ref=e192]: Makro
+          - cell "galón" [ref=e193]
+          - cell "1" [ref=e194]
+          - cell "Bloqueado" [ref=e195]
+        - row "Arroz Blanco Arroz Blanco Makro bulto 1 Bloqueado" [ref=e196]:
+          - cell "Arroz Blanco Arroz Blanco" [ref=e197]:
+            - generic [ref=e198]:
+              - img "Arroz Blanco" [ref=e199]
+              - generic [ref=e200]: Arroz Blanco
+          - cell "Makro" [ref=e201]:
+            - generic [ref=e202]: Makro
+          - cell "bulto" [ref=e203]
+          - cell "1" [ref=e204]
+          - cell "Bloqueado" [ref=e205]
+        - row "Cebolla Cabezona Cebolla Cabezona Plaza kg 3 Bloqueado" [ref=e206]:
+          - cell "Cebolla Cabezona Cebolla Cabezona" [ref=e207]:
+            - generic [ref=e208]:
+              - img "Cebolla Cabezona" [ref=e209]
+              - generic [ref=e210]: Cebolla Cabezona
+          - cell "Plaza" [ref=e211]:
+            - generic [ref=e212]: Plaza
+          - cell "kg" [ref=e213]
+          - cell "3" [ref=e214]
+          - cell "Bloqueado" [ref=e215]
+        - row "Cilantro Cilantro Plaza atado 2 Bloqueado" [ref=e216]:
+          - cell "Cilantro Cilantro" [ref=e217]:
+            - generic [ref=e218]:
+              - img "Cilantro" [ref=e219]
+              - generic [ref=e220]: Cilantro
+          - cell "Plaza" [ref=e221]:
+            - generic [ref=e222]: Plaza
+          - cell "atado" [ref=e223]
+          - cell "2" [ref=e224]
+          - cell "Bloqueado" [ref=e225]
+        - row "Papa Criolla Papa Criolla Plaza libra 4 Bloqueado" [ref=e226]:
+          - cell "Papa Criolla Papa Criolla" [ref=e227]:
+            - generic [ref=e228]:
+              - img "Papa Criolla" [ref=e229]
+              - generic [ref=e230]: Papa Criolla
+          - cell "Plaza" [ref=e231]:
+            - generic [ref=e232]: Plaza
+          - cell "libra" [ref=e233]
+          - cell "4" [ref=e234]
+          - cell "Bloqueado" [ref=e235]
+        - row "Tomate Chonto Tomate Chonto Plaza kg 5 Bloqueado" [ref=e236]:
+          - cell "Tomate Chonto Tomate Chonto" [ref=e237]:
+            - generic [ref=e238]:
+              - img "Tomate Chonto" [ref=e239]
+              - generic [ref=e240]: Tomate Chonto
+          - cell "Plaza" [ref=e241]:
+            - generic [ref=e242]: Plaza
+          - cell "kg" [ref=e243]
+          - cell "5" [ref=e244]
+          - cell "Bloqueado" [ref=e245]
+        - row "Pechuga de Pollo Pechuga de Pollo Pollo kg 4 Bloqueado" [ref=e246]:
+          - cell "Pechuga de Pollo Pechuga de Pollo" [ref=e247]:
+            - generic [ref=e248]:
+              - img "Pechuga de Pollo" [ref=e249]
+              - generic [ref=e250]: Pechuga de Pollo
+          - cell "Pollo" [ref=e251]:
+            - generic [ref=e252]: Pollo
+          - cell "kg" [ref=e253]
+          - cell "4" [ref=e254]
+          - cell "Bloqueado" [ref=e255]
+        - row "Pollo Entero Pollo Entero Pollo unidad 2 Bloqueado" [ref=e256]:
+          - cell "Pollo Entero Pollo Entero" [ref=e257]:
+            - generic [ref=e258]:
+              - img "Pollo Entero" [ref=e259]
+              - generic [ref=e260]: Pollo Entero
+          - cell "Pollo" [ref=e261]:
+            - generic [ref=e262]: Pollo
+          - cell "unidad" [ref=e263]
+          - cell "2" [ref=e264]
+          - cell "Bloqueado" [ref=e265]

@@ -1,0 +1,254 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "MIRACLE MIRACLE comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "MIRACLE" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: MIRACLE
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e43] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e44]
+            - generic [ref=e49]: Menú
+          - link "Dashboard" [ref=e50] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e51]
+            - generic [ref=e54]: Dashboard
+          - link "Métodos de pago" [ref=e55] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e56]
+            - generic [ref=e58]: Métodos de pago
+      - paragraph [ref=e59]: Cuenta
+      - link "Mi perfil" [ref=e60] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e61]
+        - generic [ref=e73]: Mi perfil
+      - paragraph [ref=e74]: Sistema
+      - link "Componentes UI" [ref=e75] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e76]
+        - generic [ref=e81]: Componentes UI
+    - button "Cerrar sesion" [ref=e84] [cursor=pointer]:
+      - img [ref=e85]
+      - text: Cerrar sesion
+  - banner [ref=e88]:
+    - generic [ref=e89]:
+      - generic [ref=e90]: Caja
+      - generic [ref=e91]:
+        - button "Cambiar tema" [ref=e92] [cursor=pointer]:
+          - img [ref=e94]
+        - button "A Admin admin" [ref=e97] [cursor=pointer]:
+          - generic [ref=e98]: A
+          - generic [ref=e99]:
+            - generic [ref=e100]: Admin
+            - generic [ref=e101]: admin
+          - img [ref=e102]
+  - main [ref=e104]:
+    - generic [ref=e105]:
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - img [ref=e110]
+          - generic [ref=e113]:
+            - generic [ref=e114]: Turno abierto
+            - generic [ref=e115]: Desde 19:09 · Por Admin
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - generic [ref=e118]: Base
+            - generic [ref=e119]: $ 250.000
+          - generic [ref=e120]:
+            - generic [ref=e121]: Ventas
+            - generic [ref=e122]: $ 0
+          - button "Cerrar caja" [ref=e123] [cursor=pointer]:
+            - img [ref=e124]
+            - text: Cerrar caja
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - button "Todos" [ref=e130] [cursor=pointer]
+            - button "Menú" [ref=e131] [cursor=pointer]
+            - button "Combos" [ref=e132] [cursor=pointer]
+            - button "Adiciones" [ref=e133] [cursor=pointer]
+            - generic [ref=e134]:
+              - generic:
+                - img
+              - textbox "Buscar..." [ref=e135]
+          - generic [ref=e136]:
+            - button "Menú Ajiaco $ 17.500" [ref=e137] [cursor=pointer]:
+              - generic [ref=e138]:
+                - img [ref=e140]
+                - generic [ref=e145]: Menú
+              - generic [ref=e146]:
+                - heading "Ajiaco" [level=3] [ref=e147]
+                - paragraph [ref=e148]: $ 17.500
+            - button "Combos Ajiaco mondongo lengua en salsa $ 21.500" [ref=e149] [cursor=pointer]:
+              - generic [ref=e150]:
+                - img [ref=e152]
+                - generic [ref=e157]: Combos
+              - generic [ref=e158]:
+                - heading "Ajiaco mondongo lengua en salsa" [level=3] [ref=e159]
+                - paragraph [ref=e160]: $ 21.500
+            - button "Adiciones Arroz $ 3.000" [ref=e161] [cursor=pointer]:
+              - generic [ref=e162]:
+                - img [ref=e164]
+                - generic [ref=e169]: Adiciones
+              - generic [ref=e170]:
+                - heading "Arroz" [level=3] [ref=e171]
+                - paragraph [ref=e172]: $ 3.000
+            - button "Adiciones Aguacate $ 2.500" [ref=e173] [cursor=pointer]:
+              - generic [ref=e174]:
+                - img [ref=e176]
+                - generic [ref=e181]: Adiciones
+              - generic [ref=e182]:
+                - heading "Aguacate" [level=3] [ref=e183]
+                - paragraph [ref=e184]: $ 2.500
+            - button "Combos Ajiaco mondongo pollo con champiñones $ 21.500" [ref=e185] [cursor=pointer]:
+              - generic [ref=e186]:
+                - img [ref=e188]
+                - generic [ref=e193]: Combos
+              - generic [ref=e194]:
+                - heading "Ajiaco mondongo pollo con champiñones" [level=3] [ref=e195]
+                - paragraph [ref=e196]: $ 21.500
+            - button "Menú Ajiaco Pequeño $ 16.000" [ref=e197] [cursor=pointer]:
+              - generic [ref=e198]:
+                - img [ref=e200]
+                - generic [ref=e205]: Menú
+              - generic [ref=e206]:
+                - heading "Ajiaco Pequeño" [level=3] [ref=e207]
+                - paragraph [ref=e208]: $ 16.000
+            - button "Combos Ajiaco mondongo arroz con pollo $ 21.500" [ref=e209] [cursor=pointer]:
+              - generic [ref=e210]:
+                - img [ref=e212]
+                - generic [ref=e217]: Combos
+              - generic [ref=e218]:
+                - heading "Ajiaco mondongo arroz con pollo" [level=3] [ref=e219]
+                - paragraph [ref=e220]: $ 21.500
+            - button "Adiciones Limonada $ 1.800" [ref=e221] [cursor=pointer]:
+              - generic [ref=e222]:
+                - img [ref=e224]
+                - generic [ref=e229]: Adiciones
+              - generic [ref=e230]:
+                - heading "Limonada" [level=3] [ref=e231]
+                - paragraph [ref=e232]: $ 1.800
+            - button "Menú Mondongo $ 17.500" [ref=e233] [cursor=pointer]:
+              - generic [ref=e234]:
+                - img [ref=e236]
+                - generic [ref=e241]: Menú
+              - generic [ref=e242]:
+                - heading "Mondongo" [level=3] [ref=e243]
+                - paragraph [ref=e244]: $ 17.500
+            - button "Adiciones Gaseosa $ 3.500" [ref=e245] [cursor=pointer]:
+              - generic [ref=e246]:
+                - img [ref=e248]
+                - generic [ref=e253]: Adiciones
+              - generic [ref=e254]:
+                - heading "Gaseosa" [level=3] [ref=e255]
+                - paragraph [ref=e256]: $ 3.500
+            - button "Menú Sancocho de Pescado $ 18.500" [ref=e257] [cursor=pointer]:
+              - generic [ref=e258]:
+                - img [ref=e260]
+                - generic [ref=e265]: Menú
+              - generic [ref=e266]:
+                - heading "Sancocho de Pescado" [level=3] [ref=e267]
+                - paragraph [ref=e268]: $ 18.500
+            - button "Menú Sancocho de Pollo $ 18.500" [ref=e269] [cursor=pointer]:
+              - generic [ref=e270]:
+                - img [ref=e272]
+                - generic [ref=e277]: Menú
+              - generic [ref=e278]:
+                - heading "Sancocho de Pollo" [level=3] [ref=e279]
+                - paragraph [ref=e280]: $ 18.500
+            - button "Menú Viudo de Capaz $ 23.000" [ref=e281] [cursor=pointer]:
+              - generic [ref=e282]:
+                - img [ref=e284]
+                - generic [ref=e289]: Menú
+              - generic [ref=e290]:
+                - heading "Viudo de Capaz" [level=3] [ref=e291]
+                - paragraph [ref=e292]: $ 23.000
+            - button "Menú Mazamorra chiquita $ 18.000" [ref=e293] [cursor=pointer]:
+              - generic [ref=e294]:
+                - img [ref=e296]
+                - generic [ref=e301]: Menú
+              - generic [ref=e302]:
+                - heading "Mazamorra chiquita" [level=3] [ref=e303]
+                - paragraph [ref=e304]: $ 18.000
+            - button "Menú Mute $ 18.000" [ref=e305] [cursor=pointer]:
+              - generic [ref=e306]:
+                - img [ref=e308]
+                - generic [ref=e313]: Menú
+              - generic [ref=e314]:
+                - heading "Mute" [level=3] [ref=e315]
+                - paragraph [ref=e316]: $ 18.000
+            - button "Menú Cuchuco con espinazo $ 18.500" [ref=e317] [cursor=pointer]:
+              - generic [ref=e318]:
+                - img [ref=e320]
+                - generic [ref=e325]: Menú
+              - generic [ref=e326]:
+                - heading "Cuchuco con espinazo" [level=3] [ref=e327]
+                - paragraph [ref=e328]: $ 18.500
+            - button "Menú Frijoles con pezuña $ 18.500" [ref=e329] [cursor=pointer]:
+              - generic [ref=e330]:
+                - img [ref=e332]
+                - generic [ref=e337]: Menú
+              - generic [ref=e338]:
+                - heading "Frijoles con pezuña" [level=3] [ref=e339]
+                - paragraph [ref=e340]: $ 18.500
+            - button "Menú Lengua en salsa $ 18.500" [ref=e341] [cursor=pointer]:
+              - generic [ref=e342]:
+                - img [ref=e344]
+                - generic [ref=e349]: Menú
+              - generic [ref=e350]:
+                - heading "Lengua en salsa" [level=3] [ref=e351]
+                - paragraph [ref=e352]: $ 18.500
+            - button "Menú Pollo con champiñones $ 18.500" [ref=e353] [cursor=pointer]:
+              - generic [ref=e354]:
+                - img [ref=e356]
+                - generic [ref=e361]: Menú
+              - generic [ref=e362]:
+                - heading "Pollo con champiñones" [level=3] [ref=e363]
+                - paragraph [ref=e364]: $ 18.500
+            - button "Menú Arroz con pollo $ 18.500" [ref=e365] [cursor=pointer]:
+              - generic [ref=e366]:
+                - img [ref=e368]
+                - generic [ref=e373]: Menú
+              - generic [ref=e374]:
+                - heading "Arroz con pollo" [level=3] [ref=e375]
+                - paragraph [ref=e376]: $ 18.500
+        - generic [ref=e378]:
+          - heading "Carrito" [level=3] [ref=e380]:
+            - img [ref=e381]
+            - text: Carrito
+          - paragraph [ref=e386]: Toca un item del catálogo para agregarlo.
+          - generic [ref=e388]:
+            - generic [ref=e389]: Total
+            - generic [ref=e390]: $ 0
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - heading "Pagos" [level=4] [ref=e393]
+              - button "Agregar método" [ref=e394] [cursor=pointer]:
+                - img [ref=e395]
+                - text: Agregar método
+            - generic [ref=e396]: Agrega al menos un método de pago.
+          - textbox "Notas (opcional)…" [ref=e398]
+          - button "Cobrar" [disabled] [ref=e400]:
+            - img [ref=e401]
+            - generic [ref=e404]: Cobrar

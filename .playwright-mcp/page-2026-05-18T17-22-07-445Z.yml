@@ -1,0 +1,136 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Métodos de pago" [ref=e54] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e55]
+            - generic [ref=e57]: Métodos de pago
+          - link "Gastos" [ref=e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+            - img [ref=e59]
+            - generic [ref=e62]: Gastos
+          - link "Trabajadores turno" [ref=e64] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+            - img [ref=e65]
+            - generic [ref=e70]: Trabajadores turno
+      - paragraph [ref=e71]: Cuenta
+      - link "Mi perfil" [ref=e72] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e73]
+        - generic [ref=e85]: Mi perfil
+      - paragraph [ref=e86]: Sistema
+      - link "Componentes UI" [ref=e87] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e88]
+        - generic [ref=e93]: Componentes UI
+    - button "Cerrar sesion" [ref=e96] [cursor=pointer]:
+      - img [ref=e97]
+      - text: Cerrar sesion
+  - banner [ref=e100]:
+    - generic [ref=e101]:
+      - button "Ocultar menu" [expanded] [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+      - generic [ref=e104]: Nuevo gasto
+      - generic [ref=e105]:
+        - button "Cambiar tema" [ref=e106] [cursor=pointer]:
+          - img [ref=e108]
+        - button "A Admin admin" [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]: A
+          - generic [ref=e113]:
+            - generic [ref=e114]: Admin
+            - generic [ref=e115]: admin
+          - img [ref=e116]
+  - main [ref=e118]:
+    - generic [ref=e119]:
+      - generic [ref=e121]:
+        - img [ref=e123]
+        - generic [ref=e126]:
+          - heading "Nuevo gasto" [level=1] [ref=e127]
+          - paragraph [ref=e128]: Registra una salida de dinero del turno de caja actual
+      - link "Volver" [ref=e130] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/gastos
+        - img [ref=e131]
+        - text: Volver
+    - generic [ref=e133]:
+      - generic [ref=e135]:
+        - img [ref=e136]
+        - generic [ref=e138]:
+          - paragraph [ref=e139]: Turno activo
+          - generic [ref=e141]:
+            - strong [ref=e143]: "Turno #1"
+            - generic [ref=e144]: "Abierto: 2026-05-18 12:21"
+            - generic [ref=e145]:
+              - text: "Ventas:"
+              - strong [ref=e146]: $ 0
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Tipo de gasto *
+            - combobox "Tipo de gasto *" [ref=e152]:
+              - option "Gasto general"
+              - option "Pago de turno" [selected]
+          - generic [ref=e170]:
+            - generic [ref=e171]: Trabajador
+            - combobox "Trabajador" [ref=e172]:
+              - option "Selecciona un trabajador..." [selected]
+              - option "Alex"
+              - option "Andrea"
+              - option "Camilo"
+              - option "Cristian"
+              - option "Diana"
+              - option "Jose"
+              - option "Leonard"
+              - option "Maritza"
+              - option "Michel"
+              - option "Yeny"
+            - paragraph [ref=e173]: Al elegir el trabajador, su valor por defecto se sugerirá en el campo de valor.
+          - generic [ref=e153]:
+            - generic [ref=e154]: Valor *
+            - generic [ref=e155]:
+              - generic: $
+              - textbox "Valor *" [ref=e156]:
+                - /placeholder: "0"
+            - paragraph [ref=e157]: El valor del gasto no está limitado por el saldo de la caja.
+          - generic [ref=e158]:
+            - generic [ref=e159]: Observación
+            - textbox "Observación" [ref=e160]:
+              - /placeholder: Ej. Compra urgente de tenedores desechables
+        - generic [ref=e162]:
+          - link "Cancelar" [ref=e163] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+          - button "Guardar" [ref=e164] [cursor=pointer]:
+            - img [ref=e165]
+            - text: Guardar

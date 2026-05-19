@@ -12,6 +12,11 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             TiposProductoMercadoSeeder::class,
             ProductosMercadoDemoSeeder::class,
+            ListaMercadoSeeder::class,
+            TiposMenuItemSeeder::class,
+            MetodosPagoSeeder::class,
+            MenuItemsSeeder::class,
+            TrabajadoresTurnoSeeder::class,
         ]);
     }
 }

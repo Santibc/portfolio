@@ -53,44 +53,46 @@ window.makeChart = (selector, options) => {
 import {
     createIcons,
     Activity, AlertCircle, AlertTriangle, Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight,
-    BarChart3, Bell,
-    Calendar, Camera, ChefHat, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
-    Clock, Cloud, Coffee, Component, Copy, CreditCard,
+    Banknote, BarChart3, Bell,
+    Calculator, Calendar, Camera, ChefHat, Check, CheckCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
+    ClipboardList, Clock, Cloud, Coffee, Component, Copy, CreditCard,
     DollarSign, Download,
     Edit, ExternalLink, Eye, EyeOff,
     Gauge,
     Heart, Home,
     Image, Inbox, Info,
     Key,
-    Layers, List, LoaderCircle, Lock, LogIn, LogOut,
+    Layers, List, ListChecks, LoaderCircle, Lock, LogIn, LogOut,
     Mail, MapPin, Menu, MessageCircle, Minus, Moon, MousePointerClick,
-    Phone, PieChart, Plus,
-    Save, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Soup, Sparkles, Square, SquareStack, Star, Sun,
+    Phone, PieChart, Play, Plus,
+    Receipt,
+    Save, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, SkipForward, Soup, Sparkles, Square, SquareStack, Star, Sun,
     Table, Tag, TextCursorInput, Trash2, TrendingDown, TrendingUp, Type,
-    Upload, User, UserCheck, UserCog, UserPlus, Users, UtensilsCrossed,
-    Wifi,
+    Unlock, Upload, User, UserCheck, UserCog, UserPlus, Users, UtensilsCrossed,
+    Wallet, Wifi,
     X,
     Zap,
 } from 'lucide';
 
 const usedIcons = {
     Activity, AlertCircle, AlertTriangle, Archive, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpRight,
-    BarChart3, Bell,
-    Calendar, Camera, ChefHat, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
-    Clock, Cloud, Coffee, Component, Copy, CreditCard,
+    Banknote, BarChart3, Bell,
+    Calculator, Calendar, Camera, ChefHat, Check, CheckCircle, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
+    ClipboardList, Clock, Cloud, Coffee, Component, Copy, CreditCard,
     DollarSign, Download,
     Edit, ExternalLink, Eye, EyeOff,
     Gauge,
     Heart, Home,
     Image, Inbox, Info,
     Key,
-    Layers, List, LoaderCircle, Lock, LogIn, LogOut,
+    Layers, List, ListChecks, LoaderCircle, Lock, LogIn, LogOut,
     Mail, MapPin, Menu, MessageCircle, Minus, Moon, MousePointerClick,
-    Phone, PieChart, Plus,
-    Save, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Soup, Sparkles, Square, SquareStack, Star, Sun,
+    Phone, PieChart, Play, Plus,
+    Receipt,
+    Save, Search, Send, Settings, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, SkipForward, Soup, Sparkles, Square, SquareStack, Star, Sun,
     Table, Tag, TextCursorInput, Trash2, TrendingDown, TrendingUp, Type,
-    Upload, User, UserCheck, UserCog, UserPlus, Users, UtensilsCrossed,
-    Wifi,
+    Unlock, Upload, User, UserCheck, UserCog, UserPlus, Users, UtensilsCrossed,
+    Wallet, Wifi,
     X,
     Zap,
 };
@@ -142,8 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderIcons();
     initTomSelect();
     initPreline();
-    // Re-init defensivo despues del primer paint, por si Alpine inserta nodos tarde
-    setTimeout(initPreline, 200);
 
     // ScrollReveal: entrada suave para data-reveal
     ScrollReveal({
@@ -156,21 +156,71 @@ document.addEventListener('DOMContentLoaded', () => {
         viewFactor: 0.1,
     }).reveal('[data-reveal]', { interval: 80 });
 
-    // Re-renderizar iconos + re-init Preline cuando se inserten nodos dinamicamente
+    // Re-renderizar iconos + re-init Preline cuando se inserten nodos dinamicamente.
+    // Debounced + reentry-safe: evita loops cuando Alpine y el observer se pelean
+    // por los mismos nodos (p.ej. <template x-for> que re-monta items con <i data-lucide>).
+    let scheduled = false;
+    let running = false;
+    let needsIcons = false;
+    let needsPreline = false;
+
+    const flush = () => {
+        scheduled = false;
+        if (running) return;
+        running = true;
+        try {
+            if (needsIcons) { needsIcons = false; renderIcons(); }
+            if (needsPreline && window.HSStaticMethods?.autoInit) {
+                needsPreline = false;
+                window.HSStaticMethods.autoInit();
+            }
+        } finally {
+            running = false;
+        }
+    };
+
     const observer = new MutationObserver((mutations) => {
-        let needsIcons = false;
-        let needsPreline = false;
+        if (running) return; // ignorar mutaciones provocadas por el propio flush()
         for (const m of mutations) {
             for (const n of m.addedNodes) {
                 if (n.nodeType !== 1) continue;
-                if (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]')) needsIcons = true;
-                if (n.querySelector?.('[data-hs-overlay], [class*="hs-"]') || n.matches?.('[data-hs-overlay]')) needsPreline = true;
+                if (!needsIcons && (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]'))) {
+                    needsIcons = true;
+                }
+                if (!needsPreline && (n.querySelector?.('[data-hs-overlay], [class*="hs-"]') || n.matches?.('[data-hs-overlay]'))) {
+                    needsPreline = true;
+                }
+                if (needsIcons && needsPreline) break;
             }
+            if (needsIcons && needsPreline) break;
         }
-        if (needsIcons) renderIcons();
-        if (needsPreline && window.HSStaticMethods?.autoInit) window.HSStaticMethods.autoInit();
+        if ((needsIcons || needsPreline) && !scheduled) {
+            scheduled = true;
+            requestAnimationFrame(flush);
+        }
     });
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // Confirmacion global con SweetAlert: reemplaza confirm() nativo
+    window.swalConfirm = (form, opts = {}) => {
+        const isDark = document.documentElement.classList.contains('dark');
+        Swal.fire({
+            title: opts.title || '¿Continuar?',
+            text: opts.text || '',
+            icon: opts.icon || 'question',
+            showCancelButton: true,
+            confirmButtonText: opts.confirmButtonText || 'Sí, continuar',
+            cancelButtonText: opts.cancelButtonText || 'Cancelar',
+            confirmButtonColor: opts.confirmButtonColor || '#aab808',
+            cancelButtonColor: '#75605a',
+            background: isDark ? '#1a1610' : '#fffdfa',
+            color: isDark ? '#fbf5e9' : '#3e2723',
+            customClass: { popup: 'rounded-2xl' },
+        }).then((result) => {
+            if (result.isConfirmed && form) form.submit();
+        });
+        return false;
+    };
 
     // Toast helper global
     window.showToast = (icon, title) => {

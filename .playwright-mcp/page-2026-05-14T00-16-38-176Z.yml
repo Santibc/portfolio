@@ -1,0 +1,155 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "MIRACLE MIRACLE comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "MIRACLE" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: MIRACLE
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e18] [cursor=pointer]:
+        - img [ref=e19]
+        - generic [ref=e25]: Mercado
+        - img [ref=e26]
+      - button "Caja" [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - generic [ref=e33]: Caja
+        - img [ref=e34]
+      - paragraph [ref=e36]: Cuenta
+      - link "Mi perfil" [ref=e37] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e38]
+        - generic [ref=e50]: Mi perfil
+      - paragraph [ref=e51]: Sistema
+      - link "Componentes UI" [ref=e52] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e53]
+        - generic [ref=e58]: Componentes UI
+    - button "Cerrar sesion" [ref=e61] [cursor=pointer]:
+      - img [ref=e62]
+      - text: Cerrar sesion
+  - banner [ref=e65]:
+    - generic [ref=e67]:
+      - button "Cambiar tema" [ref=e68] [cursor=pointer]:
+        - img [ref=e70]
+      - button "A Admin admin" [ref=e73] [cursor=pointer]:
+        - generic [ref=e74]: A
+        - generic [ref=e75]:
+          - generic [ref=e76]: Admin
+          - generic [ref=e77]: admin
+        - img [ref=e78]
+  - main [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - paragraph [ref=e87]: ¡Hola de nuevo!
+          - heading "Bienvenido, Admin" [level=1] [ref=e88]
+          - paragraph [ref=e89]: Aqui esta el resumen de tu actividad.
+        - generic [ref=e90]:
+          - link "Mi perfil" [ref=e91] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/profile
+            - img [ref=e92]
+            - text: Mi perfil
+          - link "Ver componentes" [ref=e104] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/components
+            - img [ref=e105]
+            - text: Ver componentes
+      - generic [ref=e110]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - paragraph [ref=e115]: Usuarios
+            - paragraph [ref=e116]: "1"
+            - paragraph [ref=e117]:
+              - img [ref=e118]
+              - text: +0%
+              - generic [ref=e121]: vs mes anterior
+          - img [ref=e123]
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - paragraph [ref=e132]: Roles activos
+            - paragraph [ref=e133]: "1"
+          - img [ref=e135]
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - paragraph [ref=e142]: Sesiones
+            - paragraph [ref=e143]: —
+          - img [ref=e145]
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - paragraph [ref=e151]: Estado
+            - paragraph [ref=e152]: OK
+          - img [ref=e154]
+      - generic [ref=e156]:
+        - generic [ref=e158]:
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - heading "Actividad de la semana" [level=3] [ref=e162]
+              - paragraph [ref=e163]: Datos de demostracion
+            - generic [ref=e164]:
+              - img [ref=e165]
+              - text: +12.4%
+          - generic [ref=e169]:
+            - 'application "area chart with 1 data series: Visitas" [ref=e170]':
+              - generic [ref=e179]:
+                - generic "Lun" [ref=e180]
+                - generic "Mar" [ref=e181]
+                - generic "Mie" [ref=e182]
+                - generic "Jue" [ref=e183]
+                - generic "Vie" [ref=e184]
+                - generic "Sab" [ref=e185]
+                - generic "Dom" [ref=e186]
+              - generic [ref=e188]:
+                - generic "35" [ref=e189]
+                - generic "30" [ref=e190]
+                - generic "25" [ref=e191]
+                - generic "20" [ref=e192]
+                - generic "15" [ref=e193]
+                - generic "10" [ref=e194]
+            - status [ref=e195]
+            - tooltip: ●
+        - generic [ref=e197]:
+          - heading "Ultimas acciones" [level=3] [ref=e199]
+          - list [ref=e200]:
+            - listitem [ref=e201]:
+              - img [ref=e203]
+              - generic [ref=e206]:
+                - paragraph [ref=e207]: Inicio de sesion
+                - paragraph [ref=e208]: hace 2 min
+            - listitem [ref=e209]:
+              - img [ref=e211]
+              - generic [ref=e215]:
+                - paragraph [ref=e216]: Perfil actualizado
+                - paragraph [ref=e217]: hace 1 hora
+            - listitem [ref=e218]:
+              - img [ref=e220]
+              - generic [ref=e223]:
+                - paragraph [ref=e224]: Nuevo usuario admin
+                - paragraph [ref=e225]: ayer
+      - generic [ref=e227]:
+        - heading "Accesos rapidos" [level=3] [ref=e228]
+        - generic [ref=e229]:
+          - link "Mi perfil Datos y foto" [ref=e230] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/profile
+            - img [ref=e232]
+            - generic [ref=e244]:
+              - paragraph [ref=e245]: Mi perfil
+              - paragraph [ref=e246]: Datos y foto
+            - img [ref=e247]
+          - link "Componentes UI Showcase visual" [ref=e250] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/components
+            - img [ref=e252]
+            - generic [ref=e257]:
+              - paragraph [ref=e258]: Componentes UI
+              - paragraph [ref=e259]: Showcase visual
+            - img [ref=e260]
+          - button "Cerrar sesion Salir de la cuenta" [ref=e264] [cursor=pointer]:
+            - img [ref=e266]
+            - generic [ref=e269]:
+              - paragraph [ref=e270]: Cerrar sesion
+              - paragraph [ref=e271]: Salir de la cuenta
+            - img [ref=e272]

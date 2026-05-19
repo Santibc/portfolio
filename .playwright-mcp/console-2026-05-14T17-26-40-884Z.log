@@ -1,0 +1,27 @@
+[   12633ms] [WARNING] Alpine Expression Error: x is not defined
+
+Expression: "x-data"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   12671ms] [ERROR] [sopas] error global: ReferenceError: x is not defined
+    at [Alpine] x-data (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:32)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5)
+    at deferHandlingDirectives (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:595:3)
+    at initTree (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:788:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:737:5 @ http://[::1]:5173/resources/js/app.js:127
+[   12714ms] ReferenceError: x is not defined
+    at [Alpine] x-data (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:32)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5)
+    at deferHandlingDirectives (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:595:3)
+    at initTree (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:788:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:737:5

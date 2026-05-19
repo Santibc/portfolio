@@ -1,0 +1,110 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Métodos de pago" [ref=e54] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e55]
+            - generic [ref=e57]: Métodos de pago
+          - link "Gastos" [ref=e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+            - img [ref=e59]
+            - generic [ref=e62]: Gastos
+          - link "Trabajadores turno" [ref=e63] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+            - img [ref=e64]
+            - generic [ref=e69]: Trabajadores turno
+      - paragraph [ref=e71]: Cuenta
+      - link "Mi perfil" [ref=e72] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e73]
+        - generic [ref=e85]: Mi perfil
+      - paragraph [ref=e86]: Sistema
+      - link "Componentes UI" [ref=e87] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e88]
+        - generic [ref=e93]: Componentes UI
+    - button "Cerrar sesion" [ref=e96] [cursor=pointer]:
+      - img [ref=e97]
+      - text: Cerrar sesion
+  - banner [ref=e100]:
+    - generic [ref=e101]:
+      - button "Ocultar menu" [expanded] [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+      - generic [ref=e104]: Editar trabajador de turno
+      - generic [ref=e105]:
+        - button "Cambiar tema" [ref=e106] [cursor=pointer]:
+          - img [ref=e108]
+        - button "A Admin admin" [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]: A
+          - generic [ref=e113]:
+            - generic [ref=e114]: Admin
+            - generic [ref=e115]: admin
+          - img [ref=e116]
+  - main [ref=e118]:
+    - generic [ref=e119]:
+      - generic [ref=e121]:
+        - img [ref=e123]
+        - generic [ref=e128]:
+          - heading "Editar trabajador" [level=1] [ref=e129]
+          - paragraph [ref=e130]: Tester QA
+      - link "Volver" [ref=e132] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/trabajadores-turno
+        - img [ref=e133]
+        - text: Volver
+    - generic [ref=e136]:
+      - generic [ref=e137]:
+        - generic [ref=e138]:
+          - generic [ref=e139]: Nombre *
+          - textbox "Nombre *" [ref=e141]: Tester QA
+        - generic [ref=e142]:
+          - generic [ref=e143]: Valor de turno (por defecto) *
+          - generic [ref=e144]:
+            - generic: $
+            - textbox "Valor de turno (por defecto) *" [ref=e145]:
+              - /placeholder: "0"
+              - text: "55.000"
+          - paragraph [ref=e146]: "Es solo una sugerencia: al registrar el gasto se puede cambiar."
+        - generic [ref=e147] [cursor=pointer]:
+          - checkbox "Activo Si está apagado, no aparece en el formulario de gastos." [checked] [ref=e149]
+          - generic [ref=e152]:
+            - generic [ref=e153]: Activo
+            - generic [ref=e154]: Si está apagado, no aparece en el formulario de gastos.
+      - generic [ref=e156]:
+        - link "Cancelar" [ref=e157] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/trabajadores-turno
+        - button "Guardar cambios" [ref=e158] [cursor=pointer]:
+          - img [ref=e159]
+          - text: Guardar cambios

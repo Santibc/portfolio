@@ -1,0 +1,168 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - link [ref=e239] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img [ref=e240]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link [ref=e241] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button [ref=e242] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link [ref=e243] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link [ref=e244] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link [ref=e245] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link [ref=e246] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link [ref=e247] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e54]
+            - generic [ref=e57]: Plantilla
+      - button [ref=e248] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link [ref=e249] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link [ref=e250] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button [ref=e251] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button [expanded] [ref=e252] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Lista Mercado
+      - generic [ref=e100]:
+        - button [ref=e253] [cursor=pointer]:
+          - img [ref=e103]
+        - button [ref=e254] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e116]:
+      - img [ref=e118]
+      - generic [ref=e121]:
+        - heading [level=1] [ref=e255]: Lista Mercado
+        - paragraph [ref=e123]: Mercado planificado por tipo de lugar
+    - generic [ref=e124]:
+      - link [ref=e256] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+        - img [ref=e126]
+        - text: Plantilla
+      - button [ref=e257] [cursor=pointer]:
+        - img [ref=e131]
+        - text: Cancelar mercado
+      - button [ref=e258] [cursor=pointer]:
+        - img [ref=e136]
+        - text: Finalizar mercado
+    - paragraph [ref=e139]: Mercado iniciado hace 4 minutos
+    - generic [ref=e140]:
+      - link [ref=e259] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/1
+        - generic [ref=e142]:
+          - heading [level=3] [ref=e260]:
+            - img [ref=e144]
+            - text: Plaza
+          - generic [ref=e147]: 0/4
+        - generic [ref=e151]:
+          - img [ref=e152]
+          - text: 4 pendientes
+      - link [ref=e261] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/9
+        - generic [ref=e156]:
+          - heading [level=3] [ref=e262]:
+            - img [ref=e158]
+            - text: Pollo
+          - generic [ref=e161]: 0/2
+        - generic [ref=e165]:
+          - img [ref=e166]
+          - text: 2 pendientes
+      - link [ref=e263] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/10
+        - generic [ref=e170]:
+          - heading [level=3] [ref=e264]:
+            - img [ref=e172]
+            - text: Cerdo
+          - generic [ref=e175]: 0/1
+        - generic [ref=e179]:
+          - img [ref=e180]
+          - text: 1 pendientes
+      - link [ref=e265] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/2
+        - generic [ref=e184]:
+          - heading [level=3] [ref=e266]:
+            - img [ref=e186]
+            - text: Makro
+          - generic [ref=e189]: 0/2
+        - generic [ref=e193]:
+          - img [ref=e194]
+          - text: 2 pendientes
+      - link [ref=e267] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/7
+        - generic [ref=e198]:
+          - heading [level=3] [ref=e268]:
+            - img [ref=e200]
+            - text: Gaseosas
+          - generic [ref=e203]: 0/1
+        - generic [ref=e207]:
+          - img [ref=e208]
+          - text: 1 pendientes
+      - link [ref=e269] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/4
+        - generic [ref=e212]:
+          - heading [level=3] [ref=e270]:
+            - img [ref=e214]
+            - text: Aseo
+          - generic [ref=e217]: 0/1
+        - generic [ref=e221]:
+          - img [ref=e222]
+          - text: 1 pendientes
+      - link [ref=e271] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/tipo/3
+        - generic [ref=e226]:
+          - heading [level=3] [ref=e272]:
+            - img [ref=e228]
+            - text: Desechables
+          - generic [ref=e231]: 0/1
+        - generic [ref=e235]:
+          - img [ref=e236]
+          - text: 1 pendientes
+  - dialog "¿Cancelar este mercado?" [ref=e274]:
+    - generic [ref=e276]: "!"
+    - heading "¿Cancelar este mercado?" [level=2] [ref=e277]
+    - generic [ref=e278]: Los registros ya hechos se conservarán.
+    - text: "!"
+    - generic [ref=e279]:
+      - button "Sí, cancelar" [active] [ref=e280] [cursor=pointer]
+      - button "Cancelar" [ref=e281] [cursor=pointer]

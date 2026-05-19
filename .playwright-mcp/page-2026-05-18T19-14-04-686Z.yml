@@ -1,0 +1,137 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link "Registrar" [ref=e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link "Lista mercado" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link "Plantilla" [ref=e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e54]
+            - generic [ref=e57]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Lista — Plaza
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - img [ref=e115]
+      - generic [ref=e119]: "Registrado: Tomate Chonto"
+      - button [ref=e120] [cursor=pointer]:
+        - img [ref=e121]
+    - generic [ref=e124]:
+      - generic [ref=e126]:
+        - img [ref=e128]
+        - generic [ref=e131]:
+          - heading "Plaza" [level=1] [ref=e132]
+          - paragraph [ref=e133]: Toca un producto para registrar o saltar
+      - link "Volver" [ref=e135] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado
+        - img [ref=e136]
+        - text: Volver
+    - generic [ref=e138]:
+      - img [ref=e139]
+      - generic [ref=e143]: "Registrado: Tomate Chonto"
+      - button [ref=e144] [cursor=pointer]:
+        - img [ref=e145]
+    - generic [ref=e148]:
+      - generic [ref=e151]:
+        - generic [ref=e152]: 1 de 4 procesados
+        - generic [ref=e153]: 25%
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - img [ref=e158]
+          - text: 1 registrados
+        - generic [ref=e160]:
+          - img [ref=e161]
+          - text: 3 pendientes
+    - heading "Pendientes (3)" [level=3] [ref=e164]
+    - generic [ref=e165]:
+      - link "Cebolla Cabezona 3 Cebolla Cabezona kg" [ref=e166] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/items/26/registrar
+        - generic [ref=e167]:
+          - img "Cebolla Cabezona" [ref=e168]
+          - generic [ref=e169]: "3"
+        - generic [ref=e170]:
+          - paragraph [ref=e171]: Cebolla Cabezona
+          - generic [ref=e172]: kg
+      - link "Cilantro 2 Cilantro atado" [ref=e173] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/items/27/registrar
+        - generic [ref=e174]:
+          - img "Cilantro" [ref=e175]
+          - generic [ref=e176]: "2"
+        - generic [ref=e177]:
+          - paragraph [ref=e178]: Cilantro
+          - generic [ref=e179]: atado
+      - link "Papa Criolla 4 Papa Criolla libra" [ref=e180] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/lista-mercado/items/28/registrar
+        - generic [ref=e181]:
+          - img "Papa Criolla" [ref=e182]
+          - generic [ref=e183]: "4"
+        - generic [ref=e184]:
+          - paragraph [ref=e185]: Papa Criolla
+          - generic [ref=e186]: libra
+    - heading "Procesados (1)" [level=3] [ref=e187]
+    - generic [ref=e189]:
+      - generic [ref=e190]:
+        - img "Tomate Chonto" [ref=e191]
+        - img [ref=e193]
+      - generic [ref=e196]:
+        - paragraph [ref=e197]: Tomate Chonto
+        - generic [ref=e198]: Registrado

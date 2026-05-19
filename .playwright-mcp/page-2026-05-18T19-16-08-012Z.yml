@@ -1,0 +1,318 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - generic [ref=e16]:
+        - button "Mercado" [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+          - generic [ref=e24]: Mercado
+          - img [ref=e25]
+        - generic [ref=e27]:
+          - link "Dashboard" [ref=e28] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e29]
+            - generic [ref=e32]: Dashboard
+          - link "Productos" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e34]
+            - generic [ref=e40]: Productos
+          - link "Registrar" [ref=e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e42]
+            - generic [ref=e46]: Registrar
+          - link "Lista mercado" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e48]
+            - generic [ref=e51]: Lista mercado
+          - link "Plantilla" [ref=e52] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e53]
+            - generic [ref=e56]: Plantilla
+      - button "Caja" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - generic [ref=e63]: Caja
+        - img [ref=e64]
+      - paragraph [ref=e66]: Cuenta
+      - link "Mi perfil" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e68]
+        - generic [ref=e80]: Mi perfil
+      - paragraph [ref=e81]: Sistema
+      - link "Componentes UI" [ref=e82] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e83]
+        - generic [ref=e88]: Componentes UI
+    - button "Cerrar sesion" [ref=e91] [cursor=pointer]:
+      - img [ref=e92]
+      - text: Cerrar sesion
+  - banner [ref=e95]:
+    - generic [ref=e96]:
+      - button "Ocultar menu" [expanded] [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - generic [ref=e99]: Plantilla — Lista Mercado
+      - generic [ref=e100]:
+        - button "Cambiar tema" [ref=e101] [cursor=pointer]:
+          - img [ref=e103]
+        - button "A Admin admin" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: A
+          - generic [ref=e108]:
+            - generic [ref=e109]: Admin
+            - generic [ref=e110]: admin
+          - img [ref=e111]
+  - main [ref=e113]:
+    - generic [ref=e114]:
+      - generic [ref=e116]:
+        - img [ref=e118]
+        - generic [ref=e121]:
+          - heading "Lista semanal" [level=1] [ref=e122]
+          - paragraph [ref=e123]: Productos que se compran semanalmente
+      - generic [ref=e124]:
+        - link "Volver" [ref=e125] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/lista-mercado
+          - img [ref=e126]
+          - text: Volver
+        - button "Agregar producto" [expanded] [ref=e128] [cursor=pointer]:
+          - img [ref=e129]
+          - text: Agregar producto
+    - table [ref=e132]:
+      - rowgroup [ref=e133]:
+        - row "Producto Lugar Unidad Cantidad sugerida Acciones" [ref=e134]:
+          - columnheader "Producto" [ref=e135]
+          - columnheader "Lugar" [ref=e136]
+          - columnheader "Unidad" [ref=e137]
+          - columnheader "Cantidad sugerida" [ref=e138]
+          - columnheader "Acciones" [ref=e139]
+      - rowgroup [ref=e140]:
+        - row "Detergente Detergente Aseo litro 1 Quitar" [ref=e141]:
+          - cell "Detergente Detergente" [ref=e142]:
+            - generic [ref=e143]:
+              - img "Detergente" [ref=e144]
+              - generic [ref=e145]: Detergente
+          - cell "Aseo" [ref=e146]:
+            - generic [ref=e147]: Aseo
+          - cell "litro" [ref=e148]
+          - cell "1" [ref=e149]:
+            - generic [ref=e150]:
+              - spinbutton [ref=e151]: "1"
+              - button [ref=e152] [cursor=pointer]:
+                - img [ref=e153]
+          - cell "Quitar" [ref=e155]:
+            - button "Quitar" [ref=e157] [cursor=pointer]:
+              - img [ref=e158]
+              - text: Quitar
+        - row "Costilla de Cerdo Costilla de Cerdo Cerdo kg 2 Quitar" [ref=e161]:
+          - cell "Costilla de Cerdo Costilla de Cerdo" [ref=e162]:
+            - generic [ref=e163]:
+              - img "Costilla de Cerdo" [ref=e164]
+              - generic [ref=e165]: Costilla de Cerdo
+          - cell "Cerdo" [ref=e166]:
+            - generic [ref=e167]: Cerdo
+          - cell "kg" [ref=e168]
+          - cell "2" [ref=e169]:
+            - generic [ref=e170]:
+              - spinbutton [ref=e171]: "2"
+              - button [ref=e172] [cursor=pointer]:
+                - img [ref=e173]
+          - cell "Quitar" [ref=e175]:
+            - button "Quitar" [ref=e177] [cursor=pointer]:
+              - img [ref=e178]
+              - text: Quitar
+        - row "Servilletas Servilletas Desechables paquete 2 Quitar" [ref=e181]:
+          - cell "Servilletas Servilletas" [ref=e182]:
+            - generic [ref=e183]:
+              - img "Servilletas" [ref=e184]
+              - generic [ref=e185]: Servilletas
+          - cell "Desechables" [ref=e186]:
+            - generic [ref=e187]: Desechables
+          - cell "paquete" [ref=e188]
+          - cell "2" [ref=e189]:
+            - generic [ref=e190]:
+              - spinbutton [ref=e191]: "2"
+              - button [ref=e192] [cursor=pointer]:
+                - img [ref=e193]
+          - cell "Quitar" [ref=e195]:
+            - button "Quitar" [ref=e197] [cursor=pointer]:
+              - img [ref=e198]
+              - text: Quitar
+        - row "Coca-Cola 1.5L Coca-Cola 1.5L Gaseosas unidad 6 Quitar" [ref=e201]:
+          - cell "Coca-Cola 1.5L Coca-Cola 1.5L" [ref=e202]:
+            - generic [ref=e203]:
+              - img "Coca-Cola 1.5L" [ref=e204]
+              - generic [ref=e205]: Coca-Cola 1.5L
+          - cell "Gaseosas" [ref=e206]:
+            - generic [ref=e207]: Gaseosas
+          - cell "unidad" [ref=e208]
+          - cell "6" [ref=e209]:
+            - generic [ref=e210]:
+              - spinbutton [ref=e211]: "6"
+              - button [ref=e212] [cursor=pointer]:
+                - img [ref=e213]
+          - cell "Quitar" [ref=e215]:
+            - button "Quitar" [ref=e217] [cursor=pointer]:
+              - img [ref=e218]
+              - text: Quitar
+        - row "Aceite Vegetal Aceite Vegetal Makro galón 1 Quitar" [ref=e221]:
+          - cell "Aceite Vegetal Aceite Vegetal" [ref=e222]:
+            - generic [ref=e223]:
+              - img "Aceite Vegetal" [ref=e224]
+              - generic [ref=e225]: Aceite Vegetal
+          - cell "Makro" [ref=e226]:
+            - generic [ref=e227]: Makro
+          - cell "galón" [ref=e228]
+          - cell "1" [ref=e229]:
+            - generic [ref=e230]:
+              - spinbutton [ref=e231]: "1"
+              - button [ref=e232] [cursor=pointer]:
+                - img [ref=e233]
+          - cell "Quitar" [ref=e235]:
+            - button "Quitar" [ref=e237] [cursor=pointer]:
+              - img [ref=e238]
+              - text: Quitar
+        - row "Arroz Blanco Arroz Blanco Makro bulto 1 Quitar" [ref=e241]:
+          - cell "Arroz Blanco Arroz Blanco" [ref=e242]:
+            - generic [ref=e243]:
+              - img "Arroz Blanco" [ref=e244]
+              - generic [ref=e245]: Arroz Blanco
+          - cell "Makro" [ref=e246]:
+            - generic [ref=e247]: Makro
+          - cell "bulto" [ref=e248]
+          - cell "1" [ref=e249]:
+            - generic [ref=e250]:
+              - spinbutton [ref=e251]: "1"
+              - button [ref=e252] [cursor=pointer]:
+                - img [ref=e253]
+          - cell "Quitar" [ref=e255]:
+            - button "Quitar" [ref=e257] [cursor=pointer]:
+              - img [ref=e258]
+              - text: Quitar
+        - row "Cebolla Cabezona Cebolla Cabezona Plaza kg 3 Quitar" [ref=e261]:
+          - cell "Cebolla Cabezona Cebolla Cabezona" [ref=e262]:
+            - generic [ref=e263]:
+              - img "Cebolla Cabezona" [ref=e264]
+              - generic [ref=e265]: Cebolla Cabezona
+          - cell "Plaza" [ref=e266]:
+            - generic [ref=e267]: Plaza
+          - cell "kg" [ref=e268]
+          - cell "3" [ref=e269]:
+            - generic [ref=e270]:
+              - spinbutton [ref=e271]: "3"
+              - button [ref=e272] [cursor=pointer]:
+                - img [ref=e273]
+          - cell "Quitar" [ref=e275]:
+            - button "Quitar" [ref=e277] [cursor=pointer]:
+              - img [ref=e278]
+              - text: Quitar
+        - row "Cilantro Cilantro Plaza atado 2 Quitar" [ref=e281]:
+          - cell "Cilantro Cilantro" [ref=e282]:
+            - generic [ref=e283]:
+              - img "Cilantro" [ref=e284]
+              - generic [ref=e285]: Cilantro
+          - cell "Plaza" [ref=e286]:
+            - generic [ref=e287]: Plaza
+          - cell "atado" [ref=e288]
+          - cell "2" [ref=e289]:
+            - generic [ref=e290]:
+              - spinbutton [ref=e291]: "2"
+              - button [ref=e292] [cursor=pointer]:
+                - img [ref=e293]
+          - cell "Quitar" [ref=e295]:
+            - button "Quitar" [ref=e297] [cursor=pointer]:
+              - img [ref=e298]
+              - text: Quitar
+        - row "Papa Criolla Papa Criolla Plaza libra 4 Quitar" [ref=e301]:
+          - cell "Papa Criolla Papa Criolla" [ref=e302]:
+            - generic [ref=e303]:
+              - img "Papa Criolla" [ref=e304]
+              - generic [ref=e305]: Papa Criolla
+          - cell "Plaza" [ref=e306]:
+            - generic [ref=e307]: Plaza
+          - cell "libra" [ref=e308]
+          - cell "4" [ref=e309]:
+            - generic [ref=e310]:
+              - spinbutton [ref=e311]: "4"
+              - button [ref=e312] [cursor=pointer]:
+                - img [ref=e313]
+          - cell "Quitar" [ref=e315]:
+            - button "Quitar" [ref=e317] [cursor=pointer]:
+              - img [ref=e318]
+              - text: Quitar
+        - row "Tomate Chonto Tomate Chonto Plaza kg 5 Quitar" [ref=e321]:
+          - cell "Tomate Chonto Tomate Chonto" [ref=e322]:
+            - generic [ref=e323]:
+              - img "Tomate Chonto" [ref=e324]
+              - generic [ref=e325]: Tomate Chonto
+          - cell "Plaza" [ref=e326]:
+            - generic [ref=e327]: Plaza
+          - cell "kg" [ref=e328]
+          - cell "5" [ref=e329]:
+            - generic [ref=e330]:
+              - spinbutton [ref=e331]: "5"
+              - button [ref=e332] [cursor=pointer]:
+                - img [ref=e333]
+          - cell "Quitar" [ref=e335]:
+            - button "Quitar" [ref=e337] [cursor=pointer]:
+              - img [ref=e338]
+              - text: Quitar
+        - row "Pechuga de Pollo Pechuga de Pollo Pollo kg 4 Quitar" [ref=e341]:
+          - cell "Pechuga de Pollo Pechuga de Pollo" [ref=e342]:
+            - generic [ref=e343]:
+              - img "Pechuga de Pollo" [ref=e344]
+              - generic [ref=e345]: Pechuga de Pollo
+          - cell "Pollo" [ref=e346]:
+            - generic [ref=e347]: Pollo
+          - cell "kg" [ref=e348]
+          - cell "4" [ref=e349]:
+            - generic [ref=e350]:
+              - spinbutton [ref=e351]: "4"
+              - button [ref=e352] [cursor=pointer]:
+                - img [ref=e353]
+          - cell "Quitar" [ref=e355]:
+            - button "Quitar" [ref=e357] [cursor=pointer]:
+              - img [ref=e358]
+              - text: Quitar
+        - row "Pollo Entero Pollo Entero Pollo unidad 2 Quitar" [ref=e361]:
+          - cell "Pollo Entero Pollo Entero" [ref=e362]:
+            - generic [ref=e363]:
+              - img "Pollo Entero" [ref=e364]
+              - generic [ref=e365]: Pollo Entero
+          - cell "Pollo" [ref=e366]:
+            - generic [ref=e367]: Pollo
+          - cell "unidad" [ref=e368]
+          - cell "2" [ref=e369]:
+            - generic [ref=e370]:
+              - spinbutton [ref=e371]: "2"
+              - button [ref=e372] [cursor=pointer]:
+                - img [ref=e373]
+          - cell "Quitar" [ref=e375]:
+            - button "Quitar" [ref=e377] [cursor=pointer]:
+              - img [ref=e378]
+              - text: Quitar
+    - dialog "Agregar producto a la lista" [active]:
+      - generic [ref=e382]:
+        - generic [ref=e383]:
+          - heading "Agregar producto a la lista" [level=3] [ref=e384]
+          - button "Cerrar" [expanded] [ref=e385] [cursor=pointer]:
+            - img [ref=e386]
+        - generic [ref=e390]:
+          - generic [ref=e391]:
+            - generic [ref=e392]: Producto *
+            - combobox "Producto *" [ref=e395] [cursor=pointer]
+          - generic [ref=e396]:
+            - generic [ref=e397]: Cantidad sugerida *
+            - spinbutton "Cantidad sugerida *" [ref=e399]: "1"
+            - paragraph [ref=e400]: Cuántas unidades se compran normalmente
+          - generic [ref=e401]:
+            - button "Cancelar" [expanded] [ref=e402] [cursor=pointer]
+            - button "Agregar" [ref=e403] [cursor=pointer]:
+              - img [ref=e404]
+              - text: Agregar

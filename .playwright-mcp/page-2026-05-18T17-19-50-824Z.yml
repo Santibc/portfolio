@@ -1,0 +1,259 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Métodos de pago" [ref=e54] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e55]
+            - generic [ref=e57]: Métodos de pago
+          - link "Gastos" [ref=e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+            - img [ref=e59]
+            - generic [ref=e62]: Gastos
+          - link "Trabajadores turno" [ref=e63] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+            - img [ref=e64]
+            - generic [ref=e69]: Trabajadores turno
+      - paragraph [ref=e71]: Cuenta
+      - link "Mi perfil" [ref=e72] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e73]
+        - generic [ref=e85]: Mi perfil
+      - paragraph [ref=e86]: Sistema
+      - link "Componentes UI" [ref=e87] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e88]
+        - generic [ref=e93]: Componentes UI
+    - button "Cerrar sesion" [ref=e96] [cursor=pointer]:
+      - img [ref=e97]
+      - text: Cerrar sesion
+  - banner [ref=e100]:
+    - generic [ref=e101]:
+      - button "Ocultar menu" [expanded] [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+      - generic [ref=e104]: Trabajadores de turno
+      - generic [ref=e105]:
+        - button "Cambiar tema" [ref=e106] [cursor=pointer]:
+          - img [ref=e108]
+        - button "A Admin admin" [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]: A
+          - generic [ref=e113]:
+            - generic [ref=e114]: Admin
+            - generic [ref=e115]: admin
+          - img [ref=e116]
+  - main [ref=e118]:
+    - generic [ref=e119]:
+      - img [ref=e120]
+      - generic [ref=e124]: Trabajador eliminado.
+      - button [ref=e125] [cursor=pointer]:
+        - img [ref=e126]
+    - generic [ref=e129]:
+      - generic [ref=e131]:
+        - img [ref=e133]
+        - generic [ref=e138]:
+          - heading "Trabajadores de turno" [level=1] [ref=e139]
+          - paragraph [ref=e140]: Personas que reciben pago diario por turno desde la caja
+      - generic [ref=e141]:
+        - link "Volver a gastos" [ref=e142] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/gastos
+          - img [ref=e143]
+          - text: Volver a gastos
+        - link "Nuevo trabajador" [ref=e145] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/trabajadores-turno/create
+          - img [ref=e146]
+          - text: Nuevo trabajador
+    - generic [ref=e147]:
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - img [ref=e151]
+          - searchbox "Buscar..." [ref=e154]
+        - generic [ref=e155]: 10 registros
+      - table [ref=e157]:
+        - rowgroup [ref=e158]:
+          - row "Nombre Valor turno default Estado Acciones" [ref=e159]:
+            - columnheader "Nombre" [ref=e160]:
+              - button "Nombre" [ref=e161] [cursor=pointer]
+            - columnheader "Valor turno default" [ref=e162]:
+              - button "Valor turno default" [ref=e163] [cursor=pointer]
+            - columnheader "Estado" [ref=e164]
+            - columnheader "Acciones" [ref=e165]
+        - rowgroup [ref=e166]:
+          - row "Alex $ 40.000 Activo Editar Eliminar" [ref=e167]:
+            - cell "Alex" [ref=e168]
+            - cell "$ 40.000" [ref=e169]
+            - cell "Activo" [ref=e170]:
+              - generic [ref=e171]: Activo
+            - cell "Editar Eliminar" [ref=e172]:
+              - generic [ref=e173]:
+                - link "Editar" [ref=e174] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/5/edit
+                  - img [ref=e175]
+                  - text: Editar
+                - button "Eliminar" [ref=e179] [cursor=pointer]:
+                  - img [ref=e180]
+                  - text: Eliminar
+          - row "Andrea $ 40.000 Activo Editar Eliminar" [ref=e183]:
+            - cell "Andrea" [ref=e184]
+            - cell "$ 40.000" [ref=e185]
+            - cell "Activo" [ref=e186]:
+              - generic [ref=e187]: Activo
+            - cell "Editar Eliminar" [ref=e188]:
+              - generic [ref=e189]:
+                - link "Editar" [ref=e190] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/10/edit
+                  - img [ref=e191]
+                  - text: Editar
+                - button "Eliminar" [ref=e195] [cursor=pointer]:
+                  - img [ref=e196]
+                  - text: Eliminar
+          - row "Camilo $ 40.000 Activo Editar Eliminar" [ref=e199]:
+            - cell "Camilo" [ref=e200]
+            - cell "$ 40.000" [ref=e201]
+            - cell "Activo" [ref=e202]:
+              - generic [ref=e203]: Activo
+            - cell "Editar Eliminar" [ref=e204]:
+              - generic [ref=e205]:
+                - link "Editar" [ref=e206] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/6/edit
+                  - img [ref=e207]
+                  - text: Editar
+                - button "Eliminar" [ref=e211] [cursor=pointer]:
+                  - img [ref=e212]
+                  - text: Eliminar
+          - row "Cristian $ 40.000 Activo Editar Eliminar" [ref=e215]:
+            - cell "Cristian" [ref=e216]
+            - cell "$ 40.000" [ref=e217]
+            - cell "Activo" [ref=e218]:
+              - generic [ref=e219]: Activo
+            - cell "Editar Eliminar" [ref=e220]:
+              - generic [ref=e221]:
+                - link "Editar" [ref=e222] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/8/edit
+                  - img [ref=e223]
+                  - text: Editar
+                - button "Eliminar" [ref=e227] [cursor=pointer]:
+                  - img [ref=e228]
+                  - text: Eliminar
+          - row "Diana $ 40.000 Activo Editar Eliminar" [ref=e231]:
+            - cell "Diana" [ref=e232]
+            - cell "$ 40.000" [ref=e233]
+            - cell "Activo" [ref=e234]:
+              - generic [ref=e235]: Activo
+            - cell "Editar Eliminar" [ref=e236]:
+              - generic [ref=e237]:
+                - link "Editar" [ref=e238] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/2/edit
+                  - img [ref=e239]
+                  - text: Editar
+                - button "Eliminar" [ref=e243] [cursor=pointer]:
+                  - img [ref=e244]
+                  - text: Eliminar
+          - row "Jose $ 60.000 Activo Editar Eliminar" [ref=e247]:
+            - cell "Jose" [ref=e248]
+            - cell "$ 60.000" [ref=e249]
+            - cell "Activo" [ref=e250]:
+              - generic [ref=e251]: Activo
+            - cell "Editar Eliminar" [ref=e252]:
+              - generic [ref=e253]:
+                - link "Editar" [ref=e254] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/4/edit
+                  - img [ref=e255]
+                  - text: Editar
+                - button "Eliminar" [ref=e259] [cursor=pointer]:
+                  - img [ref=e260]
+                  - text: Eliminar
+          - row "Leonard $ 60.000 Activo Editar Eliminar" [ref=e263]:
+            - cell "Leonard" [ref=e264]
+            - cell "$ 60.000" [ref=e265]
+            - cell "Activo" [ref=e266]:
+              - generic [ref=e267]: Activo
+            - cell "Editar Eliminar" [ref=e268]:
+              - generic [ref=e269]:
+                - link "Editar" [ref=e270] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/3/edit
+                  - img [ref=e271]
+                  - text: Editar
+                - button "Eliminar" [ref=e275] [cursor=pointer]:
+                  - img [ref=e276]
+                  - text: Eliminar
+          - row "Maritza $ 40.000 Activo Editar Eliminar" [ref=e279]:
+            - cell "Maritza" [ref=e280]
+            - cell "$ 40.000" [ref=e281]
+            - cell "Activo" [ref=e282]:
+              - generic [ref=e283]: Activo
+            - cell "Editar Eliminar" [ref=e284]:
+              - generic [ref=e285]:
+                - link "Editar" [ref=e286] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/1/edit
+                  - img [ref=e287]
+                  - text: Editar
+                - button "Eliminar" [ref=e291] [cursor=pointer]:
+                  - img [ref=e292]
+                  - text: Eliminar
+          - row "Michel $ 60.000 Activo Editar Eliminar" [ref=e295]:
+            - cell "Michel" [ref=e296]
+            - cell "$ 60.000" [ref=e297]
+            - cell "Activo" [ref=e298]:
+              - generic [ref=e299]: Activo
+            - cell "Editar Eliminar" [ref=e300]:
+              - generic [ref=e301]:
+                - link "Editar" [ref=e302] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/9/edit
+                  - img [ref=e303]
+                  - text: Editar
+                - button "Eliminar" [ref=e307] [cursor=pointer]:
+                  - img [ref=e308]
+                  - text: Eliminar
+          - row "Yeny $ 40.000 Activo Editar Eliminar" [ref=e311]:
+            - cell "Yeny" [ref=e312]
+            - cell "$ 40.000" [ref=e313]
+            - cell "Activo" [ref=e314]:
+              - generic [ref=e315]: Activo
+            - cell "Editar Eliminar" [ref=e316]:
+              - generic [ref=e317]:
+                - link "Editar" [ref=e318] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/trabajadores-turno/7/edit
+                  - img [ref=e319]
+                  - text: Editar
+                - button "Eliminar" [ref=e323] [cursor=pointer]:
+                  - img [ref=e324]
+                  - text: Eliminar
+      - generic [ref=e327]:
+        - generic [ref=e328]: Pagina 1 de 1
+        - generic [ref=e329]:
+          - button [disabled] [ref=e330]:
+            - img [ref=e331]
+          - button [disabled] [ref=e333]:
+            - img [ref=e334]
