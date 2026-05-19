@@ -10,6 +10,7 @@ use App\Models\PrecioProducto;
 use App\Models\ActualizacionPrecio;
 use App\Imports\PreciosImport;
 use App\Imports\ProductosImport;
+use App\Exports\PlantillaProductosExport;
 use App\Models\ListaPrecio;
 use App\Models\VarianteProducto;
 use App\Models\StockProducto;
@@ -581,6 +582,18 @@ public function actualizarPreciosExcel(Request $request)
         return response($html);
     }
 
+    public function mostrarImportar()
+    {
+        $listas = ListaPrecio::activas()->get(['codigo', 'nombre']);
+        $ultimas = ActualizacionPrecio::orderBy('created_at', 'desc')->limit(5)->get();
+        return view('productos.importar', compact('listas', 'ultimas'));
+    }
+
+    public function descargarPlantilla()
+    {
+        return Excel::download(new PlantillaProductosExport(), 'plantilla_productos_precios.xlsx');
+    }
+
     public function importarExcel(Request $request)
     {
         $request->validate([
@@ -595,19 +608,12 @@ public function actualizarPreciosExcel(Request $request)
         try {
             $archivo = $request->file('archivo');
             $nombreOriginal = $archivo->getClientOriginalName();
-            $nombreArchivo  = time() . '_' . $nombreOriginal;
-
-            $rutaPublic = public_path('uploads/importacion_productos');
-            if (!File::exists($rutaPublic)) File::makeDirectory($rutaPublic, 0755, true);
-
-            $archivo->move($rutaPublic, $nombreArchivo);
-            $rutaArchivo = 'uploads/importacion_productos/' . $nombreArchivo;
 
             $actualizacion = ActualizacionPrecio::create([
                 'usuario_id'               => auth()->id(),
                 'estado'                   => 'procesando',
                 'nombre_archivo'           => $nombreOriginal,
-                'ruta_archivo'             => $rutaArchivo,
+                'ruta_archivo'             => '(no almacenada — procesada en memoria)',
                 'total_filas'              => 0,
                 'actualizaciones_exitosas' => 0,
                 'actualizaciones_fallidas' => 0,
@@ -615,18 +621,21 @@ public function actualizarPreciosExcel(Request $request)
                 'detalles_procesados'      => [],
             ]);
 
-            Excel::import(new ProductosImport($actualizacion), public_path($rutaArchivo));
+            // Procesamos directamente desde el tmp de PHP — no dejamos copia en public/.
+            Excel::import(new ProductosImport($actualizacion), $archivo->getRealPath());
             DB::commit();
 
             $actualizacion->refresh();
             $ok = $actualizacion->actualizaciones_exitosas;
             $err = $actualizacion->actualizaciones_fallidas;
             if ($err === 0 && $ok > 0) {
-                return back()->with('success', "Importación completada: {$ok} productos procesados.");
+                return back()->with('success', "Importación completada: {$ok} filas procesadas.");
             } elseif ($ok > 0) {
-                return back()->with('warning', "Importación parcial: {$ok} exitosos, {$err} con errores.");
+                return back()->with('warning', "Importación parcial: {$ok} exitosas, {$err} con errores.")
+                             ->with('errores_import', $actualizacion->errores);
             }
-            return back()->with('error', 'No se pudo procesar ningún producto. Revisa el historial.');
+            return back()->with('error', 'No se pudo procesar ninguna fila. Revisa los errores.')
+                         ->with('errores_import', $actualizacion->errores);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error importando productos: ' . $e->getMessage());

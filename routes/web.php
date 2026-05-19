@@ -86,6 +86,8 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
     Route::post('/{producto}/toggle-activo', [ProductosController::class, 'toggleActivo'])->name('productos.toggle-activo');
     Route::delete('/{producto}', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
+    Route::get('/importar', [ProductosController::class, 'mostrarImportar'])->name('productos.importar');
+    Route::get('/importar/plantilla', [ProductosController::class, 'descargarPlantilla'])->name('productos.plantilla');
     Route::post('/importar-excel', [ProductosController::class, 'importarExcel'])->name('productos.importar-excel');
     Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');

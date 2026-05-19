@@ -80,9 +80,10 @@
           action: () => window.location.href = "{{ route('productos.historial-precios') }}"
         },
         {
-          text:'<i class="bi bi-box-seam"></i> Importar Stock',
+          text:'<i class="bi bi-upload"></i> Importar',
           className:'btn btn-outline-success',
-          action: () => window.location.href = "{{ route('stock.index') }}"
+          titleAttr:'Importar productos y precios desde Excel',
+          action: () => window.location.href = "{{ route('productos.importar') }}"
         }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
