@@ -7,7 +7,6 @@ use App\Mail\BookingRequestCustomer;
 use App\Models\CleaningOrder;
 use App\Services\CleaningOrderService;
 use App\Services\ServiceAvailabilityService;
-use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -16,18 +15,33 @@ use Illuminate\Validation\ValidationException;
 class CleaningOrderController extends Controller
 {
     protected $orderService;
-    protected $stripeService;
     protected $availabilityService;
 
     public function __construct(
         CleaningOrderService $orderService,
-        StripeService $stripeService,
         ServiceAvailabilityService $availabilityService
     ) {
         $this->orderService = $orderService;
-        $this->stripeService = $stripeService;
         $this->availabilityService = $availabilityService;
     }
+
+    /**
+     * Lazy getter para StripeService — solo se carga si las rutas legacy de pago se usan.
+     * Si stripe/stripe-php no está instalado en producción, los métodos que usan booking sin
+     * pago (submitBooking, bookingConfirmed) seguirán funcionando porque NUNCA llaman a esto.
+     */
+    protected function stripe()
+    {
+        if (!isset($this->stripeService)) {
+            if (!class_exists(\Stripe\Stripe::class)) {
+                abort(503, 'Stripe SDK is not installed in this environment. Run: composer require stripe/stripe-php');
+            }
+            $this->stripeService = app(\App\Services\StripeService::class);
+        }
+        return $this->stripeService;
+    }
+
+    protected $stripeService;
 
     /**
      * Submit a booking request without payment.
@@ -142,7 +156,7 @@ class CleaningOrderController extends Controller
             $transaction = $result['transaction'];
 
             // Create Stripe Checkout Session
-            $sessionResult = $this->stripeService->createCheckoutSession($order, $transaction);
+            $sessionResult = $this->stripe()->createCheckoutSession($order, $transaction);
 
             if (!$sessionResult['success']) {
                 Log::error('Failed to create Stripe session', [
@@ -198,7 +212,7 @@ class CleaningOrderController extends Controller
         }
 
         // Retrieve the Stripe session to verify payment
-        $session = $this->stripeService->retrieveSession($sessionId);
+        $session = $this->stripe()->retrieveSession($sessionId);
 
         if (!$session) {
             return redirect()->route('welcome')->with('error', 'Payment session not found');
