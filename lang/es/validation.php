@@ -140,7 +140,7 @@ return [
     'string' => 'El campo :attribute debe ser una cadena de texto.',
     'timezone' => 'El campo :attribute debe ser una zona horaria valida.',
     'unique' => 'El valor del campo :attribute ya esta en uso.',
-    'uploaded' => 'El archivo :attribute no se pudo cargar. Verifica que no exceda el tamano maximo permitido.',
+    'uploaded' => 'El archivo :attribute supera el tamano maximo permitido por el servidor. Reduzca el tamano del archivo e intente de nuevo.',
     'uppercase' => 'El campo :attribute debe estar en mayusculas.',
     'url' => 'El campo :attribute debe ser una URL valida.',
     'ulid' => 'El campo :attribute debe ser un ULID valido.',

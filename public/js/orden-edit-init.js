@@ -108,7 +108,7 @@ function cargarPiezas() {
             $row.find('.pieza-material').val(pieza.material);
         }
         if (pieza.calibre) {
-            $row.find('.pieza-calibre').val(pieza.calibre);
+            $row.find('.pieza-calibre').val(pieza.calibre).each(function(){ autoExpandSelect(this); });
         }
         if (pieza.notas) {
             $('#piezaNotasRow_' + idx).find('.pieza-notas').val(pieza.notas);

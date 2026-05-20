@@ -2,6 +2,47 @@
 
 @section('title', 'Garantias')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('vendor/select2/select2.min.css') }}">
+<style>
+    #filtroEstado + .select2-container { min-width: 260px; }
+    #filtroEstado + .select2-container .select2-selection--multiple {
+        min-height: calc(1.5em + 0.5rem + 2px);
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 2px 4px;
+    }
+    #filtroEstado + .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
+    }
+    #filtroEstado + .select2-container .select2-selection__choice {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        border: 1px solid #b6d4fe;
+        border-radius: 0.25rem;
+        padding: 2px 8px;
+        font-size: 0.8125rem;
+        margin: 2px 4px 2px 0;
+    }
+    #filtroEstado + .select2-container .select2-selection__choice__remove {
+        color: #0d6efd;
+        margin-right: 4px;
+        border: 0;
+        background: transparent;
+    }
+    #filtroEstado + .select2-container .select2-selection__choice__remove:hover {
+        color: #fff;
+        background-color: #0d6efd;
+        border-radius: 0.25rem;
+    }
+    .select2-dropdown { border: 1px solid #ced4da; border-radius: 0.375rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+    .select2-dropdown .select2-results__option { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+    .select2-dropdown .select2-results__option--highlighted[aria-selected],
+    .select2-dropdown .select2-results__option--highlighted { background-color: #0d6efd !important; color: #fff; }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Garantias" description="Devoluciones por garantia de piezas entregadas">
@@ -20,13 +61,13 @@
         <div class="d-flex flex-wrap align-items-center gap-3">
             <div>
                 <label class="form-label small fw-medium mb-1">Estado</label>
-                <select class="form-select form-select-sm" id="filtroEstado" style="min-width: 150px;">
-                    <option value="">Todos</option>
-                    <option value="abierta">Abierta</option>
-                    <option value="en_proceso">En Proceso</option>
+                <select class="form-select form-select-sm" id="filtroEstado" multiple>
+                    <option value="abierta" selected>Abierta</option>
+                    <option value="en_proceso" selected>En Proceso</option>
                     <option value="completada">Completada</option>
                     <option value="reentregada">Reentregada</option>
                 </select>
+                <button type="button" class="btn btn-link btn-sm p-0 mt-1" id="btnLimpiarEstado">Limpiar filtro</button>
             </div>
         </div>
     </div>
@@ -66,17 +107,26 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('vendor/select2/select2.min.js') }}"></script>
 <script>
 var CSRF_TOKEN = '{{ csrf_token() }}';
 
 $(function() {
+    // Inicializar Select2 sobre filtro de Estado
+    $('#filtroEstado').select2({
+        placeholder: 'Selecciona uno o varios estados',
+        allowClear: true,
+        closeOnSelect: false,
+        width: '100%'
+    });
+
     var table = $('#garantiasTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
             url: '{{ route("recepcion.garantias.index") }}',
             data: function(d) {
-                d.estado = $('#filtroEstado').val();
+                d.estado = $('#filtroEstado').val() || [];
             }
         },
         columns: [
@@ -110,6 +160,11 @@ $(function() {
     // Filtro por estado
     $('#filtroEstado').on('change', function() {
         table.ajax.reload();
+    });
+
+    // Limpiar filtro de estado
+    $('#btnLimpiarEstado').on('click', function() {
+        $('#filtroEstado').val([]).trigger('change');
     });
 
     // Asignar operario desde lista

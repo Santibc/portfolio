@@ -28,7 +28,8 @@ class UpdateDocumentRequest extends FormRequest
             'title.max' => 'El título no puede exceder los 255 caracteres.',
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
             'file.file' => 'Debe subir un archivo válido.',
-            'file.max' => 'El archivo no puede superar los 50MB.',
+            'file.max' => 'El archivo no puede superar los 50 MB. Tamaño máximo permitido: 50 MB.',
+            'file.uploaded' => 'El archivo supera el tamaño máximo permitido (50 MB). Reduzca el tamaño e intente de nuevo.',
         ];
     }
 }

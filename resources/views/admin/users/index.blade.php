@@ -35,15 +35,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Estado</label>
-                    <select name="status" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Correo confirmado</option>
-                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Pendiente de correo</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-5 d-flex align-items-end">
                     <button type="submit" class="btn btn-outline-primary w-100">
                         <i class="bi bi-search me-1"></i>Filtrar
                     </button>
@@ -87,22 +79,6 @@
                             </th>
                             <th>Rol</th>
                             <th>
-                                <a href="{{ $sortLink('email_verified_at') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
-                                    Estado {!! $sortIcon('email_verified_at') !!}
-                                </a>
-                                <button type="button"
-                                        class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline"
-                                        data-bs-toggle="popover"
-                                        data-bs-trigger="focus"
-                                        data-bs-placement="top"
-                                        data-bs-html="true"
-                                        data-bs-title="¿Qué significa cada estado?"
-                                        data-bs-content="<div class='mb-2'><span class='badge bg-success-subtle text-success'><i class='bi bi-check-circle me-1'></i>Correo confirmado</span><br><small class='text-muted'>El usuario verificó su correo electrónico y puede iniciar sesión normalmente.</small></div><div><span class='badge bg-warning-subtle text-warning'><i class='bi bi-clock me-1'></i>Pendiente de correo</span><br><small class='text-muted'>El usuario aún no ha confirmado su correo electrónico desde el enlace de verificación.</small></div>"
-                                        title="Ver explicación de los estados">
-                                    <i class="bi bi-question-circle"></i>
-                                </button>
-                            </th>
-                            <th>
                                 <a href="{{ $sortLink('created_at') }}" class="text-decoration-none text-dark d-inline-flex align-items-center">
                                     Registro {!! $sortIcon('created_at') !!}
                                 </a>
@@ -112,7 +88,7 @@
                     </thead>
                     <tbody>
                         @forelse($usuarios ?? [] as $usuario)
-                        <tr>
+                        <tr class="{{ $usuario->activo ? '' : 'usuario-inactivo' }}">
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
                                     @if($usuario->hasProfilePhoto())
@@ -127,7 +103,12 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <h6 class="mb-0">{{ $usuario->name }}</h6>
+                                        <h6 class="mb-0">
+                                            {{ $usuario->name }}
+                                            @if(!$usuario->activo)
+                                                <span class="badge bg-danger ms-1">Inactivo</span>
+                                            @endif
+                                        </h6>
                                         <small class="text-muted">ID: {{ $usuario->id }}</small>
                                     </div>
                                 </div>
@@ -141,21 +122,6 @@
                                 @endforeach
                             </td>
                             <td>
-                                @if($usuario->email_verified_at)
-                                    <span class="badge bg-success-subtle text-success"
-                                          data-bs-toggle="tooltip"
-                                          title="El usuario verificó su correo y puede iniciar sesión.">
-                                        <i class="bi bi-check-circle me-1"></i>Correo confirmado
-                                    </span>
-                                @else
-                                    <span class="badge bg-warning-subtle text-warning"
-                                          data-bs-toggle="tooltip"
-                                          title="El usuario aún no ha confirmado su correo electrónico.">
-                                        <i class="bi bi-clock me-1"></i>Pendiente de correo
-                                    </span>
-                                @endif
-                            </td>
-                            <td>
                                 <small class="text-muted">{{ $usuario->created_at->format('d/m/Y') }}</small>
                             </td>
                             <td class="text-end pe-4">
@@ -165,17 +131,24 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     @if($usuario->id !== auth()->id())
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                            onclick="deleteUser({{ $usuario->id }}, '{{ $usuario->name }}')" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                        @if($usuario->activo)
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="toggleActivoUser({{ $usuario->id }}, '{{ $usuario->name }}', false)" title="Desactivar">
+                                            <i class="bi bi-person-x"></i>
+                                        </button>
+                                        @else
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                                onclick="toggleActivoUser({{ $usuario->id }}, '{{ $usuario->name }}', true)" title="Activar">
+                                            <i class="bi bi-person-check"></i>
+                                        </button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
+                            <td colspan="5" class="text-center py-4 text-muted">
                                 No hay usuarios que mostrar
                             </td>
                         </tr>
@@ -308,14 +281,29 @@
     </div>
 </div>
 
-<!-- Form Eliminar -->
-<form id="deleteUserForm" method="POST" class="d-none">
+<!-- Form Activar/Desactivar -->
+<form id="toggleActivoForm" method="POST" class="d-none">
     @csrf
-    @method('DELETE')
+    @method('PATCH')
 </form>
 
 @push('styles')
 <style>
+/* Filas de usuarios desactivados */
+#usersTable tbody tr.usuario-inactivo > td {
+    background-color: #f8d7da !important;
+    color: #842029 !important;
+}
+
+#usersTable tbody tr.usuario-inactivo:hover > td {
+    background-color: #f5c2c7 !important;
+}
+
+#usersTable tbody tr.usuario-inactivo .text-muted {
+    color: #842029 !important;
+    opacity: 0.85;
+}
+
 /* Fix para conflicto Bootstrap + Tailwind en modales */
 .modal.show {
     display: block !important;
@@ -375,20 +363,27 @@ function editUser(userId) {
     });
 }
 
-function deleteUser(userId, userName) {
+function toggleActivoUser(userId, userName, activar) {
+    const titulo = activar ? '¿Activar usuario?' : '¿Desactivar usuario?';
+    const texto = activar
+        ? `El usuario "${userName}" podrá volver a iniciar sesión.`
+        : `El usuario "${userName}" no podrá iniciar sesión. Su información e historial se mantienen intactos.`;
+    const confirmar = activar ? 'Sí, activar' : 'Sí, desactivar';
+    const color = activar ? '#198754' : '#dc3545';
+
     Swal.fire({
-        title: '¿Eliminar usuario?',
-        text: `¿Estás seguro de eliminar a "${userName}"? Esta acción no se puede deshacer.`,
+        title: titulo,
+        text: texto,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
+        confirmButtonColor: color,
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonText: confirmar,
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            const form = document.getElementById('deleteUserForm');
-            form.action = `{{ url('admin/usuarios') }}/${userId}`;
+            const form = document.getElementById('toggleActivoForm');
+            form.action = `{{ url('admin/usuarios') }}/${userId}/toggle-activo`;
             form.submit();
         }
     });

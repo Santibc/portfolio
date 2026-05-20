@@ -312,8 +312,7 @@ class OrdenService
 
             $base = $cantidad * $precioUnitario;
             $descuentoMonto = round($base * $descuentoPorcentaje / 100, 2);
-            $subtotal = $base - $descuentoMonto;
-            $montoIva = round($subtotal * ($porcentajeIva / 100), 2);
+            $montoIva = round($base * ($porcentajeIva / 100), 2);
 
             OrdenItem::create([
                 'orden_id' => $orden->id,
@@ -326,9 +325,9 @@ class OrdenService
                 'descuento_porcentaje' => $descuentoPorcentaje,
                 'descuento_monto' => $descuentoMonto,
                 'categoria' => $item['categoria'] ?? 'servicio',
-                'subtotal' => $subtotal,
+                'subtotal' => $base,
                 'monto_iva' => $montoIva,
-                'total' => $subtotal + $montoIva,
+                'total' => $base + $montoIva - $descuentoMonto,
             ]);
         }
     }

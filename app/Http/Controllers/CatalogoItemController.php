@@ -264,7 +264,8 @@ class CatalogoItemController extends Controller
         ], [
             'archivo.required' => 'Debe seleccionar un archivo Excel.',
             'archivo.mimes' => 'El archivo debe ser formato .xlsx o .xls.',
-            'archivo.max' => 'El archivo no puede superar 5MB.',
+            'archivo.max' => 'El archivo no puede superar 5 MB. Tamano maximo permitido: 5 MB.',
+            'archivo.uploaded' => 'El archivo supera el tamano maximo permitido (5 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $archivo = $request->file('archivo');

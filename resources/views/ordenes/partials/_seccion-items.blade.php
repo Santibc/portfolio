@@ -61,22 +61,22 @@
                         <span class="text-muted">Subtotal bruto:</span>
                         <strong id="totalSubtotalBruto">$0</strong>
                     </div>
-                    <div class="d-flex justify-content-between mb-2" id="filaDescuento" style="display:none;">
-                        <span class="text-danger">Descuento:</span>
-                        <strong class="text-danger" id="totalDescuento">-$0</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Subtotal:</span>
-                        <strong id="totalSubtotal">$0</strong>
-                    </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">IVA:</span>
                         <strong id="totalIva">$0</strong>
                     </div>
                     <hr class="my-2">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mb-2">
                         <span class="fs-5 fw-bold">TOTAL:</span>
-                        <span class="fs-5 fw-bold text-primary" id="totalGeneral">$0</span>
+                        <span class="fs-5 fw-bold" id="totalGeneral">$0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" id="filaDescuento" style="display:none;">
+                        <span class="text-danger">Descuento:</span>
+                        <strong class="text-danger" id="totalDescuento">-$0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="fs-5 fw-bold">Total con retenciones:</span>
+                        <span class="fs-5 fw-bold text-primary" id="totalConRetenciones">$0</span>
                     </div>
                 </div>
             </div>

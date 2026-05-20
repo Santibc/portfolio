@@ -25,7 +25,11 @@ class GarantiaController extends Controller
                 ->select('devoluciones_garantia.*');
 
             if ($request->filled('estado')) {
-                $query->where('estado', $request->input('estado'));
+                $estados = (array) $request->input('estado');
+                $estados = array_filter($estados, fn($e) => $e !== '' && $e !== null);
+                if (!empty($estados)) {
+                    $query->whereIn('estado', $estados);
+                }
             }
 
             return DataTables::of($query)

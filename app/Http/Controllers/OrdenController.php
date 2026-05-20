@@ -227,6 +227,12 @@ class OrdenController extends Controller
         // Subida de archivo normal
         $request->validate([
             'archivo' => 'required|image|mimes:jpeg,jpg,png,webp|max:10240',
+        ], [
+            'archivo.required' => 'Debe seleccionar una imagen.',
+            'archivo.image' => 'El archivo debe ser una imagen.',
+            'archivo.mimes' => 'Solo se permiten imagenes JPG, PNG y WebP.',
+            'archivo.max' => 'La imagen no puede exceder 10 MB. Tamano maximo permitido: 10 MB.',
+            'archivo.uploaded' => 'La imagen supera el tamano maximo permitido (10 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $bosquejo = $this->ordenService->subirBosquejoTemporal(
@@ -1103,7 +1109,8 @@ class OrdenController extends Controller
         ], [
             'archivo.required' => 'Debe seleccionar un archivo.',
             'archivo.file' => 'El archivo es invalido.',
-            'archivo.max' => 'El archivo no puede superar 50 MB.',
+            'archivo.max' => 'El archivo no puede superar 50 MB. Tamano maximo permitido: 50 MB.',
+            'archivo.uploaded' => 'El archivo supera el tamano maximo permitido (50 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $file = $request->file('archivo');

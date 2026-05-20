@@ -1,0 +1,342 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: 
+    - generic [ref=e4]: Sin conexion a internet. Los cambios se guardaran localmente.
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - button "" [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: 
+      - generic [ref=e10]:
+        - img "Logo" [ref=e11]
+        - text: SINDEN
+      - generic [ref=e12]:
+        - button "" [ref=e13] [cursor=pointer]:
+          - text: 
+          - generic [ref=e14]: 
+        - generic "Conectado" [ref=e15]
+        - generic [ref=e16]:
+          - button " 7" [ref=e17] [cursor=pointer]:
+            - generic [ref=e18]: 
+            - generic [ref=e19]: "7"
+          - text: 
+        - link " Administrador Administrador" [ref=e20] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/profile
+          - generic [ref=e22]: 
+          - generic [ref=e23]:
+            - generic [ref=e24]: Administrador
+            - generic [ref=e25]: Administrador
+  - complementary [ref=e26]:
+    - navigation [ref=e27]:
+      - link " Inicio" [ref=e29] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - generic [ref=e30]: 
+        - generic [ref=e31]: Inicio
+      - generic [ref=e32]: Entregas
+      - link " Entregas Pendientes" [ref=e34] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+        - generic [ref=e35]: 
+        - generic [ref=e36]: Entregas Pendientes
+      - link " Historial Entregas" [ref=e38] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-historial
+        - generic [ref=e39]: 
+        - generic [ref=e40]: Historial Entregas
+      - generic [ref=e41]: Ordenes
+      - link " Crear Orden" [ref=e43] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes/crear
+        - generic [ref=e44]: 
+        - generic [ref=e45]: Crear Orden
+      - link " Buscar Ordenes" [ref=e47] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes
+        - generic [ref=e48]: 
+        - generic [ref=e49]: Buscar Ordenes
+      - link " Devoluciones/Garantias" [ref=e51] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/garantias
+        - generic [ref=e52]: 
+        - generic [ref=e53]: Devoluciones/Garantias
+      - generic [ref=e54]: Catalogos
+      - link " Clientes" [ref=e56] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/clientes
+        - generic [ref=e57]: 
+        - generic [ref=e58]: Clientes
+      - link " Items" [ref=e60] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/items
+        - generic [ref=e61]: 
+        - generic [ref=e62]: Items
+      - link " Bosquejos Matriz" [ref=e64] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/bosquejos-matriz
+        - generic [ref=e65]: 
+        - generic [ref=e66]: Bosquejos Matriz
+      - link " Consulta Precios" [ref=e68] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/consulta-precios
+        - generic [ref=e69]: 
+        - generic [ref=e70]: Consulta Precios
+      - generic [ref=e71]: Finanzas
+      - link " O. Pendientes Pagar" [ref=e73] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/ordenes-pendientes
+        - generic [ref=e74]: 
+        - generic [ref=e75]: O. Pendientes Pagar
+      - link " Historial Financiero" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/historial-financiero
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Historial Financiero
+      - link " Pagos por Aprobar" [ref=e81] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/pagos-pendientes
+        - generic [ref=e82]: 
+        - generic [ref=e83]: Pagos por Aprobar
+      - link " Reporte Ventas por Categoría de Items" [ref=e85] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/reporte-items
+        - generic [ref=e86]: 
+        - generic [ref=e87]: Reporte Ventas por Categoría de Items
+      - generic [ref=e88]: Administracion
+      - link " Usuarios" [ref=e90] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/usuarios
+        - generic [ref=e91]: 
+        - generic [ref=e92]: Usuarios
+      - link " Configuracion" [ref=e94] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/configuracion
+        - generic [ref=e95]: 
+        - generic [ref=e96]: Configuracion
+      - link " Tabla de Precios" [ref=e98] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/tabla-precios
+        - generic [ref=e99]: 
+        - generic [ref=e100]: Tabla de Precios
+      - generic [ref=e101]: Sistema
+      - link " Mis Actividades" [ref=e103] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/actividades
+        - generic [ref=e104]: 
+        - generic [ref=e105]: Mis Actividades
+      - link " Actividades Globales" [ref=e107] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/admin/actividades-globales
+        - generic [ref=e108]: 
+        - generic [ref=e109]: Actividades Globales
+      - generic [ref=e110]: Cuenta
+      - link " Mi Perfil" [ref=e112] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - generic [ref=e113]: 
+        - generic [ref=e114]: Mi Perfil
+    - button " Cerrar Sesion" [ref=e117] [cursor=pointer]:
+      - generic [ref=e118]: 
+      - generic [ref=e119]: Cerrar Sesion
+  - main [ref=e120]:
+    - generic [ref=e121]:
+      - generic [ref=e123]:
+        - heading "Crear Orden" [level=1] [ref=e124]
+        - generic [ref=e125]:
+          - generic [ref=e126] [cursor=pointer]:
+            - generic [ref=e127]: 
+            - generic [ref=e128]: Cliente
+          - generic [ref=e129] [cursor=pointer]:
+            - generic [ref=e130]: 
+            - generic [ref=e131]: Piezas
+          - generic [ref=e132] [cursor=pointer]:
+            - generic [ref=e133]: 
+            - generic [ref=e134]: Items (Productos y servicios)
+          - generic [ref=e135] [cursor=pointer]:
+            - generic [ref=e136]: 
+            - generic [ref=e137]: Firma
+          - generic [ref=e138] [cursor=pointer]:
+            - generic [ref=e139]: 
+            - generic [ref=e140]: Pagos
+          - generic [ref=e141] [cursor=pointer]:
+            - generic [ref=e142]: 
+            - generic [ref=e143]: Fechas
+      - generic [ref=e144]:
+        - generic [ref=e145]:
+          - heading " 1. Cliente" [level=6] [ref=e146]:
+            - generic [ref=e147]: 
+            - text: 1. Cliente
+          - generic [ref=e148]: Sin seleccionar
+        - generic [ref=e150]:
+          - generic [ref=e151]:
+            - generic [ref=e152]: Buscar cliente *
+            - generic [ref=e154]:
+              - generic [ref=e156]: 
+              - textbox "Escriba nombre, celular o correo..." [ref=e157]
+          - generic [ref=e159]:
+            - button " Mostrador" [ref=e160] [cursor=pointer]:
+              - generic [ref=e161]: 
+              - text: Mostrador
+            - button " Crear Nuevo" [ref=e162] [cursor=pointer]:
+              - generic [ref=e163]: 
+              - text: Crear Nuevo
+      - generic [ref=e164]:
+        - heading " 2. Piezas" [level=6] [ref=e166]:
+          - generic [ref=e167]: 
+          - text: 2. Piezas
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - heading " Piezas" [level=6] [ref=e170]:
+              - generic [ref=e171]: 
+              - text: Piezas
+            - generic [ref=e172]:
+              - button " Importar Matriz" [ref=e173] [cursor=pointer]:
+                - generic [ref=e174]: 
+                - text: Importar Matriz
+              - button " Agregar Pieza" [ref=e175] [cursor=pointer]:
+                - generic [ref=e176]: 
+                - text: Agregar Pieza
+          - generic [ref=e177]:
+            - generic [ref=e178]: 
+            - text: No hay piezas. Si esta orden requiere trabajo sobre piezas, agregue al menos una.
+            - generic [ref=e179]:
+              - generic [ref=e180]: 
+              - text: Sin piezas = Venta directa (se marca como ejecutada al generar)
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - heading " 3. Items (Productos y servicios)" [level=6] [ref=e183]:
+            - generic [ref=e184]: 
+            - text: 3. Items (Productos y servicios)
+          - button " Agregar Item" [ref=e185] [cursor=pointer]:
+            - generic [ref=e186]: 
+            - text: Agregar Item
+        - generic [ref=e187]:
+          - table [ref=e189]:
+            - rowgroup [ref=e190]:
+              - row "# Codigo Descripcion Cantidad P. Unitario IVA Desc. % Subtotal" [ref=e191]:
+                - columnheader "#" [ref=e192]
+                - columnheader "Codigo" [ref=e193]
+                - columnheader "Descripcion" [ref=e194]
+                - columnheader "Cantidad" [ref=e195]
+                - columnheader "P. Unitario" [ref=e196]
+                - columnheader "IVA" [ref=e197]
+                - columnheader "Desc. %" [ref=e198]
+                - columnheader "Subtotal" [ref=e199]
+                - columnheader [ref=e200]
+            - rowgroup [ref=e273]:
+              - 'row "1 CORTE-001 - Corte de lamina HR calibre 18 $5.000 | IVA: 19.00% CORTE-2 - Descripcion $50.000 | IVA: 19.00% dsad - Servicio de corte laser ejemplo $50.000 | IVA: 19.00% MAT-001 - Lamina de acero inoxidable ejemplo $25.000 | IVA: 19.00% PT-001 - Pieza terminada ejemplo $100.000 | IVA: 19.00% 1 0 0 $0 " [ref=e274]':
+                - cell "1" [ref=e275]
+                - 'cell "CORTE-001 - Corte de lamina HR calibre 18 $5.000 | IVA: 19.00% CORTE-2 - Descripcion $50.000 | IVA: 19.00% dsad - Servicio de corte laser ejemplo $50.000 | IVA: 19.00% MAT-001 - Lamina de acero inoxidable ejemplo $25.000 | IVA: 19.00% PT-001 - Pieza terminada ejemplo $100.000 | IVA: 19.00%" [ref=e276]':
+                  - generic [ref=e277]:
+                    - textbox "Buscar..." [active] [ref=e278]
+                    - text: 
+                  - generic [ref=e279]:
+                    - 'link "CORTE-001 - Corte de lamina HR calibre 18 $5.000 | IVA: 19.00%" [ref=e280] [cursor=pointer]':
+                      - /url: "#"
+                      - strong [ref=e281]: CORTE-001
+                      - text: "- Corte de lamina HR calibre 18"
+                      - text: "$5.000 | IVA: 19.00%"
+                    - 'link "CORTE-2 - Descripcion $50.000 | IVA: 19.00%" [ref=e282] [cursor=pointer]':
+                      - /url: "#"
+                      - strong [ref=e283]: CORTE-2
+                      - text: "- Descripcion"
+                      - text: "$50.000 | IVA: 19.00%"
+                    - 'link "dsad - Servicio de corte laser ejemplo $50.000 | IVA: 19.00%" [ref=e284] [cursor=pointer]':
+                      - /url: "#"
+                      - strong [ref=e285]: dsad
+                      - text: "- Servicio de corte laser ejemplo"
+                      - text: "$50.000 | IVA: 19.00%"
+                    - 'link "MAT-001 - Lamina de acero inoxidable ejemplo $25.000 | IVA: 19.00%" [ref=e286] [cursor=pointer]':
+                      - /url: "#"
+                      - strong [ref=e287]: MAT-001
+                      - text: "- Lamina de acero inoxidable ejemplo"
+                      - text: "$25.000 | IVA: 19.00%"
+                    - 'link "PT-001 - Pieza terminada ejemplo $100.000 | IVA: 19.00%" [ref=e288] [cursor=pointer]':
+                      - /url: "#"
+                      - strong [ref=e289]: PT-001
+                      - text: "- Pieza terminada ejemplo"
+                      - text: "$100.000 | IVA: 19.00%"
+                - cell [ref=e290]:
+                  - textbox "Descripcion del item" [ref=e291]
+                - cell "1" [ref=e292]:
+                  - spinbutton [ref=e293]: "1"
+                - cell "0" [ref=e294]:
+                  - spinbutton [ref=e295]: "0"
+                - cell [ref=e296]:
+                  - checkbox [checked] [ref=e297]
+                - cell "0" [ref=e298]:
+                  - spinbutton [ref=e299]: "0"
+                - cell "$0" [ref=e300]
+                - cell "" [ref=e301]:
+                  - button "" [ref=e302] [cursor=pointer]:
+                    - generic [ref=e303]: 
+          - text: 
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]: "Subtotal bruto:"
+              - strong [ref=e309]: $0
+            - generic [ref=e310]:
+              - generic [ref=e311]: "IVA:"
+              - strong [ref=e312]: $0
+            - separator [ref=e313]
+            - generic [ref=e314]:
+              - generic [ref=e315]: "TOTAL:"
+              - generic [ref=e316]: $0
+            - generic [ref=e317]:
+              - generic [ref=e318]: "Descuento:"
+              - strong [ref=e319]: "-$0"
+            - generic [ref=e320]:
+              - generic [ref=e321]: "Total con retenciones:"
+              - generic [ref=e322]: $0
+      - generic [ref=e205]:
+        - heading " 4. Firma del Cliente" [level=6] [ref=e207]:
+          - generic [ref=e208]: 
+          - text: 4. Firma del Cliente
+        - generic [ref=e212]:
+          - button " Limpiar" [ref=e213] [cursor=pointer]:
+            - generic [ref=e214]: 
+            - text: Limpiar
+          - generic [ref=e215]:
+            - generic [ref=e216]: 
+            - text: Dibuje la firma del cliente con el mouse o dedo (touch)
+      - generic [ref=e217]:
+        - generic [ref=e218]:
+          - heading " 5. Pagos / Abonos" [level=6] [ref=e219]:
+            - generic [ref=e220]: 
+            - text: 5. Pagos / Abonos
+          - button " Agregar Pago" [ref=e221] [cursor=pointer]:
+            - generic [ref=e222]: 
+            - text: Agregar Pago
+        - generic [ref=e224]:
+          - generic [ref=e225]: 
+          - text: No hay pagos registrados. Puede agregar abonos opcionalmente.
+      - generic [ref=e226]:
+        - heading " 6. Fechas y Notas" [level=6] [ref=e228]:
+          - generic [ref=e229]: 
+          - text: 6. Fechas y Notas
+        - generic [ref=e231]:
+          - generic [ref=e232]:
+            - generic [ref=e233]: Fecha de Creacion
+            - textbox [ref=e234]: 20/05/2026 10:18
+          - generic [ref=e235]:
+            - generic [ref=e236]: Fecha de Entrega *
+            - textbox [ref=e237]
+          - generic [ref=e238]:
+            - generic [ref=e239]: Hora de Entrega *
+            - textbox [ref=e240]
+          - generic [ref=e241]:
+            - generic [ref=e242]: Notas / Observaciones Generales
+            - textbox "Notas adicionales para esta orden..." [ref=e243]
+      - generic [ref=e244]:
+        - generic [ref=e245]:
+          - heading " Documentos adjuntos" [level=5] [ref=e246]:
+            - generic [ref=e247]: 
+            - text: Documentos adjuntos
+          - generic [ref=e248]: Cualquier tipo de archivo (max. 50 MB)
+        - generic [ref=e249]:
+          - text:  
+          - table [ref=e255]:
+            - rowgroup [ref=e256]:
+              - row "Nombre Tamaño Subido por Fecha Acciones" [ref=e257]:
+                - columnheader [ref=e258]
+                - columnheader "Nombre" [ref=e259]
+                - columnheader "Tamaño" [ref=e260]
+                - columnheader "Subido por" [ref=e261]
+                - columnheader "Fecha" [ref=e262]
+                - columnheader "Acciones" [ref=e263]
+            - rowgroup [ref=e264]:
+              - row " Sin documentos adjuntos." [ref=e265]:
+                - cell " Sin documentos adjuntos." [ref=e266]:
+                  - generic [ref=e267]: 
+                  - text: Sin documentos adjuntos.
+      - generic [ref=e268]:
+        - button " Guardar Orden" [ref=e269] [cursor=pointer]:
+          - generic [ref=e270]: 
+          - text: Guardar Orden
+        - button " Generar Orden" [ref=e271] [cursor=pointer]:
+          - generic [ref=e272]: 
+          - text: Generar Orden
+    - text:                           
+  - alert "Selecciona un cliente para activar el auto-guardado" [ref=e323]:
+    - generic [ref=e325]: i
+    - heading "Selecciona un cliente para activar el auto-guardado" [level=2] [ref=e326]
+    - text: "!"

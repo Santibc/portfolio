@@ -150,7 +150,8 @@ class BosquejoMatrizController extends Controller
             'archivo.required' => 'Debe seleccionar una imagen.',
             'archivo.image' => 'El archivo debe ser una imagen.',
             'archivo.mimes' => 'Solo se permiten imagenes JPG, PNG y WebP.',
-            'archivo.max' => 'La imagen no puede exceder 10MB.',
+            'archivo.max' => 'La imagen no puede exceder 10 MB. Tamano maximo permitido: 10 MB.',
+            'archivo.uploaded' => 'La imagen supera el tamano maximo permitido (10 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $grupoId = $validated['grupo_bosquejo_id'] ?? null;

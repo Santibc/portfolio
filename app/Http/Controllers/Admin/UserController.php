@@ -31,17 +31,8 @@ class UserController extends Controller
             $query->role($request->role);
         }
 
-        // Filtro por estado (basado en email_verified_at)
-        if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($request->status === 'inactive') {
-                $query->whereNull('email_verified_at');
-            }
-        }
-
         // Ordenamiento por columna (default: nombre alfabético)
-        $sortableColumns = ['name', 'email', 'email_verified_at', 'created_at'];
+        $sortableColumns = ['name', 'email', 'created_at'];
         $sort = in_array($request->get('sort'), $sortableColumns) ? $request->get('sort') : 'name';
         $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
 
@@ -165,28 +156,31 @@ class UserController extends Controller
             ->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    public function destroy(User $user)
+    public function toggleActivo(User $user)
     {
-        // Evitar eliminar el propio usuario
+        // Evitar desactivar el propio usuario
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.usuarios.index')
-                ->with('error', 'No puedes eliminar tu propio usuario.');
+                ->with('error', 'No puedes desactivar tu propio usuario.');
         }
 
-        $userName = $user->name;
-        $userRol = $user->roles->first()->name ?? '-';
+        $valoresOriginales = $user->getOriginal();
+        $nuevoEstado = ! $user->activo;
 
-        $this->registrarEliminacion(
-            'usuario.eliminado',
-            "Usuario eliminado: {$userName}",
+        $user->update(['activo' => $nuevoEstado]);
+
+        $accion = $nuevoEstado ? 'activado' : 'desactivado';
+
+        $this->registrarActualizacion(
+            "usuario.{$accion}",
+            "Usuario {$accion}: {$user->name}",
             $user,
+            $valoresOriginales,
             null,
-            ['rol' => $userRol]
+            ['activo' => ['antes' => ! $nuevoEstado, 'despues' => $nuevoEstado]]
         );
 
-        $user->delete();
-
         return redirect()->route('admin.usuarios.index')
-            ->with('success', 'Usuario eliminado exitosamente.');
+            ->with('success', "Usuario {$accion} exitosamente.");
     }
 }

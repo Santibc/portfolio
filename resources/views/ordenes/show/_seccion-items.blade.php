@@ -44,24 +44,12 @@
                     </tbody>
                     @php
                         $totalDescuentos = $orden->items->sum('descuento_monto');
-                        $subtotalBruto = $orden->subtotal + $totalDescuentos;
+                        $totalAntesDescuento = $orden->subtotal + $orden->monto_iva;
                     @endphp
                     <tfoot class="border-top">
-                        @if($totalDescuentos > 0)
-                            <tr>
-                                <td colspan="7"></td>
-                                <td class="text-end text-muted small">Subtotal bruto</td>
-                                <td class="text-end fw-medium">${{ number_format($subtotalBruto, 0, ',', '.') }}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="7"></td>
-                                <td class="text-end text-danger small">Descuento</td>
-                                <td class="text-end fw-medium text-danger">-${{ number_format($totalDescuentos, 0, ',', '.') }}</td>
-                            </tr>
-                        @endif
                         <tr>
                             <td colspan="7"></td>
-                            <td class="text-end text-muted small">Subtotal</td>
+                            <td class="text-end text-muted small">Subtotal bruto</td>
                             <td class="text-end fw-medium">${{ number_format($orden->subtotal, 0, ',', '.') }}</td>
                         </tr>
                         <tr>
@@ -72,7 +60,19 @@
                         <tr>
                             <td colspan="7"></td>
                             <td class="text-end fw-bold">TOTAL</td>
-                            <td class="text-end fw-bold fs-6">${{ number_format($orden->total, 0, ',', '.') }}</td>
+                            <td class="text-end fw-bold fs-6">${{ number_format($totalAntesDescuento, 0, ',', '.') }}</td>
+                        </tr>
+                        @if($totalDescuentos > 0)
+                            <tr>
+                                <td colspan="7"></td>
+                                <td class="text-end text-danger small">Descuento</td>
+                                <td class="text-end fw-medium text-danger">-${{ number_format($totalDescuentos, 0, ',', '.') }}</td>
+                            </tr>
+                        @endif
+                        <tr>
+                            <td colspan="7"></td>
+                            <td class="text-end fw-bold">Total con retenciones</td>
+                            <td class="text-end fw-bold fs-6 text-primary">${{ number_format($orden->total, 0, ',', '.') }}</td>
                         </tr>
                     </tfoot>
                 </table>

@@ -1,0 +1,22 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "SINDEN" [ref=e4]
+    - generic [ref=e5]: SINDEN
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: Correo
+      - textbox "Correo" [active] [ref=e10]: admin@sinden.com
+    - generic [ref=e11]:
+      - generic [ref=e12]: Contraseña
+      - generic [ref=e13]:
+        - textbox "Contraseña" [ref=e14]: password
+        - button "Mostrar contraseña" [ref=e15] [cursor=pointer]:
+          - img [ref=e16]
+    - generic [ref=e20]:
+      - checkbox "Recordarme" [ref=e21]
+      - generic [ref=e22]: Recordarme
+    - generic [ref=e23]:
+      - link "Recuperar contraseña" [ref=e24] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/forgot-password
+      - button "Ingresar" [ref=e25] [cursor=pointer]
+  - paragraph [ref=e27]: © 2026 SINDEN

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'profile_photo',
         'ultimo_login',
         'theme',
+        'activo',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'ultimo_login' => 'datetime',
+        'activo' => 'boolean',
     ];
 
     /**

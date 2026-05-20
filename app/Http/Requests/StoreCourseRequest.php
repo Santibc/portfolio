@@ -40,7 +40,8 @@ class StoreCourseRequest extends FormRequest
             'description.max' => 'La descripción no puede exceder los 10000 caracteres.',
             'thumbnail.image' => 'El archivo debe ser una imagen.',
             'thumbnail.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif o webp.',
-            'thumbnail.max' => 'La imagen no puede superar los 2MB.',
+            'thumbnail.max' => 'La imagen no puede superar los 2 MB. Tamano maximo permitido: 2 MB.',
+            'thumbnail.uploaded' => 'La imagen supera el tamano maximo permitido (2 MB). Reduzca el tamano e intente de nuevo.',
         ];
     }
 }

@@ -108,6 +108,11 @@ $(function() {
     $(document).on('input change', '.cantidad-auto-expand', function() {
         autoExpandCantidad(this);
     });
+
+    // Auto-expandir selects segun el texto de la opcion seleccionada
+    $(document).on('change', '.select-auto-expand', function() {
+        autoExpandSelect(this);
+    });
 });
 
 // Ajusta dinamicamente el ancho del input segun el largo del valor.
@@ -141,6 +146,30 @@ function aplicarAutoExpandCantidades() {
     $('.cantidad-auto-expand').each(function() {
         autoExpandCantidad(this);
     });
+}
+
+// Ajusta el ancho del select segun el texto de la opcion seleccionada.
+function autoExpandSelect(select) {
+    if (!select) return;
+    var opt = select.options[select.selectedIndex];
+    var val = opt ? opt.text : '';
+    if (!val) val = '--';
+
+    if (!_autoExpandCanvas) {
+        _autoExpandCanvas = document.createElement('canvas');
+    }
+    var ctx = _autoExpandCanvas.getContext('2d');
+    var cs = window.getComputedStyle(select);
+    ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    var textW = ctx.measureText(val).width;
+
+    var padL = parseFloat(cs.paddingLeft) || 0;
+    var padR = parseFloat(cs.paddingRight) || 0;
+    var chevron = 16;
+    var safety = 8;
+    var w = Math.ceil(textW + padL + padR + chevron + safety);
+    if (w < 70) w = 70;
+    select.style.width = w + 'px';
 }
 
 // ==========================================
@@ -427,17 +456,14 @@ function calcularTotalFila(idx) {
     var $row = $('#itemRow_' + idx);
     var cantidad = parseFloat($row.find('.item-cantidad').val()) || 0;
     var precio = parseFloat($row.find('.item-precio').val()) || 0;
-    var descPct = Math.max(0, Math.min(100, parseFloat($row.find('.item-descuento').val()) || 0));
     var base = cantidad * precio;
-    var subtotal = base - (base * descPct / 100);
-    $row.find('.item-subtotal-display').text(formatCOP(subtotal));
+    $row.find('.item-subtotal-display').text(formatCOP(base));
     recalcularTotales();
 }
 
 function recalcularTotales() {
     var totalSubtotalBruto = 0;
     var totalDescuento = 0;
-    var totalSubtotal = 0;
     var totalIva = 0;
 
     $('#tbodyItems tr').each(function() {
@@ -447,24 +473,24 @@ function recalcularTotales() {
         var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
         var base = cantidad * precio;
         var descMonto = base * descPct / 100;
-        var sub = base - descMonto;
-        var ivaVal = sub * (iva / 100);
+        var ivaVal = base * (iva / 100);
         totalSubtotalBruto += base;
         totalDescuento += descMonto;
-        totalSubtotal += sub;
         totalIva += ivaVal;
     });
 
-    var totalGeneral = totalSubtotal + totalIva;
+    var totalGeneral = totalSubtotalBruto + totalIva;
+    var totalConRetenciones = totalGeneral - totalDescuento;
+
     $('#totalSubtotalBruto').text(formatCOP(totalSubtotalBruto));
-    $('#totalDescuento').text('-' + formatCOP(totalDescuento));
-    if (totalDescuento > 0) { $('#filaDescuento').show(); } else { $('#filaDescuento').hide(); }
-    $('#totalSubtotal').text(formatCOP(totalSubtotal));
     $('#totalIva').text(formatCOP(totalIva));
     $('#totalGeneral').text(formatCOP(totalGeneral));
+    $('#totalDescuento').text('-' + formatCOP(totalDescuento));
+    if (totalDescuento > 0) { $('#filaDescuento').show(); } else { $('#filaDescuento').hide(); }
+    $('#totalConRetenciones').text(formatCOP(totalConRetenciones));
 
-    // Actualizar panel de pagos
-    $('#pagoTotalOrden').text(formatCOP(totalGeneral));
+    // Actualizar panel de pagos con el total que paga el cliente (con retenciones)
+    $('#pagoTotalOrden').text(formatCOP(totalConRetenciones));
     recalcularSaldo();
 
     if ($('#tbodyItems tr').length > 0) {
@@ -978,7 +1004,7 @@ function agregarFilaPieza(opts) {
         + '  <input type="text" class="form-control form-control-sm pieza-material" data-idx="' + idx + '" placeholder="Buscar..." autocomplete="off" onkeyup="buscarMaterialPieza(this)" onchange="generarEspecificacion(' + idx + ')">'
         + '  <div class="material-autocomplete-results list-group shadow-sm" id="materialResults_' + idx + '" style="display:none; position:fixed; z-index:1050; max-height:200px; overflow-y:auto;"></div>'
         + '</td>'
-        + '<td><select class="form-select form-select-sm pieza-calibre" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
+        + '<td><select class="form-select form-select-sm pieza-calibre select-auto-expand" onchange="generarEspecificacion(' + idx + ')">' + calOpts + '</select></td>'
         + '<td class="small text-muted pieza-especificacion">1 - ' + nombre + '</td>'
         + '<td>' + construirSelectOperario() + '</td>'
         + '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarFilaPieza(' + idx + ')"><i class="bi bi-trash"></i></button></td>'
@@ -1168,7 +1194,7 @@ function recalcularSaldo() {
         totalAbonado += parseFloat($(this).val()) || 0;
     });
 
-    // Obtener total general de items
+    // Obtener total con retenciones de items (lo que paga el cliente)
     var totalGeneral = 0;
     $('#tbodyItems tr').each(function() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
@@ -1176,8 +1202,9 @@ function recalcularSaldo() {
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
         var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
         var base = cantidad * precio;
-        var sub = base - (base * descPct / 100);
-        totalGeneral += sub + (sub * iva / 100);
+        var ivaVal = base * (iva / 100);
+        var descMonto = base * descPct / 100;
+        totalGeneral += base + ivaVal - descMonto;
     });
 
     var saldo = totalGeneral - totalAbonado;

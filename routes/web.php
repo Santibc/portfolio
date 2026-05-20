@@ -287,7 +287,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::get('/panel', AdminPanelController::class)->name('panel');
 
     // Gestion de Usuarios
-    Route::resource('usuarios', AdminUserController::class)->parameters(['usuarios' => 'user']);
+    Route::patch('usuarios/{user}/toggle-activo', [AdminUserController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
+    Route::resource('usuarios', AdminUserController::class)
+        ->parameters(['usuarios' => 'user'])
+        ->except(['destroy']);
 
     // Configuracion del Sistema
     Route::get('/configuracion', [ConfiguracionController::class, 'index'])->name('configuracion');

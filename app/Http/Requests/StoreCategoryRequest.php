@@ -37,7 +37,8 @@ class StoreCategoryRequest extends FormRequest
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
             'image.image' => 'El archivo debe ser una imagen.',
             'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif o webp.',
-            'image.max' => 'La imagen no puede superar los 2MB.',
+            'image.max' => 'La imagen no puede superar los 2 MB. Tamano maximo permitido: 2 MB.',
+            'image.uploaded' => 'La imagen supera el tamano maximo permitido (2 MB). Reduzca el tamano e intente de nuevo.',
         ];
     }
 }

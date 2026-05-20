@@ -387,8 +387,8 @@ class EntregaController extends Controller
         ], [
             'foto.required' => 'Debe seleccionar una foto.',
             'foto.image' => 'El archivo debe ser una imagen (JPG, PNG, etc.).',
-            'foto.max' => 'La foto no puede pesar mas de 30 MB.',
-            'foto.uploaded' => 'La foto no se pudo cargar. Verifica el tamano y vuelve a intentarlo.',
+            'foto.max' => 'La foto no puede pesar mas de 30 MB. Tamano maximo permitido: 30 MB.',
+            'foto.uploaded' => 'La foto supera el tamano maximo permitido (30 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $directorio = public_path("uploads/ordenes/{$orden->id}/fotos");

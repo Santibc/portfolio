@@ -116,7 +116,8 @@ class OrdenEstadoService
     {
         $orden->subtotal = $orden->items()->sum('subtotal');
         $orden->monto_iva = $orden->items()->sum('monto_iva');
-        $orden->total = $orden->subtotal + $orden->monto_iva;
+        $descuentoTotal = $orden->items()->sum('descuento_monto');
+        $orden->total = $orden->subtotal + $orden->monto_iva - $descuentoTotal;
         $orden->total_pagado = $orden->pagos()->where('aprobado', true)->sum('monto');
         $orden->saldo = $orden->total - $orden->total_pagado;
 

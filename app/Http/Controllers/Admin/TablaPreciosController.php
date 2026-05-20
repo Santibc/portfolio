@@ -325,6 +325,12 @@ class TablaPreciosController extends Controller
     {
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls|max:5120',
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo Excel.',
+            'archivo.file' => 'El archivo es invalido.',
+            'archivo.mimes' => 'El archivo debe ser formato .xlsx o .xls.',
+            'archivo.max' => 'El archivo no puede superar 5 MB. Tamano maximo permitido: 5 MB.',
+            'archivo.uploaded' => 'El archivo supera el tamano maximo permitido (5 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $import = new TablaPreciosImport();

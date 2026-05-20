@@ -29,7 +29,8 @@ class UpdateVideoRequest extends FormRequest
             'description.max' => 'La descripción no puede exceder los 5000 caracteres.',
             'video.file' => 'Debe subir un archivo válido.',
             'video.mimes' => 'El video debe ser de tipo: mp4, webm, ogg, mov o avi.',
-            'video.max' => 'El video no puede superar los 500MB.',
+            'video.max' => 'El video no puede superar los 500 MB. Tamaño máximo permitido: 500 MB.',
+            'video.uploaded' => 'El video supera el tamaño máximo permitido (500 MB). Reduzca el tamaño e intente de nuevo.',
         ];
     }
 }

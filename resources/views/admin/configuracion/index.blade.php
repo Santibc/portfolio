@@ -117,21 +117,6 @@
                                 <span class="input-group-text">%</span>
                             </div>
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label fw-medium">Numeros Nequi para Pagos</label>
-                            <div class="d-flex flex-wrap gap-2 mb-2">
-                                <template x-for="(num, i) in numeros_nequi" :key="i">
-                                    <span class="badge bg-primary-subtle text-primary d-inline-flex align-items-center gap-1 px-3 py-2 fs-7">
-                                        <span x-text="num"></span>
-                                        <button type="button" class="btn-close btn-close-sm ms-1" style="font-size:.6em" @click="quitarNequi(i)"></button>
-                                    </span>
-                                </template>
-                            </div>
-                            <div class="input-group input-group-sm" style="max-width:300px;">
-                                <input type="text" class="form-control" x-model="nuevoNequi" placeholder="Nuevo numero" maxlength="20" @keydown.enter.prevent="agregarNequi()">
-                                <button class="btn btn-outline-primary" type="button" @click="agregarNequi()"><i class="bi bi-plus"></i></button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -517,8 +502,6 @@ function configuracionApp() {
 
         // Financiero
         porcentaje_iva_defecto: @json($configs['porcentaje_iva_defecto']->valor ?? '19.00'),
-        numeros_nequi: @json(json_decode($configs['numeros_nequi']->valor ?? '[]', true) ?: []),
-        nuevoNequi: '',
 
         // Sistema
         timeout_autoguardado_recepcion: @json($configs['timeout_autoguardado_recepcion']->valor ?? '5'),
@@ -560,18 +543,6 @@ function configuracionApp() {
         estiloPreviewTipo(color) {
             var p = this.coloresPalette[color] || this.coloresPalette.secondary;
             return 'background-color:' + p.bg + '; color:' + p.hex + '; border:1px solid ' + p.hex + '33;';
-        },
-
-        // ─── Tags: Nequi ─────────────────────────────
-        agregarNequi() {
-            var v = this.nuevoNequi.trim();
-            if (v && !this.numeros_nequi.includes(v)) {
-                this.numeros_nequi.push(v);
-                this.nuevoNequi = '';
-            }
-        },
-        quitarNequi(i) {
-            this.numeros_nequi.splice(i, 1);
         },
 
         // ─── Tags: Materiales ────────────────────────
@@ -851,7 +822,6 @@ function configuracionApp() {
                     nit_empresa: this.nit_empresa || '',
                     color_texto_bienvenida: this.color_texto_bienvenida || '#1f2937',
                     porcentaje_iva_defecto: parseFloat(this.porcentaje_iva_defecto) || 19,
-                    numeros_nequi: this.numeros_nequi,
                     timeout_autoguardado_recepcion: parseInt(this.timeout_autoguardado_recepcion) || 5,
                     timeout_forzar_cierre: parseInt(this.timeout_forzar_cierre) || 60,
                     dias_expiracion_borradores: parseInt(this.dias_expiracion_borradores) || 30,

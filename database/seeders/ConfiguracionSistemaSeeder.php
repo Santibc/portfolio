@@ -41,12 +41,6 @@ class ConfiguracionSistemaSeeder extends Seeder
                 'descripcion' => 'NIT de la empresa',
             ],
             [
-                'clave' => 'numeros_nequi',
-                'valor' => '["3132292789","3177138139"]',
-                'tipo' => 'json',
-                'descripcion' => 'Numeros Nequi para pagos',
-            ],
-            [
                 'clave' => 'porcentaje_iva_defecto',
                 'valor' => '19.00',
                 'tipo' => 'decimal',

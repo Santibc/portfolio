@@ -213,8 +213,6 @@ class ConfiguracionController extends Controller
             'nit_empresa' => 'string|max:50|nullable',
             'color_texto_bienvenida' => 'string|regex:/^#[0-9a-fA-F]{6}$/|nullable',
             'porcentaje_iva_defecto' => 'numeric|min:0|max:100',
-            'numeros_nequi' => 'array',
-            'numeros_nequi.*' => 'string|max:20',
             'timeout_autoguardado_recepcion' => 'integer|min:1|max:60',
             'timeout_forzar_cierre' => 'integer|min:10|max:600',
             'dias_expiracion_borradores' => 'integer|min:1|max:365',
@@ -233,7 +231,7 @@ class ConfiguracionController extends Controller
         $clavesPermitidas = [
             'nombre_empresa', 'direccion_empresa', 'telefono_empresa', 'nit_empresa',
             'color_texto_bienvenida',
-            'porcentaje_iva_defecto', 'numeros_nequi',
+            'porcentaje_iva_defecto',
             'timeout_autoguardado_recepcion', 'timeout_forzar_cierre',
             'dias_expiracion_borradores', 'dias_borradores_recientes',
             'materiales_disponibles', 'calibres_disponibles',
@@ -307,6 +305,12 @@ class ConfiguracionController extends Controller
     {
         $request->validate([
             'fondo' => 'required|image|mimes:png,jpg,jpeg,webp|max:5120',
+        ], [
+            'fondo.required' => 'Debe seleccionar una imagen.',
+            'fondo.image' => 'El archivo debe ser una imagen.',
+            'fondo.mimes' => 'La imagen debe ser PNG, JPG o WebP.',
+            'fondo.max' => 'La imagen no puede exceder 5 MB. Tamano maximo permitido: 5 MB.',
+            'fondo.uploaded' => 'La imagen supera el tamano maximo permitido (5 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         $fondoActual = ConfiguracionSistema::get('imagen_fondo_login');
@@ -380,6 +384,12 @@ class ConfiguracionController extends Controller
     {
         $request->validate([
             'logo' => 'required|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
+        ], [
+            'logo.required' => 'Debe seleccionar una imagen.',
+            'logo.image' => 'El archivo debe ser una imagen.',
+            'logo.mimes' => 'El logo debe ser PNG, JPG, SVG o WebP.',
+            'logo.max' => 'El logo no puede exceder 2 MB. Tamano maximo permitido: 2 MB.',
+            'logo.uploaded' => 'El logo supera el tamano maximo permitido (2 MB). Reduzca el tamano e intente de nuevo.',
         ]);
 
         // Borrar logo anterior
