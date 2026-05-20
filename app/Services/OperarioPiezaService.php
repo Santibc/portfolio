@@ -358,7 +358,7 @@ class OperarioPiezaService
      */
     protected function notificarAvanceDisminuido(OrdenPieza $pieza, User $operario, float $desde, float $hasta): void
     {
-        $usuarios = User::role(['Administrador', 'Contabilidad'])->get();
+        $usuarios = User::role(['Administrador', 'Contabilidad'])->activos()->get();
 
         foreach ($usuarios as $usuario) {
             Notificacion::create([

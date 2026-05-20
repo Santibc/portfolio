@@ -576,7 +576,7 @@ class EntregaController extends Controller
 
     protected function notificarEntregaSinAvance(Orden $orden, OrdenPieza $pieza): void
     {
-        $usuarios = User::role(['Administrador', 'Contabilidad'])->get();
+        $usuarios = User::role(['Administrador', 'Contabilidad'])->activos()->get();
 
         foreach ($usuarios as $usuario) {
             Notificacion::create([

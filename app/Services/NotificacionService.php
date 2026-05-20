@@ -19,8 +19,11 @@ class NotificacionService
         if ($usuarios instanceof User) {
             $usuarios = collect([$usuarios]);
         } elseif (is_array($usuarios)) {
-            $usuarios = User::whereIn('id', $usuarios)->get();
+            $usuarios = User::whereIn('id', $usuarios)->activos()->get();
         }
+
+        // No enviar notificaciones a usuarios desactivados
+        $usuarios = collect($usuarios)->filter(fn ($u) => $u->activo);
 
         foreach ($usuarios as $usuario) {
             Notificacion::create([
@@ -38,7 +41,7 @@ class NotificacionService
      */
     public static function notificarRoles(array $roles, string $tipo, string $titulo, string $contenido, ?string $url = null): void
     {
-        $usuarios = User::role($roles)->get();
+        $usuarios = User::role($roles)->activos()->get();
         static::notificar($usuarios, $tipo, $titulo, $contenido, $url);
     }
 

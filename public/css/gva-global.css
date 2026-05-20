@@ -1026,6 +1026,20 @@ select.form-control {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d1d5db' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
 
+/* Header en modo oscuro: forzar texto/iconos a blanco
+   (var(--sinden-white) se redefine a oscuro en dark mode) */
+[data-theme="dark"] .nav-logo,
+[data-theme="dark"] .sidebar-toggle,
+[data-theme="dark"] .theme-toggle-btn,
+[data-theme="dark"] .user-name,
+[data-theme="dark"] .user-menu {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .user-role {
+    color: rgba(255, 255, 255, 0.8);
+}
+
 /* ==============================================
    Botón Toggle Theme (header)
    ============================================== */

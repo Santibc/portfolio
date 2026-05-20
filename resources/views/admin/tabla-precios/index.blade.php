@@ -155,16 +155,29 @@
                 <input type="file" class="form-control" name="archivo" accept=".xlsx,.xls" required>
                 <small class="text-muted mt-1 d-block">
                     <i class="bi bi-info-circle me-1"></i>
-                    El archivo debe tener las mismas columnas que el Excel exportado
-                    (tipo_servicio, calibre, cantidad_servicios_min/max, largo_mm_min/max, precio).
-                    Solo se actualizaran precios de registros existentes.
+                    El archivo debe tener las mismas columnas que el Excel exportado:
+                    <code>tipo_servicio</code>, <code>calibre</code>, <code>cantidad_servicios_min/max</code>,
+                    <code>largo_mm_min/max</code>, <code>precio</code>.
+                    Solo se actualizaran precios de registros existentes; las filas vacias o invalidas se omiten.
                 </small>
             </div>
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="btnImportar">
-                    <i class="bi bi-upload me-1"></i>Importar
-                </button>
+            <div class="alert alert-info py-2 px-3 small mb-3">
+                <i class="bi bi-download me-1"></i>
+                Si no estas seguro del formato, descarga la plantilla con los encabezados correctos:
+                <a href="{{ route('admin.tabla-precios.plantilla') }}" class="alert-link ms-1">
+                    <i class="bi bi-file-earmark-excel"></i> Descargar formato
+                </a>
+            </div>
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <a href="{{ route('admin.tabla-precios.plantilla') }}" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar Formato
+                </a>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnImportar">
+                        <i class="bi bi-upload me-1"></i>Importar
+                    </button>
+                </div>
             </div>
         </form>
     </x-sinden.modal>
@@ -503,12 +516,45 @@ $(function() {
             processData: false,
             contentType: false,
             success: function(data) {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: data.message, showConfirmButton: false, timer: 3000 });
-                bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide();
-                setTimeout(() => location.reload(), 1500);
+                var d = data.detalles || {};
+                var hayObservaciones = (d.no_encontradas || 0) + (d.invalidas || 0) + (d.vacias || 0) > 0;
+                var html = '<div class="text-start small">' +
+                    '<div><i class="bi bi-check-circle text-success me-1"></i>Actualizados: <strong>' + (d.actualizados || 0) + '</strong></div>' +
+                    '<div><i class="bi bi-dash-circle text-muted me-1"></i>Sin cambio: <strong>' + (d.sin_cambio || 0) + '</strong></div>' +
+                    ((d.no_encontradas || 0) > 0 ? '<div><i class="bi bi-exclamation-circle text-warning me-1"></i>No encontrados: <strong>' + d.no_encontradas + '</strong></div>' : '') +
+                    ((d.invalidas || 0) > 0 ? '<div><i class="bi bi-x-circle text-danger me-1"></i>Invalidos: <strong>' + d.invalidas + '</strong></div>' : '') +
+                    ((d.vacias || 0) > 0 ? '<div><i class="bi bi-circle text-muted me-1"></i>Filas vacias: <strong>' + d.vacias + '</strong></div>' : '');
+
+                if (d.errores && d.errores.length > 0) {
+                    html += '<hr class="my-2"><div class="text-muted mb-1">Primeros errores:</div><ul class="small mb-0 ps-3">';
+                    d.errores.forEach(function(err) { html += '<li>' + err + '</li>'; });
+                    html += '</ul>';
+                }
+                html += '</div>';
+
+                Swal.fire({
+                    icon: hayObservaciones ? 'warning' : 'success',
+                    title: 'Importacion finalizada',
+                    html: html,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide();
+                    location.reload();
+                });
             },
             error: function(xhr) {
-                Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Error al importar el archivo.' });
+                var msg = xhr.responseJSON?.message || 'Error al importar el archivo.';
+                var errors = xhr.responseJSON?.errors;
+                var html = '<div class="text-start small">' + msg;
+                if (errors) {
+                    html += '<ul class="mt-2 ps-3">';
+                    Object.keys(errors).forEach(function(k) {
+                        (errors[k] || []).forEach(function(e) { html += '<li>' + e + '</li>'; });
+                    });
+                    html += '</ul>';
+                }
+                html += '</div>';
+                Swal.fire({ icon: 'error', title: 'Error', html: html });
             },
             complete: function() {
                 btn.prop('disabled', false).html('<i class="bi bi-upload me-1"></i>Importar');

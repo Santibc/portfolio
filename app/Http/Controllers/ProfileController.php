@@ -20,7 +20,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
-        $esUnicoAdmin = $user->hasRole('Administrador') && User::role('Administrador')->count() <= 1;
+        $esUnicoAdmin = $user->hasRole('Administrador') && User::role('Administrador')->activos()->count() <= 1;
 
         return view('profile.edit', [
             'user' => $user,
@@ -135,7 +135,7 @@ class ProfileController extends Controller
 
         // Impedir eliminar si es el único Administrador
         if ($user->hasRole('Administrador')) {
-            $adminCount = User::role('Administrador')->count();
+            $adminCount = User::role('Administrador')->activos()->count();
             if ($adminCount <= 1) {
                 return back()->withErrors([
                     'password' => 'No puedes eliminar tu cuenta porque eres el único Administrador del sistema.',

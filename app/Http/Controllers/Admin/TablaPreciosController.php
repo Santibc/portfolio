@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TablaPreciosExport;
+use App\Exports\TablaPreciosTemplate;
 use App\Imports\TablaPreciosImport;
 
 class TablaPreciosController extends Controller
@@ -337,10 +338,14 @@ class TablaPreciosController extends Controller
         Excel::import($import, $request->file('archivo'));
 
         $actualizados = $import->getActualizados();
+        $sinCambio = $import->getSinCambio();
+        $noEncontradas = $import->getNoEncontradas();
+        $invalidas = $import->getInvalidas();
+        $vacias = $import->getVacias();
 
         $this->registrarActividad(
             'tabla_precios.importacion',
-            'Importacion de precios: ' . $actualizados . ' registros actualizados',
+            'Importacion de precios: ' . $actualizados . ' actualizados, ' . $sinCambio . ' sin cambio, ' . $noEncontradas . ' no encontradas, ' . $invalidas . ' invalidas',
             null,
             [
                 'tipo_cambio' => 'update',
@@ -348,13 +353,39 @@ class TablaPreciosController extends Controller
                 'modelo_id' => null,
                 'cambios' => [],
                 'registros_actualizados' => $actualizados,
+                'registros_sin_cambio' => $sinCambio,
+                'registros_no_encontrados' => $noEncontradas,
+                'registros_invalidos' => $invalidas,
+                'filas_vacias' => $vacias,
                 'archivo' => $request->file('archivo')->getClientOriginalName(),
             ]
         );
 
+        $partes = [$actualizados . ' actualizado(s)'];
+        if ($sinCambio > 0) $partes[] = $sinCambio . ' sin cambio';
+        if ($noEncontradas > 0) $partes[] = $noEncontradas . ' no encontrado(s)';
+        if ($invalidas > 0) $partes[] = $invalidas . ' invalido(s)';
+        if ($vacias > 0) $partes[] = $vacias . ' vacia(s)';
+
         return response()->json([
             'success' => true,
-            'message' => $actualizados . ' registro(s) de precios actualizados.',
+            'message' => implode(' | ', $partes),
+            'detalles' => [
+                'actualizados' => $actualizados,
+                'sin_cambio' => $sinCambio,
+                'no_encontradas' => $noEncontradas,
+                'invalidas' => $invalidas,
+                'vacias' => $vacias,
+                'errores' => $import->getErrores(),
+            ],
         ]);
+    }
+
+    /**
+     * Descargar plantilla vacia para importacion de precios.
+     */
+    public function plantillaExcel()
+    {
+        return Excel::download(new TablaPreciosTemplate(), 'plantilla-tabla-precios.xlsx');
     }
 }

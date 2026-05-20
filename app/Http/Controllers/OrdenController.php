@@ -50,7 +50,7 @@ class OrdenController extends Controller
         $calibres = ConfiguracionSistema::get('calibres_disponibles', []);
         $ivaDefecto = ConfiguracionSistema::get('porcentaje_iva_defecto', 19.00);
         $autoSaveInterval = ConfiguracionSistema::get('timeout_autoguardado_recepcion', 5) * 60 * 1000; // ms
-        $operarios = User::role('Operario')->orderBy('name')->get(['id', 'name']);
+        $operarios = User::role('Operario')->activos()->orderBy('name')->get(['id', 'name']);
         $gruposBosquejos = GrupoBosquejo::with('plantillas')->orderBy('nombre')->get();
         $bosquejosSueltos = PlantillaBosquejo::whereNull('grupo_bosquejo_id')
             ->orderBy('nombre')->get();
@@ -293,6 +293,7 @@ class OrdenController extends Controller
     public function listarOperarios()
     {
         $operarios = User::role('Operario')
+            ->activos()
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -426,6 +427,7 @@ class OrdenController extends Controller
         $saldoPendienteTotal = Orden::noAnuladas()->noBorradores()->where('saldo', '>', 0)->sum('saldo');
 
         $creadores = User::whereIn('id', Orden::whereNotNull('creado_por')->distinct()->pluck('creado_por'))
+            ->activos()
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -511,7 +513,7 @@ class OrdenController extends Controller
         $calibres = ConfiguracionSistema::get('calibres_disponibles', []);
         $ivaDefecto = ConfiguracionSistema::get('porcentaje_iva_defecto', 19.00);
         $autoSaveInterval = ConfiguracionSistema::get('timeout_autoguardado_recepcion', 5) * 60 * 1000;
-        $operarios = User::role('Operario')->orderBy('name')->get(['id', 'name']);
+        $operarios = User::role('Operario')->activos()->orderBy('name')->get(['id', 'name']);
         $gruposBosquejos = GrupoBosquejo::with('plantillas')->orderBy('nombre')->get();
         $bosquejosSueltos = PlantillaBosquejo::whereNull('grupo_bosquejo_id')
             ->orderBy('nombre')->get();

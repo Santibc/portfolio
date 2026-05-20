@@ -192,7 +192,7 @@ class ActividadController extends Controller
         ];
 
         $tiposAccion = RegistroActividad::TIPOS_ACCION;
-        $usuarios = User::orderBy('name')->get(['id', 'name']);
+        $usuarios = User::activos()->orderBy('name')->get(['id', 'name']);
 
         return view('actividades.global', compact('stats', 'tiposAccion', 'usuarios'));
     }

@@ -50,6 +50,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Scope: usuarios activos (pueden iniciar sesión y ser seleccionados).
+     */
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    /**
      * Obtener las iniciales del nombre
      */
     public function getInitialsAttribute(): string

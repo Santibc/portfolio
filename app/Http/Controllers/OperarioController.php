@@ -137,6 +137,7 @@ class OperarioController extends Controller
 
         // Obtener operarios para dropdown de transferencia
         $operarios = User::role('Operario')
+            ->activos()
             ->where('id', '!=', $user->id)
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -545,6 +546,7 @@ class OperarioController extends Controller
     public function operariosDisponibles()
     {
         $operarios = User::role('Operario')
+            ->activos()
             ->where('id', '!=', auth()->id())
             ->orderBy('name')
             ->get(['id', 'name']);

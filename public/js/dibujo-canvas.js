@@ -111,6 +111,7 @@
         // Bind eventos
         bindCanvasEvents();
         bindPinchZoom();
+        bindStylusHoverRejection();
         bindKeyboardShortcuts();
 
         // Actualizar toolbar
@@ -459,12 +460,18 @@
             if (!isShapeDrawing || !activeShape) return;
             isShapeDrawing = false;
 
+            // La forma reciba selectable/evented solo si la herramienta actual es
+            // interactiva (select/eraser/text). Con herramientas de dibujo activas
+            // (line/rect/ellipse/arrow/pencil), debe quedar inerte para que un nuevo
+            // trazo iniciado sobre ella no la arrastre.
+            var nowInteractive = (currentTool === 'select' || currentTool === 'eraser' || currentTool === 'text');
+
             // Para flecha: agregar punta y vincularla a la linea para que el borrador
             // elimine ambas piezas como una unidad.
             if (currentTool === 'arrow') {
                 var arrowHead = createArrowHead(activeShape);
                 if (arrowHead) {
-                    arrowHead.set({ selectable: true, evented: true });
+                    arrowHead.set({ selectable: nowInteractive, evented: nowInteractive });
                     var pairId = 'arrow_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
                     activeShape.arrowPairId = pairId;
                     arrowHead.arrowPairId = pairId;
@@ -472,10 +479,9 @@
                 }
             }
 
-            // Hacer la forma seleccionable ahora y recalcular coordenadas
             // setCoords() es necesario para que containsPoint() funcione con las
             // dimensiones finales (sin esto el borrador no detecta rects/elipses).
-            activeShape.set({ selectable: true, evented: true });
+            activeShape.set({ selectable: nowInteractive, evented: nowInteractive });
             activeShape.setCoords();
             activeShape = null;
             shapeOrigin = null;
@@ -816,6 +822,41 @@
                 }, 1000);
             }
         });
+    }
+
+    // =============================================
+    // RECHAZO DE HOVER DE STYLUS (S-Pen, Apple Pencil, Wacom)
+    // =============================================
+    // Los lapices modernos emiten eventos pointer cuando se acercan a la pantalla
+    // sin tocar (hover detection). Sin este filtro, Fabric.js los procesa como
+    // dibujo activo y traza lineas con el lapiz "en el aire".
+    //
+    // Solucion: en fase de captura interceptamos pointerdown/pointermove de tipo
+    // 'pen' que llegan sin contacto fisico (buttons === 0 y pressure === 0).
+    // pointerup se deja pasar siempre para que Fabric.js pueda cerrar trazos.
+    function bindStylusHoverRejection() {
+        if (!fabricCanvas) return;
+        if (typeof window.PointerEvent === 'undefined') return;
+        var upperCanvas = fabricCanvas.upperCanvasEl;
+        if (!upperCanvas) return;
+
+        function rejectStylusHover(e) {
+            if (e.pointerType !== 'pen') return;
+            // pointerup siempre pasa: si quedo un trazo abierto, debe cerrarse.
+            if (e.type === 'pointerup' || e.type === 'pointercancel') return;
+            // Contacto real: algun boton presionado o presion fisica > 0.
+            var hasContact = e.buttons > 0 || (typeof e.pressure === 'number' && e.pressure > 0);
+            if (!hasContact) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+        }
+
+        upperCanvas.addEventListener('pointerdown', rejectStylusHover, true);
+        upperCanvas.addEventListener('pointermove', rejectStylusHover, true);
+        // Tambien filtramos pointerover/pointerenter por si algun navegador
+        // los convierte en eventos de dibujo (caso raro pero seguro).
+        upperCanvas.addEventListener('pointerover', rejectStylusHover, true);
     }
 
     function getTouchDistance(t1, t2) {
