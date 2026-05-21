@@ -420,11 +420,15 @@ class SolicitudController extends Controller
     }
 
     /**
-     * ¿El usuario puede editar precios? Solo admin.
+     * ¿El usuario puede editar precios?
+     * Admin y vendedor pueden hacerlo. La validación de precio_minimo_venta
+     * (configurada por el admin en el producto) se sigue aplicando a ambos
+     * en actualizar() y agregarItem(), asi que el vendedor no puede bajar
+     * de lo permitido.
      */
     private function puedeEditarPrecios($user): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasRole('admin') || $user->hasRole('vendedor');
     }
 
     /**
