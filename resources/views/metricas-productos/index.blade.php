@@ -53,6 +53,16 @@
                 <option value="stock_bajo"  @selected($filtros['tipo']==='stock_bajo')>Stock bajo</option>
               </select>
             </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <div class="form-check">
+                <input type="hidden" name="solo_con_stock" value="0">
+                <input type="checkbox" name="solo_con_stock" value="1" id="solo_con_stock"
+                       class="form-check-input" @checked(!empty($filtros['solo_con_stock']))>
+                <label for="solo_con_stock" class="form-check-label small">
+                  Solo con stock <span class="text-muted">(≠ 0)</span>
+                </label>
+              </div>
+            </div>
             <div class="col-12 d-flex justify-content-end gap-2">
               <a href="{{ route('metricas.productos.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-eraser"></i> Limpiar
@@ -154,12 +164,13 @@
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const filtros = {
-      fecha_inicio: @json($filtros['fecha_inicio']),
-      fecha_fin:    @json($filtros['fecha_fin']),
-      fuente:       @json($filtros['fuente']),
-      categoria_id: @json($filtros['categoria_id']),
-      ubicacion_id: @json($filtros['ubicacion_id']),
-      tipo:         @json($filtros['tipo']),
+      fecha_inicio:    @json($filtros['fecha_inicio']),
+      fecha_fin:       @json($filtros['fecha_fin']),
+      fuente:          @json($filtros['fuente']),
+      categoria_id:    @json($filtros['categoria_id']),
+      ubicacion_id:    @json($filtros['ubicacion_id']),
+      tipo:            @json($filtros['tipo']),
+      solo_con_stock:  @json(!empty($filtros['solo_con_stock']) ? 1 : 0),
     };
 
     const table = $('#metricas-table').DataTable({

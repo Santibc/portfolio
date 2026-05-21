@@ -24,21 +24,23 @@ class MetricasProductosController extends Controller
     private function filtros(Request $r): array
     {
         $r->validate([
-            'fecha_inicio' => 'nullable|date',
-            'fecha_fin'    => 'nullable|date|after_or_equal:fecha_inicio',
-            'fuente'       => 'nullable|in:ambas,pdv,cotizaciones',
-            'categoria_id' => 'nullable|integer|exists:categorias,id',
-            'ubicacion_id' => 'nullable|integer|exists:ubicaciones,id',
-            'tipo'         => 'nullable|in:todos,con_ventas,sin_ventas,stock_bajo',
+            'fecha_inicio'   => 'nullable|date',
+            'fecha_fin'      => 'nullable|date|after_or_equal:fecha_inicio',
+            'fuente'         => 'nullable|in:ambas,pdv,cotizaciones',
+            'categoria_id'   => 'nullable|integer|exists:categorias,id',
+            'ubicacion_id'   => 'nullable|integer|exists:ubicaciones,id',
+            'tipo'           => 'nullable|in:todos,con_ventas,sin_ventas,stock_bajo',
+            'solo_con_stock' => 'nullable|boolean',
         ]);
 
         return $this->svc->normalizar([
-            'fecha_inicio' => $r->input('fecha_inicio'),
-            'fecha_fin'    => $r->input('fecha_fin'),
-            'fuente'       => $r->input('fuente'),
-            'categoria_id' => $r->filled('categoria_id') ? (int) $r->input('categoria_id') : null,
-            'ubicacion_id' => $r->filled('ubicacion_id') ? (int) $r->input('ubicacion_id') : null,
-            'tipo'         => $r->input('tipo'),
+            'fecha_inicio'   => $r->input('fecha_inicio'),
+            'fecha_fin'      => $r->input('fecha_fin'),
+            'fuente'         => $r->input('fuente'),
+            'categoria_id'   => $r->filled('categoria_id') ? (int) $r->input('categoria_id') : null,
+            'ubicacion_id'   => $r->filled('ubicacion_id') ? (int) $r->input('ubicacion_id') : null,
+            'tipo'           => $r->input('tipo'),
+            'solo_con_stock' => $r->boolean('solo_con_stock'),
         ]);
     }
 

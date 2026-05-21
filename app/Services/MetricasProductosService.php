@@ -14,12 +14,13 @@ class MetricasProductosService
     public function normalizar(array $filtros): array
     {
         return [
-            'fecha_inicio' => $filtros['fecha_inicio'] ?? Carbon::now()->startOfMonth()->toDateString(),
-            'fecha_fin'    => $filtros['fecha_fin']    ?? Carbon::now()->toDateString(),
-            'fuente'       => $filtros['fuente']       ?? 'ambas',
-            'categoria_id' => $filtros['categoria_id'] ?? null,
-            'ubicacion_id' => $filtros['ubicacion_id'] ?? null,
-            'tipo'         => $filtros['tipo']         ?? 'todos',
+            'fecha_inicio'   => $filtros['fecha_inicio'] ?? Carbon::now()->startOfMonth()->toDateString(),
+            'fecha_fin'      => $filtros['fecha_fin']    ?? Carbon::now()->toDateString(),
+            'fuente'         => $filtros['fuente']       ?? 'ambas',
+            'categoria_id'   => $filtros['categoria_id'] ?? null,
+            'ubicacion_id'   => $filtros['ubicacion_id'] ?? null,
+            'tipo'           => $filtros['tipo']         ?? 'todos',
+            'solo_con_stock' => !empty($filtros['solo_con_stock']),
         ];
     }
 
@@ -292,7 +293,8 @@ class MetricasProductosService
             ->when($f['categoria_id'], fn($q, $id) => $q->where('pv.categoria_id', $id))
             ->when($f['tipo'] === 'con_ventas', fn($q) => $q->whereRaw('COALESCE(va.unidades,0) > 0'))
             ->when($f['tipo'] === 'sin_ventas', fn($q) => $q->whereRaw('COALESCE(va.unidades,0) = 0'))
-            ->when($f['tipo'] === 'stock_bajo', fn($q) => $q->whereRaw('COALESCE(st.stock_actual,0) <= COALESCE(st.stock_minimo,0)'));
+            ->when($f['tipo'] === 'stock_bajo', fn($q) => $q->whereRaw('COALESCE(st.stock_actual,0) <= COALESCE(st.stock_minimo,0)'))
+            ->when(!empty($f['solo_con_stock']), fn($q) => $q->whereRaw('COALESCE(st.stock_actual,0) <> 0'));
 
         return DataTables::query($query)
             ->addColumn('producto_info', function ($row) {
