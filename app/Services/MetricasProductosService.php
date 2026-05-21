@@ -37,6 +37,7 @@ class MetricasProductosService
                 DB::raw('NULL as variante_id'),
                 'p.referencia',
                 'p.nombre',
+                'p.descripcion',
                 'p.marca',
                 'p.activo',
                 'p.categoria_id',
@@ -56,6 +57,7 @@ class MetricasProductosService
                 'v.id as variante_id',
                 'p.referencia',
                 'p.nombre',
+                'p.descripcion',
                 'p.marca',
                 'p.activo',
                 'p.categoria_id',
@@ -351,11 +353,33 @@ class MetricasProductosService
                 $q->where(function ($qq) use ($kw) {
                     $qq->where('pv.referencia', 'like', "%{$kw}%")
                        ->orWhere('pv.nombre', 'like', "%{$kw}%")
+                       ->orWhere('pv.descripcion', 'like', "%{$kw}%")
+                       ->orWhere('pv.marca', 'like', "%{$kw}%")
                        ->orWhere('pv.variante_referencia', 'like', "%{$kw}%")
                        ->orWhere('pv.variante_color', 'like', "%{$kw}%")
                        ->orWhere('pv.variante_sku', 'like', "%{$kw}%");
                 });
             })
+            ->filterColumn('categoria_nombre', function ($q, $kw) {
+                $q->where('pv.categoria_nombre', 'like', "%{$kw}%");
+            })
+            ->filter(function ($query) {
+                $kw = request('search.value');
+                if (!$kw) {
+                    return;
+                }
+                $like = "%{$kw}%";
+                $query->where(function ($q) use ($like) {
+                    $q->where('pv.referencia', 'like', $like)
+                      ->orWhere('pv.nombre', 'like', $like)
+                      ->orWhere('pv.descripcion', 'like', $like)
+                      ->orWhere('pv.marca', 'like', $like)
+                      ->orWhere('pv.categoria_nombre', 'like', $like)
+                      ->orWhere('pv.variante_referencia', 'like', $like)
+                      ->orWhere('pv.variante_color', 'like', $like)
+                      ->orWhere('pv.variante_sku', 'like', $like);
+                });
+            }, true)
             ->rawColumns(['producto_info', 'stock_badge', 'ingresos_fmt', 'precio_prom_fmt', 'ultima_venta_fmt', 'delta_badge'])
             ->make(true);
     }
