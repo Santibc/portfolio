@@ -20,22 +20,15 @@ class PreciosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettin
     public function __construct(ActualizacionPrecio $actualizacion)
     {
         $this->actualizacion = $actualizacion;
-        
-        // Mapeo de nombres de columnas a IDs de listas de precios
-        $this->mapeoListas = [
-            'export1' => 1,
-            'export_1' => 1,
-            'export2' => 2,
-            'export_2' => 2,
-            'local1' => 3,
-            'local_1' => 3,
-            'local2' => 4,
-            'local_2' => 4,
-            'local3' => 5,
-            'local_3' => 5,
-            'local4' => 6,
-            'local_4' => 6,
-        ];
+
+        $this->mapeoListas = [];
+        $listas = ListaPrecio::where('activo', true)->get(['id', 'codigo']);
+        foreach ($listas as $lista) {
+            $codigoNormalizado = strtolower(str_replace([' ', '-', '_'], '', $lista->codigo));
+            if ($codigoNormalizado !== '') {
+                $this->mapeoListas[$codigoNormalizado] = $lista->id;
+            }
+        }
     }
 
     // Configuración personalizada para CSV
