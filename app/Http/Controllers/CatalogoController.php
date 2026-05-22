@@ -11,6 +11,10 @@ use App\Models\SolicitudCotizacion;
 use App\Models\ItemSolicitudCotizacion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NuevaSolicitudCreada;
+use App\Models\User;
 
 class CatalogoController extends Controller
 {
@@ -114,16 +118,19 @@ class CatalogoController extends Controller
             ->select('productos.*'); // Asegurarse de que se incluyan todos los campos, incluyendo unidad_venta
         
         // Filtro por categoría
-        if ($request->has('categoria_id') && $request->categoria_id) {
-            $query->where('categoria_id', $request->categoria_id);
+        if ($request->filled('categoria_id')) {
+            $query->where('categoria_id', $request->input('categoria_id'));
         }
-        
+
         // Búsqueda por nombre o referencia
-        if ($request->has('busqueda') && $request->busqueda) {
-            $query->buscar($request->busqueda);
+        $busqueda = trim((string) $request->input('busqueda', ''));
+        if ($busqueda !== '') {
+            $query->buscar($busqueda);
         }
         
-        $productos = $query->orderBy('nombre')->paginate(12);
+        // Si hay filtro de categoría, paginar de 12 en 12. Si no, mostrar todos.
+        $perPage = $request->filled('categoria_id') ? 12 : 10000;
+        $productos = $query->orderBy('nombre')->paginate($perPage);
         
         // Obtener configuración de visualización
         $listaPrecioId = null;
@@ -492,13 +499,32 @@ class CatalogoController extends Controller
             
             // Actualizar monto total
             $solicitud->update(['monto_total' => $montoTotal]);
-            
+
             DB::commit();
-            
+
+            // Notificar a administradores y al vendedor del cliente (no detiene la respuesta si falla)
+            try {
+                $solicitud->load(['cliente.vendedor', 'items']);
+                $destinatarios = User::role('admin')->pluck('email')->all();
+                if ($cliente->vendedor && $cliente->vendedor->email) {
+                    $destinatarios[] = $cliente->vendedor->email;
+                }
+                $destinatarios = array_values(array_unique(array_filter($destinatarios)));
+
+                if (!empty($destinatarios)) {
+                    Mail::to($destinatarios)->send(new NuevaSolicitudCreada($solicitud));
+                }
+            } catch (\Throwable $e) {
+                Log::error('No se pudo notificar nueva solicitud: ' . $e->getMessage(), [
+                    'solicitud_id' => $solicitud->id,
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'mensaje' => 'Solicitud de cotización creada exitosamente.',
-                'numero_solicitud' => $solicitud->numero_solicitud
+                'numero_solicitud' => $solicitud->numero_solicitud,
+                'codigo_corto' => $solicitud->codigo_corto,
             ]);
             
         } catch (\Exception $e) {

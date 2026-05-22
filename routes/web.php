@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\LeadsController;
 use App\Http\Controllers\LlamadasController;
@@ -27,7 +27,7 @@ use App\Http\Controllers\ActualizacionPreciosController;
 
 Route::redirect('/', '/login'); // 302 por defecto
 
-Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/importar_usuarios', [UsuariosController::class, 'importar_usuarios'])->name('importar_usuarios');
     Route::get('/usuarios_form/{user?}', [UsuariosController::class, 'form'])->name('usuarios.form');
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
+    Route::post('/usuarios/{user}/toggle-activo', [UsuariosController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
+    Route::delete('/usuarios/{user}', [UsuariosController::class, 'eliminar'])->name('usuarios.eliminar');
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');
@@ -54,6 +56,12 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
     Route::post('clientes/guardar', [ClientesController::class, 'guardar'])
         ->name('clientes.guardar');
 
+    // Toggle activo / eliminar
+    Route::post('clientes/{cliente}/toggle-activo', [ClientesController::class, 'toggleActivo'])
+        ->name('clientes.toggle-activo');
+    Route::delete('clientes/{cliente}', [ClientesController::class, 'eliminar'])
+        ->name('clientes.eliminar');
+
             // Listado & AJAX
     Route::get('categorias', [CategoriasController::class, 'index'])
          ->name('categorias');
@@ -65,11 +73,22 @@ Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
     // Guardar (crear / actualizar)
     Route::post('categorias/guardar', [CategoriasController::class, 'guardar'])
          ->name('categorias.guardar');
+
+    // Toggle activo / Eliminar
+    Route::post('categorias/{categoria}/toggle-activo', [CategoriasController::class, 'toggleActivo'])
+         ->name('categorias.toggle-activo');
+    Route::delete('categorias/{categoria}', [CategoriasController::class, 'eliminar'])
+         ->name('categorias.eliminar');
 // Rutas de Productos - versión simplificada
 Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/', [ProductosController::class, 'index'])->name('productos');
     Route::get('/form/{producto?}', [ProductosController::class, 'form'])->name('productos.form');
     Route::post('/guardar', [ProductosController::class, 'guardar'])->name('productos.guardar');
+    Route::post('/{producto}/toggle-activo', [ProductosController::class, 'toggleActivo'])->name('productos.toggle-activo');
+    Route::delete('/{producto}', [ProductosController::class, 'eliminar'])->name('productos.eliminar');
+    Route::get('/importar', [ProductosController::class, 'mostrarImportar'])->name('productos.importar');
+    Route::get('/importar/plantilla', [ProductosController::class, 'descargarPlantilla'])->name('productos.plantilla');
+    Route::post('/importar-excel', [ProductosController::class, 'importarExcel'])->name('productos.importar-excel');
     Route::get('/{producto}/variantes-ajax', [ProductosController::class, 'variantesAjax'])->name('productos.variantes-ajax');
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
@@ -111,6 +130,7 @@ Route::post('/catalogo/solicitud', [CatalogoController::class, 'guardarSolicitud
 // Rutas de Gestión de Solicitudes
 Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('solicitudes');
+    Route::get('/solicitudes/pendientes-count', [SolicitudController::class, 'pendientesCount'])->name('solicitudes.pendientes-count');
     Route::get('/solicitudes/{solicitud}/detalle', [SolicitudController::class, 'detalle'])->name('solicitudes.detalle');
     Route::post('/solicitudes/{solicitud}/aplicar', [SolicitudController::class, 'aplicar'])->name('solicitudes.aplicar');
 });
@@ -121,6 +141,10 @@ Route::prefix('stock')->name('stock.')->group(function () {
     // Vistas principales
     Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
     Route::get('/dashboard', [App\Http\Controllers\StockController::class, 'dashboard'])->name('dashboard');
+
+    // Importación masiva desde Excel
+    Route::post('/importar-excel', [App\Http\Controllers\StockController::class, 'importarExcel'])->name('importar-excel');
+    Route::get('/plantilla-importacion', [App\Http\Controllers\StockController::class, 'descargarPlantilla'])->name('plantilla-importacion');
     
     // Operaciones de stock
     Route::post('/entrada', [App\Http\Controllers\StockController::class, 'entrada'])->name('entrada');

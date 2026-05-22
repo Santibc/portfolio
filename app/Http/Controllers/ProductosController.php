@@ -9,6 +9,8 @@ use App\Models\ImagenProducto;
 use App\Models\PrecioProducto;
 use App\Models\ActualizacionPrecio;
 use App\Imports\PreciosImport;
+use App\Imports\ProductosImport;
+use App\Exports\PlantillaProductosExport;
 use App\Models\ListaPrecio;
 use App\Models\VarianteProducto;
 use App\Models\StockProducto;
@@ -52,35 +54,53 @@ class ProductosController extends Controller
                     
                     return '<span class="badge bg-'.$badge.'">' . $stockDisponible . '</span>';
                 })
+                ->addColumn('tiene_extension', fn($p) => $p->tiene_extension ? 'Sí' : 'No')
                 ->addColumn('variantes', fn($p) => $p->tiene_variantes ? 'Sí' : 'No')
-                ->addColumn('activo', fn($p) => $p->activo ? 'Sí' : 'No')
+                ->addColumn('estado', function($p) {
+                    return $p->activo
+                        ? '<span class="badge bg-success">Activo</span>'
+                        : '<span class="badge bg-secondary">Inactivo</span>';
+                })
                 ->addColumn('action', function($p) {
-                    $url = route('productos.form', $p->id);
-                    
+                    $editUrl   = route('productos.form', $p->id);
+                    $toggleUrl = route('productos.toggle-activo', $p->id);
+                    $deleteUrl = route('productos.eliminar', $p->id);
+                    $csrf      = csrf_token();
+
+                    $toggleIcon  = $p->activo ? 'bi-toggle-on' : 'bi-toggle-off';
+                    $toggleClass = $p->activo ? 'btn-outline-warning' : 'btn-outline-success';
+                    $toggleTitle = $p->activo ? 'Inactivar' : 'Activar';
+
                     $buttons = '<div class="d-flex justify-content-center gap-1">';
-                    $buttons .= '<a href="'.$url.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
-                    
-                    // Botón de variantes si tiene
+                    $buttons .= '<a href="'.$editUrl.'" class="btn btn-outline-info btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>';
+
                     if ($p->tiene_variantes) {
                         $buttons .= '<button type="button" class="btn btn-outline-secondary btn-sm" title="Ver Variantes" onclick="verVariantes('.$p->id.')"><i class="bi bi-list-ul"></i></button>';
                     }
-                    
-                    // Botón de imágenes
+
                     $buttons .= '<button type="button" class="btn btn-outline-primary btn-sm" title="Ver Imágenes" onclick="verImagenes('.$p->id.')"><i class="bi bi-image"></i></button>';
-                    
-                    // Botón de precios
                     $buttons .= '<button type="button" class="btn btn-outline-success btn-sm" title="Ver Precios" onclick="verPrecios('.$p->id.')"><i class="bi bi-currency-dollar"></i></button>';
-                    
-                    // Botón de stock (NUEVO)
+
                     if ($p->controlar_stock) {
                         $buttons .= '<button type="button" class="btn btn-outline-warning btn-sm" title="Ver Stock" onclick="verStock('.$p->id.')"><i class="bi bi-box-seam"></i></button>';
                     }
-                    
+
+                    $buttons .= '<form method="POST" action="'.$toggleUrl.'" style="display:inline">';
+                    $buttons .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                    $buttons .= '<button type="submit" class="btn '.$toggleClass.' btn-sm" title="'.$toggleTitle.'"><i class="bi '.$toggleIcon.'"></i></button>';
+                    $buttons .= '</form>';
+
+                    $buttons .= '<form method="POST" action="'.$deleteUrl.'" style="display:inline" onsubmit="return confirm(\'¿Eliminar este producto? Se conservarán sus relaciones (cotizaciones, movimientos de stock, etc).\');">';
+                    $buttons .= '<input type="hidden" name="_token" value="'.$csrf.'">';
+                    $buttons .= '<input type="hidden" name="_method" value="DELETE">';
+                    $buttons .= '<button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="bi bi-trash"></i></button>';
+                    $buttons .= '</form>';
+
                     $buttons .= '</div>';
-                    
+
                     return $buttons;
                 })
-                ->rawColumns(['imagen', 'stock', 'action'])
+                ->rawColumns(['imagen', 'stock', 'estado', 'action'])
                 ->make(true);
         }
 
@@ -124,13 +144,13 @@ class ProductosController extends Controller
             'descripcion' => ['nullable','string'],
             'unidad_venta' => ['required','string','max:100'],
             'unidad_empaque' => ['required','string','max:100'],
-            'extension' => ['nullable','string','max:100'],
+            'tiene_extension' => ['nullable','boolean'],
             'categoria_id' => ['required','exists:categorias,id'],
+            'activo' => ['nullable','boolean'],
             'controlar_stock' => ['boolean'],  // NUEVO
             'permitir_venta_sin_stock' => ['boolean'],  // NUEVO
             'imagenes.*' => ['nullable','image','mimes:jpeg,png,jpg,webp','max:2048'],
-            'variantes.*.talla' => ['nullable','string','max:50'],
-            'variantes.*.color' => ['nullable','string','max:50'],
+            'variantes.*.extension' => ['nullable','string','max:100'],
             'variantes.*.sku' => ['nullable','string','max:255'],
             'variantes.*.stock_inicial' => ['nullable','integer','min:0'],  // NUEVO
             'variantes.*.stock_minimo' => ['nullable','integer','min:0'],  // NUEVO
@@ -164,9 +184,10 @@ class ProductosController extends Controller
         try {
             // Guardar datos básicos del producto
             $data['tiene_variantes'] = $request->input('tiene_variantes', 0) == 1;
+            $data['tiene_extension'] = $request->input('tiene_extension', 0) == 1;
             $data['controlar_stock'] = $request->input('controlar_stock', 1) == 1;  // NUEVO
             $data['permitir_venta_sin_stock'] = $request->input('permitir_venta_sin_stock', 0) == 1;  // NUEVO
-            $data['activo'] = true;
+            $data['activo'] = $producto->exists ? $request->boolean('activo') : true;
             
             $esNuevo = !$producto->exists;  // NUEVO
             $producto->fill($data)->save();
@@ -184,26 +205,22 @@ class ProductosController extends Controller
                 }
                 
                 foreach ($request->variantes as $index => $varianteData) {
-                    if (!empty($varianteData['talla']) || !empty($varianteData['color']) || !empty($varianteData['sku'])) {
+                    $extension = $varianteData['extension'] ?? null;
+                    if (!empty($extension) || !empty($varianteData['sku'])) {
                         // Generar SKU si no se proporciona
-                        $sku = $varianteData['sku'];
+                        $sku = $varianteData['sku'] ?? null;
                         if (empty($sku)) {
                             $sku = $producto->referencia;
-                            if (!empty($varianteData['talla'])) {
-                                $sku .= '-' . strtoupper(str_replace(' ', '', $varianteData['talla']));
-                            }
-                            if (!empty($varianteData['color'])) {
-                                $sku .= '-' . strtoupper(str_replace(' ', '', $varianteData['color']));
-                            }
-                            if (empty($varianteData['talla']) && empty($varianteData['color'])) {
+                            if (!empty($extension)) {
+                                $sku .= '-' . strtoupper(str_replace(' ', '', $extension));
+                            } else {
                                 $count = $producto->variantes()->count() + 1;
                                 $sku .= '-VAR' . $count;
                             }
                         }
-                        
+
                         $variante = $producto->variantes()->create([
-                            'talla' => $varianteData['talla'],
-                            'color' => $varianteData['color'],
+                            'extension' => $extension,
                             'sku' => $sku,
                             'activo' => true
                         ]);
@@ -453,14 +470,13 @@ public function actualizarPreciosExcel(Request $request)
             $html .= '<p class="text-center text-muted">Este producto no tiene variantes configuradas.</p>';
         } else {
             $html .= '<table class="table table-striped">';
-            $html .= '<thead><tr><th>SKU</th><th>Talla</th><th>Color</th><th>Estado</th></tr></thead>';
+            $html .= '<thead><tr><th>SKU</th><th>Extensión</th><th>Estado</th></tr></thead>';
             $html .= '<tbody>';
-            
+
             foreach ($variantes as $variante) {
                 $html .= '<tr>';
                 $html .= '<td><code>' . $variante->sku . '</code></td>';
-                $html .= '<td>' . ($variante->talla ?: '-') . '</td>';
-                $html .= '<td>' . ($variante->color ?: '-') . '</td>';
+                $html .= '<td>' . ($variante->extension ?: '-') . '</td>';
                 $html .= '<td>' . ($variante->activo ? '<span class="badge bg-success">Activa</span>' : '<span class="badge bg-secondary">Inactiva</span>') . '</td>';
                 $html .= '</tr>';
             }
@@ -567,7 +583,82 @@ public function actualizarPreciosExcel(Request $request)
         }
         
         $html .= '</div>';
-        
+
         return response($html);
+    }
+
+    public function mostrarImportar()
+    {
+        $listas = ListaPrecio::activas()->get(['codigo', 'nombre']);
+        $ultimas = ActualizacionPrecio::orderBy('created_at', 'desc')->limit(5)->get();
+        return view('productos.importar', compact('listas', 'ultimas'));
+    }
+
+    public function descargarPlantilla()
+    {
+        return Excel::download(new PlantillaProductosExport(), 'plantilla_productos_precios.xlsx');
+    }
+
+    public function importarExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv|max:10240'
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo',
+            'archivo.mimes'    => 'El archivo debe ser Excel (.xlsx, .xls) o CSV',
+            'archivo.max'      => 'El archivo no debe superar los 10MB',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $archivo = $request->file('archivo');
+            $nombreOriginal = $archivo->getClientOriginalName();
+
+            $actualizacion = ActualizacionPrecio::create([
+                'usuario_id'               => auth()->id(),
+                'estado'                   => 'procesando',
+                'nombre_archivo'           => $nombreOriginal,
+                'ruta_archivo'             => '(no almacenada — procesada en memoria)',
+                'total_filas'              => 0,
+                'actualizaciones_exitosas' => 0,
+                'actualizaciones_fallidas' => 0,
+                'errores'                  => [],
+                'detalles_procesados'      => [],
+            ]);
+
+            // Procesamos directamente desde el tmp de PHP — no dejamos copia en public/.
+            Excel::import(new ProductosImport($actualizacion), $archivo->getRealPath());
+            DB::commit();
+
+            $actualizacion->refresh();
+            $ok = $actualizacion->actualizaciones_exitosas;
+            $err = $actualizacion->actualizaciones_fallidas;
+            if ($err === 0 && $ok > 0) {
+                return back()->with('success', "Importación completada: {$ok} filas procesadas.");
+            } elseif ($ok > 0) {
+                return back()->with('warning', "Importación parcial: {$ok} exitosas, {$err} con errores.")
+                             ->with('errores_import', $actualizacion->errores);
+            }
+            return back()->with('error', 'No se pudo procesar ninguna fila. Revisa los errores.')
+                         ->with('errores_import', $actualizacion->errores);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error importando productos: ' . $e->getMessage());
+            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage());
+        }
+    }
+
+    public function toggleActivo(Producto $producto)
+    {
+        $producto->update(['activo' => ! $producto->activo]);
+
+        $msg = $producto->activo ? 'Producto activado.' : 'Producto inactivado.';
+        return back()->with('success', $msg);
+    }
+
+    public function eliminar(Producto $producto)
+    {
+        $producto->delete();
+        return redirect()->route('productos')->with('success', 'Producto eliminado.');
     }
 }

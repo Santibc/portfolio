@@ -13,8 +13,7 @@ class VarianteProducto extends Model
 
     protected $fillable = [
         'producto_id',
-        'talla',
-        'color',
+        'extension',
         'sku',
         'activo'
     ];
@@ -55,8 +54,7 @@ public function stock()
 
     public function getNombreVarianteAttribute()
     {
-        $partes = array_filter([$this->talla, $this->color]);
-        return implode(' - ', $partes);
+        return $this->extension ?? '';
     }
 
     public function scopeActivas($query)

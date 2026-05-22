@@ -7,19 +7,27 @@
           <div class="p-6">
             <h4 class="text-2xl font-semibold mb-4">Clientes</h4>
 
+            @if (session('success'))
+              <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if (session('error'))
+              <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
+
             <table id="clientes-table" class="table-responsive w-full text-sm text-left">
               <thead class="text-xs uppercase bg-gray-100">
                 <tr>
                   <th>Acciones</th>
                   <th>Identificación</th>
                   <th>Contacto</th>
+                  <th>Empresa</th>
                   <th>Email</th>
                   <th>Teléfono</th>
                   <th>País</th>
                   <th>Ciudad</th>
                   <th>Vendedor</th>
                   <th>Lista Precio</th>
-                  <th>Activo</th>
+                  <th>Estado</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -39,16 +47,17 @@
         scrollX: true,
         ajax: "{{ route('clientes') }}",
         columns: [
-          { data:'action',       orderable:false, searchable:false },
+          { data:'action',                orderable:false, searchable:false },
           { data:'numero_identificacion', name:'numero_identificacion' },
           { data:'nombre_contacto',       name:'nombre_contacto' },
+          { data:'nombre_empresa',        name:'nombre_empresa' },
           { data:'email',                 name:'email' },
           { data:'telefono',              name:'telefono' },
-  { data:'pais',                 name:'pais',      orderable:false, searchable:false },
-  { data:'ciudad',               name:'ciudad',    orderable:false, searchable:false },
+          { data:'pais',                  name:'pais' },
+          { data:'ciudad',                name:'ciudad' },
           { data:'vendedor',              orderable:false, searchable:false },
           { data:'lista_precio',          orderable:false, searchable:false },
-          { data:'activo',                name:'activo' },
+          { data:'estado',                name:'activo', orderable:true, searchable:false },
         ],
         dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
         buttons: [

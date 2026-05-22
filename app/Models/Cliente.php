@@ -4,37 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cliente extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'clientes';
 
     protected $fillable = [
         'numero_identificacion',
         'nombre_contacto',
+        'nombre_empresa',
         'email',
         'telefono',
-  'ciudad_id',
+        'pais',
+        'ciudad',
         'vendedor_id',
         'lista_precio_id',
         'activo',
-         'pais_id'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
     ];
-    public function pais()
-    {
-        return $this->belongsTo(Pais::class);
-    }
 
-    public function ciudad()
-    {
-        return $this->belongsTo(Ciudad::class);
-    }
     public function vendedor()
     {
         return $this->belongsTo(User::class, 'vendedor_id');

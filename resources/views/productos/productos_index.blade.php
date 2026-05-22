@@ -32,9 +32,9 @@
                 <th>Categoría</th>
                 <th>Unidad Venta</th>
                 <th>Unidad Empaque</th>
-                <th>Extensión</th>
+                <th>¿Maneja Extensión?</th>
                 <th>Variantes</th>
-                <th>Activo</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -61,9 +61,9 @@
         { data:'categoria',    orderable:false, searchable:false },
         { data:'unidad_venta', name:'unidad_venta' },
         { data:'unidad_empaque', name:'unidad_empaque' },
-        { data:'extension',    name:'extension' },
+        { data:'tiene_extension', name:'tiene_extension' },
         { data:'variantes',    name:'tiene_variantes' },
-        { data:'activo',       name:'activo' },
+        { data:'estado',       name:'activo' },
       ],
       dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
       buttons: [
@@ -75,10 +75,16 @@
           action: () => window.location.href = "{{ route('productos.form') }}"
         },
         {
-  text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios', 
-  className:'btn btn-outline-warning',
-  action: () => window.location.href = "{{ route('productos.historial-precios') }}"
-}
+          text:'<i class="bi bi-currency-dollar"></i> Actualizar Precios',
+          className:'btn btn-outline-warning',
+          action: () => window.location.href = "{{ route('productos.historial-precios') }}"
+        },
+        {
+          text:'<i class="bi bi-upload"></i> Importar',
+          className:'btn btn-outline-success',
+          titleAttr:'Importar productos y precios desde Excel',
+          action: () => window.location.href = "{{ route('productos.importar') }}"
+        }
       ],
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10,25,50,-1],[10,25,50,'Todos']]

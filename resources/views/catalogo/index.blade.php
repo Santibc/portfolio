@@ -46,18 +46,43 @@
     /* Contenedor de imagen con fondo para mejor visualización */
     .producto-imagen-container {
       height: 200px;
-      background-color: #f8f9fa;
+      background-color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       border-bottom: 1px solid #dee2e6;
+      position: relative;
+      overflow: hidden;
     }
-    
+
     .producto-imagen {
       height: 100%;
       width: 100%;
       object-fit: contain;
       object-position: center;
+      transition: transform .25s ease;
+    }
+
+    .producto-card:hover .producto-imagen {
+      transform: scale(1.05);
+    }
+
+    .producto-imagen-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      opacity: 0;
+      transition: opacity .2s ease;
+      pointer-events: none;
+    }
+
+    .producto-card:hover .producto-imagen-overlay {
+      opacity: 1;
     }
     
     /* Estilos para la navegación del carrusel */
@@ -247,57 +272,45 @@
 
   <div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      {{-- Header --}}
-      <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-4">
-        <div class="p-4 row align-items-center">
-          <div class="col-md-4">
-            <h4 class="mb-0">
-              <a href="{{ route('catalogo') }}" class="text-decoration-none">
-                <i class="bi bi-arrow-left"></i> Cambiar Cliente
-              </a>
-            </h4>
-            <div class="mt-2">
-              <p class="text-muted mb-0 small">
-                Cliente: <strong>{{ $cliente->nombre_contacto }}</strong><br>
-                Lista de Precios: <strong>{{ $cliente->listaPrecio?->nombre ?? 'Sin lista asignada' }}</strong>
-              </p>
+      {{-- Toolbar compacta (Cliente / Búsqueda / Categoría / Vista / Carrito) --}}
+      <div class="bg-white shadow-sm rounded-lg mb-3 px-3 py-2 catalogo-toolbar">
+        <div class="row align-items-center g-2">
+          <div class="col-md-3">
+            <a href="{{ route('catalogo') }}" class="text-decoration-none small">
+              <i class="bi bi-arrow-left"></i> Cambiar cliente
+            </a>
+            <div class="text-muted small">
+              Lista: <strong>{{ $cliente->listaPrecio?->nombre ?? '—' }}</strong>
             </div>
           </div>
-          <div class="col-md-8">
-            <div class="input-group">
+          <div class="col-md-4">
+            <div class="input-group input-group-sm">
               <span class="input-group-text"><i class="bi bi-search"></i></span>
               <input type="text" class="form-control" id="busquedaProducto" placeholder="Buscar por nombre o referencia...">
             </div>
           </div>
-        </div>
-      </div>
-
-      {{-- Filtros --}}
-      <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-4">
-        <div class="p-4 row align-items-center">
-          <div class="col-md-4">
-            <label class="form-label">Filtrar por Categoría</label>
-            <select class="form-select" id="filtroCategoria">
+          <div class="col-md-2">
+            <select class="form-select form-select-sm" id="filtroCategoria" aria-label="Filtrar por categoría">
               <option value="">Todas las categorías</option>
               @foreach($categorias as $categoria)
                 <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
               @endforeach
             </select>
           </div>
-          <div class="col-md-8 text-end">
-            <button class="btn btn-outline-secondary me-2" id="btnToggleView">
-              <i class="bi bi-view-list"></i> Ver como carrusel
+          <div class="col-md-3 text-end d-flex justify-content-end gap-1">
+            <button class="btn btn-outline-secondary btn-sm" id="btnToggleView" title="Cambiar vista">
+              <i class="bi bi-view-list"></i>
             </button>
-            <select class="form-select form-select-sm d-none me-2" id="itemsPerPageSelect">
-              <option value="1">Mostrar 1</option>
-              <option value="2">Mostrar 2</option>
-              <option value="3" selected>Mostrar 3</option>
-              <option value="6">Mostrar 6</option>
-              <option value="9">Mostrar 9</option>
-              <option value="12">Mostrar 12</option>
+            <select class="form-select form-select-sm d-none" id="itemsPerPageSelect" style="width:auto;">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="6">6</option>
+              <option value="9">9</option>
+              <option value="12">12</option>
             </select>
-            <button class="btn btn-primary position-relative" id="btnCarrito">
-              <i class="bi bi-cart"></i> Carrito
+            <button class="btn btn-primary btn-sm position-relative" id="btnCarrito">
+              <i class="bi bi-cart"></i>
               <span class="badge rounded-pill bg-danger cart-badge" id="cartCount" style="display:none;">0</span>
             </button>
           </div>
@@ -487,7 +500,7 @@
           variante_id: variante?.id||null,
           referencia: producto.referencia,
           nombre: producto.nombre,
-          variante: variante? `${variante.talla||''} ${variante.color||''}`.trim():null,
+          variante: variante? (variante.extension||'').trim():null,
           precio: precioUnit,
           unidad_venta: producto.unidad_venta || '', // Agregamos la unidad de venta
           cantidad
@@ -569,7 +582,7 @@ function cargarProductos(page=1){
         ?'<div class="col-12 text-center py-5"><p class="text-muted">No se encontraron productos</p></div>'
         : prods.map(p=>{
             productosCargados[p.id]=p;
-            return buildCard(p, 'col-12 col-sm-4 col-md-3 col-lg-2 col-xl-2');
+            return buildCard(p, 'col-12 col-md-4 col-lg-3 col-xl-2');
           }).join('');
 
       $('#productosContainer').html(html);
@@ -682,15 +695,11 @@ function cargarProductos(page=1){
           <div class="${cardClass}" ${clickHandler}>
             <div class="producto-imagen-container">
               <img src="${img}" class="producto-imagen" alt="${p.nombre}">
+              <div class="producto-imagen-overlay"><i class="bi bi-zoom-in"></i></div>
             </div>
             <div class="card-body">
-              <h6 class="card-title">${p.nombre}</h6>
-              <p class="card-text">
-                <small class="text-muted">Ref: ${p.referencia}</small><br>
-                <small class="text-muted">${p.categoria.nombre}</small>
-                ${precioTag}
-                ${stockTag}
-              </p>
+              <h6 class="card-title mb-1">${p.nombre}</h6>
+              <small class="text-muted">Ref: ${p.referencia}</small>
             </div>
           </div>
         </div>`;
@@ -746,7 +755,7 @@ function cargarProductos(page=1){
         if(p.imagenes?.length){
           html+='<div id="carouselProducto" class="carousel slide" data-bs-ride="carousel"><div class="carousel-inner">';
           p.imagenes.forEach((img,i)=>{
-            html+=`<div class="carousel-item ${i===0?"active":""}"><img src="{{asset("")}}${img.ruta_imagen}" class="d-block w-100" style="height:400px;object-fit:contain;background-color:#f8f9fa;"></div>`;
+            html+=`<div class="carousel-item ${i===0?"active":""}"><img src="{{asset("")}}${img.ruta_imagen}" class="d-block w-100" style="height:400px;object-fit:contain;background-color:#ffffff;"></div>`;
           });
           html+='</div>';
           if(p.imagenes.length>1){
@@ -755,19 +764,35 @@ function cargarProductos(page=1){
           }
           html+='</div>';
         } else {
-          html+='<img src="{{asset("images/no-image.png")}}" class="img-fluid" style="object-fit:contain;background-color:#f8f9fa;">';
+          html+='<img src="{{asset("images/no-image.png")}}" class="img-fluid" style="object-fit:contain;background-color:#ffffff;">';
         }
         html+='</div>';
 
         // Info del producto
         html+='<div class="col-md-6">';
-        html+=`<h4>${p.nombre}</h4><p class="text-muted">Referencia: ${p.referencia}</p><p>${p.descripcion||""}</p>`;
-        
-        // Precio
+        html+=`<h4>${p.nombre}</h4>`;
+        html+=`<p class="text-muted mb-2">Referencia: ${p.referencia}</p>`;
+        if(p.descripcion) html+=`<p>${p.descripcion}</p>`;
+
+        // Precio (con prefijo USD y 2 decimales, solo si tiene permiso)
         if(mostrarPrecios){
           const raw=p.precio, num=parseFloat(raw);
-          if(raw!=null&&!isNaN(num)) html+=`<h5 class="text-primary">${num.toFixed(2)}</h5>`;
+          if(raw!=null&&!isNaN(num)) html+=`<h5 class="text-primary mb-3">USD ${num.toFixed(2)}</h5>`;
         }
+
+        // Unidad de venta
+        if(p.unidad_venta) html+=`<p class="mb-1"><strong>Unidad de venta:</strong> ${p.unidad_venta}</p>`;
+
+        // Inventario (solo si tiene permiso)
+        if(mostrarStock && p.stock_info){
+          const cant = p.stock_info.controla_stock
+            ? (p.stock_info.cantidad_disponible ?? 0)
+            : 'Ilimitado';
+          html+=`<p class="mb-1"><strong>Inventario:</strong> ${cant}</p>`;
+        }
+
+        // Unidad de empaque
+        if(p.unidad_empaque) html+=`<p class="mb-3"><strong>Unidad de empaque:</strong> ${p.unidad_empaque}</p>`;
         
         // Información de stock del producto principal
         if(mostrarStock && p.stock_info && !p.tiene_variantes) {
@@ -893,7 +918,7 @@ function cargarProductos(page=1){
           });
           
           html+='</tbody></table></div>';
-          html+=`<button class="btn btn-primary w-100" onclick="agregarVariantesAlCarrito(${p.id})">Agregar al Carrito</button>`;
+          html+=`<button class="btn btn-primary w-100" onclick="agregarVariantesAlCarrito(${p.id})">Solicitar</button>`;
         } else {
           html+='<hr><div class="mb-3"><label class="form-label">Cantidad:</label>';
           
@@ -917,7 +942,7 @@ function cargarProductos(page=1){
           
           // Botón agregar - determinar si deshabilitar
           let btnDisabled = '';
-          let btnText = 'Agregar al Carrito';
+          let btnText = 'Solicitar';
           
           if(mostrarStock && p.stock_info && p.stock_info.controla_stock) {
             if(!p.stock_info.permite_sin_stock && !p.stock_info.tiene_stock) {

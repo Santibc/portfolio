@@ -3,724 +3,174 @@
 
   <div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      {{-- Alertas --}}
+
       @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mb-4">
           {{ session('success') }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       @endif
-      
+      @if(session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show mb-4">
+          {{ session('warning') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
       @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show mb-4">
           {{ session('error') }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       @endif
 
-      {{-- Tarjetas de resumen --}}
+      {{-- Tarjetas resumen --}}
       <div class="row mb-4">
-        <div class="col-md-3">
-          <div class="card border-success">
+        <div class="col-md-4">
+          <div class="card border-warning h-100">
             <div class="card-body">
-              <h6 class="card-title text-success">
-                <i class="bi bi-check-circle"></i> Con Stock
+              <h6 class="card-title text-warning mb-1">
+                <i class="bi bi-exclamation-triangle"></i> Productos con stock bajo
               </h6>
-              <p class="card-text display-6" id="productosConStock">-</p>
+              <p class="card-text display-6 mb-0">{{ $productosConStockBajo }}</p>
+              <small class="text-muted">
+                @if($productosConStockBajo === 0)
+                  Ningún producto está por debajo de su mínimo.
+                @else
+                  Por debajo del stock mínimo configurado.
+                @endif
+              </small>
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card border-warning">
+        <div class="col-md-4">
+          <div class="card border-danger h-100">
             <div class="card-body">
-              <h6 class="card-title text-warning">
-                <i class="bi bi-exclamation-triangle"></i> Stock Bajo
+              <h6 class="card-title text-danger mb-1">
+                <i class="bi bi-x-circle"></i> Productos sin stock
               </h6>
-              <p class="card-text display-6">{{ $productosConStockBajo }}</p>
+              <p class="card-text display-6 mb-0">{{ $productosSinStock }}</p>
+              <small class="text-muted">
+                @if($productosSinStock === 0)
+                  Todos los productos tienen unidades disponibles.
+                @else
+                  Con 0 unidades disponibles.
+                @endif
+              </small>
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card border-danger">
+        <div class="col-md-4">
+          <div class="card border-info h-100">
             <div class="card-body">
-              <h6 class="card-title text-danger">
-                <i class="bi bi-x-circle"></i> Sin Stock
+              <h6 class="card-title text-info mb-2">
+                <i class="bi bi-clock-history"></i> Historial
               </h6>
-              <p class="card-text display-6">{{ $productosSinStock }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card border-info">
-            <div class="card-body">
-              <h6 class="card-title text-info">
-                <i class="bi bi-box-seam"></i> Total Items
-              </h6>
-              <p class="card-text display-6" id="totalItems">-</p>
+              <a href="{{ route('stock.historial') }}" class="btn btn-outline-info">
+                Ver movimientos
+              </a>
+              <small class="d-block text-muted mt-2">Entradas, salidas y ajustes.</small>
             </div>
           </div>
         </div>
       </div>
 
-      {{-- Panel de Filtros --}}
-      <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-          <h5 class="mb-0">
-            <i class="bi bi-funnel"></i> Filtros
-            @if(request('producto_id'))
-              <span class="badge bg-info ms-2">Filtro activo</span>
-            @endif
-          </h5>
+      {{-- Importar Excel --}}
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5 class="mb-0"><i class="bi bi-upload"></i> Importar / Actualizar inventario desde Excel</h5>
+          <a href="{{ route('stock.plantilla-importacion') }}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Descargar plantilla Excel
+          </a>
         </div>
         <div class="card-body">
-          <div class="row align-items-end">
-            <div class="col-md-6">
-              <label class="form-label">Buscar Producto</label>
-              <select id="filtroProducto" class="form-select select2-productos w-100">
-                <option value="">-- Todos los productos --</option>
-                @if($productoFiltrado ?? false)
-                  <option value="{{ $productoFiltrado->id }}" selected>
-                    {{ $productoFiltrado->referencia }} - {{ $productoFiltrado->nombre }}
-                    @if($productoFiltrado->tiene_variantes)
-                      (Con variantes)
-                    @endif
-                  </option>
-                @endif
-              </select>
-            </div>
-            
-            <div class="col-md-3">
-              <label class="form-label">Estado de Stock</label>
-              <select id="filtroEstado" class="form-select">
-                <option value="">-- Todos --</option>
-                <option value="con_stock">Con Stock</option>
-                <option value="sin_stock">Sin Stock</option>
-                <option value="stock_bajo">Stock Bajo</option>
-              </select>
-            </div>
-            
-            <div class="col-md-3">
-              <div class="btn-group w-100" role="group">
-                <button type="button" class="btn btn-primary" onclick="aplicarFiltros()">
-                  <i class="bi bi-check-circle"></i> Aplicar
-                </button>
-                <button type="button" class="btn btn-outline-secondary" onclick="limpiarFiltros()">
-                  <i class="bi bi-x-circle"></i> Limpiar
-                </button>
-              </div>
+          <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+            <i class="bi bi-info-circle-fill mt-1"></i>
+            <div>
+              <strong>Esta importación solo actualiza el stock de productos y variantes que ya existen.</strong><br>
+              <small>
+                No crea productos nuevos. Si una referencia o SKU del Excel no existe en el sistema, esa fila se reportará como error.
+                Para dar de alta productos o variantes, usa primero
+                <a href="{{ route('productos.form') }}" class="alert-link">Productos → Nuevo</a>.
+              </small>
             </div>
           </div>
 
-          {{-- Información del filtro activo --}}
-          @if($productoFiltrado ?? false)
-            <div class="alert alert-info mt-3 mb-0">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <strong><i class="bi bi-info-circle"></i> Mostrando stock de:</strong>
-                  <span class="ms-2">{{ $productoFiltrado->referencia }} - {{ $productoFiltrado->nombre }}</span>
-                  @if($productoFiltrado->tiene_variantes)
-                    <span class="badge bg-secondary ms-2">
-                      {{ $productoFiltrado->variantes->count() }} variantes
-                    </span>
-                  @endif
-                </div>
-                <div>
-                  <a href="{{ route('productos.form', $productoFiltrado->id) }}" 
-                     class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-pencil"></i> Editar Producto
-                  </a>
-                </div>
-              </div>
+          <form action="{{ route('stock.importar-excel') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-3">
+              <label class="form-label">Archivo Excel / CSV</label>
+              <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls,.csv" required>
+              <small class="text-muted">Descarga primero la plantilla, llénala y súbela aquí.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-upload"></i> Subir e importar
+            </button>
+          </form>
+
+          <hr>
+
+          <h6 class="mt-3">Formato esperado</h6>
+          <p class="mb-2 text-muted">
+            Encabezados en la fila 1. La columna <code>referencia</code> puede ser el código del producto o el SKU de una variante.
+            Las columnas marcadas en <span class="text-danger fw-bold">rojo</span> son obligatorias.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Columna</th>
+                  <th>Obligatorio</th>
+                  <th>Descripción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="table-danger">
+                  <td><code class="text-danger fw-bold">referencia</code></td>
+                  <td><span class="badge bg-danger">Sí</span></td>
+                  <td>Referencia del producto o SKU de la variante.</td>
+                </tr>
+                <tr class="table-danger">
+                  <td><code class="text-danger fw-bold">cantidad</code></td>
+                  <td><span class="badge bg-danger">Sí</span></td>
+                  <td>Cantidad (entero positivo). Se interpreta según la columna <code>modo</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>modo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td><code>set</code> (reemplaza, default), <code>sumar</code> o <code>restar</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>stock_minimo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cantidad mínima para alerta de stock bajo.</td>
+                </tr>
+                <tr>
+                  <td><code>stock_maximo</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cantidad máxima de referencia.</td>
+                </tr>
+                <tr>
+                  <td><code>ubicacion</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Ubicación física (bodega, estante, etc).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          @if(session('errores_stock'))
+            <div class="alert alert-warning mt-3">
+              <strong>Errores en el archivo:</strong>
+              <ul class="mb-0">
+                @foreach(session('errores_stock') as $err)
+                  <li>Fila {{ $err['fila'] }} — <code>{{ $err['referencia'] }}</code>: {{ $err['mensaje'] }}</li>
+                @endforeach
+              </ul>
             </div>
           @endif
         </div>
       </div>
 
-      {{-- Tabla de stock --}}
-      <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div class="p-6">
-          <h4 class="text-2xl font-semibold mb-4">Control de Stock</h4>
-
-          <table id="stock-table" class="table-responsive w-full text-sm text-left">
-            <thead class="text-xs uppercase bg-gray-100">
-              <tr>
-                <th>Producto</th>
-                <th>Stock Actual</th>
-                <th>Disp./Reserv.</th>
-                <th>Mín/Máx</th>
-                <th>Ubicación</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </div>
-
-  {{-- Modal Entrada de Stock --}}
-  <div class="modal fade" id="modalEntrada" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formEntrada">
-          @csrf
-          <div class="modal-header">
-            <h5 class="modal-title">Entrada de Stock</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" id="entrada_stock_id" name="stock_id">
-            
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input type="text" class="form-control" id="entrada_producto" readonly>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Cantidad <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="cantidad" min="1" required>
-              <small class="text-muted">Stock actual: <span id="entrada_stock_actual"></span></small>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Referencia (Factura/Orden)</label>
-              <input type="text" class="form-control" name="referencia">
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Motivo/Observaciones</label>
-              <textarea class="form-control" name="motivo" rows="2"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-success">Registrar Entrada</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  {{-- Modal Salida de Stock --}}
-  <div class="modal fade" id="modalSalida" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formSalida">
-          @csrf
-          <div class="modal-header">
-            <h5 class="modal-title">Salida de Stock</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" id="salida_stock_id" name="stock_id">
-            
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input type="text" class="form-control" id="salida_producto" readonly>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Cantidad <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="cantidad" min="1" required>
-              <small class="text-muted">Stock disponible: <span id="salida_stock_disponible"></span></small>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Referencia (Factura/Orden)</label>
-              <input type="text" class="form-control" name="referencia">
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Motivo/Observaciones</label>
-              <textarea class="form-control" name="motivo" rows="2"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-danger">Registrar Salida</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  {{-- Modal Ajuste de Stock --}}
-  <div class="modal fade" id="modalAjuste" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formAjuste">
-          @csrf
-          <div class="modal-header">
-            <h5 class="modal-title">Ajuste de Inventario</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" id="ajuste_stock_id" name="stock_id">
-            
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input type="text" class="form-control" id="ajuste_producto" readonly>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Stock Actual</label>
-              <input type="text" class="form-control" id="ajuste_stock_actual" readonly>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Nueva Cantidad <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" name="nueva_cantidad" min="0" required>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Motivo del Ajuste <span class="text-danger">*</span></label>
-              <textarea class="form-control" name="motivo" rows="3" required 
-                        placeholder="Explique el motivo del ajuste de inventario"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-warning">Realizar Ajuste</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  {{-- Modal Configuración de Stock --}}
-  <div class="modal fade" id="modalConfiguracion" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formConfiguracion">
-          @csrf
-          <div class="modal-header">
-            <h5 class="modal-title">Configuración de Stock</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <input type="hidden" id="config_stock_id" name="stock_id">
-            
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input type="text" class="form-control" id="config_producto" readonly>
-            </div>
-            
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Stock Mínimo <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" name="stock_minimo" id="config_stock_minimo" min="0" required>
-              </div>
-              
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Stock Máximo</label>
-                <input type="number" class="form-control" name="stock_maximo" id="config_stock_maximo" min="0">
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Ubicación en Bodega</label>
-              <input type="text" class="form-control" name="ubicacion" id="config_ubicacion" 
-                     placeholder="Ej: Pasillo A, Estante 3">
-            </div>
-            
-            <div class="mb-3">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="alerta_stock_bajo" 
-                       id="config_alerta" value="1" checked>
-                <label class="form-check-label" for="config_alerta">
-                  Activar alerta de stock bajo
-                </label>
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Notas</label>
-              <textarea class="form-control" name="notas" id="config_notas" rows="2"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-info">Guardar Configuración</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  {{-- Modal Historial --}}
-  <div class="modal fade" id="modalHistorial" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Historial de Movimientos</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body" id="contenidoHistorial">
-          <div class="text-center">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  @push('styles')
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-  @endpush
-
-  @push('scripts')
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Obtener parámetros de la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const productoId = urlParams.get('producto_id');
-    const estadoFiltro = urlParams.get('estado');
-    
-    // Configurar Select2 para búsqueda de productos
-    $('.select2-productos').select2({
-      theme: 'bootstrap-5',
-      width: '100%',
-      placeholder: '-- Todos los productos --',
-      allowClear: true,
-      ajax: {
-        url: '{{ route("stock.productos-json") }}',
-        dataType: 'json',
-        delay: 250,
-        data: function (params) {
-          return {
-            q: params.term
-          };
-        },
-        processResults: function (data) {
-          return {
-            results: data.results
-          };
-        },
-        cache: true
-      },
-      minimumInputLength: 0,
-      language: {
-        searching: function() {
-          return "Buscando...";
-        },
-        noResults: function() {
-          return "No se encontraron resultados";
-        },
-        inputTooShort: function() {
-          return "Escribe para buscar";
-        }
-      }
-    });
-
-    // Si hay un filtro de estado, seleccionarlo
-    if (estadoFiltro) {
-      $('#filtroEstado').val(estadoFiltro);
-    }
-    
-    // Configurar DataTable
-    const table = $('#stock-table').DataTable({
-      processing: true,
-      serverSide: true,
-      responsive: true,
-      scrollX: true,
-      ajax: {
-        url: "{{ route('stock.index') }}",
-        data: function(d) {
-          // Agregar filtros al request
-          if (productoId) {
-            d.producto_id = productoId;
-          }
-          const estado = $('#filtroEstado').val();
-          if (estado) {
-            d.estado = estado;
-          }
-        }
-      },
-      columns: [
-        { data: 'producto_info', name: 'producto_id' },
-        { data: 'stock_actual', orderable: false },
-        { data: 'disponible_reservado', orderable: false },
-        { data: 'stock_minimo_maximo', orderable: false },
-        { data: 'ubicacion', name: 'ubicacion' },
-        { data: 'action', orderable: false, searchable: false }
-      ],
-      dom: "<'flex justify-between mb-4'<'relative'B>f>t<'flex justify-between items-center px-2 my-2'i<'pagination-wrapper'p>>",
-      buttons: [
-        { extend: 'pageLength', className: 'btn btn-outline-dark', text: 'Filas' },
-        { extend: 'colvis', className: 'btn btn-outline-dark', text: 'Columnas' },
-        { extend: 'excelHtml5', className: 'btn btn-outline-success', text: 'Excel' },
-        {
-          text: 'Inicializar Stock', className: 'btn btn-outline-warning',
-          action: () => {
-            if (confirm('¿Desea inicializar el stock para todos los productos?')) {
-              inicializarStock();
-            }
-          }
-        }
-      ],
-      language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
-      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-      drawCallback: function(settings) {
-        // Actualizar contadores
-        const info = this.api().page.info();
-        $('#totalItems').text(info.recordsTotal);
-        
-        // Calcular productos con stock
-        const data = this.api().rows({page:'current'}).data();
-        let conStock = 0;
-        data.each(function(row) {
-          // Extraer el número del badge de stock
-          const match = row.stock_actual.match(/>(\d+)</);
-          if (match && parseInt(match[1]) > 0) {
-            conStock++;
-          }
-        });
-        $('#productosConStock').text(conStock);
-      }
-    });
-
-    // Función para aplicar filtros
-    window.aplicarFiltros = function() {
-      const productoId = $('#filtroProducto').val();
-      const estado = $('#filtroEstado').val();
-      
-      let url = "{{ route('stock.index') }}";
-      const params = [];
-      
-      if (productoId) {
-        params.push('producto_id=' + productoId);
-      }
-      if (estado) {
-        params.push('estado=' + estado);
-      }
-      
-      if (params.length > 0) {
-        url += '?' + params.join('&');
-      }
-      
-      window.location.href = url;
-    };
-
-    // Función para limpiar filtros
-    window.limpiarFiltros = function() {
-      window.location.href = "{{ route('stock.index') }}";
-    };
-
-    // Funciones para los modales
-    window.entradaStock = function(stockId) {
-      $.get(`/stock/${stockId}/obtener`, function(data) {
-        $('#entrada_stock_id').val(stockId);
-        $('#entrada_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
-        $('#entrada_stock_actual').text(data.stock.cantidad_disponible);
-        $('#modalEntrada').modal('show');
-      });
-    };
-
-    window.salidaStock = function(stockId) {
-      $.get(`/stock/${stockId}/obtener`, function(data) {
-        $('#salida_stock_id').val(stockId);
-        $('#salida_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
-        $('#salida_stock_disponible').text(data.stock.stock_real);
-        $('#modalSalida').modal('show');
-      });
-    };
-
-    window.ajusteStock = function(stockId) {
-      $.get(`/stock/${stockId}/obtener`, function(data) {
-        $('#ajuste_stock_id').val(stockId);
-        $('#ajuste_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
-        $('#ajuste_stock_actual').val(data.stock.cantidad_disponible);
-        $('#modalAjuste').modal('show');
-      });
-    };
-
-    window.configurarStock = function(stockId) {
-      $.get(`/stock/${stockId}/obtener`, function(data) {
-        $('#config_stock_id').val(stockId);
-        $('#config_producto').val(data.producto_nombre + (data.variante_nombre ? ' - ' + data.variante_nombre : ''));
-        $('#config_stock_minimo').val(data.stock.stock_minimo);
-        $('#config_stock_maximo').val(data.stock.stock_maximo);
-        $('#config_ubicacion').val(data.stock.ubicacion);
-        $('#config_alerta').prop('checked', data.stock.alerta_stock_bajo);
-        $('#config_notas').val(data.stock.notas);
-        $('#modalConfiguracion').modal('show');
-      });
-    };
-
-    window.verHistorial = function(productoId, varianteId) {
-      $.get('/stock/historial', { producto_id: productoId, variante_id: varianteId }, function(response) {
-        $('#contenidoHistorial').html(response.html);
-        $('#modalHistorial').modal('show');
-      });
-    };
-
-    // Formulario de entrada
-    $('#formEntrada').on('submit', function(e) {
-      e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.entrada') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalEntrada').modal('hide');
-            table.ajax.reload();
-            // Usar toastr si está disponible, sino alert
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
-    });
-
-    // Formulario de salida
-    $('#formSalida').on('submit', function(e) {
-      e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.salida') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalSalida').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
-    });
-
-    // Formulario de ajuste
-    $('#formAjuste').on('submit', function(e) {
-      e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.ajuste') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalAjuste').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
-    });
-
-    // Formulario de configuración
-    $('#formConfiguracion').on('submit', function(e) {
-      e.preventDefault();
-      
-      $.ajax({
-        url: "{{ route('stock.configurar') }}",
-        method: 'POST',
-        data: $(this).serialize(),
-        success: function(response) {
-          if (response.success) {
-            $('#modalConfiguracion').modal('hide');
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
-    });
-
-    // Inicializar stock
-    function inicializarStock() {
-      $.ajax({
-        url: "{{ route('stock.inicializar-todos') }}",
-        method: 'POST',
-        data: { _token: '{{ csrf_token() }}' },
-        success: function(response) {
-          if (response.success) {
-            table.ajax.reload();
-            if (typeof toastr !== 'undefined') {
-              toastr.success(response.message);
-            } else {
-              alert(response.message);
-            }
-          }
-        },
-        error: function(xhr) {
-          const message = 'Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Error desconocido');
-          if (typeof toastr !== 'undefined') {
-            toastr.error(message);
-          } else {
-            alert(message);
-          }
-        }
-      });
-    }
-
-    // Atajos de teclado
-    $(document).keydown(function(e) {
-      // Alt + F para abrir filtros
-      if (e.altKey && e.key === 'f') {
-        e.preventDefault();
-        $('#filtroProducto').select2('open');
-      }
-      // Alt + L para limpiar filtros
-      if (e.altKey && e.key === 'l') {
-        e.preventDefault();
-        limpiarFiltros();
-      }
-    });
-  });
-  </script>
-  @endpush
 </x-app-layout>

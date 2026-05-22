@@ -58,16 +58,17 @@ class ResumenSheet implements FromCollection, WithHeadings, WithMapping, WithTit
     
     public function map($solicitud): array
     {
+        $cliente = $solicitud->cliente;
         return [
             $solicitud->numero_solicitud,
             $solicitud->created_at->format('d/m/Y H:i'),
-            $solicitud->cliente->numero_identificacion,
-            $solicitud->cliente->nombre_contacto,
-            $solicitud->cliente->email,
-            $solicitud->cliente->telefono,
-            $solicitud->cliente->ciudad->nombre . ', ' . $solicitud->cliente->pais->nombre,
-            $solicitud->cliente->vendedor->name,
-            $solicitud->cliente->listaPrecio?->nombre ?? 'Sin lista',
+            $cliente?->numero_identificacion ?? '',
+            $cliente?->nombre_contacto ?? 'Cliente eliminado',
+            $cliente?->email ?? '',
+            $cliente?->telefono ?? '',
+            trim(($cliente?->ciudad ?? '') . ', ' . ($cliente?->pais ?? ''), ', '),
+            $cliente?->vendedor?->name ?? 'Sin vendedor',
+            $cliente?->listaPrecio?->nombre ?? 'Sin lista',
             $solicitud->total_items,
             '$' . number_format($solicitud->monto_total, 2),
             $solicitud->estado === 'aplicada' ? 'Aplicada' : 'Pendiente',
@@ -156,7 +157,7 @@ class DetalleSheet implements FromCollection, WithHeadings, WithMapping, WithTit
         return [
             $solicitud->numero_solicitud,
             $solicitud->created_at->format('d/m/Y'),
-            $solicitud->cliente->nombre_contacto,
+            $solicitud->cliente?->nombre_contacto ?? 'Cliente eliminado',
             $item->referencia_producto,
             $item->nombre_producto,
             $item->info_variante ?? '-',

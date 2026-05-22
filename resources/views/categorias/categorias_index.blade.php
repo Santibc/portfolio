@@ -3,6 +3,20 @@
 
   <div class="py-6">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+      @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4">
+          {{ session('success') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+      @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4">
+          {{ session('error') }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      @endif
+
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           <h4 class="text-2xl font-semibold mb-4">Listado de Categorías</h4>

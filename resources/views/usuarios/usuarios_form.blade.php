@@ -56,7 +56,7 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                                                <div class="col-12 col-md-6 mb-3">
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="form-label">
                                 Rol <span class="text-danger">*</span>
                             </label>
@@ -73,6 +73,26 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
+
+                        @if($user->exists)
+                            <div class="col-12 col-md-6 mb-3 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input type="hidden" name="activo" value="0">
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           id="activo"
+                                           name="activo"
+                                           value="1"
+                                           {{ old('activo', $user->activo) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="activo">
+                                        Usuario activo
+                                    </label>
+                                    <small class="d-block text-muted">
+                                        Si está desactivado, el usuario no podrá iniciar sesión.
+                                    </small>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- Botones --}}

@@ -7,12 +7,59 @@ use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
 use App\Models\VarianteProducto;
+use App\Imports\StockImport;
+use App\Exports\PlantillaStockExport;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
 class StockController extends Controller
 {
+    // Descargar plantilla Excel de ejemplo para importar stock
+    public function descargarPlantilla()
+    {
+        return Excel::download(
+            new PlantillaStockExport(),
+            'plantilla_importacion_stock.xlsx'
+        );
+    }
+
+    // Importar stock desde Excel
+    public function importarExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv|max:10240'
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo',
+            'archivo.mimes'    => 'El archivo debe ser Excel (.xlsx, .xls) o CSV',
+            'archivo.max'      => 'El archivo no debe superar los 10MB',
+        ]);
+
+        $rutaArchivo = null;
+        try {
+            // Procesamos directamente desde el tmp de PHP — no dejamos copia en public/.
+            $rutaArchivo = $request->file('archivo')->getRealPath();
+
+            $import = new StockImport();
+            Excel::import($import, $rutaArchivo);
+
+            if ($import->exito > 0 && $import->fallo === 0) {
+                return back()->with('success', "Stock actualizado: {$import->exito} registros.");
+            } elseif ($import->exito > 0) {
+                return back()->with('warning', "Parcial: {$import->exito} actualizados, {$import->fallo} con errores.")
+                             ->with('errores_stock', $import->errores);
+            }
+            return back()->with('error', 'No se pudo actualizar ningún registro.')
+                         ->with('errores_stock', $import->errores);
+        } catch (\Throwable $e) {
+            Log::error('Error import stock: ' . $e->getMessage());
+            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage());
+        }
+    }
+
     // Vista principal de gestión de stock
     public function index(Request $request)
     {
@@ -260,25 +307,67 @@ class StockController extends Controller
     // Ver historial de movimientos
     public function historial(Request $request)
     {
-        $productoId = $request->producto_id;
-        $varianteId = $request->variante_id;
-        
-        $movimientos = MovimientoStock::with(['usuario', 'producto', 'variante'])
-            ->where('producto_id', $productoId);
-            
-        if ($varianteId) {
-            $movimientos->where('variante_producto_id', $varianteId);
-        } else {
-            $movimientos->whereNull('variante_producto_id');
+        if ($request->ajax()) {
+            $query = MovimientoStock::with(['usuario', 'producto', 'variante'])
+                ->select('movimientos_stock.*');
+
+            if ($request->filled('producto_id')) {
+                $query->where('producto_id', $request->producto_id);
+            }
+            if ($request->filled('tipo')) {
+                $query->where('tipo_movimiento', $request->tipo);
+            }
+            if ($request->filled('origen')) {
+                $query->where('origen', $request->origen);
+            }
+            if ($request->filled('desde')) {
+                $query->whereDate('created_at', '>=', $request->desde);
+            }
+            if ($request->filled('hasta')) {
+                $query->whereDate('created_at', '<=', $request->hasta);
+            }
+
+            return DataTables::of($query)
+                ->addColumn('fecha', fn($m) => $m->created_at->format('d/m/Y H:i'))
+                ->addColumn('producto', function($m) {
+                    $info = '<strong>' . e($m->producto?->referencia ?? '—') . '</strong><br>';
+                    $info .= e($m->producto?->nombre ?? '');
+                    if ($m->variante) {
+                        $info .= '<br><small class="text-muted">' . e($m->variante->nombre_variante) . '</small>';
+                    }
+                    return $info;
+                })
+                ->addColumn('tipo', function($m) {
+                    return '<span class="badge bg-' . $m->color_movimiento . '">'
+                        . '<i class="' . $m->icono_movimiento . '"></i> '
+                        . ucfirst($m->tipo_movimiento)
+                        . '</span>';
+                })
+                ->addColumn('cantidad_fmt', function($m) {
+                    $signo = match ($m->tipo_movimiento) {
+                        'entrada' => '+',
+                        'salida'  => '-',
+                        default   => '',
+                    };
+                    $clase = 'text-' . $m->color_movimiento;
+                    return '<span class="' . $clase . ' fw-bold">' . $signo . $m->cantidad . '</span>';
+                })
+                ->addColumn('stocks', fn($m) => $m->stock_anterior . ' → <strong>' . $m->stock_nuevo . '</strong>')
+                ->addColumn('origen_fmt', fn($m) => $m->descripcion_origen)
+                ->addColumn('motivo_fmt', fn($m) => $m->motivo ? e(\Illuminate\Support\Str::limit($m->motivo, 60)) : '-')
+                ->addColumn('usuario_fmt', fn($m) => e($m->usuario?->name ?? '-'))
+                ->filterColumn('producto', function($q, $keyword) {
+                    $q->whereHas('producto', function($p) use ($keyword) {
+                        $p->where('referencia', 'like', "%{$keyword}%")
+                          ->orWhere('nombre', 'like', "%{$keyword}%");
+                    });
+                })
+                ->rawColumns(['producto', 'tipo', 'cantidad_fmt', 'stocks'])
+                ->make(true);
         }
-        
-        $movimientos = $movimientos->orderBy('created_at', 'desc')
-                                   ->limit(50)
-                                   ->get();
-        
-        $html = view('stock.historial', compact('movimientos'))->render();
-        
-        return response()->json(['html' => $html]);
+
+        $productos = Producto::orderBy('referencia')->get(['id', 'referencia', 'nombre']);
+        return view('stock.historial', compact('productos'));
     }
 
     // Obtener datos de stock para edición
