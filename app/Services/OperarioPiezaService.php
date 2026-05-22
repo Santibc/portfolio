@@ -321,7 +321,14 @@ class OperarioPiezaService
      */
     public function getStatsOperario(User $operario): array
     {
-        $piezasAsignadas = OrdenPieza::where('operario_actual_id', $operario->id)->get();
+        // Solo piezas pendientes (<100%) en ordenes activas (no anuladas/borradores).
+        // Debe coincidir con el filtro del listado de "Mis Ordenes Asignadas".
+        $piezasAsignadas = OrdenPieza::where('operario_actual_id', $operario->id)
+            ->where('porcentaje_avance', '<', 100)
+            ->whereHas('orden', function ($q) {
+                $q->noAnuladas()->noBorradores();
+            })
+            ->get();
 
         $ordenesIds = $piezasAsignadas->pluck('orden_id')->unique();
 

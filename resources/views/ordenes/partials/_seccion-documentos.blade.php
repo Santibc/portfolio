@@ -46,7 +46,9 @@
                         @foreach($orden->documentos as $doc)
                             <tr data-doc-id="{{ $doc->id }}">
                                 <td class="text-center"><i class="bi {{ $doc->icono }} fs-4"></i></td>
-                                <td class="text-break">{{ $doc->nombre_original }}</td>
+                                <td style="max-width: 200px;" title="{{ $doc->nombre_original }}">
+                                    <div class="text-truncate" style="max-width: 100%;">{{ $doc->nombre_original }}</div>
+                                </td>
                                 <td>{{ $doc->tamano_legible }}</td>
                                 <td>{{ optional($doc->subidoPorUsuario)->name ?? '-' }}</td>
                                 <td>{{ optional($doc->created_at)->format('d/m/Y H:i') }}</td>
@@ -170,7 +172,7 @@
         $('#docsVacio').addClass('d-none');
         var html = '<tr data-doc-id="' + doc.id + '">' +
             '<td class="text-center"><i class="bi ' + doc.icono + ' fs-4"></i></td>' +
-            '<td class="text-break">' + $('<div>').text(doc.nombre_original).html() + '</td>' +
+            '<td style="max-width: 200px;" title="' + $('<div>').text(doc.nombre_original).html() + '"><div class="text-truncate" style="max-width: 100%;">' + $('<div>').text(doc.nombre_original).html() + '</div></td>' +
             '<td>' + doc.tamano_legible + '</td>' +
             '<td>' + $('<div>').text(doc.subido_por).html() + '</td>' +
             '<td>' + (doc.created_at || '-') + '</td>' +

@@ -324,6 +324,17 @@
 
             // Formas: linea, rectangulo, elipse, flecha
             if (['line', 'rect', 'ellipse', 'arrow'].indexOf(currentTool) !== -1) {
+                // Defensa: si Fabric.js detecto un target arrastrable (p.ej. tras
+                // undo/redo que restauro selectable:true por default), abortar el
+                // drag y dejar ese objeto inert para que el nuevo trazo no lo mueva.
+                if (opt.target) {
+                    opt.target.selectable = false;
+                    opt.target.evented = false;
+                    fabricCanvas.discardActiveObject();
+                    if (fabricCanvas._currentTransform) {
+                        fabricCanvas._currentTransform = null;
+                    }
+                }
                 isShapeDrawing = true;
                 var ptr = fabricCanvas.getPointer(e);
                 shapeOrigin = { x: ptr.x, y: ptr.y };
@@ -646,12 +657,26 @@
         }
     }
 
+    // Reaplica selectable/evented a todos los objetos segun la herramienta actual.
+    // Fabric.js NO serializa estas propiedades en toJSON por defecto, asi que tras
+    // un loadFromJSON los objetos vuelven a su default (selectable:true, evented:true)
+    // y podrian ser arrastrados al iniciar un nuevo trazo sobre ellos.
+    function reaplicarInteractividad() {
+        if (!fabricCanvas) return;
+        var interactive = (currentTool === 'select' || currentTool === 'eraser' || currentTool === 'text');
+        fabricCanvas.forEachObject(function(obj) {
+            obj.selectable = interactive;
+            obj.evented = interactive;
+        });
+    }
+
     window.deshacerDibujo = function() {
         if (!fabricCanvas || undoStack.length <= 1) return;
         isSavingState = true;
         redoStack.push(undoStack.pop());
         var prevState = undoStack[undoStack.length - 1];
         fabricCanvas.loadFromJSON(prevState, function() {
+            reaplicarInteractividad();
             fabricCanvas.renderAll();
             isSavingState = false;
         });
@@ -663,6 +688,7 @@
         var nextState = redoStack.pop();
         undoStack.push(nextState);
         fabricCanvas.loadFromJSON(nextState, function() {
+            reaplicarInteractividad();
             fabricCanvas.renderAll();
             isSavingState = false;
         });
