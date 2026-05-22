@@ -242,6 +242,14 @@ class SiigoFacturacionService
             return $existente;
         }
 
+        // Buscar en SIIGO si ya existe una NC para esta factura (creada manualmente
+        // desde el panel SIIGO o por otra vía). Si la encontramos aprobada, la
+        // importamos en lugar de crear una nueva.
+        $ncEnSiigo = $this->buscarNotaCreditoExistenteEnSiigo($facturaOriginal);
+        if ($ncEnSiigo) {
+            return $this->importarNotaCreditoExistente($facturaOriginal, $ncEnSiigo);
+        }
+
         $venta = $facturaOriginal->ventaPdv;
         $venta->loadMissing(['items.producto', 'items.variante', 'cliente']);
 
@@ -611,6 +619,100 @@ class SiigoFacturacionService
         }
 
         return $this->api->getRaw("/v1/invoices/{$factura->siigo_invoice_id}/pdf", $factura->id);
+    }
+
+    /**
+     * Buscar en SIIGO si ya existe una nota crédito ELECTRÓNICA aceptada por DIAN
+     * que apunte a la factura indicada. Útil cuando el usuario creó manualmente
+     * la NC desde el panel SIIGO y queremos importarla al sistema local en lugar
+     * de generar una nueva.
+     *
+     * SIIGO no permite filtrar /v1/credit-notes por invoice, así que paginamos
+     * los resultados desde la fecha de la factura.
+     *
+     * @return array|null Datos crudos de SIIGO si encuentra la NC, null si no.
+     */
+    public function buscarNotaCreditoExistenteEnSiigo(FacturaSiigo $factura, int $maxPaginas = 10, int $pageSize = 100): ?array
+    {
+        if (!$factura->siigo_invoice_id) {
+            return null;
+        }
+
+        $fechaInicio = $factura->fecha_emision
+            ? $factura->fecha_emision->copy()->subDay()->format('Y-m-d')
+            : now()->subMonths(3)->format('Y-m-d');
+
+        for ($page = 1; $page <= $maxPaginas; $page++) {
+            try {
+                $r = $this->api->get('/v1/credit-notes', [
+                    'created_start' => $fechaInicio,
+                    'page' => $page,
+                    'page_size' => $pageSize,
+                ]);
+            } catch (Exception $e) {
+                Log::warning("SIIGO buscarNotaCreditoExistenteEnSiigo: error pag $page: {$e->getMessage()}");
+                break;
+            }
+
+            $results = $r['results'] ?? [];
+            if (empty($results)) break;
+
+            foreach ($results as $nc) {
+                $invoiceId = is_array($nc['invoice'] ?? null) ? ($nc['invoice']['id'] ?? null) : null;
+                if ($invoiceId !== $factura->siigo_invoice_id) continue;
+
+                // Filtrar solo NCs aceptadas por DIAN con CUDE
+                $status = strtolower($nc['stamp']['status'] ?? '');
+                $cude = $nc['stamp']['cude'] ?? $nc['stamp']['cufe'] ?? null;
+                if ($status !== 'accepted' || empty($cude)) continue;
+
+                // reason 2 = anulación total, 6 = devolución total
+                $reason = (int) ($nc['reason'] ?? 0);
+                if (!in_array($reason, [2, 6])) continue;
+
+                return $nc;
+            }
+
+            // Si la página no llenó, no hay más
+            if (count($results) < $pageSize) break;
+        }
+
+        return null;
+    }
+
+    /**
+     * Crear un registro local de FacturaSiigo a partir de una NC ya existente en SIIGO.
+     * Se usa cuando la NC fue creada manualmente desde el panel SIIGO y queremos
+     * dejarla vinculada al sistema sin duplicarla.
+     */
+    public function importarNotaCreditoExistente(FacturaSiigo $facturaOriginal, array $nc): FacturaSiigo
+    {
+        $venta = $facturaOriginal->ventaPdv;
+
+        $nuevaFactura = FacturaSiigo::create([
+            'venta_pdv_id'           => $venta?->id,
+            'tipo_documento'         => 'nota_credito',
+            'siigo_document_type_id' => $nc['document']['id'] ?? null,
+            'siigo_invoice_id'       => $nc['id'] ?? null,
+            'numero_factura'         => $nc['name']
+                ?? (isset($nc['prefix'], $nc['number']) ? $nc['prefix'].'-'.$nc['number'] : null),
+            'cufe'                   => $nc['stamp']['cude'] ?? $nc['stamp']['cufe'] ?? null,
+            'fecha_emision'          => $nc['date'] ?? now()->toDateString(),
+            'subtotal'               => $nc['total'] ?? $facturaOriginal->subtotal,
+            'iva'                    => 0,
+            'total'                  => $nc['total'] ?? $facturaOriginal->total,
+            'estado_dian'            => 'aprobada',
+            'siigo_request'          => null,
+            'siigo_response'         => $nc,
+            'nota_credito_de'        => $facturaOriginal->id,
+            'cliente_id'             => $venta?->cliente_id,
+            'usuario_id'             => auth()->id() ?? $venta?->usuario_id,
+            'intentos'               => 1,
+            'ultimo_intento_en'      => now(),
+        ]);
+
+        Log::info("SIIGO: NC existente importada {$nuevaFactura->numero_factura} para factura {$facturaOriginal->numero_factura}");
+        return $nuevaFactura;
     }
 
     /**
