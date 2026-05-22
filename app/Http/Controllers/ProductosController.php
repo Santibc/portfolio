@@ -609,42 +609,65 @@ public function actualizarPreciosExcel(Request $request)
             'archivo.max'      => 'El archivo no debe superar los 10MB',
         ]);
 
-        DB::beginTransaction();
+        $archivo = $request->file('archivo');
+        $nombreOriginal = $archivo->getClientOriginalName();
+        $extension = strtolower($archivo->getClientOriginalExtension());
+
+        $readerType = match ($extension) {
+            'xlsx'  => \Maatwebsite\Excel\Excel::XLSX,
+            'xls'   => \Maatwebsite\Excel\Excel::XLS,
+            'csv'   => \Maatwebsite\Excel\Excel::CSV,
+            default => null,
+        };
+
+        $actualizacion = ActualizacionPrecio::create([
+            'usuario_id'               => auth()->id(),
+            'estado'                   => 'procesando',
+            'nombre_archivo'           => $nombreOriginal,
+            'ruta_archivo'             => '(no almacenada — procesada en memoria)',
+            'total_filas'              => 0,
+            'actualizaciones_exitosas' => 0,
+            'actualizaciones_fallidas' => 0,
+            'errores'                  => [],
+            'detalles_procesados'      => [],
+        ]);
+
         try {
-            $archivo = $request->file('archivo');
-            $nombreOriginal = $archivo->getClientOriginalName();
-
-            $actualizacion = ActualizacionPrecio::create([
-                'usuario_id'               => auth()->id(),
-                'estado'                   => 'procesando',
-                'nombre_archivo'           => $nombreOriginal,
-                'ruta_archivo'             => '(no almacenada — procesada en memoria)',
-                'total_filas'              => 0,
-                'actualizaciones_exitosas' => 0,
-                'actualizaciones_fallidas' => 0,
-                'errores'                  => [],
-                'detalles_procesados'      => [],
-            ]);
-
-            // Procesamos directamente desde el tmp de PHP — no dejamos copia en public/.
-            Excel::import(new ProductosImport($actualizacion), $archivo->getRealPath());
-            DB::commit();
+            Excel::import(new ProductosImport($actualizacion), $archivo, null, $readerType);
 
             $actualizacion->refresh();
             $ok = $actualizacion->actualizaciones_exitosas;
             $err = $actualizacion->actualizaciones_fallidas;
             if ($err === 0 && $ok > 0) {
-                return back()->with('success', "Importación completada: {$ok} filas procesadas.");
+                return back()->with('success', "Importación completada: {$ok} filas procesadas.")
+                             ->with('actualizacion_id', $actualizacion->id);
             } elseif ($ok > 0) {
                 return back()->with('warning', "Importación parcial: {$ok} exitosas, {$err} con errores.")
-                             ->with('errores_import', $actualizacion->errores);
+                             ->with('errores_import', $actualizacion->errores)
+                             ->with('actualizacion_id', $actualizacion->id);
             }
             return back()->with('error', 'No se pudo procesar ninguna fila. Revisa los errores.')
-                         ->with('errores_import', $actualizacion->errores);
+                         ->with('errores_import', $actualizacion->errores)
+                         ->with('actualizacion_id', $actualizacion->id);
         } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('Error importando productos: ' . $e->getMessage());
-            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage());
+            Log::error('Error importando productos', [
+                'actualizacion_id' => $actualizacion->id,
+                'mensaje'          => $e->getMessage(),
+                'archivo'          => $e->getFile(),
+                'linea'            => $e->getLine(),
+            ]);
+
+            $actualizacion->update([
+                'estado'  => 'error',
+                'errores' => [[
+                    'fila'       => 0,
+                    'referencia' => '',
+                    'mensaje'    => 'Error general: ' . $e->getMessage(),
+                ]],
+            ]);
+
+            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage())
+                         ->with('actualizacion_id', $actualizacion->id);
         }
     }
 
