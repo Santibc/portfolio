@@ -227,14 +227,18 @@ class ProductosController extends Controller
                         
                         // Crear registro de stock para la variante si se controla stock (NUEVO)
                         if ($producto->controlar_stock) {
-                            $stockInicial = $varianteData['stock_inicial'] ?? 0;
+                            $stockInicial = (int) ($varianteData['stock_inicial'] ?? 0);
+                            $stockMinimoVar = (int) ($varianteData['stock_minimo'] ?? 0);
+                            $stockMaximoVar = isset($varianteData['stock_maximo']) && $varianteData['stock_maximo'] !== '' && $varianteData['stock_maximo'] !== null
+                                ? (int) $varianteData['stock_maximo']
+                                : null;
                             $stock = StockProducto::create([
                                 'producto_id' => $producto->id,
                                 'variante_producto_id' => $variante->id,
                                 'cantidad_disponible' => $stockInicial,
                                 'cantidad_reservada' => 0,
-                                'stock_minimo' => $varianteData['stock_minimo'] ?? 0,
-                                'stock_maximo' => $varianteData['stock_maximo'] ?? null,
+                                'stock_minimo' => $stockMinimoVar,
+                                'stock_maximo' => $stockMaximoVar,
                                 'ubicacion' => $varianteData['ubicacion'] ?? null,
                                 'alerta_stock_bajo' => true
                             ]);
@@ -256,28 +260,32 @@ class ProductosController extends Controller
                         }
                     }
                 }
-            } else if ($producto->controlar_stock && !$producto->tiene_variantes) {
+            } elseif ($producto->controlar_stock && !$producto->tiene_variantes) {
                 // Producto sin variantes - crear o actualizar stock principal (NUEVO)
-                $stockInicial = $request->input('stock_inicial', 0);
-                
+                $stockInicial = (int) ($request->input('stock_inicial') ?? 0);
+                $stockMinimo  = (int) ($request->input('stock_minimo') ?? 0);
+                $stockMaximoRaw = $request->input('stock_maximo');
+                $stockMaximo  = ($stockMaximoRaw === null || $stockMaximoRaw === '')
+                    ? null
+                    : (int) $stockMaximoRaw;
+                $ubicacion    = $request->input('ubicacion_stock');
+
                 $stock = StockProducto::firstOrNew([
                     'producto_id' => $producto->id,
                     'variante_producto_id' => null
                 ]);
-                
+
                 // Si es nuevo o si cambió el stock
                 if (!$stock->exists || ($esNuevo && $stockInicial > 0)) {
-                    $stockAnterior = $stock->cantidad_disponible ?? 0;
-                    
                     $stock->fill([
-                        'cantidad_disponible' => $esNuevo ? $stockInicial : $stock->cantidad_disponible,
-                        'cantidad_reservada' => $stock->cantidad_reservada ?? 0,
-                        'stock_minimo' => $request->input('stock_minimo', 0),
-                        'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion' => $request->input('ubicacion_stock'),
+                        'cantidad_disponible' => $esNuevo ? $stockInicial : (int) ($stock->cantidad_disponible ?? 0),
+                        'cantidad_reservada' => (int) ($stock->cantidad_reservada ?? 0),
+                        'stock_minimo' => $stockMinimo,
+                        'stock_maximo' => $stockMaximo,
+                        'ubicacion' => $ubicacion,
                         'alerta_stock_bajo' => true
                     ])->save();
-                    
+
                     // Registrar movimiento si es nuevo con stock inicial
                     if ($esNuevo && $stockInicial > 0) {
                         MovimientoStock::create([
@@ -295,9 +303,9 @@ class ProductosController extends Controller
                 } else {
                     // Solo actualizar configuración
                     $stock->update([
-                        'stock_minimo' => $request->input('stock_minimo', 0),
-                        'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion' => $request->input('ubicacion_stock')
+                        'stock_minimo' => $stockMinimo,
+                        'stock_maximo' => $stockMaximo,
+                        'ubicacion' => $ubicacion
                     ]);
                 }
             }

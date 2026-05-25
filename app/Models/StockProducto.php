@@ -25,7 +25,27 @@ class StockProducto extends Model
 
     protected $casts = [
         'alerta_stock_bajo' => 'boolean',
+        'cantidad_disponible' => 'integer',
+        'cantidad_reservada' => 'integer',
+        'stock_minimo' => 'integer',
+        'stock_maximo' => 'integer',
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($stock) {
+            // Garantizar que los campos NOT NULL nunca queden en null
+            $stock->cantidad_disponible = (int) ($stock->cantidad_disponible ?? 0);
+            $stock->cantidad_reservada  = (int) ($stock->cantidad_reservada ?? 0);
+            $stock->stock_minimo        = (int) ($stock->stock_minimo ?? 0);
+            if ($stock->stock_maximo === '' ) {
+                $stock->stock_maximo = null;
+            }
+            if ($stock->alerta_stock_bajo === null) {
+                $stock->alerta_stock_bajo = true;
+            }
+        });
+    }
 
     public function producto()
     {
