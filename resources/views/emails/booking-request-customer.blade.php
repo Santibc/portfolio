@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Booking received</title>
+    <title>{{ $layoutConfig->customer_email_subject ? str_replace('{reference}', $order->order_number, $layoutConfig->customer_email_subject) : 'Booking received' }}</title>
 </head>
 <body style="font-family: Arial, sans-serif; color:#333; max-width:600px; margin:0 auto; padding:20px;">
     <h2 style="color:#1d4f7c;">Hi {{ $order->first_name }},</h2>
 
-    <p>Thanks for booking your cleaning service with us — we have received your request and one of our team will contact you shortly to confirm the date, final pricing and payment method.</p>
+    <p>{!! nl2br(e($layoutConfig->customer_email_intro ?? 'Thanks for booking your cleaning service with us — we have received your request and one of our team will contact you shortly to confirm the date, final pricing and payment method.')) !!}</p>
 
     <h3 style="color:#1d4f7c; border-bottom:1px solid #ddd; padding-bottom:6px;">Booking summary</h3>
 
@@ -27,13 +27,13 @@
     </table>
 
     <p style="margin-top:20px; padding:12px; background:#f2f7fb; border-left:4px solid #1d4f7c;">
-        <strong>What happens next?</strong><br>
-        We'll review your booking and contact you within 24 hours to confirm everything. <em>No payment has been taken at this point.</em>
+        <strong>{{ $layoutConfig->customer_email_next_title ?? 'What happens next?' }}</strong><br>
+        {!! nl2br(e($layoutConfig->customer_email_next_text ?? "We'll review your booking and contact you within 24 hours to confirm everything. No payment has been taken at this point.")) !!}
     </p>
 
     <p style="margin-top:30px; color:#777; font-size:13px;">
-        If you have any questions reply to this email or call us.<br>
-        — {{ config('app.name') }}
+        {!! nl2br(e($layoutConfig->customer_email_footer_text ?? 'If you have any questions reply to this email or call us.')) !!}<br>
+        — {{ $layoutConfig->customer_email_signature ?? config('app.name') }}
     </p>
 </body>
 </html>

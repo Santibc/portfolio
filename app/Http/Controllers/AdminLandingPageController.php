@@ -503,6 +503,30 @@ class AdminLandingPageController extends Controller
         return redirect()->back()->with('success', 'Configuración del sitio actualizada correctamente.');
     }
     
+    public function updateCustomerEmail(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_email_subject' => 'nullable|string|max:200',
+            'customer_email_intro' => 'nullable|string',
+            'customer_email_next_title' => 'nullable|string|max:200',
+            'customer_email_next_text' => 'nullable|string',
+            'customer_email_footer_text' => 'nullable|string',
+            'customer_email_signature' => 'nullable|string|max:150',
+        ]);
+
+        $layoutConfig = LandingLayoutConfig::first();
+
+        if ($layoutConfig) {
+            $layoutConfig->update($validated);
+        } else {
+            LandingLayoutConfig::create($validated);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Correo de confirmación al cliente actualizado correctamente.')
+            ->with('activeTab', '#customer-email');
+    }
+
     // SEO Methods
     private function ensureLandingPagesExist()
     {

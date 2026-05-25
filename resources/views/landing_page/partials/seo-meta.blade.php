@@ -22,6 +22,9 @@
     $twitterImagePath = $seo->twitter_image_path ?? $ogImagePath;
     $twitterImage = $twitterImagePath ? asset($twitterImagePath) : null;
 
+    // Logo URL absoluto (necesario para que Google muestre el logo en resultados de búsqueda)
+    $logoUrl = asset('images/logo.png');
+
     // Schema markup
     $schemaType = $seo->schema_type ?? 'LocalBusiness';
     $schemaData = is_array($seo->schema_data ?? null) ? $seo->schema_data : null;
@@ -31,6 +34,8 @@
             '@type' => 'LocalBusiness',
             'name' => $layoutConfig->site_title ?? config('app.name'),
             'description' => $description,
+            'image' => $logoUrl,
+            'logo' => $logoUrl,
             'address' => [
                 '@type' => 'PostalAddress',
                 'streetAddress' => $layoutConfig->footer_address ?? null,
@@ -43,7 +48,22 @@
         ];
     } elseif ($schemaData && !isset($schemaData['@context'])) {
         $schemaData = array_merge(['@context' => 'https://schema.org', '@type' => $schemaType], $schemaData);
+        if (!isset($schemaData['logo'])) {
+            $schemaData['logo'] = $logoUrl;
+        }
+        if (!isset($schemaData['image'])) {
+            $schemaData['image'] = $logoUrl;
+        }
     }
+
+    // Schema Organization adicional (Google usa esto específicamente para mostrar el logo de marca)
+    $organizationSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => $layoutConfig->site_title ?? config('app.name'),
+        'url' => url('/'),
+        'logo' => $logoUrl,
+    ];
 @endphp
 
 <title>{{ $title }}</title>
@@ -86,3 +106,6 @@
 @if($schemaData)
     <script type="application/ld+json">{!! json_encode($schemaData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>
 @endif
+
+{{-- Schema Organization para que Google muestre el logo en resultados de búsqueda --}}
+<script type="application/ld+json">{!! json_encode($organizationSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>

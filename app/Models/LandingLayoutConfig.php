@@ -31,6 +31,12 @@ class LandingLayoutConfig extends Model
         'google_maps_api_key',
         'google_maps_country',
         'admin_notification_email',
+        'customer_email_subject',
+        'customer_email_intro',
+        'customer_email_next_title',
+        'customer_email_next_text',
+        'customer_email_footer_text',
+        'customer_email_signature',
         'is_active'
     ];
     

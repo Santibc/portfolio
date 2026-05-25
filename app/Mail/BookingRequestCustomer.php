@@ -22,8 +22,12 @@ class BookingRequestCustomer extends Mailable
 
     public function envelope()
     {
+        $layoutConfig = \App\Models\LandingLayoutConfig::first();
+        $subjectTemplate = $layoutConfig->customer_email_subject ?? 'Booking received — {reference}';
+        $subject = str_replace('{reference}', $this->order->order_number, $subjectTemplate);
+
         return new Envelope(
-            subject: "Booking received — {$this->order->order_number}",
+            subject: $subject,
         );
     }
 
@@ -31,7 +35,10 @@ class BookingRequestCustomer extends Mailable
     {
         return new Content(
             view: 'emails.booking-request-customer',
-            with: ['order' => $this->order]
+            with: [
+                'order' => $this->order,
+                'layoutConfig' => \App\Models\LandingLayoutConfig::first(),
+            ]
         );
     }
 

@@ -162,13 +162,13 @@
                   <div class="form-check mb-3">
                     <input class="form-check-input" type="checkbox" id="date-flexible">
                     <label class="form-check-label" for="date-flexible">
-                      I'm flexible with the date (±2 days)
+                      I'm flexible with the date (2 days)
                     </label>
                   </div>
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="time-flexible">
                     <label class="form-check-label" for="time-flexible">
-                      I'm flexible with the time (±2 hours)
+                      I'm flexible with the time (2 hours)
                     </label>
                   </div>
                 </div>

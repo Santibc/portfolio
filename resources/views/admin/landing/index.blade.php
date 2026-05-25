@@ -68,6 +68,12 @@
                             <i class="bi bi-calculator me-1"></i>Pricing
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="customer-email-tab" data-bs-toggle="tab" data-bs-target="#customer-email"
+                            type="button" role="tab">
+                            <i class="bi bi-envelope-paper me-1"></i>Correo al cliente
+                        </button>
+                    </li>
                 </ul>
 
                 <div class="tab-content mt-4" id="landingTabsContent">
@@ -1540,6 +1546,82 @@
                     </div>
                     <!-- End Pricing Tab -->
 
+                    <!-- Customer Email -->
+                    <div class="tab-pane fade" id="customer-email" role="tabpanel">
+                        @php
+                            $defaultSubject = 'Booking received — {reference}';
+                            $defaultIntro = 'Thanks for booking your cleaning service with us — we have received your request and one of our team will contact you shortly to confirm the date, final pricing and payment method.';
+                            $defaultNextTitle = 'What happens next?';
+                            $defaultNextText = "We'll review your booking and contact you within 24 hours to confirm everything. No payment has been taken at this point.";
+                            $defaultFooterText = 'If you have any questions reply to this email or call us.';
+                            $defaultSignature = config('app.name');
+                        @endphp
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-envelope-paper me-2 text-primary"></i>
+                                    Correo de confirmación al cliente
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">
+                                    Personaliza el contenido del correo que recibe el cliente cuando completa una reserva.
+                                    Los campos muestran el texto que se envía actualmente; modifícalo y guarda para aplicar los cambios.
+                                </p>
+
+                                <form action="{{ route('admin.landing.customer-email.update') }}" method="POST">
+                                    @csrf
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Asunto del correo</label>
+                                        <input type="text" name="customer_email_subject" class="form-control"
+                                               value="{{ $layoutConfig->customer_email_subject ?? $defaultSubject }}"
+                                               maxlength="200">
+                                        <small class="form-text text-muted">
+                                            Puedes usar <code>{reference}</code> y se reemplazará por el número de reserva
+                                            (ej: <code>CLN20260525768ACE</code>).
+                                        </small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Párrafo de introducción</label>
+                                        <textarea name="customer_email_intro" class="form-control" rows="3">{{ $layoutConfig->customer_email_intro ?? $defaultIntro }}</textarea>
+                                        <small class="form-text text-muted">Mensaje principal que aparece después del saludo "Hi {nombre}".</small>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Título del bloque "What happens next"</label>
+                                            <input type="text" name="customer_email_next_title" class="form-control"
+                                                   value="{{ $layoutConfig->customer_email_next_title ?? $defaultNextTitle }}"
+                                                   maxlength="200">
+                                        </div>
+                                        <div class="col-md-8 mb-3">
+                                            <label class="form-label">Texto del bloque "What happens next"</label>
+                                            <textarea name="customer_email_next_text" class="form-control" rows="3">{{ $layoutConfig->customer_email_next_text ?? $defaultNextText }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-8 mb-3">
+                                            <label class="form-label">Texto de pie del correo</label>
+                                            <textarea name="customer_email_footer_text" class="form-control" rows="2">{{ $layoutConfig->customer_email_footer_text ?? $defaultFooterText }}</textarea>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Firma (después del "—")</label>
+                                            <input type="text" name="customer_email_signature" class="form-control"
+                                                   value="{{ $layoutConfig->customer_email_signature ?? $defaultSignature }}"
+                                                   maxlength="150">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar correo al cliente
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
             </div>

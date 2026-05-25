@@ -242,8 +242,8 @@
                                 {{ $cleaningOrder->preferred_date->format('M d, Y') }} at {{ $cleaningOrder->preferred_time }}
                                 @if($cleaningOrder->date_flexible || $cleaningOrder->time_flexible)
                                     <br><small class="text-muted">
-                                        @if($cleaningOrder->date_flexible) Flexible with date (±2 days) @endif
-                                        @if($cleaningOrder->time_flexible) Flexible with time (±2 hours) @endif
+                                        @if($cleaningOrder->date_flexible) Flexible with date (2 days) @endif
+                                        @if($cleaningOrder->time_flexible) Flexible with time (2 hours) @endif
                                     </small>
                                 @endif
                             </p>

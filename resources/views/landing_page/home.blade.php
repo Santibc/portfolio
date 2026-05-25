@@ -14,8 +14,8 @@
                         <p>{{ $homeConfig->hero_description ?? 'At Clean Me, we believe that putting in a lot of hard work ensures the best and fastest service.' }}
                         </p>
                         <div class="hero-actions justify-content-center justify-content-lg-start">
-                            <a href="{{ $homeConfig->hero_services_button_url ?? route('servicios') }}"
-                                class="btn-primary">Our Services</a>
+                            <a href="{{ route('services.calculator') }}"
+                                class="btn-primary">Book Now</a>
                             <a href="{{ $homeConfig->hero_estimate_button_url ?? '#contact' }}"
                                 class="btn-primary scrollto">Get Free Estimate</a>
                         </div>
@@ -87,14 +87,15 @@
                     @if ($homeConfig && $homeConfig->facebook_url)
                         <div class="swiper-slide">
                             <a href="{{ $homeConfig->facebook_url }}" target="_blank" rel="noopener noreferrer">
-                                <img src="{{ asset('images/facebook.png') }}" class="img-fluid" alt="Facebook">
+                                <img src="{{ asset('images/facebook.svg') }}" class="img-fluid" alt="Facebook">
                             </a>
                         </div>
                     @endif
                     @if ($homeConfig && $homeConfig->instagram_url)
                         <div class="swiper-slide">
-                            <a href="{{ $homeConfig->instagram_url }}" target="_blank" rel="noopener noreferrer">
-                                <img src="{{ asset('images/instagram.png') }}" class="img-fluid" alt="Instagram">
+                            <a href="{{ $homeConfig->instagram_url }}" target="_blank" rel="noopener noreferrer" class="ig-composite">
+                                <img src="{{ asset('images/instagram.png') }}" alt="Instagram" class="ig-composite__icon">
+                                <span class="ig-composite__text">Instagram</span>
                             </a>
                         </div>
                     @endif

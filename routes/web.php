@@ -98,6 +98,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/team/{id}', [AdminLandingPageController::class, 'updateTeamMember'])->name('team.update');
         Route::delete('/team/{id}', [AdminLandingPageController::class, 'deleteTeamMember'])->name('team.delete');
         Route::post('/layout/update', [AdminLandingPageController::class, 'updateLayoutConfig'])->name('layout.update');
+        Route::post('/customer-email/update', [AdminLandingPageController::class, 'updateCustomerEmail'])->name('customer-email.update');
         Route::post('/home/update', [AdminLandingPageController::class, 'updateHomeConfig'])->name('home.update');
         Route::post('/seo/update', [AdminLandingPageController::class, 'updateSeo'])->name('seo.update');
         Route::get('/seo/{pageId}', [AdminLandingPageController::class, 'getSeoData'])->name('seo.get');

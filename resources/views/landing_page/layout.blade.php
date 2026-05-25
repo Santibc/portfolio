@@ -9,8 +9,10 @@
     @include('landing_page.partials.seo-meta', ['seo' => $seo ?? null, 'layoutConfig' => $layoutConfig ?? null])
 
     <!-- Favicons -->
-    <link href="{{ asset('images/logo.png') }}" rel="icon">
-    <link href="{{ asset('devin_assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/logo.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -50,19 +52,35 @@
             }
         }
 
-        /* Header navigation colors for dark blue header */
-        .header .navmenu a,
-        .header .navmenu a:focus {
-            color: rgba(255, 255, 255, 0.9) !important;
-        }
+        /* Header navigation colors for dark blue header (desktop only) */
+        @media (min-width: 1200px) {
+            .header .navmenu a,
+            .header .navmenu a:focus {
+                color: rgba(255, 255, 255, 0.9) !important;
+            }
 
-        .header .navmenu li:hover>a,
-        .header .navmenu .active {
-            color: #46cdcf !important;
+            .header .navmenu li:hover>a,
+            .header .navmenu .active {
+                color: #46cdcf !important;
+            }
         }
 
         .header .mobile-nav-toggle {
             color: #ffffff;
+        }
+
+        /* Mobile menu: ensure links are visible on the light dropdown background */
+        @media (max-width: 1199px) {
+            .header .navmenu a,
+            .header .navmenu a:focus {
+                color: #535d6b !important;
+            }
+
+            .header .navmenu li:hover>a,
+            .header .navmenu .active,
+            .header .navmenu .active:focus {
+                color: #46cdcf !important;
+            }
         }
 
         /* Header background override - Lighter blue */

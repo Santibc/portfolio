@@ -5919,13 +5919,38 @@ button.btn-primary:disabled,
 }
 
 .social-media-section .swiper-slide img {
-  width: 95% !important;
-  height: auto;
-  max-width: 130px;
+  width: 100% !important;
+  height: 70px !important;
+  max-width: 180px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  object-fit: contain;
   filter: grayscale(0%);
   transition: all 0.3s ease;
 }
 
 .social-media-section .swiper-slide a:hover img {
   filter: grayscale(0%) brightness(1.1);
+}
+
+.social-media-section .swiper-slide a.ig-composite {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.social-media-section .swiper-slide a.ig-composite .ig-composite__icon {
+  width: auto !important;
+  height: 60px !important;
+  max-width: none;
+}
+
+.social-media-section .swiper-slide a.ig-composite .ig-composite__text {
+  font-family: 'Billabong', 'Lobster', 'Brush Script MT', cursive;
+  font-size: 38px;
+  color: #262626;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: 0.5px;
 }
