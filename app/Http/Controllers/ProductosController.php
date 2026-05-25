@@ -399,65 +399,70 @@ public function actualizarPreciosExcel(Request $request)
         'archivo.max'      => 'El archivo no debe superar los 10MB'
     ]);
 
-    DB::beginTransaction();
+    $archivo        = $request->file('archivo');
+    $nombreOriginal = $archivo->getClientOriginalName();
+    $nombreArchivo  = time() . '_' . $nombreOriginal;
+
+    $rutaPublic = public_path('uploads/actualizaciones_precios');
+    if (! File::exists($rutaPublic)) {
+        File::makeDirectory($rutaPublic, 0755, true);
+    }
+
+    $archivo->move($rutaPublic, $nombreArchivo);
+    $rutaArchivo = 'uploads/actualizaciones_precios/' . $nombreArchivo;
+
+    $actualizacion = ActualizacionPrecio::create([
+        'usuario_id'               => auth()->id(),
+        'estado'                   => 'procesando',
+        'nombre_archivo'           => $nombreOriginal,
+        'ruta_archivo'             => $rutaArchivo,
+        'total_filas'              => 0,
+        'actualizaciones_exitosas' => 0,
+        'actualizaciones_fallidas' => 0,
+        'errores'                  => [],
+        'detalles_procesados'      => []
+    ]);
+
+    Log::info('Iniciando actualización de precios', [
+        'usuario'          => auth()->user()->name,
+        'archivo'          => $nombreArchivo,
+        'actualizacion_id' => $actualizacion->id,
+    ]);
 
     try {
-        // 2. Obtener archivo y nombres
-        $archivo        = $request->file('archivo');
-        $nombreOriginal = $archivo->getClientOriginalName();
-        $nombreArchivo  = time() . '_' . $nombreOriginal;
-
-        // 3. Directorio en public
-        $rutaPublic = public_path('uploads/actualizaciones_precios');
-        if (! File::exists($rutaPublic)) {
-            File::makeDirectory($rutaPublic, 0755, true);
-        }
-
-        // 4. Mover archivo y construir ruta relativa
-        $archivo->move($rutaPublic, $nombreArchivo);
-        $rutaArchivo = 'uploads/actualizaciones_precios/' . $nombreArchivo;
-
-        // 5. Registrar en base de datos
-        $actualizacion = ActualizacionPrecio::create([
-            'usuario_id'               => auth()->id(),
-            'estado'                   => 'procesando',
-            'nombre_archivo'           => $nombreOriginal,
-            'ruta_archivo'             => $rutaArchivo,
-            'total_filas'              => 0,
-            'actualizaciones_exitosas' => 0,
-            'actualizaciones_fallidas' => 0,
-            'errores'                  => [],
-            'detalles_procesados'      => []
-        ]);
-
-        // 6. Log de inicio
-        Log::info('Iniciando actualización de precios', [
-            'usuario'          => auth()->user()->name,
-            'archivo'          => $nombreArchivo,
-            'actualizacion_id' => $actualizacion->id,
-        ]);
-
-        // 7. Importar usando la ruta en public
         $pathImport = public_path($rutaArchivo);
         Excel::import(new PreciosImport($actualizacion), $pathImport);
 
-        DB::commit();
-
-        // 8. Preparar mensaje de resultado
         $actualizacion->refresh();
         if ($actualizacion->actualizaciones_fallidas === 0 && $actualizacion->actualizaciones_exitosas > 0) {
-            return back()->with('success', "Actualización completada: {$actualizacion->actualizaciones_exitosas} productos actualizados.");
+            return back()->with('success', "Actualización completada: {$actualizacion->actualizaciones_exitosas} productos actualizados.")
+                         ->with('actualizacion_id', $actualizacion->id);
         } elseif ($actualizacion->actualizaciones_exitosas > 0) {
-            return back()->with('warning', "Actualización parcial: {$actualizacion->actualizaciones_exitosas} éxitosas, {$actualizacion->actualizaciones_fallidas} con errores.");
+            return back()->with('warning', "Actualización parcial: {$actualizacion->actualizaciones_exitosas} éxitosas, {$actualizacion->actualizaciones_fallidas} con errores.")
+                         ->with('actualizacion_id', $actualizacion->id);
         } else {
-            return back()->with('error', 'No se pudo actualizar ningún producto. Revisa el reporte de errores.');
+            return back()->with('error', 'No se pudo actualizar ningún producto. Revisa el reporte de errores.')
+                         ->with('actualizacion_id', $actualizacion->id);
         }
     } catch (\Throwable $e) {
-        DB::rollBack();
         Log::error('Error en actualización de precios', [
-            'mensaje' => $e->getMessage()
+            'actualizacion_id' => $actualizacion->id,
+            'mensaje'          => $e->getMessage(),
+            'archivo'          => $e->getFile(),
+            'linea'            => $e->getLine(),
         ]);
-        return back()->with('error', 'Ocurrió un error procesando el archivo.');
+
+        $actualizacion->update([
+            'estado'  => 'error',
+            'errores' => [[
+                'fila'       => 0,
+                'referencia' => '',
+                'mensaje'    => 'Error general: ' . $e->getMessage(),
+            ]],
+        ]);
+
+        return back()->with('error', 'Ocurrió un error procesando el archivo: ' . $e->getMessage())
+                     ->with('actualizacion_id', $actualizacion->id);
     }
 }
 
@@ -612,42 +617,65 @@ public function actualizarPreciosExcel(Request $request)
             'archivo.max'      => 'El archivo no debe superar los 10MB',
         ]);
 
-        DB::beginTransaction();
+        $archivo = $request->file('archivo');
+        $nombreOriginal = $archivo->getClientOriginalName();
+        $extension = strtolower($archivo->getClientOriginalExtension());
+
+        $readerType = match ($extension) {
+            'xlsx'  => \Maatwebsite\Excel\Excel::XLSX,
+            'xls'   => \Maatwebsite\Excel\Excel::XLS,
+            'csv'   => \Maatwebsite\Excel\Excel::CSV,
+            default => null,
+        };
+
+        $actualizacion = ActualizacionPrecio::create([
+            'usuario_id'               => auth()->id(),
+            'estado'                   => 'procesando',
+            'nombre_archivo'           => $nombreOriginal,
+            'ruta_archivo'             => '(no almacenada — procesada en memoria)',
+            'total_filas'              => 0,
+            'actualizaciones_exitosas' => 0,
+            'actualizaciones_fallidas' => 0,
+            'errores'                  => [],
+            'detalles_procesados'      => [],
+        ]);
+
         try {
-            $archivo = $request->file('archivo');
-            $nombreOriginal = $archivo->getClientOriginalName();
-
-            $actualizacion = ActualizacionPrecio::create([
-                'usuario_id'               => auth()->id(),
-                'estado'                   => 'procesando',
-                'nombre_archivo'           => $nombreOriginal,
-                'ruta_archivo'             => '(no almacenada — procesada en memoria)',
-                'total_filas'              => 0,
-                'actualizaciones_exitosas' => 0,
-                'actualizaciones_fallidas' => 0,
-                'errores'                  => [],
-                'detalles_procesados'      => [],
-            ]);
-
-            // Procesamos directamente desde el tmp de PHP — no dejamos copia en public/.
-            Excel::import(new ProductosImport($actualizacion), $archivo->getRealPath());
-            DB::commit();
+            Excel::import(new ProductosImport($actualizacion), $archivo, null, $readerType);
 
             $actualizacion->refresh();
             $ok = $actualizacion->actualizaciones_exitosas;
             $err = $actualizacion->actualizaciones_fallidas;
             if ($err === 0 && $ok > 0) {
-                return back()->with('success', "Importación completada: {$ok} filas procesadas.");
+                return back()->with('success', "Importación completada: {$ok} filas procesadas.")
+                             ->with('actualizacion_id', $actualizacion->id);
             } elseif ($ok > 0) {
                 return back()->with('warning', "Importación parcial: {$ok} exitosas, {$err} con errores.")
-                             ->with('errores_import', $actualizacion->errores);
+                             ->with('errores_import', $actualizacion->errores)
+                             ->with('actualizacion_id', $actualizacion->id);
             }
             return back()->with('error', 'No se pudo procesar ninguna fila. Revisa los errores.')
-                         ->with('errores_import', $actualizacion->errores);
+                         ->with('errores_import', $actualizacion->errores)
+                         ->with('actualizacion_id', $actualizacion->id);
         } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('Error importando productos: ' . $e->getMessage());
-            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage());
+            Log::error('Error importando productos', [
+                'actualizacion_id' => $actualizacion->id,
+                'mensaje'          => $e->getMessage(),
+                'archivo'          => $e->getFile(),
+                'linea'            => $e->getLine(),
+            ]);
+
+            $actualizacion->update([
+                'estado'  => 'error',
+                'errores' => [[
+                    'fila'       => 0,
+                    'referencia' => '',
+                    'mensaje'    => 'Error general: ' . $e->getMessage(),
+                ]],
+            ]);
+
+            return back()->with('error', 'Error procesando el archivo: ' . $e->getMessage())
+                         ->with('actualizacion_id', $actualizacion->id);
         }
     }
 

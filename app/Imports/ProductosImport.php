@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 /**
  * Importa productos y precios desde la plantilla del cliente.
@@ -39,7 +40,36 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
  *   - Si la misma referencia aparece varias veces con distinto "Color o motivo",
  *     se interpretan como variantes del mismo producto.
  */
-class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
+class ProductosImport implements WithMultipleSheets, WithCustomCsvSettings
+{
+    protected ActualizacionPrecio $actualizacion;
+
+    public function __construct(ActualizacionPrecio $actualizacion)
+    {
+        $this->actualizacion = $actualizacion;
+    }
+
+    public function sheets(): array
+    {
+        // Solo procesamos la primera hoja. La hoja "Instrucciones" (índice 1) se ignora.
+        return [
+            0 => new ProductosImportSheet($this->actualizacion),
+        ];
+    }
+
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter'        => ';',
+            'enclosure'        => '"',
+            'escape_character' => '\\',
+            'contiguous'       => false,
+            'input_encoding'   => 'UTF-8',
+        ];
+    }
+}
+
+class ProductosImportSheet implements ToCollection, WithHeadingRow
 {
     protected ActualizacionPrecio $actualizacion;
 
@@ -60,17 +90,6 @@ class ProductosImport implements ToCollection, WithHeadingRow, WithCustomCsvSett
             $this->listasPorCodigo[$key] = $lista->id;
             $this->nombresListas[$key]   = $lista->nombre;
         }
-    }
-
-    public function getCsvSettings(): array
-    {
-        return [
-            'delimiter'        => ';',
-            'enclosure'        => '"',
-            'escape_character' => '\\',
-            'contiguous'       => false,
-            'input_encoding'   => 'UTF-8',
-        ];
     }
 
     public function collection(Collection $rows)
