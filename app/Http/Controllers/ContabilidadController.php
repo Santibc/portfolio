@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\HistorialFinancieroExport;
 use App\Exports\ReporteItemsExport;
 use App\Models\Orden;
 use App\Models\OrdenItem;
@@ -622,6 +623,48 @@ class ContabilidadController extends Controller
         return view('contabilidad.historial-financiero', compact(
             'totalOrdenes', 'ordenesPagadas', 'totalRecaudado', 'totalPorCobrar'
         ));
+    }
+
+    /**
+     * GET /contabilidad/historial-financiero/export - Exportar historial financiero a Excel.
+     */
+    public function historialFinancieroExport(Request $request)
+    {
+        $query = Orden::whereNotIn('estado_trabajo', ['borrador', 'anulada'])
+            ->with(['cliente', 'pagos'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('numero_orden')) {
+            $query->where('numero_orden', 'like', '%' . $request->input('numero_orden') . '%');
+        }
+        if ($request->filled('cliente')) {
+            $query->whereHas('cliente', function ($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->input('cliente') . '%');
+            });
+        }
+        if ($request->filled('estado_pago') && $request->input('estado_pago') !== 'todos') {
+            $filtro = $request->input('estado_pago');
+            if ($filtro === 'sin_pagos') {
+                $query->where('total_pagado', 0);
+            } elseif ($filtro === 'pagada') {
+                $query->where('total_pagado', '>', 0)->where('saldo', '<=', 0);
+            } elseif ($filtro === 'saldo_pendiente') {
+                $query->where('saldo', '>', 0)->where('total_pagado', '>', 0);
+            }
+        }
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
+        }
+
+        $ordenes = $query->get();
+
+        return Excel::download(
+            new HistorialFinancieroExport($ordenes),
+            'historial-financiero-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     /**

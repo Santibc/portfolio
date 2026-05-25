@@ -24,6 +24,11 @@
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Historial Financiero" description="Resumen financiero de todas las ordenes">
+        <x-slot name="actions">
+            <a href="{{ route('contabilidad.historial-financiero.export') }}" class="btn btn-success" id="btnExportar" style="min-height:48px">
+                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+            </a>
+        </x-slot>
     </x-sinden.page-header>
 
     {{-- Stat Cards --}}
@@ -168,6 +173,7 @@
     $(function() {
         initHistorialFinancieroTable({
             ajaxUrl: '{{ route("contabilidad.historial-financiero") }}',
+            exportUrl: '{{ route("contabilidad.historial-financiero.export") }}',
             pagosUrl: '{{ url("contabilidad/ordenes") }}',
             csrfToken: '{{ csrf_token() }}'
         });

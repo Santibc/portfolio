@@ -476,18 +476,28 @@ function initHistorialFinancieroTable(config) {
     // Filtros
     $('#btnFiltrarHistorial').on('click', function() {
         historialFinancieroTable.draw();
+        actualizarExportUrlHistorial(config.exportUrl);
     });
 
     $('#btnLimpiarHistorial').on('click', function() {
         $('#filtroNumeroOrden, #filtroCliente, #filtroFechaDesde, #filtroFechaHasta').val('');
         $('#filtroEstadoPago').val('todos');
         historialFinancieroTable.draw();
+        actualizarExportUrlHistorial(config.exportUrl);
     });
 
     // Enter para filtrar
     $('#filtroNumeroOrden, #filtroCliente').on('keypress', function(e) {
-        if (e.which === 13) historialFinancieroTable.draw();
+        if (e.which === 13) {
+            historialFinancieroTable.draw();
+            actualizarExportUrlHistorial(config.exportUrl);
+        }
     });
+
+    // URL inicial del export
+    if (config.exportUrl) {
+        actualizarExportUrlHistorial(config.exportUrl);
+    }
 
     // Ver pagos de una orden (modal)
     $(document).on('click', '.btn-ver-pagos', function() {
@@ -635,6 +645,23 @@ function recalcularTotalesHistorial() {
 
 function formatNumber(num) {
     return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function actualizarExportUrlHistorial(baseUrl) {
+    if (!baseUrl) return;
+    var params = new URLSearchParams();
+    var numeroOrden = $('#filtroNumeroOrden').val();
+    var cliente = $('#filtroCliente').val();
+    var estadoPago = $('#filtroEstadoPago').val();
+    var desde = $('#filtroFechaDesde').val();
+    var hasta = $('#filtroFechaHasta').val();
+    if (numeroOrden) params.set('numero_orden', numeroOrden);
+    if (cliente) params.set('cliente', cliente);
+    if (estadoPago && estadoPago !== 'todos') params.set('estado_pago', estadoPago);
+    if (desde) params.set('fecha_desde', desde);
+    if (hasta) params.set('fecha_hasta', hasta);
+    var qs = params.toString();
+    $('#btnExportar').attr('href', baseUrl + (qs ? '?' + qs : ''));
 }
 
 // ============================================================

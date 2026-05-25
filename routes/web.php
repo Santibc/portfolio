@@ -246,6 +246,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
 
         // Historial financiero (todas las ordenes)
         Route::get('/historial-financiero', [ContabilidadController::class, 'historialFinanciero'])->name('historial-financiero');
+        Route::get('/historial-financiero/export', [ContabilidadController::class, 'historialFinancieroExport'])->name('historial-financiero.export');
 
         // Ver orden (solo lectura, reutiliza vista de recepcion)
         Route::get('/ordenes/{orden}', [OrdenController::class, 'show'])->name('ordenes.show');
