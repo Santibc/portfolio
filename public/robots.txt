@@ -24,4 +24,4 @@ Disallow: /password
 Disallow: /order/cancel
 Disallow: /booking/
 
-Sitemap: https://cleanme.com.au/sitemap.xml
+Sitemap: https://cleanmeadelaide.au/sitemap.xml
