@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="google-site-verification" content="GJ1TmfVvhlfj3gsyOl5cXJuw5WPunB54gMgA-d766po" />
 
     {{-- SEO meta tags + Open Graph + Twitter Card + JSON-LD --}}
     @include('landing_page.partials.seo-meta', ['seo' => $seo ?? null, 'layoutConfig' => $layoutConfig ?? null])

@@ -1,2 +1,27 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /usuarios
+Disallow: /productos
+Disallow: /categorias
+Disallow: /clientes
+Disallow: /compras
+Disallow: /stock
+Disallow: /solicitudes
+Disallow: /enlaces
+Disallow: /catalogo
+Disallow: /empresa
+Disallow: /tienda/acceso/
+Disallow: /webhook/
+Disallow: /webhooks/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /password
+Disallow: /order/cancel
+Disallow: /booking/
+
+Sitemap: https://cleanme.com.au/sitemap.xml
