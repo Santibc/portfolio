@@ -8,7 +8,7 @@
     <x-sinden.page-header title="Tabla de Precios" description="Administracion de precios por servicio, cantidad de servicios, largo (mm) y calibre">
         <x-slot name="actions">
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel" @click="exportarExcel()">
-                Exportar Excel
+                Excel
             </x-sinden.button>
             <x-sinden.button variant="outline" icon="bi bi-upload" data-bs-toggle="modal" data-bs-target="#modalImport">
                 Importar Excel

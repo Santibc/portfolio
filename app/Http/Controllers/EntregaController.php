@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\EntregasHistorialExport;
+use App\Exports\EntregasPendientesExport;
 use App\Models\Entrega;
 use App\Models\EntregaPieza;
 use App\Models\Notificacion;
@@ -13,6 +15,7 @@ use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class EntregaController extends Controller
@@ -118,6 +121,44 @@ class EntregaController extends Controller
         return view('entregas.pendientes', compact(
             'totalPendientes', 'piezasPendientes', 'entregasHoy', 'entregasVencidas'
         ));
+    }
+
+    /**
+     * GET /recepcion/entregas-pendientes/export-excel - Exportar entregas pendientes a Excel.
+     */
+    public function exportPendientesExcel(Request $request)
+    {
+        $ordenes = Orden::whereHas('piezas', function ($q) {
+            $q->whereColumn('cantidad_entregada', '<', 'cantidad');
+        })
+            ->whereNotIn('estado_trabajo', ['borrador', 'anulada'])
+            ->with(['cliente', 'piezas'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return Excel::download(
+            new EntregasPendientesExport($ordenes),
+            'entregas-pendientes-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
+     * GET /recepcion/entregas-historial/export-excel - Exportar historial de entregas a Excel.
+     */
+    public function exportHistorialExcel(Request $request)
+    {
+        $entregasPiezas = EntregaPieza::with([
+            'entrega.entregadaPorUsuario',
+            'entrega.orden.cliente',
+            'ordenPieza',
+        ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Excel::download(
+            new EntregasHistorialExport($entregasPiezas),
+            'entregas-historial-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     /**

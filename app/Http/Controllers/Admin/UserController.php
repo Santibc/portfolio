@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\UsuariosExport;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -39,6 +41,37 @@ class UserController extends Controller
         $usuarios = $query->orderBy($sort, $direction)->get();
         $roles = Role::all();
         return view('admin.users.index', compact('usuarios', 'roles', 'sort', 'direction'));
+    }
+
+    /**
+     * GET /admin/usuarios/export-excel - Exportar usuarios a Excel respetando filtros.
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = User::with(['roles']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->role($request->role);
+        }
+
+        $sortableColumns = ['name', 'email', 'created_at'];
+        $sort = in_array($request->get('sort'), $sortableColumns) ? $request->get('sort') : 'name';
+        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+
+        $usuarios = $query->orderBy($sort, $direction)->get();
+
+        return Excel::download(
+            new UsuariosExport($usuarios),
+            'usuarios-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     public function create()

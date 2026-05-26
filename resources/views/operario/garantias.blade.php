@@ -6,6 +6,8 @@
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Garantias Asignadas" description="Piezas devueltas por garantia que debes reparar">
         <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('operario.garantias.export-excel') }}">Excel</x-sinden.button>
             <a href="{{ route('operario.panel') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Volver al Panel
             </a>

@@ -4,7 +4,14 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <x-sinden.page-header title="Actividades Globales" description="Registro de todas las acciones realizadas en el sistema" />
+    <x-sinden.page-header title="Actividades Globales" description="Registro de todas las acciones realizadas en el sistema">
+        @if(Route::has($routePrefix . '.actividades-globales.export-excel'))
+        <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="#" onclick="exportarActividadesGlobalesExcel(); return false;">Excel</x-sinden.button>
+        </x-slot>
+        @endif
+    </x-sinden.page-header>
 
     {{-- Stat Cards --}}
     <div class="summary-cards">
@@ -103,5 +110,20 @@
             personal: false
         });
     });
+
+    function exportarActividadesGlobalesExcel() {
+        var params = {
+            fecha_desde: $('#filtroFechaDesde').val(),
+            fecha_hasta: $('#filtroFechaHasta').val(),
+            accion: $('#filtroAccion').val(),
+            usuario_id: $('#filtroUsuario').val()
+        };
+        var qs = $.param(Object.keys(params).reduce(function(acc, k) {
+            if (params[k]) acc[k] = params[k];
+            return acc;
+        }, {}));
+        var base = '{{ route($routePrefix . ".actividades-globales.export-excel") }}';
+        window.location.href = base + (qs ? ('?' + qs) : '');
+    }
 </script>
 @endpush

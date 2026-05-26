@@ -10,9 +10,13 @@
             <h1 class="h3 mb-1">Gestión de Usuarios</h1>
             <p class="text-muted mb-0">Administra los usuarios de la plataforma</p>
         </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Usuario
-        </button>
+        <div class="d-flex gap-2">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('admin.usuarios.export-excel', request()->only(['search', 'role', 'sort', 'direction'])) }}">Excel</x-sinden.button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Usuario
+            </button>
+        </div>
     </div>
 
     <!-- Filtros -->

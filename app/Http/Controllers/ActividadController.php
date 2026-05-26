@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ActividadesExport;
 use App\Models\RegistroActividad;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class ActividadController extends Controller
@@ -93,8 +95,9 @@ class ActividadController extends Controller
         ];
 
         $tiposAccion = RegistroActividad::TIPOS_ACCION;
+        $routePrefix = $this->detectarRoutePrefix($request);
 
-        return view('actividades.index', compact('stats', 'tiposAccion'));
+        return view('actividades.index', compact('stats', 'tiposAccion', 'routePrefix'));
     }
 
     /**
@@ -193,7 +196,77 @@ class ActividadController extends Controller
 
         $tiposAccion = RegistroActividad::TIPOS_ACCION;
         $usuarios = User::activos()->orderBy('name')->get(['id', 'name']);
+        $routePrefix = $this->detectarRoutePrefix($request);
 
-        return view('actividades.global', compact('stats', 'tiposAccion', 'usuarios'));
+        return view('actividades.global', compact('stats', 'tiposAccion', 'usuarios', 'routePrefix'));
+    }
+
+    /**
+     * Detecta el prefijo de ruta actual (recepcion|operario|contabilidad|admin) para construir URLs dinamicas en la vista.
+     */
+    protected function detectarRoutePrefix(Request $request): string
+    {
+        foreach (['admin', 'recepcion', 'contabilidad', 'operario'] as $prefix) {
+            if ($request->routeIs($prefix . '.*')) {
+                return $prefix;
+            }
+        }
+        return 'admin';
+    }
+
+    /**
+     * GET /[prefix]/actividades/export-excel - Exportar actividades personales a Excel respetando filtros.
+     */
+    public function exportPersonalExcel(Request $request)
+    {
+        $query = RegistroActividad::where('usuario_id', auth()->id())
+            ->with('orden')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+        if ($request->filled('accion')) {
+            $query->where('accion', $request->accion);
+        }
+
+        $actividades = $query->get();
+
+        return Excel::download(
+            new ActividadesExport($actividades, false),
+            'actividades-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
+     * GET /admin/actividades-globales/export-excel - Exportar actividades globales a Excel respetando filtros.
+     */
+    public function exportGlobalExcel(Request $request)
+    {
+        $query = RegistroActividad::with(['usuario.roles', 'orden'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+        if ($request->filled('accion')) {
+            $query->where('accion', $request->accion);
+        }
+        if ($request->filled('usuario_id')) {
+            $query->where('usuario_id', $request->usuario_id);
+        }
+
+        $actividades = $query->get();
+
+        return Excel::download(
+            new ActividadesExport($actividades, true),
+            'actividades-globales-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

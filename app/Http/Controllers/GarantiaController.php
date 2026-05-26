@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\GarantiasExport;
+use App\Exports\OperarioGarantiasExport;
 use App\Models\DevolucionGarantia;
 use App\Models\Orden;
 use App\Models\User;
@@ -9,6 +11,7 @@ use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
 use App\Services\NotificacionService;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class GarantiaController extends Controller
@@ -89,6 +92,30 @@ class GarantiaController extends Controller
             ->sum('monto_cobro');
 
         return view('garantias.index', compact('abiertas', 'enProceso', 'completadas', 'totalCobrables'));
+    }
+
+    /**
+     * GET /recepcion/garantias/export-excel - Exportar garantias a Excel respetando filtros.
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = DevolucionGarantia::with(['orden.cliente', 'pieza', 'operarioAsignado'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('estado')) {
+            $estados = (array) $request->input('estado');
+            $estados = array_filter($estados, fn($e) => $e !== '' && $e !== null);
+            if (!empty($estados)) {
+                $query->whereIn('estado', $estados);
+            }
+        }
+
+        $garantias = $query->get();
+
+        return Excel::download(
+            new GarantiasExport($garantias),
+            'garantias-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     /**
@@ -383,6 +410,23 @@ class GarantiaController extends Controller
             ->count();
 
         return view('operario.garantias', compact('pendientes'));
+    }
+
+    /**
+     * GET /operario/garantias/export-excel - Exportar garantias asignadas al operario.
+     */
+    public function exportMisGarantiasExcel(Request $request)
+    {
+        $garantias = DevolucionGarantia::where('operario_asignado_id', auth()->id())
+            ->where('estado', 'en_proceso')
+            ->with(['orden.cliente', 'pieza'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return Excel::download(
+            new OperarioGarantiasExport($garantias),
+            'mis-garantias-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     protected function badgeEstadoGarantia(string $estado): string

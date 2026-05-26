@@ -86,7 +86,6 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::resource('items', CatalogoItemController::class)->except(['show', 'destroy'])->parameters(['items' => 'item']);
 
         // Ordenes - Exportacion listado (rutas literales ANTES de {orden})
-        Route::get('/ordenes/export-excel', [OrdenController::class, 'exportExcel'])->name('ordenes.export-excel');
         Route::get('/ordenes/export-pdf', [OrdenController::class, 'exportPdf'])->name('ordenes.export-pdf');
         Route::get('/ordenes/pdf-multiple', [OrdenPdfController::class, 'multiple'])->name('ordenes.pdf-multiple');
         Route::get('/ordenes/pdf-zip', [OrdenPdfController::class, 'zip'])->name('ordenes.pdf-zip');
@@ -114,6 +113,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::delete('/ordenes/{orden}/documentos/{documento}', [OrdenController::class, 'eliminarDocumento'])->name('ordenes.documentos.eliminar');
 
         // Actividades
+        Route::get('/actividades/export-excel', [ActividadController::class, 'exportPersonalExcel'])->name('actividades.export-excel');
+        Route::get('/actividades-globales/export-excel', [ActividadController::class, 'exportGlobalExcel'])->name('actividades-globales.export-excel');
         Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
         Route::get('/actividades-globales', [ActividadController::class, 'global'])->name('actividades-globales');
 
@@ -125,6 +126,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilidad|Operario'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
+        // Exportacion Excel disponible para todos los roles (ruta literal ANTES de {orden})
+        Route::get('/ordenes/export-excel', [OrdenController::class, 'exportExcel'])->name('ordenes.export-excel');
         Route::get('/ordenes', [OrdenController::class, 'index'])->name('ordenes.index');
         Route::get('/ordenes/{orden}/pdf', [OrdenPdfController::class, 'show'])->name('ordenes.pdf');
         Route::get('/ordenes/{orden}/documentos/{documento}/descargar', [OrdenController::class, 'descargarDocumento'])->name('ordenes.documentos.descargar');
@@ -136,6 +139,10 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilida
 // ==========================================
 Route::middleware(['auth', 'verified'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
+        // Entregas Pendientes - Exportacion (rutas literales ANTES de {orden})
+        Route::get('/entregas-pendientes/export-excel', [EntregaController::class, 'exportPendientesExcel'])->name('entregas-pendientes.export-excel');
+        Route::get('/entregas-historial/export-excel', [EntregaController::class, 'exportHistorialExcel'])->name('entregas-historial.export-excel');
+
         // Entregas Pendientes
         Route::get('/entregas-pendientes', [EntregaController::class, 'pendientes'])->name('entregas-pendientes');
         Route::get('/entregas-pendientes/{orden}/flujo', [EntregaController::class, 'flujo'])->name('entregas.flujo');
@@ -156,6 +163,7 @@ Route::middleware(['auth', 'verified'])
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
     ->prefix('recepcion')->name('recepcion.')->group(function () {
+        Route::get('/garantias/export-excel', [GarantiaController::class, 'exportExcel'])->name('garantias.export-excel');
         Route::get('/garantias', [GarantiaController::class, 'index'])->name('garantias.index');
         Route::get('/ordenes/{orden}/piezas-entregadas', [GarantiaController::class, 'piezasEntregadas'])->name('garantias.piezas-entregadas');
         Route::post('/ordenes/{orden}/garantias', [GarantiaController::class, 'store'])->name('garantias.store');
@@ -197,6 +205,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
         Route::get('/panel', [OperarioController::class, 'panel'])->name('panel');
 
         // Ordenes asignadas
+        Route::get('/ordenes-asignadas/export-excel', [OperarioController::class, 'exportOrdenesAsignadasExcel'])->name('ordenes-asignadas.export-excel');
         Route::get('/ordenes-asignadas', [OperarioController::class, 'ordenesAsignadas'])->name('ordenes-asignadas');
 
         // Vista de trabajo
@@ -207,9 +216,11 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
         Route::get('/buscar-orden', [OperarioController::class, 'buscarOrden'])->name('buscar-orden');
 
         // Complementar
+        Route::get('/complementar/export-excel', [OperarioController::class, 'exportComplementarExcel'])->name('complementar.export-excel');
         Route::get('/complementar', [OperarioController::class, 'complementar'])->name('complementar');
 
         // Garantias asignadas
+        Route::get('/garantias/export-excel', [GarantiaController::class, 'exportMisGarantiasExcel'])->name('garantias.export-excel');
         Route::get('/garantias', [GarantiaController::class, 'misGarantias'])->name('garantias');
         Route::post('/garantias/{garantia}/completar', [GarantiaController::class, 'completarTrabajo'])->name('garantias.completar');
 
@@ -230,6 +241,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
         Route::get('/operarios-disponibles', [OperarioController::class, 'operariosDisponibles'])->name('operarios-disponibles');
 
         // Actividades
+        Route::get('/actividades/export-excel', [ActividadController::class, 'exportPersonalExcel'])->name('actividades.export-excel');
         Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
     });
 
@@ -242,6 +254,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
         Route::get('/panel', [ContabilidadController::class, 'panel'])->name('panel');
 
         // Ordenes con saldo pendiente
+        Route::get('/ordenes-pendientes/export-excel', [ContabilidadController::class, 'ordenesPendientesExportExcel'])->name('ordenes-pendientes.export-excel');
         Route::get('/ordenes-pendientes', [ContabilidadController::class, 'ordenesPendientes'])->name('ordenes-pendientes');
 
         // Historial financiero (todas las ordenes)
@@ -258,6 +271,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
         Route::post('/ordenes/{orden}/pagos', [ContabilidadController::class, 'agregarPago'])->name('ordenes.pagos.store');
 
         // Pagos pendientes de aprobacion
+        Route::get('/pagos-pendientes/export-excel', [ContabilidadController::class, 'pagosPendientesExportExcel'])->name('pagos-pendientes.export-excel');
         Route::get('/pagos-pendientes', [ContabilidadController::class, 'pagosPendientes'])->name('pagos-pendientes');
 
         // Aprobar pagos masivo (ANTES de ruta con parametro)
@@ -274,9 +288,11 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])
         Route::get('/reporte-items/export', [ContabilidadController::class, 'reporteItemsExport'])->name('reporte-items.export');
 
         // Catalogo Items (solo lectura)
+        Route::get('/items/export-excel', [CatalogoItemController::class, 'exportExcel'])->name('items.export-excel');
         Route::get('/items', [CatalogoItemController::class, 'index'])->name('items.index');
 
         // Actividades
+        Route::get('/actividades/export-excel', [ActividadController::class, 'exportPersonalExcel'])->name('actividades.export-excel');
         Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
     });
 
@@ -288,6 +304,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::get('/panel', AdminPanelController::class)->name('panel');
 
     // Gestion de Usuarios
+    Route::get('usuarios/export-excel', [AdminUserController::class, 'exportExcel'])->name('usuarios.export-excel');
     Route::patch('usuarios/{user}/toggle-activo', [AdminUserController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
     Route::resource('usuarios', AdminUserController::class)
         ->parameters(['usuarios' => 'user'])
@@ -320,6 +337,8 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('admin')->
     Route::post('/tabla-precios/import-excel', [TablaPreciosController::class, 'importExcel'])->name('tabla-precios.import');
 
     // Actividades
+    Route::get('/actividades/export-excel', [ActividadController::class, 'exportPersonalExcel'])->name('actividades.export-excel');
+    Route::get('/actividades-globales/export-excel', [ActividadController::class, 'exportGlobalExcel'])->name('actividades-globales.export-excel');
     Route::get('/actividades', [ActividadController::class, 'personal'])->name('actividades');
     Route::get('/actividades-globales', [ActividadController::class, 'global'])->name('actividades-globales');
 });

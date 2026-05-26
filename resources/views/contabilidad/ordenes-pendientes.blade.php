@@ -5,6 +5,10 @@
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Ordenes con Saldo Pendiente" description="Ordenes que tienen saldo por cobrar">
+        <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="#" onclick="exportarOrdenesPendientesExcel(); return false;">Excel</x-sinden.button>
+        </x-slot>
     </x-sinden.page-header>
 
     {{-- Stat Cards --}}
@@ -146,5 +150,19 @@
             csrfToken: '{{ csrf_token() }}'
         });
     });
+
+    function exportarOrdenesPendientesExcel() {
+        var params = {
+            numero_orden: $('#filtroNumeroOrden').val(),
+            cliente: $('#filtroCliente').val(),
+            fecha_desde: $('#filtroFechaDesde').val(),
+            fecha_hasta: $('#filtroFechaHasta').val()
+        };
+        var qs = $.param(Object.keys(params).reduce(function(acc, k) {
+            if (params[k]) acc[k] = params[k];
+            return acc;
+        }, {}));
+        window.location.href = '{{ route("contabilidad.ordenes-pendientes.export-excel") }}' + (qs ? ('?' + qs) : '');
+    }
 </script>
 @endpush

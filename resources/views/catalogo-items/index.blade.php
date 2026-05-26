@@ -7,9 +7,10 @@
     {{-- Page Header --}}
     <x-sinden.page-header title="Catalogo de Items (Productos y servicios)" description="Gestion de productos y servicios del catalogo">
         <x-slot name="actions">
-            @can('editar_catalogo_items')
+            {{-- Excel disponible para todos los roles que ven el catalogo --}}
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
-                href="{{ route('recepcion.items.export-excel') }}">Excel</x-sinden.button>
+                href="{{ route(($routePrefix ?? 'recepcion') . '.items.export-excel') }}">Excel</x-sinden.button>
+            @can('editar_catalogo_items')
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-pdf"
                 href="{{ route('recepcion.items.export-pdf') }}">PDF</x-sinden.button>
             <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#importModal">

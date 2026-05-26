@@ -6,6 +6,10 @@
 <div class="container-fluid py-4">
     {{-- Page Header --}}
     <x-sinden.page-header title="Historial de Entregas" description="Registro de todas las entregas realizadas">
+        <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('recepcion.entregas-historial.export-excel') }}">Excel</x-sinden.button>
+        </x-slot>
     </x-sinden.page-header>
 
     {{-- Summary Cards --}}

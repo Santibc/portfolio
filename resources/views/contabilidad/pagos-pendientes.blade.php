@@ -5,13 +5,15 @@
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Pagos Pendientes de Aprobacion" description="Pagos registrados por Recepcion (ventas) que requieren aprobacion">
-        @if($porAprobar > 0)
         <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('contabilidad.pagos-pendientes.export-excel') }}">Excel</x-sinden.button>
+            @if($porAprobar > 0)
             <button type="button" class="btn btn-success btn-lg" id="btnAprobarTodos" style="min-height:48px">
                 <i class="bi bi-check-all me-1"></i>Aprobar Todos ({{ $porAprobar }})
             </button>
+            @endif
         </x-slot>
-        @endif
     </x-sinden.page-header>
 
     {{-- Stat Cards --}}

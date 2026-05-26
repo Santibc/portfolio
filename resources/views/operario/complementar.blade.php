@@ -6,6 +6,8 @@
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Complementar Otras Ordenes" description="Piezas disponibles en cola general que puedes tomar para trabajar">
         <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('operario.complementar.export-excel') }}">Excel</x-sinden.button>
             <a href="{{ route('operario.panel') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Volver al Panel
             </a>

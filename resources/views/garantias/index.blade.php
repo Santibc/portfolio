@@ -46,6 +46,10 @@
 @section('content')
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Garantias" description="Devoluciones por garantia de piezas entregadas">
+        <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="#" id="btnExportExcel" onclick="exportarGarantiasExcel(); return false;">Excel</x-sinden.button>
+        </x-slot>
     </x-sinden.page-header>
 
     {{-- Summary Cards --}}
@@ -166,6 +170,14 @@ $(function() {
     $('#btnLimpiarEstado').on('click', function() {
         $('#filtroEstado').val([]).trigger('change');
     });
+
+    // Exportar Excel respetando filtros de estado
+    window.exportarGarantiasExcel = function() {
+        var estados = $('#filtroEstado').val() || [];
+        var url = '{{ route("recepcion.garantias.export-excel") }}';
+        var qs = estados.map(function(e) { return 'estado[]=' + encodeURIComponent(e); }).join('&');
+        window.location.href = url + (qs ? ('?' + qs) : '');
+    };
 
     // Asignar operario desde lista
     $(document).on('click', '.btn-asignar-operario-garantia', function() {

@@ -6,9 +6,8 @@
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Reporte Ventas por Items" description="Items vendidos en ordenes (pagadas y con saldo pendiente)">
         <x-slot name="actions">
-            <a href="{{ route('contabilidad.reporte-items.export') }}" class="btn btn-success" id="btnExportar" style="min-height:48px">
-                <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
-            </a>
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('contabilidad.reporte-items.export') }}" id="btnExportar">Excel</x-sinden.button>
         </x-slot>
     </x-sinden.page-header>
 

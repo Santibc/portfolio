@@ -6,6 +6,8 @@
 <div class="container-fluid py-4">
     <x-sinden.page-header title="Mis Ordenes Asignadas" description="Ordenes donde tienes piezas asignadas para trabajar">
         <x-slot name="actions">
+            <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
+                href="{{ route('operario.ordenes-asignadas.export-excel') }}">Excel</x-sinden.button>
             <a href="{{ route('operario.panel') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Volver al Panel
             </a>

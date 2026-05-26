@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ContabilidadOrdenesPendientesExport;
 use App\Exports\HistorialFinancieroExport;
+use App\Exports\PagosPendientesExport;
 use App\Exports\ReporteItemsExport;
 use App\Models\Orden;
 use App\Models\OrdenItem;
@@ -174,6 +176,55 @@ class ContabilidadController extends Controller
         return view('contabilidad.ordenes-pendientes', compact(
             'totalOrdenes', 'totalPendiente', 'abonosSinAprobar', 'recaudadoHoy'
         ));
+    }
+
+    /**
+     * GET /contabilidad/ordenes-pendientes/export-excel - Exportar ordenes pendientes a Excel respetando filtros.
+     */
+    public function ordenesPendientesExportExcel(Request $request)
+    {
+        $query = Orden::where('estado_pago', 'saldo_pendiente')
+            ->whereNotIn('estado_trabajo', ['borrador', 'anulada'])
+            ->with(['cliente', 'pagos'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('numero_orden')) {
+            $query->where('numero_orden', 'like', '%' . $request->input('numero_orden') . '%');
+        }
+        if ($request->filled('cliente')) {
+            $query->whereHas('cliente', function ($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->input('cliente') . '%');
+            });
+        }
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->input('fecha_desde'));
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->input('fecha_hasta'));
+        }
+
+        $ordenes = $query->get();
+
+        return Excel::download(
+            new ContabilidadOrdenesPendientesExport($ordenes),
+            'ordenes-pendientes-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
+     * GET /contabilidad/pagos-pendientes/export-excel - Exportar pagos pendientes a Excel.
+     */
+    public function pagosPendientesExportExcel(Request $request)
+    {
+        $pagos = Pago::where('aprobado', false)
+            ->with(['orden.cliente', 'registradoPorUsuario'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Excel::download(
+            new PagosPendientesExport($pagos),
+            'pagos-pendientes-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     /**

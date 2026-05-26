@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\OperarioComplementarExport;
+use App\Exports\OperarioOrdenesAsignadasExport;
 use App\Models\ConfiguracionSistema;
 use App\Models\Orden;
 use App\Models\OrdenPieza;
@@ -12,6 +14,7 @@ use App\Services\OperarioPiezaService;
 use App\Services\OrdenEstadoService;
 use App\Traits\RegistraActividad;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class OperarioController extends Controller
@@ -99,6 +102,54 @@ class OperarioController extends Controller
         }
 
         return view('operario.ordenes-asignadas');
+    }
+
+    /**
+     * GET /operario/ordenes-asignadas/export-excel - Exportar ordenes asignadas al operario.
+     */
+    public function exportOrdenesAsignadasExcel(Request $request)
+    {
+        $user = auth()->user();
+
+        $ordenes = Orden::whereHas('piezas', function ($q) use ($user) {
+            $q->where('operario_actual_id', $user->id)
+              ->where('porcentaje_avance', '<', 100);
+        })
+            ->with(['cliente', 'piezas'])
+            ->noAnuladas()
+            ->noBorradores()
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return Excel::download(
+            new OperarioOrdenesAsignadasExport($ordenes, $user->id),
+            'ordenes-asignadas-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
+     * GET /operario/complementar/export-excel - Exportar piezas disponibles para complementar.
+     */
+    public function exportComplementarExcel(Request $request)
+    {
+        $piezas = OrdenPieza::whereNull('operario_actual_id')
+            ->where('porcentaje_avance', '<', 100)
+            ->where('estado', '!=', 'completada')
+            ->whereHas('orden', function ($q) {
+                $q->noAnuladas()->noBorradores()
+                    ->where(function ($q2) {
+                        $q2->whereNull('estado_entrega')
+                            ->orWhere('estado_entrega', '!=', 'entregada');
+                    });
+            })
+            ->with(['orden.cliente'])
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return Excel::download(
+            new OperarioComplementarExport($piezas),
+            'complementar-piezas-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 
     /**
