@@ -9,6 +9,10 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Force non-www (canonical host: cleanmeadelaide.au)
+    RewriteCond %{HTTP_HOST} ^www\.cleanmeadelaide\.au$ [NC]
+    RewriteRule ^(.*)$ https://cleanmeadelaide.au/$1 [L,R=301]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$

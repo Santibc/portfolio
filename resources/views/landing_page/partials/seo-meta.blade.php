@@ -22,6 +22,10 @@
     $twitterImagePath = $seo->twitter_image_path ?? $ogImagePath;
     $twitterImage = $twitterImagePath ? asset($twitterImagePath) : null;
 
+    // Forzar host canónico sin www para consolidar señales en Google
+    $canonicalHost = 'https://cleanmeadelaide.au';
+    $currentUrl = preg_replace('#^https?://(www\.)?cleanmeadelaide\.au#i', $canonicalHost, $currentUrl);
+
     // Logo URL absoluto (necesario para que Google muestre el logo en resultados de búsqueda)
     $logoUrl = asset('images/logo.png');
 
