@@ -1068,7 +1068,11 @@
                 monto_efectivo: metodo === 'efectivo' ? (parseFloat(document.getElementById('montoRecibido').value) || total) : (metodo === 'mixto' ? (parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0) : null),
                 monto_transferencia: metodo === 'transferencia' ? total : (metodo === 'mixto' ? (parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0) : null),
                 monto_recibido: metodo === 'efectivo' ? (parseFloat(document.getElementById('montoRecibido').value) || 0) : null,
-                cambio: metodo === 'efectivo' ? Math.max(0, (parseFloat(document.getElementById('montoRecibido').value) || 0) - total) : null,
+                cambio: metodo === 'efectivo'
+                    ? Math.max(0, (parseFloat(document.getElementById('montoRecibido').value) || 0) - total)
+                    : (metodo === 'mixto'
+                        ? Math.max(0, ((parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0) + (parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0)) - total)
+                        : null),
                 tipo_transferencia: metodo === 'transferencia' ? document.getElementById('tipoTransferencia').value : (metodo === 'mixto' ? document.getElementById('tipoTransferenciaMixto').value : null),
                 notas: document.getElementById('notasVenta').value,
                 descuento_autorizado_por: autorizadorDescuento,

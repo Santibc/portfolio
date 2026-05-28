@@ -66,6 +66,14 @@ class VentaPdvServiceV2
             $subtotal = round($totalConIva - $ivaTotal, 2); // base gravable sin IVA
             $total = round($totalConIva, 2);
 
+            $cambioFinal = $datosVenta['cambio'] ?? null;
+            if ($cambioFinal === null || (float) $cambioFinal <= 0) {
+                $efectivoEntregado = (float) ($datosVenta['monto_efectivo'] ?? 0);
+                $transferenciaEntregada = (float) ($datosVenta['monto_transferencia'] ?? 0);
+                $sobrante = ($efectivoEntregado + $transferenciaEntregada) - $total;
+                $cambioFinal = $sobrante > 0 ? round($sobrante, 2) : ($datosVenta['cambio'] ?? null);
+            }
+
             $venta = VentaPdv::create([
                 'numero_venta' => $numeroVenta,
                 'sesion_caja_id' => $sesionCajaId,
@@ -85,7 +93,7 @@ class VentaPdvServiceV2
                 'monto_tarjeta' => $datosVenta['monto_tarjeta'] ?? null,
                 'monto_transferencia' => $datosVenta['monto_transferencia'] ?? null,
                 'monto_recibido' => $datosVenta['monto_recibido'] ?? null,
-                'cambio' => $datosVenta['cambio'] ?? null,
+                'cambio' => $cambioFinal,
                 'tipo_transferencia' => $datosVenta['tipo_transferencia'] ?? null,
                 'comprobante_pago' => $datosVenta['comprobante_pago'] ?? null,
                 'notas' => $datosVenta['notas'] ?? null,

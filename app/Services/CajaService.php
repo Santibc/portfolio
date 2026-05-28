@@ -83,7 +83,17 @@ class CajaService
         $ventasAnuladas = $sesion->ventas()->where('estado', 'anulada')->get();
         $valesActivos = $sesion->vales()->whereIn('estado', ['pendiente', 'redimido'])->get();
 
-        $totalEfectivoNeto = $ventasCompletadas->sum(fn($v) => (float) ($v->monto_efectivo ?? 0) - (float) ($v->cambio ?? 0));
+        $efectivoNetoFn = function ($v) {
+            $efectivo = (float) ($v->monto_efectivo ?? 0);
+            $transferencia = (float) ($v->monto_transferencia ?? 0);
+            $cambio = (float) ($v->cambio ?? 0);
+            if ($cambio <= 0) {
+                $cambio = max(0.0, ($efectivo + $transferencia) - (float) $v->total);
+            }
+            return max(0.0, $efectivo - $cambio);
+        };
+
+        $totalEfectivoNeto = $ventasCompletadas->sum($efectivoNetoFn);
         $totalTransferencia = (float) $ventasCompletadas->sum('monto_transferencia');
         $totalVales = (float) $valesActivos->sum('monto');
 
@@ -95,7 +105,7 @@ class CajaService
         ];
 
         foreach ($ventasCompletadas as $venta) {
-            $efv = (float) ($venta->monto_efectivo ?? 0) - (float) ($venta->cambio ?? 0);
+            $efv = $efectivoNetoFn($venta);
             $trv = (float) ($venta->monto_transferencia ?? 0);
 
             if ($venta->metodo_pago === 'mixto') {
