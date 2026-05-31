@@ -14,6 +14,26 @@ Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` 
 - Laravel Breeze (auth), Spatie Laravel-Permission (roles)
 - Deploy target: **Hostinger shared hosting** — only PHP runtime, all JS/CSS must compile via `npm run build`
 
+---
+
+## RULE 0 — NUNCA borres la base de datos ni datos del usuario (crítico)
+
+**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `sopasysopitas` (o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
+
+Prohibido sin permiso explícito:
+- `php artisan migrate:fresh`, `migrate:fresh --seed`, `migrate:refresh`, `migrate:reset`, `db:wipe`.
+- `php artisan test` / `phpunit` **mientras la suite use la conexión real** (los tests con `RefreshDatabase` ejecutan `migrate:fresh` contra la base configurada). Antes de correr tests, **verifica** que `phpunit.xml` fuerce una base de pruebas aislada (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`) y que NO esté comentada. Si no lo está, **no corras tests** — arréglalo primero o pregunta.
+- `DROP`, `TRUNCATE`, `DELETE` masivos vía tinker/SQL directo.
+- Cualquier seeder o script que limpie tablas existentes.
+
+Reglas operativas:
+1. Si una tarea parece requerir resetear la base, **PREGUNTA primero** y explica el impacto. No asumas que los datos son "solo demo".
+2. Para verificar cambios de modelo/migración, usa una base de pruebas aislada (SQLite en memoria) o una copia, nunca la base de desarrollo del usuario.
+3. Si vas a correr tests, confirma el aislamiento de la base de tests **antes** de ejecutar.
+4. Ante la duda, no borres. Es infinitamente más barato preguntar que perder datos.
+
+---
+
 ## Commands
 
 ```bash

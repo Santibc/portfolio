@@ -8,6 +8,7 @@ use App\Enums\TipoGasto;
 use App\Http\Requests\StoreGastoRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Models\Gasto;
+use App\Models\MetodoPago;
 use App\Models\TrabajadorTurno;
 use App\Services\GastoService;
 use App\Services\TurnoCajaService;
@@ -90,12 +91,15 @@ class GastoController extends Controller
         $trabajadores = TrabajadorTurno::activos()->orderBy('nombre')->get();
         $trabajadoresOptions = $trabajadores->pluck('nombre', 'id')->all();
         $valoresTurnoDefault = $trabajadores->mapWithKeys(fn ($t) => [$t->id => (int) $t->valor_turno_default])->all();
+        $valoresAhorroDefault = $trabajadores->mapWithKeys(fn ($t) => [$t->id => (int) $t->valor_ahorro_default])->all();
 
         return view('gastos.create', [
-            'turnoActivo'         => $turnoActivo,
-            'trabajadoresOptions' => $trabajadoresOptions,
-            'valoresTurnoDefault' => $valoresTurnoDefault,
-            'gasto'               => null,
+            'turnoActivo'          => $turnoActivo,
+            'trabajadoresOptions'  => $trabajadoresOptions,
+            'metodosOptions'       => $this->metodosOptions(),
+            'valoresTurnoDefault'  => $valoresTurnoDefault,
+            'valoresAhorroDefault' => $valoresAhorroDefault,
+            'gasto'                => null,
         ]);
     }
 
@@ -117,7 +121,7 @@ class GastoController extends Controller
 
     public function edit(Gasto $gasto): View
     {
-        $gasto->load(['turno', 'trabajadorTurno']);
+        $gasto->load(['turno', 'trabajadorTurno', 'metodoPago']);
 
         $trabajadores = TrabajadorTurno::activos()->orderBy('nombre')->get();
 
@@ -128,12 +132,21 @@ class GastoController extends Controller
 
         $trabajadoresOptions = $trabajadores->pluck('nombre', 'id')->all();
         $valoresTurnoDefault = $trabajadores->mapWithKeys(fn ($t) => [$t->id => (int) $t->valor_turno_default])->all();
+        $valoresAhorroDefault = $trabajadores->mapWithKeys(fn ($t) => [$t->id => (int) $t->valor_ahorro_default])->all();
 
         return view('gastos.edit', [
-            'gasto'               => $gasto,
-            'trabajadoresOptions' => $trabajadoresOptions,
-            'valoresTurnoDefault' => $valoresTurnoDefault,
+            'gasto'                => $gasto,
+            'trabajadoresOptions'  => $trabajadoresOptions,
+            'metodosOptions'       => $this->metodosOptions(),
+            'valoresTurnoDefault'  => $valoresTurnoDefault,
+            'valoresAhorroDefault' => $valoresAhorroDefault,
         ]);
+    }
+
+    /** @return array<int, string> */
+    private function metodosOptions(): array
+    {
+        return MetodoPago::activos()->orderBy('orden')->pluck('nombre', 'id')->all();
     }
 
     public function update(UpdateGastoRequest $request, Gasto $gasto): RedirectResponse

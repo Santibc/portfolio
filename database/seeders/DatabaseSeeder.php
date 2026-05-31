@@ -10,13 +10,20 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolesAndPermissionsSeeder::class,
+            // Mercado / Productos
             TiposProductoMercadoSeeder::class,
             ProductosMercadoDemoSeeder::class,
             ListaMercadoSeeder::class,
+            MercadosDemoSeeder::class,
+            // Caja / Menú
             TiposMenuItemSeeder::class,
             MetodosPagoSeeder::class,
             MenuItemsSeeder::class,
             TrabajadoresTurnoSeeder::class,
+            TurnosCajaVentasGastosSeeder::class,
+            PagosAhorroSeeder::class,
+            // Reintento con títulos alternativos para imágenes que Wikipedia no resolvió en el primer paso
+            BackfillImagenesFaltantesSeeder::class,
         ]);
     }
 }

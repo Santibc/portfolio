@@ -95,7 +95,8 @@
             || request()->routeIs('menu-items.*')
             || request()->routeIs('metodos-pago.*')
             || request()->routeIs('gastos.*')
-            || request()->routeIs('trabajadores-turno.*');
+            || request()->routeIs('trabajadores-turno.*')
+            || request()->routeIs('pagos-ahorros.*');
     @endphp
     <div x-data="{ open: @js($cajaActive) }">
         <button type="button" @click="open = !open"
@@ -149,6 +150,13 @@
             <a href="{{ route('trabajadores-turno.index') }}" class="{{ $cls }}">
                 <x-icon name="users" class="w-4 h-4" />
                 <span class="flex-1">Trabajadores turno</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('pagos-ahorros.index', 'piggy-bank', 'Pagos ahorros', 'pagos-ahorros.*'); @endphp
+            <a href="{{ route('pagos-ahorros.index') }}" class="{{ $cls }}">
+                <x-icon name="piggy-bank" class="w-4 h-4" />
+                <span class="flex-1">Pagos ahorros</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
         </div>

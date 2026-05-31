@@ -3,7 +3,11 @@
 @section('header', 'Métodos de pago')
 
 @section('content')
-<div x-data="{ nuevoOpen: false, editarOpen: false }">
+<div x-data="{
+    nuevoOpen: false,
+    editarOpen: false,
+    edit: { id: null, codigo: '', nombre: '', orden: 0, es_efectivo: false, activo: false },
+}">
     <x-page-header
         title="Métodos de pago"
         subtitle="Administra los métodos disponibles en la caja"
@@ -53,11 +57,11 @@
                                 <div class="inline-flex items-center gap-2">
                                     <button type="button"
                                             class="inline-flex items-center gap-1 text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 font-medium text-xs"
-                                            @click="abrirEditarMetodo({{ $m->id }}, '{{ e($m->codigo) }}', '{{ e($m->nombre) }}', {{ $m->es_efectivo ? 'true' : 'false' }}, {{ $m->activo ? 'true' : 'false' }}, {{ (int) $m->orden }}); editarOpen = true">
+                                            @click="edit = { id: {{ $m->id }}, codigo: @js($m->codigo), nombre: @js($m->nombre), orden: {{ (int) $m->orden }}, es_efectivo: {{ $m->es_efectivo ? 'true' : 'false' }}, activo: {{ $m->activo ? 'true' : 'false' }} }; editarOpen = true">
                                         <x-icon name="edit" class="w-3.5 h-3.5" /> Editar
                                     </button>
                                     <form action="{{ route('metodos-pago.destroy', $m) }}" method="POST"
-                                          onsubmit="return confirm('¿Eliminar este método de pago?');">
+                                          onsubmit="return confirm('¿Deshabilitar este método de pago? No aparecerá en la caja, pero las ventas ya registradas lo conservan.');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
@@ -125,7 +129,7 @@
          @click.self="editarOpen = false">
         <div class="flex min-h-full items-center justify-center p-4">
             <div class="w-full max-w-md bg-white dark:bg-surface-dark rounded-2xl shadow-soft-lg">
-                <form id="form-metodo-editar" method="POST">
+                <form :action="'{{ url('metodos-pago') }}/' + edit.id" method="POST">
                     @csrf
                     @method('PATCH')
                     <div class="flex items-center justify-between px-5 py-4 border-b border-cream-200 dark:border-cream-800">
@@ -137,13 +141,34 @@
                     </div>
 
                     <div class="p-5 space-y-4">
-                        <x-input label="Código" name="codigo" id="edit-codigo" required />
-                        <x-input label="Nombre" name="nombre" id="edit-nombre" required />
-                        <x-input label="Orden" name="orden" id="edit-orden" type="number" />
+                        <x-input label="Código" name="codigo" required x-model="edit.codigo" />
+                        <x-input label="Nombre" name="nombre" required x-model="edit.nombre" />
+                        <x-input label="Orden" name="orden" type="number" x-model.number="edit.orden" />
+
                         <input type="hidden" name="es_efectivo" value="0">
-                        <x-toggle name="es_efectivo" id="edit-es-efectivo" label="Es efectivo" />
+                        <label class="flex items-start gap-3 cursor-pointer select-none">
+                            <span class="relative inline-flex items-center">
+                                <input type="checkbox" name="es_efectivo" value="1" x-model="edit.es_efectivo" class="sr-only peer">
+                                <span class="w-11 h-6 rounded-full bg-cream-300 peer-checked:bg-primary-500 transition-colors duration-200 dark:bg-cream-700"></span>
+                                <span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                            </span>
+                            <span class="text-sm">
+                                <span class="block font-medium text-cream-800 dark:text-cream-200">Es efectivo</span>
+                                <span class="block text-xs text-cream-600 dark:text-cream-400">Marca solo si este método representa pago en dinero físico</span>
+                            </span>
+                        </label>
+
                         <input type="hidden" name="activo" value="0">
-                        <x-toggle name="activo" id="edit-activo" label="Activo" />
+                        <label class="flex items-start gap-3 cursor-pointer select-none">
+                            <span class="relative inline-flex items-center">
+                                <input type="checkbox" name="activo" value="1" x-model="edit.activo" class="sr-only peer">
+                                <span class="w-11 h-6 rounded-full bg-cream-300 peer-checked:bg-primary-500 transition-colors duration-200 dark:bg-cream-700"></span>
+                                <span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                            </span>
+                            <span class="text-sm">
+                                <span class="block font-medium text-cream-800 dark:text-cream-200">Activo</span>
+                            </span>
+                        </label>
                     </div>
 
                     <div class="px-5 py-4 border-t border-cream-200 dark:border-cream-800 flex items-center justify-end gap-2">
@@ -159,17 +184,3 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    function abrirEditarMetodo(id, codigo, nombre, esEfectivo, activo, orden) {
-        const form = document.getElementById('form-metodo-editar');
-        form.action = '{{ url('metodos-pago') }}/' + id;
-        document.getElementById('edit-codigo').value = codigo;
-        document.getElementById('edit-nombre').value = nombre;
-        document.getElementById('edit-orden').value = orden;
-        document.getElementById('edit-es-efectivo').checked = esEfectivo;
-        document.getElementById('edit-activo').checked = activo;
-        document.getElementById('modal-metodo-editar').classList.remove('hidden');
-    }
-</script>
-@endpush

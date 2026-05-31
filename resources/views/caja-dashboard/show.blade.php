@@ -17,15 +17,14 @@
     </x-page-header>
 
     {{-- Estado y stats --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+    <div class="grid grid-cols-2 gap-3 mb-3">
         <x-stat-card icon="wallet"      color="primary" label="Total ventas"        :value="$turno->total_ventas_formateado" />
-        <x-stat-card icon="banknote"    color="emerald" label="Efectivo"            :value="$turno->total_efectivo_formateado" />
         <x-stat-card icon="dollar-sign" color="accent"  label="Base inicial"        :value="$turno->base_inicial_formateada" />
-        <x-stat-card icon="calculator"  color="sky"     label="Efectivo esperado"   :value="$turno->efectivo_esperado_formateado" />
     </div>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <x-stat-card icon="trending-down" color="rose" label="Total gastos" :value="$turno->total_gastos_formateado" />
-        <x-stat-card icon="trending-up"   :color="$turno->neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos)" :value="$turno->neto_formateado" />
+        <x-stat-card icon="piggy-bank"    color="primary" label="Ahorros descontados" :value="$turno->total_ahorros_formateado" />
+        <x-stat-card icon="trending-up"   :color="$turno->neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − ahorros)" :value="$turno->neto_formateado" />
     </div>
 
     @if ($turno->cerrado_en !== null)
@@ -65,7 +64,13 @@
                             <x-icon :name="$d['es_efectivo'] ? 'banknote' : 'credit-card'" class="w-3 h-3" />
                             {{ $d['nombre'] }}
                         </p>
-                        <p class="text-sm font-bold text-cream-900 dark:text-cream-50 tabular-nums">$ {{ number_format($d['monto'], 0, ',', '.') }}</p>
+                        @if ($d['gastos'] > 0)
+                            <p class="text-[11px] text-cream-500 tabular-nums leading-tight">
+                                $ {{ number_format($d['ventas'], 0, ',', '.') }}
+                                <span class="text-rose-600 dark:text-rose-400">− $ {{ number_format($d['gastos'], 0, ',', '.') }}</span>
+                            </p>
+                        @endif
+                        <p class="text-sm font-bold tabular-nums {{ $d['monto'] < 0 ? 'text-rose-700 dark:text-rose-400' : 'text-cream-900 dark:text-cream-50' }}">$ {{ number_format($d['monto'], 0, ',', '.') }}</p>
                     </div>
                 @endforeach
             </div>
@@ -208,6 +213,8 @@
                         <th class="text-left px-4 py-2 font-semibold">Tipo</th>
                         <th class="text-left px-4 py-2 font-semibold">Concepto / Trabajador</th>
                         <th class="text-right px-4 py-2 font-semibold">Valor</th>
+                        <th class="text-right px-4 py-2 font-semibold">Ahorro</th>
+                        <th class="text-left px-4 py-2 font-semibold">Método</th>
                         <th class="text-left px-4 py-2 font-semibold">Cajero</th>
                         <th class="px-4 py-2"></th>
                     </tr>
@@ -234,6 +241,17 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-rose-700 dark:text-rose-400">{{ $g->valor_formateado }}</td>
+                            <td class="px-4 py-2.5 text-right tabular-nums {{ $g->ahorro > 0 ? 'text-primary-700 dark:text-primary-300 font-semibold' : 'text-cream-400' }}">{{ $g->ahorro > 0 ? $g->ahorro_formateado : '—' }}</td>
+                            <td class="px-4 py-2.5">
+                                @if ($g->metodoPago)
+                                    <span class="inline-flex items-center gap-1 font-medium rounded-full bg-cream-100 dark:bg-cream-800 text-cream-800 dark:text-cream-200 text-xs px-2.5 py-1">
+                                        <x-icon :name="$g->metodoPago->es_efectivo ? 'banknote' : 'credit-card'" class="w-3 h-3" />
+                                        {{ $g->metodoPago->nombre }}
+                                    </span>
+                                @else
+                                    <span class="text-cream-400">—</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2.5 text-cream-700 dark:text-cream-300">{{ $g->user?->name ?? '—' }}</td>
                             <td class="px-4 py-2.5 text-right">
                                 <div class="inline-flex items-center gap-2">
@@ -253,7 +271,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
+                            <td colspan="8" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
                                 No hay gastos en este turno.
                             </td>
                         </tr>

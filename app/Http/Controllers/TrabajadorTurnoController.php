@@ -14,42 +14,101 @@ class TrabajadorTurnoController extends Controller
 {
     public function index(): View
     {
-        $trabajadores = TrabajadorTurno::orderBy('nombre')->get();
+        $trabajadores = TrabajadorTurno::withSum('gastos as total_ahorrado', 'ahorro')
+            ->withSum('pagosAhorro as total_pagado_ahorro', 'monto')
+            ->orderBy('nombre')
+            ->get();
 
         $rows = $trabajadores->map(function (TrabajadorTurno $t) {
-            $activo = $t->activo
-                ? '<span class="inline-flex items-center font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200 text-xs px-2.5 py-1">Activo</span>'
-                : '<span class="inline-flex items-center font-semibold rounded-full bg-cream-200 text-cream-800 dark:bg-cream-800 dark:text-cream-200 text-xs px-2.5 py-1">Inactivo</span>';
+            $acumulado = $t->ahorro_acumulado;
+            $nombre = e($t->nombre);
 
-            $editUrl   = route('trabajadores-turno.edit', $t);
-            $deleteUrl = route('trabajadores-turno.destroy', $t);
-            $csrf      = csrf_token();
+            $editUrl = route('trabajadores-turno.edit', $t);
+            $toggleUrl = route('trabajadores-turno.toggle-activo', $t);
+            $csrf = csrf_token();
 
-            $acciones = '<div class="inline-flex items-center gap-2">'
-                . '<a href="' . $editUrl . '" class="inline-flex items-center gap-1 text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 font-medium"><i data-lucide="edit" class="w-3.5 h-3.5"></i>Editar</a>'
-                . '<form action="' . $deleteUrl . '" method="POST" class="inline" onsubmit="return confirm(\'¿Eliminar este trabajador?\');">'
-                . '<input type="hidden" name="_token" value="' . $csrf . '">'
-                . '<input type="hidden" name="_method" value="DELETE">'
-                . '<button type="submit" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 font-medium"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>'
-                . '</form>'
-                . '</div>';
+            $estadoTexto = $t->activo ? 'Activo' : 'Inactivo';
+            $activo = '<form action="'.$toggleUrl.'" method="POST" class="inline-flex items-center gap-2">'
+                .'<input type="hidden" name="_token" value="'.$csrf.'">'
+                .'<input type="hidden" name="_method" value="PATCH">'
+                .'<label class="relative inline-flex items-center cursor-pointer" title="'.($t->activo ? 'Desactivar' : 'Activar').'">'
+                .'<input type="checkbox" onchange="this.form.submit()" '.($t->activo ? 'checked' : '').' class="sr-only peer">'
+                .'<span class="w-11 h-6 rounded-full bg-cream-300 peer-checked:bg-primary-500 transition-colors duration-200 dark:bg-cream-700"></span>'
+                .'<span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>'
+                .'</label>'
+                .'<span class="text-xs font-medium '.($t->activo ? 'text-emerald-700 dark:text-emerald-300' : 'text-cream-500').'">'.$estadoTexto.'</span>'
+                .'</form>';
+
+            $pagarBtn = '<button type="button"'
+                .' data-id="'.$t->id.'" data-nombre="'.$nombre.'" data-acumulado="'.$acumulado.'"'
+                .' onclick="window.dispatchEvent(new CustomEvent(\'abrir-pago-ahorro\',{detail:{id:this.dataset.id,nombre:this.dataset.nombre,acumulado:this.dataset.acumulado}}))"'
+                .($acumulado > 0 ? '' : ' disabled')
+                .' class="inline-flex items-center gap-1 font-medium '.($acumulado > 0 ? 'text-emerald-700 hover:text-emerald-900 dark:text-emerald-300 dark:hover:text-emerald-100' : 'text-cream-400 cursor-not-allowed').'">'
+                .'<i data-lucide="banknote" class="w-3.5 h-3.5"></i>Pagar ahorro</button>';
+
+            $historialBtn = '<button type="button"'
+                .' data-id="'.$t->id.'" data-nombre="'.$nombre.'"'
+                .' onclick="window.dispatchEvent(new CustomEvent(\'abrir-historial-ahorro\',{detail:{id:this.dataset.id,nombre:this.dataset.nombre}}))"'
+                .' class="inline-flex items-center gap-1 text-sky-700 hover:text-sky-900 dark:text-sky-300 dark:hover:text-sky-100 font-medium">'
+                .'<i data-lucide="clock" class="w-3.5 h-3.5"></i>Historial</button>';
+
+            $acciones = '<div class="inline-flex items-center gap-3 flex-wrap">'
+                .'<a href="'.$editUrl.'" class="inline-flex items-center gap-1 text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 font-medium"><i data-lucide="edit" class="w-3.5 h-3.5"></i>Editar</a>'
+                .$pagarBtn
+                .$historialBtn
+                .'</div>';
 
             return [
-                'nombre'   => e($t->nombre),
-                'valor'    => '<span class="font-semibold tabular-nums text-cream-900 dark:text-cream-50">' . e($t->valor_turno_default_formateado) . '</span>',
-                'activo'   => $activo,
+                'nombre' => $nombre,
+                'valor' => '<span class="font-semibold tabular-nums text-cream-900 dark:text-cream-50">'.e($t->valor_turno_default_formateado).'</span>',
+                'ahorro_default' => '<span class="font-semibold tabular-nums text-cream-900 dark:text-cream-50">'.e($t->valor_ahorro_default_formateado).'</span>',
+                'ahorro' => '<span class="font-semibold tabular-nums '.($acumulado > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-cream-500').'">'.e($t->ahorro_acumulado_formateado).'</span>',
+                'activo' => $activo,
                 'acciones' => $acciones,
             ];
         })->values()->all();
 
         $columns = [
-            ['key' => 'nombre',   'label' => 'Nombre',           'sortable' => true],
-            ['key' => 'valor',    'label' => 'Valor turno default', 'sortable' => true],
-            ['key' => 'activo',   'label' => 'Estado',           'sortable' => false],
-            ['key' => 'acciones', 'label' => 'Acciones',         'sortable' => false],
+            ['key' => 'nombre',         'label' => 'Nombre',              'sortable' => true],
+            ['key' => 'valor',          'label' => 'Valor turno default', 'sortable' => true],
+            ['key' => 'ahorro_default', 'label' => 'Valor ahorro default', 'sortable' => true],
+            ['key' => 'ahorro',         'label' => 'Ahorro acumulado',    'sortable' => true],
+            ['key' => 'activo',         'label' => 'Estado',              'sortable' => false],
+            ['key' => 'acciones',       'label' => 'Acciones',            'sortable' => false],
         ];
 
         return view('trabajadores-turno.index', compact('rows', 'columns'));
+    }
+
+    public function historialAhorro(TrabajadorTurno $trabajadorTurno): View
+    {
+        $aportes = $trabajadorTurno->gastos()
+            ->where('ahorro', '>', 0)
+            ->get()
+            ->map(fn ($g) => [
+                'fecha' => $g->created_at,
+                'tipo' => 'aporte',
+                'monto' => (int) $g->ahorro,
+                'detalle' => 'Ahorro registrado en pago de turno',
+            ]);
+
+        $pagos = $trabajadorTurno->pagosAhorro()
+            ->get()
+            ->map(fn ($p) => [
+                'fecha' => $p->pagado_en,
+                'tipo' => 'pago',
+                'monto' => (int) $p->monto,
+                'detalle' => $p->observacion ?: 'Pago de ahorro',
+            ]);
+
+        $movimientos = $aportes->concat($pagos)
+            ->sortByDesc('fecha')
+            ->values();
+
+        return view('trabajadores-turno._historial-ahorro', [
+            'trabajador' => $trabajadorTurno,
+            'movimientos' => $movimientos,
+        ]);
     }
 
     public function create(): View
@@ -86,12 +145,14 @@ class TrabajadorTurnoController extends Controller
             ->with('success', 'Trabajador actualizado correctamente.');
     }
 
-    public function destroy(TrabajadorTurno $trabajadorTurno): RedirectResponse
+    public function toggleActivo(TrabajadorTurno $trabajadorTurno): RedirectResponse
     {
-        $trabajadorTurno->delete();
+        $trabajadorTurno->update(['activo' => ! $trabajadorTurno->activo]);
 
         return redirect()
             ->route('trabajadores-turno.index')
-            ->with('success', 'Trabajador eliminado.');
+            ->with('success', $trabajadorTurno->activo
+                ? 'Trabajador activado. Volverá a aparecer en el formulario de gastos.'
+                : 'Trabajador desactivado. Ya no aparecerá en el formulario de gastos.');
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\ListaMercadoItemController;
 use App\Http\Controllers\ListaMercadoPlantillaController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MetodoPagoController;
+use App\Http\Controllers\PagoAhorroController;
 use App\Http\Controllers\ProductoMercadoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistroMercadoController;
@@ -99,11 +100,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/caja/ventas/{venta}',        [VentaController::class, 'destroy'])->name('caja.venta.destroy');
 
     Route::resource('trabajadores-turno', TrabajadorTurnoController::class)
-        ->except(['show'])
+        ->except(['show', 'destroy'])
         ->parameters(['trabajadores-turno' => 'trabajadorTurno']);
+
+    Route::patch('trabajadores-turno/{trabajadorTurno}/activo', [TrabajadorTurnoController::class, 'toggleActivo'])
+        ->name('trabajadores-turno.toggle-activo');
+
+    Route::get('trabajadores-turno/{trabajadorTurno}/historial-ahorro', [TrabajadorTurnoController::class, 'historialAhorro'])
+        ->name('trabajadores-turno.historial-ahorro');
 
     Route::resource('gastos', GastoController::class)
         ->except(['show']);
+
+    Route::get('pagos-ahorros',                  [PagoAhorroController::class, 'index'])->name('pagos-ahorros.index');
+    Route::post('pagos-ahorros',                 [PagoAhorroController::class, 'store'])->name('pagos-ahorros.store');
+    Route::delete('pagos-ahorros/{pagoAhorro}',  [PagoAhorroController::class, 'destroy'])->name('pagos-ahorros.destroy');
 });
 
 require __DIR__.'/auth.php';

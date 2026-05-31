@@ -87,8 +87,9 @@
 
         <div x-data='pos(@json($menuPayload), @json($metodosPayload), @json($tiposPayload), @json($oldData))'>
 
-            {{-- Header sticky --}}
-            <div class="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/95 dark:bg-surface-dark/95 backdrop-blur border-b border-cream-200 dark:border-cream-800 mb-4">
+            {{-- Header sticky (colapsable para ganar espacio vertical) --}}
+            <div x-show="infoOpen" x-cloak
+                 class="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/95 dark:bg-surface-dark/95 backdrop-blur border-b border-cream-200 dark:border-cream-800 mb-4">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
                         <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -137,12 +138,25 @@
                                     @click="tipoFiltro = t.id" x-text="t.nombre"></button>
                         </template>
 
-                        <div class="ml-auto relative w-full sm:w-56">
-                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-cream-500">
-                                <x-icon name="search" class="w-4 h-4" />
-                            </span>
-                            <input x-model="search" type="text" placeholder="Buscar..."
-                                   class="block w-full rounded-xl border-cream-300 bg-white pl-8 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                        <div class="ml-auto flex items-center gap-2 w-full sm:w-auto">
+                            <div class="relative flex-1 sm:w-56">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5 text-cream-500">
+                                    <x-icon name="search" class="w-4 h-4" />
+                                </span>
+                                <input x-model="search" type="text" placeholder="Buscar..."
+                                       class="block w-full rounded-xl border-cream-300 bg-white pl-8 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                            </div>
+                            {{-- Toggle de la info del turno --}}
+                            <button type="button" @click="infoOpen = !infoOpen"
+                                    :class="infoOpen ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-cream-700 border-cream-300 hover:bg-cream-100 dark:bg-cream-900/40 dark:text-cream-200 dark:border-cream-700'"
+                                    class="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-all"
+                                    :title="infoOpen ? 'Ocultar info del turno' : 'Ver info del turno'">
+                                <x-icon name="wallet" class="w-4 h-4" />
+                                <span class="hidden sm:inline">Turno</span>
+                                <span class="inline-flex transition-transform" :class="infoOpen && 'rotate-180'">
+                                    <x-icon name="chevron-down" class="w-3.5 h-3.5" />
+                                </span>
+                            </button>
                         </div>
                     </div>
 
@@ -237,27 +251,35 @@
                             </div>
 
                             <template x-for="(p, i) in pagos" :key="i">
-                                <div class="grid grid-cols-12 gap-1.5 items-center">
-                                    <select x-model.number="p.metodo_pago_id"
-                                            class="col-span-5 rounded-lg border-cream-300 bg-white px-2 py-1.5 text-xs focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
-                                        <option :value="null">Seleccionar…</option>
+                                <div class="rounded-xl border border-cream-200 dark:border-cream-800 p-2 space-y-2">
+                                    {{-- Métodos como botones táctiles --}}
+                                    <div class="flex flex-wrap gap-1.5">
                                         <template x-for="m in metodos" :key="m.id">
-                                            <option :value="m.id" x-text="m.nombre"></option>
+                                            <button type="button" @click="p.metodo_pago_id = m.id"
+                                                    :class="p.metodo_pago_id == m.id
+                                                        ? 'bg-primary-500 border-primary-500 text-white shadow-sm'
+                                                        : 'bg-white border-cream-300 text-cream-700 hover:border-primary-400 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-200 dark:hover:border-primary-500'"
+                                                    class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors active:scale-95"
+                                                    x-text="m.nombre">
+                                            </button>
                                         </template>
-                                    </select>
-
-                                    <div class="col-span-6 relative">
-                                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2 text-cream-500 text-xs font-semibold">$</span>
-                                        <input type="text" inputmode="numeric"
-                                               :value="p.monto > 0 ? p.monto.toLocaleString('es-CO') : ''"
-                                               @input="p.monto = parseInt(($event.target.value || '').replace(/\D/g,'') || '0', 10); $event.target.value = p.monto > 0 ? p.monto.toLocaleString('es-CO') : ''"
-                                               placeholder="0"
-                                               class="block w-full rounded-lg border-cream-300 bg-white pl-5 pr-2 py-1.5 text-xs focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
                                     </div>
 
-                                    <button type="button" @click="removePago(i)" class="col-span-1 inline-flex items-center justify-center w-7 h-7 rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                                    </button>
+                                    {{-- Monto + quitar --}}
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="flex-1 relative">
+                                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2 text-cream-500 text-xs font-semibold">$</span>
+                                            <input type="text" inputmode="numeric"
+                                                   :value="p.monto > 0 ? p.monto.toLocaleString('es-CO') : ''"
+                                                   @input="p.monto = parseInt(($event.target.value || '').replace(/\D/g,'') || '0', 10); $event.target.value = p.monto > 0 ? p.monto.toLocaleString('es-CO') : ''"
+                                                   placeholder="0"
+                                                   class="block w-full rounded-lg border-cream-300 bg-white pl-5 pr-2 py-1.5 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                                        </div>
+
+                                        <button type="button" @click="removePago(i)" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                        </button>
+                                    </div>
                                 </div>
                             </template>
 
@@ -390,6 +412,7 @@
             menuItems,
             metodos,
             tipos,
+            infoOpen: false,
             cart: [],
             pagos: [],
             notas: oldData.notas || '',
@@ -442,9 +465,10 @@
                 if (c) c.cantidad = n;
             },
             addPago() {
-                // Pre-llenar con el primer método activo si no hay
+                // Pre-llenar con el primer método activo si no hay. Se agrega arriba (unshift)
+                // para que el método recién creado quede primero en la lista.
                 const m = this.metodos[0];
-                this.pagos.push({ metodo_pago_id: m ? m.id : null, monto: 0, referencia: '' });
+                this.pagos.unshift({ metodo_pago_id: m ? m.id : null, monto: 0, referencia: '' });
             },
             removePago(i) { this.pagos.splice(i, 1); },
 

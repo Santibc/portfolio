@@ -91,9 +91,27 @@
       "Bash(npm run *)",
       "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\agromarket\\\\resources\\\\views\" -Directory)",
       "Bash(Select-Object Name)",
-      "PowerShell(head -30)"
+      "PowerShell(head -30)",
+      "Bash(printf '\\\\ninnodb_force_recovery=1\\\\n')",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(mv /c/xampp/mysql/data /c/xampp/mysql/data.OLD.20260529_1025)",
+      "Bash(node tmp-playwright-validate.cjs)",
+      "Bash(node tmp-playwright-write.cjs)",
+      "Bash(node tmp-pa-check.cjs)",
+      "Bash(where.exe plink *)",
+      "Bash(where.exe ssh *)",
+      "Bash(where.exe sshpass *)",
+      "Bash(where.exe putty *)",
+      "Bash(where.exe pscp *)",
+      "Bash(where.exe winget *)",
+      "Bash(where.exe choco *)",
+      "Read(//c/Program Files/PuTTY/**)",
+      "Bash(\"/c/Program Files/PuTTY/plink.exe\" -V)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\xampp\\mysql\\data"
+    ]
   }
 }

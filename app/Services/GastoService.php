@@ -32,8 +32,10 @@ class GastoService
             'user_id'             => $userId,
             'tipo'                => $tipo->value,
             'trabajador_turno_id' => $tipo === TipoGasto::Turno ? (int) $datos['trabajador_turno_id'] : null,
+            'metodo_pago_id'      => (int) $datos['metodo_pago_id'],
             'valor'               => $valor,
-            'observacion'         => $tipo === TipoGasto::Turno ? ($datos['observacion'] ?? null) : ($datos['observacion'] ?? null),
+            'ahorro'              => $tipo === TipoGasto::Turno ? (int) ($datos['ahorro'] ?? 0) : 0,
+            'observacion'         => $datos['observacion'] ?? null,
         ]));
     }
 
@@ -47,11 +49,13 @@ class GastoService
         $gasto->fill([
             'tipo'                => $tipo->value,
             'trabajador_turno_id' => $tipo === TipoGasto::Turno ? (int) $datos['trabajador_turno_id'] : null,
+            'metodo_pago_id'      => (int) $datos['metodo_pago_id'],
             'valor'               => $valor,
+            'ahorro'              => $tipo === TipoGasto::Turno ? (int) ($datos['ahorro'] ?? 0) : 0,
             'observacion'         => $datos['observacion'] ?? null,
         ])->save();
 
-        return $gasto->fresh(['trabajadorTurno', 'turno', 'user']);
+        return $gasto->fresh(['trabajadorTurno', 'metodoPago', 'turno', 'user']);
     }
 
     public function eliminar(Gasto $gasto): void

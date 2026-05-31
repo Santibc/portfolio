@@ -16,9 +16,10 @@ class UpdateTrabajadorTurnoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'              => ['required', 'string', 'max:100'],
-            'valor_turno_default' => ['required', 'integer', 'min:0', 'max:999999999'],
-            'activo'              => ['nullable', 'boolean'],
+            'nombre'               => ['required', 'string', 'max:100'],
+            'valor_turno_default'  => ['required', 'integer', 'min:0', 'max:999999999'],
+            'valor_ahorro_default' => ['required', 'integer', 'min:0', 'max:999999999'],
+            'activo'               => ['nullable', 'boolean'],
         ];
     }
 }

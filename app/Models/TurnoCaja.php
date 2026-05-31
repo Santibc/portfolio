@@ -78,10 +78,15 @@ class TurnoCaja extends Model
 
     public function getTotalEfectivoAttribute(): int
     {
-        return (int) $this->ventas
-            ->flatMap->pagos
-            ->filter(fn ($p) => optional($p->metodo)->es_efectivo)
-            ->sum('monto');
+        // Efectivo NETO que queda en el cajón: lo recibido en efectivo menos el
+        // cambio devuelto en cada venta. El cambio nunca entra en los totales.
+        return (int) $this->ventas->sum(function ($venta) {
+            $efectivo = $venta->pagos
+                ->filter(fn ($p) => optional($p->metodo)->es_efectivo)
+                ->sum('monto');
+
+            return max(0, (int) $efectivo - (int) $venta->cambio);
+        });
     }
 
     public function getTotalNoEfectivoAttribute(): int
@@ -102,14 +107,20 @@ class TurnoCaja extends Model
         return (int) $this->gastos->sum('valor');
     }
 
+    public function getTotalAhorrosAttribute(): int
+    {
+        return (int) $this->gastos->sum('ahorro');
+    }
+
     public function getNetoAttribute(): int
     {
-        return $this->total_ventas - $this->total_gastos;
+        return $this->total_ventas - $this->total_gastos - $this->total_ahorros;
     }
 
     public function getEfectivoEsperadoAttribute(): int
     {
-        return (int) $this->base_inicial + $this->total_efectivo - $this->total_cambio - $this->total_gastos;
+        // total_efectivo ya viene neto del cambio; el cambio no se resta aquí.
+        return (int) $this->base_inicial + $this->total_efectivo - $this->total_gastos - $this->total_ahorros;
     }
 
     public function getDiferenciaCierreAttribute(): ?int
@@ -144,6 +155,11 @@ class TurnoCaja extends Model
     public function getTotalGastosFormateadoAttribute(): string
     {
         return '$ ' . number_format($this->total_gastos, 0, ',', '.');
+    }
+
+    public function getTotalAhorrosFormateadoAttribute(): string
+    {
+        return '$ ' . number_format($this->total_ahorros, 0, ',', '.');
     }
 
     public function getNetoFormateadoAttribute(): string

@@ -40,6 +40,14 @@
                     required
                 />
 
+                <x-input-currency
+                    label="Valor ahorro (por defecto)"
+                    name="valor_ahorro_default"
+                    :value="old('valor_ahorro_default', $trabajador->valor_ahorro_default)"
+                    hint="Sugerencia del ahorro al pagar el turno. Puede cambiarse al registrar el gasto."
+                    required
+                />
+
                 <input type="hidden" name="activo" value="0" />
                 <x-toggle
                     name="activo"

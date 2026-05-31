@@ -20,13 +20,16 @@ class Gasto extends Model
         'user_id',
         'tipo',
         'trabajador_turno_id',
+        'metodo_pago_id',
         'valor',
+        'ahorro',
         'observacion',
     ];
 
     protected $casts = [
-        'tipo'  => TipoGasto::class,
-        'valor' => 'integer',
+        'tipo'   => TipoGasto::class,
+        'valor'  => 'integer',
+        'ahorro' => 'integer',
     ];
 
     public function turno(): BelongsTo
@@ -44,8 +47,18 @@ class Gasto extends Model
         return $this->belongsTo(TrabajadorTurno::class, 'trabajador_turno_id');
     }
 
+    public function metodoPago(): BelongsTo
+    {
+        return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
+    }
+
     public function getValorFormateadoAttribute(): string
     {
         return '$ ' . number_format((int) $this->valor, 0, ',', '.');
+    }
+
+    public function getAhorroFormateadoAttribute(): string
+    {
+        return '$ ' . number_format((int) $this->ahorro, 0, ',', '.');
     }
 }

@@ -29,7 +29,9 @@ class VentaPago extends Model
 
     public function metodo(): BelongsTo
     {
-        return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
+        // withTrashed: un método deshabilitado (soft delete) debe seguir
+        // resolviendo su nombre en el histórico de ventas.
+        return $this->belongsTo(MetodoPago::class, 'metodo_pago_id')->withTrashed();
     }
 
     public function getMontoFormateadoAttribute(): string

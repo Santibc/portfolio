@@ -5,6 +5,8 @@
     $tipoActual = old('tipo', $isEdit ? $gasto->tipo->value : 'general');
     $trabajadorActual = old('trabajador_turno_id', $isEdit ? $gasto->trabajador_turno_id : '');
     $valorActual = old('valor', $isEdit ? $gasto->valor : '');
+    $ahorroActual = old('ahorro', $isEdit ? $gasto->ahorro : '');
+    $metodoActual = old('metodo_pago_id', $isEdit ? $gasto->metodo_pago_id : '');
     $observacionActual = old('observacion', $isEdit ? $gasto->observacion : '');
 @endphp
 
@@ -24,12 +26,16 @@
     x-data="{
         tipo: @js($tipoActual),
         valoresDefault: @js($valoresTurnoDefault ?? []),
+        ahorrosDefault: @js($valoresAhorroDefault ?? []),
         aplicarDefault(id) {
             if (!id) return;
-            const v = this.valoresDefault[id] ?? 0;
-            const inp = document.getElementById('valor');
+            this.setCurrency('valor', this.valoresDefault[id] ?? 0);
+            this.setCurrency('ahorro', this.ahorrosDefault[id] ?? 0);
+        },
+        setCurrency(inputId, value) {
+            const inp = document.getElementById(inputId);
             if (!inp) return;
-            inp.value = String(v);
+            inp.value = String(value);
             inp.dispatchEvent(new Event('input', { bubbles: true }));
         },
     }"
@@ -63,6 +69,16 @@
                 @endif
             </div>
 
+            <x-select
+                label="Método de pago"
+                name="metodo_pago_id"
+                :options="$metodosOptions"
+                :value="$metodoActual"
+                placeholder="Selecciona un método..."
+                hint="El gasto se descontará del saldo de este método en el desglose de la caja."
+                required
+            />
+
             <x-input-currency
                 label="Valor"
                 name="valor"
@@ -70,6 +86,15 @@
                 hint="El valor del gasto no está limitado por el saldo de la caja."
                 required
             />
+
+            <div x-show="tipo === 'turno'" x-transition x-cloak>
+                <x-input-currency
+                    label="Ahorro"
+                    name="ahorro"
+                    :value="$ahorroActual"
+                    hint="Se descuenta de la caja junto con el valor y se acumula como ahorro del trabajador."
+                />
+            </div>
 
             <x-textarea
                 label="Observación"

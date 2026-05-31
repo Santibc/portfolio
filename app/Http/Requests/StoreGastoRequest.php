@@ -20,7 +20,9 @@ class StoreGastoRequest extends FormRequest
     {
         return [
             'tipo'                => ['required', new Enum(TipoGasto::class)],
+            'metodo_pago_id'      => ['required', 'integer', 'exists:metodos_pago,id'],
             'valor'               => ['required', 'integer', 'min:1', 'max:999999999'],
+            'ahorro'              => ['nullable', 'integer', 'min:0', 'max:999999999'],
             'observacion'         => [
                 Rule::requiredIf(fn () => $this->input('tipo') === TipoGasto::General->value),
                 'nullable',

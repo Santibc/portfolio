@@ -51,16 +51,12 @@ class MetodoPagoController extends Controller
 
     public function destroy(MetodoPago $metodoPago): RedirectResponse
     {
-        if ($metodoPago->pagos()->exists()) {
-            return redirect()
-                ->route('metodos-pago.index')
-                ->with('error', 'No se puede eliminar "' . $metodoPago->nombre . '": tiene pagos registrados. Desactívalo en su lugar.');
-        }
-
+        // Soft delete: conserva los pagos ya registrados (la FK sigue válida) y
+        // saca el método de la caja sin romper el histórico de ventas.
         $metodoPago->delete();
 
         return redirect()
             ->route('metodos-pago.index')
-            ->with('success', 'Método de pago eliminado.');
+            ->with('success', 'Método de pago "' . $metodoPago->nombre . '" deshabilitado.');
     }
 }
