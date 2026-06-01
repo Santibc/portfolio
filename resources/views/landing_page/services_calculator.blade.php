@@ -107,7 +107,7 @@
                   <div class="row g-3">
                     <div class="col-md-6">
                       <label for="preferred-date" class="form-label">Preferred Date <span class="text-danger">*</span></label>
-                      <input type="date" class="form-control" id="preferred-date" lang="en-US" required>
+                      <input type="text" class="form-control" id="preferred-date" placeholder="Select a date" autocomplete="off" required>
                     </div>
                     <div class="col-md-6">
                       <label for="preferred-time" class="form-label">Preferred Time <span class="text-danger">*</span></label>
@@ -415,8 +415,23 @@
 @endsection
 
 @push('scripts')
+{{-- Flatpickr: calendario en ingles, independiente del idioma del navegador/SO --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Calendario de la reserva siempre en ingles (no usa el calendario nativo del navegador)
+    if (window.flatpickr) {
+        flatpickr('#preferred-date', {
+            locale: 'default',          // ingles
+            dateFormat: 'Y-m-d',        // valor real que lee el resto del JS
+            altInput: true,             // input visible con formato amigable
+            altFormat: 'F j, Y',        // ej. "June 1, 2026"
+            minDate: 'today',
+            disableMobile: true         // fuerza flatpickr tambien en moviles
+        });
+    }
+
     let currentStep = 1;
     const totalSteps = 10;
 
