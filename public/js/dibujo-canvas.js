@@ -767,6 +767,44 @@
                    currentTool === 'ellipse' || currentTool === 'arrow';
         }
 
+        // --- FASE DE CAPTURA (corre ANTES que los handlers de Fabric.js) ---
+        // Fabric procesa el segundo toque como un nuevo mouse:down y REINICIA el
+        // pincel, descartando el trazo en curso. Para evitarlo, interceptamos el
+        // segundo dedo en captura y detenemos su propagacion: Fabric nunca lo ve,
+        // y el primer dedo (touches[0]) sigue dibujando con normalidad.
+        upperCanvas.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1 && !pinchActive) {
+                singleFingerActive = esHerramientaDibujo();
+                ignoreNextPathCreated = 0;
+            } else if (e.touches.length >= 2 && singleFingerActive) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }, true);
+
+        // Tambien bloqueamos en captura touchmove/touchend de dedos extra durante
+        // un trazo, para que Fabric no finalice ni reinicie el path por el 2do dedo.
+        upperCanvas.addEventListener('touchmove', function(e) {
+            if (singleFingerActive && e.touches.length >= 2) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }, true);
+
+        // Mientras se dibuja y AUN queda algun dedo en pantalla, evitar que Fabric
+        // finalice/reinicie el path al levantar un dedo extra. Solo cuando se
+        // levantan TODOS los dedos dejamos pasar el evento para cerrar el trazo.
+        upperCanvas.addEventListener('touchend', function(e) {
+            if (singleFingerActive) {
+                if (e.touches.length >= 1) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                } else {
+                    singleFingerActive = false;
+                }
+            }
+        }, true);
+
         upperCanvas.addEventListener('touchstart', function(e) {
             // Primer dedo: si es una herramienta de dibujo, marcamos que hay un
             // trazo de un dedo en curso. Aseguramos que ningun flag de descarte
