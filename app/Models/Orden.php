@@ -157,7 +157,15 @@ class Orden extends Model
         if (!$piezas || $piezas->isEmpty()) {
             return 0;
         }
-        $avg = (float) $piezas->avg('porcentaje_avance');
+        // Una pieza totalmente entregada cuenta como 100% de trabajo,
+        // aunque su avance registrado sea menor (entrega sin avance).
+        $valores = $piezas->map(function ($p) {
+            if ($p->cantidad > 0 && $p->cantidad_entregada >= $p->cantidad) {
+                return 100.0;
+            }
+            return (float) $p->porcentaje_avance;
+        });
+        $avg = (float) $valores->avg();
         return (int) max(0, min(100, round($avg)));
     }
 

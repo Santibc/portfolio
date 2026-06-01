@@ -969,6 +969,18 @@ select.form-control {
         0 10px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
+/* Barras de progreso en modo oscuro: riel mas claro y colores visibles.
+   El degradado base (background-image) tapa las clases bg-* de Bootstrap,
+   por eso se redefine el color solido para cada estado. */
+[data-theme="dark"] .progress {
+    background: #3a3a3a;
+}
+[data-theme="dark"] .progress-bar.bg-success { background: #22c55e; }
+[data-theme="dark"] .progress-bar.bg-warning { background: #fbbf24; }
+[data-theme="dark"] .progress-bar.bg-info    { background: #38bdf8; }
+[data-theme="dark"] .progress-bar.bg-primary { background: #3b82f6; }
+[data-theme="dark"] .progress-bar.bg-secondary { background: #64748b; }
+
 /* Body en modo oscuro */
 [data-theme="dark"] body {
     background-color: var(--sinden-gray-50);

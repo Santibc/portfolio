@@ -44,8 +44,17 @@ class OrdenEstadoService
         }
 
         $totalPiezas = $piezas->count();
-        $completadas = $piezas->where('porcentaje_avance', '>=', 100)->count();
-        $enProgreso = $piezas->where('porcentaje_avance', '>', 0)->count();
+
+        // Una pieza cuenta como completada si llego al 100% de avance
+        // O si ya fue entregada en su totalidad (no se puede entregar algo sin terminar).
+        $completadas = $piezas->filter(function ($p) {
+            return $p->porcentaje_avance >= 100
+                || ($p->cantidad > 0 && $p->cantidad_entregada >= $p->cantidad);
+        })->count();
+
+        $enProgreso = $piezas->filter(function ($p) {
+            return $p->porcentaje_avance > 0 || $p->cantidad_entregada > 0;
+        })->count();
 
         if ($completadas === $totalPiezas) {
             return 'ejecutada';

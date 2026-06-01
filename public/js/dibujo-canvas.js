@@ -49,6 +49,7 @@
     var pinchLastCenter = null;
     var ignoreNextPathCreated = 0; // descartar path:created generado durante pinch
     var lastPinchEndedAt = 0;
+    var singleFingerActive = false; // hay un trazo de UN dedo en curso (no abortar por 2do dedo)
 
     // =============================================
     // INICIALIZACION
@@ -758,7 +759,31 @@
         var upperCanvas = fabricCanvas.upperCanvasEl;
         if (!upperCanvas) return;
 
+        // Herramientas en las que un trazo de un dedo NO debe abortarse al
+        // apoyar un segundo dedo o la palma.
+        function esHerramientaDibujo() {
+            return currentTool === 'pencil' || currentTool === 'white-brush' ||
+                   currentTool === 'line' || currentTool === 'rect' ||
+                   currentTool === 'ellipse' || currentTool === 'arrow';
+        }
+
         upperCanvas.addEventListener('touchstart', function(e) {
+            // Primer dedo: si es una herramienta de dibujo, marcamos que hay un
+            // trazo de un dedo en curso. Aseguramos que ningun flag de descarte
+            // huerfano elimine este trazo legitimo.
+            if (e.touches.length === 1 && !pinchActive) {
+                singleFingerActive = esHerramientaDibujo();
+                ignoreNextPathCreated = 0;
+                return;
+            }
+
+            // Dedos adicionales mientras se dibuja con un dedo: IGNORARLOS.
+            // No abortamos el trazo ni iniciamos pinch -> el dibujo no se borra.
+            // El zoom con dos dedos solo aplica si NO se estaba dibujando.
+            if (e.touches.length >= 2 && singleFingerActive) {
+                return;
+            }
+
             if (e.touches.length === 2) {
                 pinchActive = true;
                 // Deshabilitar dibujo durante pinch
@@ -832,6 +857,10 @@
         }, { passive: false });
 
         upperCanvas.addEventListener('touchend', function(e) {
+            // Al levantar todos los dedos, terminar el trazo de un dedo.
+            if (e.touches.length === 0) {
+                singleFingerActive = false;
+            }
             if (pinchActive && e.touches.length < 2) {
                 pinchActive = false;
                 lastPinchEndedAt = Date.now();
@@ -846,6 +875,12 @@
                         ignoreNextPathCreated = 0;
                     }
                 }, 1000);
+            }
+        });
+
+        upperCanvas.addEventListener('touchcancel', function(e) {
+            if (e.touches.length === 0) {
+                singleFingerActive = false;
             }
         });
     }
