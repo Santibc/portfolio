@@ -93,9 +93,8 @@
                     @endif
                     @if ($homeConfig && $homeConfig->instagram_url)
                         <div class="swiper-slide">
-                            <a href="{{ $homeConfig->instagram_url }}" target="_blank" rel="noopener noreferrer" class="ig-composite">
-                                <img src="{{ asset('images/instagram.png') }}" alt="Instagram" class="ig-composite__icon">
-                                <span class="ig-composite__text">Instagram</span>
+                            <a href="{{ $homeConfig->instagram_url }}" target="_blank" rel="noopener noreferrer">
+                                <img src="{{ asset('images/instagram.png') }}" class="img-fluid" alt="Instagram">
                             </a>
                         </div>
                     @endif
