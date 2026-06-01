@@ -107,7 +107,7 @@
                   <div class="row g-3">
                     <div class="col-md-6">
                       <label for="preferred-date" class="form-label">Preferred Date <span class="text-danger">*</span></label>
-                      <input type="date" class="form-control" id="preferred-date" required>
+                      <input type="date" class="form-control" id="preferred-date" lang="en-US" required>
                     </div>
                     <div class="col-md-6">
                       <label for="preferred-time" class="form-label">Preferred Time <span class="text-danger">*</span></label>

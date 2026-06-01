@@ -9,8 +9,11 @@
   <meta name="keywords" content="">
 
   <!-- Favicons -->
-  <link  href="{{ $empresa->logo_url }}" rel="icon">
-  <link href="{{ asset('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+  <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('favicon-192x192.png') }}?v=3">
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}?v=3">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
