@@ -271,25 +271,29 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body d-flex align-items-center justify-content-center p-0" style="overflow:hidden;position:relative;">
-                <div id="lightboxZoomContainer" style="overflow:auto;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                    <img id="lightboxImagen" src="" style="max-height:90vh;max-width:90vw;object-fit:contain;transition:transform 0.2s;cursor:zoom-in;" onclick="toggleZoomLightbox()">
+                <div id="lightboxZoomContainer" style="overflow:auto;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1rem;">
+                    <img id="lightboxImagen" src="" style="max-height:calc(100vh - 120px);max-width:92vw;object-fit:contain;transition:transform 0.2s;cursor:zoom-in;" onclick="toggleZoomLightbox()">
                 </div>
                 {{-- Contador visual --}}
-                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3 d-flex align-items-center gap-4 bg-dark bg-opacity-75 rounded-pill px-4 py-3">
-                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.5rem;" onclick="cambiarContador(-1)">
+                <div class="position-absolute bottom-0 end-0 mb-3 me-3 d-flex align-items-center gap-3 bg-dark bg-opacity-75 rounded-pill px-3 py-2">
+                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;font-size:1.2rem;" onclick="cambiarContador(-1)">
                         <i class="bi bi-dash-lg"></i>
                     </button>
-                    <span id="contadorValor" class="text-white fw-bold" style="font-size:2.1rem;min-width:48px;text-align:center;">0</span>
-                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.5rem;" onclick="cambiarContador(1)">
+                    <span id="contadorValor" class="text-white fw-bold" style="font-size:1.68rem;min-width:38px;text-align:center;">0</span>
+                    <button type="button" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width:38px;height:38px;font-size:1.2rem;" onclick="cambiarContador(1)">
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </div>
                 {{-- Controles zoom --}}
-                <div class="position-absolute top-0 end-0 me-5 mt-2 d-flex gap-2">
-                    <button type="button" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;" onclick="zoomLightbox(-1)" title="Alejar">
+                <div class="position-absolute top-0 end-0 me-5 mt-2 d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center text-white" style="width:32px;height:32px;background:rgba(0,0,0,0.75);border:1px solid #000;" onclick="zoomLightbox(-1)" title="Alejar">
                         <i class="bi bi-zoom-out"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;" onclick="zoomLightbox(1)" title="Acercar">
+                    <div class="d-flex align-items-center bg-dark bg-opacity-75 rounded-pill px-2 py-1" style="border:1px solid #000;">
+                        <input type="number" id="zoomPercentInput" min="20" max="500" step="10" value="100" onchange="setZoomPercent(this.value)" style="width:58px;border:none;background:transparent;color:#fff;text-align:center;font-size:0.9rem;outline:none;">
+                        <span class="text-white" style="font-size:0.9rem;">%</span>
+                    </div>
+                    <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center text-white" style="width:32px;height:32px;background:rgba(0,0,0,0.75);border:1px solid #000;" onclick="zoomLightbox(1)" title="Acercar">
                         <i class="bi bi-zoom-in"></i>
                     </button>
                 </div>
@@ -320,14 +324,19 @@ var OPERARIO_ROUTES = {
 let contadorLightbox = 0;
 let zoomLevel = 1;
 
+function aplicarZoom() {
+    const img = document.getElementById('lightboxImagen');
+    img.style.transform = 'scale(' + zoomLevel + ')';
+    img.style.cursor = zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+    document.getElementById('zoomPercentInput').value = Math.round(zoomLevel * 100);
+}
+
 function abrirLightbox(ruta, titulo) {
     contadorLightbox = 0;
     zoomLevel = 1;
     document.getElementById('contadorValor').textContent = '0';
-    const img = document.getElementById('lightboxImagen');
-    img.src = ruta;
-    img.style.transform = 'scale(1)';
-    img.style.cursor = 'zoom-in';
+    document.getElementById('lightboxImagen').src = ruta;
+    aplicarZoom();
     $('#lightboxTitulo').text(titulo || 'Bosquejo');
     new bootstrap.Modal(document.getElementById('modalLightbox')).show();
 }
@@ -338,17 +347,21 @@ function cambiarContador(delta) {
 }
 
 function zoomLightbox(direction) {
-    zoomLevel = Math.max(0.5, Math.min(5, zoomLevel + direction * 0.5));
-    const img = document.getElementById('lightboxImagen');
-    img.style.transform = 'scale(' + zoomLevel + ')';
-    img.style.cursor = zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+    zoomLevel = Math.max(0.2, Math.min(5, zoomLevel + direction * 0.1));
+    aplicarZoom();
+}
+
+function setZoomPercent(val) {
+    let pct = parseInt(val, 10);
+    if (isNaN(pct)) { aplicarZoom(); return; }
+    pct = Math.max(20, Math.min(500, pct));
+    zoomLevel = pct / 100;
+    aplicarZoom();
 }
 
 function toggleZoomLightbox() {
-    zoomLevel = zoomLevel > 1 ? 1 : 2;
-    const img = document.getElementById('lightboxImagen');
-    img.style.transform = 'scale(' + zoomLevel + ')';
-    img.style.cursor = zoomLevel > 1 ? 'zoom-out' : 'zoom-in';
+    zoomLevel = zoomLevel > 1 ? 1 : 1.5;
+    aplicarZoom();
 }
 </script>
 <script src="{{ asset('js/operario-trabajo.js') }}"></script>
