@@ -442,6 +442,17 @@
                     const def = this.metodos.find(m => m.es_efectivo) || this.metodos[0];
                     this.pagos.push({ metodo_pago_id: def.id, monto: 0, referencia: '' });
                 }
+
+                // Con un único método de pago, el monto sigue automáticamente al total
+                // del carrito (al agregar/quitar items o al quedar un solo método).
+                this.$watch('total', () => this.autoMontoPagoUnico());
+                this.$watch('pagos.length', () => this.autoMontoPagoUnico());
+                this.autoMontoPagoUnico();
+            },
+
+            // Si solo hay un método de pago, su monto = total del carrito.
+            autoMontoPagoUnico() {
+                if (this.pagos.length === 1) this.pagos[0].monto = this.total;
             },
 
             get itemsFiltrados() {
@@ -469,6 +480,9 @@
                 // para que el método recién creado quede primero en la lista.
                 const m = this.metodos[0];
                 this.pagos.unshift({ metodo_pago_id: m ? m.id : null, monto: 0, referencia: '' });
+                // Al pasar a múltiples métodos, limpiar los montos: el usuario debe
+                // repartir el total manualmente entre los métodos.
+                this.pagos.forEach(p => p.monto = 0);
             },
             removePago(i) { this.pagos.splice(i, 1); },
 

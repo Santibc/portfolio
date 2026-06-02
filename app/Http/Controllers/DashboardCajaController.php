@@ -104,6 +104,48 @@ class DashboardCajaController extends Controller
             ->where('tipo', \App\Enums\TipoGasto::Turno)
             ->sum('valor');
 
-        return view('caja-dashboard.show', compact('turno', 'desglosePorMetodo', 'totalGastosGeneral', 'totalGastosTurno'));
+        // Desglose de items vendidos en el turno: agrupados por item de menú,
+        // con la cantidad total y el total vendido (suma de subtotales).
+        $desglosePorItem = $turno->ventas
+            ->flatMap(fn ($venta) => $venta->items)
+            ->groupBy('menu_item_id')
+            ->map(fn ($items) => [
+                'nombre'   => $items->first()->nombre_snapshot,
+                'cantidad' => (int) $items->sum('cantidad'),
+                'total'    => (int) $items->sum('subtotal'),
+            ])
+            ->sortByDesc('total')
+            ->values();
+
+        // Datos de ventas pre-formateados para la tabla cliente (orden + paginación
+        // en el navegador con Alpine). Se incluyen valores crudos para ordenar y
+        // formateados para mostrar, además de items/pagos para el detalle expandible.
+        $ventasData = $turno->ventas->map(fn ($v) => [
+            'id'                    => $v->id,
+            'hora'                  => $v->created_at->format('H:i:s'),
+            'ts'                    => $v->created_at->timestamp,
+            'cajero'                => $v->user?->name ?? '—',
+            'items_count'           => (int) $v->items->sum('cantidad'),
+            'total'                 => (int) $v->total,
+            'total_fmt'             => $v->total_formateado,
+            'cambio'                => (int) $v->cambio,
+            'cambio_fmt'            => $v->cambio_formateado,
+            'notas'                 => $v->notas,
+            'efectivo_recibido'     => (int) $v->efectivo_recibido,
+            'efectivo_recibido_fmt' => $v->efectivo_recibido_formateado,
+            'edit_url'              => route('caja.venta.edit', $v),
+            'destroy_url'           => route('caja.venta.destroy', $v),
+            'pagos'                 => $v->pagos->map(fn ($p) => [
+                'nombre'     => $p->metodo?->nombre ?? '—',
+                'monto'      => (int) $p->monto,
+                'referencia' => $p->referencia,
+            ])->values(),
+            'items'                 => $v->items->map(fn ($it) => [
+                'label'        => $it->cantidad . ' × ' . $it->nombre_snapshot,
+                'subtotal_fmt' => $it->subtotal_formateado,
+            ])->values(),
+        ])->values();
+
+        return view('caja-dashboard.show', compact('turno', 'desglosePorMetodo', 'desglosePorItem', 'ventasData', 'totalGastosGeneral', 'totalGastosTurno'));
     }
 }

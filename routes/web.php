@@ -7,6 +7,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ListaMercadoController;
 use App\Http\Controllers\ListaMercadoItemController;
 use App\Http\Controllers\ListaMercadoPlantillaController;
+use App\Http\Controllers\MenuDiaController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\PagoAhorroController;
@@ -86,6 +87,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('metodos-pago', MetodoPagoController::class)
         ->only(['index', 'store', 'update', 'destroy'])
         ->parameters(['metodos-pago' => 'metodoPago']);
+
+    Route::get('/caja/menu-dia',       [MenuDiaController::class, 'index'])->name('menu-dia.index');
+    Route::put('/caja/menu-dia/{dia}', [MenuDiaController::class, 'update'])->name('menu-dia.update');
 
     Route::get('/caja',                          [CajaController::class, 'index'])->name('caja.index');
     Route::post('/caja/turno/abrir',             [CajaController::class, 'abrir'])->name('caja.turno.abrir');

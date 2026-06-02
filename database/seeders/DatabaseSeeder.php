@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             ListaMercadoSeeder::class,
             MercadosDemoSeeder::class,
             // Caja / Menú
+            DiasSemanaSeeder::class,
             TiposMenuItemSeeder::class,
             MetodosPagoSeeder::class,
             MenuItemsSeeder::class,

@@ -37,6 +37,25 @@ window.makeChart = (selector, options) => {
     const chart = new ApexCharts(el, options);
     chart.render();
 
+    // Re-medir el ancho cuando la card cambia de tamaño (resize de ventana,
+    // toggle del sidebar, breakpoints). Evita que ApexCharts mantenga un ancho
+    // fijo en px medido antes de que el layout se asentara y desborde la card.
+    if ('ResizeObserver' in window) {
+        const container = el.parentElement || el;
+        let raf = null;
+        let lastWidth = container.clientWidth;
+        const ro = new ResizeObserver(() => {
+            const width = container.clientWidth;
+            if (width === lastWidth) return;
+            lastWidth = width;
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                chart.updateOptions({ chart: { width: '100%' } }, false, false);
+            });
+        });
+        ro.observe(container);
+    }
+
     window.addEventListener('sopas:theme-changed', (e) => {
         const dark = e.detail.theme === 'dark';
         chart.updateOptions({

@@ -93,6 +93,7 @@
         $cajaActive = request()->routeIs('caja.*')
             || request()->routeIs('caja-dashboard.*')
             || request()->routeIs('menu-items.*')
+            || request()->routeIs('menu-dia.*')
             || request()->routeIs('metodos-pago.*')
             || request()->routeIs('gastos.*')
             || request()->routeIs('trabajadores-turno.*')
@@ -122,6 +123,13 @@
             <a href="{{ route('menu-items.index') }}" class="{{ $cls }}">
                 <x-icon name="utensils-crossed" class="w-4 h-4" />
                 <span class="flex-1">Menú</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('menu-dia.index', 'calendar', 'Menú por día', 'menu-dia.*'); @endphp
+            <a href="{{ route('menu-dia.index') }}" class="{{ $cls }}">
+                <x-icon name="calendar" class="w-4 h-4" />
+                <span class="flex-1">Menú por día</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
 

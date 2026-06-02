@@ -17,11 +17,11 @@
     </x-page-header>
 
     {{-- Estado y stats --}}
-    <div class="grid grid-cols-2 gap-3 mb-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <x-stat-card icon="wallet"      color="primary" label="Total ventas"        :value="$turno->total_ventas_formateado" />
         <x-stat-card icon="dollar-sign" color="accent"  label="Base inicial"        :value="$turno->base_inicial_formateada" />
     </div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <x-stat-card icon="trending-down" color="rose" label="Total gastos" :value="$turno->total_gastos_formateado" />
         <x-stat-card icon="piggy-bank"    color="primary" label="Ahorros descontados" :value="$turno->total_ahorros_formateado" />
         <x-stat-card icon="trending-up"   :color="$turno->neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − ahorros)" :value="$turno->neto_formateado" />
@@ -77,113 +77,322 @@
         </x-card>
     @endif
 
+    {{-- Tabla de items vendidos --}}
+    <x-card padding="p-0" class="mb-5">
+        <div x-data="{
+            rows: @js($desglosePorItem),
+            sortKey: 'total', sortAsc: false,
+            page: 1, perPage: 25,
+            sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get sorted() {
+                const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+                return [...this.rows].sort((a, b) => {
+                    const x = a[k], y = b[k];
+                    return (typeof x === 'number' && typeof y === 'number')
+                        ? (x - y) * dir
+                        : String(x).localeCompare(String(y), 'es', { numeric: true }) * dir;
+                });
+            },
+            get effPerPage() { return this.perPage === 0 ? Math.max(this.sorted.length, 1) : this.perPage; },
+            get pages() { return Math.max(1, Math.ceil(this.sorted.length / this.effPerPage)); },
+            get pageRows() { const s = (this.page - 1) * this.effPerPage; return this.sorted.slice(s, s + this.effPerPage); },
+            get totalCantidad() { return this.rows.reduce((a, r) => a + r.cantidad, 0); },
+            get totalTotal() { return this.rows.reduce((a, r) => a + r.total, 0); },
+            fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
+        }">
+        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
+            <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
+                <x-icon name="utensils-crossed" class="w-4 h-4" />
+                Items vendidos
+                <span class="text-xs font-normal text-cream-600 dark:text-cream-400" x-text="`(${rows.length})`"></span>
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-cream-50 dark:bg-cream-900/30 text-cream-700 dark:text-cream-300">
+                    <tr>
+                        <th class="text-left px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('nombre')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Item
+                                <span class="inline-flex" x-show="sortKey === 'nombre'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('cantidad')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Cantidad
+                                <span class="inline-flex" x-show="sortKey === 'cantidad'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('total')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Total vendido
+                                <span class="inline-flex" x-show="sortKey === 'total'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                    <template x-for="item in pageRows" :key="item.nombre">
+                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                            <td class="px-4 py-2.5 text-cream-800 dark:text-cream-100" x-text="item.nombre"></td>
+                            <td class="px-4 py-2.5 text-right tabular-nums text-cream-700 dark:text-cream-300" x-text="fmt(item.cantidad)"></td>
+                            <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-cream-900 dark:text-cream-50" x-text="'$ ' + fmt(item.total)"></td>
+                        </tr>
+                    </template>
+                    <tr x-show="rows.length === 0">
+                        <td colspan="3" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
+                            No se vendieron items en este turno todavía.
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot x-show="rows.length > 0" class="border-t-2 border-cream-200 dark:border-cream-800 bg-cream-50 dark:bg-cream-900/30">
+                    <tr class="font-semibold text-cream-900 dark:text-cream-50">
+                        <td class="px-4 py-2.5 whitespace-nowrap">Total</td>
+                        <td class="px-4 py-2.5 text-right tabular-nums" x-text="fmt(totalCantidad)"></td>
+                        <td class="px-4 py-2.5 text-right tabular-nums" x-text="'$ ' + fmt(totalTotal)"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {{-- Controles: filas por página + paginación --}}
+        <div x-show="rows.length > 0" class="px-4 py-3 border-t border-cream-200 dark:border-cream-800 flex flex-wrap items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-xs text-cream-600 dark:text-cream-400">
+                Filas por página
+                <select x-model.number="perPage" @change="page = 1" class="rounded-lg border-cream-300 bg-white py-1 pl-2 pr-7 text-xs focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                    <option :value="10">10</option>
+                    <option :value="25">25</option>
+                    <option :value="50">50</option>
+                    <option :value="100">100</option>
+                    <option :value="0">Todas</option>
+                </select>
+            </label>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-cream-600 dark:text-cream-400" x-text="`Página ${page} de ${pages}`"></span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" @click="page = Math.max(1, page - 1)" :disabled="page === 1" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-cream-300 text-cream-700 hover:bg-cream-100 disabled:opacity-50 disabled:cursor-not-allowed dark:border-cream-700 dark:text-cream-300 dark:hover:bg-cream-800">
+                        <x-icon name="chevron-left" class="w-4 h-4" />
+                    </button>
+                    <button type="button" @click="page = Math.min(pages, page + 1)" :disabled="page === pages" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-cream-300 text-cream-700 hover:bg-cream-100 disabled:opacity-50 disabled:cursor-not-allowed dark:border-cream-700 dark:text-cream-300 dark:hover:bg-cream-800">
+                        <x-icon name="chevron-right" class="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </x-card>
+
     {{-- Tabla de ventas --}}
     <x-card padding="p-0">
+        <div x-data="{
+            ventas: @js($ventasData),
+            csrf: '{{ csrf_token() }}',
+            open: null,
+            sortKey: 'ts', sortAsc: false,
+            page: 1, perPage: 25,
+            sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get sorted() {
+                const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+                return [...this.ventas].sort((a, b) => {
+                    const x = a[k], y = b[k];
+                    return (typeof x === 'number' && typeof y === 'number')
+                        ? (x - y) * dir
+                        : String(x).localeCompare(String(y), 'es', { numeric: true }) * dir;
+                });
+            },
+            get effPerPage() { return this.perPage === 0 ? Math.max(this.sorted.length, 1) : this.perPage; },
+            get pages() { return Math.max(1, Math.ceil(this.sorted.length / this.effPerPage)); },
+            get pageRows() { const s = (this.page - 1) * this.effPerPage; return this.sorted.slice(s, s + this.effPerPage); },
+            fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
+            confirmDelete(e) { if (!confirm('¿Eliminar esta venta?')) e.preventDefault(); },
+        }">
         <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
             <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="list" class="w-4 h-4" />
                 Ventas del turno
-                <span class="text-xs font-normal text-cream-600 dark:text-cream-400">({{ $turno->ventas->count() }})</span>
+                <span class="text-xs font-normal text-cream-600 dark:text-cream-400" x-text="`(${ventas.length})`"></span>
             </h3>
         </div>
 
-        <div x-data="{ open: null }">
+        <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-cream-50 dark:bg-cream-900/30 text-cream-700 dark:text-cream-300">
                     <tr>
-                        <th class="text-left px-4 py-2 font-semibold">Hora</th>
-                        <th class="text-left px-4 py-2 font-semibold">Cajero</th>
-                        <th class="text-right px-4 py-2 font-semibold">Items</th>
-                        <th class="text-right px-4 py-2 font-semibold">Total</th>
-                        <th class="text-right px-4 py-2 font-semibold">Cambio</th>
-                        <th class="text-left px-4 py-2 font-semibold">Métodos</th>
+                        <th class="text-left px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('ts')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Hora
+                                <span class="inline-flex" x-show="sortKey === 'ts'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-left px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('cajero')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Cajero
+                                <span class="inline-flex" x-show="sortKey === 'cajero'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('items_count')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Items
+                                <span class="inline-flex" x-show="sortKey === 'items_count'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('total')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Total
+                                <span class="inline-flex" x-show="sortKey === 'total'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-2 font-semibold whitespace-nowrap">
+                            <button type="button" @click="sort('cambio')" class="inline-flex items-center gap-1 hover:text-primary-700 dark:hover:text-primary-300">
+                                Cambio
+                                <span class="inline-flex" x-show="sortKey === 'cambio'" x-cloak>
+                                    <x-icon name="arrow-up" class="w-3 h-3" x-show="sortAsc" />
+                                    <x-icon name="arrow-down" class="w-3 h-3" x-show="!sortAsc" />
+                                </span>
+                            </button>
+                        </th>
+                        <th class="text-left px-4 py-2 font-semibold whitespace-nowrap">Métodos</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
-                    @forelse ($turno->ventas as $v)
+                <template x-for="v in pageRows" :key="v.id">
+                    <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
                         <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
-                            <td class="px-4 py-2.5 font-mono text-xs text-cream-700 dark:text-cream-300">{{ $v->created_at->format('H:i:s') }}</td>
-                            <td class="px-4 py-2.5 text-cream-700 dark:text-cream-300">{{ $v->user?->name ?? '—' }}</td>
-                            <td class="px-4 py-2.5 text-right tabular-nums">{{ $v->items->sum('cantidad') }}</td>
-                            <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-cream-900 dark:text-cream-50">{{ $v->total_formateado }}</td>
-                            <td class="px-4 py-2.5 text-right tabular-nums text-emerald-700 dark:text-emerald-400">{{ $v->cambio_formateado }}</td>
+                            <td class="px-4 py-2.5 font-mono text-xs text-cream-700 dark:text-cream-300 whitespace-nowrap" x-text="v.hora"></td>
+                            <td class="px-4 py-2.5 text-cream-700 dark:text-cream-300 whitespace-nowrap" x-text="v.cajero"></td>
+                            <td class="px-4 py-2.5 text-right tabular-nums" x-text="v.items_count"></td>
+                            <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-cream-900 dark:text-cream-50 whitespace-nowrap" x-text="v.total_fmt"></td>
+                            <td class="px-4 py-2.5 text-right tabular-nums text-emerald-700 dark:text-emerald-400 whitespace-nowrap" x-text="v.cambio_fmt"></td>
                             <td class="px-4 py-2.5">
                                 <div class="flex flex-wrap gap-1">
-                                    @foreach ($v->pagos as $p)
-                                        <span class="inline-flex items-center font-medium rounded-full bg-cream-100 dark:bg-cream-800 text-cream-800 dark:text-cream-200 text-[10px] px-2 py-0.5">
-                                            {{ $p->metodo?->nombre }} <span class="ml-1 font-bold">$ {{ number_format((int) $p->monto, 0, ',', '.') }}</span>
+                                    <template x-for="(p, i) in v.pagos" :key="i">
+                                        <span class="inline-flex items-center font-medium rounded-full bg-cream-100 dark:bg-cream-800 text-cream-800 dark:text-cream-200 text-[10px] px-2 py-0.5 whitespace-nowrap">
+                                            <span x-text="p.nombre"></span> <span class="ml-1 font-bold" x-text="'$ ' + fmt(p.monto)"></span>
                                         </span>
-                                    @endforeach
+                                    </template>
                                 </div>
                             </td>
-                            <td class="px-4 py-2.5 text-right">
+                            <td class="px-4 py-2.5 text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-2">
-                                    <button type="button" @click="open === {{ $v->id }} ? open = null : open = {{ $v->id }}"
+                                    {{-- Iconos inline (sin data-lucide) para que paginar/ordenar no dispare el re-render global de Lucide --}}
+                                    <button type="button" @click="open === v.id ? open = null : open = v.id"
                                             class="inline-flex items-center gap-1 text-cream-700 hover:text-cream-900 dark:text-cream-300 dark:hover:text-cream-100 text-xs font-medium">
-                                        <x-icon name="eye" class="w-3.5 h-3.5" />
-                                        <span x-text="open === {{ $v->id }} ? 'Ocultar' : 'Ver'"></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                        <span x-text="open === v.id ? 'Ocultar' : 'Ver'"></span>
                                     </button>
-                                    <a href="{{ route('caja.venta.edit', $v) }}"
+                                    <a :href="v.edit_url"
                                        class="inline-flex items-center gap-1 text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 text-xs font-medium">
-                                        <x-icon name="edit" class="w-3.5 h-3.5" /> Editar
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg> Editar
                                     </a>
-                                    <form action="{{ route('caja.venta.destroy', $v) }}" method="POST" onsubmit="return confirm('¿Eliminar esta venta?');">
-                                        @csrf
-                                        @method('DELETE')
+                                    <form :action="v.destroy_url" method="POST" @submit="confirmDelete($event)">
+                                        <input type="hidden" name="_token" :value="csrf">
+                                        <input type="hidden" name="_method" value="DELETE">
                                         <button type="submit" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-xs font-medium">
-                                            <x-icon name="trash-2" class="w-3.5 h-3.5" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                         </button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
-                        <tr x-show="open === {{ $v->id }}" x-cloak>
+                        <template x-if="open === v.id">
+                        <tr>
                             <td colspan="7" class="bg-cream-50 dark:bg-cream-900/40 px-6 py-3">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <h4 class="text-[10px] uppercase tracking-wide text-cream-500 mb-1.5">Items</h4>
                                         <ul class="text-sm divide-y divide-cream-200 dark:divide-cream-800">
-                                            @foreach ($v->items as $it)
+                                            <template x-for="(it, i) in v.items" :key="i">
                                                 <li class="py-1.5 flex items-center justify-between gap-2">
-                                                    <span class="text-cream-800 dark:text-cream-100">{{ $it->cantidad }} × {{ $it->nombre_snapshot }}</span>
-                                                    <span class="font-semibold tabular-nums">{{ $it->subtotal_formateado }}</span>
+                                                    <span class="text-cream-800 dark:text-cream-100" x-text="it.label"></span>
+                                                    <span class="font-semibold tabular-nums" x-text="it.subtotal_fmt"></span>
                                                 </li>
-                                            @endforeach
+                                            </template>
                                         </ul>
                                     </div>
                                     <div>
                                         <h4 class="text-[10px] uppercase tracking-wide text-cream-500 mb-1.5">Pagos</h4>
                                         <ul class="text-sm divide-y divide-cream-200 dark:divide-cream-800">
-                                            @foreach ($v->pagos as $p)
+                                            <template x-for="(p, i) in v.pagos" :key="i">
                                                 <li class="py-1.5 flex items-center justify-between gap-2">
-                                                    <span class="text-cream-800 dark:text-cream-100">{{ $p->metodo?->nombre ?? '—' }}@if ($p->referencia) <span class="text-xs text-cream-500">· {{ $p->referencia }}</span>@endif</span>
-                                                    <span class="font-semibold tabular-nums">{{ $p->monto_formateado }}</span>
+                                                    <span class="text-cream-800 dark:text-cream-100">
+                                                        <span x-text="p.nombre"></span><template x-if="p.referencia"><span class="text-xs text-cream-500"> · <span x-text="p.referencia"></span></span></template>
+                                                    </span>
+                                                    <span class="font-semibold tabular-nums" x-text="'$ ' + fmt(p.monto)"></span>
                                                 </li>
-                                            @endforeach
-                                            @if ($v->efectivo_recibido > 0)
+                                            </template>
+                                            <template x-if="v.efectivo_recibido > 0">
                                                 <li class="py-1.5 flex items-center justify-between gap-2 text-cream-600 dark:text-cream-400 text-xs">
                                                     <span>Efectivo recibido extra</span>
-                                                    <span class="tabular-nums">{{ $v->efectivo_recibido_formateado }}</span>
+                                                    <span class="tabular-nums" x-text="v.efectivo_recibido_fmt"></span>
                                                 </li>
-                                            @endif
+                                            </template>
                                         </ul>
                                     </div>
                                 </div>
-                                @if ($v->notas)
-                                    <p class="mt-3 text-xs text-cream-600 dark:text-cream-400 italic">{{ $v->notas }}</p>
-                                @endif
+                                <template x-if="v.notas">
+                                    <p class="mt-3 text-xs text-cream-600 dark:text-cream-400 italic" x-text="v.notas"></p>
+                                </template>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
-                                No hay ventas en este turno todavía.
-                            </td>
-                        </tr>
-                    @endforelse
+                        </template>
+                    </tbody>
+                </template>
+                <tbody x-show="ventas.length === 0">
+                    <tr>
+                        <td colspan="7" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
+                            No hay ventas en este turno todavía.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
+        </div>
+
+        {{-- Controles: filas por página + paginación --}}
+        <div x-show="ventas.length > 0" class="px-4 py-3 border-t border-cream-200 dark:border-cream-800 flex flex-wrap items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-xs text-cream-600 dark:text-cream-400">
+                Filas por página
+                <select x-model.number="perPage" @change="page = 1" class="rounded-lg border-cream-300 bg-white py-1 pl-2 pr-7 text-xs focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                    <option :value="10">10</option>
+                    <option :value="25">25</option>
+                    <option :value="50">50</option>
+                    <option :value="100">100</option>
+                    <option :value="0">Todas</option>
+                </select>
+            </label>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-cream-600 dark:text-cream-400" x-text="`Página ${page} de ${pages}`"></span>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" @click="page = Math.max(1, page - 1)" :disabled="page === 1" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-cream-300 text-cream-700 hover:bg-cream-100 disabled:opacity-50 disabled:cursor-not-allowed dark:border-cream-700 dark:text-cream-300 dark:hover:bg-cream-800">
+                        <x-icon name="chevron-left" class="w-4 h-4" />
+                    </button>
+                    <button type="button" @click="page = Math.min(pages, page + 1)" :disabled="page === pages" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-cream-300 text-cream-700 hover:bg-cream-100 disabled:opacity-50 disabled:cursor-not-allowed dark:border-cream-700 dark:text-cream-300 dark:hover:bg-cream-800">
+                        <x-icon name="chevron-right" class="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        </div>
         </div>
     </x-card>
 

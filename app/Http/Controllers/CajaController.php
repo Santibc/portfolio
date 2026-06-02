@@ -21,15 +21,23 @@ class CajaController extends Controller
     public function __construct(
         private TurnoCajaService $turnos,
         private VentaService $ventas,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
         $turno = $this->turnos->turnoActivo()?->load(['aperturadoPor', 'ventas.pagos.metodo']);
 
-        $items   = MenuItem::activos()->with('tipo')->orderBy('orden')->orderBy('nombre')->get();
-        $tipos   = $items->pluck('tipo')->unique('id')->sortBy('orden')->values();
+        // El menú se filtra por el día actual (no por el de apertura del turno):
+        // si hoy hay items configurados en "Menú por día", solo salen esos;
+        // si no hay configuración para hoy, salen todos los items activos.
+        $diaIso = (int) now()->dayOfWeekIso;
+        $hayMenuDelDia = MenuItem::activos()->paraDia($diaIso)->exists();
+
+        $items = MenuItem::activos()->with('tipo')
+            ->when($hayMenuDelDia, fn ($q) => $q->paraDia($diaIso))
+            ->orderBy('orden')->orderBy('nombre')
+            ->get();
+        $tipos = $items->pluck('tipo')->unique('id')->sortBy('orden')->values();
         $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
 
         return view('caja.index', compact('turno', 'items', 'tipos', 'metodos'));
@@ -85,6 +93,6 @@ class CajaController extends Controller
 
         return redirect()
             ->route('caja.index')
-            ->with('success', 'Venta registrada · Total ' . $venta->total_formateado . ' · Cambio ' . $venta->cambio_formateado);
+            ->with('success', 'Venta registrada · Total '.$venta->total_formateado.' · Cambio '.$venta->cambio_formateado);
     }
 }

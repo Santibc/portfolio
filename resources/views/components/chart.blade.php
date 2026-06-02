@@ -11,6 +11,8 @@
         'chart' => [
             'type' => $type,
             'height' => $height,
+            'width' => '100%',
+            'parentHeightOffset' => 0,
             'fontFamily' => 'Plus Jakarta Sans, Inter, sans-serif',
             'toolbar' => ['show' => false],
             'animations' => ['enabled' => true, 'easing' => 'easeinout', 'speed' => 600],
@@ -24,7 +26,7 @@
     $merged = array_replace_recursive($defaultOptions, $options);
 @endphp
 
-<div id="{{ $id }}" class="w-full min-h-[200px]"></div>
+<div id="{{ $id }}" class="w-full max-w-full min-w-0 overflow-hidden min-h-[200px]"></div>
 
 <script>
     (function () {

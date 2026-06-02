@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -28,7 +29,7 @@ class MenuItem extends Model
     protected $casts = [
         'precio' => 'integer',
         'activo' => 'boolean',
-        'orden'  => 'integer',
+        'orden' => 'integer',
     ];
 
     public function tipo(): BelongsTo
@@ -41,14 +42,20 @@ class MenuItem extends Model
         return $this->hasMany(VentaItem::class);
     }
 
+    public function dias(): BelongsToMany
+    {
+        return $this->belongsToMany(DiaSemana::class, 'menu_dia', 'menu_item_id', 'dia_semana_id')
+            ->withTimestamps();
+    }
+
     public function getImagenUrlAttribute(): string
     {
-        return $this->imagen ? asset('uploads/menu-items/' . $this->imagen) : '';
+        return $this->imagen ? asset('uploads/menu-items/'.$this->imagen) : '';
     }
 
     public function getPrecioFormateadoAttribute(): string
     {
-        return '$ ' . number_format((int) $this->precio, 0, ',', '.');
+        return '$ '.number_format((int) $this->precio, 0, ',', '.');
     }
 
     public function hasImagen(): bool
@@ -64,5 +71,11 @@ class MenuItem extends Model
     public function scopeDelTipo(Builder $query, int $tipoId): Builder
     {
         return $query->where('tipo_id', $tipoId);
+    }
+
+    /** Items configurados para un día de la semana (ISO: 1=Lunes … 7=Domingo). */
+    public function scopeParaDia(Builder $query, int $diaIso): Builder
+    {
+        return $query->whereHas('dias', fn (Builder $q) => $q->whereKey($diaIso));
     }
 }
