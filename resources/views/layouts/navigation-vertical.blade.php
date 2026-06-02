@@ -136,6 +136,7 @@
                             <span>Impuestos</span>
                         </a>
                     </li>
+                    {{-- Oculto temporalmente: Tipos de descuento (volver a habilitar después)
                     <li>
                         <a href="{{ route('admin.tipos-descuento.index') }}" @class([
                             'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
@@ -146,6 +147,7 @@
                             <span>Tipos de descuento</span>
                         </a>
                     </li>
+                    --}}
                     <li>
                         <a href="{{ route('admin.incoterms.index') }}" @class([
                             'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',

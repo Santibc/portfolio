@@ -303,8 +303,47 @@ class FacturaController extends Controller
                 'total' => number_format((float) $factura->total, 2, ',', '.'),
                 'total_cop' => $factura->total_cop ? number_format((float) $factura->total_cop, 2, ',', '.') : '',
             ],
-            'banco' => app(\App\Services\Settings\ConfigService::class)->group('banco'),
-            'contacto' => app(\App\Services\Settings\ConfigService::class)->group('contacto'),
+            'banco' => $this->datosBanco(),
+            'contacto' => $this->datosContacto(),
+        ];
+    }
+
+    /**
+     * Datos bancarios para la plantilla. Remapea las claves planas de
+     * configuración (`banco.nombre`) a la estructura anidada que espera el
+     * renderer (`{{banco.nombre}}` → $data['banco']['nombre']).
+     *
+     * @return array<string, string>
+     */
+    private function datosBanco(): array
+    {
+        $config = app(\App\Services\Settings\ConfigService::class);
+
+        return [
+            'nombre' => (string) $config->get('banco.nombre', ''),
+            'pais' => (string) $config->get('banco.pais', ''),
+            'direccion' => (string) $config->get('banco.direccion', ''),
+            'titular' => (string) $config->get('banco.titular', ''),
+            'moneda' => (string) $config->get('banco.moneda', ''),
+            'swift' => (string) $config->get('banco.swift', ''),
+            'numero_cuenta' => (string) $config->get('banco.numero_cuenta', ''),
+        ];
+    }
+
+    /**
+     * Datos del contacto financiero. Las claves se guardan con el prefijo
+     * `contacto_financiero.*` pero la plantilla las consume como `{{contacto.*}}`.
+     *
+     * @return array<string, string>
+     */
+    private function datosContacto(): array
+    {
+        $config = app(\App\Services\Settings\ConfigService::class);
+
+        return [
+            'nombre' => (string) $config->get('contacto_financiero.nombre', ''),
+            'email' => (string) $config->get('contacto_financiero.email', ''),
+            'telefono' => (string) $config->get('contacto_financiero.telefono', ''),
         ];
     }
 

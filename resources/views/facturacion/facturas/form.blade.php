@@ -484,7 +484,7 @@
                                                 x-model.number="item.cantidad"
                                                 min="0"
                                                 step="0.01"
-                                                class="input input-sm w-20 text-right"
+                                                class="input input-sm ml-auto w-20 text-right"
                                             >
                                         </td>
                                         <td class="px-2 py-2">
@@ -494,7 +494,7 @@
                                                 x-model.number="item.precio_unitario"
                                                 step="0.01"
                                                 min="0"
-                                                class="input input-sm w-28 text-right"
+                                                class="input input-sm ml-auto w-28 text-right"
                                             >
                                         </td>
                                         <td class="px-2 py-2">
@@ -504,7 +504,7 @@
                                                 x-model.number="item.descuento"
                                                 step="0.01"
                                                 min="0"
-                                                class="input input-sm w-24 text-right"
+                                                class="input input-sm ml-auto w-24 text-right"
                                             >
                                         </td>
                                         <td class="px-2 py-2">
@@ -515,7 +515,7 @@
                                                 step="0.01"
                                                 min="0"
                                                 max="100"
-                                                class="input input-sm w-20 text-right"
+                                                class="input input-sm ml-auto w-20 text-right"
                                             >
                                         </td>
                                         <td class="px-2 py-2 text-right font-semibold text-zinc-800 dark:text-zinc-200">
