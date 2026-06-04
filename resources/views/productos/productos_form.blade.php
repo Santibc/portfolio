@@ -93,6 +93,47 @@
               @error('unidad_empaque') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            {{-- Peso por paca --}}
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Peso por paca (kg)</label>
+              <input name="peso_paca" type="number" step="0.001" min="0"
+                     class="form-control @error('peso_paca') is-invalid @enderror"
+                     value="{{ old('peso_paca',$producto->peso_paca) }}"
+                     placeholder="Ej: 12.500">
+              @error('peso_paca') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            {{-- Cubicaje (volumen) por paca --}}
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Cubicaje por paca (m³)</label>
+              <input name="cubicaje_paca" type="number" step="0.0001" min="0"
+                     class="form-control @error('cubicaje_paca') is-invalid @enderror"
+                     value="{{ old('cubicaje_paca',$producto->cubicaje_paca) }}"
+                     placeholder="Ej: 0.0450">
+              @error('cubicaje_paca') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            {{-- Unidades por paca --}}
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Unidades por paca</label>
+              <input name="unidades_por_paca" type="number" step="0.001" min="0"
+                     class="form-control @error('unidades_por_paca') is-invalid @enderror"
+                     value="{{ old('unidades_por_paca',$producto->unidades_por_paca) }}"
+                     placeholder="Ej: 12">
+              <small class="text-muted">Cuántas unidades de venta trae una paca. Se usa para calcular peso/volumen en la cotización.</small>
+              @error('unidades_por_paca') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            {{-- Código de barras --}}
+            <div class="col-md-3 mb-3">
+              <label class="form-label">Código de barras</label>
+              <input name="codigo_barras" type="text" maxlength="100"
+                     class="form-control @error('codigo_barras') is-invalid @enderror"
+                     value="{{ old('codigo_barras',$producto->codigo_barras) }}"
+                     placeholder="Ej: 7701234567890">
+              @error('codigo_barras') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
             {{-- ¿Maneja extensión? --}}
             <div class="col-md-3 mb-3">
               <label class="form-label">¿Maneja extensión?</label>

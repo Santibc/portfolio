@@ -28,9 +28,34 @@ class Parametros extends Model
         'nombre_parametro',
         'valor_parametro',
         'estado',
-        'ayuda',
+        'comentario',
         'reservado',
         'created',
         'updated',
     ];
+
+    /**
+     * Obtiene el valor de un parámetro por su nombre.
+     */
+    public static function valor(string $nombre, ?string $default = null): ?string
+    {
+        $valor = static::where('nombre_parametro', $nombre)->value('valor_parametro');
+        return ($valor === null || $valor === '') ? $default : $valor;
+    }
+
+    /**
+     * Datos corporativos usados en el encabezado del PDF de cotización.
+     * Se leen desde la tabla `parametros` (editables por BD) con fallback seguro.
+     */
+    public static function empresa(): array
+    {
+        return [
+            'razon_social' => static::valor('empresa_razon_social', 'Offi-Esco'),
+            'ruc'          => static::valor('empresa_ruc', ''),
+            'direccion'    => static::valor('empresa_direccion', ''),
+            'telefonos'    => static::valor('empresa_telefonos', ''),
+            'email'        => static::valor('empresa_email', ''),
+            'sitio_web'    => static::valor('empresa_sitio_web', ''),
+        ];
+    }
 }

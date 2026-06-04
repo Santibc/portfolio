@@ -17,11 +17,28 @@ class UserCreationService
     {
         $plainPassword = $userData['password'] ?? '12345678';
 
-        $user = User::create([
-            'name'     => $userData['name'] ?? $userData['email'],
-            'email'    => $userData['email'],
-            'password' => Hash::make($plainPassword),
-        ]);
+        // Si el correo pertenece a un usuario eliminado (soft-delete), lo restauramos
+        // y sobrescribimos con los datos nuevos. Insertar de cero chocaría con el
+        // índice UNIQUE de la columna email en BD.
+        $user = User::withTrashed()->where('email', $userData['email'])->first();
+
+        if ($user && $user->trashed()) {
+            $user->restore();
+            $user->fill([
+                'name'     => $userData['name'] ?? $userData['email'],
+                'password' => Hash::make($plainPassword),
+            ]);
+            if (array_key_exists('activo', $userData)) {
+                $user->activo = (bool) $userData['activo'];
+            }
+            $user->save();
+        } else {
+            $user = User::create([
+                'name'     => $userData['name'] ?? $userData['email'],
+                'email'    => $userData['email'],
+                'password' => Hash::make($plainPassword),
+            ]);
+        }
 
         try {
             Mail::to($user->email)->send(new UsuarioBienvenida($user, $plainPassword));

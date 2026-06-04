@@ -18,7 +18,7 @@
               <thead class="text-xs uppercase bg-gray-100">
                 <tr>
                   <th>Acciones</th>
-                  <th>Identificación</th>
+                  <th>NIT/CC</th>
                   <th>Contacto</th>
                   <th>Empresa</th>
                   <th>Email</th>

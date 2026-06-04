@@ -214,6 +214,11 @@ class ProductosImportSheet implements ToCollection, WithHeadingRow
         $descripcion   = trim((string) ($r['descripcion'] ?? ''));
         $unidadVenta   = trim((string) ($r['unidadventa'] ?? '')) ?: 'UND';
         $unidadEmpaque = trim((string) ($r['unidadempaque'] ?? '')) ?: 'UND';
+        $nombreCategoria = trim((string) ($r['categoria'] ?? ''));
+        $pesoPaca      = $this->numeroONull($r['pesopaca'] ?? null);
+        $cubicajePaca  = $this->numeroONull($r['cubicajepaca'] ?? null);
+        $unidadesPaca  = $this->numeroONull($r['unidadesporpaca'] ?? null);
+        $codigoBarras  = trim((string) ($r['codigobarras'] ?? ''));
 
         // Buscamos incluyendo soft-deleted para no romper el UNIQUE de referencia.
         // Si existe pero está borrado, lo restauramos al importar.
@@ -223,11 +228,9 @@ class ProductosImportSheet implements ToCollection, WithHeadingRow
         }
 
         if (! $producto) {
-            // Categoría default. El usuario puede recategorizar luego desde la UI.
-            $categoria = Categoria::firstOrCreate(
-                ['nombre' => 'Sin categoría'],
-                ['activo' => true, 'orden' => 999]
-            );
+            // Categoría desde el Excel si viene; si no, default "Sin categoría".
+            // Se crea automáticamente si el nombre no existe aún.
+            $categoria = $this->resolverCategoria($nombreCategoria);
 
             // Fallback de nombre: usa nombre del Excel; si no viene, usa la descripción;
             // si tampoco hay descripción, usa la referencia como último recurso.
@@ -241,6 +244,10 @@ class ProductosImportSheet implements ToCollection, WithHeadingRow
                 'descripcion'     => $descripcion !== '' ? $descripcion : null,
                 'unidad_venta'    => $unidadVenta,
                 'unidad_empaque'  => $unidadEmpaque,
+                'peso_paca'         => $pesoPaca,
+                'cubicaje_paca'     => $cubicajePaca,
+                'unidades_por_paca' => $unidadesPaca,
+                'codigo_barras'     => $codigoBarras !== '' ? $codigoBarras : null,
                 'tiene_extension' => $tieneVariantes,
                 'tiene_variantes' => $tieneVariantes,
                 'controlar_stock' => true,
@@ -264,6 +271,21 @@ class ProductosImportSheet implements ToCollection, WithHeadingRow
         if (! empty($r['unidadempaque'])) {
             $cambios['unidad_empaque'] = $unidadEmpaque;
         }
+        if ($nombreCategoria !== '') {
+            $cambios['categoria_id'] = $this->resolverCategoria($nombreCategoria)->id;
+        }
+        if ($pesoPaca !== null) {
+            $cambios['peso_paca'] = $pesoPaca;
+        }
+        if ($cubicajePaca !== null) {
+            $cambios['cubicaje_paca'] = $cubicajePaca;
+        }
+        if ($unidadesPaca !== null) {
+            $cambios['unidades_por_paca'] = $unidadesPaca;
+        }
+        if ($codigoBarras !== '') {
+            $cambios['codigo_barras'] = $codigoBarras;
+        }
         if ($tieneVariantes && ! $producto->tiene_variantes) {
             $cambios['tiene_variantes'] = true;
             $cambios['tiene_extension'] = true;
@@ -273,6 +295,43 @@ class ProductosImportSheet implements ToCollection, WithHeadingRow
         }
 
         return $producto;
+    }
+
+    /**
+     * Resuelve la categoría por nombre. Si el nombre viene vacío usa "Sin categoría".
+     * Crea la categoría si no existe (búsqueda case-insensitive por nombre).
+     */
+    private function resolverCategoria(string $nombre): Categoria
+    {
+        $nombre = trim($nombre) !== '' ? trim($nombre) : 'Sin categoría';
+
+        $categoria = Categoria::whereRaw('LOWER(nombre) = ?', [mb_strtolower($nombre, 'UTF-8')])->first();
+        if ($categoria) {
+            return $categoria;
+        }
+
+        return Categoria::create([
+            'nombre' => $nombre,
+            'activo' => true,
+            'orden'  => 999,
+        ]);
+    }
+
+    /**
+     * Normaliza un valor de celda a float >= 0 o null si viene vacío/!numérico.
+     * Acepta coma o punto decimal (ej. "12,5" o "12.5").
+     */
+    private function numeroONull($valor): ?float
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+        $valor = str_replace(',', '.', trim((string) $valor));
+        if (! is_numeric($valor)) {
+            return null;
+        }
+        $num = (float) $valor;
+        return $num < 0 ? null : $num;
     }
 
     private function upsertPreciosProducto(Producto $producto, array $r, int $fila, string $referencia): bool

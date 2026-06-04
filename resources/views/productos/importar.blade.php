@@ -122,6 +122,31 @@
                   <td>Default: UND.</td>
                 </tr>
                 <tr>
+                  <td><code>peso_paca</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Peso por paca en kilogramos (kg). Acepta decimales (ej. 12.5). Se usa para el cálculo de peso en la cotización.</td>
+                </tr>
+                <tr>
+                  <td><code>cubicaje_paca</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cubicaje (volumen) por paca en metros cúbicos (m³). Acepta decimales (ej. 0.045). Se usa para el cálculo de volumen en la cotización.</td>
+                </tr>
+                <tr>
+                  <td><code>unidades_por_paca</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Cuántas unidades de venta trae una paca (ej. 12). Necesario para calcular el peso/volumen total según la cantidad pedida.</td>
+                </tr>
+                <tr>
+                  <td><code>codigo_barras</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Código de barras del producto (útil para exportaciones/aduanas).</td>
+                </tr>
+                <tr>
+                  <td><code>categoria</code></td>
+                  <td><span class="badge bg-secondary">No</span></td>
+                  <td>Nombre de la categoría. Si no existe, se crea automáticamente. Si se deja vacía al crear, se usa "Sin categoría".</td>
+                </tr>
+                <tr>
                   <td><code>color_o_motivo</code></td>
                   <td><span class="badge bg-secondary">No</span></td>
                   <td>Si trae valor, esa fila es una variante. Repite la misma referencia con distintos colores para crear varias variantes.</td>

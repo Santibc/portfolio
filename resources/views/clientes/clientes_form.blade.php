@@ -13,7 +13,7 @@
             <div class="row">
               {{-- Identificación --}}
               <div class="col-md-6 mb-3">
-                <label class="form-label">Identificación <span class="text-danger">*</span></label>
+                <label class="form-label">NIT/CC (Identificación) <span class="text-danger">*</span></label>
                 <input name="numero_identificacion" type="text"
                        class="form-control"
                        value="{{ old('numero_identificacion', $cliente->numero_identificacion) }}">
@@ -22,7 +22,7 @@
 
               {{-- Contacto --}}
               <div class="col-md-6 mb-3">
-                <label class="form-label">Contacto <span class="text-danger">*</span></label>
+                <label class="form-label">Nombre de contacto <span class="text-danger">*</span></label>
                 <input name="nombre_contacto" type="text"
                        class="form-control"
                        value="{{ old('nombre_contacto', $cliente->nombre_contacto) }}">

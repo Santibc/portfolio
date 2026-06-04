@@ -19,6 +19,10 @@ class Producto extends Model
         'descripcion',
         'unidad_venta',
         'unidad_empaque',
+        'peso_paca',
+        'cubicaje_paca',
+        'unidades_por_paca',
+        'codigo_barras',
         'tiene_extension',
         'categoria_id',
         'activo',
@@ -29,6 +33,9 @@ class Producto extends Model
 
     protected $casts = [
         'activo' => 'boolean',
+        'peso_paca' => 'decimal:3',
+        'cubicaje_paca' => 'decimal:4',
+        'unidades_por_paca' => 'decimal:3',
         'tiene_extension' => 'boolean',
         'tiene_variantes' => 'boolean',
         'controlar_stock' => 'boolean',
@@ -79,6 +86,37 @@ class Producto extends Model
     public function itemsSolicitudCotizacion()
     {
         return $this->hasMany(ItemSolicitudCotizacion::class, 'producto_id');
+    }
+
+    // ===== Cálculo de peso/volumen según cantidad pedida (paca) =====
+    // pacas = cantidad / unidades_por_paca. Devuelve null si no hay unidades_por_paca.
+    public function pacasParaCantidad($cantidad): ?float
+    {
+        $upp = $this->unidades_por_paca !== null ? (float) $this->unidades_por_paca : null;
+        if (!$upp || $upp <= 0) {
+            return null;
+        }
+        return (float) $cantidad / $upp;
+    }
+
+    // peso total = pacas * peso_paca. Null si falta el dato.
+    public function pesoTotalParaCantidad($cantidad): ?float
+    {
+        $pacas = $this->pacasParaCantidad($cantidad);
+        if ($pacas === null || $this->peso_paca === null) {
+            return null;
+        }
+        return $pacas * (float) $this->peso_paca;
+    }
+
+    // volumen (cubicaje) total = pacas * cubicaje_paca. Null si falta el dato.
+    public function volumenTotalParaCantidad($cantidad): ?float
+    {
+        $pacas = $this->pacasParaCantidad($cantidad);
+        if ($pacas === null || $this->cubicaje_paca === null) {
+            return null;
+        }
+        return $pacas * (float) $this->cubicaje_paca;
     }
 
     // Obtener precio por lista de precios

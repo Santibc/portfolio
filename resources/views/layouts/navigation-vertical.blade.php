@@ -54,6 +54,11 @@
                 <i class="bi bi-basket3"></i>
                 <span>Productos</span>
             </a>
+            <a href="{{ route('empresa.edit') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('empresa*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-building"></i>
+                <span>Empresa</span>
+            </a>
         @endif
 
         {{-- Catálogo (para vendedor y admin) --}}

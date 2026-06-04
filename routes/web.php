@@ -13,6 +13,7 @@ use App\Http\Controllers\CategoriasController;
 use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\ActualizacionPreciosController;
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/usuarios/guardar', [UsuariosController::class, 'guardar'])->name('usuarios.guardar');
     Route::post('/usuarios/{user}/toggle-activo', [UsuariosController::class, 'toggleActivo'])->name('usuarios.toggle-activo');
     Route::delete('/usuarios/{user}', [UsuariosController::class, 'eliminar'])->name('usuarios.eliminar');
+
+    // Configuración de la empresa dueña (datos del encabezado del PDF). Solo admin (validado en el controlador).
+    Route::get('/empresa', [EmpresaController::class, 'edit'])->name('empresa.edit');
+    Route::post('/empresa', [EmpresaController::class, 'update'])->name('empresa.update');
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
      ->name('ajax.ciudades');

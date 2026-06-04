@@ -1,3 +1,4 @@
+@php($empresa = \App\Models\Parametros::empresa())
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>{{ $solicitud->nombre_archivo_pdf }}</title>
     <style>
-        @page { margin: 95px 25px 60px 25px; }
+        @page { margin: 135px 25px 60px 25px; }
 
         body {
             font-family: Arial, sans-serif;
@@ -18,18 +19,21 @@
         /* ===== Header con logo ===== */
         .header {
             position: fixed;
-            top: -80px;
+            top: -120px;
             left: 0;
             right: 0;
-            height: 70px;
+            height: 110px;
             border-bottom: 2px solid #007bff;
             padding: 0;
         }
         .header table { width: 100%; border-collapse: collapse; }
-        .header td { vertical-align: middle; padding: 0; }
-        .header .logo-cell { width: 110px; }
+        .header td { vertical-align: top; padding: 0; }
+        .header .logo-cell { width: 130px; vertical-align: middle; }
         .header .logo-cell img { height: 55px; }
-        .header .title-cell { text-align: right; padding-right: 5px; }
+        .header .empresa-cell { padding-left: 8px; }
+        .header .empresa-cell .razon { font-size: 13px; font-weight: bold; color: #007bff; }
+        .header .empresa-cell .meta { font-size: 9px; color: #555; line-height: 1.35; margin-top: 2px; }
+        .header .title-cell { text-align: right; padding-right: 5px; vertical-align: top; }
         .header h2 { margin: 0; color: #007bff; font-size: 16px; }
         .header .codigo { font-size: 11px; color: #555; margin-top: 2px; }
 
@@ -95,15 +99,15 @@
             background-color: #007bff;
             color: #fff;
             border: 1px solid #007bff;
-            padding: 6px 5px;
+            padding: 5px 3px;
             text-align: left;
-            font-size: 10px;
+            font-size: 8.5px;
             font-weight: bold;
         }
         table.items td {
             border: 1px solid #dee2e6;
-            padding: 5px;
-            font-size: 10.5px;
+            padding: 4px 3px;
+            font-size: 9px;
         }
         table.items tr:nth-child(even) td { background-color: #f9f9f9; }
 
@@ -151,10 +155,20 @@
         <table>
             <tr>
                 <td class="logo-cell">
-                    <img src="{{ public_path('images/logo.png') }}" alt="Offi-Esco">
+                    <img src="{{ public_path('images/logo.png') }}" alt="{{ $empresa['razon_social'] }}">
+                </td>
+                <td class="empresa-cell">
+                    <div class="razon">{{ $empresa['razon_social'] }}</div>
+                    <div class="meta">
+                        @if($empresa['ruc'])RUC/CC: {{ $empresa['ruc'] }}<br>@endif
+                        @if($empresa['direccion']){{ $empresa['direccion'] }}<br>@endif
+                        @if($empresa['telefonos'])Tel: {{ $empresa['telefonos'] }}@if($empresa['email']) &nbsp;·&nbsp; @endif @endif
+                        @if($empresa['email']){{ $empresa['email'] }}@endif
+                        @if($empresa['sitio_web'])<br>{{ $empresa['sitio_web'] }}@endif
+                    </div>
                 </td>
                 <td class="title-cell">
-                    <h2>SOLICITUD DE COTIZACIÓN</h2>
+                    <h2>COTIZACIÓN</h2>
                     <div class="codigo">{{ $solicitud->codigo_corto }} &nbsp;·&nbsp; {{ $solicitud->created_at->format('d/m/Y H:i') }}</div>
                 </td>
             </tr>
@@ -176,9 +190,7 @@
                 <div class="section-title">Cliente</div>
                 <table class="info-compact">
                     <tr><td class="lbl">Nombre:</td><td class="val">{{ $solicitud->cliente?->nombre_contacto ?? 'Cliente eliminado' }}</td></tr>
-                    @if($solicitud->cliente?->nombre_empresa)
-                    <tr><td class="lbl">Empresa:</td><td class="val">{{ $solicitud->cliente->nombre_empresa }}</td></tr>
-                    @endif
+                    <tr><td class="lbl">Empresa:</td><td class="val">{{ $solicitud->cliente?->nombre_empresa ?: '—' }}</td></tr>
                     <tr><td class="lbl">NIT/CC:</td><td>{{ $solicitud->cliente?->numero_identificacion ?? '—' }}</td></tr>
                     <tr><td class="lbl">Email:</td><td>{{ $solicitud->cliente?->email ?? '—' }}</td></tr>
                     <tr><td class="lbl">Teléfono:</td><td>{{ $solicitud->cliente?->telefono ?: '—' }}</td></tr>
@@ -211,16 +223,30 @@
     <table class="items">
         <thead>
             <tr>
-                <th width="50">Img.</th>
-                <th width="75">Ref.</th>
+                <th width="38">Img.</th>
+                <th width="52">Ref.</th>
                 <th>Producto</th>
-                <th width="55" class="text-center">Cant.</th>
-                <th width="80" class="text-right">Precio Unit.</th>
-                <th width="90" class="text-right">Subtotal</th>
+                <th width="32" class="text-center">Cant.</th>
+                <th width="60" class="text-right">Precio Unit.</th>
+                <th width="32" class="text-center">Und</th>
+                <th width="68" class="text-right">Subtotal</th>
+                <th width="36" class="text-center">Und<br>Emp</th>
+                <th width="38" class="text-center">Cbm</th>
+                <th width="38" class="text-center">Peso</th>
             </tr>
         </thead>
         <tbody>
+            <?php $totPacas = 0; $totPeso = 0; $totVol = 0; ?>
             @foreach($solicitud->items as $item)
+            <?php
+                $prod       = $item->producto;
+                $pacasLinea = $prod?->pacasParaCantidad($item->cantidad);
+                $pesoLinea  = $prod?->pesoTotalParaCantidad($item->cantidad);
+                $volLinea   = $prod?->volumenTotalParaCantidad($item->cantidad);
+                $totPacas  += $pacasLinea ?? 0;
+                $totPeso   += $pesoLinea ?? 0;
+                $totVol    += $volLinea ?? 0;
+            ?>
             <tr>
                 <td class="text-center">
                     @if($item->producto && $item->producto->imagenPrincipal)
@@ -242,12 +268,22 @@
                 </td>
                 <td class="text-center">{{ $item->cantidad }}</td>
                 <td class="text-right">${{ number_format($item->precio_unitario, 2) }}</td>
+                <td class="text-center">{{ $item->producto?->unidad_venta ?: '' }}</td>
                 <td class="text-right">${{ number_format($item->precio_total, 2) }}</td>
+                <td class="text-center">{{ $item->producto?->unidad_empaque ?: '' }}</td>
+                <td class="text-center">{{ $volLinea !== null ? number_format($volLinea, 4) : '' }}</td>
+                <td class="text-center">{{ $pesoLinea !== null ? number_format($pesoLinea, 3) : '' }}</td>
             </tr>
             @endforeach
             <tr class="total-row">
-                <td colspan="5" class="text-right">TOTAL:</td>
+                <td colspan="3" style="text-align:left;">Items: {{ $solicitud->items->count() }} &nbsp;·&nbsp; Pacas: {{ number_format($totPacas, 2) }}</td>
+                <td class="text-center">{{ $solicitud->total_items }}</td>
+                <td></td>
+                <td></td>
                 <td class="text-right">${{ number_format($solicitud->monto_total, 2) }}</td>
+                <td></td>
+                <td class="text-center">{{ $totVol > 0 ? number_format($totVol, 4) : '' }}</td>
+                <td class="text-center">{{ $totPeso > 0 ? number_format($totPeso, 3) : '' }}</td>
             </tr>
         </tbody>
     </table>

@@ -815,60 +815,27 @@ $(function(){
       
       // Variantes o cantidad simple
       if(p.tiene_variantes&&p.variantes?.length){
-        html+='<hr><h6>Seleccione las variantes:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Variante</th><th>SKU</th>';
-        if(mostrarPrecios) html+='<th>Precio</th>';
+        html+='<hr><h6 style="color:#0d6efd;">Solicitado acá:</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>SKU</th><th>Ext.</th>';
         if(mostrarStock) html+='<th>Stock</th>';
         html+='<th>Cantidad</th></tr></thead><tbody>';
-        
+
         p.variantes.forEach((v,i)=>{
           html+='<tr>';
-          html+=`<td>${v.nombre_variante||"Estándar"}</td><td><small>${v.sku}</small></td>`;
-          
-          // Precio de variante
-          if(mostrarPrecios) html+=`<td>${(v.precio_final||0).toFixed(2)}</td>`;
-          
-          // Stock de variante
-          if(mostrarStock && v.stock_info) {
-            const vStock = v.stock_info;
-            let vStockClass = '';
-            let vStockIcon = '';
-            
-            if (!vStock.controla_stock) {
-              vStockClass = 'text-primary';
-              vStockIcon = 'bi-infinity';
-              html+=`<td class="stock-status"><i class="bi ${vStockIcon} ${vStockClass}"></i> <small class="${vStockClass}">Ilimitado</small></td>`;
-            } else {
-              switch(vStock.estado) {
-                case 'disponible':
-                  vStockClass = 'text-success';
-                  vStockIcon = 'bi-check-circle';
-                  break;
-                case 'stock_limitado':
-                  vStockClass = 'text-warning';
-                  vStockIcon = 'bi-exclamation-triangle';
-                  break;
-                case 'stock_bajo':
-                  vStockClass = 'text-danger';
-                  vStockIcon = 'bi-exclamation-circle';
-                  break;
-                case 'sin_stock':
-                  vStockClass = 'text-muted';
-                  vStockIcon = 'bi-x-circle';
-                  break;
-                case 'sin_stock_permitido':
-                  vStockClass = 'text-warning';
-                  vStockIcon = 'bi-x-circle';
-                  break;
-              }
-              
-              html+=`<td class="stock-status"><i class="bi ${vStockIcon} ${vStockClass}"></i> <small class="${vStockClass}">${vStock.mensaje}</small></td>`;
+          html+=`<td><small>${v.sku||''}</small></td><td>${v.extension||'-'}</td>`;
+
+          // Stock de variante (cantidad disponible)
+          if(mostrarStock) {
+            let stockTxt = '0';
+            if(v.stock_info) {
+              stockTxt = v.stock_info.controla_stock ? (v.stock_info.cantidad_disponible ?? 0) : 'Ilimitado';
             }
+            html+=`<td>${stockTxt}</td>`;
           }
-          
+
           // Campo cantidad - aplicar lógica de control de stock
           let maxCantidad = 999999;
           let inputDisabled = '';
-          
+
           if(mostrarStock && v.stock_info && v.stock_info.controla_stock) {
             // Si controla stock pero no permite venta sin stock, limitar cantidad
             if(!v.stock_info.permite_sin_stock && !v.stock_info.tiene_stock) {
@@ -879,12 +846,12 @@ $(function(){
             }
             // Si permite venta sin stock o no controla stock, no limitar
           }
-          
-          html+=`<td><input type="number" class="form-control form-control-sm variante-cantidad" 
+
+          html+=`<td><input type="number" class="form-control form-control-sm variante-cantidad"
                     data-variante-index="${i}" min="0" max="${maxCantidad}" value="0" ${inputDisabled}></td>`;
           html+='</tr>';
         });
-        
+
         html+='</tbody></table></div>';
         html+=`<button class="btn btn-primary w-100" onclick="agregarVariantesAlCarrito(${p.id})">Solicitar</button>`;
       } else {

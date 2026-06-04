@@ -87,7 +87,9 @@ class UsuariosController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required', 'email', 'max:255',
-                Rule::unique('users')->ignore($user?->id)
+                // Ignorar usuarios eliminados (soft-delete): su correo se puede reutilizar.
+                // Al crear, si el correo pertenece a un usuario borrado, se restaura y sobrescribe.
+                Rule::unique('users')->ignore($user?->id)->whereNull('deleted_at')
             ],
             'password' => $user ? ['nullable', 'string', 'min:6'] : ['required', 'string', 'min:6'],
             'role'     => ['required','exists:roles,name'],
