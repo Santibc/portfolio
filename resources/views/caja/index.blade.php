@@ -448,6 +448,18 @@
                 this.$watch('total', () => this.autoMontoPagoUnico());
                 this.$watch('pagos.length', () => this.autoMontoPagoUnico());
                 this.autoMontoPagoUnico();
+
+                // Restaurar la categoría seleccionada tras una recarga (ej. al cobrar
+                // una venta el POST recarga la página y el estado de Alpine se reinicia).
+                const tipoGuardado = sessionStorage.getItem('caja-tipo-filtro');
+                if (tipoGuardado !== null && tipoGuardado !== '') {
+                    const id = parseInt(tipoGuardado, 10);
+                    if (this.tipos.some(t => t.id === id)) this.tipoFiltro = id;
+                }
+                // Persistir cada cambio de categoría para sobrevivir a la recarga.
+                this.$watch('tipoFiltro', (val) => {
+                    sessionStorage.setItem('caja-tipo-filtro', val === null ? '' : val);
+                });
             },
 
             // Si solo hay un método de pago, su monto = total del carrito.
