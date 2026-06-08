@@ -45,6 +45,30 @@
         <x-stat-card icon="trending-up"   :color="$neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − ahorros)" :value="($neto < 0 ? '-' : '') . '$ ' . number_format(abs($neto), 0, ',', '.')" />
     </div>
 
+    {{-- Total por método de pago en el rango: recibido − gastado --}}
+    @if ($desglosePorMetodo->isNotEmpty())
+        <x-card class="mb-5" padding="p-4">
+            <h3 class="font-semibold text-sm text-cream-800 dark:text-cream-200 mb-3">Total por método de pago</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                @foreach ($desglosePorMetodo as $d)
+                    <div class="rounded-xl bg-cream-50 dark:bg-cream-900/40 border border-cream-200 dark:border-cream-800 px-3 py-2">
+                        <p class="text-[10px] uppercase tracking-wide text-cream-500 flex items-center gap-1">
+                            <x-icon :name="$d['es_efectivo'] ? 'banknote' : 'credit-card'" class="w-3 h-3" />
+                            {{ $d['nombre'] }}
+                        </p>
+                        @if ($d['gastos'] > 0)
+                            <p class="text-[11px] text-cream-500 tabular-nums leading-tight">
+                                $ {{ number_format($d['ventas'], 0, ',', '.') }}
+                                <span class="text-rose-600 dark:text-rose-400">− $ {{ number_format($d['gastos'], 0, ',', '.') }}</span>
+                            </p>
+                        @endif
+                        <p class="text-sm font-bold tabular-nums {{ $d['monto'] < 0 ? 'text-rose-700 dark:text-rose-400' : 'text-cream-900 dark:text-cream-50' }}">$ {{ number_format($d['monto'], 0, ',', '.') }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </x-card>
+    @endif
+
     {{-- Tabla de turnos --}}
     <x-card padding="p-0">
         <div class="overflow-x-auto">
