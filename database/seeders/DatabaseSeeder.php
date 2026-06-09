@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ImpuestoSeeder::class,
             TipoDescuentoSeeder::class,
             IncotermSeeder::class,
+            PaisesSeeder::class,
             PuertoSeeder::class,
             TipoPagoSeeder::class,
             ConfiguracionSeeder::class,

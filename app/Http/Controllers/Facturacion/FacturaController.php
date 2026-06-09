@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Facturacion;
 
+use App\Exports\PlantillaImportacionFacturaExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Facturacion\FacturaRequest;
 use App\Models\Cliente;
@@ -10,15 +11,19 @@ use App\Models\Impuesto;
 use App\Models\Moneda;
 use App\Models\PlantillaFactura;
 use App\Models\Producto;
+use App\Services\Facturacion\FacturaItemImportService;
 use App\Services\Facturacion\FacturaService;
 use App\Services\Facturacion\TemplateRenderer;
 use App\Services\Siigo\SiigoEmisionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FacturaController extends Controller
 {
@@ -26,6 +31,7 @@ class FacturaController extends Controller
         private readonly FacturaService $service,
         private readonly TemplateRenderer $renderer,
         private readonly SiigoEmisionService $siigo,
+        private readonly FacturaItemImportService $importador,
     ) {}
 
     public function index(Request $request): View
@@ -207,14 +213,59 @@ class FacturaController extends Controller
     }
 
     /**
+     * Descarga una plantilla Excel para importar líneas de factura. Incluye
+     * hasta 3 referencias reales del catálogo como ejemplo.
+     */
+    public function plantillaImportacion(): BinaryFileResponse
+    {
+        $ejemplos = Producto::where('activo', true)
+            ->orderBy('referencia')
+            ->take(3)
+            ->get()
+            ->map(fn (Producto $p) => [$p->referencia, '', 1, (float) $p->precio_unitario, 0, 'valor', 19])
+            ->all();
+
+        return Excel::download(new PlantillaImportacionFacturaExport($ejemplos), 'plantilla-lineas-factura.xlsx');
+    }
+
+    /**
+     * Procesa un Excel de líneas y devuelve JSON con los ítems válidos (listos
+     * para el formulario) y la lista de errores por fila. No persiste nada:
+     * el usuario revisa y guarda la factura normalmente.
+     */
+    public function importarItems(Request $request): JsonResponse
+    {
+        $datos = $request->validate([
+            'archivo' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:5120'],
+            'iva_default' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $resultado = $this->importador->procesar(
+            (string) $request->file('archivo')->getRealPath(),
+            (float) ($datos['iva_default'] ?? 19),
+        );
+
+        return response()->json($resultado);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function formData(Factura $factura): array
     {
+        // Productos activos + los ya referenciados por esta factura (aunque estén
+        // inactivos), para que el select de líneas no pierda la selección al editar.
+        $idsEnFactura = $factura->relationLoaded('items')
+            ? $factura->items->pluck('producto_id')->filter()->all()
+            : [];
+
         return [
             'factura' => $factura,
             'clientes' => Cliente::orderBy('nombre')->get(),
-            'productos' => Producto::with(['moneda', 'impuesto'])->where('activo', true)->orderBy('referencia')->get(),
+            'productos' => Producto::query()
+                ->where(fn ($q) => $q->where('activo', true)->orWhereIn('id', $idsEnFactura))
+                ->orderBy('referencia')
+                ->get(),
             'monedas' => Moneda::activas()->orderBy('codigo')->get(),
             'impuestos' => Impuesto::where('activo', true)->orderBy('porcentaje')->get(),
             'plantillas' => PlantillaFactura::activas()->orderByDesc('es_default')->get(),
@@ -233,23 +284,8 @@ class FacturaController extends Controller
             default => (string) ($factura->moneda?->simbolo ?? ''),
         };
 
-        $logoPath = public_path('images/logo.png');
-        $logoBase64 = is_file($logoPath) ? 'data:image/png;base64,'.base64_encode((string) @file_get_contents($logoPath)) : '';
-        $nitEmisor = (string) (\App\Models\SiigoConfig::current()->nit_emisor ?? '901249576-9');
-
         return [
-            'empresa' => [
-                'razon_social' => (string) config('app.name'),
-                'nit' => $nitEmisor,
-                'direccion' => 'Cr 4 No. 4-43 oficina 302',
-                'telefono' => '89 36 527',
-                'email' => 'jsrojas@caladelacruz',
-                'sitio_web' => 'www.caladelacruz.com',
-                'logo' => $logoBase64,
-                'regimen' => 'IVA RÉGIMEN COMÚN – NO SOMOS RETENEDORES DE IVA – NO SOMOS GRANDES CONTRIBUYENTES',
-                'resolucion_clc' => 'Factura Electrónica de Venta código 4, prefijo CLC desde 1 hasta 3000 vigencia 24 tipo de solicitud autorización código 1 Resolución 18764084396801 de 2024/11/29',
-                'resolucion_fv' => 'Factura Electrónica de Venta código 4, prefijo FV desde 1 hasta 1500 vigencia 24 tipo de solicitud autorización código 1 Resolución 18764088482186 de 2025/02/06',
-            ],
+            'empresa' => app(\App\Services\Settings\EmpresaData::class)->paraPlantilla(),
             'cliente' => [
                 'nombre' => (string) $factura->cliente?->nombre,
                 'identificacion' => (string) $factura->cliente?->identificacion,
@@ -278,8 +314,8 @@ class FacturaController extends Controller
                 'awb' => (string) $factura->awb,
                 'shipper' => (string) $factura->shipper,
                 'cod' => '',
-                'remision' => '',
-                'payment_terms' => '',
+                'remision' => (string) $factura->remision,
+                'payment_terms' => (string) $factura->payment_terms,
                 'version' => 'V 1.9',
             ],
             'items' => $factura->items->map(fn ($item) => [
@@ -290,8 +326,11 @@ class FacturaController extends Controller
                 'composition' => (string) $item->composicion,
                 'size' => $this->formatearTallas($item->tallas_json),
                 'codigo_pa' => (string) $item->codigo_pa,
+                'pais_origen' => (string) $item->pais_origen,
+                'country_of_origin' => (string) $item->pais_origen,
                 'cantidad' => number_format((float) $item->cantidad, 0, ',', '.'),
                 'precio_unitario' => number_format((float) $item->precio_unitario, 2, ',', '.'),
+                'descuento' => number_format($item->descuentoValor(), 2, ',', '.'),
                 'total' => number_format((float) $item->total_linea, 2, ',', '.'),
             ])->all(),
             'totales' => [

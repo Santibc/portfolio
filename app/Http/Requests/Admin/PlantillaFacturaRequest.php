@@ -19,6 +19,7 @@ class PlantillaFacturaRequest extends FormRequest
         return [
             'nombre' => ['required', 'string', 'max:120'],
             'descripcion' => ['nullable', 'string', 'max:255'],
+            'tipo' => ['required', 'in:nacional,internacional'],
             'html_content' => ['required', 'string', 'max:100000'],
             'css_content' => ['nullable', 'string', 'max:20000'],
             'es_default' => ['sometimes', 'boolean'],

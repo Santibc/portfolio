@@ -41,8 +41,8 @@
 
         {{-- Sidebar --}}
         <aside
-            :class="$store.sidebar.open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-            class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 ease-smooth dark:border-zinc-800 dark:bg-zinc-900 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+            :class="$store.sidebar.open ? 'translate-x-0 lg:w-64' : '-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden lg:border-0'"
+            class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-200 bg-white transition-all duration-300 ease-smooth dark:border-zinc-800 dark:bg-zinc-900 lg:sticky lg:top-0 lg:h-screen"
         >
             {{-- Sidebar header / logo --}}
             <div class="flex h-16 shrink-0 items-center gap-3 border-b border-zinc-200 px-6 dark:border-zinc-800">
@@ -78,7 +78,7 @@
                 <button
                     type="button"
                     @click="$store.sidebar.toggle()"
-                    class="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 lg:hidden"
+                    class="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                     aria-label="Abrir menú"
                     :aria-expanded="$store.sidebar.open.toString()"
                 >

@@ -40,6 +40,18 @@ class EmpresaRequest extends FormRequest
             'contacto_nombre' => ['required', 'string', 'max:120'],
             'contacto_email' => ['required', 'email:rfc', 'max:120'],
             'contacto_telefono' => ['required', 'string', 'max:40'],
+
+            'facturacion_prefijo' => ['required', 'string', 'max:10', 'regex:/^[A-Za-z0-9]+$/'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'facturacion_prefijo.regex' => 'El prefijo solo puede contener letras y números, sin espacios ni guiones.',
         ];
     }
 }

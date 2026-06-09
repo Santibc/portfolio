@@ -10,8 +10,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 
 /**
- * Portal público: descarga de factura por token único (sin auth).
- * El token viaja en URL firmada/no guesseable — cualquier ruta aquí
+ * Portal pÃºblico: descarga de factura por token Ãºnico (sin auth).
+ * El token viaja en URL firmada/no guesseable â€” cualquier ruta aquÃ­
  * NO requiere login.
  */
 class FacturaPublicaController extends Controller
@@ -44,21 +44,14 @@ class FacturaPublicaController extends Controller
     private function datosFactura(Factura $factura): array
     {
         $simbolo = match ($factura->moneda?->codigo) {
-            'EUR' => '€',
+            'EUR' => 'â‚¬',
             'USD' => 'US$',
             'COP' => '$',
             default => (string) ($factura->moneda?->simbolo ?? ''),
         };
 
         return [
-            'empresa' => [
-                'razon_social' => (string) config('app.name'),
-                'nit' => '901249576-9',
-                'direccion' => 'Cr 4 No. 4-43 oficina 302',
-                'telefono' => '89 36 527',
-                'email' => 'jsrojas@caladelacruz',
-                'sitio_web' => 'www.caladelacruz.com',
-            ],
+            'empresa' => app(\App\Services\Settings\EmpresaData::class)->paraPlantilla(),
             'cliente' => [
                 'nombre' => (string) $factura->cliente?->nombre,
                 'identificacion' => (string) $factura->cliente?->identificacion,
@@ -78,14 +71,22 @@ class FacturaPublicaController extends Controller
                 'cufe' => (string) $factura->cufe,
                 'tasa_cambio' => $factura->tasa_cambio,
                 'observaciones' => (string) $factura->observaciones,
+                'remision' => (string) $factura->remision,
+                'payment_terms' => (string) $factura->payment_terms,
             ],
             'items' => $factura->items->map(fn ($item) => [
                 'referencia' => (string) $item->referencia,
                 'descripcion' => (string) $item->descripcion,
                 'color' => (string) $item->color,
                 'composicion' => (string) $item->composicion,
+                'composition' => (string) $item->composicion,
+                'size' => is_array($item->tallas_json) ? implode(', ', $item->tallas_json) : '',
+                'codigo_pa' => (string) $item->codigo_pa,
+                'pais_origen' => (string) $item->pais_origen,
+                'country_of_origin' => (string) $item->pais_origen,
                 'cantidad' => number_format((float) $item->cantidad, 0, ',', '.'),
                 'precio_unitario' => number_format((float) $item->precio_unitario, 2, ',', '.'),
+                'descuento' => number_format($item->descuentoValor(), 2, ',', '.'),
                 'total' => number_format((float) $item->total_linea, 2, ',', '.'),
             ])->all(),
             'totales' => [
@@ -104,8 +105,8 @@ class FacturaPublicaController extends Controller
 
     /**
      * Datos bancarios para la plantilla. Remapea las claves planas de
-     * configuración (`banco.nombre`) a la estructura anidada que espera el
-     * renderer (`{{banco.nombre}}` → $data['banco']['nombre']).
+     * configuraciÃ³n (`banco.nombre`) a la estructura anidada que espera el
+     * renderer (`{{banco.nombre}}` â†’ $data['banco']['nombre']).
      *
      * @return array<string, string>
      */

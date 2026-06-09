@@ -38,24 +38,7 @@
         </x-slot>
     </x-manzer.page-header>
 
-    @if (session('error'))
-        <div class="mb-4">
-            <x-manzer.alert type="error" :message="session('error')" dismissible />
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="mb-4">
-            <x-manzer.alert type="error" dismissible>
-                <strong>Revisa los errores del formulario:</strong>
-                <ul class="mt-1 list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </x-manzer.alert>
-        </div>
-    @endif
+    {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     <form
         action="{{ $plantilla->exists ? route('admin.plantillas.update', $plantilla) : route('admin.plantillas.store') }}"
@@ -142,6 +125,19 @@
             <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Configuración
             </h3>
+
+            <div class="max-w-sm">
+                <x-manzer.form-group
+                    label="Tipo de factura"
+                    name="tipo"
+                    type="select"
+                    :value="old('tipo', $plantilla->tipo ?? 'nacional')"
+                    :options="['nacional' => 'Nacional', 'internacional' => 'Internacional (exportación)']"
+                    icon="globe"
+                    :required="true"
+                    help="Las facturas que usen esta plantilla se emitirán a Siigo como nacionales o de exportación." />
+            </div>
+
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
                 <label class="inline-flex items-start gap-2">
                     <input type="hidden" name="es_default" value="0">
@@ -304,6 +300,7 @@
                 { label: 'Código arancelario',  value: '{{codigo_pa}}' },
                 { label: 'Cantidad',            value: '{{cantidad}}' },
                 { label: 'Precio unitario',     value: '{{precio_unitario}}' },
+                { label: 'Descuento línea',     value: '{{descuento}}' },
                 { label: 'Total línea',         value: '{{total}}' },
                 { label: 'Índice (#fila)',      value: '{{@index}}' },
             ]},

@@ -14,30 +14,7 @@
         </x-slot>
     </x-manzer.page-header>
 
-    @if (session('success'))
-        <div class="mb-4">
-            <x-manzer.alert type="success" :message="session('success')" dismissible />
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4">
-            <x-manzer.alert type="error" :message="session('error')" dismissible />
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="mb-4">
-            <x-manzer.alert type="error" dismissible>
-                <strong class="block font-semibold">Revisa los siguientes campos:</strong>
-                <ul class="mt-2 list-disc pl-5 text-xs">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </x-manzer.alert>
-        </div>
-    @endif
+    {{-- Los mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     <form
         action="{{ route('admin.empresa.update') }}"
@@ -83,6 +60,14 @@
                     class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
                 >
                     <i class="bi bi-person-lines-fill"></i> Contacto financiero
+                </button>
+                <button
+                    type="button"
+                    @click="tab = 'facturacion'"
+                    :class="tab === 'facturacion' ? 'bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300' : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'"
+                    class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
+                >
+                    <i class="bi bi-receipt"></i> Facturación
                 </button>
             </nav>
         </div>
@@ -346,6 +331,36 @@
                     :required="true"
                     icon="telephone"
                     placeholder="+57 300 000 0000"
+                />
+            </div>
+        </div>
+
+        {{-- Sección Facturación --}}
+        <div x-show="tab === 'facturacion'" x-transition x-cloak class="card space-y-5">
+            <div class="flex items-center gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800">
+                <i class="bi bi-receipt text-xl text-primary-600"></i>
+                <div>
+                    <h3 class="text-lg font-semibold">Numeración de facturas</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Prefijo del consecutivo interno para facturas no electrónicas.</p>
+                </div>
+            </div>
+
+            <x-manzer.alert
+                type="info"
+                dismissible="false"
+                message="El número se genera como PREFIJO-####, por ejemplo REM-0001. Cambiar el prefijo solo afecta a las facturas nuevas; las ya emitidas conservan su número."
+            />
+
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <x-manzer.form-group
+                    label="Prefijo del consecutivo"
+                    name="facturacion_prefijo"
+                    type="text"
+                    :value="old('facturacion_prefijo', $facturacion['facturacion.prefijo_interno'] ?? 'REM')"
+                    :required="true"
+                    icon="hash"
+                    placeholder="REM"
+                    help="Solo letras y números (ej: REM, FAC, FAV). Máx. 10 caracteres."
                 />
             </div>
         </div>

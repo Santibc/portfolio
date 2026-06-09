@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Catalogo;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Catalogo\ProductoRequest;
-use App\Models\Impuesto;
-use App\Models\Moneda;
+use App\Models\Pais;
 use App\Models\Producto;
 use App\Services\Catalogo\ProductoService;
 use Illuminate\Contracts\View\View;
@@ -18,7 +17,7 @@ class ProductoController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Producto::with(['moneda', 'impuesto'])->orderBy('referencia');
+        $query = Producto::orderBy('referencia');
 
         if ($buscar = $request->string('q')->toString()) {
             $query->where(function ($q) use ($buscar) {
@@ -81,8 +80,7 @@ class ProductoController extends Controller
     {
         return [
             'producto' => $producto,
-            'monedas' => Moneda::activas()->orderBy('codigo')->get(),
-            'impuestos' => Impuesto::where('activo', true)->orderBy('porcentaje')->get(),
+            'paises' => Pais::activos()->orderBy('nombre')->pluck('nombre'),
         ];
     }
 }

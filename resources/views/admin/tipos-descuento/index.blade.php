@@ -17,17 +17,7 @@
         </x-slot>
     </x-manzer.page-header>
 
-    @if (session('success'))
-        <div class="mb-4">
-            <x-manzer.alert type="success" :message="session('success')" dismissible />
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4">
-            <x-manzer.alert type="error" :message="session('error')" dismissible />
-        </div>
-    @endif
+    {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     <x-manzer.data-table :headers="['Nombre', 'Alcance', 'Modalidad', 'Activo', 'Acciones']">
         @forelse ($tipos as $tipo)

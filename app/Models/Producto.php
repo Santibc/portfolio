@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends Model
@@ -20,9 +19,8 @@ class Producto extends Model
         'color',
         'composicion',
         'codigo_pa',
+        'pais_origen',
         'precio_unitario',
-        'moneda_id',
-        'impuesto_id',
         'unidad_medida',
         'imagen_path',
         'es_prenda',
@@ -35,22 +33,6 @@ class Producto extends Model
         'es_prenda' => 'bool',
         'activo' => 'bool',
     ];
-
-    /**
-     * @return BelongsTo<Moneda, Producto>
-     */
-    public function moneda(): BelongsTo
-    {
-        return $this->belongsTo(Moneda::class);
-    }
-
-    /**
-     * @return BelongsTo<Impuesto, Producto>
-     */
-    public function impuesto(): BelongsTo
-    {
-        return $this->belongsTo(Impuesto::class);
-    }
 
     /**
      * @return HasMany<ProductoTalla>

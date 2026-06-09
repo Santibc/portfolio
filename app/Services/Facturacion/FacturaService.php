@@ -5,6 +5,7 @@ namespace App\Services\Facturacion;
 use App\Models\Factura;
 use App\Models\FacturaItem;
 use App\Models\PlantillaFactura;
+use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -81,31 +82,71 @@ class FacturaService
      */
     private function guardarItems(Factura $factura, array $items): void
     {
+        // Los campos descriptivos (referencia, descripción, color, etc.) se toman
+        // SIEMPRE del producto en BD, no del cliente: garantiza integridad y que no
+        // se cuelen productos inexistentes. Solo cantidad, precio, descuento e IVA
+        // son editables y vienen del formulario.
+        $ids = collect($items)->pluck('producto_id')->filter()->map(fn ($id) => (int) $id)->unique();
+        $productos = Producto::whereIn('id', $ids)->get()->keyBy('id');
+
         foreach ($items as $orden => $item) {
+            $producto = $productos->get((int) ($item['producto_id'] ?? 0));
+            if ($producto === null) {
+                continue;
+            }
+
             $cantidad = (float) ($item['cantidad'] ?? 0);
             $precio = (float) ($item['precio_unitario'] ?? 0);
             $descuento = (float) ($item['descuento'] ?? 0);
+            $descuentoTipo = ($item['descuento_tipo'] ?? 'valor') === 'porcentaje' ? 'porcentaje' : 'valor';
             $iva = (float) ($item['impuesto_porcentaje'] ?? 0);
-            $subtotal = $cantidad * $precio - $descuento;
+
+            $base = $cantidad * $precio;
+            $descuentoValor = FacturaItem::calcularDescuento($base, $descuentoTipo, $descuento);
+            $subtotal = $base - $descuentoValor;
             $totalLinea = $subtotal + ($subtotal * $iva / 100);
 
             FacturaItem::create([
                 'factura_id' => $factura->id,
-                'producto_id' => $item['producto_id'] ?? null,
-                'referencia' => (string) ($item['referencia'] ?? ''),
-                'descripcion' => (string) ($item['descripcion'] ?? ''),
-                'color' => $item['color'] ?? null,
-                'composicion' => $item['composicion'] ?? null,
-                'codigo_pa' => $item['codigo_pa'] ?? null,
+                'producto_id' => $producto->id,
+                'referencia' => (string) $producto->referencia,
+                'descripcion' => (string) $producto->descripcion,
+                'color' => $producto->color,
+                'composicion' => $producto->composicion,
+                'codigo_pa' => $producto->codigo_pa,
+                'pais_origen' => $producto->pais_origen,
                 'cantidad' => $cantidad,
                 'precio_unitario' => $precio,
                 'descuento' => $descuento,
+                'descuento_tipo' => $descuentoTipo,
                 'impuesto_porcentaje' => $iva,
                 'total_linea' => $totalLinea,
-                'tallas_json' => isset($item['tallas']) && is_array($item['tallas']) ? $item['tallas'] : null,
+                'tallas_json' => $this->parsearTallas($item['tallas'] ?? null),
                 'orden' => $orden,
             ]);
         }
+    }
+
+    /**
+     * Normaliza el campo de tallas (texto libre "S, M, L" o array) a un array de
+     * strings limpio, o null si no hay tallas. Es lo que consume formatearTallas().
+     *
+     * @param  mixed  $tallas
+     * @return array<int, string>|null
+     */
+    private function parsearTallas($tallas): ?array
+    {
+        if (is_array($tallas)) {
+            $partes = array_map('strval', $tallas);
+        } elseif (is_string($tallas) && trim($tallas) !== '') {
+            $partes = explode(',', $tallas);
+        } else {
+            return null;
+        }
+
+        $partes = array_values(array_filter(array_map('trim', $partes), fn ($t) => $t !== ''));
+
+        return $partes === [] ? null : $partes;
     }
 
     public function recalcular(Factura $factura): void
@@ -118,7 +159,7 @@ class FacturaService
         foreach ($items as $item) {
             $cantidad = (float) $item->cantidad;
             $precio = (float) $item->precio_unitario;
-            $descuento = (float) $item->descuento;
+            $descuento = $item->descuentoValor();
             $ivaPct = (float) $item->impuesto_porcentaje;
 
             $subLinea = $cantidad * $precio;
@@ -152,7 +193,8 @@ class FacturaService
         $camposPermitidos = [
             'fecha', 'vencimiento', 'cliente_id', 'moneda_id', 'tasa_cambio',
             'flete', 'seguro', 'observaciones', 'es_electronica',
-            'plantilla_factura_id',
+            'plantilla_factura_id', 'po_numero', 'awb', 'shipper',
+            'remision', 'payment_terms',
         ];
 
         return array_intersect_key($data, array_flip($camposPermitidos));

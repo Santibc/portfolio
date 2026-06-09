@@ -26,17 +26,7 @@
             </x-slot>
         </x-manzer.page-header>
 
-        @if (session('success'))
-            <div class="mb-4">
-                <x-manzer.alert type="success" :message="session('success')" dismissible />
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4">
-                <x-manzer.alert type="error" :message="session('error')" dismissible />
-            </div>
-        @endif
+        {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
         <div class="card mb-4 p-4">
             <form action="{{ route('catalogos.clientes.index') }}" method="GET" class="grid grid-cols-1 gap-3 md:grid-cols-12 md:items-end">

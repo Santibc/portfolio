@@ -24,8 +24,10 @@ class SiigoConfigRequest extends FormRequest
             'activo' => ['sometimes', 'boolean'],
             'nit_emisor' => ['nullable', 'string', 'max:30', 'regex:/^[0-9\-]+$/'],
             'tipo_documento_id' => ['nullable', 'integer', 'min:1'],
+            'tipo_documento_export_id' => ['nullable', 'integer', 'min:1'],
             'seller_id' => ['nullable', 'integer', 'min:1'],
             'payment_type_id' => ['nullable', 'integer', 'min:1'],
+            'tax_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 

@@ -8,17 +8,7 @@
         description="Configura los catálogos y datos de la empresa emisora."
     />
 
-    @if (session('success'))
-        <div class="mb-4">
-            <x-manzer.alert type="success" :message="session('success')" dismissible />
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4">
-            <x-manzer.alert type="error" :message="session('error')" dismissible />
-        </div>
-    @endif
+    {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <a href="{{ route('admin.monedas.index') }}" class="block focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-xl">

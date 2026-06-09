@@ -29,7 +29,6 @@ class Cliente extends Model
         'incoterm_id',
         'puerto_id',
         'tipo_pago_id',
-        'idioma_documento',
         'plantilla_factura_id',
         'datos_bancarios_destino',
         'observaciones',

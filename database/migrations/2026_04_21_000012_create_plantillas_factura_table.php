@@ -24,7 +24,7 @@ return new class extends Migration
         Schema::table('clientes', function (Blueprint $table) {
             $table->foreignId('plantilla_factura_id')
                 ->nullable()
-                ->after('idioma_documento')
+                ->after('tipo_pago_id')
                 ->constrained('plantillas_factura')
                 ->nullOnDelete();
         });

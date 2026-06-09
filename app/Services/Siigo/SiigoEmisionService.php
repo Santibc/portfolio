@@ -30,6 +30,7 @@ class SiigoEmisionService
     public function __construct(
         private readonly SiigoClient $cliente,
         private readonly QrGeneratorService $qr,
+        private readonly SiigoClienteService $clienteSiigo,
     ) {}
 
     /**
@@ -39,8 +40,14 @@ class SiigoEmisionService
      */
     public function emitir(Factura $factura): Factura
     {
+        // La plantilla determina si la factura es nacional o de exportación.
+        $factura->loadMissing(['items', 'cliente', 'moneda', 'plantilla']);
+
         $this->validarElegible($factura);
-        $this->validarConfigSiigo();
+        $this->validarConfigSiigo($factura);
+
+        // Garantiza que el cliente exista en Siigo (lo crea si hace falta).
+        $this->clienteSiigo->resolver($factura->cliente);
 
         $payload = $this->construirPayload($factura);
 
@@ -110,9 +117,13 @@ class SiigoEmisionService
         if (empty($factura->cliente?->identificacion)) {
             throw new RuntimeException('El cliente no tiene identificación — requerida por la DIAN.');
         }
+
+        if ($factura->esInternacional() && ($factura->tasa_cambio === null || $factura->moneda?->codigo === 'COP')) {
+            throw new RuntimeException('Las facturas de exportación requieren moneda extranjera y tasa de cambio (TRM).');
+        }
     }
 
-    private function validarConfigSiigo(): void
+    private function validarConfigSiigo(Factura $factura): void
     {
         $config = SiigoConfig::current();
 
@@ -120,11 +131,18 @@ class SiigoEmisionService
             throw new RuntimeException('La integración con Siigo está desactivada. Actívala en Configuración → Integración Siigo.');
         }
 
+        // Comunes a nacional y exportación.
         $labels = [
-            'tipo_documento_id' => 'Tipo documento ID',
             'seller_id' => 'Vendedor (Seller) ID',
             'payment_type_id' => 'Método de pago ID',
         ];
+
+        if ($factura->esInternacional()) {
+            $labels['tipo_documento_export_id'] = 'Tipo documento exportación ID';
+        } else {
+            $labels['tipo_documento_id'] = 'Tipo documento ID (nacional)';
+            $labels['tax_id'] = 'Tax ID (IVA nacional)';
+        }
 
         foreach ($labels as $clave => $label) {
             if (empty($config->{$clave})) {
@@ -141,26 +159,48 @@ class SiigoEmisionService
     private function construirPayload(Factura $factura): array
     {
         $config = SiigoConfig::current();
+        $esExport = $factura->esInternacional();
 
-        $items = $factura->items->map(fn ($item) => [
-            'code' => (string) $item->referencia,
-            'description' => (string) $item->descripcion,
-            'quantity' => (float) $item->cantidad,
-            'price' => (float) $item->precio_unitario,
-            'discount' => (float) ($item->descuento ?? 0),
-            // Si el item tiene impuesto, Siigo lo exige como array de IDs de taxes.
-            // Por ahora omitimos a menos que el item tenga tax_id configurado.
-        ])->all();
+        // Nacional: tipo de documento estándar. Exportación: tipo de documento de exportación.
+        $documentoId = $esExport
+            ? (int) $config->tipo_documento_export_id
+            : (int) $config->tipo_documento_id;
+
+        $sellerId = (int) $config->seller_id;
+
+        $items = $factura->items->map(function ($item) use ($config, $esExport, $sellerId) {
+            $linea = [
+                'code' => (string) $item->referencia,
+                'description' => (string) $item->descripcion,
+                'quantity' => (float) $item->cantidad,
+                // En clc el precio_unitario ya es la base (sin IVA): el IVA se suma aparte
+                // en FacturaService::recalcular(). NO se divide como en miracle.
+                'price' => (float) $item->precio_unitario,
+                // Siigo solo acepta descuento por línea como monto fijo. Si la línea
+                // usa descuento porcentual, se resuelve al valor efectivo aquí.
+                'discount' => $item->descuentoValor(),
+                'seller' => $sellerId,
+            ];
+
+            // Exportación: exenta de IVA (sin taxes).
+            // Nacional: si el ítem tiene impuesto, se referencia el tax_id de IVA configurado.
+            if (! $esExport && (float) $item->impuesto_porcentaje > 0) {
+                $linea['taxes'] = [['id' => (int) $config->tax_id]];
+            }
+
+            return $linea;
+        })->all();
 
         $payload = [
             'document' => [
-                'id' => (int) $config->tipo_documento_id,
+                'id' => $documentoId,
             ],
             'date' => $factura->fecha->format('Y-m-d'),
             'customer' => [
                 'identification' => (string) $factura->cliente->identificacion,
+                'branch_office' => 0,
             ],
-            'seller' => (int) $config->seller_id,
+            'seller' => $sellerId,
             'items' => $items,
             'payments' => [[
                 'id' => (int) $config->payment_type_id,
@@ -181,6 +221,7 @@ class SiigoEmisionService
             $payload['observations'] = (string) $factura->observaciones;
         }
 
+        // Moneda extranjera + TRM. Obligatoria en exportación (validada en validarElegible).
         if ($factura->tasa_cambio !== null && $factura->moneda?->codigo !== 'COP') {
             $payload['currency'] = [
                 'code' => (string) $factura->moneda?->codigo,

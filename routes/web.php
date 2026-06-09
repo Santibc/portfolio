@@ -84,6 +84,12 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])
     ->name('facturacion.')
     ->group(function () {
         Route::get('dashboard', [FacturacionDashboardController::class, 'index'])->name('dashboard');
+
+        // Importación de líneas vía Excel (deben ir ANTES del resource para no
+        // colisionar con rutas tipo facturas/{factura}).
+        Route::get('facturas/importar/plantilla', [FacturaController::class, 'plantillaImportacion'])->name('facturas.importar.plantilla');
+        Route::post('facturas/importar', [FacturaController::class, 'importarItems'])->name('facturas.importar');
+
         Route::resource('facturas', FacturaController::class)->except(['show']);
         Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir'])->name('facturas.emitir');
         Route::post('facturas/{factura}/emitir-electronica', [FacturaController::class, 'emitirElectronica'])->name('facturas.emitir-electronica');

@@ -29,22 +29,28 @@ class FacturaRequest extends FormRequest
             'po_numero' => ['nullable', 'string', 'max:60'],
             'awb' => ['nullable', 'string', 'max:60'],
             'shipper' => ['nullable', 'string', 'max:100'],
+            'remision' => ['nullable', 'string', 'max:60'],
+            'payment_terms' => ['nullable', 'string', 'max:100'],
             'es_electronica' => ['sometimes', 'boolean'],
 
             'items' => ['required', 'array', 'min:1'],
-            'items.*.producto_id' => ['nullable', 'integer', 'exists:productos,id'],
-            'items.*.referencia' => ['required', 'string', 'max:40'],
-            'items.*.descripcion' => ['required', 'string', 'max:200'],
+            // Toda línea debe corresponder a un producto existente del catálogo.
+            // Los campos descriptivos se derivan del producto en el servidor, por eso
+            // aquí son opcionales (el guard real es producto_id required + exists).
+            'items.*.producto_id' => ['required', 'integer', 'exists:productos,id'],
+            'items.*.referencia' => ['nullable', 'string', 'max:40'],
+            'items.*.descripcion' => ['nullable', 'string', 'max:200'],
             'items.*.color' => ['nullable', 'string', 'max:60'],
             'items.*.composicion' => ['nullable', 'string', 'max:255'],
             'items.*.codigo_pa' => ['nullable', 'string', 'max:20'],
             'items.*.cantidad' => ['required', 'numeric', 'min:0.01'],
             'items.*.precio_unitario' => ['required', 'numeric', 'min:0'],
             'items.*.descuento' => ['nullable', 'numeric', 'min:0'],
+            'items.*.descuento_tipo' => ['nullable', 'in:valor,porcentaje'],
             'items.*.impuesto_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'items.*.tallas' => ['nullable', 'array'],
-            'items.*.tallas.*.talla' => ['nullable', 'string', 'max:20'],
-            'items.*.tallas.*.cantidad' => ['nullable', 'numeric', 'min:0'],
+            // Tallas como texto libre separado por comas (ej: "S, M, L" o "1S").
+            // Se normaliza a un array de strings en FacturaService.
+            'items.*.tallas' => ['nullable', 'string', 'max:100'],
         ];
     }
 

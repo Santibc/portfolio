@@ -12,9 +12,14 @@ class PlantillaFactura extends Model
 
     protected $table = 'plantillas_factura';
 
+    public const TIPO_NACIONAL = 'nacional';
+
+    public const TIPO_INTERNACIONAL = 'internacional';
+
     protected $fillable = [
         'nombre',
         'descripcion',
+        'tipo',
         'html_content',
         'css_content',
         'es_default',
@@ -25,6 +30,11 @@ class PlantillaFactura extends Model
         'es_default' => 'bool',
         'activo' => 'bool',
     ];
+
+    public function esInternacional(): bool
+    {
+        return $this->tipo === self::TIPO_INTERNACIONAL;
+    }
 
     /**
      * CSS base para cualquier plantilla nueva. Compatible con DomPDF:

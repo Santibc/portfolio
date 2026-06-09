@@ -33,7 +33,7 @@
     @endif
 @endforeach
 
-@if ($errors->any() && ! $errors->has('email') && ! $errors->has('password'))
+@if ($errors->any())
     <div role="alert" class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
         <div class="flex items-start gap-3">
             <i class="bi bi-exclamation-triangle mt-0.5 text-base"></i>

@@ -19,23 +19,7 @@
             </x-slot>
         </x-manzer.page-header>
 
-        @if (session('success'))
-            <div class="mb-4">
-                <x-manzer.alert type="success" :message="session('success')" dismissible />
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4">
-                <x-manzer.alert type="error" :message="session('error')" dismissible />
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-4">
-                <x-manzer.alert type="error" message="Revisa los campos marcados en rojo." />
-            </div>
-        @endif
+        {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
         <form
             action="{{ $cliente->exists ? route('catalogos.clientes.update', $cliente) : route('catalogos.clientes.store') }}"
@@ -90,15 +74,6 @@
                             <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <x-manzer.form-group
-                        label="Idioma del documento"
-                        name="idioma_documento"
-                        type="select"
-                        icon="translate"
-                        :options="['es' => 'Español', 'en' => 'Inglés']"
-                        :value="$cliente->idioma_documento ?? 'es'"
-                    />
                 </div>
             </div>
 

@@ -17,17 +17,7 @@
         </x-slot>
     </x-manzer.page-header>
 
-    @if (session('success'))
-        <div class="mb-4">
-            <x-manzer.alert type="success" :message="session('success')" dismissible />
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4">
-            <x-manzer.alert type="error" :message="session('error')" dismissible />
-        </div>
-    @endif
+    {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     @if ($plantillas->isEmpty())
         <div class="card flex flex-col items-center justify-center gap-3 py-12 text-center">
@@ -41,7 +31,7 @@
             </x-manzer.button>
         </div>
     @else
-        <x-manzer.data-table :headers="['Nombre', 'Descripción', 'Predeterminada', 'Activa', 'Acciones']">
+        <x-manzer.data-table :headers="['Nombre', 'Descripción', 'Tipo', 'Predeterminada', 'Activa', 'Acciones']">
             @foreach ($plantillas as $plantilla)
                 <x-manzer.table-row>
                     <x-manzer.table-cell class="font-semibold">
@@ -49,6 +39,13 @@
                     </x-manzer.table-cell>
                     <x-manzer.table-cell class="whitespace-normal text-zinc-500 dark:text-zinc-400">
                         {{ $plantilla->descripcion ?: '—' }}
+                    </x-manzer.table-cell>
+                    <x-manzer.table-cell>
+                        @if ($plantilla->esInternacional())
+                            <x-manzer.badge variant="info" text="Internacional" />
+                        @else
+                            <x-manzer.badge variant="primary" text="Nacional" />
+                        @endif
                     </x-manzer.table-cell>
                     <x-manzer.table-cell>
                         @if ($plantilla->es_default)

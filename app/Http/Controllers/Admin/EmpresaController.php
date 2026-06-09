@@ -22,6 +22,7 @@ class EmpresaController extends Controller
             'dian' => $this->config->group('dian'),
             'banco' => $this->config->group('banco'),
             'contacto' => $this->config->group('contacto'),
+            'facturacion' => $this->config->group('facturacion'),
         ]);
     }
 
@@ -56,6 +57,8 @@ class EmpresaController extends Controller
         $this->config->set('contacto_financiero.nombre', $data['contacto_nombre'], 'string', 'contacto');
         $this->config->set('contacto_financiero.email', $data['contacto_email'], 'string', 'contacto');
         $this->config->set('contacto_financiero.telefono', $data['contacto_telefono'], 'string', 'contacto');
+
+        $this->config->set('facturacion.prefijo_interno', strtoupper($data['facturacion_prefijo']), 'string', 'facturacion');
 
         return redirect()->route('admin.empresa.edit')->with('success', 'Datos de empresa actualizados.');
     }

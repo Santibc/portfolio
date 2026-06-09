@@ -20,8 +20,10 @@ class SiigoConfig extends Model
         'activo',
         'nit_emisor',
         'tipo_documento_id',
+        'tipo_documento_export_id',
         'seller_id',
         'payment_type_id',
+        'tax_id',
     ];
 
     protected $casts = [
@@ -29,8 +31,10 @@ class SiigoConfig extends Model
         'sync_catalogos_at' => 'datetime',
         'activo' => 'bool',
         'tipo_documento_id' => 'integer',
+        'tipo_documento_export_id' => 'integer',
         'seller_id' => 'integer',
         'payment_type_id' => 'integer',
+        'tax_id' => 'integer',
     ];
 
     public function setAccessKeyAttribute(?string $value): void

@@ -33,7 +33,6 @@ class ClienteRequest extends FormRequest
             'puerto_id' => ['nullable', 'integer', 'exists:puertos,id'],
             'tipo_pago_id' => ['nullable', 'integer', 'exists:tipos_pago,id'],
             'plantilla_factura_id' => ['nullable', 'integer', 'exists:plantillas_factura,id'],
-            'idioma_documento' => ['required', 'in:es,en'],
             'datos_bancarios_destino' => ['nullable', 'string', 'max:2000'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
             'activo' => ['sometimes', 'boolean'],

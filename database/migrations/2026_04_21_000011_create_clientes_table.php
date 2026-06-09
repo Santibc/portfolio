@@ -25,7 +25,6 @@ return new class extends Migration
             $table->foreignId('incoterm_id')->nullable()->constrained('incoterms')->nullOnDelete();
             $table->foreignId('puerto_id')->nullable()->constrained('puertos')->nullOnDelete();
             $table->foreignId('tipo_pago_id')->nullable()->constrained('tipos_pago')->nullOnDelete();
-            $table->enum('idioma_documento', ['es', 'en'])->default('es');
             $table->text('datos_bancarios_destino')->nullable();
             $table->text('observaciones')->nullable();
             $table->string('siigo_id', 100)->nullable();

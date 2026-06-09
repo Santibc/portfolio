@@ -287,19 +287,10 @@ class TemplateRenderer
      */
     public function datosDummy(): array
     {
+        $config = app(\App\Services\Settings\ConfigService::class);
+
         return [
-            'empresa' => [
-                'razon_social' => 'CLC & CIA S.A.S.',
-                'nit' => '901249576-9',
-                'direccion' => 'Cr 4 No. 4-43 oficina 302',
-                'telefono' => '89 36 527',
-                'email' => 'jsrojas@caladelacruz',
-                'sitio_web' => 'www.caladelacruz.com',
-                'logo' => $this->logoEmpresa(),
-                'regimen' => 'IVA RÉGIMEN COMÚN – NO SOMOS RETENEDORES DE IVA – NO SOMOS GRANDES CONTRIBUYENTES',
-                'resolucion_clc' => 'Factura Electrónica de Venta código 4, prefijo CLC desde 1 hasta 3000 vigencia 24 tipo de solicitud autorización código 1 Resolución 18764084396801 de 2024/11/29',
-                'resolucion_fv' => 'Factura Electrónica de Venta código 4, prefijo FV desde 1 hasta 1500 vigencia 24 tipo de solicitud autorización código 1 Resolución 18764088482186 de 2025/02/06',
-            ],
+            'empresa' => app(\App\Services\Settings\EmpresaData::class)->paraPlantilla(),
             'cliente' => [
                 'nombre' => 'Mytheresa International Service GmbH',
                 'identificacion' => 'DE213277271-0',
@@ -332,9 +323,9 @@ class TemplateRenderer
                 'version' => 'V 1.4',
             ],
             'items' => [
-                ['referencia' => '25C185', 'descripcion' => 'ERES DRESS', 'color' => 'HIBISCUS', 'size' => '1S', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'cantidad' => 45, 'precio_unitario' => '149,64', 'total' => '6.733,80'],
-                ['referencia' => '25C186', 'descripcion' => 'ORLY DRESS', 'color' => 'HIBISCUS', 'size' => '2M', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'cantidad' => 40, 'precio_unitario' => '149,64', 'total' => '5.985,60'],
-                ['referencia' => '25C246', 'descripcion' => 'RHODA DRESS', 'color' => 'CALICOAMA', 'size' => '3L', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'cantidad' => 50, 'precio_unitario' => '149,64', 'total' => '7.482,00'],
+                ['referencia' => '25C185', 'descripcion' => 'ERES DRESS', 'color' => 'HIBISCUS', 'size' => '1S', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'pais_origen' => 'Colombia', 'country_of_origin' => 'Colombia', 'cantidad' => 45, 'precio_unitario' => '149,64', 'descuento' => '0,00', 'total' => '6.733,80'],
+                ['referencia' => '25C186', 'descripcion' => 'ORLY DRESS', 'color' => 'HIBISCUS', 'size' => '2M', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'pais_origen' => 'Colombia', 'country_of_origin' => 'Colombia', 'cantidad' => 40, 'precio_unitario' => '149,64', 'descuento' => '0,00', 'total' => '5.985,60'],
+                ['referencia' => '25C246', 'descripcion' => 'RHODA DRESS', 'color' => 'CALICOAMA', 'size' => '3L', 'composition' => '100% ORGANIC COTTON', 'codigo_pa' => '6204420000', 'pais_origen' => 'Colombia', 'country_of_origin' => 'Colombia', 'cantidad' => 50, 'precio_unitario' => '149,64', 'descuento' => '0,00', 'total' => '7.482,00'],
             ],
             'totales' => [
                 'subtotal' => '87.814,60',
@@ -346,39 +337,19 @@ class TemplateRenderer
                 'total_cop' => '322.772.436,00',
             ],
             'banco' => [
-                'nombre' => 'BANCOLOMBIA',
-                'pais' => 'COLOMBIA',
-                'direccion' => 'Avenida 8 Norte # 12 - 43',
-                'titular' => 'CLC Y CIA SAS',
-                'moneda' => 'PESOS COLOMBIANOS',
-                'swift' => 'COLOCOBM, COLOCOBMXXX',
-                'numero_cuenta' => '96700000418',
+                'nombre' => (string) $config->get('banco.nombre', ''),
+                'pais' => (string) $config->get('banco.pais', ''),
+                'direccion' => (string) $config->get('banco.direccion', ''),
+                'titular' => (string) $config->get('banco.titular', ''),
+                'moneda' => (string) $config->get('banco.moneda', ''),
+                'swift' => (string) $config->get('banco.swift', ''),
+                'numero_cuenta' => (string) $config->get('banco.numero_cuenta', ''),
             ],
             'contacto' => [
-                'nombre' => 'Juan Sebastián Rojas',
-                'email' => 'jsrojas@caladelacruz',
-                'telefono' => '+57 302 2285789',
+                'nombre' => (string) $config->get('contacto_financiero.nombre', ''),
+                'email' => (string) $config->get('contacto_financiero.email', ''),
+                'telefono' => (string) $config->get('contacto_financiero.telefono', ''),
             ],
         ];
-    }
-
-    /**
-     * Convierte el logo a data URI base64 — compatible con DomPDF (sin necesidad
-     * de enable_remote) y con el preview del editor (browser).
-     */
-    private function logoEmpresa(): string
-    {
-        $path = public_path('images/logo.png');
-
-        if (! is_file($path)) {
-            return '';
-        }
-
-        $contenido = @file_get_contents($path);
-        if ($contenido === false) {
-            return '';
-        }
-
-        return 'data:image/png;base64,'.base64_encode($contenido);
     }
 }

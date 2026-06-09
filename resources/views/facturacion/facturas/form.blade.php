@@ -36,7 +36,9 @@
                 'cantidad' => (float) $i->cantidad,
                 'precio_unitario' => (float) $i->precio_unitario,
                 'descuento' => (float) $i->descuento,
+                'descuento_tipo' => $i->descuento_tipo ?? 'valor',
                 'impuesto_porcentaje' => (float) $i->impuesto_porcentaje,
+                'tallas' => is_array($i->tallas_json) ? implode(', ', $i->tallas_json) : '',
             ])->values()->all() ?? []),
             monedaId: {{ $monedaInicialId ?? 'null' }},
             monedaCopId: {{ $monedaCopId ?? 'null' }},
@@ -45,6 +47,10 @@
             seguro: {{ (float) old('seguro', $factura->seguro ?? 0) }},
             plantillaId: '{{ old('plantilla_factura_id', $factura->plantilla_factura_id ?? '') }}',
             clientesPlantilla: @js($clientes->pluck('plantilla_factura_id', 'id')->filter()->map(fn($id) => (string) $id)->all()),
+            clientesMoneda: @js($clientes->pluck('moneda_preferida_id', 'id')->filter()->map(fn($id) => (string) $id)->all()),
+            plantillasTipo: @js($plantillas->pluck('tipo', 'id')->map(fn($t) => (string) $t)->all()),
+            importUrl: '{{ route('facturacion.facturas.importar') }}',
+            csrf: '{{ csrf_token() }}',
             productos: @js($productos->map(fn($p) => [
                 'id' => $p->id,
                 'referencia' => $p->referencia,
@@ -53,7 +59,6 @@
                 'composicion' => $p->composicion,
                 'codigo_pa' => $p->codigo_pa,
                 'precio_unitario' => (float) $p->precio_unitario,
-                'impuesto_porcentaje' => (float) ($p->impuesto->porcentaje ?? 0),
                 'es_prenda' => (bool) $p->es_prenda,
             ])->values()->all()),
         })"
@@ -110,30 +115,7 @@
             </div>
         @endif
 
-        @if (session('success'))
-            <div class="mb-4">
-                <x-manzer.alert type="success" :message="session('success')" dismissible />
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4">
-                <x-manzer.alert type="error" :message="session('error')" dismissible />
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-4">
-                <x-manzer.alert type="error" :dismissible="false">
-                    <div class="font-semibold">Revisa los siguientes errores:</div>
-                    <ul class="mt-1 list-disc ps-5 text-xs">
-                        @foreach ($errors->all() as $err)
-                            <li>{{ $err }}</li>
-                        @endforeach
-                    </ul>
-                </x-manzer.alert>
-            </div>
-        @endif
+        {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
         <form action="{{ $action }}" method="POST" class="space-y-6">
             @csrf
@@ -183,6 +165,15 @@
                                 @endforeach
                             </select>
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">Al seleccionar cliente se precarga su plantilla preferida.</p>
+                            <template x-if="plantillaId && plantillasTipo[plantillaId]">
+                                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                    :class="plantillasTipo[plantillaId] === 'internacional'
+                                        ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-400'
+                                        : 'bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-400'">
+                                    <i class="bi bi-globe"></i>
+                                    <span x-text="plantillasTipo[plantillaId] === 'internacional' ? 'Factura internacional (exportación)' : 'Factura nacional'"></span>
+                                </span>
+                            </template>
                             @error('plantilla_factura_id')
                                 <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
@@ -333,6 +324,44 @@
                                 <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div class="space-y-1.5">
+                            <label for="remision" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                <i class="bi bi-file-earmark-text mr-1"></i>Remisión
+                            </label>
+                            <input
+                                type="text"
+                                id="remision"
+                                name="remision"
+                                value="{{ old('remision', $factura->remision) }}"
+                                maxlength="60"
+                                placeholder="Ej: REM-2026-0006"
+                                class="input {{ $errors->has('remision') ? 'ring-red-500 focus:ring-red-500' : '' }}"
+                            >
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Número de remisión asociado a la factura.</p>
+                            @error('remision')
+                                <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="payment_terms" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                <i class="bi bi-cash-coin mr-1"></i>Términos de pago
+                            </label>
+                            <input
+                                type="text"
+                                id="payment_terms"
+                                name="payment_terms"
+                                value="{{ old('payment_terms', $factura->payment_terms) }}"
+                                maxlength="100"
+                                placeholder="Ej: Crédito ACH 30 días"
+                                class="input {{ $errors->has('payment_terms') ? 'ring-red-500 focus:ring-red-500' : '' }}"
+                            >
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Condiciones de pago visibles en la factura.</p>
+                            @error('payment_terms')
+                                <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -375,15 +404,54 @@
                             ></span>
                         </div>
 
-                        <x-manzer.button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            icon="plus-lg"
-                            x-on:click="agregarLineaVacia()"
-                        >
-                            Línea manual
-                        </x-manzer.button>
+                        <div class="flex flex-wrap items-center gap-2">
+                            {{-- Botón de errores de importación (solo si hubo) --}}
+                            <button
+                                type="button"
+                                x-show="erroresImport.length > 0"
+                                @click="modalErrores = true"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400"
+                                style="display: none;"
+                            >
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span x-text="erroresImport.length + (erroresImport.length === 1 ? ' fila con error' : ' filas con error')"></span>
+                            </button>
+
+                            <a
+                                href="{{ route('facturacion.facturas.importar.plantilla') }}"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            >
+                                <i class="bi bi-file-earmark-arrow-down"></i>
+                                Plantilla Excel
+                            </a>
+
+                            <button
+                                type="button"
+                                @click="$refs.archivoExcel.click()"
+                                :disabled="importando"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-400"
+                            >
+                                <i class="bi" :class="importando ? 'bi-arrow-repeat animate-spin' : 'bi-file-earmark-excel'"></i>
+                                <span x-text="importando ? 'Importando…' : 'Importar Excel'"></span>
+                            </button>
+                            <input
+                                type="file"
+                                x-ref="archivoExcel"
+                                accept=".xlsx,.xls,.csv"
+                                class="hidden"
+                                @change="importarExcel($event)"
+                            >
+
+                            <x-manzer.button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                icon="plus-lg"
+                                x-on:click="agregarLinea()"
+                            >
+                                Agregar línea
+                            </x-manzer.button>
+                        </div>
                     </div>
 
                     {{-- Buscador productos --}}
@@ -435,9 +503,10 @@
                                     <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ref.</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Descripción</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Color</th>
+                                    <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Talla</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Cant.</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">P. Unit.</th>
-                                    <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Desc.</th>
+                                    <th class="whitespace-nowrap px-2 py-2 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Descuento</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">IVA %</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400"></th>
@@ -446,34 +515,47 @@
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                 <template x-for="(item, idx) in items" :key="idx">
                                     <tr class="align-top">
-                                        {{-- Hidden inputs: los que viajan al backend --}}
+                                        {{-- Hidden inputs: snapshot descriptivo que viaja al backend --}}
                                         <td class="px-2 py-2">
-                                            <input type="hidden" :name="'items['+idx+'][producto_id]'" :value="item.producto_id ?? ''">
+                                            <input type="hidden" :name="'items['+idx+'][referencia]'" :value="item.referencia ?? ''">
                                             <input type="hidden" :name="'items['+idx+'][composicion]'" :value="item.composicion ?? ''">
                                             <input type="hidden" :name="'items['+idx+'][codigo_pa]'" :value="item.codigo_pa ?? ''">
-                                            <input
-                                                type="text"
-                                                :name="'items['+idx+'][referencia]'"
-                                                x-model="item.referencia"
-                                                placeholder="REF-001"
-                                                class="input input-sm w-28 font-mono text-xs"
+                                            {{-- No usamos x-model: con opciones generadas por x-for, Alpine no
+                                                 sincroniza el valor inicial cuando el item se inyecta antes de que
+                                                 las opciones existan (caso importar Excel). Usamos :selected por
+                                                 opción + @change, que es fiable sin importar el orden de render. --}}
+                                            <select
+                                                :name="'items['+idx+'][producto_id]'"
+                                                @change="item.producto_id = $event.target.value === '' ? '' : Number($event.target.value); aplicarProducto(item)"
+                                                required
+                                                class="input input-sm w-44"
                                             >
+                                                <option value="" :selected="!item.producto_id">Seleccionar producto…</option>
+                                                <template x-for="p in productos" :key="p.id">
+                                                    <option
+                                                        :value="p.id"
+                                                        :selected="String(p.id) === String(item.producto_id)"
+                                                        x-text="p.referencia + ' — ' + p.descripcion"
+                                                    ></option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="hidden" :name="'items['+idx+'][descripcion]'" :value="item.descripcion ?? ''">
+                                            <span class="block min-w-[12rem] text-sm text-zinc-700 dark:text-zinc-300" x-text="item.descripcion || '—'"></span>
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="hidden" :name="'items['+idx+'][color]'" :value="item.color ?? ''">
+                                            <span class="block w-24 text-sm text-zinc-600 dark:text-zinc-400" x-text="item.color || '—'"></span>
                                         </td>
                                         <td class="px-2 py-2">
                                             <input
                                                 type="text"
-                                                :name="'items['+idx+'][descripcion]'"
-                                                x-model="item.descripcion"
-                                                placeholder="Descripción"
-                                                class="input input-sm w-full min-w-[12rem]"
-                                            >
-                                        </td>
-                                        <td class="px-2 py-2">
-                                            <input
-                                                type="text"
-                                                :name="'items['+idx+'][color]'"
-                                                x-model="item.color"
-                                                placeholder="—"
+                                                :name="'items['+idx+'][tallas]'"
+                                                x-model="item.tallas"
+                                                maxlength="100"
+                                                placeholder="S, M, L"
+                                                title="Tallas separadas por coma. Se muestran en el campo size de la plantilla."
                                                 class="input input-sm w-24"
                                             >
                                         </td>
@@ -498,14 +580,32 @@
                                             >
                                         </td>
                                         <td class="px-2 py-2">
-                                            <input
-                                                type="number"
-                                                :name="'items['+idx+'][descuento]'"
-                                                x-model.number="item.descuento"
-                                                step="0.01"
-                                                min="0"
-                                                class="input input-sm ml-auto w-24 text-right"
-                                            >
+                                            <div class="flex items-center justify-end gap-1">
+                                                <input
+                                                    type="number"
+                                                    :name="'items['+idx+'][descuento]'"
+                                                    x-model.number="item.descuento"
+                                                    step="0.01"
+                                                    min="0"
+                                                    :max="item.descuento_tipo === 'porcentaje' ? 100 : null"
+                                                    class="input input-sm w-20 text-right"
+                                                >
+                                                <select
+                                                    :name="'items['+idx+'][descuento_tipo]'"
+                                                    x-model="item.descuento_tipo"
+                                                    class="input input-sm w-16 px-1 text-center"
+                                                    title="Tipo de descuento"
+                                                >
+                                                    <option value="valor">$</option>
+                                                    <option value="porcentaje">%</option>
+                                                </select>
+                                            </div>
+                                            <p
+                                                x-show="descuentoLinea(item) > 0"
+                                                class="mt-0.5 text-right text-[10px] text-red-500"
+                                                x-text="'-' + fmt(descuentoLinea(item))"
+                                                style="display: none;"
+                                            ></p>
                                         </td>
                                         <td class="px-2 py-2">
                                             <input
@@ -563,9 +663,9 @@
                                 variant="outline"
                                 size="sm"
                                 icon="plus-lg"
-                                x-on:click="agregarLineaVacia()"
+                                x-on:click="agregarLinea()"
                             >
-                                Línea manual
+                                Agregar línea
                             </x-manzer.button>
                         </div>
                     </div>
@@ -720,6 +820,54 @@
                 </x-manzer.button>
             </form>
         @endif
+
+        {{-- Modal: errores de importación Excel --}}
+        <div
+            x-show="modalErrores"
+            x-transition.opacity
+            @keydown.escape.window="modalErrores = false"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            style="display: none;"
+        >
+            <div @click.outside="modalErrores = false" class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl dark:bg-zinc-900">
+                <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3 dark:border-zinc-800">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Errores al importar
+                        <span class="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-950 dark:text-red-400" x-text="erroresImport.length"></span>
+                    </h3>
+                    <button type="button" @click="modalErrores = false" class="rounded-lg p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="max-h-96 overflow-y-auto p-5">
+                    <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                        Estas filas no se importaron. Corrígelas en el Excel y vuelve a subirlo. El resto de líneas válidas sí se cargaron.
+                    </p>
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs uppercase tracking-wider text-zinc-400">
+                                <th class="pb-2 pr-3">Fila</th>
+                                <th class="pb-2 pr-3">Referencia</th>
+                                <th class="pb-2">Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            <template x-for="(e, i) in erroresImport" :key="i">
+                                <tr>
+                                    <td class="py-1.5 pr-3 font-mono text-xs text-zinc-600 dark:text-zinc-400" x-text="e.fila"></td>
+                                    <td class="py-1.5 pr-3 font-mono text-xs text-zinc-700 dark:text-zinc-300" x-text="e.referencia"></td>
+                                    <td class="py-1.5 text-xs text-red-600 dark:text-red-400" x-text="e.motivo"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex justify-end border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
+                    <button type="button" @click="modalErrores = false" class="btn-secondary">Cerrar</button>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -735,18 +883,69 @@
                 seguro: inicial.seguro,
                 plantillaId: inicial.plantillaId || '',
                 clientesPlantilla: inicial.clientesPlantilla || {},
+                clientesMoneda: inicial.clientesMoneda || {},
+                plantillasTipo: inicial.plantillasTipo || {},
                 productos: inicial.productos,
                 productoBuscar: '',
+                importUrl: inicial.importUrl,
+                csrf: inicial.csrf,
+                erroresImport: [],
+                importando: false,
+                modalErrores: false,
+
+                /** La factura es internacional si la plantilla seleccionada lo es. */
+                get esInternacional() {
+                    return this.plantillasTipo[this.plantillaId] === 'internacional';
+                },
+
+                /** IVA por defecto: 0% en exportación (exenta), 19% nacional. */
+                get ivaPorDefecto() {
+                    return this.esInternacional ? 0 : 19;
+                },
+
+                productoPorId(id) {
+                    return this.productos.find(p => String(p.id) === String(id)) || null;
+                },
 
                 /**
-                 * Al cambiar el cliente, precarga su plantilla preferida en el select.
-                 * El usuario puede cambiarla después manualmente — este método no bloquea.
+                 * Al elegir un producto en el select de una línea, copia su snapshot
+                 * descriptivo y aplica el IVA por defecto según el tipo de factura.
+                 * No toca cantidad/precio/descuento si ya tenían valor.
+                 */
+                aplicarProducto(item) {
+                    const p = this.productoPorId(item.producto_id);
+                    if (!p) {
+                        item.referencia = '';
+                        item.descripcion = '';
+                        item.color = '';
+                        item.composicion = '';
+                        item.codigo_pa = '';
+                        return;
+                    }
+                    item.referencia = p.referencia;
+                    item.descripcion = p.descripcion;
+                    item.color = p.color;
+                    item.composicion = p.composicion;
+                    item.codigo_pa = p.codigo_pa;
+                    if (!item.precio_unitario) {
+                        item.precio_unitario = p.precio_unitario;
+                    }
+                    item.impuesto_porcentaje = this.ivaPorDefecto;
+                },
+
+                /**
+                 * Al cambiar el cliente, precarga su plantilla y moneda preferidas.
+                 * El usuario puede cambiarlas después manualmente — este método no bloquea.
                  */
                 aplicarPlantillaDeCliente(clienteId) {
                     if (!clienteId) return;
                     const plantillaPreferida = this.clientesPlantilla[clienteId];
                     if (plantillaPreferida) {
                         this.plantillaId = plantillaPreferida;
+                    }
+                    const monedaPreferida = this.clientesMoneda[clienteId];
+                    if (monedaPreferida) {
+                        this.monedaId = Number(monedaPreferida);
                     }
                 },
 
@@ -771,14 +970,16 @@
                         cantidad: 1,
                         precio_unitario: p.precio_unitario,
                         descuento: 0,
-                        impuesto_porcentaje: p.impuesto_porcentaje,
+                        descuento_tipo: 'valor',
+                        impuesto_porcentaje: this.ivaPorDefecto,
+                        tallas: '',
                     });
                     this.productoBuscar = '';
                 },
 
-                agregarLineaVacia() {
+                agregarLinea() {
                     this.items.push({
-                        producto_id: null,
+                        producto_id: '',
                         referencia: '',
                         descripcion: '',
                         color: '',
@@ -787,16 +988,98 @@
                         cantidad: 1,
                         precio_unitario: 0,
                         descuento: 0,
-                        impuesto_porcentaje: 0,
+                        descuento_tipo: 'valor',
+                        impuesto_porcentaje: this.ivaPorDefecto,
+                        tallas: '',
                     });
+                },
+
+                /**
+                 * Sube el Excel al backend, agrega las líneas válidas y guarda los
+                 * errores por fila para mostrarlos en el modal.
+                 */
+                async importarExcel(event) {
+                    const input = event.target;
+                    const archivo = input.files && input.files[0];
+                    if (!archivo) return;
+
+                    this.importando = true;
+                    this.erroresImport = [];
+
+                    const formData = new FormData();
+                    formData.append('archivo', archivo);
+                    formData.append('iva_default', this.ivaPorDefecto);
+
+                    try {
+                        const resp = await fetch(this.importUrl, {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
+                            body: formData,
+                        });
+
+                        if (!resp.ok) {
+                            const data = await resp.json().catch(() => ({}));
+                            const msg = data.message || 'No se pudo procesar el archivo. Verifica que sea un Excel válido.';
+                            window.Swal.fire({ icon: 'error', title: 'Error al importar', text: msg });
+                            return;
+                        }
+
+                        const data = await resp.json();
+                        const nuevos = (data.items || []).map(it => ({
+                            producto_id: it.producto_id,
+                            referencia: it.referencia,
+                            descripcion: it.descripcion,
+                            color: it.color,
+                            composicion: it.composicion,
+                            codigo_pa: it.codigo_pa,
+                            cantidad: Number(it.cantidad) || 0,
+                            precio_unitario: Number(it.precio_unitario) || 0,
+                            descuento: Number(it.descuento) || 0,
+                            descuento_tipo: it.descuento_tipo === 'porcentaje' ? 'porcentaje' : 'valor',
+                            impuesto_porcentaje: Number(it.impuesto_porcentaje) || 0,
+                            tallas: it.tallas || '',
+                        }));
+
+                        this.items.push(...nuevos);
+                        this.erroresImport = data.errores || [];
+
+                        if (nuevos.length > 0) {
+                            window.Swal.fire({
+                                icon: this.erroresImport.length ? 'warning' : 'success',
+                                title: nuevos.length + (nuevos.length === 1 ? ' línea importada' : ' líneas importadas'),
+                                text: this.erroresImport.length
+                                    ? this.erroresImport.length + ' fila(s) con error. Revísalas en el botón de alerta.'
+                                    : 'Todas las filas se importaron correctamente.',
+                                timer: this.erroresImport.length ? undefined : 2000,
+                                showConfirmButton: this.erroresImport.length > 0,
+                            });
+                        } else if (this.erroresImport.length > 0) {
+                            this.modalErrores = true;
+                        } else {
+                            window.Swal.fire({ icon: 'info', title: 'Sin líneas', text: 'El archivo no contenía filas para importar.' });
+                        }
+                    } catch (e) {
+                        window.Swal.fire({ icon: 'error', title: 'Error', text: 'Ocurrió un problema al subir el archivo.' });
+                    } finally {
+                        this.importando = false;
+                        input.value = '';
+                    }
                 },
 
                 eliminar(idx) {
                     this.items.splice(idx, 1);
                 },
 
+                // Monto de descuento efectivo de la línea (espejo de FacturaItem::calcularDescuento en PHP).
+                descuentoLinea(item) {
+                    const base = (Number(item.cantidad) || 0) * (Number(item.precio_unitario) || 0);
+                    const valor = Math.max(Number(item.descuento) || 0, 0);
+                    const desc = item.descuento_tipo === 'porcentaje' ? base * valor / 100 : valor;
+                    return Math.min(desc, Math.max(base, 0));
+                },
+
                 subtotalLinea(item) {
-                    return (Number(item.cantidad) || 0) * (Number(item.precio_unitario) || 0) - (Number(item.descuento) || 0);
+                    return (Number(item.cantidad) || 0) * (Number(item.precio_unitario) || 0) - this.descuentoLinea(item);
                 },
 
                 totalLinea(item) {
@@ -809,7 +1092,7 @@
                 },
 
                 get descuentoTotal() {
-                    return this.items.reduce((s, it) => s + (Number(it.descuento) || 0), 0);
+                    return this.items.reduce((s, it) => s + this.descuentoLinea(it), 0);
                 },
 
                 get ivaTotal() {

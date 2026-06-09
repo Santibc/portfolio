@@ -126,6 +126,7 @@
                             <span>Monedas</span>
                         </a>
                     </li>
+                    {{-- Oculto temporalmente: Impuestos (volver a habilitar después)
                     <li>
                         <a href="{{ route('admin.impuestos.index') }}" @class([
                             'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
@@ -136,6 +137,7 @@
                             <span>Impuestos</span>
                         </a>
                     </li>
+                    --}}
                     {{-- Oculto temporalmente: Tipos de descuento (volver a habilitar después)
                     <li>
                         <a href="{{ route('admin.tipos-descuento.index') }}" @class([

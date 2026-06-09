@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('composicion', 255)->nullable();
             $table->string('codigo_pa', 20)->nullable();
             $table->decimal('precio_unitario', 14, 2);
-            $table->foreignId('moneda_id')->constrained('monedas')->restrictOnDelete();
-            $table->foreignId('impuesto_id')->nullable()->constrained('impuestos')->nullOnDelete();
             $table->string('unidad_medida', 20)->default('Und');
             $table->string('imagen_path', 255)->nullable();
             $table->boolean('es_prenda')->default(false);

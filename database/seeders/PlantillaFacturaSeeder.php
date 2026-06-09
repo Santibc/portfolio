@@ -258,6 +258,7 @@ HTML;
                 <th>COMPOSITION</th>
                 <th>QTY</th>
                 <th>#PA</th>
+                <th>COUNTRY OF ORIGIN</th>
                 <th>UNIT PRICE</th>
                 <th>TOTAL AMOUNT</th>
             </tr>
@@ -271,6 +272,7 @@ HTML;
                 <td>{{composition}}</td>
                 <td>{{cantidad}}</td>
                 <td>{{codigo_pa}}</td>
+                <td>{{pais_origen}}</td>
                 <td>${{precio_unitario}}</td>
                 <td>${{total}}</td>
             </tr>

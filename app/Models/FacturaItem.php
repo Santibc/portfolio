@@ -20,9 +20,11 @@ class FacturaItem extends Model
         'color',
         'composicion',
         'codigo_pa',
+        'pais_origen',
         'cantidad',
         'precio_unitario',
         'descuento',
+        'descuento_tipo',
         'impuesto_porcentaje',
         'total_linea',
         'tallas_json',
@@ -38,6 +40,30 @@ class FacturaItem extends Model
         'tallas_json' => 'array',
         'orden' => 'int',
     ];
+
+    /**
+     * Resuelve el monto de descuento efectivo (en moneda de la factura) a partir
+     * de un valor crudo y su tipo. Para 'porcentaje' aplica el % sobre la base;
+     * para 'valor' usa el monto tal cual. Nunca devuelve negativo ni excede la base.
+     */
+    public static function calcularDescuento(float $base, string $tipo, float $valor): float
+    {
+        $valor = max($valor, 0.0);
+        $descuento = $tipo === 'porcentaje' ? $base * $valor / 100 : $valor;
+
+        return round(min($descuento, max($base, 0.0)), 2);
+    }
+
+    /**
+     * Monto de descuento efectivo de esta línea (cantidad × precio − descuento).
+     * Fuente única de verdad usada por el cálculo de totales y por el payload Siigo.
+     */
+    public function descuentoValor(): float
+    {
+        $base = (float) $this->cantidad * (float) $this->precio_unitario;
+
+        return self::calcularDescuento($base, $this->descuento_tipo ?? 'valor', (float) $this->descuento);
+    }
 
     /**
      * @return BelongsTo<Factura, FacturaItem>

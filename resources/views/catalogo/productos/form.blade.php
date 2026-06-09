@@ -19,17 +19,7 @@
             </x-slot>
         </x-manzer.page-header>
 
-        @if (session('success'))
-            <div class="mb-4">
-                <x-manzer.alert type="success" :message="session('success')" dismissible />
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4">
-                <x-manzer.alert type="error" :message="session('error')" dismissible />
-            </div>
-        @endif
+        {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
         <form
             action="{{ $producto->exists ? route('catalogos.productos.update', $producto) : route('catalogos.productos.store') }}"
@@ -91,6 +81,68 @@
                         :value="$producto->codigo_pa ?? ''"
                     />
 
+                    <div
+                        x-data="paisCombobox({
+                            opciones: {{ Js::from($paises) }},
+                            seleccionado: {{ Js::from(old('pais_origen', $producto->pais_origen ?? 'Colombia')) }},
+                        })"
+                        @keydown.escape="cerrar()"
+                        class="relative"
+                    >
+                        <label for="pais_origen_buscar" class="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <i class="bi bi-globe-americas mr-1"></i>País de origen
+                        </label>
+
+                        <input type="hidden" name="pais_origen" x-model="seleccionado">
+
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="pais_origen_buscar"
+                                x-model="busqueda"
+                                @focus="abrir()"
+                                @click="abrir()"
+                                @input="abrir()"
+                                autocomplete="off"
+                                placeholder="Busca un país…"
+                                class="input pr-8 {{ $errors->has('pais_origen') ? 'ring-red-500 focus:ring-red-500' : '' }}"
+                            >
+                            <button
+                                type="button"
+                                @click="seleccionar('')"
+                                x-show="seleccionado"
+                                class="absolute inset-y-0 right-2 flex items-center text-zinc-400 hover:text-zinc-600"
+                                aria-label="Limpiar"
+                            >
+                                <i class="bi bi-x-lg text-xs"></i>
+                            </button>
+                        </div>
+
+                        <ul
+                            x-show="abierto"
+                            x-transition.opacity
+                            @click.outside="cerrar()"
+                            class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                            style="display: none;"
+                        >
+                            <template x-for="opcion in filtradas" :key="opcion">
+                                <li
+                                    @click="seleccionar(opcion)"
+                                    class="cursor-pointer px-3 py-1.5 text-sm text-zinc-700 hover:bg-primary-50 hover:text-primary-700 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                                    :class="opcion === seleccionado ? 'bg-primary-50 font-medium text-primary-700 dark:bg-zinc-700' : ''"
+                                    x-text="opcion"
+                                ></li>
+                            </template>
+                            <li x-show="filtradas.length === 0" class="px-3 py-1.5 text-sm text-zinc-400">
+                                Sin resultados
+                            </li>
+                        </ul>
+
+                        @error('pais_origen')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <x-manzer.form-group
                         label="Unidad de medida"
                         name="unidad_medida"
@@ -110,33 +162,6 @@
                         required
                         :value="$producto->precio_unitario ?? ''"
                     />
-
-                    <x-manzer.form-group
-                        label="Moneda"
-                        name="moneda_id"
-                        type="select"
-                        icon="currency-exchange"
-                        required
-                        :value="$producto->moneda_id ?? ''"
-                        :options="$monedas->pluck('codigo', 'id')->toArray()"
-                    />
-
-                    <div>
-                        <label for="impuesto_id" class="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                            <i class="bi bi-percent mr-1"></i>Impuesto (IVA)
-                        </label>
-                        <select id="impuesto_id" name="impuesto_id" class="input {{ $errors->has('impuesto_id') ? 'ring-red-500 focus:ring-red-500' : '' }}">
-                            <option value="" @selected(old('impuesto_id', $producto->impuesto_id) === null || old('impuesto_id', $producto->impuesto_id) === '')>Sin impuesto</option>
-                            @foreach ($impuestos as $impuesto)
-                                <option value="{{ $impuesto->id }}" @selected((string) old('impuesto_id', $producto->impuesto_id) === (string) $impuesto->id)>
-                                    {{ $impuesto->nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('impuesto_id')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     <div>
                         <label for="imagen" class="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -222,4 +247,37 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+        <script>
+            window.paisCombobox = function ({ opciones = [], seleccionado = '' } = {}) {
+                return {
+                    opciones,
+                    seleccionado,
+                    busqueda: seleccionado,
+                    abierto: false,
+                    get filtradas() {
+                        const q = this.busqueda.trim().toLowerCase();
+                        if (!q) {
+                            return this.opciones;
+                        }
+                        return this.opciones.filter((o) => o.toLowerCase().includes(q));
+                    },
+                    abrir() {
+                        this.abierto = true;
+                    },
+                    cerrar() {
+                        this.abierto = false;
+                        // Si lo escrito no coincide con la selección, restaura el texto seleccionado
+                        this.busqueda = this.seleccionado;
+                    },
+                    seleccionar(opcion) {
+                        this.seleccionado = opcion;
+                        this.busqueda = opcion;
+                        this.abierto = false;
+                    },
+                };
+            };
+        </script>
+    @endpush
 @endsection

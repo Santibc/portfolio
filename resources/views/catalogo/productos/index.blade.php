@@ -26,17 +26,7 @@
             </x-slot>
         </x-manzer.page-header>
 
-        @if (session('success'))
-            <div class="mb-4">
-                <x-manzer.alert type="success" :message="session('success')" dismissible />
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4">
-                <x-manzer.alert type="error" :message="session('error')" dismissible />
-            </div>
-        @endif
+        {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
         <div class="card mb-4 p-4">
             <form action="{{ route('catalogos.productos.index') }}" method="GET" class="grid grid-cols-1 gap-3 md:grid-cols-12 md:items-end">
@@ -85,7 +75,7 @@
                 </div>
             </div>
         @else
-            <x-manzer.data-table :headers="['Imagen', 'Referencia', 'Descripción', 'Color', 'Precio', 'Moneda', 'IVA', 'Tipo', 'Activo', 'Acciones']">
+            <x-manzer.data-table :headers="['Imagen', 'Referencia', 'Descripción', 'Color', 'Origen', 'Precio', 'Tipo', 'Activo', 'Acciones']">
                 @foreach ($productos as $producto)
                     <x-manzer.table-row>
                         <x-manzer.table-cell>
@@ -121,16 +111,16 @@
                             @endif
                         </x-manzer.table-cell>
 
+                        <x-manzer.table-cell>
+                            @if (!empty($producto->pais_origen))
+                                {{ $producto->pais_origen }}
+                            @else
+                                <span class="text-zinc-400">—</span>
+                            @endif
+                        </x-manzer.table-cell>
+
                         <x-manzer.table-cell class="font-semibold">
                             {{ number_format((float) $producto->precio_unitario, 2, ',', '.') }}
-                        </x-manzer.table-cell>
-
-                        <x-manzer.table-cell>
-                            {{ $producto->moneda?->codigo ?? '—' }}
-                        </x-manzer.table-cell>
-
-                        <x-manzer.table-cell>
-                            {{ $producto->impuesto?->nombre ?? '—' }}
                         </x-manzer.table-cell>
 
                         <x-manzer.table-cell>

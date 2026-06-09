@@ -40,6 +40,8 @@ class Factura extends Model
         'po_numero',
         'awb',
         'shipper',
+        'remision',
+        'payment_terms',
         'estado',
         'es_electronica',
         'plantilla_factura_id',
@@ -115,6 +117,15 @@ class Factura extends Model
     public function yaEmitida(): bool
     {
         return in_array($this->estado, ['emitida', 'enviada', 'pagada'], true);
+    }
+
+    /**
+     * Una factura es internacional (exportación) si su plantilla lo es.
+     * La plantilla es la fuente única de verdad — el tipo no se persiste en la factura.
+     */
+    public function esInternacional(): bool
+    {
+        return $this->plantilla?->tipo === PlantillaFactura::TIPO_INTERNACIONAL;
     }
 
     /**

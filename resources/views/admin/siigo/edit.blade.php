@@ -13,12 +13,7 @@
         </x-slot>
     </x-manzer.page-header>
 
-    @if (session('success'))
-        <x-manzer.alert type="success" :message="session('success')" dismissible />
-    @endif
-    @if (session('error'))
-        <x-manzer.alert type="error" :message="session('error')" dismissible />
-    @endif
+    {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-6">
@@ -97,13 +92,31 @@
                                 help="NIT de la empresa (con o sin dígito de verificación)." />
 
                             <x-manzer.form-group
-                                label="Tipo documento ID"
+                                label="Tipo documento ID (nacional)"
                                 icon="hash"
                                 name="tipo_documento_id"
                                 type="number"
                                 :value="old('tipo_documento_id', $config->tipo_documento_id)"
                                 placeholder="Ej: 24446"
                                 help="ID del tipo 'Factura de venta electrónica' en Siigo." />
+
+                            <x-manzer.form-group
+                                label="Tipo documento exportación ID"
+                                icon="globe"
+                                name="tipo_documento_export_id"
+                                type="number"
+                                :value="old('tipo_documento_export_id', $config->tipo_documento_export_id)"
+                                placeholder="Ej: 24447"
+                                help="ID del tipo 'Factura electrónica de venta – exportación' (catálogo document-types)." />
+
+                            <x-manzer.form-group
+                                label="Tax ID (IVA nacional)"
+                                icon="percent"
+                                name="tax_id"
+                                type="number"
+                                :value="old('tax_id', $config->tax_id)"
+                                placeholder="Ej: 13156"
+                                help="ID del impuesto IVA en Siigo (catálogo taxes). Se aplica a ítems con impuesto en facturas nacionales. La exportación va exenta." />
 
                             <x-manzer.form-group
                                 label="Vendedor (Seller) ID"
