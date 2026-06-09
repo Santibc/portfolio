@@ -54,6 +54,21 @@
                 @endif
             @endif
 
+            @if($partes_diario->estado === 'validado')
+                @role('Administrador')
+                <a href="{{ route('partes-diarios.edit', $partes_diario) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-2"></i>Editar (admin)
+                </a>
+                <form action="{{ route('partes-diarios.destroy', $partes_diario) }}" method="POST" class="d-inline"
+                      onsubmit="return confirm('¿Eliminar este parte validado? Esta acción no se puede deshacer.');">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-2"></i>Eliminar (admin)
+                    </button>
+                </form>
+                @endrole
+            @endif
+
             <!-- Duplicar -->
             <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#duplicarModal">
                 <i class="bi bi-copy me-2"></i>Duplicar

@@ -1,0 +1,155 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Nomina;
+use App\Models\Trabajador;
+use Illuminate\Http\Request;
+
+class NominaController extends Controller
+{
+    /**
+     * Guardar una nómina de un trabajador (admin/RRHH).
+     */
+    public function store(Request $request, Trabajador $trabajador)
+    {
+        $validated = $request->validate([
+            'anio' => 'required|integer|min:2000|max:2100',
+            'mes' => 'required|integer|min:1|max:12',
+            'salario_bruto' => 'required|numeric|min:0',
+            'ss_empresa' => 'nullable|numeric|min:0',
+            'ss_trabajador' => 'nullable|numeric|min:0',
+            'irpf' => 'nullable|numeric|min:0',
+            'documento' => 'nullable|file|mimes:pdf|max:5120',
+            'notas' => 'nullable|string',
+        ], [
+            'documento.mimes' => 'La nómina debe ser un PDF.',
+            'documento.max' => 'El PDF no puede superar 5MB.',
+        ]);
+
+        if (Nomina::where('trabajador_id', $trabajador->id)->where('anio', $validated['anio'])->where('mes', $validated['mes'])->exists()) {
+            return back()->with('error', 'Ya existe una nómina para ese trabajador en ese mes/año.');
+        }
+
+        $bruto = (float) $validated['salario_bruto'];
+        $ssTrab = (float) ($validated['ss_trabajador'] ?? 0);
+        $irpf = (float) ($validated['irpf'] ?? 0);
+
+        $data = [
+            'trabajador_id' => $trabajador->id,
+            'anio' => $validated['anio'],
+            'mes' => $validated['mes'],
+            'salario_bruto' => $bruto,
+            'ss_empresa' => (float) ($validated['ss_empresa'] ?? 0),
+            'ss_trabajador' => $ssTrab,
+            'irpf' => $irpf,
+            'liquido' => round($bruto - $ssTrab - $irpf, 2),
+            'notas' => $validated['notas'] ?? null,
+        ];
+
+        if ($request->hasFile('documento')) {
+            $archivo = $request->file('documento');
+            $nombre = 'nomina_' . $validated['anio'] . '_' . $validated['mes'] . '_' . time() . '.' . $archivo->getClientOriginalExtension();
+            $ruta = 'uploads/trabajadores/' . $trabajador->id . '/nominas';
+            $archivo->move(public_path($ruta), $nombre);
+            $data['documento_path'] = $ruta . '/' . $nombre;
+        }
+
+        Nomina::create($data);
+
+        return back()->with('success', 'Nómina registrada correctamente.');
+    }
+
+    /**
+     * Eliminar una nómina.
+     */
+    public function destroy(Nomina $nomina)
+    {
+        if ($nomina->documento_path && file_exists(public_path($nomina->documento_path))) {
+            @unlink(public_path($nomina->documento_path));
+        }
+        $nomina->delete();
+
+        return back()->with('success', 'Nómina eliminada correctamente.');
+    }
+
+    /**
+     * Descargar el PDF de una nómina (admin/RRHH/Contabilidad o el propio trabajador).
+     */
+    public function download(Nomina $nomina)
+    {
+        $user = auth()->user();
+        $miTrabajador = Trabajador::where('user_id', $user->id)->first();
+        $esPropia = $miTrabajador && $miTrabajador->id === $nomina->trabajador_id;
+
+        if (!$esPropia && !$user->hasAnyRole(['Administrador', 'RRHH', 'Contabilidad'])) {
+            abort(403, 'No tienes permiso para descargar esta nómina.');
+        }
+
+        if (!$nomina->documento_path || !file_exists(public_path($nomina->documento_path))) {
+            abort(404, 'No hay documento adjunto en esta nómina.');
+        }
+
+        return response()->download(
+            public_path($nomina->documento_path),
+            'nomina_' . $nomina->mes_nombre . '_' . $nomina->anio . '.pdf'
+        );
+    }
+
+    /**
+     * Resumen mensual de nóminas (coste empresa, SS, IRPF, líquido).
+     */
+    public function resumen(Request $request)
+    {
+        $anio = (int) $request->input('anio', now()->year);
+
+        $nominas = Nomina::where('anio', $anio)->get();
+
+        $porMes = [];
+        foreach (range(1, 12) as $m) {
+            $delMes = $nominas->where('mes', $m);
+            if ($delMes->isEmpty()) {
+                continue;
+            }
+            $bruto = (float) $delMes->sum('salario_bruto');
+            $ssEmp = (float) $delMes->sum('ss_empresa');
+            $porMes[$m] = [
+                'nombre' => Nomina::MESES[$m],
+                'bruto' => $bruto,
+                'ss_empresa' => $ssEmp,
+                'ss_trabajador' => (float) $delMes->sum('ss_trabajador'),
+                'irpf' => (float) $delMes->sum('irpf'),
+                'liquido' => (float) $delMes->sum('liquido'),
+                'coste_empresa' => $bruto + $ssEmp,
+                'count' => $delMes->count(),
+            ];
+        }
+
+        $totales = [
+            'bruto' => (float) $nominas->sum('salario_bruto'),
+            'ss_empresa' => (float) $nominas->sum('ss_empresa'),
+            'ss_trabajador' => (float) $nominas->sum('ss_trabajador'),
+            'irpf' => (float) $nominas->sum('irpf'),
+            'liquido' => (float) $nominas->sum('liquido'),
+            'coste_empresa' => (float) $nominas->sum('salario_bruto') + (float) $nominas->sum('ss_empresa'),
+        ];
+
+        $anios = range(now()->year, now()->year - 5);
+
+        return view('nominas.resumen', compact('anio', 'porMes', 'totales', 'anios'));
+    }
+
+    /**
+     * Portal del trabajador: mis nóminas.
+     */
+    public function misNominas()
+    {
+        $trabajador = Trabajador::where('user_id', auth()->id())->first();
+        abort_unless($trabajador, 403, 'No tienes un perfil de trabajador asociado.');
+
+        $nominas = Nomina::where('trabajador_id', $trabajador->id)
+            ->orderByDesc('anio')->orderByDesc('mes')->get();
+
+        return view('trabajador.nominas', compact('nominas', 'trabajador'));
+    }
+}

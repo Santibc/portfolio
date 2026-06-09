@@ -181,7 +181,7 @@
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         @if($gasto->estado == 'pendiente')
-                            <button type="button" class="btn btn-success" onclick="marcarPagado({{ $gasto->id }})">
+                            <button type="button" class="btn btn-success" onclick="marcarPagado({{ $gasto->id }}, '{{ optional($gasto->fecha_vencimiento)->format('Y-m-d') ?: optional($gasto->fecha)->format('Y-m-d') }}')">
                                 <i class="bi bi-check-lg me-2"></i>Marcar como Pagado
                             </button>
                         @else
@@ -245,10 +245,10 @@
 
 @push('scripts')
 <script>
-    function marcarPagado(id) {
+    function marcarPagado(id, fechaSugerida) {
         Swal.fire({
             title: 'Marcar como pagado',
-            html: '<input type="date" id="fechaPago" class="form-control" value="{{ date('Y-m-d') }}">',
+            html: '<input type="date" id="fechaPago" class="form-control" value="' + (fechaSugerida || '{{ date('Y-m-d') }}') + '">',
             showCancelButton: true,
             confirmButtonText: 'Marcar Pagado',
             cancelButtonText: 'Cancelar',

@@ -14,6 +14,38 @@ use Illuminate\View\View;
 class IngresoController extends Controller
 {
     /**
+     * Exportar el listado de ingresos a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Ingreso::with(['obra', 'cliente']);
+        if ($request->filled('obra_id')) $query->where('obra_id', $request->obra_id);
+        if ($request->filled('cliente_id')) $query->where('cliente_id', $request->cliente_id);
+        if ($request->filled('estado')) $query->where('estado', $request->estado);
+        if ($request->filled('fecha_desde')) $query->whereDate('fecha', '>=', $request->fecha_desde);
+        if ($request->filled('fecha_hasta')) $query->whereDate('fecha', '<=', $request->fecha_hasta);
+        if ($request->filled('importe_min')) $query->where('importe', '>=', (float) $request->importe_min);
+        if ($request->filled('importe_max')) $query->where('importe', '<=', (float) $request->importe_max);
+        $items = $query->orderByDesc('fecha')->orderByDesc('id')->get();
+
+        $rows = $items->map(fn($i) => [
+            optional($i->fecha)->format('d/m/Y'),
+            $i->concepto,
+            $i->obra?->codigo ?? '-',
+            $i->cliente?->nombre_comercial ?? '-',
+            (float) $i->importe,
+            (float) $i->iva_importe,
+            (float) $i->importe_total,
+            ucfirst($i->estado),
+        ])->toArray();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ListadoExport(['Fecha', 'Concepto', 'Obra', 'Cliente', 'Base imponible', 'IVA', 'Total', 'Estado'], $rows),
+            'ingresos_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
+    /**
      * Mostrar listado de ingresos con filtros y estadísticas.
      */
     public function index(Request $request): View
@@ -36,18 +68,27 @@ class IngresoController extends Controller
         if ($request->filled('fecha_hasta')) {
             $query->whereDate('fecha', '<=', $request->fecha_hasta);
         }
+        if ($request->filled('importe_min')) {
+            $query->where('importe', '>=', (float) $request->importe_min);
+        }
+        if ($request->filled('importe_max')) {
+            $query->where('importe', '<=', (float) $request->importe_max);
+        }
 
         // Ordenar y paginar
         $ingresos = $query->orderByDesc('fecha')->orderByDesc('id')->paginate(25)->withQueryString();
 
-        // Estadísticas
+        // Estadísticas (cifras en BASE IMPONIBLE, sin IVA, para valoración del rendimiento)
         $stats = [
-            'total' => Ingreso::sum('importe_total'),
-            'pendiente' => Ingreso::pendientes()->sum('importe_total'),
-            'cobrado' => Ingreso::cobrados()->sum('importe_total'),
+            'total' => Ingreso::sum('importe'),
+            'pendiente' => Ingreso::pendientes()->sum('importe'),
+            'cobrado' => Ingreso::cobrados()->sum('importe'),
             'este_mes' => Ingreso::whereMonth('fecha', now()->month)
                                  ->whereYear('fecha', now()->year)
-                                 ->sum('importe_total'),
+                                 ->sum('importe'),
+            // Desglose de IVA y total con impuestos (separación contable)
+            'total_iva' => Ingreso::sum('iva_importe'),
+            'total_con_iva' => Ingreso::sum('importe_total'),
         ];
 
         // Datos para filtros
@@ -72,17 +113,50 @@ class IngresoController extends Controller
     }
 
     /**
+     * Calcular base total, IVA total y desglose a partir de las líneas de IVA.
+     */
+    private function calcularDesgloseIva(array $bases, array $pcts): array
+    {
+        $base = 0; $iva = 0; $desglose = [];
+        foreach ($bases as $i => $b) {
+            $b = floatval($b);
+            $p = floatval($pcts[$i] ?? 0);
+            $imp = round($b * $p / 100, 2);
+            $base += $b;
+            $iva += $imp;
+            $desglose[] = ['base' => round($b, 2), 'porcentaje' => $p, 'importe' => $imp];
+        }
+        return [round($base, 2), round($iva, 2), $desglose];
+    }
+
+    /**
      * Guardar nuevo ingreso.
      */
     public function store(Request $request)
     {
+        // Aviso de posible duplicado (misma fecha + misma base imponible total), salvo confirmación expresa
+        $baseDup = round(collect($request->input('iva_base', []))->sum(fn($v) => floatval($v)), 2);
+        if (!$request->boolean('confirmar_duplicado') && $request->filled('fecha') && $baseDup != 0) {
+            $dup = Ingreso::whereDate('fecha', $request->fecha)
+                ->where('importe', $baseDup)
+                ->first();
+            if ($dup) {
+                return back()->withInput()->with('dup_warning',
+                    'Ya existe un ingreso con la misma fecha (' . \Carbon\Carbon::parse($request->fecha)->format('d/m/Y')
+                    . ') e importe (' . number_format($baseDup, 2, ',', '.') . ' €): "' . $dup->concepto
+                    . '". Si no es un duplicado, marca la casilla y guarda de nuevo.');
+            }
+        }
+
         $validated = $request->validate([
             'obra_id' => 'required|exists:obras,id',
             'cliente_id' => 'required|exists:clientes,id',
             'concepto' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'importe' => 'required|numeric|min:0.01',
-            'iva_porcentaje' => 'required|numeric|min:0|max:100',
+            'iva_base' => 'required|array|min:1',
+            'iva_base.*' => 'required|numeric',
+            'iva_pct' => 'required|array|min:1',
+            'iva_pct.*' => 'required|numeric|min:0|max:100',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'fecha' => 'required|date',
             'fecha_prevista_cobro' => 'nullable|date|after_or_equal:fecha',
@@ -92,21 +166,19 @@ class IngresoController extends Controller
             'obra_id.required' => 'La obra es obligatoria.',
             'cliente_id.required' => 'El cliente es obligatorio.',
             'concepto.required' => 'El concepto es obligatorio.',
-            'importe.required' => 'El importe es obligatorio.',
-            'importe.min' => 'El importe debe ser mayor a 0.',
+            'iva_base.required' => 'Indica al menos una base imponible.',
+            'iva_base.*.required' => 'La base imponible es obligatoria.',
             'fecha.required' => 'La fecha es obligatoria.',
         ]);
 
         DB::beginTransaction();
         try {
-            // Calcular importes
-            $importe = floatval($validated['importe']);
-            $ivaPorcentaje = floatval($validated['iva_porcentaje']);
+            // Calcular importes con desglose de varios IVA + retención
+            [$importe, $ivaImporte, $desglose] = $this->calcularDesgloseIva($validated['iva_base'], $validated['iva_pct']);
+            $ivaPorcentaje = count($desglose) === 1 ? $desglose[0]['porcentaje'] : ($importe != 0 ? round($ivaImporte / $importe * 100, 2) : 0);
             $retencionPorcentaje = floatval($validated['retencion_porcentaje'] ?? 0);
-
-            $ivaImporte = $importe * ($ivaPorcentaje / 100);
-            $retencionImporte = $importe * ($retencionPorcentaje / 100);
-            $importeTotal = $importe + $ivaImporte - $retencionImporte;
+            $retencionImporte = round($importe * $retencionPorcentaje / 100, 2);
+            $importeTotal = round($importe + $ivaImporte - $retencionImporte, 2);
 
             // Preparar datos
             $data = [
@@ -117,6 +189,7 @@ class IngresoController extends Controller
                 'importe' => $importe,
                 'iva_porcentaje' => $ivaPorcentaje,
                 'iva_importe' => $ivaImporte,
+                'desglose_iva' => $desglose,
                 'retencion_porcentaje' => $retencionPorcentaje,
                 'retencion_importe' => $retencionImporte,
                 'importe_total' => $importeTotal,
@@ -177,8 +250,10 @@ class IngresoController extends Controller
             'cliente_id' => 'required|exists:clientes,id',
             'concepto' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'importe' => 'required|numeric|min:0.01',
-            'iva_porcentaje' => 'required|numeric|min:0|max:100',
+            'iva_base' => 'required|array|min:1',
+            'iva_base.*' => 'required|numeric',
+            'iva_pct' => 'required|array|min:1',
+            'iva_pct.*' => 'required|numeric|min:0|max:100',
             'retencion_porcentaje' => 'nullable|numeric|min:0|max:100',
             'fecha' => 'required|date',
             'fecha_prevista_cobro' => 'nullable|date|after_or_equal:fecha',
@@ -188,21 +263,19 @@ class IngresoController extends Controller
             'obra_id.required' => 'La obra es obligatoria.',
             'cliente_id.required' => 'El cliente es obligatorio.',
             'concepto.required' => 'El concepto es obligatorio.',
-            'importe.required' => 'El importe es obligatorio.',
-            'importe.min' => 'El importe debe ser mayor a 0.',
+            'iva_base.required' => 'Indica al menos una base imponible.',
+            'iva_base.*.required' => 'La base imponible es obligatoria.',
             'fecha.required' => 'La fecha es obligatoria.',
         ]);
 
         DB::beginTransaction();
         try {
-            // Calcular importes
-            $importe = floatval($validated['importe']);
-            $ivaPorcentaje = floatval($validated['iva_porcentaje']);
+            // Calcular importes con desglose de varios IVA + retención
+            [$importe, $ivaImporte, $desglose] = $this->calcularDesgloseIva($validated['iva_base'], $validated['iva_pct']);
+            $ivaPorcentaje = count($desglose) === 1 ? $desglose[0]['porcentaje'] : ($importe != 0 ? round($ivaImporte / $importe * 100, 2) : 0);
             $retencionPorcentaje = floatval($validated['retencion_porcentaje'] ?? 0);
-
-            $ivaImporte = $importe * ($ivaPorcentaje / 100);
-            $retencionImporte = $importe * ($retencionPorcentaje / 100);
-            $importeTotal = $importe + $ivaImporte - $retencionImporte;
+            $retencionImporte = round($importe * $retencionPorcentaje / 100, 2);
+            $importeTotal = round($importe + $ivaImporte - $retencionImporte, 2);
 
             // Preparar datos
             $data = [
@@ -213,6 +286,7 @@ class IngresoController extends Controller
                 'importe' => $importe,
                 'iva_porcentaje' => $ivaPorcentaje,
                 'iva_importe' => $ivaImporte,
+                'desglose_iva' => $desglose,
                 'retencion_porcentaje' => $retencionPorcentaje,
                 'retencion_importe' => $retencionImporte,
                 'importe_total' => $importeTotal,
@@ -272,7 +346,11 @@ class IngresoController extends Controller
         try {
             $ingreso->update([
                 'estado' => 'cobrado',
-                'fecha_cobro' => $request->fecha_cobro ?? now()->toDateString(),
+                // Por defecto: fecha prevista de cobro (vencimiento); si no, la de emisión; si no, hoy
+                'fecha_cobro' => $request->fecha_cobro
+                    ?? optional($ingreso->fecha_prevista_cobro)->toDateString()
+                    ?? optional($ingreso->fecha)->toDateString()
+                    ?? now()->toDateString(),
             ]);
 
             return response()->json([

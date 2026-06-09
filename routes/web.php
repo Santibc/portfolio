@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrabajadorController;
 use App\Http\Controllers\TrabajadorBonoController;
+use App\Http\Controllers\TipoHoraController;
+use App\Http\Controllers\NominaController;
 use App\Http\Controllers\CuadrillaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ClienteEmailController;
@@ -73,6 +75,43 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
     Route::delete('trabajadores/bonos/{bono}', [TrabajadorBonoController::class, 'destroy'])->name('trabajadores.bonos.destroy');
     Route::post('trabajadores/bonos/{bono}/pagar', [TrabajadorBonoController::class, 'marcarPagado'])->name('trabajadores.bonos.pagar');
     Route::post('trabajadores/bonos/{bono}/pendiente', [TrabajadorBonoController::class, 'marcarPendiente'])->name('trabajadores.bonos.pendiente');
+    Route::get('trabajadores/bonos-deuda', [TrabajadorBonoController::class, 'deuda'])->name('trabajadores.bonos.deuda');
+});
+
+// ==========================================
+// RUTAS DE TIPOS DE HORA (solo Administrador)
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('tipos-hora')->name('tipos-hora.')->group(function () {
+    Route::get('/', [TipoHoraController::class, 'index'])->name('index');
+    Route::post('/', [TipoHoraController::class, 'store'])->name('store');
+    Route::put('/{tipoHora}', [TipoHoraController::class, 'update'])->name('update');
+    Route::delete('/{tipoHora}', [TipoHoraController::class, 'destroy'])->name('destroy');
+});
+
+// ==========================================
+// RUTAS DE NÓMINAS (Administrador, RRHH, Contabilidad)
+// ==========================================
+Route::middleware(['auth', 'verified', 'role:Administrador|RRHH|Contabilidad'])->group(function () {
+    Route::get('nominas/resumen', [NominaController::class, 'resumen'])->name('nominas.resumen');
+    Route::post('trabajadores/{trabajador}/nominas', [NominaController::class, 'store'])->name('trabajadores.nominas.store');
+    Route::delete('nominas/{nomina}', [NominaController::class, 'destroy'])->name('nominas.destroy');
+});
+// Descarga de nómina: admin/RRHH/Contabilidad o el propio trabajador (autorización en el controlador)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('nominas/{nomina}/download', [NominaController::class, 'download'])->name('nominas.download');
+});
+
+// ==========================================
+// EXPORTACIONES A EXCEL (respetan los filtros del listado)
+// ==========================================
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('exportar/ingresos', [\App\Http\Controllers\IngresoController::class, 'exportExcel'])->name('ingresos.export.excel')->middleware('role:Administrador|Contabilidad');
+    Route::get('exportar/gastos', [\App\Http\Controllers\GastoController::class, 'exportExcel'])->name('gastos.export.excel')->middleware('role:Administrador|Contabilidad|Encargado');
+    Route::get('exportar/facturas', [\App\Http\Controllers\FacturaController::class, 'exportExcel'])->name('facturas.export.excel')->middleware('role:Administrador|Contabilidad');
+    Route::get('exportar/contratos', [\App\Http\Controllers\ContratoController::class, 'exportExcel'])->name('contratos.export.excel')->middleware('role:Administrador|Contabilidad|Encargado|RRHH|Auditor');
+    Route::get('exportar/obras', [\App\Http\Controllers\ObraController::class, 'exportExcel'])->name('obras.export.excel');
+    Route::get('exportar/trabajadores', [\App\Http\Controllers\TrabajadorController::class, 'exportExcel'])->name('trabajadores.export.excel')->middleware('permission:ver_trabajadores');
+    Route::get('exportar/bonos', [\App\Http\Controllers\TrabajadorBonoController::class, 'exportExcel'])->name('bonos.export.excel')->middleware('role:Administrador|Contabilidad');
 });
 
 // ==========================================
@@ -214,6 +253,8 @@ Route::middleware(['auth', 'verified', 'permission:editar_obras'])->group(functi
     // Hitos
     Route::post('obras/{obra}/hitos', [ObraController::class, 'storeHito'])
         ->name('obras.hitos.store');
+    Route::post('obras/{obra}/hitos/generar-ingresos', [ObraController::class, 'generarIngresosHitos'])
+        ->name('obras.hitos.generar-ingresos');
     Route::post('obras/{obra}/hitos/{hito}/completar', [ObraController::class, 'completarHito'])
         ->name('obras.hitos.completar');
     Route::delete('obras/{obra}/hitos/{hito}', [ObraController::class, 'destroyHito'])
@@ -269,6 +310,11 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->pref
 // ==========================================
 // RUTAS DE FICHAJES
 // ==========================================
+// Configuración de recordatorios (debe ir antes de fichajes/{fichaje})
+Route::middleware(['auth', 'verified', 'role:Administrador|RRHH'])->group(function () {
+    Route::get('fichajes/configuracion', [FichajeController::class, 'configuracion'])->name('fichajes.configuracion');
+    Route::post('fichajes/configuracion', [FichajeController::class, 'guardarConfiguracion'])->name('fichajes.configuracion.guardar');
+});
 Route::middleware(['auth', 'verified', 'permission:crear_fichajes'])->group(function () {
     Route::get('fichajes/create', [FichajeController::class, 'create'])->name('fichajes.create');
     Route::post('fichajes', [FichajeController::class, 'store'])->name('fichajes.store');
@@ -510,6 +556,9 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
     Route::resource('ingresos', IngresoController::class);
     Route::post('ingresos/{ingreso}/marcar-cobrado', [IngresoController::class, 'marcarCobrado'])->name('ingresos.marcar-cobrado');
     Route::post('ingresos/{ingreso}/marcar-pendiente', [IngresoController::class, 'marcarPendiente'])->name('ingresos.marcar-pendiente');
+
+    // Resumen de impuestos (IVA, IRPF, Seguridad Social)
+    Route::get('impuestos/resumen', [\App\Http\Controllers\ImpuestosController::class, 'resumen'])->name('impuestos.resumen');
 });
 
 // ==========================================
@@ -573,6 +622,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
 
     // Acciones de estado
     Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir'])->name('facturas.emitir');
+    Route::post('facturas/{factura}/numero', [FacturaController::class, 'actualizarNumero'])->name('facturas.numero');
     Route::post('facturas/{factura}/enviar', [FacturaController::class, 'enviar'])->name('facturas.enviar');
     Route::post('facturas/{factura}/cobrar', [FacturaController::class, 'cobrar'])->name('facturas.cobrar');
     Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular'])->name('facturas.anular');
@@ -756,6 +806,9 @@ use App\Http\Controllers\Trabajador\DashboardController as TrabajadorDashboardCo
 Route::middleware(['auth', 'verified', 'role:Trabajador'])->prefix('trabajador')->name('trabajador.')->group(function () {
     // Dashboard Trabajador - Vista principal (Mi Portal)
     Route::get('/dashboard', [TrabajadorDashboardController::class, 'index'])->name('dashboard');
+
+    // Mis Nóminas (descarga propia)
+    Route::get('/mis-nominas', [NominaController::class, 'misNominas'])->name('mis-nominas');
 
     // Dashboard Trabajador - APIs para widgets AJAX
     Route::prefix('dashboard/api')->name('dashboard.api.')->group(function () {

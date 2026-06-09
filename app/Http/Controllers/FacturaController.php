@@ -6,11 +6,13 @@ use App\Models\Factura;
 use App\Models\FacturaLinea;
 use App\Models\Obra;
 use App\Models\Cliente;
+use App\Models\Ingreso;
 use App\Models\Auditoria;
 use App\Models\EmailLog;
 use App\Mail\FacturaEnviadaMail;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +21,42 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class FacturaController extends Controller
 {
+    /**
+     * Exportar el listado de facturas a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Factura::with(['cliente', 'obra']);
+        if ($request->filled('cliente_id')) $query->where('cliente_id', $request->cliente_id);
+        if ($request->filled('obra_id')) $query->where('obra_id', $request->obra_id);
+        if ($request->filled('estado')) $query->where('estado', $request->estado);
+        if ($request->filled('serie')) $query->where('serie', $request->serie);
+        if ($request->filled('fecha_desde')) $query->whereDate('fecha_emision', '>=', $request->fecha_desde);
+        if ($request->filled('fecha_hasta')) $query->whereDate('fecha_emision', '<=', $request->fecha_hasta);
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(fn($q) => $q->where('numero', 'like', "%{$s}%")->orWhereHas('cliente', fn($q2) => $q2->where('nombre_comercial', 'like', "%{$s}%")));
+        }
+        $items = $query->orderByDesc('fecha_emision')->orderByDesc('id')->get();
+
+        $rows = $items->map(fn($f) => [
+            $f->numero ?? 'Borrador',
+            optional($f->fecha_emision)->format('d/m/Y'),
+            $f->fecha_vencimiento ? $f->fecha_vencimiento->format('d/m/Y') : '-',
+            $f->cliente?->nombre_comercial ?? '-',
+            $f->obra?->codigo ?? '-',
+            (float) $f->base_imponible,
+            (float) $f->iva_importe,
+            (float) $f->total,
+            ucfirst($f->estado),
+        ])->toArray();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ListadoExport(['Número', 'Emisión', 'Vencimiento', 'Cliente', 'Obra', 'Base', 'IVA', 'Total', 'Estado'], $rows),
+            'facturas_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
     /**
      * Mostrar listado de facturas con filtros y estadísticas.
      */
@@ -96,6 +134,8 @@ class FacturaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'serie' => 'nullable|string|max:20',
+            'numero' => ['nullable', 'string', 'max:50', Rule::unique('facturas', 'numero')],
             'cliente_id' => 'required|exists:clientes,id',
             'obra_id' => 'nullable|exists:obras,id',
             'fecha_emision' => 'required|date',
@@ -127,8 +167,8 @@ class FacturaController extends Controller
         try {
             // Crear factura sin número (se genera al emitir)
             $factura = Factura::create([
-                'serie' => 'F',
-                'numero' => null,
+                'serie' => $validated['serie'] ?? 'F',
+                'numero' => $validated['numero'] ?? null,
                 'cliente_id' => $validated['cliente_id'],
                 'obra_id' => $validated['obra_id'] ?? null,
                 'fecha_emision' => $validated['fecha_emision'],
@@ -359,8 +399,8 @@ class FacturaController extends Controller
                 ], 400);
             }
 
-            // Generar número de factura
-            $numero = $this->generarNumeroFactura($factura->serie);
+            // Usar el número introducido manualmente si existe; si no, generarlo automáticamente
+            $numero = $factura->numero ?: $this->generarNumeroFactura($factura->serie);
 
             $factura->update([
                 'numero' => $numero,
@@ -634,16 +674,92 @@ class FacturaController extends Controller
                 ], 400);
             }
 
+            DB::beginTransaction();
+
+            $fechaCobro = $request->fecha_cobro ?? now()->toDateString();
+
             $factura->update([
                 'estado' => 'cobrada',
-                'fecha_cobro' => $request->fecha_cobro ?? now()->toDateString(),
+                'fecha_cobro' => $fechaCobro,
+            ]);
+
+            // Generar automáticamente el ingreso correspondiente (si no existe ya)
+            $ingresoCreado = false;
+            if (!Ingreso::where('factura_id', $factura->id)->exists()) {
+                $ingreso = Ingreso::create([
+                    'obra_id' => $factura->obra_id,
+                    'cliente_id' => $factura->cliente_id,
+                    'factura_id' => $factura->id,
+                    'concepto' => 'Cobro factura ' . ($factura->numero ?? ('borrador #' . $factura->id)),
+                    'descripcion' => 'Ingreso generado automáticamente al cobrar la factura.',
+                    'importe' => $factura->base_imponible,
+                    'iva_porcentaje' => $factura->iva_porcentaje,
+                    'iva_importe' => $factura->iva_importe,
+                    'retencion_porcentaje' => $factura->retencion_porcentaje,
+                    'retencion_importe' => $factura->retencion_importe,
+                    'importe_total' => $factura->total,
+                    'fecha' => $factura->fecha_emision,
+                    'fecha_prevista_cobro' => $factura->fecha_vencimiento,
+                    'fecha_cobro' => $fechaCobro,
+                    'estado' => 'cobrado',
+                ]);
+                Auditoria::registrar('crear', 'ingresos', $ingreso->id, null, $ingreso->toArray());
+                $ingresoCreado = true;
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $ingresoCreado
+                    ? 'Factura cobrada. Se generó automáticamente el ingreso correspondiente.'
+                    : 'Factura marcada como cobrada.',
+                'factura' => $factura->fresh(),
+            ]);
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualizar el número/serie de la factura manualmente (en cualquier estado salvo anulada).
+     */
+    public function actualizarNumero(Request $request, Factura $factura): JsonResponse
+    {
+        try {
+            if ($factura->estado === 'anulada') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede cambiar el número de una factura anulada.',
+                ], 400);
+            }
+
+            $validated = $request->validate([
+                'serie' => 'nullable|string|max:20',
+                'numero' => ['nullable', 'string', 'max:50', Rule::unique('facturas', 'numero')->ignore($factura->id)],
+            ]);
+
+            $factura->update([
+                'serie' => $validated['serie'] ?: $factura->serie,
+                'numero' => $validated['numero'] ?: null,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Factura marcada como cobrada.',
+                'message' => 'Número de factura actualizado correctamente.',
                 'factura' => $factura->fresh(),
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

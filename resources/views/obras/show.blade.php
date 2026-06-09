@@ -88,9 +88,17 @@
         <div class="col-6 col-md">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    @php $margen = $stats['total_ingresos'] - $stats['total_gastos']; @endphp
+                    <h3 class="mb-0 text-danger">{{ number_format($stats['total_coste_personal'], 0, ',', '.') }}€</h3>
+                    <small class="text-muted">Coste personal</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    @php $margen = $stats['total_ingresos'] - $stats['total_gastos'] - $stats['total_coste_personal']; @endphp
                     <h3 class="mb-0 text-{{ $margen >= 0 ? 'success' : 'danger' }}">{{ number_format($margen, 0, ',', '.') }}€</h3>
-                    <small class="text-muted">Margen</small>
+                    <small class="text-muted">Margen <span class="text-muted">(sin IVA)</span></small>
                 </div>
             </div>
         </div>
@@ -264,6 +272,16 @@
                                 <i class="bi bi-flag me-1"></i>Hitos
                             </button>
                         </li>
+                        @can('ver_rentabilidad_obras')
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="costes-personal-tab" data-bs-toggle="tab" data-bs-target="#costes-personal" type="button">
+                                <i class="bi bi-cash-coin me-1"></i>Costes personal
+                                @if(($obra->bonos->count() + $obra->primas->count()) > 0)
+                                <span class="badge bg-secondary ms-1">{{ $obra->bonos->count() + $obra->primas->count() }}</span>
+                                @endif
+                            </button>
+                        </li>
+                        @endcan
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button">
                                 <i class="bi bi-folder me-1"></i>Documentos
@@ -418,31 +436,53 @@
                         <!-- Tab Hitos -->
                         <div class="tab-pane fade" id="hitos" role="tabpanel">
                             @if($obra->hitos->count() > 0)
-                                <div class="list-group list-group-flush mb-4">
+                                @can('editar_obras')
+                                {{-- Form para generar ingresos de hitos seleccionados (checkbox asociados por atributo form) --}}
+                                <form id="generarHitosForm" method="POST" action="{{ route('obras.hitos.generar-ingresos', $obra) }}"
+                                      onsubmit="return confirm('¿Generar los ingresos de los hitos seleccionados?');">@csrf</form>
+                                @endcan
+                                <div class="list-group list-group-flush mb-3">
                                     @foreach($obra->hitos as $hito)
                                     <div class="list-group-item d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                @if($hito->completado)
-                                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                        <div class="d-flex align-items-start gap-2">
+                                            @can('editar_obras')
+                                                @if(!$hito->ingreso_id && $hito->importe_cobro > 0)
+                                                    <input class="form-check-input mt-1" type="checkbox" name="hitos[]" value="{{ $hito->id }}" form="generarHitosForm" title="Seleccionar para generar ingreso">
                                                 @else
-                                                    <i class="bi bi-circle text-muted"></i>
+                                                    <span style="display:inline-block;width:1rem;"></span>
                                                 @endif
-                                                <strong class="{{ $hito->completado ? 'text-decoration-line-through text-muted' : '' }}">
-                                                    {{ $hito->nombre }}
-                                                </strong>
-                                                @if($hito->porcentaje_obra)
-                                                    <span class="badge bg-info-subtle text-info">{{ $hito->porcentaje_obra }}%</span>
+                                            @endcan
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                    @if($hito->completado)
+                                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                                    @else
+                                                        <i class="bi bi-circle text-muted"></i>
+                                                    @endif
+                                                    <strong class="{{ $hito->completado ? 'text-muted' : '' }}">
+                                                        {{ $hito->nombre }}
+                                                    </strong>
+                                                    @if($hito->porcentaje_obra)
+                                                        <span class="badge bg-info-subtle text-info">{{ $hito->porcentaje_obra }}%</span>
+                                                    @endif
+                                                    @if($hito->importe_cobro > 0)
+                                                        <span class="badge bg-light text-dark border">{{ number_format($hito->importe_cobro, 2, ',', '.') }} €</span>
+                                                    @endif
+                                                    @if($hito->ingreso_id)
+                                                        <a href="{{ route('ingresos.show', $hito->ingreso_id) }}" class="badge bg-success-subtle text-success text-decoration-none">
+                                                            <i class="bi bi-check2-circle me-1"></i>Ingreso generado
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                                @if($hito->descripcion)
+                                                    <small class="text-muted">{{ $hito->descripcion }}</small>
+                                                @endif
+                                                @if($hito->fecha_prevista)
+                                                    <small class="d-block text-muted">
+                                                        <i class="bi bi-calendar me-1"></i>{{ $hito->fecha_prevista->format('d/m/Y') }}
+                                                    </small>
                                                 @endif
                                             </div>
-                                            @if($hito->descripcion)
-                                                <small class="text-muted">{{ $hito->descripcion }}</small>
-                                            @endif
-                                            @if($hito->fecha_prevista)
-                                                <small class="d-block text-muted">
-                                                    <i class="bi bi-calendar me-1"></i>{{ $hito->fecha_prevista->format('d/m/Y') }}
-                                                </small>
-                                            @endif
                                         </div>
                                         <div class="d-flex gap-1">
                                             @can('editar_obras')
@@ -466,6 +506,13 @@
                                     </div>
                                     @endforeach
                                 </div>
+                                @can('editar_obras')
+                                <div class="d-flex justify-content-end mb-4">
+                                    <button type="submit" form="generarHitosForm" class="btn btn-success btn-sm">
+                                        <i class="bi bi-cash-coin me-1"></i>Generar ingreso de los hitos seleccionados
+                                    </button>
+                                </div>
+                                @endcan
                             @else
                                 <p class="text-muted mb-4">No hay hitos definidos</p>
                             @endif
@@ -474,13 +521,16 @@
                             <form action="{{ route('obras.hitos.store', $obra) }}" method="POST">
                                 @csrf
                                 <div class="row g-2">
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
                                         <input type="text" name="nombre" class="form-control" placeholder="Nombre del hito" required>
                                     </div>
                                     <div class="col-md-2">
                                         <input type="number" name="porcentaje_obra" class="form-control" placeholder="%" min="0" max="100">
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
+                                        <input type="number" name="importe_cobro" class="form-control" placeholder="Importe €" min="0" step="0.01">
+                                    </div>
+                                    <div class="col-md-2">
                                         <input type="date" name="fecha_prevista" class="form-control">
                                     </div>
                                     <div class="col-md-2">
@@ -492,6 +542,71 @@
                             </form>
                             @endcan
                         </div>
+
+                        <!-- Tab Costes de personal -->
+                        @can('ver_rentabilidad_obras')
+                        <div class="tab-pane fade" id="costes-personal" role="tabpanel">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <div class="border rounded p-3 text-center">
+                                        <div class="text-muted small">Bonos / horas</div>
+                                        <div class="fs-5 fw-bold text-danger">{{ number_format($stats['coste_bonos'], 2, ',', '.') }} €</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="border rounded p-3 text-center">
+                                        <div class="text-muted small">Primas</div>
+                                        <div class="fs-5 fw-bold text-danger">{{ number_format($stats['coste_primas'], 2, ',', '.') }} €</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="border rounded p-3 text-center bg-light">
+                                        <div class="text-muted small">Total coste personal</div>
+                                        <div class="fs-5 fw-bold">{{ number_format($stats['total_coste_personal'], 2, ',', '.') }} €</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if($obra->bonos->count() || $obra->primas->count())
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr><th>Fecha</th><th>Trabajador</th><th>Concepto</th><th>Tipo</th><th class="text-end">Importe</th><th class="text-center">Estado</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($obra->bonos as $b)
+                                        <tr>
+                                            <td>{{ optional($b->fecha)->format('d/m/Y') }}</td>
+                                            <td>{{ $b->trabajador?->nombre }} {{ $b->trabajador?->apellidos }}</td>
+                                            <td>{{ $b->concepto }}</td>
+                                            <td><span class="badge bg-secondary-subtle text-secondary">{{ $b->tipo_formateado }}</span></td>
+                                            <td class="text-end">{{ number_format($b->importe, 2, ',', '.') }} €</td>
+                                            <td class="text-center">
+                                                @if($b->pagado)<span class="badge bg-success">Pagado</span>@else<span class="badge bg-warning text-dark">Pendiente</span>@endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                        @foreach($obra->primas as $p)
+                                        <tr>
+                                            <td>{{ optional($p->fecha)->format('d/m/Y') }}</td>
+                                            <td>{{ $p->trabajador?->nombre }} {{ $p->trabajador?->apellidos }}</td>
+                                            <td>Prima de producción</td>
+                                            <td><span class="badge bg-info-subtle text-info">Prima</span></td>
+                                            <td class="text-end">{{ number_format($p->importe_prima, 2, ',', '.') }} €</td>
+                                            <td class="text-center">
+                                                @if($p->pagada)<span class="badge bg-success">Pagada</span>@else<span class="badge bg-warning text-dark">Pendiente</span>@endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            @else
+                            <p class="text-muted">No hay bonos ni primas imputados a esta obra.</p>
+                            @endif
+                            <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i>Estos costes de personal se incluyen en el "Coste personal" y el "Margen" de la obra.</small>
+                        </div>
+                        @endcan
 
                         <!-- Tab Documentos -->
                         <div class="tab-pane fade" id="documentos" role="tabpanel">

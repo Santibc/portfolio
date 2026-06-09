@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Fichaje;
+use App\Models\FichajeConfiguracion;
 use App\Models\Trabajador;
 use App\Models\Obra;
 use App\Models\EmailLog;
@@ -17,6 +18,38 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class FichajeController extends Controller
 {
+    /**
+     * Mostrar configuración de recordatorios de fichaje.
+     */
+    public function configuracion()
+    {
+        $config = FichajeConfiguracion::obtener();
+        return view('fichajes.configuracion', compact('config'));
+    }
+
+    /**
+     * Guardar configuración de recordatorios de fichaje.
+     */
+    public function guardarConfiguracion(Request $request)
+    {
+        $validated = $request->validate([
+            'hora_entrada' => 'required|date_format:H:i',
+            'hora_salida' => 'required|date_format:H:i',
+        ], [
+            'hora_entrada.date_format' => 'La hora de entrada debe tener formato HH:MM.',
+            'hora_salida.date_format' => 'La hora de salida debe tener formato HH:MM.',
+        ]);
+
+        $config = FichajeConfiguracion::obtener();
+        $config->update([
+            'activo' => $request->boolean('activo'),
+            'hora_entrada' => $validated['hora_entrada'],
+            'hora_salida' => $validated['hora_salida'],
+        ]);
+
+        return back()->with('success', 'Configuración de recordatorios guardada correctamente.');
+    }
+
     /**
      * Display a listing of fichajes.
      */

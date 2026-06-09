@@ -10,9 +10,14 @@
             <h1 class="h3 mb-1">Bonos y Primas</h1>
             <p class="text-muted mb-0">Gestion manual de bonos y primas de trabajadores</p>
         </div>
-        <a href="{{ route('trabajadores.bonos.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Bono
-        </a>
+        <div>
+            <a href="{{ route('bonos.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
+            <a href="{{ route('trabajadores.bonos.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Bono
+            </a>
+        </div>
     </div>
 
     <!-- Resumen -->

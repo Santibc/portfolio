@@ -11,6 +11,9 @@
             <p class="text-muted mb-0">Gestión de contratos y garantías</p>
         </div>
         <div>
+            <a href="{{ route('contratos.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
             @role('Administrador')
             <a href="{{ route('contrato-tipos.index') }}" class="btn btn-outline-secondary me-2">
                 <i class="bi bi-collection me-2"></i>Tipos

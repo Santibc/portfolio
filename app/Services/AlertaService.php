@@ -12,6 +12,7 @@ use App\Models\EpiRevision;
 use App\Models\Vehiculo;
 use App\Models\VehiculoDocumento;
 use App\Models\Contrato;
+use App\Models\Factura;
 use App\Models\SubcontrataDocumentoCae;
 use App\Models\User;
 use App\Notifications\AlertaNotification;
@@ -37,6 +38,9 @@ class AlertaService
         'documento_vehiculo' => 'Documento Vehículo',
         'contrato_vencimiento' => 'Contrato - Vencimiento',
         'contrato_garantia' => 'Contrato - Garantía',
+        'factura_vencimiento' => 'Factura - Vencimiento',
+        'fichaje_entrada' => 'Fichaje - Entrada',
+        'fichaje_salida' => 'Fichaje - Salida',
         'documento_cae' => 'Documento CAE',
         'caducidad_general' => 'Caducidad Empresa',
     ];
@@ -530,6 +534,44 @@ class AlertaService
     }
 
     /**
+     * Generar alertas de facturas próximas a vencer o vencidas (pendientes de cobro)
+     */
+    protected function generarAlertasFacturaVencimiento(int $diasAntelacion): int
+    {
+        $fechaLimite = now()->addDays($diasAntelacion);
+        $count = 0;
+
+        // Facturas impagadas (emitida/enviada) ya vencidas o que vencen dentro del plazo de antelación.
+        // No se limita la antigüedad: una factura vencida sigue avisando hasta que se cobre o se resuelva.
+        $facturas = Factura::with('cliente')
+            ->whereIn('estado', ['emitida', 'enviada'])
+            ->whereNotNull('fecha_vencimiento')
+            ->where('fecha_vencimiento', '<=', $fechaLimite)
+            ->get();
+
+        foreach ($facturas as $factura) {
+            $clienteNombre = $factura->cliente ? $factura->cliente->nombre_comercial : 'Sin cliente';
+            $numero = $factura->numero ?? ('Borrador #' . $factura->id);
+            $importe = number_format($factura->total ?? 0, 2, ',', '.');
+
+            if ($this->crearAlertaSiNoExiste([
+                'tipo' => 'factura_vencimiento',
+                'titulo' => "Factura próxima a vencer: {$numero}",
+                'mensaje' => "La factura {$numero} de {$clienteNombre} ({$importe} €) vence el " . $factura->fecha_vencimiento->format('d/m/Y') . ". Comprueba el cobro en el banco o reclama.",
+                'prioridad' => $this->calcularPrioridad($factura->fecha_vencimiento),
+                'alertable_type' => Factura::class,
+                'alertable_id' => $factura->id,
+                'para_roles' => ['Administrador', 'Contabilidad'],
+                'fecha_vencimiento' => $factura->fecha_vencimiento,
+            ])) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    /**
      * Generar alertas de documentos CAE de subcontratas
      */
     protected function generarAlertasDocumentoCae(int $diasAntelacion): int
@@ -722,6 +764,8 @@ class AlertaService
             'itv' => 'bi-car-front',
             'seguro_vehiculo' => 'bi-shield',
             'contrato_vencimiento', 'contrato_garantia' => 'bi-file-earmark-ruled',
+            'factura_vencimiento' => 'bi-receipt',
+            'fichaje_entrada', 'fichaje_salida' => 'bi-clock-history',
             'caducidad_general' => 'bi-building',
             default => 'bi-bell',
         };

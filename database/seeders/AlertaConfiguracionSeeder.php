@@ -73,6 +73,11 @@ class AlertaConfiguracionSeeder extends Seeder
                 'dias_antelacion' => 45,
                 'activa' => true,
             ],
+            [
+                'tipo' => 'factura_vencimiento',
+                'dias_antelacion' => 30,
+                'activa' => true,
+            ],
         ];
 
         foreach ($configuraciones as $config) {

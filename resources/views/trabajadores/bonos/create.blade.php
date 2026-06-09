@@ -25,19 +25,28 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Trabajador <span class="text-danger">*</span></label>
-                                <select name="trabajador_id" class="form-select @error('trabajador_id') is-invalid @enderror" required>
-                                    <option value="">Seleccionar trabajador...</option>
-                                    @foreach($trabajadores as $trabajador)
-                                        <option value="{{ $trabajador->id }}" {{ old('trabajador_id', $trabajadorId ?? '') == $trabajador->id ? 'selected' : '' }}>
-                                            {{ $trabajador->apellidos }}, {{ $trabajador->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('trabajador_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-12">
+                                <label class="form-label">Trabajadores <span class="text-danger">*</span></label>
+                                <div class="border rounded p-2" style="max-height:220px; overflow-y:auto;">
+                                    <div class="form-check mb-1">
+                                        <input class="form-check-input" type="checkbox" id="selAllTrab">
+                                        <label class="form-check-label fw-semibold" for="selAllTrab">Seleccionar todos</label>
+                                    </div>
+                                    <hr class="my-1">
+                                    <div class="row g-1">
+                                        @foreach($trabajadores as $trabajador)
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input chk-trab" type="checkbox" name="trabajadores[]" value="{{ $trabajador->id }}" id="trab{{ $trabajador->id }}"
+                                                    {{ collect(old('trabajadores', $trabajadorId ? [$trabajadorId] : []))->contains($trabajador->id) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="trab{{ $trabajador->id }}">{{ $trabajador->apellidos }}, {{ $trabajador->nombre }}</label>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @error('trabajadores')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                <small class="text-muted">Puedes seleccionar varios para asignarles el mismo bono.</small>
                             </div>
 
                             <div class="col-md-6">
@@ -81,13 +90,24 @@
                             <div class="col-md-4">
                                 <label class="form-label">Importe <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="number" name="importe" class="form-control @error('importe') is-invalid @enderror"
+                                    <input type="number" name="importe" id="importeInput" class="form-control @error('importe') is-invalid @enderror"
                                            step="0.01" min="0" value="{{ old('importe') }}" required placeholder="0.00">
                                     <span class="input-group-text">€</span>
                                 </div>
                                 @error('importe')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="col-md-4" id="tipoHoraWrapper" style="{{ old('tipo') == 'horas' ? '' : 'display:none;' }}">
+                                <label class="form-label">Tipo de hora</label>
+                                <select name="tipo_hora_id" id="tipoHoraSelect" class="form-select">
+                                    <option value="">Manual (sin tipo)</option>
+                                    @foreach($tiposHora as $th)
+                                        <option value="{{ $th->id }}" data-precio="{{ $th->precio_hora }}" {{ old('tipo_hora_id') == $th->id ? 'selected' : '' }}>{{ $th->nombre }} ({{ number_format($th->precio_hora, 2, ',', '.') }} €/h)</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Importe = horas × precio.</small>
                             </div>
 
                             <div class="col-md-4" id="horasWrapper" style="{{ old('tipo') == 'horas' ? '' : 'display: none;' }}">
@@ -176,24 +196,41 @@
         fechaPagoWrapper.style.display = this.checked ? 'block' : 'none';
     });
 
-    // Toggle campo horas
+    // Toggle campos de horas + tipo de hora
     const tipoSelect = document.getElementById('tipoSelect');
     const horasWrapper = document.getElementById('horasWrapper');
+    const tipoHoraWrapper = document.getElementById('tipoHoraWrapper');
     const horasInput = document.getElementById('horasInput');
+    const tipoHoraSelect = document.getElementById('tipoHoraSelect');
+    const importeInput = document.getElementById('importeInput');
 
     function toggleHorasField() {
-        if (tipoSelect.value === 'horas') {
-            horasWrapper.style.display = 'block';
-            horasInput.removeAttribute('disabled');
-        } else {
-            horasWrapper.style.display = 'none';
-            horasInput.setAttribute('disabled', 'disabled');
+        const isHoras = tipoSelect.value === 'horas';
+        horasWrapper.style.display = isHoras ? 'block' : 'none';
+        tipoHoraWrapper.style.display = isHoras ? 'block' : 'none';
+    }
+
+    function recalcImporte() {
+        const opt = tipoHoraSelect.options[tipoHoraSelect.selectedIndex];
+        const precio = opt ? parseFloat(opt.dataset.precio || 0) : 0;
+        const horas = parseFloat(horasInput.value) || 0;
+        if (precio > 0 && horas > 0) {
+            importeInput.value = (precio * horas).toFixed(2);
         }
     }
 
     tipoSelect.addEventListener('change', toggleHorasField);
-    // Ejecutar al cargar si hay old() value
+    tipoHoraSelect.addEventListener('change', recalcImporte);
+    horasInput.addEventListener('input', recalcImporte);
     toggleHorasField();
+
+    // Seleccionar todos los trabajadores
+    const selAll = document.getElementById('selAllTrab');
+    if (selAll) {
+        selAll.addEventListener('change', function() {
+            document.querySelectorAll('.chk-trab').forEach(c => c.checked = this.checked);
+        });
+    }
 </script>
 @endpush
 @endsection

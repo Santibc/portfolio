@@ -18,6 +18,9 @@ class Gasto extends Model
         'importe',
         'iva_porcentaje',
         'iva_importe',
+        'irpf_porcentaje',
+        'irpf_importe',
+        'desglose_iva',
         'importe_total',
         'fecha',
         'fecha_vencimiento',
@@ -35,6 +38,9 @@ class Gasto extends Model
         'importe' => 'decimal:2',
         'iva_porcentaje' => 'decimal:2',
         'iva_importe' => 'decimal:2',
+        'irpf_porcentaje' => 'decimal:2',
+        'irpf_importe' => 'decimal:2',
+        'desglose_iva' => 'array',
         'importe_total' => 'decimal:2',
     ];
 

@@ -284,11 +284,115 @@
                         </span>
                     </button>
                 </li>
+                @role('Administrador|RRHH|Contabilidad')
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nominas" type="button">
+                        <i class="bi bi-cash-stack fs-5"></i>
+                        <span>Nóminas</span>
+                        <span class="tab-badge">{{ $trabajador->nominas->count() }}</span>
+                    </button>
+                </li>
+                @endrole
             </ul>
         </div>
 
         <div class="tabs-content">
             <div class="tab-content" id="tabsContent">
+                @role('Administrador|RRHH|Contabilidad')
+                {{-- Tab Nóminas --}}
+                <div class="tab-pane" id="nominas" role="tabpanel">
+                    <div class="tab-header">
+                        <h5><i class="bi bi-cash-stack me-2"></i>Nóminas del Trabajador</h5>
+                    </div>
+
+                    @if(session('success'))<div class="alert alert-success alert-dismissible fade show">{{ session('success') }}<button class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+                    @if(session('error'))<div class="alert alert-danger alert-dismissible fade show">{{ session('error') }}<button class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+
+                    {{-- Alta de nómina --}}
+                    <form action="{{ route('trabajadores.nominas.store', $trabajador) }}" method="POST" enctype="multipart/form-data" class="border rounded p-3 mb-3 bg-light">
+                        @csrf
+                        <div class="row g-2">
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">Año</label>
+                                <input type="number" name="anio" class="form-control form-control-sm" value="{{ date('Y') }}" min="2000" max="2100" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">Mes</label>
+                                <select name="mes" class="form-select form-select-sm" required>
+                                    @foreach(\App\Models\Nomina::MESES as $num => $nom)
+                                        <option value="{{ $num }}" {{ $num == date('n') ? 'selected' : '' }}>{{ $nom }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">Salario bruto</label>
+                                <input type="number" step="0.01" min="0" name="salario_bruto" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">SS empresa</label>
+                                <input type="number" step="0.01" min="0" name="ss_empresa" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">SS trabajador</label>
+                                <input type="number" step="0.01" min="0" name="ss_trabajador" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small mb-1">IRPF</label>
+                                <input type="number" step="0.01" min="0" name="irpf" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small mb-1">PDF de la nómina (opcional)</label>
+                                <input type="file" name="documento" accept="application/pdf" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-lg me-1"></i>Añadir nómina</button>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-2">Líquido = bruto − SS trabajador − IRPF (se calcula solo). Coste empresa = bruto + SS empresa.</small>
+                    </form>
+
+                    @if($trabajador->nominas->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr><th>Periodo</th><th class="text-end">Bruto</th><th class="text-end">SS empresa</th><th class="text-end">IRPF</th><th class="text-end">Líquido</th><th class="text-end">Coste empresa</th><th class="text-center">PDF</th><th class="text-end">Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach($trabajador->nominas as $nom)
+                                <tr>
+                                    <td class="fw-medium">{{ $nom->mes_nombre }} {{ $nom->anio }}</td>
+                                    <td class="text-end">{{ number_format($nom->salario_bruto, 2, ',', '.') }} €</td>
+                                    <td class="text-end">{{ number_format($nom->ss_empresa, 2, ',', '.') }} €</td>
+                                    <td class="text-end">{{ number_format($nom->irpf, 2, ',', '.') }} €</td>
+                                    <td class="text-end fw-bold">{{ number_format($nom->liquido, 2, ',', '.') }} €</td>
+                                    <td class="text-end">{{ number_format($nom->coste_empresa, 2, ',', '.') }} €</td>
+                                    <td class="text-center">
+                                        @if($nom->documento_path)
+                                            <a href="{{ route('nominas.download', $nom) }}" class="btn btn-sm btn-outline-primary" title="Descargar PDF"><i class="bi bi-download"></i></a>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <form action="{{ route('nominas.destroy', $nom) }}" method="POST" onsubmit="return confirm('¿Eliminar esta nómina?');" class="d-inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="empty-tab-state">
+                        <i class="bi bi-cash-stack"></i>
+                        <p>No hay nóminas registradas</p>
+                    </div>
+                    @endif
+                </div>
+                @endrole
+
                 {{-- Tab Documentos --}}
                 <div class="tab-pane active" id="documentos" role="tabpanel">
                     <div class="tab-header">

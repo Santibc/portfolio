@@ -17,6 +17,7 @@ class ObraHito extends Model
         'fecha_prevista',
         'fecha_completado',
         'importe_cobro',
+        'ingreso_id',
         'completado',
         'orden',
     ];
@@ -31,5 +32,10 @@ class ObraHito extends Model
     public function obra(): BelongsTo
     {
         return $this->belongsTo(Obra::class);
+    }
+
+    public function ingreso(): BelongsTo
+    {
+        return $this->belongsTo(Ingreso::class);
     }
 }

@@ -10,11 +10,16 @@
             <h1 class="h3 mb-1">Gestión de Obras</h1>
             <p class="text-muted mb-0">Administra los proyectos y obras de la empresa</p>
         </div>
-        @can('crear_obras')
-        <a href="{{ route('obras.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Nueva Obra
-        </a>
-        @endcan
+        <div>
+            <a href="{{ route('obras.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
+            @can('crear_obras')
+            <a href="{{ route('obras.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Obra
+            </a>
+            @endcan
+        </div>
     </div>
 
     <!-- Resumen -->

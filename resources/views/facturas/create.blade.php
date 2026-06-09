@@ -75,6 +75,17 @@
                                 @enderror
                             </div>
 
+                            <div class="col-md-2">
+                                <label for="serie" class="form-label">Serie</label>
+                                <input type="text" name="serie" id="serie" class="form-control @error('serie') is-invalid @enderror" value="{{ old('serie', 'F') }}" maxlength="20">
+                                @error('serie')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-md-4">
+                                <label for="numero" class="form-label">Número (opcional)</label>
+                                <input type="text" name="numero" id="numero" class="form-control @error('numero') is-invalid @enderror" value="{{ old('numero') }}" maxlength="50" placeholder="Ej: F-2026-00001">
+                                <small class="text-muted">Déjalo vacío para numeración automática al emitir.</small>
+                                @error('numero')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
                             <div class="col-md-4">
                                 <label for="fecha_emision" class="form-label">Fecha Emisión <span class="text-danger">*</span></label>
                                 <input type="date" name="fecha_emision" id="fecha_emision"

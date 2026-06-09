@@ -18,6 +18,7 @@ class TrabajadorBono extends Model
         'trabajador_id',
         'obra_id',
         'tipo',
+        'tipo_hora_id',
         'concepto',
         'fecha',
         'importe',
@@ -46,6 +47,11 @@ class TrabajadorBono extends Model
     public function obra(): BelongsTo
     {
         return $this->belongsTo(Obra::class);
+    }
+
+    public function tipoHora(): BelongsTo
+    {
+        return $this->belongsTo(TipoHora::class, 'tipo_hora_id');
     }
 
     public function registrador(): BelongsTo

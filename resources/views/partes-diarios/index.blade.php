@@ -300,6 +300,18 @@
                                             </button>
                                             @endcan
                                         @endif
+
+                                        @if($parte->estado === 'validado')
+                                            @role('Administrador')
+                                            <a href="{{ route('partes-diarios.edit', $parte) }}" class="btn btn-outline-primary" title="Editar (admin)">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                    onclick="confirmarEliminar({{ $parte->id }})" title="Eliminar (admin)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                            @endrole
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

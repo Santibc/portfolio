@@ -21,6 +21,39 @@ use Illuminate\Support\Facades\Hash;
 
 class TrabajadorController extends Controller
 {
+    /**
+     * Exportar el listado de trabajadores a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Trabajador::query();
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(fn($q) => $q->where('nombre', 'like', "%{$s}%")->orWhere('apellidos', 'like', "%{$s}%")->orWhere('dni', 'like', "%{$s}%"));
+        }
+        if ($request->filled('tipo_relacion')) $query->where('tipo_relacion', $request->tipo_relacion);
+        if ($request->filled('activo')) $query->where('activo', $request->activo === '1');
+        if ($request->filled('subcontrata_id')) $query->where('subcontrata_id', $request->subcontrata_id);
+        if ($request->filled('cuadrilla_id')) {
+            $query->whereHas('cuadrillas', fn($q) => $q->where('cuadrillas.id', $request->cuadrilla_id)->wherePivot('activo', true));
+        }
+        $items = $query->orderBy('apellidos')->orderBy('nombre')->get();
+
+        $rows = $items->map(fn($t) => [
+            $t->apellidos,
+            $t->nombre,
+            $t->dni ?? '-',
+            ucfirst($t->tipo_relacion ?? '-'),
+            $t->activo ? 'Activo' : 'Inactivo',
+            (float) ($t->salario_bruto_mensual ?? 0),
+        ])->toArray();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ListadoExport(['Apellidos', 'Nombre', 'DNI', 'Relación', 'Estado', 'Salario bruto'], $rows),
+            'trabajadores_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
     public function index(Request $request)
     {
         $query = Trabajador::with(['subcontrata', 'cuadrillas']);

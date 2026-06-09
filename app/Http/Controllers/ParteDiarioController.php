@@ -273,6 +273,9 @@ class ParteDiarioController extends Controller
             // Actualizar importe total del parte
             $parte->calcularYActualizarImporte();
 
+            // Reflejar el importe en lo producido de la obra
+            optional($parte->obra)->actualizarImportesAcumulados();
+
             DB::commit();
 
             $tipoLabel = $parte->es_mensual ? 'mensual' : 'diario';
@@ -353,8 +356,8 @@ class ParteDiarioController extends Controller
      */
     public function edit(ParteDiario $partes_diario)
     {
-        if ($partes_diario->estado === 'validado') {
-            return back()->with('error', 'No se puede editar un parte validado.');
+        if ($partes_diario->estado === 'validado' && !auth()->user()->hasRole('Administrador')) {
+            return back()->with('error', 'Solo un administrador puede editar un parte validado.');
         }
 
         $obras = Obra::whereIn('estado', ['en_curso', 'aprobada'])
@@ -374,8 +377,8 @@ class ParteDiarioController extends Controller
      */
     public function update(Request $request, ParteDiario $partes_diario)
     {
-        if ($partes_diario->estado === 'validado') {
-            return back()->with('error', 'No se puede editar un parte validado.');
+        if ($partes_diario->estado === 'validado' && !auth()->user()->hasRole('Administrador')) {
+            return back()->with('error', 'Solo un administrador puede editar un parte validado.');
         }
 
         $validated = $request->validate([
@@ -406,7 +409,7 @@ class ParteDiarioController extends Controller
         DB::beginTransaction();
         try {
             $partes_diario->update([
-                'jornada' => $validated['jornada'],
+                'jornada' => $validated['jornada'] ?? null,
                 'linea' => $validated['linea'] ?? null,
                 'trayecto' => $validated['trayecto'] ?? null,
                 'gerencia_jefatura' => $validated['gerencia_jefatura'] ?? null,
@@ -473,6 +476,9 @@ class ParteDiarioController extends Controller
             // Actualizar importe total del parte
             $partes_diario->calcularYActualizarImporte();
 
+            // Reflejar el importe en lo producido de la obra
+            optional($partes_diario->obra)->actualizarImportesAcumulados();
+
             DB::commit();
 
             return redirect()->route('partes-diarios.show', $partes_diario)
@@ -489,11 +495,13 @@ class ParteDiarioController extends Controller
      */
     public function destroy(ParteDiario $partes_diario)
     {
-        if ($partes_diario->estado === 'validado') {
-            return back()->with('error', 'No se puede eliminar un parte validado.');
+        if ($partes_diario->estado === 'validado' && !auth()->user()->hasRole('Administrador')) {
+            return back()->with('error', 'Solo un administrador puede eliminar un parte validado.');
         }
 
+        $obra = $partes_diario->obra;
         $partes_diario->delete();
+        optional($obra)->actualizarImportesAcumulados();
 
         return redirect()->route('partes-diarios.index')
                          ->with('success', 'Parte diario eliminado correctamente.');
@@ -509,6 +517,7 @@ class ParteDiarioController extends Controller
         }
 
         $partes_diario->update(['estado' => 'completado']);
+        optional($partes_diario->obra)->actualizarImportesAcumulados();
 
         return back()->with('success', 'Parte marcado como completado.');
     }
@@ -523,6 +532,7 @@ class ParteDiarioController extends Controller
         }
 
         $partes_diario->update(['estado' => 'validado']);
+        optional($partes_diario->obra)->actualizarImportesAcumulados();
 
         return back()->with('success', 'Parte validado correctamente.');
     }

@@ -241,6 +241,11 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        @if(in_array($factura->estado, ['emitida','enviada','cobrada']))
+                            <button type="button" class="btn btn-outline-primary" onclick="editarNumeroFactura()">
+                                <i class="bi bi-hash me-2"></i>Editar Número
+                            </button>
+                        @endif
                         @switch($factura->estado)
                             @case('borrador')
                                 <a href="{{ route('facturas.edit', $factura) }}" class="btn btn-primary">
@@ -498,6 +503,49 @@
                             timer: 1500,
                             showConfirmButton: false,
                         }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Error de conexión', 'error');
+                }
+            }
+        });
+    }
+
+    function editarNumeroFactura() {
+        Swal.fire({
+            title: 'Editar número de factura',
+            html: `
+                <div class="mb-2 text-start">
+                    <label class="form-label mb-1">Serie</label>
+                    <input id="serieInput" class="form-control" value="{{ $factura->serie }}" maxlength="20">
+                </div>
+                <div class="text-start">
+                    <label class="form-label mb-1">Número</label>
+                    <input id="numeroInput" class="form-control" value="{{ $factura->numero }}" maxlength="50" placeholder="Ej: F-2026-00001">
+                </div>`,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`{{ route('facturas.numero', $factura) }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            serie: document.getElementById('serieInput').value,
+                            numero: document.getElementById('numeroInput').value,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({ icon: 'success', title: 'Éxito', text: data.message, timer: 1500, showConfirmButton: false }).then(() => window.location.reload());
                     } else {
                         Swal.fire('Error', data.message, 'error');
                     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Obra;
 use App\Models\ObraTipo;
 use App\Models\ObraHito;
+use App\Models\Ingreso;
 use App\Models\ObraDocumento;
 use App\Models\ObraHistorial;
 use App\Models\Cliente;
@@ -21,6 +22,38 @@ use Carbon\Carbon;
 
 class ObraController extends Controller
 {
+    /**
+     * Exportar el listado de obras a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Obra::with(['cliente', 'tipo']);
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(fn($q) => $q->where('codigo', 'like', "%{$s}%")->orWhere('nombre', 'like', "%{$s}%")->orWhereHas('cliente', fn($q2) => $q2->where('nombre_comercial', 'like', "%{$s}%")));
+        }
+        if ($request->filled('estado')) $query->where('estado', $request->estado);
+        if ($request->filled('obra_tipo_id')) $query->where('obra_tipo_id', $request->obra_tipo_id);
+        if ($request->filled('cliente_id')) $query->where('cliente_id', $request->cliente_id);
+        if ($request->filled('encargado_id')) $query->where('encargado_id', $request->encargado_id);
+        $items = $query->orderByDesc('created_at')->get();
+
+        $rows = $items->map(fn($o) => [
+            $o->codigo,
+            $o->nombre,
+            $o->cliente?->nombre_comercial ?? '-',
+            $o->tipo?->nombre ?? '-',
+            ucfirst(str_replace('_', ' ', $o->estado)),
+            (float) ($o->presupuesto ?? 0),
+            (float) ($o->importe_producido_acumulado ?? 0),
+        ])->toArray();
+
+        return Excel::download(
+            new \App\Exports\ListadoExport(['Código', 'Nombre', 'Cliente', 'Tipo', 'Estado', 'Presupuesto', 'Producido'], $rows),
+            'obras_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
     public function index(Request $request)
     {
         $query = Obra::with(['cliente', 'tipo', 'encargado'])
@@ -232,14 +265,27 @@ class ObraController extends Controller
             'discrepancias' => function ($q) {
                 $q->orderByDesc('periodo_mes')->limit(12);
             },
+            'bonos' => function ($q) {
+                $q->with('trabajador')->orderByDesc('fecha');
+            },
+            'primas' => function ($q) {
+                $q->with('trabajador')->orderByDesc('fecha');
+            },
         ]);
 
         // Estadísticas de la obra
         $stats = [
             'total_trabajadores' => $obra->trabajadoresActivos->count(),
             'total_partes' => $obra->partesDiarios()->count(),
-            'total_ingresos' => $obra->ingresos()->sum('importe_total'),
-            'total_gastos' => $obra->gastos()->sum('importe_total'),
+            // Imputación a la obra en BASE IMPONIBLE (sin IVA), según criterio contable del cliente
+            'total_ingresos' => $obra->ingresos()->sum('importe'),
+            'total_gastos' => $obra->gastos()->sum('importe'),
+            'total_ingresos_iva' => $obra->ingresos()->sum('iva_importe'),
+            'total_gastos_iva' => $obra->gastos()->sum('iva_importe'),
+            // Coste de personal imputado a la obra (bonos + primas)
+            'coste_bonos' => (float) $obra->bonos()->sum('importe'),
+            'coste_primas' => (float) $obra->primas()->sum('importe_prima'),
+            'total_coste_personal' => (float) $obra->bonos()->sum('importe') + (float) $obra->primas()->sum('importe_prima'),
             'progreso' => $this->calcularProgreso($obra),
             'total_producido' => $obra->importe_producido_acumulado,
             'total_pendiente' => $obra->importe_pendiente_acumulado,
@@ -503,6 +549,85 @@ class ObraController extends Controller
 
         return redirect()->route('obras.show', $obra)
             ->with('success', 'Hito eliminado.');
+    }
+
+    /**
+     * Generar ingresos a partir de varios hitos seleccionados (a la vez).
+     */
+    public function generarIngresosHitos(Request $request, Obra $obra)
+    {
+        $validated = $request->validate([
+            'hitos' => 'required|array|min:1',
+            'hitos.*' => 'integer',
+        ], [
+            'hitos.required' => 'Selecciona al menos un hito.',
+        ]);
+
+        if (!$obra->cliente_id) {
+            return redirect()->route('obras.show', $obra)
+                ->with('error', 'La obra no tiene cliente asignado; no se pueden generar ingresos.');
+        }
+
+        // Solo hitos de esta obra, con importe y sin ingreso ya generado
+        $hitos = $obra->hitos()
+            ->whereIn('id', $validated['hitos'])
+            ->whereNull('ingreso_id')
+            ->where('importe_cobro', '>', 0)
+            ->get();
+
+        if ($hitos->isEmpty()) {
+            return redirect()->route('obras.show', $obra)
+                ->with('error', 'No hay hitos válidos para facturar (sin importe o ya tienen ingreso).');
+        }
+
+        $obra->loadMissing('cliente');
+        $retencionPct = (float) ($obra->cliente->retencion_porcentaje ?? 0);
+        $creados = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($hitos as $hito) {
+                $base = (float) $hito->importe_cobro;
+                $ivaPct = 21;
+                $ivaImporte = round($base * $ivaPct / 100, 2);
+                $retImporte = round($base * $retencionPct / 100, 2);
+                $total = round($base + $ivaImporte - $retImporte, 2);
+
+                $ingreso = Ingreso::create([
+                    'obra_id' => $obra->id,
+                    'cliente_id' => $obra->cliente_id,
+                    'concepto' => 'Hito: ' . $hito->nombre . ' (' . $obra->codigo . ')',
+                    'descripcion' => 'Ingreso generado automáticamente desde un hito de la obra.',
+                    'importe' => $base,
+                    'iva_porcentaje' => $ivaPct,
+                    'iva_importe' => $ivaImporte,
+                    'desglose_iva' => [['base' => round($base, 2), 'porcentaje' => $ivaPct, 'importe' => $ivaImporte]],
+                    'retencion_porcentaje' => $retencionPct,
+                    'retencion_importe' => $retImporte,
+                    'importe_total' => $total,
+                    'fecha' => now()->toDateString(),
+                    'fecha_prevista_cobro' => $hito->fecha_prevista,
+                    'estado' => 'pendiente',
+                ]);
+
+                $hito->update([
+                    'ingreso_id' => $ingreso->id,
+                    'completado' => true,
+                    'fecha_completado' => $hito->fecha_completado ?? now(),
+                ]);
+
+                Auditoria::registrar('crear', 'ingresos', $ingreso->id, null, $ingreso->toArray());
+                $creados++;
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('obras.show', $obra)
+                ->with('error', 'Error al generar ingresos: ' . $e->getMessage());
+        }
+
+        return redirect()->route('obras.show', $obra)
+            ->with('success', "Se generaron {$creados} ingreso(s) desde los hitos seleccionados.");
     }
 
     // =============================================

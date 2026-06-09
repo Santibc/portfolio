@@ -10,9 +10,14 @@
             <h1 class="h3 mb-1">Facturas</h1>
             <p class="text-muted mb-0">Emisión y seguimiento de facturas</p>
         </div>
-        <a href="{{ route('facturas.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Nueva Factura
-        </a>
+        <div>
+            <a href="{{ route('facturas.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
+            <a href="{{ route('facturas.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Factura
+            </a>
+        </div>
     </div>
 
     {{-- Alertas de sesión --}}

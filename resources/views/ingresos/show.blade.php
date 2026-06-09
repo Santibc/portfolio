@@ -174,7 +174,7 @@
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         @if($ingreso->estado == 'pendiente')
-                            <button type="button" class="btn btn-success" onclick="marcarCobrado({{ $ingreso->id }})">
+                            <button type="button" class="btn btn-success" onclick="marcarCobrado({{ $ingreso->id }}, '{{ optional($ingreso->fecha_prevista_cobro)->format('Y-m-d') ?: optional($ingreso->fecha)->format('Y-m-d') }}')">
                                 <i class="bi bi-check-lg me-2"></i>Marcar como Cobrado
                             </button>
                         @else
@@ -261,10 +261,10 @@
 
 @push('scripts')
 <script>
-    function marcarCobrado(id) {
+    function marcarCobrado(id, fechaSugerida) {
         Swal.fire({
             title: 'Marcar como cobrado',
-            html: '<input type="date" id="fechaCobro" class="form-control" value="{{ date('Y-m-d') }}">',
+            html: '<input type="date" id="fechaCobro" class="form-control" value="' + (fechaSugerida || '{{ date('Y-m-d') }}') + '">',
             showCancelButton: true,
             confirmButtonText: 'Marcar Cobrado',
             cancelButtonText: 'Cancelar',

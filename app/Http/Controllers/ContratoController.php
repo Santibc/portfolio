@@ -15,6 +15,39 @@ use Illuminate\View\View;
 class ContratoController extends Controller
 {
     /**
+     * Exportar el listado de contratos a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Contrato::with(['tipo', 'cliente', 'subcontrata']);
+        if ($request->filled('search')) $query->buscar($request->search);
+        if ($request->filled('estado')) $query->where('estado', $request->estado);
+        if ($request->filled('contrato_tipo_id')) $query->where('contrato_tipo_id', $request->contrato_tipo_id);
+        if ($request->filled('cliente_id')) $query->where('cliente_id', $request->cliente_id);
+        if ($request->filled('subcontrata_id')) $query->where('subcontrata_id', $request->subcontrata_id);
+        if ($request->filled('tiene_retencion')) $query->where('tiene_retencion', $request->tiene_retencion === '1');
+        if ($request->filled('fecha_desde')) $query->whereDate('fecha_inicio', '>=', $request->fecha_desde);
+        if ($request->filled('fecha_hasta')) $query->whereDate('fecha_fin', '<=', $request->fecha_hasta);
+        $items = $query->orderByDesc('created_at')->get();
+
+        $rows = $items->map(fn($c) => [
+            $c->codigo,
+            $c->titulo,
+            $c->parte_nombre,
+            $c->tipo?->nombre ?? '-',
+            (float) $c->importe,
+            $c->fecha_inicio ? $c->fecha_inicio->format('d/m/Y') : '-',
+            $c->fecha_fin ? $c->fecha_fin->format('d/m/Y') : '-',
+            ucfirst($c->estado),
+        ])->toArray();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ListadoExport(['Código', 'Título', 'Cliente/Subcontrata', 'Tipo', 'Importe', 'Inicio', 'Fin', 'Estado'], $rows),
+            'contratos_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
+    /**
      * Mostrar listado de contratos con filtros y estadísticas.
      */
     public function index(Request $request): View

@@ -298,6 +298,18 @@ class AlertaController extends Controller
                     'Fecha caducidad' => $registro->fecha_caducidad?->format('d/m/Y'),
                 ];
                 break;
+
+            case 'App\Models\Factura':
+                $info['tipo'] = 'Factura';
+                $info['nombre'] = $registro->numero ?? ('Borrador #' . $registro->id);
+                $info['url'] = route('facturas.show', $registro->id);
+                $info['detalles'] = [
+                    'Cliente' => $registro->cliente->nombre_comercial ?? 'N/A',
+                    'Fecha emisión' => $registro->fecha_emision?->format('d/m/Y'),
+                    'Fecha vencimiento' => $registro->fecha_vencimiento?->format('d/m/Y'),
+                    'Total' => number_format($registro->total ?? 0, 2, ',', '.') . ' €',
+                ];
+                break;
         }
 
         return $info;

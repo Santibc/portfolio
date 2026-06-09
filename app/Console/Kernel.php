@@ -23,6 +23,20 @@ class Kernel extends ConsoleKernel
         }
 
         $schedule->command('cumpleanos:enviar')->dailyAt($hora);
+
+        // Generar alertas de caducidades y vencimientos (facturas, contratos, ITV, etc.)
+        $schedule->command('alertas:generar')->dailyAt('07:00');
+
+        // Recordatorios de fichaje (entrada/salida) según configuración
+        try {
+            $fichajeConfig = \App\Models\FichajeConfiguracion::obtener();
+            if ($fichajeConfig->activo) {
+                $schedule->command('fichajes:recordatorio entrada')->dailyAt($fichajeConfig->horaEntradaCorta());
+                $schedule->command('fichajes:recordatorio salida')->dailyAt($fichajeConfig->horaSalidaCorta());
+            }
+        } catch (\Throwable $e) {
+            // La tabla puede no existir todavía durante migraciones; se ignora.
+        }
     }
 
     /**

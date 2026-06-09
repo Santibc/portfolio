@@ -10,11 +10,16 @@
             <h1 class="h3 mb-1">Gestión de Trabajadores</h1>
             <p class="text-muted mb-0">Administra el personal de la empresa</p>
         </div>
-        @can('crear_trabajadores')
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTrabajadorModal">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Trabajador
-        </button>
-        @endcan
+        <div>
+            <a href="{{ route('trabajadores.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
+            @can('crear_trabajadores')
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTrabajadorModal">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Trabajador
+            </button>
+            @endcan
+        </div>
     </div>
 
     <!-- Resumen -->

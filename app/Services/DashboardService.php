@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Obra;
 use App\Models\Ingreso;
 use App\Models\Gasto;
+use App\Models\TrabajadorBono;
+use App\Models\PrimaTrabajador;
 use App\Models\Factura;
 use App\Models\Fichaje;
 use App\Models\ParteDiario;
@@ -34,13 +36,13 @@ class DashboardService
         $fechaInicio = $fechaInicio ?? now()->startOfYear();
         $fechaFin = $fechaFin ?? now();
 
-        // Ingresos del periodo
+        // Ingresos del periodo (BASE IMPONIBLE, sin IVA, para rendimiento)
         $ingresosPeriodo = Ingreso::whereBetween('fecha', [$fechaInicio, $fechaFin])
-            ->sum('importe_total');
+            ->sum('importe');
 
-        // Gastos del periodo
+        // Gastos del periodo (BASE IMPONIBLE, sin IVA, para rendimiento)
         $gastosPeriodo = Gasto::whereBetween('fecha', [$fechaInicio, $fechaFin])
-            ->sum('importe_total');
+            ->sum('importe');
 
         return [
             // Financieros
@@ -87,7 +89,7 @@ class DashboardService
         $ingresosMensuales = Ingreso::query()
             ->select(
                 DB::raw("DATE_FORMAT(fecha, '%Y-%m') as periodo"),
-                DB::raw("SUM(importe_total) as total")
+                DB::raw("SUM(importe) as total")
             )
             ->groupBy('periodo')
             ->orderBy('periodo')
@@ -98,7 +100,7 @@ class DashboardService
         $gastosMensuales = Gasto::query()
             ->select(
                 DB::raw("DATE_FORMAT(fecha, '%Y-%m') as periodo"),
-                DB::raw("SUM(importe_total) as total")
+                DB::raw("SUM(importe) as total")
             )
             ->groupBy('periodo')
             ->orderBy('periodo')
@@ -214,8 +216,10 @@ class DashboardService
                 'obras.presupuesto',
                 'obras.estado',
                 'obras.cliente_id',
-                DB::raw('COALESCE((SELECT SUM(importe_total) FROM ingresos WHERE ingresos.obra_id = obras.id), 0) as total_ingresos'),
-                DB::raw('COALESCE((SELECT SUM(importe_total) FROM gastos WHERE gastos.obra_id = obras.id), 0) as total_gastos'),
+                DB::raw('COALESCE((SELECT SUM(importe) FROM ingresos WHERE ingresos.obra_id = obras.id), 0) as total_ingresos'),
+                DB::raw('(COALESCE((SELECT SUM(importe) FROM gastos WHERE gastos.obra_id = obras.id), 0)
+                        + COALESCE((SELECT SUM(importe) FROM trabajador_bonos WHERE trabajador_bonos.obra_id = obras.id), 0)
+                        + COALESCE((SELECT SUM(importe_prima) FROM primas_trabajador WHERE primas_trabajador.obra_id = obras.id), 0)) as total_gastos'),
             ])
             ->whereIn('obras.estado', ['aprobada', 'en_curso', 'finalizada'])
             ->with('cliente:id,nombre_comercial');
@@ -403,7 +407,9 @@ class DashboardService
 
         // Calcular gasto real y filtrar las que superan el coste estimado
         return $obras->map(function ($obra) {
-                $gastoReal = Gasto::where('obra_id', $obra->id)->sum('importe_total');
+                $gastoReal = Gasto::where('obra_id', $obra->id)->sum('importe')
+                    + TrabajadorBono::where('obra_id', $obra->id)->sum('importe')
+                    + PrimaTrabajador::where('obra_id', $obra->id)->sum('importe_prima');
                 $obra->gasto_real = round($gastoReal, 2);
                 $obra->desviacion = round($gastoReal - $obra->coste_estimado, 2);
                 $obra->desviacion_porcentaje = $obra->coste_estimado > 0

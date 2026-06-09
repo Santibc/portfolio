@@ -67,6 +67,11 @@ class Trabajador extends Model
         return $this->hasMany(TrabajadorDocumento::class);
     }
 
+    public function nominas(): HasMany
+    {
+        return $this->hasMany(Nomina::class)->orderByDesc('anio')->orderByDesc('mes');
+    }
+
     public function formaciones(): HasMany
     {
         return $this->hasMany(TrabajadorFormacion::class);

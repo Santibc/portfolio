@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TrabajadorBono;
 use App\Models\Trabajador;
+use App\Models\PrimaTrabajador;
+use App\Models\TipoHora;
 use App\Models\Obra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +13,36 @@ use Illuminate\Support\Facades\DB;
 
 class TrabajadorBonoController extends Controller
 {
+    /**
+     * Exportar el listado de bonos a Excel (respetando filtros).
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = TrabajadorBono::with(['trabajador', 'obra']);
+        if ($request->filled('trabajador_id')) $query->where('trabajador_id', $request->trabajador_id);
+        if ($request->filled('obra_id')) $query->where('obra_id', $request->obra_id);
+        if ($request->filled('tipo')) $query->where('tipo', $request->tipo);
+        if ($request->filled('pagado')) $query->where('pagado', $request->pagado === 'si');
+        if ($request->filled('fecha_desde')) $query->whereDate('fecha', '>=', $request->fecha_desde);
+        if ($request->filled('fecha_hasta')) $query->whereDate('fecha', '<=', $request->fecha_hasta);
+        $items = $query->orderByDesc('fecha')->get();
+
+        $rows = $items->map(fn($b) => [
+            optional($b->fecha)->format('d/m/Y'),
+            $b->trabajador ? ($b->trabajador->apellidos . ', ' . $b->trabajador->nombre) : '-',
+            $b->obra?->codigo ?? '-',
+            $b->tipo_formateado,
+            $b->concepto,
+            (float) $b->importe,
+            $b->pagado ? 'Pagado' : 'Pendiente',
+        ])->toArray();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ListadoExport(['Fecha', 'Trabajador', 'Obra', 'Tipo', 'Concepto', 'Importe', 'Estado'], $rows),
+            'bonos_' . now()->format('Y-m-d_H-i') . '.xlsx'
+        );
+    }
+
     /**
      * Display a listing of bonos.
      */
@@ -87,11 +119,13 @@ class TrabajadorBonoController extends Controller
             ->orderBy('nombre')
             ->get();
 
+        $tiposHora = TipoHora::activos()->orderBy('nombre')->get();
+
         // Pre-select trabajador if provided
         $trabajadorId = $request->query('trabajador_id');
         $obraId = $request->query('obra_id');
 
-        return view('trabajadores.bonos.create', compact('trabajadores', 'obras', 'trabajadorId', 'obraId'));
+        return view('trabajadores.bonos.create', compact('trabajadores', 'obras', 'tiposHora', 'trabajadorId', 'obraId'));
     }
 
     /**
@@ -100,9 +134,11 @@ class TrabajadorBonoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'trabajador_id' => 'required|exists:trabajadores,id',
+            'trabajadores' => 'required|array|min:1',
+            'trabajadores.*' => 'exists:trabajadores,id',
             'obra_id' => 'nullable|exists:obras,id',
             'tipo' => 'required|in:prima_produccion,bono_especial,plus_nocturnidad,horas,otro',
+            'tipo_hora_id' => 'nullable|exists:tipo_horas,id',
             'concepto' => 'required|string|max:255',
             'fecha' => 'required|date',
             'importe' => 'required|numeric|min:0',
@@ -110,26 +146,41 @@ class TrabajadorBonoController extends Controller
             'pagado' => 'nullable|boolean',
             'fecha_pago' => 'nullable|required_if:pagado,true|date',
             'notas' => 'nullable|string',
+        ], [
+            'trabajadores.required' => 'Selecciona al menos un trabajador.',
         ]);
 
         DB::beginTransaction();
         try {
-            $data = $validated;
-            $data['registrado_por'] = Auth::id();
-            $data['pagado'] = $validated['pagado'] ?? false;
+            $pagado = $request->boolean('pagado');
+            $fechaPago = $pagado ? ($validated['fecha_pago'] ?? now()) : null;
+            // El tipo de hora solo aplica a bonos de tipo "horas"
+            $tipoHoraId = $validated['tipo'] === 'horas' ? ($validated['tipo_hora_id'] ?? null) : null;
 
-            // If pagado is false, remove fecha_pago
-            if (!$data['pagado']) {
-                $data['fecha_pago'] = null;
+            // Crear el mismo bono para cada trabajador seleccionado
+            foreach ($validated['trabajadores'] as $trabajadorId) {
+                TrabajadorBono::create([
+                    'trabajador_id' => $trabajadorId,
+                    'obra_id' => $validated['obra_id'] ?? null,
+                    'tipo' => $validated['tipo'],
+                    'tipo_hora_id' => $tipoHoraId,
+                    'concepto' => $validated['concepto'],
+                    'fecha' => $validated['fecha'],
+                    'importe' => $validated['importe'],
+                    'horas' => $validated['horas'] ?? null,
+                    'pagado' => $pagado,
+                    'fecha_pago' => $fechaPago,
+                    'notas' => $validated['notas'] ?? null,
+                    'registrado_por' => Auth::id(),
+                ]);
             }
-
-            $bono = TrabajadorBono::create($data);
 
             DB::commit();
 
+            $n = count($validated['trabajadores']);
             return redirect()
                 ->route('trabajadores.bonos.index')
-                ->with('success', 'Bono registrado exitosamente.');
+                ->with('success', $n > 1 ? "Bono registrado para {$n} trabajadores." : 'Bono registrado exitosamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -270,6 +321,32 @@ class TrabajadorBonoController extends Controller
                 'message' => 'Error al marcar como pendiente: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Resumen de deuda (bonos + primas pendientes de pago) por trabajador.
+     */
+    public function deuda()
+    {
+        $trabajadores = Trabajador::where('activo', true)
+            ->orderBy('apellidos')->orderBy('nombre')
+            ->get()
+            ->map(function ($t) {
+                $bonosPend = (float) $t->bonos()->pendientesPago()->sum('importe');
+                $primasPend = (float) PrimaTrabajador::where('trabajador_id', $t->id)
+                    ->where('pagada', false)->sum('importe_prima');
+                $t->deuda_bonos = $bonosPend;
+                $t->deuda_primas = $primasPend;
+                $t->deuda_total = $bonosPend + $primasPend;
+                return $t;
+            })
+            ->filter(fn($t) => $t->deuda_total > 0)
+            ->sortByDesc('deuda_total')
+            ->values();
+
+        $totalDeuda = $trabajadores->sum('deuda_total');
+
+        return view('trabajadores.bonos.deuda', compact('trabajadores', 'totalDeuda'));
     }
 
     /**

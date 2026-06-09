@@ -134,66 +134,65 @@
                 {{-- Importes --}}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="bi bi-currency-euro me-2"></i>Importes</h5>
+                        <h5 class="mb-0"><i class="bi bi-currency-euro me-2"></i>Importes e impuestos</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row g-3">
-                            {{-- Importe base --}}
-                            <div class="col-md-4">
-                                <label for="importe" class="form-label">Base Imponible <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="number" name="importe" id="importe" class="form-control @error('importe') is-invalid @enderror"
-                                           value="{{ old('importe', $gasto->importe) }}" required min="0.01" step="0.01">
-                                    <span class="input-group-text">€</span>
+                        @php
+                            $desglose = $gasto->desglose_iva ?: [['base' => $gasto->importe, 'porcentaje' => $gasto->iva_porcentaje]];
+                            $oldBases = old('iva_base', array_map(fn($l) => $l['base'], $desglose));
+                            $oldPcts = old('iva_pct', array_map(fn($l) => $l['porcentaje'], $desglose));
+                        @endphp
+                        <label class="form-label fw-semibold">Base imponible e IVA <span class="text-danger">*</span></label>
+                        <div id="ivaLineas">
+                            @foreach($oldBases as $i => $b)
+                            <div class="row g-2 mb-2 iva-linea align-items-center">
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <input type="number" name="iva_base[]" class="form-control iva-base" step="0.01" placeholder="Base imponible" value="{{ $b }}">
+                                        <span class="input-group-text">€</span>
+                                    </div>
                                 </div>
-                                @error('importe')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            {{-- IVA --}}
-                            <div class="col-md-4">
-                                <label for="iva_porcentaje" class="form-label">IVA <span class="text-danger">*</span></label>
-                                <select name="iva_porcentaje" id="iva_porcentaje" class="form-select @error('iva_porcentaje') is-invalid @enderror" required>
-                                    <option value="0" {{ old('iva_porcentaje', $gasto->iva_porcentaje) == '0' ? 'selected' : '' }}>0%</option>
-                                    <option value="4" {{ old('iva_porcentaje', $gasto->iva_porcentaje) == '4' ? 'selected' : '' }}>4%</option>
-                                    <option value="10" {{ old('iva_porcentaje', $gasto->iva_porcentaje) == '10' ? 'selected' : '' }}>10%</option>
-                                    <option value="21" {{ old('iva_porcentaje', $gasto->iva_porcentaje) == '21' ? 'selected' : '' }}>21%</option>
-                                </select>
-                                @error('iva_porcentaje')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            {{-- Total calculado --}}
-                            <div class="col-md-4">
-                                <label class="form-label">Total</label>
-                                <div class="input-group">
-                                    <input type="text" id="importe_total" class="form-control fw-bold bg-light" readonly value="0,00">
-                                    <span class="input-group-text">€</span>
+                                <div class="col-md-3">
+                                    <select name="iva_pct[]" class="form-select iva-pct">
+                                        @foreach(['0','4','10','21'] as $r)
+                                            <option value="{{ $r }}" {{ (float)($oldPcts[$i] ?? 21) == (float)$r ? 'selected' : '' }}>{{ $r }}% IVA</option>
+                                        @endforeach
+                                    </select>
                                 </div>
+                                <div class="col-md-3">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control iva-importe-disp bg-light" readonly value="0,00">
+                                        <span class="input-group-text">€</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 text-end">
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-quitar-iva" title="Quitar"><i class="bi bi-x-lg"></i></button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        <button type="button" id="btnAddIva" class="btn btn-sm btn-outline-primary mt-1">
+                            <i class="bi bi-plus-lg me-1"></i>Añadir otro tipo de IVA
+                        </button>
+                        <small class="d-block text-muted mt-1">Añade líneas si la factura tiene varios IVA (ej. 10% y 21%). Importe negativo = abono/devolución.</small>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-4">
+                                <label for="irpf_porcentaje" class="form-label">IRPF / Retención (%)</label>
+                                <div class="input-group">
+                                    <input type="number" name="irpf_porcentaje" id="irpf_porcentaje" class="form-control" step="0.01" min="0" max="100" value="{{ old('irpf_porcentaje', $gasto->irpf_porcentaje) }}">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">Para facturas con IRPF (ej. 15%). Deja 0 si no aplica.</small>
                             </div>
                         </div>
 
-                        {{-- Desglose --}}
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="bg-light rounded p-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Base imponible:</span>
-                                        <span id="displayBase">0,00 €</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span>IVA (<span id="displayIvaPct">21</span>%):</span>
-                                        <span id="displayIva">0,00 €</span>
-                                    </div>
-                                    <hr class="my-2">
-                                    <div class="d-flex justify-content-between fw-bold">
-                                        <span>TOTAL:</span>
-                                        <span id="displayTotal">0,00 €</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="bg-light rounded p-3 mt-3">
+                            <div class="d-flex justify-content-between"><span>Base imponible:</span><span id="displayBase">0,00 €</span></div>
+                            <div class="d-flex justify-content-between"><span>IVA:</span><span id="displayIva">0,00 €</span></div>
+                            <div class="d-flex justify-content-between text-danger"><span>IRPF:</span><span id="displayIrpf">-0,00 €</span></div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-between fw-bold"><span>TOTAL:</span><span id="displayTotal">0,00 €</span></div>
                         </div>
                     </div>
                 </div>
@@ -310,25 +309,44 @@
 
 @push('scripts')
 <script>
-    function calcularTotal() {
-        const importe = parseFloat(document.getElementById('importe').value) || 0;
-        const ivaPct = parseFloat(document.getElementById('iva_porcentaje').value) || 0;
+    (function() {
+        const cont = document.getElementById('ivaLineas');
+        const fmt = (n) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        const ivaImporte = importe * (ivaPct / 100);
-        const total = importe + ivaImporte;
+        function recalc() {
+            let base = 0, iva = 0;
+            cont.querySelectorAll('.iva-linea').forEach(row => {
+                const b = parseFloat(row.querySelector('.iva-base').value) || 0;
+                const p = parseFloat(row.querySelector('.iva-pct').value) || 0;
+                const imp = b * p / 100;
+                base += b; iva += imp;
+                row.querySelector('.iva-importe-disp').value = fmt(imp);
+            });
+            const irpfPct = parseFloat(document.getElementById('irpf_porcentaje').value) || 0;
+            const irpf = base * irpfPct / 100;
+            document.getElementById('displayBase').textContent = fmt(base) + ' €';
+            document.getElementById('displayIva').textContent = fmt(iva) + ' €';
+            document.getElementById('displayIrpf').textContent = '-' + fmt(irpf) + ' €';
+            document.getElementById('displayTotal').textContent = fmt(base + iva - irpf) + ' €';
+        }
 
-        const formatear = (num) => num.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        document.getElementById('importe_total').value = formatear(total);
-        document.getElementById('displayBase').textContent = formatear(importe) + ' €';
-        document.getElementById('displayIvaPct').textContent = ivaPct;
-        document.getElementById('displayIva').textContent = formatear(ivaImporte) + ' €';
-        document.getElementById('displayTotal').textContent = formatear(total) + ' €';
-    }
-
-    document.getElementById('importe').addEventListener('input', calcularTotal);
-    document.getElementById('iva_porcentaje').addEventListener('change', calcularTotal);
-
-    calcularTotal();
+        document.getElementById('btnAddIva').addEventListener('click', function() {
+            const row = cont.querySelector('.iva-linea').cloneNode(true);
+            row.querySelector('.iva-base').value = '';
+            row.querySelector('.iva-importe-disp').value = '0,00';
+            cont.appendChild(row);
+        });
+        cont.addEventListener('input', recalc);
+        cont.addEventListener('change', recalc);
+        document.getElementById('irpf_porcentaje').addEventListener('input', recalc);
+        cont.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-quitar-iva');
+            if (btn && cont.querySelectorAll('.iva-linea').length > 1) {
+                btn.closest('.iva-linea').remove();
+                recalc();
+            }
+        });
+        recalc();
+    })();
 </script>
 @endpush

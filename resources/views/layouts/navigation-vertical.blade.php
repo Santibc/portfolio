@@ -25,6 +25,12 @@
             <span>Mi Portal</span>
         </a>
     </div>
+    <div class="nav-item {{ request()->routeIs('trabajador.mis-nominas') ? 'active' : '' }}">
+        <a href="{{ route('trabajador.mis-nominas') }}" class="nav-link">
+            <i class="bi bi-cash-stack"></i>
+            <span>Mis Nóminas</span>
+        </a>
+    </div>
     @endrole
 
     {{-- Dashboard Admin - Solo para rol Administrador --}}
@@ -150,19 +156,49 @@
         @endcan
 
         @can('ver_fichajes')
-        <div class="nav-item {{ request()->routeIs('fichajes.*') ? 'active' : '' }}">
+        <div class="nav-item {{ request()->routeIs('fichajes.*') && !request()->routeIs('fichajes.configuracion*') ? 'active' : '' }}">
             <a href="{{ route('fichajes.index') }}" class="nav-link">
                 <i class="bi bi-clock-history"></i>
                 <span>Fichajes</span>
             </a>
         </div>
         @endcan
+        @role('Administrador|RRHH')
+        <div class="nav-item {{ request()->routeIs('fichajes.configuracion*') ? 'active' : '' }}">
+            <a href="{{ route('fichajes.configuracion') }}" class="nav-link">
+                <i class="bi bi-bell"></i>
+                <span>Recordatorios fichaje</span>
+            </a>
+        </div>
+        @endrole
 
         @role('Administrador|Contabilidad')
-        <div class="nav-item {{ request()->routeIs('trabajadores.bonos.*') ? 'active' : '' }}">
+        <div class="nav-item {{ request()->routeIs('trabajadores.bonos.*') && !request()->routeIs('trabajadores.bonos.deuda') ? 'active' : '' }}">
             <a href="{{ route('trabajadores.bonos.index') }}" class="nav-link">
                 <i class="bi bi-gift"></i>
                 <span>Bonos y Primas</span>
+            </a>
+        </div>
+        <div class="nav-item {{ request()->routeIs('trabajadores.bonos.deuda') ? 'active' : '' }}">
+            <a href="{{ route('trabajadores.bonos.deuda') }}" class="nav-link">
+                <i class="bi bi-wallet2"></i>
+                <span>Deuda trabajadores</span>
+            </a>
+        </div>
+        @role('Administrador')
+        <div class="nav-item {{ request()->routeIs('tipos-hora.*') ? 'active' : '' }}">
+            <a href="{{ route('tipos-hora.index') }}" class="nav-link">
+                <i class="bi bi-clock-history"></i>
+                <span>Tipos de Hora</span>
+            </a>
+        </div>
+        @endrole
+        @endrole
+        @role('Administrador|RRHH|Contabilidad')
+        <div class="nav-item {{ request()->routeIs('nominas.*') ? 'active' : '' }}">
+            <a href="{{ route('nominas.resumen') }}" class="nav-link">
+                <i class="bi bi-cash-stack"></i>
+                <span>Resumen Nóminas</span>
             </a>
         </div>
         @endrole
@@ -270,6 +306,13 @@
             <a href="{{ route('facturas.index') }}" class="nav-link">
                 <i class="bi bi-receipt"></i>
                 <span>Facturas</span>
+            </a>
+        </div>
+
+        <div class="nav-item {{ request()->routeIs('impuestos.*') ? 'active' : '' }}">
+            <a href="{{ route('impuestos.resumen') }}" class="nav-link">
+                <i class="bi bi-percent"></i>
+                <span>Resumen Impuestos</span>
             </a>
         </div>
 

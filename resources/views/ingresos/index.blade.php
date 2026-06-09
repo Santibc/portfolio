@@ -10,9 +10,14 @@
             <h1 class="h3 mb-1">Ingresos</h1>
             <p class="text-muted mb-0">Registro y seguimiento de ingresos</p>
         </div>
-        <a href="{{ route('ingresos.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Ingreso
-        </a>
+        <div>
+            <a href="{{ route('ingresos.export.excel', request()->query()) }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+            </a>
+            <a href="{{ route('ingresos.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Ingreso
+            </a>
+        </div>
     </div>
 
     {{-- Alertas de sesión --}}
@@ -34,7 +39,8 @@
                         </div>
                         <div>
                             <h3 class="mb-0">{{ number_format($stats['total'], 2, ',', '.') }} €</h3>
-                            <small class="text-muted">Total Ingresos</small>
+                            <small class="text-muted">Total Ingresos <span class="badge bg-light text-dark border">base imp.</span></small>
+                            <div class="small text-muted mt-1">IVA: {{ number_format($stats['total_iva'], 2, ',', '.') }} € · c/IVA: {{ number_format($stats['total_con_iva'], 2, ',', '.') }} €</div>
                         </div>
                     </div>
                 </div>
@@ -130,6 +136,14 @@
                         <label class="form-label">Hasta</label>
                         <input type="date" name="fecha_hasta" class="form-control" value="{{ request('fecha_hasta') }}">
                     </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Importe desde</label>
+                        <input type="number" step="0.01" name="importe_min" class="form-control" value="{{ request('importe_min') }}" placeholder="0,00">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Importe hasta</label>
+                        <input type="number" step="0.01" name="importe_max" class="form-control" value="{{ request('importe_max') }}" placeholder="0,00">
+                    </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="bi bi-search"></i>
@@ -193,7 +207,7 @@
                         </td>
                         <td class="text-end">
                             @if($ingreso->estado == 'pendiente')
-                                <button type="button" class="btn btn-sm btn-outline-success" onclick="marcarCobrado({{ $ingreso->id }})" title="Marcar como cobrado">
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="marcarCobrado({{ $ingreso->id }}, '{{ optional($ingreso->fecha_prevista_cobro)->format('Y-m-d') ?: optional($ingreso->fecha)->format('Y-m-d') }}')" title="Marcar como cobrado">
                                     <i class="bi bi-check-lg"></i>
                                 </button>
                             @else
@@ -239,10 +253,10 @@
 
 @push('scripts')
 <script>
-    function marcarCobrado(id) {
+    function marcarCobrado(id, fechaSugerida) {
         Swal.fire({
             title: 'Marcar como cobrado',
-            html: '<input type="date" id="fechaCobro" class="form-control" value="{{ date('Y-m-d') }}">',
+            html: '<input type="date" id="fechaCobro" class="form-control" value="' + (fechaSugerida || '{{ date('Y-m-d') }}') + '">',
             showCancelButton: true,
             confirmButtonText: 'Marcar Cobrado',
             cancelButtonText: 'Cancelar',
