@@ -15,7 +15,7 @@ class StoreRegistroMercadoRequest extends FormRequest
     {
         return [
             'producto_mercado_id' => ['required', 'integer', 'exists:productos_mercado,id'],
-            'cantidad'            => ['required', 'integer', 'min:1', 'max:99999'],
+            'cantidad'            => ['required', 'numeric', 'min:0.01', 'max:99999', 'decimal:0,2'],
             'valor'               => ['required', 'integer', 'min:1', 'max:999999999'],
             'tipo_id'             => ['nullable', 'integer', 'exists:tipos_producto_mercado,id'],
         ];
@@ -24,7 +24,8 @@ class StoreRegistroMercadoRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'cantidad.min' => 'La cantidad debe ser al menos 1.',
+            'cantidad.min'     => 'La cantidad debe ser mayor a 0.',
+            'cantidad.decimal' => 'La cantidad admite hasta 2 decimales.',
             'valor.min'    => 'El valor debe ser mayor a 0.',
         ];
     }

@@ -16,7 +16,7 @@
     </x-page-header>
 
     <div class="max-w-md mx-auto"
-         x-data="{ cantidad: {{ (int) old('cantidad', $sugerida) }}, valor: 0 }"
+         x-data="{ cantidad: {{ (float) old('cantidad', $sugerida) }}, valor: 0 }"
          x-on:currency-changed="valor = $event.detail">
 
         <x-card padding="p-0" clip>
@@ -61,9 +61,9 @@
                         :value="old('cantidad', $sugerida)"
                         placeholder="0"
                         required
-                        inputmode="numeric"
-                        min="1"
-                        step="1"
+                        inputmode="decimal"
+                        min="0.01"
+                        step="any"
                         autofocus
                         x-model.number="cantidad"
                         class="text-2xl py-4 font-semibold text-center"

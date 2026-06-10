@@ -62,7 +62,7 @@ class MercadoSessionService
         });
     }
 
-    public function registrarItem(MercadoItem $item, int $cantidad, int $valor): RegistroMercado
+    public function registrarItem(MercadoItem $item, float $cantidad, int $valor): RegistroMercado
     {
         return DB::transaction(function () use ($item, $cantidad, $valor) {
             $mercado = $item->mercado;

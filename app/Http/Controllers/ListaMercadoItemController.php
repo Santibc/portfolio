@@ -39,7 +39,7 @@ class ListaMercadoItemController extends Controller
         try {
             $this->session->registrarItem(
                 $item,
-                (int) $request->validated('cantidad'),
+                (float) $request->validated('cantidad'),
                 (int) $request->validated('valor'),
             );
         } catch (DomainException $e) {

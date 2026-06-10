@@ -23,7 +23,7 @@ class RegistroMercado extends Model
     ];
 
     protected $casts = [
-        'cantidad' => 'integer',
+        'cantidad' => 'decimal:2',
         'valor'    => 'integer',
     ];
 
@@ -45,6 +45,18 @@ class RegistroMercado extends Model
     public function getValorFormateadoAttribute(): string
     {
         return '$ ' . number_format((int) $this->valor, 0, ',', '.');
+    }
+
+    public function getCantidadFormateadaAttribute(): string
+    {
+        $cantidad = (float) $this->cantidad;
+
+        // Sin decimales si es entero; con hasta 2 decimales (sin ceros de relleno) si no.
+        if (floor($cantidad) === $cantidad) {
+            return number_format($cantidad, 0, ',', '.');
+        }
+
+        return rtrim(rtrim(number_format($cantidad, 2, ',', '.'), '0'), ',');
     }
 
     public function scopeDeHoy(Builder $query): Builder

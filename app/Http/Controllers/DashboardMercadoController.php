@@ -25,7 +25,7 @@ class DashboardMercadoController extends Controller
             ->get();
 
         $totalGastado = (int) $registros->sum('valor');
-        $totalCantidad = (int) $registros->sum('cantidad');
+        $totalCantidad = (float) $registros->sum('cantidad');
         $productosDistintos = $registros->pluck('producto_mercado_id')->unique()->count();
         $promedioPorRegistro = $registros->isEmpty() ? 0 : (int) round($totalGastado / $registros->count());
 
@@ -44,7 +44,7 @@ class DashboardMercadoController extends Controller
                 ? '<span class="inline-flex items-center font-semibold rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-200 text-[10px] px-1.5 py-0.5">' . e($r->producto->tipo->nombre) . '</span>'
                 : '—';
 
-            $cantidad = e($r->cantidad . ' ' . ($r->producto?->unidad_empaque ?? ''));
+            $cantidad = e($r->cantidad_formateada . ' ' . ($r->producto?->unidad_empaque ?? ''));
 
             $unitario = $r->cantidad > 0 ? intval($r->valor / $r->cantidad) : 0;
             $unitarioFmt = '$ ' . number_format($unitario, 0, ',', '.');

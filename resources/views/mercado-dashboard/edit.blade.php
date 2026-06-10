@@ -16,7 +16,7 @@
     </x-page-header>
 
     <div class="max-w-md mx-auto"
-         x-data="{ cantidad: {{ (int) $registro->cantidad }}, valor: {{ (int) $registro->valor }} }"
+         x-data="{ cantidad: {{ (float) $registro->cantidad }}, valor: {{ (int) $registro->valor }} }"
          x-on:currency-changed="valor = $event.detail">
 
         <x-card padding="p-4">
@@ -54,11 +54,11 @@
                         label="Cantidad ({{ $registro->producto->unidad_empaque }})"
                         name="cantidad"
                         type="number"
-                        :value="old('cantidad', $registro->cantidad)"
+                        :value="old('cantidad', (float) $registro->cantidad)"
                         required
-                        inputmode="numeric"
-                        min="1"
-                        step="1"
+                        inputmode="decimal"
+                        min="0.01"
+                        step="any"
                         autofocus
                         x-model.number="cantidad"
                         class="text-2xl py-4 font-semibold text-center"

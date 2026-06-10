@@ -56,9 +56,9 @@
                         :value="old('cantidad')"
                         placeholder="0"
                         required
-                        inputmode="numeric"
-                        min="1"
-                        step="1"
+                        inputmode="decimal"
+                        min="0.01"
+                        step="any"
                         autofocus
                         x-model.number="cantidad"
                         class="text-2xl py-4 font-semibold text-center"
