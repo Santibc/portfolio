@@ -1,4 +1,21 @@
 {{-- Seccion 3: Piezas --}}
+<style>
+    /* Fondo de la vista (crear/editar orden) un poco mas oscuro que el blanco de las tarjetas */
+    body:has(#ordenWizardApp) { background-color: #e6e8ec; }
+    [data-bs-theme="dark"] body:has(#ordenWizardApp) { background-color: var(--sinden-gray-50); }
+
+    /* Divisor mas notable entre cada pieza */
+    #tablaPiezas tbody tr.pieza-row td {
+        border-top: 3px solid #94a3b8;
+    }
+    #tablaPiezas tbody tr.pieza-row:first-child td {
+        border-top-width: 1px;
+        border-top-color: #dee2e6;
+    }
+    [data-bs-theme="dark"] #tablaPiezas tbody tr.pieza-row td {
+        border-top-color: #475569;
+    }
+</style>
 <div class="card border-0 shadow-sm mb-4 wizard-section" data-section="2" id="seccionBosquejosPiezas">
     <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
         <h6 class="mb-0 fw-semibold">
