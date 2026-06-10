@@ -117,7 +117,7 @@ class OrdenPdfController extends Controller
         ]);
 
         // Logo empresa
-        $logoBase64 = $this->imageToBase64('images/GVA_LOGO_AZUL.png');
+        $logoBase64 = $this->imageToBase64('images/SINDEN_logo_transparente.png');
 
         // Firma cliente
         $firmaBase64 = '';

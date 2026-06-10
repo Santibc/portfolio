@@ -33,24 +33,9 @@
             @endif
             @endhasanyrole
             @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
-                <div class="dropdown d-inline-block">
-                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', $orden) }}">
-                                <i class="bi bi-download me-2"></i>Descargar PDF
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li class="dropdown-header">Bosquejos por fila</li>
-                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 1]) }}">1 por fila</a></li>
-                        <li><a class="dropdown-item active" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 2]) }}">2 por fila (defecto)</a></li>
-                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 3]) }}">3 por fila</a></li>
-                        <li><a class="dropdown-item" href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 4]) }}">4 por fila</a></li>
-                    </ul>
-                </div>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDescargarPdf">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
                 @hasanyrole('Administrador|Recepcion')
                 <button type="button" class="btn btn-outline-danger" onclick="$('#modalAnularOrden').modal('show')">
                     <i class="bi bi-x-circle me-1"></i>Anular
@@ -144,6 +129,46 @@
 </div>
 
 {{-- Modal Anular --}}
+{{-- Modal Descargar PDF --}}
+<div class="modal fade" id="modalDescargarPdf" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-pdf me-2 text-primary"></i>Descargar PDF</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label fw-medium" for="selectBosquejosCols">Bosquejos por fila</label>
+                <select class="form-select" id="selectBosquejosCols">
+                    <option value="1">1 por fila</option>
+                    <option value="2" selected>2 por fila (defecto)</option>
+                    <option value="3">3 por fila</option>
+                    <option value="4">4 por fila</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a class="btn btn-primary" id="btnDescargarPdf"
+                   href="{{ route('recepcion.ordenes.pdf', [$orden, 'bosquejos_cols' => 2]) }}">
+                    <i class="bi bi-download me-1"></i>Descargar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        var select = document.getElementById('selectBosquejosCols');
+        var btn = document.getElementById('btnDescargarPdf');
+        var base = "{{ route('recepcion.ordenes.pdf', $orden) }}";
+        if (select && btn) {
+            select.addEventListener('change', function () {
+                btn.href = base + '?bosquejos_cols=' + encodeURIComponent(this.value);
+            });
+        }
+    })();
+</script>
+
 <div class="modal fade" id="modalAnularOrden" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

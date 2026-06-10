@@ -50,6 +50,9 @@
     var ignoreNextPathCreated = 0; // descartar path:created generado durante pinch
     var lastPinchEndedAt = 0;
     var singleFingerActive = false; // hay un trazo de UN dedo en curso (no abortar por 2do dedo)
+    var firstTouchPt = null;        // posicion inicial del primer dedo (coords cliente)
+    var strokeCommitted = false;    // el primer dedo ya se movio: es un trazo deliberado
+    var STROKE_COMMIT_PX = 10;      // movimiento minimo para considerar el trazo deliberado
 
     // =============================================
     // INICIALIZACION
@@ -767,24 +770,100 @@
                    currentTool === 'ellipse' || currentTool === 'arrow';
         }
 
+        // Inicia un pinch-zoom abortando limpiamente cualquier trazo/forma/pan en
+        // curso para que el gesto de dos dedos no deje ninguna marca.
+        function startPinch(e) {
+            pinchActive = true;
+            singleFingerActive = false;
+
+            // Cancelar long-press de pan temporal pendiente o activo
+            if (tempPanTimer) {
+                clearTimeout(tempPanTimer);
+                tempPanTimer = null;
+                tempPanStartPoint = null;
+            }
+            tempPanActive = false;
+            if (isPanning) {
+                isPanning = false;
+                lastPanPoint = null;
+            }
+
+            // Deshabilitar dibujo durante pinch
+            var wasDrawing = fabricCanvas.isDrawingMode;
+            if (wasDrawing) {
+                fabricCanvas.isDrawingMode = false;
+            }
+            // Abortar cualquier trazo en curso del primer dedo:
+            // - vaciar puntos del brush
+            // - limpiar la capa contextTop (tinta provisional)
+            // - marcar para descartar el proximo path:created
+            var brush = fabricCanvas.freeDrawingBrush;
+            if (brush) {
+                brush._points = [];
+                if (typeof brush._reset === 'function') {
+                    try { brush._reset(); } catch(_) {}
+                }
+            }
+            if (fabricCanvas.contextTop) {
+                fabricCanvas.clearContext(fabricCanvas.contextTop);
+            }
+            // Decirle a Fabric que NO hay trazo en curso: sin esto, al soltar los
+            // dedos (o al re-habilitar drawing mode) genera un path fantasma con
+            // los puntos del dedo inicial.
+            fabricCanvas._isCurrentlyDrawing = false;
+            if (wasDrawing) {
+                ignoreNextPathCreated = 1;
+            }
+            // Cancelar shape drawing en curso (linea/rect/elipse/flecha)
+            if (isShapeDrawing && activeShape) {
+                fabricCanvas.remove(activeShape);
+                isShapeDrawing = false;
+                activeShape = null;
+                fabricCanvas.requestRenderAll();
+            }
+            pinchStartDist = getTouchDistance(e.touches[0], e.touches[1]);
+            pinchStartZoom = fabricCanvas.getZoom();
+            pinchLastCenter = getTouchCenter(e.touches[0], e.touches[1]);
+        }
+
         // --- FASE DE CAPTURA (corre ANTES que los handlers de Fabric.js) ---
         // Fabric procesa el segundo toque como un nuevo mouse:down y REINICIA el
         // pincel, descartando el trazo en curso. Para evitarlo, interceptamos el
-        // segundo dedo en captura y detenemos su propagacion: Fabric nunca lo ve,
-        // y el primer dedo (touches[0]) sigue dibujando con normalidad.
+        // segundo dedo en captura. Dos casos:
+        // 1. El primer dedo AUN NO se ha movido (no hay trazo real): es un gesto
+        //    de pinch -> abortamos el micro-trazo sin dejar marca e iniciamos zoom.
+        // 2. El primer dedo YA esta trazando: el segundo dedo es palma/apoyo ->
+        //    lo bloqueamos y el trazo continua con normalidad.
+        // En ambos casos Fabric nunca ve el segundo dedo (no pone puntos).
         upperCanvas.addEventListener('touchstart', function(e) {
             if (e.touches.length === 1 && !pinchActive) {
                 singleFingerActive = esHerramientaDibujo();
                 ignoreNextPathCreated = 0;
+                firstTouchPt = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                strokeCommitted = false;
             } else if (e.touches.length >= 2 && singleFingerActive) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
+                if (!strokeCommitted && e.touches.length === 2) {
+                    // Pinch-to-zoom: el usuario apoyo dos dedos sin haber dibujado
+                    startPinch(e);
+                }
+                // Si ya habia trazo en curso, solo bloqueamos (palm rejection)
             }
         }, true);
 
         // Tambien bloqueamos en captura touchmove/touchend de dedos extra durante
         // un trazo, para que Fabric no finalice ni reinicie el path por el 2do dedo.
+        // Ademas registramos cuanto se ha movido el primer dedo para distinguir
+        // "trazo deliberado" de "apenas apoyo el dedo" (candidato a pinch).
         upperCanvas.addEventListener('touchmove', function(e) {
+            if (singleFingerActive && !strokeCommitted && firstTouchPt && e.touches.length === 1) {
+                var mdx = e.touches[0].clientX - firstTouchPt.x;
+                var mdy = e.touches[0].clientY - firstTouchPt.y;
+                if (Math.hypot(mdx, mdy) > STROKE_COMMIT_PX) {
+                    strokeCommitted = true;
+                }
+            }
             if (singleFingerActive && e.touches.length >= 2) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -815,47 +894,15 @@
                 return;
             }
 
-            // Dedos adicionales mientras se dibuja con un dedo: IGNORARLOS.
-            // No abortamos el trazo ni iniciamos pinch -> el dibujo no se borra.
-            // El zoom con dos dedos solo aplica si NO se estaba dibujando.
+            // Con herramienta de dibujo activa, el segundo dedo ya fue resuelto
+            // en fase de captura (pinch o palm rejection); aqui no hay nada que hacer.
             if (e.touches.length >= 2 && singleFingerActive) {
                 return;
             }
 
+            // Herramientas no-dibujo (pan, select, borrador, texto): pinch directo.
             if (e.touches.length === 2) {
-                pinchActive = true;
-                // Deshabilitar dibujo durante pinch
-                var wasDrawing = fabricCanvas.isDrawingMode;
-                if (wasDrawing) {
-                    fabricCanvas.isDrawingMode = false;
-                }
-                // Abortar cualquier trazo en curso del primer dedo:
-                // - vaciar puntos del brush
-                // - limpiar la capa contextTop (tinta provisional)
-                // - marcar para descartar el proximo path:created
-                var brush = fabricCanvas.freeDrawingBrush;
-                if (brush) {
-                    brush._points = [];
-                    if (typeof brush._reset === 'function') {
-                        try { brush._reset(); } catch(_) {}
-                    }
-                }
-                if (fabricCanvas.contextTop) {
-                    fabricCanvas.clearContext(fabricCanvas.contextTop);
-                }
-                if (wasDrawing) {
-                    ignoreNextPathCreated = 1;
-                }
-                // Cancelar shape drawing en curso (linea/rect/elipse/flecha)
-                if (isShapeDrawing && activeShape) {
-                    fabricCanvas.remove(activeShape);
-                    isShapeDrawing = false;
-                    activeShape = null;
-                    fabricCanvas.requestRenderAll();
-                }
-                pinchStartDist = getTouchDistance(e.touches[0], e.touches[1]);
-                pinchStartZoom = fabricCanvas.getZoom();
-                pinchLastCenter = getTouchCenter(e.touches[0], e.touches[1]);
+                startPinch(e);
                 e.preventDefault();
             }
         }, { passive: false });
@@ -919,6 +966,13 @@
         upperCanvas.addEventListener('touchcancel', function(e) {
             if (e.touches.length === 0) {
                 singleFingerActive = false;
+                if (pinchActive) {
+                    pinchActive = false;
+                    lastPinchEndedAt = Date.now();
+                    if (currentTool === 'pencil' || currentTool === 'white-brush') {
+                        fabricCanvas.isDrawingMode = true;
+                    }
+                }
             }
         });
     }

@@ -255,6 +255,20 @@ function escapeHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/**
+ * Toast de confirmacion al agregar una fila (pieza, item o pago).
+ * Aparece arriba a la derecha para que el usuario sepa que se agrego,
+ * aunque la lista crezca hacia abajo y la nueva fila quede fuera de vista.
+ */
+function mostrarToastAgregado(mensaje) {
+    if (!window.Swal) return;
+    Swal.fire({
+        toast: true, position: 'top-end', icon: 'success',
+        title: mensaje,
+        showConfirmButton: false, timer: 2000
+    });
+}
+
 function seleccionarCliente(id, nombre, celular, correo) {
     wizardState.clienteId = id;
     $('#cliente_id').val(id);
@@ -366,6 +380,7 @@ function agregarFilaItem(opts) {
     }
     if (!opts.skipAutoSave) {
         triggerAutoSave('item-add');
+        mostrarToastAgregado('Item agregado');
     }
 }
 
@@ -1025,6 +1040,7 @@ function agregarFilaPieza(opts) {
     marcarStepCompletado(2);
     if (!opts.skipAutoSave) {
         triggerAutoSave('pieza-add');
+        mostrarToastAgregado('Pieza agregada');
     }
 }
 
@@ -1174,6 +1190,7 @@ function agregarFilaPago(opts) {
     marcarStepCompletado(5);
     if (!opts.skipAutoSave) {
         triggerAutoSave('pago-add');
+        mostrarToastAgregado('Pago agregado');
     }
 }
 

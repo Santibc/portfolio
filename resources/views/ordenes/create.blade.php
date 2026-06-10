@@ -130,7 +130,7 @@
                                          onclick="seleccionarPlantillaMatriz({{ $plantilla->id }}, '{{ addslashes($plantilla->nombre) }}', '{{ $plantilla->ruta_archivo }}', '{{ $plantilla->ruta_miniatura ?: $plantilla->ruta_archivo }}')">
                                         <img src="{{ asset($plantilla->ruta_miniatura ?: $plantilla->ruta_archivo) }}"
                                              class="card-img-top" alt="{{ $plantilla->nombre }}"
-                                             style="height:100px; object-fit:cover;">
+                                             style="aspect-ratio:1/1; width:100%; height:auto; object-fit:contain; background:#f8f9fa; padding:6px;">
                                         <div class="card-body p-2 text-center">
                                             <small class="text-truncate d-block">{{ $plantilla->nombre }}</small>
                                         </div>
@@ -155,7 +155,7 @@
                                          onclick="seleccionarPlantillaMatriz({{ $plantilla->id }}, '{{ addslashes($plantilla->nombre) }}', '{{ $plantilla->ruta_archivo }}', '{{ $plantilla->ruta_miniatura ?: $plantilla->ruta_archivo }}')">
                                         <img src="{{ asset($plantilla->ruta_miniatura ?: $plantilla->ruta_archivo) }}"
                                              class="card-img-top" alt="{{ $plantilla->nombre }}"
-                                             style="height:100px; object-fit:cover;">
+                                             style="aspect-ratio:1/1; width:100%; height:auto; object-fit:contain; background:#f8f9fa; padding:6px;">
                                         <div class="card-body p-2 text-center">
                                             <small class="text-truncate d-block">{{ $plantilla->nombre }}</small>
                                         </div>
