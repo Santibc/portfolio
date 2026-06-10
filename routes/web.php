@@ -623,6 +623,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Contabilidad'])->grou
     // Acciones de estado
     Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir'])->name('facturas.emitir');
     Route::post('facturas/{factura}/numero', [FacturaController::class, 'actualizarNumero'])->name('facturas.numero');
+    Route::post('facturas/{factura}/marcar-enviada', [FacturaController::class, 'marcarEnviada'])->name('facturas.marcar-enviada');
     Route::post('facturas/{factura}/enviar', [FacturaController::class, 'enviar'])->name('facturas.enviar');
     Route::post('facturas/{factura}/cobrar', [FacturaController::class, 'cobrar'])->name('facturas.cobrar');
     Route::post('facturas/{factura}/anular', [FacturaController::class, 'anular'])->name('facturas.anular');

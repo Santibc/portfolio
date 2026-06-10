@@ -216,7 +216,10 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             @elseif($factura->estado == 'emitida')
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFactura({{ $factura->id }})" title="Marcar como enviada">
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="marcarEnviada({{ $factura->id }})" title="Marcar como enviada (sin correo)">
+                                    <i class="bi bi-check2-circle"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFactura({{ $factura->id }})" title="Enviar por email">
                                     <i class="bi bi-envelope"></i>
                                 </button>
                                 <a href="{{ route('facturas.pdf', $factura) }}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Ver PDF">
@@ -372,6 +375,40 @@
                 } else { Swal.fire('Error', sendData.message, 'error'); }
             }
         } catch (error) { console.error('Error:', error); Swal.fire('Error', 'Error de conexión al servidor', 'error'); }
+    }
+
+    function marcarEnviada(id) {
+        Swal.fire({
+            title: '¿Marcar como enviada?',
+            text: 'La factura quedará como enviada (sin enviar ningún correo). Después podrás marcarla como cobrada.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, marcar enviada',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#198754',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`{{ url('facturas') }}/${id}/marcar-enviada`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({ icon: 'success', title: 'Hecho', text: data.message, timer: 1500, showConfirmButton: false })
+                            .then(() => window.location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Error', 'Error de conexión', 'error');
+                }
+            }
+        });
     }
 
     function cobrarFactura(id) {

@@ -421,6 +421,37 @@ class FacturaController extends Controller
     }
 
     /**
+     * Marcar la factura como enviada SIN enviar ningún correo.
+     * Permite avanzar el estado emitida -> enviada para luego poder cobrarla.
+     */
+    public function marcarEnviada(Factura $factura): JsonResponse
+    {
+        try {
+            if ($factura->estado !== 'emitida') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solo se pueden marcar como enviadas las facturas emitidas.',
+                ], 400);
+            }
+
+            $datosAnteriores = $factura->toArray();
+            $factura->update(['estado' => 'enviada']);
+            Auditoria::registrar('editar', 'facturas', $factura->id, $datosAnteriores, $factura->fresh()->toArray());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Factura marcada como enviada.',
+                'factura' => $factura->fresh(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al marcar la factura como enviada: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Enviar factura por email a uno o múltiples destinatarios.
      */
     public function enviar(Request $request, Factura $factura): JsonResponse
