@@ -84,6 +84,7 @@ class StockProducto extends Model
         MovimientoStock::create([
             'producto_id' => $this->producto_id,
             'variante_producto_id' => $this->variante_producto_id,
+            'ubicacion_id' => $this->ubicacion_id,
             'tipo_movimiento' => 'reserva',
             'cantidad' => $cantidad,
             'stock_anterior' => $this->cantidad_disponible,
@@ -106,6 +107,7 @@ class StockProducto extends Model
         MovimientoStock::create([
             'producto_id' => $this->producto_id,
             'variante_producto_id' => $this->variante_producto_id,
+            'ubicacion_id' => $this->ubicacion_id,
             'tipo_movimiento' => 'liberacion',
             'cantidad' => $cantidad,
             'stock_anterior' => $this->cantidad_disponible,
@@ -129,6 +131,7 @@ class StockProducto extends Model
         MovimientoStock::create([
             'producto_id' => $this->producto_id,
             'variante_producto_id' => $this->variante_producto_id,
+            'ubicacion_id' => $this->ubicacion_id,
             'tipo_movimiento' => 'entrada',
             'cantidad' => $cantidad,
             'stock_anterior' => $stockAnterior,
@@ -163,6 +166,7 @@ class StockProducto extends Model
         MovimientoStock::create([
             'producto_id' => $this->producto_id,
             'variante_producto_id' => $this->variante_producto_id,
+            'ubicacion_id' => $this->ubicacion_id,
             'tipo_movimiento' => 'salida',
             'cantidad' => $cantidad,
             'stock_anterior' => $stockAnterior,
@@ -189,6 +193,7 @@ class StockProducto extends Model
         MovimientoStock::create([
             'producto_id' => $this->producto_id,
             'variante_producto_id' => $this->variante_producto_id,
+            'ubicacion_id' => $this->ubicacion_id,
             'tipo_movimiento' => 'ajuste',
             'cantidad' => $diferencia,
             'stock_anterior' => $stockAnterior,

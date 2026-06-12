@@ -77,6 +77,11 @@
             </td>
             <td class="text-end">
               <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-secondary"
+                        onclick="verHistorialUbicacion({{ $producto->id }}, {{ $variante?->id ?? 'null' }}, {{ $s->ubicacion_id ?? 'null' }}, @js($s->ubicacionRelacion?->nombre ?? 'Sin ubicación'))"
+                        title="Ver historial de entradas y salidas en esta ubicación">
+                  <i class="bi bi-clock-history"></i>
+                </button>
                 @hasanyrole('admin|auxiliar_administrativo|inventarios|auxiliar_inventario')
                   <button type="button" class="btn btn-success" onclick="entradaStock({{ $s->id }})" title="Entrada">
                     <i class="bi bi-plus-circle"></i>

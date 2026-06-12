@@ -291,9 +291,12 @@ class ProductosController extends Controller
 
                             if ($producto->controlar_stock) {
                                 $stockInicial = $varianteData['stock_inicial'] ?? 0;
+                                // Sin ubicación explícita, el stock inicial va a la bodega principal (nunca NULL).
+                                $ubicacionId = $varianteData['ubicacion_id'] ?? optional(\App\Models\Ubicacion::principal())->id;
                                 StockProducto::create([
                                     'producto_id' => $producto->id,
                                     'variante_producto_id' => $variante->id,
+                                    'ubicacion_id' => $ubicacionId,
                                     'cantidad_disponible' => $stockInicial,
                                     'cantidad_reservada' => 0,
                                     'stock_minimo' => $varianteData['stock_minimo'] ?? 0,
@@ -306,6 +309,7 @@ class ProductosController extends Controller
                                     MovimientoStock::create([
                                         'producto_id' => $producto->id,
                                         'variante_producto_id' => $variante->id,
+                                        'ubicacion_id' => $ubicacionId,
                                         'tipo_movimiento' => 'entrada',
                                         'cantidad' => $stockInicial,
                                         'stock_anterior' => 0,
@@ -345,12 +349,14 @@ class ProductosController extends Controller
 
                 // Si no existe el registro de stock (primera vez activando control de stock)
                 if (!$stock->exists) {
+                    // Sin ubicación explícita, el stock inicial va a la bodega principal (nunca NULL).
+                    $ubicacionId = $request->input('ubicacion_id') ?? optional(\App\Models\Ubicacion::principal())->id;
                     $stock->fill([
                         'cantidad_disponible' => $stockInicial,
                         'cantidad_reservada' => 0,
                         'stock_minimo' => $request->input('stock_minimo', 0),
                         'stock_maximo' => $request->input('stock_maximo'),
-                        'ubicacion_id' => $request->input('ubicacion_id'),
+                        'ubicacion_id' => $ubicacionId,
                         'ubicacion' => $request->input('ubicacion'),
                         'alerta_stock_bajo' => true
                     ])->save();
@@ -360,7 +366,7 @@ class ProductosController extends Controller
                         MovimientoStock::create([
                             'producto_id' => $producto->id,
                             'variante_producto_id' => null,
-                            'ubicacion_id' => $request->input('ubicacion_id'),
+                            'ubicacion_id' => $ubicacionId,
                             'tipo_movimiento' => 'entrada',
                             'cantidad' => $stockInicial,
                             'stock_anterior' => 0,

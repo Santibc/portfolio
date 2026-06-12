@@ -489,22 +489,30 @@ class StockController extends Controller
     {
         $productoId = $request->producto_id;
         $varianteId = $request->variante_id;
-        
-        $movimientos = MovimientoStock::with(['usuario', 'producto', 'variante'])
+        $ubicacionId = $request->ubicacion_id;
+
+        $movimientos = MovimientoStock::with(['usuario', 'producto', 'variante', 'ubicacion'])
             ->where('producto_id', $productoId);
-            
+
         if ($varianteId) {
             $movimientos->where('variante_producto_id', $varianteId);
         } else {
             $movimientos->whereNull('variante_producto_id');
         }
-        
+
+        // Filtro opcional por ubicación: muestra solo lo que entra y sale en esa ubicación
+        if ($ubicacionId) {
+            $movimientos->where('ubicacion_id', $ubicacionId);
+        }
+
         $movimientos = $movimientos->orderBy('created_at', 'desc')
                                    ->limit(50)
                                    ->get();
-        
-        $html = view('stock.historial', compact('movimientos'))->render();
-        
+
+        $ubicacion = $ubicacionId ? Ubicacion::find($ubicacionId) : null;
+
+        $html = view('stock.historial', compact('movimientos', 'ubicacion'))->render();
+
         return response()->json(['html' => $html]);
     }
 

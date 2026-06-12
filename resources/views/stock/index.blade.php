@@ -398,7 +398,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Historial de Movimientos</h5>
+          <h5 class="modal-title" id="tituloHistorial">Historial de Movimientos</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="contenidoHistorial">
@@ -734,9 +734,28 @@
     };
 
     window.verHistorial = function(productoId, varianteId) {
+      $('#tituloHistorial').text('Historial de Movimientos');
       $.get('/stock/historial', { producto_id: productoId, variante_id: varianteId }, function(response) {
         $('#contenidoHistorial').html(response.html);
         $('#modalHistorial').modal('show');
+      });
+    };
+
+    // Historial filtrado por ubicación: entradas y salidas SOLO en esa ubicación.
+    // Se abre apilado encima del modal de ubicaciones.
+    window.verHistorialUbicacion = function(productoId, varianteId, ubicacionId, ubicacionNombre) {
+      const params = { producto_id: productoId };
+      if (varianteId && varianteId !== 'null') params.variante_id = varianteId;
+      if (ubicacionId && ubicacionId !== 'null') params.ubicacion_id = ubicacionId;
+
+      $('#tituloHistorial').text('Historial de Movimientos — ' + (ubicacionNombre || ''));
+      $('#contenidoHistorial').html('<div class="text-center py-4"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+      $('#modalHistorial').modal('show');
+
+      $.get('/stock/historial', params, function(response) {
+        $('#contenidoHistorial').html(response.html);
+      }).fail(function() {
+        $('#contenidoHistorial').html('<p class="text-center text-danger">Error al cargar el historial.</p>');
       });
     };
 
@@ -807,7 +826,7 @@
 
     // Soporte para modales apilados: cuando se abre un modal encima del de ubicaciones,
     // elevar su z-index y el de su backdrop para que queden visibles arriba.
-    ['#modalEntrada', '#modalSalida', '#modalAjuste', '#modalConfiguracion'].forEach(function(sel) {
+    ['#modalEntrada', '#modalSalida', '#modalAjuste', '#modalConfiguracion', '#modalHistorial'].forEach(function(sel) {
       $(sel).on('shown.bs.modal', function() {
         if ($('#modalUbicaciones').hasClass('show')) {
           $(this).css('z-index', 1080);

@@ -1,7 +1,19 @@
 {{-- stock/historial.blade.php --}}
 <div class="table-responsive">
+  @if(!empty($ubicacion))
+    <div class="alert alert-info py-2 d-flex align-items-center gap-2">
+      <i class="bi bi-geo-alt-fill"></i>
+      <span>Mostrando entradas y salidas de la ubicación <strong>{{ $ubicacion->nombre }}</strong></span>
+    </div>
+  @endif
   @if($movimientos->isEmpty())
-    <p class="text-center text-muted">No hay movimientos registrados para este producto.</p>
+    <p class="text-center text-muted">
+      @if(!empty($ubicacion))
+        No hay movimientos registrados en esta ubicación para este producto.
+      @else
+        No hay movimientos registrados para este producto.
+      @endif
+    </p>
   @else
     <table class="table table-striped table-sm">
       <thead>
@@ -11,6 +23,7 @@
           <th>Cantidad</th>
           <th>Stock Anterior</th>
           <th>Stock Nuevo</th>
+          <th>Ubicación</th>
           <th>Origen</th>
           <th>Referencia</th>
           <th>Motivo</th>
@@ -48,6 +61,13 @@
             <td>{{ $movimiento->stock_anterior }}</td>
             <td>
               <strong>{{ $movimiento->stock_nuevo }}</strong>
+            </td>
+            <td>
+              @if($movimiento->ubicacion)
+                <span class="badge bg-light text-dark border">{{ $movimiento->ubicacion->nombre }}</span>
+              @else
+                <span class="text-muted">—</span>
+              @endif
             </td>
             <td>{{ $movimiento->descripcion_origen }}</td>
             <td>

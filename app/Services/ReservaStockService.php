@@ -507,19 +507,28 @@ class ReservaStockService
      */
     private function obtenerStock(int $productoId, ?int $varianteId = null): ?StockProducto
     {
-        $query = StockProducto::where('producto_id', $productoId)
-            ->where(function($q) {
-                $q->whereNull('ubicacion_id')
-                  ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
-            });
-
-        if ($varianteId) {
-            $query->where('variante_producto_id', $varianteId);
-        } else {
-            $query->whereNull('variante_producto_id');
-        }
-
-        return $query->first();
+        // Reservar SIEMPRE desde una ubicación real de bodega (nunca el registro "fantasma" sin
+        // ubicación, ni desde tiendas/ferias), priorizando la bodega principal y luego la de
+        // mayor disponibilidad real.
+        return StockProducto::with('ubicacionRelacion')
+            ->where('producto_id', $productoId)
+            ->whereNotNull('ubicacion_id')
+            ->whereHas('ubicacionRelacion', function ($u) {
+                $u->where('tipo', '!=', 'tienda');
+            })
+            ->when($varianteId, function ($q) use ($varianteId) {
+                $q->where('variante_producto_id', $varianteId);
+            }, function ($q) {
+                $q->whereNull('variante_producto_id');
+            })
+            ->get()
+            ->sortByDesc(function ($s) {
+                return [
+                    optional($s->ubicacionRelacion)->es_principal ? 1 : 0,
+                    $s->cantidad_disponible - $s->cantidad_reservada,
+                ];
+            })
+            ->first();
     }
 
     /**

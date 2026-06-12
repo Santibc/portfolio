@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\MovimientoStock;
+use App\Models\ReservaStock;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1395,85 +1396,130 @@ class SolicitudController extends Controller
             ];
         }
         
-        // Buscar registro de stock
-        if ($item->variante_producto_id) {
-            $stock = StockProducto::where('producto_id', $producto->id)
-                                  ->where('variante_producto_id', $item->variante_producto_id)
-                                  ->first();
-            $descripcion = $producto->nombre . ' - ' . $item->info_variante;
-        } else {
-            $stock = StockProducto::where('producto_id', $producto->id)
-                                  ->whereNull('variante_producto_id')
-                                  ->first();
-            $descripcion = $producto->nombre;
-        }
-        
-        if (!$stock) {
-            // Si no existe registro de stock, crearlo
-            $stock = StockProducto::create([
-                'producto_id' => $producto->id,
-                'variante_producto_id' => $item->variante_producto_id,
-                'cantidad_disponible' => 0,
-                'cantidad_reservada' => 0,
-                'stock_minimo' => 0,
-                'alerta_stock_bajo' => true
-            ]);
-        }
-        
-        $stockAnterior = $stock->cantidad_disponible;
-        $cantidadSolicitada = $item->cantidad;
-        $stockResultante = $stockAnterior - $cantidadSolicitada;
-        
-        // Verificar si se puede procesar
-        if ($stockResultante < 0 && !$producto->permitir_venta_sin_stock) {
+        $descripcion = $producto->nombre . ($item->variante_producto_id ? ' - ' . $item->info_variante : '');
+        $cantidadRequerida = (int) $item->cantidad;
+        $numeroSolicitud = $item->solicitudCotizacion->numero_solicitud;
+
+        // Candidatos de stock SOLO en ubicaciones reales (nunca el registro "fantasma" sin
+        // ubicación), priorizando la bodega principal y luego la ubicación con más disponible.
+        $candidatos = StockProducto::with('ubicacionRelacion')
+            ->where('producto_id', $producto->id)
+            ->whereNotNull('ubicacion_id')
+            ->when($item->variante_producto_id, function ($q) use ($item) {
+                $q->where('variante_producto_id', $item->variante_producto_id);
+            }, function ($q) {
+                $q->whereNull('variante_producto_id');
+            })
+            ->lockForUpdate()
+            ->get()
+            ->sortByDesc(function ($s) {
+                // [bodega principal primero, luego mayor disponible]
+                return [optional($s->ubicacionRelacion)->es_principal ? 1 : 0, $s->cantidad_disponible];
+            })
+            ->values();
+
+        $disponibleTotal = (int) $candidatos->sum('cantidad_disponible');
+
+        // Verificar disponibilidad real total (sumando todas las ubicaciones válidas)
+        if ($disponibleTotal < $cantidadRequerida && !$producto->permitir_venta_sin_stock) {
             return [
                 'procesado' => false,
                 'error' => true,
-                'mensaje' => $descripcion . ' - Stock insuficiente (disponible: ' . $stockAnterior . ', solicitado: ' . $cantidadSolicitada . ')'
+                'mensaje' => $descripcion . ' - Stock insuficiente (disponible en ubicaciones: ' . $disponibleTotal . ', solicitado: ' . $cantidadRequerida . ')'
             ];
         }
-        
-        // Procesar la salida
-        $resultado = $stock->salida(
-            $cantidadSolicitada,
-            'venta',
-            $item->solicitudCotizacion->numero_solicitud,
-            'Venta aplicada desde solicitud de cotización'
-        );
-        
-        if (!$resultado && !$producto->permitir_venta_sin_stock) {
+
+        // Descontar de forma greedy: bodega principal primero, luego las demás con stock.
+        $pendiente = $cantidadRequerida;
+        $detalle = [];
+
+        foreach ($candidatos as $stock) {
+            if ($pendiente <= 0) break;
+            if ($stock->cantidad_disponible <= 0) continue;
+
+            $aDescontar = min($pendiente, (int) $stock->cantidad_disponible);
+            $this->ejecutarSalidaDesdeUbicacion($stock, $aDescontar, $usuarioId, $solicitudId, $numeroSolicitud);
+            $pendiente -= $aDescontar;
+            $detalle[] = $aDescontar . ' en ' . (optional($stock->ubicacionRelacion)->nombre ?? 'ubicación');
+        }
+
+        // Si aún queda pendiente y el producto permite venta sin stock, descontar el resto
+        // de la bodega principal (primer candidato) dejándola en negativo.
+        if ($pendiente > 0 && $producto->permitir_venta_sin_stock && $candidatos->isNotEmpty()) {
+            $stock = $candidatos->first();
+            $this->ejecutarSalidaDesdeUbicacion($stock, $pendiente, $usuarioId, $solicitudId, $numeroSolicitud);
+            $detalle[] = $pendiente . ' en ' . (optional($stock->ubicacionRelacion)->nombre ?? 'ubicación') . ' (sin stock)';
+            $pendiente = 0;
+        }
+
+        if ($pendiente > 0) {
             return [
                 'procesado' => false,
                 'error' => true,
-                'mensaje' => $descripcion . ' - Error al procesar salida de stock'
+                'mensaje' => $descripcion . ' - Stock insuficiente (disponible en ubicaciones: ' . $disponibleTotal . ', solicitado: ' . $cantidadRequerida . ')'
             ];
         }
-        
-        // Si permite venta sin stock y falló la salida normal, hacer ajuste manual
-        if (!$resultado && $producto->permitir_venta_sin_stock) {
-            $stock->update(['cantidad_disponible' => $stockResultante]);
-            
-            // Crear movimiento manual
-            MovimientoStock::create([
-                'producto_id' => $producto->id,
-                'variante_producto_id' => $item->variante_producto_id,
-                'tipo_movimiento' => 'salida',
-                'cantidad' => $cantidadSolicitada,
-                'stock_anterior' => $stockAnterior,
-                'stock_nuevo' => $stockResultante,
-                'referencia_documento' => $item->solicitudCotizacion->numero_solicitud,
-                'origen' => 'venta',
-                'motivo' => 'Venta aplicada desde solicitud de cotización (permite stock negativo)',
-                'usuario_id' => $usuarioId,
-                'solicitud_cotizacion_id' => $solicitudId
-            ]);
-        }
-        
+
+        // Conciliar las reservas activas de este item (aplicarlas), sin importar a qué
+        // registro de stock apunten: el descuento real ya se hizo en la(s) ubicación(es) correcta(s).
+        $this->aplicarReservasItem($item, $solicitudId);
+
         return [
             'procesado' => true,
             'error' => false,
-            'mensaje' => $descripcion . ' - Descontado: ' . $cantidadSolicitada . ' unidades (stock resultante: ' . $stockResultante . ')'
+            'mensaje' => $descripcion . ' - Descontado: ' . $cantidadRequerida . ' (' . implode(', ', $detalle) . ')'
         ];
+    }
+
+    /**
+     * Ejecuta la salida de una cantidad desde un registro de stock concreto (con su ubicación),
+     * registrando el movimiento con la ubicación correcta. No toca cantidad_reservada: las
+     * reservas se concilian aparte en aplicarReservasItem().
+     */
+    private function ejecutarSalidaDesdeUbicacion($stock, $cantidad, $usuarioId, $solicitudId, $numeroSolicitud)
+    {
+        $stockAnterior = (int) $stock->cantidad_disponible;
+        $stockNuevo = $stockAnterior - $cantidad;
+
+        $stock->cantidad_disponible = $stockNuevo;
+        $stock->save();
+
+        MovimientoStock::create([
+            'producto_id' => $stock->producto_id,
+            'variante_producto_id' => $stock->variante_producto_id,
+            'ubicacion_id' => $stock->ubicacion_id,
+            'tipo_movimiento' => 'salida',
+            'cantidad' => $cantidad,
+            'stock_anterior' => $stockAnterior,
+            'stock_nuevo' => $stockNuevo,
+            'referencia_documento' => $numeroSolicitud,
+            'origen' => 'venta',
+            'motivo' => 'Venta aplicada desde solicitud de cotización',
+            'usuario_id' => $usuarioId,
+            'solicitud_cotizacion_id' => $solicitudId,
+        ]);
+    }
+
+    /**
+     * Marca como aplicadas las reservas activas del item y libera su cantidad_reservada del
+     * registro de stock al que apuntan (con guardia contra negativos).
+     */
+    private function aplicarReservasItem($item, $solicitudId)
+    {
+        $reservas = ReservaStock::where('solicitud_cotizacion_id', $solicitudId)
+            ->where('item_solicitud_id', $item->id)
+            ->where('estado', 'activa')
+            ->get();
+
+        foreach ($reservas as $reserva) {
+            $reserva->update(['estado' => 'aplicada']);
+
+            $stock = StockProducto::where('id', $reserva->stock_producto_id)->lockForUpdate()->first();
+            if ($stock && $stock->cantidad_reservada > 0) {
+                $cantidad = min($reserva->cantidad_reservada, $stock->cantidad_reservada);
+                $stock->decrement('cantidad_reservada', $cantidad);
+            }
+        }
     }
     
     /**

@@ -194,12 +194,16 @@ class Producto extends Model
     // Inicializar stock si no existe
     public function inicializarStock()
     {
+        // El stock inicial se crea en la bodega principal, nunca como registro "sin ubicación".
+        $ubicacionId = optional(\App\Models\Ubicacion::principal())->id;
+
         if ($this->tiene_variantes) {
             foreach ($this->variantes as $variante) {
                 StockProducto::firstOrCreate(
                     [
                         'producto_id' => $this->id,
-                        'variante_producto_id' => $variante->id
+                        'variante_producto_id' => $variante->id,
+                        'ubicacion_id' => $ubicacionId,
                     ],
                     [
                         'cantidad_disponible' => 0,
@@ -213,7 +217,8 @@ class Producto extends Model
             StockProducto::firstOrCreate(
                 [
                     'producto_id' => $this->id,
-                    'variante_producto_id' => null
+                    'variante_producto_id' => null,
+                    'ubicacion_id' => $ubicacionId,
                 ],
                 [
                     'cantidad_disponible' => 0,
