@@ -396,7 +396,7 @@ class OrdenController extends Controller
                         return $o->numero_orden;
                     }
 
-                    $html = '<span class="text-muted fst-italic">Borrador</span>';
+                    $html = '<span class="text-muted fst-italic">Borrador #' . $o->id . '</span>';
                     $diasExpiracion = \App\Models\ConfiguracionSistema::get('dias_expiracion_borradores', 30);
                     $diasTranscurridos = $o->updated_at->diffInDays(now());
                     $diasRestantes = $diasExpiracion - $diasTranscurridos;
@@ -450,6 +450,7 @@ class OrdenController extends Controller
             'piezas.operarioActual',
             'piezas.asignaciones.asignadoA',
             'piezas.historialAvances.operario',
+            'piezas.observaciones.usuario',
             'pagos' => function ($q) {
                 $q->withTrashed()->with(['registradoPorUsuario', 'aprobadoPorUsuario', 'rechazadoPorUsuario']);
             },

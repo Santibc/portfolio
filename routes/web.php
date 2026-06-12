@@ -230,6 +230,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Operario'])
         Route::post('/piezas/{pieza}/dejar-cola', [OperarioController::class, 'dejarEnCola'])->name('piezas.dejar-cola');
         Route::post('/piezas/{pieza}/tomar', [OperarioController::class, 'tomarPieza'])->name('piezas.tomar');
         Route::post('/piezas/{pieza}/foto', [OperarioController::class, 'subirFoto'])->name('piezas.foto');
+        Route::post('/piezas/{pieza}/observacion', [OperarioController::class, 'guardarObservacion'])->name('piezas.observacion');
 
         // AJAX: Bloqueo
         Route::post('/ordenes/{orden}/bloquear', [OperarioController::class, 'bloquear'])->name('ordenes.bloquear');

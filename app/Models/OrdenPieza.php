@@ -57,6 +57,11 @@ class OrdenPieza extends Model
         return $this->hasMany(OrdenFoto::class, 'orden_pieza_id');
     }
 
+    public function observaciones()
+    {
+        return $this->hasMany(OrdenPiezaObservacion::class, 'orden_pieza_id');
+    }
+
     public function garantias()
     {
         return $this->hasMany(DevolucionGarantia::class, 'orden_pieza_id');

@@ -138,12 +138,22 @@
             </div>
         @endif
 
-        {{-- Historial colapsable --}}
-        @if($pieza->historialAvances->count() > 0)
-            <div class="mb-3">
-                <a class="text-primary text-decoration-none small" data-bs-toggle="collapse" href="#hist{{ $pieza->id }}">
-                    <i class="bi bi-clock-history me-1"></i>Ver historial ({{ $pieza->historialAvances->count() }})
+        {{-- Toggles: Historial + Observaciones (misma fila) --}}
+        <div class="mb-3 observaciones-wrapper" id="obsWrapper{{ $pieza->id }}">
+            <div class="d-flex flex-wrap gap-3">
+                @if($pieza->historialAvances->count() > 0)
+                    <a class="text-primary text-decoration-none small" data-bs-toggle="collapse" href="#hist{{ $pieza->id }}">
+                        <i class="bi bi-clock-history me-1"></i>Ver historial ({{ $pieza->historialAvances->count() }})
+                    </a>
+                @endif
+                <a class="text-info text-decoration-none small obs-toggle {{ $pieza->observaciones->count() > 0 ? '' : 'd-none' }}"
+                   data-bs-toggle="collapse" href="#obs{{ $pieza->id }}">
+                    <i class="bi bi-chat-left-text me-1"></i>Ver observaciones (<span class="obs-count">{{ $pieza->observaciones->count() }}</span>)
                 </a>
+            </div>
+
+            {{-- Historial colapsable --}}
+            @if($pieza->historialAvances->count() > 0)
                 <div class="collapse mt-2" id="hist{{ $pieza->id }}">
                     <div class="historial-timeline">
                         @foreach($pieza->historialAvances->sortByDesc('created_at') as $h)
@@ -169,8 +179,22 @@
                         @endforeach
                     </div>
                 </div>
+            @endif
+
+            {{-- Observaciones colapsable --}}
+            <div class="collapse mt-2" id="obs{{ $pieza->id }}">
+                <div class="historial-timeline obs-list" id="obsList{{ $pieza->id }}">
+                    @foreach($pieza->observaciones->sortByDesc('created_at') as $obs)
+                        <div class="timeline-item">
+                            <strong>{{ $obs->usuario->name ?? 'Desconocido' }}</strong>
+                            <small class="text-muted">({{ $obs->created_at->format('d/m/Y H:i') }})</small>
+                            <br>
+                            <small><i class="bi bi-chat-text me-1"></i>{{ $obs->observacion }}</small>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        @endif
+        </div>
 
         {{-- === CONTROLES DE TRABAJO === --}}
         @if($lockResult['success'] ?? false)
@@ -191,15 +215,19 @@
                 </div>
             </div>
 
-            {{-- Foto --}}
-            <div class="mt-3">
-                <label class="btn btn-sm btn-outline-secondary">
+            {{-- Foto / Observacion --}}
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                <label class="btn btn-sm btn-outline-secondary mb-0">
                     <i class="bi bi-camera me-1"></i>Adjuntar Foto
                     <input type="file" class="d-none foto-input" accept="image/*" capture="environment"
                            data-pieza-id="{{ $pieza->id }}">
                 </label>
-                <div class="foto-preview mt-2" id="fotoPreview{{ $pieza->id }}"></div>
+                <button type="button" class="btn btn-sm btn-outline-info btn-observacion"
+                        data-pieza-id="{{ $pieza->id }}" data-pieza-nombre="{{ e($pieza->nombre) }}">
+                    <i class="bi bi-chat-left-text me-1"></i>Ingresar Observación
+                </button>
             </div>
+            <div class="foto-preview mt-2" id="fotoPreview{{ $pieza->id }}"></div>
 
             {{-- Acciones: Transferir / Dejar en cola --}}
             <div class="d-flex gap-2 mt-3 flex-wrap">
