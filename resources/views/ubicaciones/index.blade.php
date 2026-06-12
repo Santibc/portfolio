@@ -111,6 +111,42 @@
         }
       });
     };
+
+    window.reiniciarInventario = function(id, nombre) {
+      Swal.fire({
+        title: '¿Reiniciar inventario a 0?',
+        html: `Vas a poner en <strong>0</strong> todo el stock disponible de <strong>${nombre}</strong> para un nuevo conteo.<br><br>` +
+              `<small>Las reservas activas de cotizaciones se conservan. La acción queda registrada en el log y en el historial de movimientos.</small><br><br>` +
+              `Escribe <code>REINICIAR</code> para confirmar:`,
+        input: 'text',
+        inputPlaceholder: 'REINICIAR',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Sí, reiniciar a 0',
+        cancelButtonText: 'Cancelar',
+        preConfirm: (val) => {
+          if ((val || '').trim().toUpperCase() !== 'REINICIAR') {
+            Swal.showValidationMessage('Debes escribir REINICIAR para confirmar');
+          }
+        }
+      }).then((result) => {
+        if (!result.isConfirmed) return;
+        $.ajax({
+          url: `/ubicaciones/${id}/reiniciar-inventario`,
+          method: 'POST',
+          data: { _token: '{{ csrf_token() }}' },
+          success: function(resp) {
+            Swal.fire('Inventario reiniciado', resp.message, 'success');
+            table.ajax.reload(null, false);
+          },
+          error: function(xhr) {
+            const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'No se pudo reiniciar el inventario.';
+            Swal.fire('Error', msg, 'error');
+          }
+        });
+      });
+    };
   });
   </script>
   @endpush

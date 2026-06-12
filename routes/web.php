@@ -326,6 +326,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->g
     Route::delete('ubicaciones/{id}/eliminar', [UbicacionesController::class, 'eliminar'])->name('ubicaciones.eliminar');
     Route::post('ubicaciones/{ubicacion}/toggle-estado', [UbicacionesController::class, 'toggleEstado'])->name('ubicaciones.toggle-estado');
     Route::post('ubicaciones/{ubicacion}/marcar-principal', [UbicacionesController::class, 'marcarPrincipal'])->name('ubicaciones.marcar-principal');
+    Route::post('ubicaciones/{ubicacion}/reiniciar-inventario', [UbicacionesController::class, 'reiniciarInventario'])->name('ubicaciones.reiniciar-inventario');
 });
 
 // ============================================================

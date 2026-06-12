@@ -15,6 +15,9 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StockPorUbicacionExport;
+use Illuminate\Support\Str;
 
 class StockController extends Controller
 {
@@ -56,6 +59,11 @@ class StockController extends Controller
             // Filtrar por producto si se especifica
             if ($request->has('producto_id') && $request->producto_id) {
                 $query->where('stock_productos.producto_id', $request->producto_id);
+            }
+
+            // Filtrar por ubicación (los usuarios con sede asignada ya están restringidos arriba)
+            if (!$ubicacionUsuarioId && $request->filled('ubicacion_id')) {
+                $query->where('stock_productos.ubicacion_id', $request->ubicacion_id);
             }
 
             // Filtrar por estado de stock (usando HAVING sobre los totales agregados)
@@ -223,12 +231,19 @@ class StockController extends Controller
                 ->make(true);
         }
 
-        $productosConStockBajo = StockProducto::conStockBajo()
-            ->when($ubicacionUsuarioId, fn($q) => $q->where('ubicacion_id', $ubicacionUsuarioId))
-            ->count();
-        $productosSinStock = StockProducto::sinStock()
-            ->when($ubicacionUsuarioId, fn($q) => $q->where('ubicacion_id', $ubicacionUsuarioId))
-            ->count();
+        // Las tarjetas de resumen respetan los filtros activos (sede del usuario o ubicación
+        // seleccionada, y producto) para que cambien al filtrar.
+        $ubicacionFiltro = $ubicacionUsuarioId ?: $request->ubicacion_id;
+        $productoFiltroId = $request->filled('producto_id') ? $request->producto_id : null;
+
+        $aplicarFiltrosResumen = function ($q) use ($ubicacionFiltro, $productoFiltroId) {
+            return $q->when($ubicacionFiltro, fn($qq) => $qq->where('ubicacion_id', $ubicacionFiltro))
+                     ->when($productoFiltroId, fn($qq) => $qq->where('producto_id', $productoFiltroId));
+        };
+
+        $productosConStock     = $aplicarFiltrosResumen(StockProducto::conStock())->count();
+        $productosConStockBajo = $aplicarFiltrosResumen(StockProducto::conStockBajo())->count();
+        $productosSinStock     = $aplicarFiltrosResumen(StockProducto::sinStock())->count();
 
         // Obtener información del producto si viene filtrado
         $productoFiltrado = null;
@@ -243,7 +258,7 @@ class StockController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('stock.index', compact('productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'ubicaciones'));
+        return view('stock.index', compact('productosConStock', 'productosConStockBajo', 'productosSinStock', 'productoFiltrado', 'ubicaciones'));
     }
 
     // AJAX: retorna el HTML con el desglose de stock por ubicación para un producto/variante
@@ -635,11 +650,26 @@ class StockController extends Controller
     }
 
     // Exportar inventario actual
-    public function exportar()
+    // Exportar inventario a Excel, respetando los filtros de ubicación, producto y estado
+    public function exportar(Request $request)
     {
-        // TODO: Implementar exportación a Excel
-        
-        return response()->download('inventario.xlsx');
+        // Si el usuario está restringido a una sede, se fuerza esa ubicación
+        $ubicacionUsuarioId = auth()->user()->ubicacion_id ?? null;
+        $ubicacionId = $ubicacionUsuarioId ?: $request->ubicacion_id;
+
+        $filtros = [
+            'ubicacion_id' => $ubicacionId,
+            'producto_id'  => $request->producto_id,
+            'estado'       => $request->estado,
+        ];
+
+        $sufijo = $ubicacionId
+            ? Str::slug(optional(Ubicacion::find($ubicacionId))->nombre ?: 'ubicacion')
+            : 'todas-ubicaciones';
+
+        $nombre = 'stock_' . $sufijo . '_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new StockPorUbicacionExport($filtros), $nombre);
     }
 
     // Reporte de movimientos

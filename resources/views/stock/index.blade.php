@@ -26,7 +26,7 @@
               <h6 class="card-title text-success">
                 <i class="bi bi-check-circle"></i> Con Stock
               </h6>
-              <p class="card-text display-6" id="productosConStock">-</p>
+              <p class="card-text display-6" id="productosConStock">{{ $productosConStock }}</p>
             </div>
           </div>
         </div>
@@ -106,13 +106,23 @@
               </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">Estado de Stock</label>
               <select id="filtroEstado" class="form-select">
                 <option value="">-- Todos --</option>
                 <option value="con_stock">Con Stock</option>
                 <option value="sin_stock">Sin Stock</option>
                 <option value="stock_bajo">Stock Bajo</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Ubicación</label>
+              <select id="filtroUbicacion" class="form-select">
+                <option value="">-- Todas las ubicaciones --</option>
+                @foreach($ubicaciones as $u)
+                  <option value="{{ $u->id }}">{{ $u->nombre }} ({{ ucfirst($u->tipo) }})</option>
+                @endforeach
               </select>
             </div>
 
@@ -548,6 +558,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const productoId = urlParams.get('producto_id');
     const estadoFiltro = urlParams.get('estado');
+    const ubicacionFiltro = urlParams.get('ubicacion_id');
 
     // Estado del modal de ubicaciones (para refrescar tras operaciones)
     let ubicacionesContextoActual = null;
@@ -592,6 +603,10 @@
     if (estadoFiltro) {
       $('#filtroEstado').val(estadoFiltro);
     }
+    // Si hay un filtro de ubicación, seleccionarlo
+    if (ubicacionFiltro) {
+      $('#filtroUbicacion').val(ubicacionFiltro);
+    }
 
     // Configurar DataTable
     const table = $('#stock-table').DataTable({
@@ -608,6 +623,10 @@
           const estado = $('#filtroEstado').val();
           if (estado) {
             d.estado = estado;
+          }
+          const ubicacion = $('#filtroUbicacion').val();
+          if (ubicacion) {
+            d.ubicacion_id = ubicacion;
           }
         }
       },
@@ -626,12 +645,10 @@
         { extend: 'pageLength', className: 'btn btn-outline-dark', text: 'Filas' },
         { extend: 'colvis', className: 'btn btn-outline-dark', text: 'Columnas' },
         {
-          extend: 'excelHtml5',
+          text: '<i class="bi bi-file-earmark-excel"></i> Excel',
           className: 'btn btn-outline-success',
-          text: 'Excel',
-          title: 'Inventario',
-          exportOptions: {
-            columns: [5, 6, 7, 1, 2, 3]
+          action: function() {
+            window.location.href = construirUrlExport();
           }
         },
         {
@@ -646,21 +663,9 @@
       language: { url: '{{ asset("js/datatables/es-ES.json") }}' },
       lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
       drawCallback: function(settings) {
-        // Actualizar contadores
+        // Actualizar contador total (las demás tarjetas vienen del servidor y respetan el filtro)
         const info = this.api().page.info();
         $('#totalItems').text(info.recordsTotal);
-        
-        // Calcular productos con stock
-        const data = this.api().rows({page:'current'}).data();
-        let conStock = 0;
-        data.each(function(row) {
-          // Extraer el número del badge de stock
-          const match = row.stock_actual.match(/>(\d+)</);
-          if (match && parseInt(match[1]) > 0) {
-            conStock++;
-          }
-        });
-        $('#productosConStock').text(conStock);
       }
     });
 
@@ -668,6 +673,7 @@
     window.aplicarFiltros = function() {
       const productoId = $('#filtroProducto').val();
       const estado = $('#filtroEstado').val();
+      const ubicacion = $('#filtroUbicacion').val();
 
       let url = "{{ route('stock.index') }}";
       const params = [];
@@ -678,12 +684,29 @@
       if (estado) {
         params.push('estado=' + estado);
       }
+      if (ubicacion) {
+        params.push('ubicacion_id=' + ubicacion);
+      }
 
       if (params.length > 0) {
         url += '?' + params.join('&');
       }
 
       window.location.href = url;
+    };
+
+    // Construye la URL de exportación a Excel respetando los filtros actuales (incluida la ubicación)
+    window.construirUrlExport = function() {
+      const params = [];
+      const productoId = $('#filtroProducto').val();
+      const estado = $('#filtroEstado').val();
+      const ubicacion = $('#filtroUbicacion').val();
+      if (productoId) params.push('producto_id=' + encodeURIComponent(productoId));
+      if (estado) params.push('estado=' + encodeURIComponent(estado));
+      if (ubicacion) params.push('ubicacion_id=' + encodeURIComponent(ubicacion));
+      let url = "{{ route('stock.exportar') }}";
+      if (params.length > 0) url += '?' + params.join('&');
+      return url;
     };
 
     // Función para limpiar filtros

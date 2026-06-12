@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ubicacion;
+use App\Models\StockProducto;
+use App\Models\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class UbicacionesController extends Controller
@@ -17,6 +20,10 @@ class UbicacionesController extends Controller
                 ->addColumn('action', function ($row) {
                     $btns = '<div class="d-flex gap-1">';
                     $btns .= '<a href="' . route('ubicaciones.form', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>';
+                    if (auth()->user()->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
+                        $nombreJs = htmlspecialchars(json_encode($row->nombre), ENT_QUOTES);
+                        $btns .= '<button type="button" class="btn btn-sm btn-outline-warning" onclick="reiniciarInventario(' . $row->id . ', ' . $nombreJs . ')" title="Reiniciar inventario a 0 (conteo)"><i class="bi bi-arrow-counterclockwise"></i></button>';
+                    }
                     if (!$row->es_principal) {
                         $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarUbicacion(' . $row->id . ')"><i class="bi bi-trash"></i></button>';
                     }
@@ -168,5 +175,72 @@ class UbicacionesController extends Controller
             'success' => true,
             'message' => 'Ubicación marcada como principal correctamente.'
         ]);
+    }
+
+    /**
+     * Reinicia el inventario de una ubicación: pone la cantidad disponible en 0 para un
+     * conteo físico. Conserva las reservas activas. Registra un movimiento de ajuste por
+     * cada producto afectado y una entrada de auditoría en el log.
+     */
+    public function reiniciarInventario(Ubicacion $ubicacion)
+    {
+        $user = auth()->user();
+
+        if (!$user->hasAnyRole(['admin', 'auxiliar_administrativo'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para reiniciar el inventario.'
+            ], 403);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Solo los registros con disponible distinto de 0 generan movimiento
+            $stocks = StockProducto::where('ubicacion_id', $ubicacion->id)
+                ->where('cantidad_disponible', '!=', 0)
+                ->lockForUpdate()
+                ->get();
+
+            $registros = 0;
+            $unidades = 0;
+
+            foreach ($stocks as $stock) {
+                $unidades += (int) $stock->cantidad_disponible;
+                // ajustar(0) pone disponible en 0, conserva reservada y crea el movimiento
+                // de ajuste con su ubicacion_id (queda en el historial de stock).
+                $stock->ajustar(0, 'Reinicio de inventario para conteo físico - ' . $ubicacion->nombre);
+                $registros++;
+            }
+
+            // Registro de auditoría en el log general
+            Log::create([
+                'id_tabla'    => $ubicacion->id,
+                'tabla'       => 'ubicaciones',
+                'tipo_log'    => 'reinicio_inventario',
+                'detalle'     => "Reinicio de inventario en ubicación '{$ubicacion->nombre}' (#{$ubicacion->id}): "
+                                 . "{$registros} registros puestos en 0, {$unidades} unidades retiradas. Reservas conservadas.",
+                'valor_viejo' => (string) $unidades,
+                'valor_nuevo' => '0',
+                'id_usuario'  => $user->id,
+                'estado'      => 1,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success'   => true,
+                'message'   => "Inventario de '{$ubicacion->nombre}' reiniciado a 0: {$registros} productos ({$unidades} unidades). Ya puedes ingresar el conteo.",
+                'registros' => $registros,
+                'unidades'  => $unidades,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al reiniciar el inventario: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
