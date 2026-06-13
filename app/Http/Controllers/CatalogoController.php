@@ -483,8 +483,11 @@ class CatalogoController extends Controller
                     );
                 }
 
-                // Bloqueo pesimista para evitar race conditions (excluir stock de tienda)
+                // Bloqueo pesimista para evitar race conditions. Se descarta el stock de tienda
+                // y se PRIORIZA la bodega principal: los registros sin ubicación (legacy/fantasma)
+                // quedan de último, así nunca se elige uno con 0 si hay una bodega con stock.
                 $stockQuery = StockProducto::where('producto_id', $item['producto_id'])
+                    ->with('ubicacionRelacion')
                     ->where(function($q) {
                         $q->whereNull('ubicacion_id')
                           ->orWhereHas('ubicacionRelacion', fn($u) => $u->where('tipo', '!=', 'tienda'));
@@ -496,7 +499,15 @@ class CatalogoController extends Controller
                     $stockQuery->whereNull('variante_producto_id');
                 }
 
-                $stock = $stockQuery->lockForUpdate()->first();
+                $stock = $stockQuery->lockForUpdate()->get()
+                    ->sortByDesc(function ($s) {
+                        return [
+                            $s->ubicacion_id ? 1 : 0,                                  // con ubicación antes que sin ubicación
+                            optional($s->ubicacionRelacion)->es_principal ? 1 : 0,     // bodega principal primero
+                            $s->cantidad_disponible - $s->cantidad_reservada,          // luego la de mayor disponible real
+                        ];
+                    })
+                    ->first();
 
                 // Validar con el stock BLOQUEADO
                 if ($producto->controlar_stock && !$producto->permitir_venta_sin_stock) {

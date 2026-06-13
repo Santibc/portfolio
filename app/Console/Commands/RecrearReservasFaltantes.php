@@ -85,7 +85,14 @@ class RecrearReservasFaltantes extends Command
                     $stockQuery->whereNull('variante_producto_id');
                 }
 
-                $stock = $stockQuery->first();
+                // Priorizar bodega principal; el registro sin ubicación (fantasma) queda de último.
+                $stock = $stockQuery->with('ubicacionRelacion')->get()
+                    ->sortByDesc(fn($s) => [
+                        $s->ubicacion_id ? 1 : 0,
+                        optional($s->ubicacionRelacion)->es_principal ? 1 : 0,
+                        $s->cantidad_disponible - $s->cantidad_reservada,
+                    ])
+                    ->first();
 
                 if (!$stock) {
                     continue; // Sin control de stock
