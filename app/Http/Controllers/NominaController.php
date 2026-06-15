@@ -61,6 +61,63 @@ class NominaController extends Controller
     }
 
     /**
+     * Alta centralizada de nómina desde el Resumen: se elige el trabajador en el formulario.
+     */
+    public function storeCentral(Request $request)
+    {
+        $validated = $request->validate([
+            'trabajador_id' => 'required|exists:trabajadores,id',
+            'anio' => 'required|integer|min:2000|max:2100',
+            'mes' => 'required|integer|min:1|max:12',
+            'salario_bruto' => 'required|numeric|min:0',
+            'ss_empresa' => 'nullable|numeric|min:0',
+            'ss_trabajador' => 'nullable|numeric|min:0',
+            'irpf' => 'nullable|numeric|min:0',
+            'documento' => 'nullable|file|mimes:pdf|max:5120',
+            'notas' => 'nullable|string',
+        ], [
+            'trabajador_id.required' => 'Selecciona un trabajador.',
+            'documento.mimes' => 'La nómina debe ser un PDF.',
+            'documento.max' => 'El PDF no puede superar 5MB.',
+        ]);
+
+        $trabajador = Trabajador::findOrFail($validated['trabajador_id']);
+
+        if (Nomina::where('trabajador_id', $trabajador->id)->where('anio', $validated['anio'])->where('mes', $validated['mes'])->exists()) {
+            return back()->with('error', 'Ya existe una nómina para ' . $trabajador->nombre . ' ' . $trabajador->apellidos . ' en ' . Nomina::MESES[$validated['mes']] . ' de ' . $validated['anio'] . '.')->withInput();
+        }
+
+        $bruto = (float) $validated['salario_bruto'];
+        $ssTrab = (float) ($validated['ss_trabajador'] ?? 0);
+        $irpf = (float) ($validated['irpf'] ?? 0);
+
+        $data = [
+            'trabajador_id' => $trabajador->id,
+            'anio' => $validated['anio'],
+            'mes' => $validated['mes'],
+            'salario_bruto' => $bruto,
+            'ss_empresa' => (float) ($validated['ss_empresa'] ?? 0),
+            'ss_trabajador' => $ssTrab,
+            'irpf' => $irpf,
+            'liquido' => round($bruto - $ssTrab - $irpf, 2),
+            'notas' => $validated['notas'] ?? null,
+        ];
+
+        if ($request->hasFile('documento')) {
+            $archivo = $request->file('documento');
+            $nombre = 'nomina_' . $validated['anio'] . '_' . $validated['mes'] . '_' . time() . '.' . $archivo->getClientOriginalExtension();
+            $ruta = 'uploads/trabajadores/' . $trabajador->id . '/nominas';
+            $archivo->move(public_path($ruta), $nombre);
+            $data['documento_path'] = $ruta . '/' . $nombre;
+        }
+
+        Nomina::create($data);
+
+        return redirect()->route('nominas.resumen', ['anio' => $validated['anio']])
+            ->with('success', 'Nómina de ' . $trabajador->nombre . ' ' . $trabajador->apellidos . ' (' . Nomina::MESES[$validated['mes']] . ' ' . $validated['anio'] . ') registrada correctamente.');
+    }
+
+    /**
      * Eliminar una nómina.
      */
     public function destroy(Nomina $nomina)
@@ -136,7 +193,12 @@ class NominaController extends Controller
 
         $anios = range(now()->year, now()->year - 5);
 
-        return view('nominas.resumen', compact('anio', 'porMes', 'totales', 'anios'));
+        // Trabajadores activos para el alta centralizada de nóminas
+        $trabajadores = Trabajador::where('activo', true)
+            ->orderBy('apellidos')->orderBy('nombre')
+            ->get();
+
+        return view('nominas.resumen', compact('anio', 'porMes', 'totales', 'anios', 'trabajadores'));
     }
 
     /**

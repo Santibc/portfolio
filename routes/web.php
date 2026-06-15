@@ -93,6 +93,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])->prefix('tipos-hor
 // ==========================================
 Route::middleware(['auth', 'verified', 'role:Administrador|RRHH|Contabilidad'])->group(function () {
     Route::get('nominas/resumen', [NominaController::class, 'resumen'])->name('nominas.resumen');
+    Route::post('nominas', [NominaController::class, 'storeCentral'])->name('nominas.store');
     Route::post('trabajadores/{trabajador}/nominas', [NominaController::class, 'store'])->name('trabajadores.nominas.store');
     Route::delete('nominas/{nomina}', [NominaController::class, 'destroy'])->name('nominas.destroy');
 });

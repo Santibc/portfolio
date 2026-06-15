@@ -140,6 +140,10 @@
                         </select>
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">Proveedor</label>
+                        <input type="text" name="proveedor" class="form-control" value="{{ request('proveedor') }}" placeholder="Nombre del proveedor">
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label">Desde</label>
                         <input type="date" name="fecha_desde" class="form-control" value="{{ request('fecha_desde') }}">
                     </div>

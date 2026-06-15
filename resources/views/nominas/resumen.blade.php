@@ -9,6 +9,9 @@
             <h1 class="h3 mb-1">Resumen de Nóminas</h1>
             <p class="text-muted mb-0">Coste de personal mensual — se refleja en gastos e impuestos</p>
         </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNomina">
+            <i class="bi bi-plus-lg me-2"></i>Subir nómina
+        </button>
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -62,5 +65,109 @@
         <i class="bi bi-info-circle me-1"></i>La <strong>Seguridad Social</strong> y el <strong>IRPF</strong> de las nóminas se reflejan en el
         <a href="{{ route('impuestos.resumen') }}">Resumen de Impuestos</a>. El <strong>"coste empresa"</strong> es el gasto de personal de cada mes.
     </div>
+
+    {{-- Modal: alta centralizada de nómina --}}
+    <div class="modal fade" id="modalNomina" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('nominas.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-cash-coin me-2"></i>Subir nómina</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if($errors->any())
+                            <div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+                        @endif
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Trabajador <span class="text-danger">*</span></label>
+                                <select name="trabajador_id" class="form-select" required>
+                                    <option value="">Selecciona un trabajador...</option>
+                                    @foreach($trabajadores as $t)
+                                        <option value="{{ $t->id }}" {{ old('trabajador_id') == $t->id ? 'selected' : '' }}>{{ $t->apellidos }}, {{ $t->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mes <span class="text-danger">*</span></label>
+                                <select name="mes" class="form-select" required>
+                                    <option value="">Mes...</option>
+                                    @foreach(\App\Models\Nomina::MESES as $num => $nombre)
+                                        <option value="{{ $num }}" {{ old('mes') == $num ? 'selected' : '' }}>{{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Año <span class="text-danger">*</span></label>
+                                <select name="anio" class="form-select" required>
+                                    @foreach($anios as $a)
+                                        <option value="{{ $a }}" {{ old('anio', $anio) == $a ? 'selected' : '' }}>{{ $a }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Salario bruto <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="0" name="salario_bruto" id="n_bruto" class="form-control" value="{{ old('salario_bruto') }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">SS empresa</label>
+                                <input type="number" step="0.01" min="0" name="ss_empresa" class="form-control" value="{{ old('ss_empresa') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">SS trabajador</label>
+                                <input type="number" step="0.01" min="0" name="ss_trabajador" id="n_sstrab" class="form-control" value="{{ old('ss_trabajador') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">IRPF</label>
+                                <input type="number" step="0.01" min="0" name="irpf" id="n_irpf" class="form-control" value="{{ old('irpf') }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Líquido a percibir (automático)</label>
+                                <input type="text" id="n_liquido" class="form-control bg-light fw-semibold" readonly value="0,00 €">
+                                <small class="text-muted">Bruto − SS trabajador − IRPF</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Documento (PDF)</label>
+                                <input type="file" name="documento" class="form-control" accept="application/pdf">
+                                <small class="text-muted">Opcional. Máximo 5MB.</small>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notas</label>
+                                <textarea name="notas" class="form-control" rows="2">{{ old('notas') }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Guardar nómina</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+    (function () {
+        const bruto = document.getElementById('n_bruto');
+        const ssTrab = document.getElementById('n_sstrab');
+        const irpf = document.getElementById('n_irpf');
+        const liquido = document.getElementById('n_liquido');
+        function calc() {
+            const v = (parseFloat(bruto.value) || 0) - (parseFloat(ssTrab.value) || 0) - (parseFloat(irpf.value) || 0);
+            liquido.value = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(v);
+        }
+        [bruto, ssTrab, irpf].forEach(el => el && el.addEventListener('input', calc));
+        @if($errors->any() || session('error'))
+        document.addEventListener('DOMContentLoaded', function () {
+            new bootstrap.Modal(document.getElementById('modalNomina')).show();
+            calc();
+        });
+        @endif
+    })();
+</script>
+@endpush
 @endsection
