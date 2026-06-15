@@ -22,6 +22,7 @@ class StoreVentaRequest extends FormRequest
             'items'                  => ['required', 'array', 'min:1'],
             'items.*.menu_item_id'   => ['required', 'integer', 'exists:menu_items,id'],
             'items.*.cantidad'       => ['required', 'integer', 'min:1', 'max:99'],
+            'items.*.precio_unitario' => ['nullable', 'integer', 'min:0', 'max:99999999'],
 
             'pagos'                  => ['required', 'array', 'min:1'],
             'pagos.*.metodo_pago_id' => ['required', 'integer', 'exists:metodos_pago,id'],
@@ -46,7 +47,12 @@ class StoreVentaRequest extends FormRequest
             $menus   = MenuItem::whereIn('id', $itemIds)->pluck('precio', 'id');
             $total   = 0;
             foreach ($items as $row) {
-                $total += (int) ($menus[$row['menu_item_id']] ?? 0) * (int) $row['cantidad'];
+                // El precio puede editarse en el carrito; usa el enviado y, si no llega,
+                // el de catálogo. Debe coincidir con VentaService::calcularItems().
+                $precio = array_key_exists('precio_unitario', $row) && $row['precio_unitario'] !== ''
+                    ? (int) $row['precio_unitario']
+                    : (int) ($menus[$row['menu_item_id']] ?? 0);
+                $total += $precio * (int) $row['cantidad'];
             }
 
             $metodos         = MetodoPago::whereIn('id', collect($pagos)->pluck('metodo_pago_id')->unique()->all())->get()->keyBy('id');

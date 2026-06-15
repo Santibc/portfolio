@@ -22,18 +22,19 @@ class DashboardCajaController extends Controller
             ? Carbon::parse((string) $request->input('hasta'))->endOfDay()
             : Carbon::now()->endOfDay();
 
-        $turnos = TurnoCaja::with(['aperturadoPor', 'cerradoPor', 'ventas.pagos.metodo', 'gastos'])
+        $turnos = TurnoCaja::with(['aperturadoPor', 'cerradoPor', 'ventas.pagos.metodo', 'gastos', 'gastosMercado.metodoPago'])
             ->whereBetween('abierto_en', [$desde, $hasta])
             ->orderByDesc('abierto_en')
             ->get();
 
-        $totalVentas    = (int) $turnos->sum->total_ventas;
-        $totalEfectivo  = (int) $turnos->sum->total_efectivo;
-        $totalNoEfvo    = (int) $turnos->sum->total_no_efectivo;
-        $totalGastos    = (int) $turnos->sum->total_gastos;
-        $totalAhorros   = (int) $turnos->sum->total_ahorros;
-        $neto           = $totalVentas - $totalGastos - $totalAhorros;
-        $turnosAbiertos = $turnos->where('cerrado_en', null)->count();
+        $totalVentas        = (int) $turnos->sum->total_ventas;
+        $totalEfectivo      = (int) $turnos->sum->total_efectivo;
+        $totalNoEfvo        = (int) $turnos->sum->total_no_efectivo;
+        $totalGastos        = (int) $turnos->sum->total_gastos;
+        $totalGastosMercado = (int) $turnos->sum->total_gastos_mercado;
+        $totalAhorros       = (int) $turnos->sum->total_ahorros;
+        $neto               = $totalVentas - $totalGastos - $totalGastosMercado - $totalAhorros;
+        $turnosAbiertos     = $turnos->where('cerrado_en', null)->count();
 
         // Total por método de pago en todo el rango: lo recibido menos lo gastado
         // con ese método, sumando todos los turnos del filtro.
@@ -47,6 +48,7 @@ class DashboardCajaController extends Controller
             'totalEfectivo'     => $totalEfectivo,
             'totalNoEfvo'       => $totalNoEfvo,
             'totalGastos'       => $totalGastos,
+            'totalGastosMercado' => $totalGastosMercado,
             'totalAhorros'      => $totalAhorros,
             'neto'              => $neto,
             'turnosAbiertos'    => $turnosAbiertos,
@@ -82,10 +84,15 @@ class DashboardCajaController extends Controller
             }));
 
             // Gastos (valor + ahorro) registrados con este método se descuentan
-            // del saldo que quedó en caja para ese método de pago.
+            // del saldo que quedó en caja para ese método de pago. Se incluyen
+            // los gastos de mercado vinculados al turno con ese mismo método.
             $gastos = (int) $turnos->sum(fn ($turno) => (int) $turno->gastos
                 ->where('metodo_pago_id', $m->id)
                 ->sum(fn ($g) => (int) $g->valor + (int) $g->ahorro));
+
+            $gastos += (int) $turnos->sum(fn ($turno) => (int) $turno->gastosMercado
+                ->where('metodo_pago_id', $m->id)
+                ->sum('valor'));
 
             return [
                 'codigo'      => $m->codigo,
@@ -111,9 +118,14 @@ class DashboardCajaController extends Controller
             'gastos.trabajadorTurno',
             'gastos.metodoPago',
             'gastos.user',
+            'gastosMercado' => fn ($q) => $q->orderByDesc('created_at'),
+            'gastosMercado.producto',
+            'gastosMercado.metodoPago',
         ]);
 
         $desglosePorMetodo = $this->desglosePorMetodo(collect([$turno]));
+
+        $totalGastosMercado = (int) $turno->gastosMercado->sum('valor');
 
         $totalGastosGeneral = (int) $turno->gastos
             ->where('tipo', \App\Enums\TipoGasto::General)
@@ -164,6 +176,6 @@ class DashboardCajaController extends Controller
             ])->values(),
         ])->values();
 
-        return view('caja-dashboard.show', compact('turno', 'desglosePorMetodo', 'desglosePorItem', 'ventasData', 'totalGastosGeneral', 'totalGastosTurno'));
+        return view('caja-dashboard.show', compact('turno', 'desglosePorMetodo', 'desglosePorItem', 'ventasData', 'totalGastosGeneral', 'totalGastosTurno', 'totalGastosMercado'));
     }
 }

@@ -22,9 +22,10 @@
         <x-stat-card icon="dollar-sign" color="accent"  label="Base inicial"        :value="$turno->base_inicial_formateada" />
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <x-stat-card icon="trending-down" color="rose" label="Total gastos" :value="$turno->total_gastos_formateado" />
-        <x-stat-card icon="piggy-bank"    color="primary" label="Ahorros descontados" :value="$turno->total_ahorros_formateado" />
-        <x-stat-card icon="trending-up"   :color="$turno->neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − ahorros)" :value="$turno->neto_formateado" />
+        <x-stat-card icon="trending-down"   color="rose" label="Total gastos" :value="$turno->total_gastos_formateado" />
+        <x-stat-card icon="shopping-basket" color="rose" label="Gastos mercado" :value="$turno->total_gastos_mercado_formateado" />
+        <x-stat-card icon="piggy-bank"      color="primary" label="Ahorros descontados" :value="$turno->total_ahorros_formateado" />
+        <x-stat-card icon="trending-up"     :color="$turno->neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − mercado − ahorros)" :value="$turno->neto_formateado" />
     </div>
 
     @if ($turno->cerrado_en !== null)
@@ -482,6 +483,65 @@
                         <tr>
                             <td colspan="8" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
                                 No hay gastos en este turno.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </x-card>
+
+    {{-- Tabla de gastos de mercado (registros vinculados a este turno) --}}
+    <x-card padding="p-0" class="mt-5">
+        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex items-center justify-between gap-3">
+            <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
+                <x-icon name="shopping-basket" class="w-4 h-4" />
+                Gastos de mercado
+                <span class="text-xs font-normal text-cream-600 dark:text-cream-400">({{ $turno->gastosMercado->count() }})</span>
+            </h3>
+            <span class="text-xs text-cream-600 dark:text-cream-400">
+                Total: <strong class="text-rose-700 dark:text-rose-400">$ {{ number_format($totalGastosMercado, 0, ',', '.') }}</strong>
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-cream-50 dark:bg-cream-900/30 text-cream-700 dark:text-cream-300">
+                    <tr>
+                        <th class="text-left px-4 py-2 font-semibold">Hora</th>
+                        <th class="text-left px-4 py-2 font-semibold">Producto</th>
+                        <th class="text-right px-4 py-2 font-semibold">Cantidad</th>
+                        <th class="text-right px-4 py-2 font-semibold">Unitario</th>
+                        <th class="text-right px-4 py-2 font-semibold">Valor</th>
+                        <th class="text-left px-4 py-2 font-semibold">Método</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                    @forelse ($turno->gastosMercado as $r)
+                        @php $unitario = $r->cantidad > 0 ? (int) round($r->valor / $r->cantidad) : 0; @endphp
+                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                            <td class="px-4 py-2.5 font-mono text-xs text-cream-700 dark:text-cream-300">{{ $r->created_at->format('H:i:s') }}</td>
+                            <td class="px-4 py-2.5 text-cream-800 dark:text-cream-200 font-medium">{{ $r->producto?->nombre ?? '—' }}</td>
+                            <td class="px-4 py-2.5 text-right tabular-nums text-cream-700 dark:text-cream-300">
+                                {{ $r->cantidad_formateada }}{{ $r->producto?->unidad_empaque ? ' ' . $r->producto->unidad_empaque : '' }}
+                            </td>
+                            <td class="px-4 py-2.5 text-right tabular-nums text-cream-700 dark:text-cream-300">$ {{ number_format($unitario, 0, ',', '.') }}</td>
+                            <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-rose-700 dark:text-rose-400">{{ $r->valor_formateado }}</td>
+                            <td class="px-4 py-2.5">
+                                @if ($r->metodoPago)
+                                    <span class="inline-flex items-center gap-1 font-medium rounded-full bg-cream-100 dark:bg-cream-800 text-cream-800 dark:text-cream-200 text-xs px-2.5 py-1">
+                                        <x-icon :name="$r->metodoPago->es_efectivo ? 'banknote' : 'credit-card'" class="w-3 h-3" />
+                                        {{ $r->metodoPago->nombre }}
+                                    </span>
+                                @else
+                                    <span class="text-cream-400">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
+                                No hay gastos de mercado vinculados a este turno.
                             </td>
                         </tr>
                     @endforelse

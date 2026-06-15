@@ -19,7 +19,7 @@ class DashboardMercadoController extends Controller
         $desde = $request->input('desde', $hoy);
         $hasta = $request->input('hasta', $hoy);
 
-        $registros = RegistroMercado::with('producto.tipo')
+        $registros = RegistroMercado::with(['producto.tipo', 'metodoPago'])
             ->enRangoFechas($desde, $hasta)
             ->latest()
             ->get();
@@ -28,6 +28,16 @@ class DashboardMercadoController extends Controller
         $totalCantidad = (float) $registros->sum('cantidad');
         $productosDistintos = $registros->pluck('producto_mercado_id')->unique()->count();
         $promedioPorRegistro = $registros->isEmpty() ? 0 : (int) round($totalGastado / $registros->count());
+
+        $totalesPorMetodo = $registros
+            ->groupBy(fn (RegistroMercado $r) => $r->metodoPago?->nombre ?? 'Sin método')
+            ->map(fn ($grupo, $nombre) => [
+                'nombre' => $nombre,
+                'total'  => (int) $grupo->sum('valor'),
+                'count'  => $grupo->count(),
+            ])
+            ->sortByDesc('total')
+            ->values();
 
         $rows = $registros->map(function (RegistroMercado $r) {
             $thumb = $r->producto?->hasImagen()
@@ -85,7 +95,8 @@ class DashboardMercadoController extends Controller
 
         return view('mercado-dashboard.index', compact(
             'rows', 'columns', 'desde', 'hasta',
-            'totalGastado', 'totalCantidad', 'productosDistintos', 'promedioPorRegistro'
+            'totalGastado', 'totalCantidad', 'productosDistintos', 'promedioPorRegistro',
+            'totalesPorMetodo'
         ));
     }
 

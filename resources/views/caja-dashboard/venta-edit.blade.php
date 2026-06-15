@@ -110,7 +110,23 @@
                             <div class="px-4 py-2.5 flex items-center gap-2">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-cream-900 dark:text-cream-50 truncate" x-text="c.nombre"></p>
-                                    <p class="text-xs text-cream-600 dark:text-cream-400" x-text="fmt(c.precio)"></p>
+                                    {{-- Precio unitario editable --}}
+                                    <div class="mt-1 flex items-center gap-1.5">
+                                        <div class="relative w-24">
+                                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1.5 text-cream-500 text-[11px] font-semibold">$</span>
+                                            <input type="text" inputmode="numeric"
+                                                   :value="c.precio > 0 ? c.precio.toLocaleString('es-CO') : ''"
+                                                   @input="c.precio = parseInt(($event.target.value || '').replace(/\D/g,'') || '0', 10); $event.target.value = c.precio > 0 ? c.precio.toLocaleString('es-CO') : ''"
+                                                   placeholder="0" title="Editar precio unitario"
+                                                   class="block w-full rounded-md border-cream-300 bg-white pl-4 pr-1 py-0.5 text-xs tabular-nums focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                                        </div>
+                                        <button type="button" x-show="c.precio !== c.precioOrig" @click="c.precio = c.precioOrig"
+                                                class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+                                                :title="'Restablecer al precio de catálogo (' + fmt(c.precioOrig) + ')'">
+                                            <x-icon name="rotate-ccw" class="w-3 h-3" />
+                                            <span x-text="fmt(c.precioOrig)"></span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="inline-flex items-center gap-1">
                                     <button type="button" @click="setQty(c.id, c.cantidad - 1)" class="w-6 h-6 rounded bg-cream-100 dark:bg-cream-800"><x-icon name="minus" class="w-3 h-3 mx-auto" /></button>
@@ -192,6 +208,7 @@
                 <div>
                     <input type="hidden" :name="'items[' + i + '][menu_item_id]'" :value="c.id">
                     <input type="hidden" :name="'items[' + i + '][cantidad]'" :value="c.cantidad">
+                    <input type="hidden" :name="'items[' + i + '][precio_unitario]'" :value="c.precio">
                 </div>
             </template>
             <template x-for="(p, i) in pagos" :key="'p'+i">
@@ -221,8 +238,15 @@
                     oldData.items.forEach(row => {
                         const mi = this.menuItems.find(m => m.id == row.menu_item_id);
                         const nombre = (row.nombre) || (mi ? mi.nombre : 'Item');
-                        const precio = (row.precio !== undefined) ? parseInt(row.precio) : (mi ? mi.precio : 0);
-                        this.cart.push({ id: parseInt(row.menu_item_id), nombre, precio, cantidad: parseInt(row.cantidad) || 1 });
+                        // Precio actual = lo que se cobró (snapshot / old). Precio de catálogo = referencia para "restablecer".
+                        const precioCatalogo = mi ? mi.precio : 0;
+                        let precio = precioCatalogo;
+                        if (row.precio_unitario !== undefined && row.precio_unitario !== null && row.precio_unitario !== '') {
+                            precio = parseInt(row.precio_unitario) || 0;
+                        } else if (row.precio !== undefined) {
+                            precio = parseInt(row.precio) || 0;
+                        }
+                        this.cart.push({ id: parseInt(row.menu_item_id), nombre, precio, precioOrig: precioCatalogo, cantidad: parseInt(row.cantidad) || 1 });
                     });
                 }
                 if (Array.isArray(oldData.pagos)) {
@@ -244,7 +268,7 @@
             addToCart(item) {
                 const e = this.cart.find(c => c.id === item.id);
                 if (e) e.cantidad++;
-                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, cantidad: 1 });
+                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, precioOrig: item.precio, cantidad: 1 });
             },
             setQty(id, n) {
                 if (n <= 0) { this.cart = this.cart.filter(c => c.id !== id); return; }

@@ -216,7 +216,24 @@
                                 <div class="px-4 py-3 flex items-center gap-3">
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-cream-900 dark:text-cream-50 truncate" x-text="c.nombre"></p>
-                                        <p class="text-xs text-cream-600 dark:text-cream-400" x-text="fmt(c.precio) + ' c/u'"></p>
+                                        {{-- Precio unitario editable: a veces se cobra más o menos que el de catálogo --}}
+                                        <div class="mt-1 flex items-center gap-1.5">
+                                            <div class="relative w-24">
+                                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1.5 text-cream-500 text-[11px] font-semibold">$</span>
+                                                <input type="text" inputmode="numeric"
+                                                       :value="c.precio > 0 ? c.precio.toLocaleString('es-CO') : ''"
+                                                       @input="c.precio = parseInt(($event.target.value || '').replace(/\D/g,'') || '0', 10); $event.target.value = c.precio > 0 ? c.precio.toLocaleString('es-CO') : ''"
+                                                       placeholder="0" title="Editar precio unitario"
+                                                       class="block w-full rounded-md border-cream-300 bg-white pl-4 pr-1 py-0.5 text-xs tabular-nums focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                                            </div>
+                                            <span class="text-[11px] text-cream-500 dark:text-cream-400">c/u</span>
+                                            <button type="button" x-show="c.precio !== c.precioOrig" @click="c.precio = c.precioOrig"
+                                                    class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+                                                    :title="'Restablecer al precio de catálogo (' + fmt(c.precioOrig) + ')'">
+                                                <x-icon name="rotate-ccw" class="w-3 h-3" />
+                                                <span x-text="fmt(c.precioOrig)"></span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="inline-flex items-center gap-1.5">
                                         <button type="button" @click="setQty(c.id, c.cantidad - 1)" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-cream-800 dark:bg-cream-800 dark:hover:bg-cream-700 dark:text-cream-100">
@@ -331,6 +348,7 @@
                     <div>
                         <input type="hidden" :name="'items[' + i + '][menu_item_id]'" :value="c.id">
                         <input type="hidden" :name="'items[' + i + '][cantidad]'" :value="c.cantidad">
+                        <input type="hidden" :name="'items[' + i + '][precio_unitario]'" :value="c.precio">
                     </div>
                 </template>
                 <template x-for="(p, i) in pagos" :key="'p'+i">
@@ -425,7 +443,12 @@
                 if (Array.isArray(oldData.items) && oldData.items.length) {
                     oldData.items.forEach(row => {
                         const mi = this.menuItems.find(m => m.id == row.menu_item_id);
-                        if (mi) this.cart.push({ id: mi.id, nombre: mi.nombre, precio: mi.precio, cantidad: parseInt(row.cantidad) || 1 });
+                        if (mi) {
+                            const precio = (row.precio_unitario !== undefined && row.precio_unitario !== null && row.precio_unitario !== '')
+                                ? (parseInt(row.precio_unitario) || 0)
+                                : mi.precio;
+                            this.cart.push({ id: mi.id, nombre: mi.nombre, precio, precioOrig: mi.precio, cantidad: parseInt(row.cantidad) || 1 });
+                        }
                     });
                 }
                 if (Array.isArray(oldData.pagos) && oldData.pagos.length) {
@@ -479,7 +502,7 @@
             addToCart(item) {
                 const e = this.cart.find(c => c.id === item.id);
                 if (e) e.cantidad++;
-                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, cantidad: 1 });
+                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, precioOrig: item.precio, cantidad: 1 });
             },
             setQty(id, n) {
                 if (n <= 0) { this.cart = this.cart.filter(c => c.id !== id); return; }

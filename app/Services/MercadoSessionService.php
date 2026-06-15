@@ -62,9 +62,9 @@ class MercadoSessionService
         });
     }
 
-    public function registrarItem(MercadoItem $item, float $cantidad, int $valor): RegistroMercado
+    public function registrarItem(MercadoItem $item, float $cantidad, int $valor, ?int $metodoPagoId = null, ?int $turnoCajaId = null): RegistroMercado
     {
-        return DB::transaction(function () use ($item, $cantidad, $valor) {
+        return DB::transaction(function () use ($item, $cantidad, $valor, $metodoPagoId, $turnoCajaId) {
             $mercado = $item->mercado;
 
             if ($mercado->estado !== EstadoMercado::EnProgreso) {
@@ -76,6 +76,8 @@ class MercadoSessionService
                 'mercado_id'          => $mercado->id,
                 'cantidad'            => $cantidad,
                 'valor'               => $valor,
+                'metodo_pago_id'      => $metodoPagoId,
+                'turno_caja_id'       => $turnoCajaId,
             ]);
 
             $item->update([
@@ -187,10 +189,10 @@ class MercadoSessionService
     public function itemsDeTipo(Mercado $mercado, int $tipoId): Collection
     {
         return $mercado->items()
-            ->with(['producto.tipo', 'tipo'])
+            ->with(['producto.tipo', 'tipo', 'listaItem'])
             ->where('tipo_producto_mercado_id', $tipoId)
             ->get()
-            ->sortBy(fn ($i) => [$i->estado->value === 'pendiente' ? 0 : 1, $i->producto?->nombre ?? ''])
+            ->sortBy(fn ($i) => [$i->listaItem?->orden ?? PHP_INT_MAX, $i->id])
             ->values();
     }
 

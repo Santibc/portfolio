@@ -17,6 +17,13 @@
                 Trabajadores de turno
             </x-button>
             <x-button
+                variant="secondary"
+                icon="layers"
+                :href="route('gastos.pago-masivo')"
+            >
+                Pago masivo de turnos
+            </x-button>
+            <x-button
                 variant="primary"
                 icon="plus"
                 :href="route('gastos.create')"

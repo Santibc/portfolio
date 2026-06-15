@@ -114,7 +114,13 @@ class VentaService
                 throw new DomainException("Cantidad inválida para '{$mi->nombre}'.");
             }
 
-            $precio   = (int) $mi->precio;
+            // El precio puede editarse en el carrito (a veces se cobra más o menos que
+            // el precio de catálogo). Si llega un precio explícito se usa ese; si no,
+            // se toma el precio actual del item de menú como respaldo.
+            $precio = array_key_exists('precio_unitario', $row) && $row['precio_unitario'] !== ''
+                ? max(0, (int) $row['precio_unitario'])
+                : (int) $mi->precio;
+
             $subtotal = $precio * $cantidad;
             $total   += $subtotal;
 
