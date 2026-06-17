@@ -149,16 +149,7 @@
                             </thead>
                             <tbody>
                                 @php
-                                    $paletaPreview = [
-                                        'success'   => ['hex' => '#198754', 'bg' => 'rgba(25,135,84,.15)'],
-                                        'primary'   => ['hex' => '#0d6efd', 'bg' => 'rgba(13,110,253,.15)'],
-                                        'info'      => ['hex' => '#0dcaf0', 'bg' => 'rgba(13,202,240,.18)'],
-                                        'warning'   => ['hex' => '#b8860b', 'bg' => 'rgba(255,193,7,.22)'],
-                                        'danger'    => ['hex' => '#dc3545', 'bg' => 'rgba(220,53,69,.15)'],
-                                        'secondary' => ['hex' => '#6c757d', 'bg' => 'rgba(108,117,125,.18)'],
-                                        'purple'    => ['hex' => '#6f42c1', 'bg' => 'rgba(111,66,193,.15)'],
-                                        'dark'      => ['hex' => '#212529', 'bg' => 'rgba(33,37,41,.18)'],
-                                    ];
+                                    $paletaPreview = \App\Models\TipoPago::paletaColores();
                                 @endphp
                                 @forelse($tiposPago as $tp)
                                 @php($_pp = $paletaPreview[$tp->color] ?? $paletaPreview['secondary'])

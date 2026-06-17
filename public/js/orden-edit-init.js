@@ -186,11 +186,27 @@ function cargarPagos() {
 // ==========================================
 function cargarFechas() {
     if (ORDEN_DATA.fecha_entrega) {
-        $('#fecha_entrega').val(ORDEN_DATA.fecha_entrega);
+        var inputFecha = document.getElementById('fecha_entrega');
+        // El input de fecha usa Flatpickr con altInput: si solo seteamos el value
+        // del input real (que queda oculto), el campo visible no muestra la fecha.
+        // Hay que actualizar la instancia de Flatpickr con setDate.
+        if (inputFecha && inputFecha._flatpickr) {
+            inputFecha._flatpickr.setDate(ORDEN_DATA.fecha_entrega, false);
+        } else {
+            $('#fecha_entrega').val(ORDEN_DATA.fecha_entrega);
+        }
         marcarStepCompletado(6);
     }
     if (ORDEN_DATA.hora_entrega) {
-        $('#hora_entrega').val(ORDEN_DATA.hora_entrega);
+        // La hora guardada puede traer segundos (HH:MM:SS); el select usa HH:MM.
+        var hora = ORDEN_DATA.hora_entrega.substring(0, 5);
+        var $hora = $('#hora_entrega');
+        // Si la hora guardada no existe como opcion (orden antigua con minutos
+        // distintos a 00/30), agregarla para que se muestre correctamente.
+        if ($hora.find('option[value="' + hora + '"]').length === 0) {
+            $hora.append('<option value="' + hora + '">' + hora + '</option>');
+        }
+        $hora.val(hora);
     }
     if (ORDEN_DATA.notas) {
         $('#notas').val(ORDEN_DATA.notas);

@@ -1,0 +1,193 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: 
+    - generic [ref=e4]: Sin conexion a internet. Los cambios se guardaran localmente.
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - button "" [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: 
+      - generic [ref=e10]:
+        - img "Logo" [ref=e11]
+        - text: SINDEN
+      - generic [ref=e12]:
+        - button "" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 
+          - text: 
+        - generic "Conectado" [ref=e15]
+        - generic [ref=e16]:
+          - button "" [ref=e17] [cursor=pointer]:
+            - generic [ref=e18]: 
+          - text: 
+        - link " Usuario Recepcion Recepcion" [ref=e19] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/profile
+          - generic [ref=e21]: 
+          - generic [ref=e22]:
+            - generic [ref=e23]: Usuario Recepcion
+            - generic [ref=e24]: Recepcion
+  - complementary [ref=e25]:
+    - navigation [ref=e26]:
+      - link " Inicio" [ref=e28] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - generic [ref=e29]: 
+        - generic [ref=e30]: Inicio
+      - generic [ref=e31]: Entregas
+      - link " Entregas Pendientes" [ref=e33] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+        - generic [ref=e34]: 
+        - generic [ref=e35]: Entregas Pendientes
+      - link " Historial Entregas" [ref=e37] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-historial
+        - generic [ref=e38]: 
+        - generic [ref=e39]: Historial Entregas
+      - generic [ref=e40]: Ordenes
+      - link " Crear Orden" [ref=e42] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes/crear
+        - generic [ref=e43]: 
+        - generic [ref=e44]: Crear Orden
+      - link " Buscar Ordenes" [ref=e46] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes
+        - generic [ref=e47]: 
+        - generic [ref=e48]: Buscar Ordenes
+      - link " Devoluciones/Garantias" [ref=e50] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/garantias
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Devoluciones/Garantias
+      - generic [ref=e53]: Catalogos
+      - link " Clientes" [ref=e55] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/clientes
+        - generic [ref=e56]: 
+        - generic [ref=e57]: Clientes
+      - link " Items" [ref=e59] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/items
+        - generic [ref=e60]: 
+        - generic [ref=e61]: Items
+      - link " Bosquejos Matriz" [ref=e63] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/bosquejos-matriz
+        - generic [ref=e64]: 
+        - generic [ref=e65]: Bosquejos Matriz
+      - link " Consulta Precios" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/consulta-precios
+        - generic [ref=e68]: 
+        - generic [ref=e69]: Consulta Precios
+      - generic [ref=e70]: Sistema
+      - link " Mis Actividades" [ref=e72] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/actividades
+        - generic [ref=e73]: 
+        - generic [ref=e74]: Mis Actividades
+      - link " Actividades Globales" [ref=e76] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/actividades-globales
+        - generic [ref=e77]: 
+        - generic [ref=e78]: Actividades Globales
+      - generic [ref=e79]: Cuenta
+      - link " Mi Perfil" [ref=e81] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - generic [ref=e82]: 
+        - generic [ref=e83]: Mi Perfil
+    - button " Cerrar Sesion" [ref=e86] [cursor=pointer]:
+      - generic [ref=e87]: 
+      - generic [ref=e88]: Cerrar Sesion
+  - main [ref=e89]:
+    - generic [ref=e90]:
+      - generic [ref=e92]:
+        - heading "Panel de Recepcion (ventas)" [level=1] [ref=e93]
+        - paragraph [ref=e94]: Bienvenido, Usuario Recepcion | miércoles 17 de junio 2026
+      - generic [ref=e95]:
+        - link " 1 Entregas Pendientes Hoy" [ref=e96] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+          - generic [ref=e97]:
+            - generic [ref=e99]: 
+            - generic [ref=e100]:
+              - heading "1" [level=3] [ref=e101]
+              - paragraph [ref=e102]: Entregas Pendientes Hoy
+        - link " 1 Entregas Hoy/Manana" [ref=e103] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+          - generic [ref=e104]:
+            - generic [ref=e106]: 
+            - generic [ref=e107]:
+              - heading "1" [level=3] [ref=e108]
+              - paragraph [ref=e109]: Entregas Hoy/Manana
+        - link " 1 Entregas Vencidas" [ref=e110] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+          - generic [ref=e111]:
+            - generic [ref=e113]: 
+            - generic [ref=e114]:
+              - heading "1" [level=3] [ref=e115]
+              - paragraph [ref=e116]: Entregas Vencidas
+        - link " 3 Ordenes Abiertas" [ref=e117] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/ordenes
+          - generic [ref=e118]:
+            - generic [ref=e120]: 
+            - generic [ref=e121]:
+              - heading "3" [level=3] [ref=e122]
+              - paragraph [ref=e123]: Ordenes Abiertas
+        - link " $179.350 Saldo Pendiente" [ref=e124] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/ordenes
+          - generic [ref=e125]:
+            - generic [ref=e127]: 
+            - generic [ref=e128]:
+              - heading "$179.350" [level=3] [ref=e129]
+              - paragraph [ref=e130]: Saldo Pendiente
+        - link " 0 Para Complementar" [ref=e131] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/recepcion/ordenes
+          - generic [ref=e132]:
+            - generic [ref=e134]: 
+            - generic [ref=e135]:
+              - heading "0" [level=3] [ref=e136]
+              - paragraph [ref=e137]: Para Complementar
+      - generic [ref=e138]:
+        - generic [ref=e140]:
+          - heading " Acciones Rapidas" [level=6] [ref=e142]:
+            - generic [ref=e143]: 
+            - text: Acciones Rapidas
+          - generic [ref=e145]:
+            - link " Crear Orden" [ref=e146] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/recepcion/ordenes/crear
+              - generic [ref=e147]: 
+              - generic [ref=e148]: Crear Orden
+            - link " Buscar Ordenes 3" [ref=e149] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/recepcion/ordenes
+              - generic [ref=e150]: 
+              - generic [ref=e151]: Buscar Ordenes
+              - generic [ref=e152]: "3"
+            - link " Entregas Pendientes 1" [ref=e153] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+              - generic [ref=e154]: 
+              - generic [ref=e155]: Entregas Pendientes
+              - generic [ref=e156]: "1"
+            - link " Garantias 2" [ref=e157] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/recepcion/garantias
+              - generic [ref=e158]: 
+              - generic [ref=e159]: Garantias
+              - generic [ref=e160]: "2"
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - heading " Garantias Activas" [level=6] [ref=e164]:
+              - generic [ref=e165]: 
+              - text: Garantias Activas
+            - generic [ref=e166]:
+              - generic [ref=e167]:
+                - generic [ref=e169]: "2"
+                - generic [ref=e170]:
+                  - generic [ref=e171]: Garantias abiertas o en proceso
+                  - text: Requieren atencion
+              - link " Ver Garantias" [ref=e172] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/recepcion/garantias
+                - generic [ref=e173]: 
+                - text: Ver Garantias
+          - generic [ref=e174]:
+            - heading " Catalogos" [level=6] [ref=e176]:
+              - generic [ref=e177]: 
+              - text: Catalogos
+            - generic [ref=e178]:
+              - link " Clientes" [ref=e179] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/recepcion/clientes
+                - generic [ref=e180]: 
+                - text: Clientes
+              - link " Catalogo de Items" [ref=e181] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/recepcion/items
+                - generic [ref=e182]: 
+                - text: Catalogo de Items
+              - link " Consulta de Precios" [ref=e183] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/recepcion/consulta-precios
+                - generic [ref=e184]: 
+                - text: Consulta de Precios

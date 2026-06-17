@@ -17,7 +17,21 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-medium">Hora de Entrega <span class="text-danger">*</span></label>
-                <input type="time" id="hora_entrega" class="form-control" required>
+                <select id="hora_entrega" class="form-select" required>
+                    <option value="">Seleccione...</option>
+                    @for ($h = 6; $h <= 19; $h++)
+                        @foreach (['00', '30'] as $m)
+                            @continue($h == 19 && $m == '30')
+                            @php
+                                $valor = sprintf('%02d:%s', $h, $m);
+                                $sufijo = $h < 12 ? 'a. m.' : 'p. m.';
+                                $h12 = $h % 12; if ($h12 === 0) { $h12 = 12; }
+                                $etiqueta = sprintf('%d:%s %s', $h12, $m, $sufijo);
+                            @endphp
+                            <option value="{{ $valor }}">{{ $etiqueta }}</option>
+                        @endforeach
+                    @endfor
+                </select>
             </div>
             <div class="col-12">
                 <label class="form-label fw-medium">Notas / Observaciones Generales</label>

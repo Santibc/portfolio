@@ -1,0 +1,255 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: 
+    - generic [ref=e4]: Sin conexion a internet. Los cambios se guardaran localmente.
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - button "" [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: 
+      - generic [ref=e10]:
+        - img "Logo" [ref=e11]
+        - text: SINDEN
+      - generic [ref=e12]:
+        - button "" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 
+          - text: 
+        - generic "Conectado" [ref=e15]
+        - generic [ref=e16]:
+          - button "" [ref=e17] [cursor=pointer]:
+            - generic [ref=e18]: 
+          - text: 
+        - link " Usuario Recepcion Recepcion" [ref=e19] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/profile
+          - generic [ref=e21]: 
+          - generic [ref=e22]:
+            - generic [ref=e23]: Usuario Recepcion
+            - generic [ref=e24]: Recepcion
+  - complementary [ref=e25]:
+    - navigation [ref=e26]:
+      - link " Inicio" [ref=e28] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - generic [ref=e29]: 
+        - generic [ref=e30]: Inicio
+      - generic [ref=e31]: Entregas
+      - link " Entregas Pendientes" [ref=e33] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+        - generic [ref=e34]: 
+        - generic [ref=e35]: Entregas Pendientes
+      - link " Historial Entregas" [ref=e37] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-historial
+        - generic [ref=e38]: 
+        - generic [ref=e39]: Historial Entregas
+      - generic [ref=e40]: Ordenes
+      - link " Crear Orden" [ref=e42] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes/crear
+        - generic [ref=e43]: 
+        - generic [ref=e44]: Crear Orden
+      - link " Buscar Ordenes" [ref=e46] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes
+        - generic [ref=e47]: 
+        - generic [ref=e48]: Buscar Ordenes
+      - link " Devoluciones/Garantias" [ref=e50] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/garantias
+        - generic [ref=e51]: 
+        - generic [ref=e52]: Devoluciones/Garantias
+      - generic [ref=e53]: Catalogos
+      - link " Clientes" [ref=e55] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/clientes
+        - generic [ref=e56]: 
+        - generic [ref=e57]: Clientes
+      - link " Items" [ref=e59] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/items
+        - generic [ref=e60]: 
+        - generic [ref=e61]: Items
+      - link " Bosquejos Matriz" [ref=e63] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/bosquejos-matriz
+        - generic [ref=e64]: 
+        - generic [ref=e65]: Bosquejos Matriz
+      - link " Consulta Precios" [ref=e67] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/consulta-precios
+        - generic [ref=e68]: 
+        - generic [ref=e69]: Consulta Precios
+      - generic [ref=e70]: Sistema
+      - link " Mis Actividades" [ref=e72] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/actividades
+        - generic [ref=e73]: 
+        - generic [ref=e74]: Mis Actividades
+      - link " Actividades Globales" [ref=e76] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/actividades-globales
+        - generic [ref=e77]: 
+        - generic [ref=e78]: Actividades Globales
+      - generic [ref=e79]: Cuenta
+      - link " Mi Perfil" [ref=e81] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - generic [ref=e82]: 
+        - generic [ref=e83]: Mi Perfil
+    - button " Cerrar Sesion" [ref=e86] [cursor=pointer]:
+      - generic [ref=e87]: 
+      - generic [ref=e88]: Cerrar Sesion
+  - main [ref=e89]:
+    - generic [ref=e90]:
+      - generic [ref=e92]:
+        - heading "Crear Orden" [level=1] [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95] [cursor=pointer]:
+            - generic [ref=e96]: 
+            - generic [ref=e97]: Cliente
+          - generic [ref=e98] [cursor=pointer]:
+            - generic [ref=e99]: 
+            - generic [ref=e100]: Piezas
+          - generic [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 
+            - generic [ref=e103]: Items (Productos y servicios)
+          - generic [ref=e104] [cursor=pointer]:
+            - generic [ref=e105]: 
+            - generic [ref=e106]: Firma
+          - generic [ref=e107] [cursor=pointer]:
+            - generic [ref=e108]: 
+            - generic [ref=e109]: Pagos
+          - generic [ref=e110] [cursor=pointer]:
+            - generic [ref=e111]: 
+            - generic [ref=e112]: Fechas
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - heading " 1. Cliente" [level=6] [ref=e115]:
+            - generic [ref=e116]: 
+            - text: 1. Cliente
+          - generic [ref=e117]: Sin seleccionar
+        - generic [ref=e119]:
+          - generic [ref=e120]:
+            - generic [ref=e121]: Buscar cliente *
+            - generic [ref=e123]:
+              - generic [ref=e125]: 
+              - textbox "Escriba nombre, celular o correo..." [ref=e126]
+          - generic [ref=e128]:
+            - button " Mostrador" [ref=e129] [cursor=pointer]:
+              - generic [ref=e130]: 
+              - text: Mostrador
+            - button " Crear Nuevo" [ref=e131] [cursor=pointer]:
+              - generic [ref=e132]: 
+              - text: Crear Nuevo
+      - generic [ref=e133]:
+        - heading " 2. Piezas" [level=6] [ref=e135]:
+          - generic [ref=e136]: 
+          - text: 2. Piezas
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - heading " Piezas" [level=6] [ref=e139]:
+              - generic [ref=e140]: 
+              - text: Piezas
+            - generic [ref=e141]:
+              - button " Importar Matriz" [ref=e142] [cursor=pointer]:
+                - generic [ref=e143]: 
+                - text: Importar Matriz
+              - button " Agregar Pieza" [ref=e144] [cursor=pointer]:
+                - generic [ref=e145]: 
+                - text: Agregar Pieza
+          - generic [ref=e146]:
+            - generic [ref=e147]: 
+            - text: No hay piezas. Si esta orden requiere trabajo sobre piezas, agregue al menos una.
+            - generic [ref=e148]:
+              - generic [ref=e149]: 
+              - text: Sin piezas = Venta directa (se marca como ejecutada al generar)
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - heading " 3. Items (Productos y servicios)" [level=6] [ref=e152]:
+            - generic [ref=e153]: 
+            - text: 3. Items (Productos y servicios)
+          - button " Agregar Item" [ref=e154] [cursor=pointer]:
+            - generic [ref=e155]: 
+            - text: Agregar Item
+        - generic [ref=e156]:
+          - table [ref=e158]:
+            - rowgroup [ref=e159]:
+              - row "# Codigo Descripcion Cantidad P. Unitario IVA Desc. % Subtotal" [ref=e160]:
+                - columnheader "#" [ref=e161]
+                - columnheader "Codigo" [ref=e162]
+                - columnheader "Descripcion" [ref=e163]
+                - columnheader "Cantidad" [ref=e164]
+                - columnheader "P. Unitario" [ref=e165]
+                - columnheader "IVA" [ref=e166]
+                - columnheader "Desc. %" [ref=e167]
+                - columnheader "Subtotal" [ref=e168]
+                - columnheader [ref=e169]
+            - rowgroup
+          - generic [ref=e170]:
+            - generic [ref=e171]: 
+            - paragraph [ref=e172]:
+              - text: No hay items agregados. Haga clic en
+              - strong [ref=e173]: "\"Agregar Item\""
+              - text: para comenzar.
+      - generic [ref=e174]:
+        - heading " 4. Firma del Cliente" [level=6] [ref=e176]:
+          - generic [ref=e177]: 
+          - text: 4. Firma del Cliente
+        - generic [ref=e181]:
+          - button " Limpiar" [ref=e182] [cursor=pointer]:
+            - generic [ref=e183]: 
+            - text: Limpiar
+          - generic [ref=e184]:
+            - generic [ref=e185]: 
+            - text: Dibuje la firma del cliente con el mouse o dedo (touch)
+      - generic [ref=e186]:
+        - generic [ref=e187]:
+          - heading " 5. Pagos / Abonos" [level=6] [ref=e188]:
+            - generic [ref=e189]: 
+            - text: 5. Pagos / Abonos
+          - button " Agregar Pago" [ref=e190] [cursor=pointer]:
+            - generic [ref=e191]: 
+            - text: Agregar Pago
+        - generic [ref=e193]:
+          - generic [ref=e194]: 
+          - text: No hay pagos registrados. Puede agregar abonos opcionalmente.
+      - generic [ref=e195]:
+        - heading " 6. Fechas y Notas" [level=6] [ref=e197]:
+          - generic [ref=e198]: 
+          - text: 6. Fechas y Notas
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - generic [ref=e202]: Fecha de Creacion
+            - textbox [ref=e203]: 17/06/2026 15:59
+          - generic [ref=e204]:
+            - generic [ref=e205]: Fecha de Entrega *
+            - textbox [ref=e206]
+          - generic [ref=e207]:
+            - generic [ref=e208]: Hora de Entrega *
+            - textbox [ref=e209]
+          - generic [ref=e210]:
+            - generic [ref=e211]: Notas / Observaciones Generales
+            - textbox "Notas adicionales para esta orden..." [ref=e212]
+      - generic [ref=e213]:
+        - generic [ref=e214]:
+          - heading " Documentos adjuntos" [level=5] [ref=e215]:
+            - generic [ref=e216]: 
+            - text: Documentos adjuntos
+          - generic [ref=e217]: Cualquier tipo de archivo (max. 50 MB)
+        - generic [ref=e218]:
+          - generic [ref=e219]:
+            - generic [ref=e220]: 
+            - text: Guarda la orden como borrador para poder adjuntar documentos.
+            - button " Guardar borrador ahora" [ref=e221] [cursor=pointer]:
+              - generic [ref=e222]: 
+              - text: Guardar borrador ahora
+          - text:  
+          - table [ref=e224]:
+            - rowgroup [ref=e225]:
+              - row "Nombre Tamaño Subido por Fecha Acciones" [ref=e226]:
+                - columnheader [ref=e227]
+                - columnheader "Nombre" [ref=e228]
+                - columnheader "Tamaño" [ref=e229]
+                - columnheader "Subido por" [ref=e230]
+                - columnheader "Fecha" [ref=e231]
+                - columnheader "Acciones" [ref=e232]
+            - rowgroup [ref=e233]:
+              - row " Sin documentos adjuntos." [ref=e234]:
+                - cell " Sin documentos adjuntos." [ref=e235]:
+                  - generic [ref=e236]: 
+                  - text: Sin documentos adjuntos.
+      - generic [ref=e237]:
+        - button " Guardar Orden" [ref=e238] [cursor=pointer]:
+          - generic [ref=e239]: 
+          - text: Guardar Orden
+        - button " Generar Orden" [ref=e240] [cursor=pointer]:
+          - generic [ref=e241]: 
+          - text: Generar Orden
+    - text:                           

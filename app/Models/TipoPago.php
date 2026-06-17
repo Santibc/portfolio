@@ -40,21 +40,47 @@ class TipoPago extends Model
     }
 
     /**
+     * Paleta de colores de los tipos de pago. Fuente unica de la verdad para
+     * renderizar badges con valores hex explicitos, inmunes a los overrides de
+     * Bootstrap del tema (p.ej. el tema remapea .bg-success a gris acero).
+     * Estructura: [color => ['hex' => texto/borde, 'bg' => fondo]]
+     * @return array
+     */
+    public static function paletaColores(): array
+    {
+        return [
+            'success'   => ['hex' => '#198754', 'bg' => 'rgba(25,135,84,.15)'],
+            'primary'   => ['hex' => '#0d6efd', 'bg' => 'rgba(13,110,253,.15)'],
+            'info'      => ['hex' => '#0dcaf0', 'bg' => 'rgba(13,202,240,.18)'],
+            'warning'   => ['hex' => '#b8860b', 'bg' => 'rgba(255,193,7,.22)'],
+            'danger'    => ['hex' => '#dc3545', 'bg' => 'rgba(220,53,69,.15)'],
+            'secondary' => ['hex' => '#6c757d', 'bg' => 'rgba(108,117,125,.18)'],
+            'purple'    => ['hex' => '#6f42c1', 'bg' => 'rgba(111,66,193,.15)'],
+            'dark'      => ['hex' => '#212529', 'bg' => 'rgba(33,37,41,.18)'],
+        ];
+    }
+
+    /**
      * Mapa completo (incluye inactivos y soft-deleted) para renderizar badges
-     * de pagos historicos. Estructura: [codigo => ['color', 'icono', 'nombre']]
+     * de pagos historicos. Estructura:
+     * [codigo => ['color', 'icono', 'nombre', 'codigo', 'etiqueta', 'hex', 'bg']]
      * @return array
      */
     public static function mapaBadges()
     {
         static $cache = null;
         if ($cache === null) {
-            $cache = static::withTrashed()->orderBy('orden')->get()->mapWithKeys(function ($t) {
+            $paleta = static::paletaColores();
+            $cache = static::withTrashed()->orderBy('orden')->get()->mapWithKeys(function ($t) use ($paleta) {
+                $pp = $paleta[$t->color] ?? $paleta['secondary'];
                 return [$t->codigo => [
                     'color' => $t->color,
                     'icono' => $t->icono,
                     'nombre' => $t->nombre,
                     'codigo' => $t->codigo,
                     'etiqueta' => $t->codigo . ' - ' . $t->nombre,
+                    'hex' => $pp['hex'],
+                    'bg' => $pp['bg'],
                 ]];
             })->toArray();
         }

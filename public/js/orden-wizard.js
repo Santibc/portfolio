@@ -269,6 +269,25 @@ function mostrarToastAgregado(mensaje) {
     });
 }
 
+var _piezaMsgTimer = null;
+function mostrarMensajePieza(mensaje) {
+    var $box = $('#piezaMsgInline');
+    if (!$box.length) { mostrarToastAgregado(mensaje); return; }
+
+    $('#piezaMsgInlineText').text(mensaje);
+
+    $box.removeClass('d-none');
+    // Reiniciar la animacion de aparicion aunque ya estuviera visible
+    $box.removeClass('pieza-msg-flash');
+    void $box[0].offsetWidth; // forzar reflow para reiniciar el @keyframes
+    $box.addClass('pieza-msg-flash');
+
+    if (_piezaMsgTimer) clearTimeout(_piezaMsgTimer);
+    _piezaMsgTimer = setTimeout(function () {
+        $box.addClass('d-none').removeClass('pieza-msg-flash');
+    }, 2500);
+}
+
 function seleccionarCliente(id, nombre, celular, correo) {
     wizardState.clienteId = id;
     $('#cliente_id').val(id);
@@ -1040,7 +1059,6 @@ function agregarFilaPieza(opts) {
     marcarStepCompletado(2);
     if (!opts.skipAutoSave) {
         triggerAutoSave('pieza-add');
-        mostrarToastAgregado('Pieza agregada');
     }
 }
 
@@ -1065,6 +1083,12 @@ function renumerarFilasPiezas() {
         var idx = $(this).data('idx');
         generarEspecificacion(idx);
     });
+    actualizarContadorPiezas();
+}
+
+function actualizarContadorPiezas() {
+    var total = $('#tbodyPiezas tr.pieza-row').length;
+    $('#contadorPiezas').text(total > 0 ? ' (' + total + ')' : '');
 }
 
 function obtenerLetraPieza(index) {

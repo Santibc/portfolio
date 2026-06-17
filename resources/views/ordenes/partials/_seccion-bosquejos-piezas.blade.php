@@ -4,6 +4,23 @@
     body:has(#ordenWizardApp) { background-color: #e6e8ec; }
     [data-bs-theme="dark"] body:has(#ordenWizardApp) { background-color: var(--sinden-gray-50); }
 
+    /* Mensaje inline de confirmacion de pieza: color fuerte y animacion */
+    #piezaMsgInline {
+        background-color: #16a34a;
+        border: 1px solid #15803d;
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(22,163,74,.35);
+    }
+    #piezaMsgInline.pieza-msg-flash {
+        animation: piezaMsgPop .35s ease-out;
+    }
+    @keyframes piezaMsgPop {
+        0%   { transform: scale(.96); opacity: 0; }
+        60%  { transform: scale(1.02); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
     /* Divisor mas notable entre cada pieza */
     #tablaPiezas tbody tr.pieza-row td {
         border-top: 3px solid #94a3b8;
@@ -34,7 +51,7 @@
                     <i class="bi bi-grid-3x3 me-1"></i> Importar Matriz
                 </button>
                 <button type="button" class="btn btn-sm btn-primary" onclick="agregarFilaPieza()">
-                    <i class="bi bi-plus-lg me-1"></i> Agregar Pieza
+                    <i class="bi bi-plus-lg me-1"></i> Agregar Pieza<span id="contadorPiezas"></span>
                 </button>
             </div>
         </div>

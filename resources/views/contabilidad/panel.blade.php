@@ -50,10 +50,10 @@
                                         ${{ number_format($pago->monto, 0, ',', '.') }}
                                     </span>
                                     @php
-                                        $_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($pago->metodo_pago), 'etiqueta' => ucfirst($pago->metodo_pago)];
-                                        $_bg = $_tp['color'] === 'purple' ? 'bg-purple' : 'bg-' . $_tp['color'];
+                                        $_sec = \App\Models\TipoPago::paletaColores()['secondary'];
+                                        $_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($pago->metodo_pago), 'etiqueta' => ucfirst($pago->metodo_pago), 'hex' => $_sec['hex'], 'bg' => $_sec['bg']];
                                     @endphp
-                                    <span class="badge {{ $_bg }} bg-opacity-10 text-dark border small">
+                                    <span class="badge border small" style="background-color: {{ $_tp['bg'] }}; color: {{ $_tp['hex'] }}; border-color: {{ $_tp['hex'] }}33 !important;">
                                         <i class="bi {{ $_tp['icono'] }} me-1"></i>{{ $_tp['etiqueta'] ?? $_tp['nombre'] }}
                                     </span>
                                 </div>
@@ -97,11 +97,12 @@
 
                     @forelse($porMetodoPago as $metodo => $total)
                         @php
-                            $cfg = $_mapa[$metodo] ?? ['nombre' => ucfirst($metodo), 'icono' => 'bi-three-dots', 'color' => 'secondary', 'etiqueta' => ucfirst($metodo)];
+                            $_secM = \App\Models\TipoPago::paletaColores()['secondary'];
+                            $cfg = $_mapa[$metodo] ?? ['nombre' => ucfirst($metodo), 'icono' => 'bi-three-dots', 'color' => 'secondary', 'etiqueta' => ucfirst($metodo), 'hex' => $_secM['hex']];
                         @endphp
                         <div class="d-flex justify-content-between align-items-center py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
                             <div>
-                                <i class="bi {{ $cfg['icono'] }} text-{{ $cfg['color'] }} me-2"></i>
+                                <i class="bi {{ $cfg['icono'] }} me-2" style="color: {{ $cfg['hex'] }};"></i>
                                 <span>{{ $cfg['etiqueta'] ?? $cfg['nombre'] }}</span>
                             </div>
                             <span class="fw-semibold">${{ number_format($total, 0, ',', '.') }}</span>

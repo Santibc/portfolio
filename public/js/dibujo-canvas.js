@@ -311,15 +311,27 @@
                 // Delay enterEditing para que Fabric termine de procesar el mouse event
                 setTimeout(function() {
                     if (itext) {
+                        var wrapper = document.getElementById('dibujoCanvasWrapper');
+                        // Guardar el scroll del wrapper: al enfocar el textarea el navegador
+                        // intenta "traerlo a la vista" y desplaza el lienzo. Lo restauramos.
+                        var sTop = wrapper ? wrapper.scrollTop : 0;
+                        var sLeft = wrapper ? wrapper.scrollLeft : 0;
+
                         itext.enterEditing();
                         // Fabric.js crea el hidden textarea en <body>, pero Bootstrap modal
                         // atrapa el focus dentro del modal. Moverlo dentro del modal.
                         if (itext.hiddenTextarea) {
-                            var wrapper = document.getElementById('dibujoCanvasWrapper');
                             if (wrapper && itext.hiddenTextarea.parentElement !== wrapper) {
                                 wrapper.appendChild(itext.hiddenTextarea);
                             }
-                            itext.hiddenTextarea.focus();
+                            try { itext.hiddenTextarea.focus({ preventScroll: true }); }
+                            catch (err) { itext.hiddenTextarea.focus(); }
+                        }
+
+                        // Restaurar la posicion del lienzo (no se debe mover al poner texto)
+                        if (wrapper) {
+                            wrapper.scrollTop = sTop;
+                            wrapper.scrollLeft = sLeft;
                         }
                     }
                 }, 100);
@@ -1082,6 +1094,15 @@
         document.addEventListener('keyup', function(e) {
             var modal = document.getElementById('modalDibujoTablet');
             if (!modal || !modal.classList.contains('show')) return;
+
+            // No interceptar teclas si hay un IText en modo edicion (el espacio debe
+            // escribirse en el texto, no activar el pan ni resetear la herramienta).
+            if (fabricCanvas) {
+                var activeObj = fabricCanvas.getActiveObject();
+                if (activeObj && activeObj.type === 'i-text' && activeObj.isEditing) {
+                    return;
+                }
+            }
 
             if (e.key === ' ' || e.code === 'Space') {
                 e.preventDefault();

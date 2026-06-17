@@ -1,0 +1,188 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]: 
+    - generic [ref=e4]: Sin conexion a internet. Los cambios se guardaran localmente.
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - button "" [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: 
+      - generic [ref=e10]:
+        - img "Logo" [ref=e11]
+        - text: SINDEN
+      - generic [ref=e12]:
+        - button "" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 
+          - text: 
+        - generic "Conectado" [ref=e15]
+        - generic [ref=e16]:
+          - button "" [ref=e17] [cursor=pointer]:
+            - generic [ref=e18]: 
+          - text: 
+        - link " Usuario Contabilidad Contabilidad" [ref=e19] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/profile
+          - generic [ref=e21]: 
+          - generic [ref=e22]:
+            - generic [ref=e23]: Usuario Contabilidad
+            - generic [ref=e24]: Contabilidad
+  - complementary [ref=e25]:
+    - navigation [ref=e26]:
+      - link " Inicio" [ref=e28] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - generic [ref=e29]: 
+        - generic [ref=e30]: Inicio
+      - generic [ref=e31]: Entregas
+      - link " Entregas Pendientes" [ref=e33] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-pendientes
+        - generic [ref=e34]: 
+        - generic [ref=e35]: Entregas Pendientes
+      - link " Historial Entregas" [ref=e37] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/entregas-historial
+        - generic [ref=e38]: 
+        - generic [ref=e39]: Historial Entregas
+      - generic [ref=e40]: Catalogos
+      - link " Bosquejos Matriz" [ref=e42] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/bosquejos-matriz
+        - generic [ref=e43]: 
+        - generic [ref=e44]: Bosquejos Matriz
+      - generic [ref=e45]: Ordenes
+      - link " Buscar Ordenes" [ref=e47] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/ordenes
+        - generic [ref=e48]: 
+        - generic [ref=e49]: Buscar Ordenes
+      - generic [ref=e50]: Catalogos
+      - link " Clientes" [ref=e52] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/recepcion/clientes
+        - generic [ref=e53]: 
+        - generic [ref=e54]: Clientes
+      - generic [ref=e55]: Finanzas
+      - link " O. Pendientes Pagar" [ref=e57] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/ordenes-pendientes
+        - generic [ref=e58]: 
+        - generic [ref=e59]: O. Pendientes Pagar
+      - link " Historial Financiero" [ref=e61] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/historial-financiero
+        - generic [ref=e62]: 
+        - generic [ref=e63]: Historial Financiero
+      - link " Pagos por Aprobar" [ref=e65] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/pagos-pendientes
+        - generic [ref=e66]: 
+        - generic [ref=e67]: Pagos por Aprobar
+      - link " Reporte Ventas por Categoría de Items" [ref=e69] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/reporte-items
+        - generic [ref=e70]: 
+        - generic [ref=e71]: Reporte Ventas por Categoría de Items
+      - link " Items" [ref=e73] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/items
+        - generic [ref=e74]: 
+        - generic [ref=e75]: Items
+      - generic [ref=e76]: Sistema
+      - link " Mis Actividades" [ref=e78] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/contabilidad/actividades
+        - generic [ref=e79]: 
+        - generic [ref=e80]: Mis Actividades
+      - generic [ref=e81]: Cuenta
+      - link " Mi Perfil" [ref=e83] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - generic [ref=e84]: 
+        - generic [ref=e85]: Mi Perfil
+    - button " Cerrar Sesion" [ref=e88] [cursor=pointer]:
+      - generic [ref=e89]: 
+      - generic [ref=e90]: Cerrar Sesion
+  - main [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e94]:
+        - heading "Panel de Contabilidad" [level=1] [ref=e95]
+        - paragraph [ref=e96]: Resumen financiero y gestion de pagos
+      - generic [ref=e97]:
+        - link " 3 Ordenes con Saldo" [ref=e98] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/contabilidad/ordenes-pendientes
+          - generic [ref=e99]:
+            - generic [ref=e101]: 
+            - generic [ref=e102]:
+              - heading "3" [level=3] [ref=e103]
+              - paragraph [ref=e104]: Ordenes con Saldo
+        - link " 1 Abonos por Aprobar" [ref=e105] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/contabilidad/pagos-pendientes
+          - generic [ref=e106]:
+            - generic [ref=e108]: 
+            - generic [ref=e109]:
+              - heading "1" [level=3] [ref=e110]
+              - paragraph [ref=e111]: Abonos por Aprobar
+        - generic [ref=e112]:
+          - generic [ref=e114]: 
+          - generic [ref=e115]:
+            - heading "$179.350" [level=3] [ref=e116]
+            - paragraph [ref=e117]: Total Pendiente
+        - generic [ref=e118]:
+          - generic [ref=e120]: 
+          - generic [ref=e121]:
+            - heading "$0" [level=3] [ref=e122]
+            - paragraph [ref=e123]: Recaudado Hoy
+      - generic [ref=e124]:
+        - generic [ref=e126]:
+          - generic [ref=e128]:
+            - heading " Ultimos Pagos Aprobados" [level=6] [ref=e129]:
+              - generic [ref=e130]: 
+              - text: Ultimos Pagos Aprobados
+            - generic [ref=e131]: Reciente
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: $5.000
+                - generic [ref=e136]:
+                  - generic [ref=e137]: 
+                  - text: da - davi 5545621321
+              - generic [ref=e138]:
+                - link "#0002" [ref=e139] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/contabilidad/ordenes/2
+                - generic [ref=e140]: Cliente Mostrador
+              - generic [ref=e141]: 14:38
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e144]: $100
+                - generic [ref=e145]:
+                  - generic [ref=e146]: 
+                  - text: da - davi 5545621321
+              - generic [ref=e147]:
+                - link "#0001" [ref=e148] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/contabilidad/ordenes/1
+                - generic [ref=e149]: Cliente Mostrador
+              - generic [ref=e150]: 09:19
+        - generic [ref=e151]:
+          - generic [ref=e152]:
+            - heading " Recaudo por Metodo (Hoy)" [level=6] [ref=e154]:
+              - generic [ref=e155]: 
+              - text: Recaudo por Metodo (Hoy)
+            - paragraph [ref=e157]: Sin recaudo hoy
+          - generic [ref=e158]:
+            - heading " Garantias Cobrables" [level=6] [ref=e160]:
+              - generic [ref=e161]: 
+              - text: Garantias Cobrables
+            - generic [ref=e162]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: Garantias activas
+                - generic [ref=e165]: "1"
+              - generic [ref=e166]:
+                - generic [ref=e167]: Monto cobrable
+                - generic [ref=e168]: $3.453
+              - link " Ver Garantias" [ref=e169] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/recepcion/garantias
+                - generic [ref=e170]: 
+                - text: Ver Garantias
+          - generic [ref=e171]:
+            - heading " Acciones Rapidas" [level=6] [ref=e173]:
+              - generic [ref=e174]: 
+              - text: Acciones Rapidas
+            - generic [ref=e175]:
+              - link " Ordenes con Saldo" [ref=e176] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/contabilidad/ordenes-pendientes
+                - generic [ref=e177]: 
+                - text: Ordenes con Saldo
+              - link " Pagos por Aprobar" [ref=e178] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/contabilidad/pagos-pendientes
+                - generic [ref=e179]: 
+                - text: Pagos por Aprobar
+              - link " Catalogo de Items (Productos y servicios)" [ref=e180] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/contabilidad/items
+                - generic [ref=e181]: 
+                - text: Catalogo de Items (Productos y servicios)

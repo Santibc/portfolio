@@ -20,7 +20,7 @@
                         <div>
                             <span class="fw-semibold" @if($pago->trashed()) style="text-decoration: line-through;" @endif>${{ number_format($pago->monto, 0, ',', '.') }}</span>
                             @php($_tp = ($tiposPagoMapa ?? [])[$pago->metodo_pago] ?? null)
-                            <span class="badge bg-{{ $_tp['color'] ?? 'light' }}-subtle text-{{ $_tp['color'] ?? 'dark' }} border ms-1 small">
+                            <span class="badge border ms-1 small" @if($_tp) style="background-color: {{ $_tp['bg'] }}; color: {{ $_tp['hex'] }}; border-color: {{ $_tp['hex'] }}33 !important;" @endif>
                                 @if($_tp)<i class="bi {{ $_tp['icono'] }} me-1"></i>@endif{{ $_tp['etiqueta'] ?? ucfirst($pago->metodo_pago) }}
                             </span>
                             @if($pago->trashed())
