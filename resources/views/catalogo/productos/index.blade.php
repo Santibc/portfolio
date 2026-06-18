@@ -17,6 +17,21 @@
                     Volver
                 </x-manzer.button>
                 <x-manzer.button
+                    variant="secondary"
+                    icon="download"
+                    href="{{ route('catalogos.productos.importar.plantilla') }}"
+                >
+                    Descargar plantilla
+                </x-manzer.button>
+                <x-manzer.button
+                    variant="secondary"
+                    icon="file-earmark-excel"
+                    x-data="{}"
+                    x-on:click="$dispatch('open-modal', 'importar-productos')"
+                >
+                    Importar Excel
+                </x-manzer.button>
+                <x-manzer.button
                     variant="primary"
                     icon="plus-lg"
                     href="{{ route('catalogos.productos.create') }}"
@@ -25,6 +40,73 @@
                 </x-manzer.button>
             </x-slot>
         </x-manzer.page-header>
+
+        {{-- Botón para listar los errores de la última importación (si los hubo). --}}
+        @if (!empty(session('import_errores')))
+            <div class="mb-4" x-data="{ errores: @js(session('import_errores')) }">
+                <x-manzer.button
+                    variant="danger"
+                    icon="exclamation-triangle"
+                    x-on:click="window.Swal.fire({
+                        title: 'Errores de importación',
+                        icon: 'warning',
+                        width: 640,
+                        html: '<div class=&quot;text-left max-h-80 overflow-auto&quot;><table class=&quot;w-full text-sm&quot;><thead><tr class=&quot;border-b font-semibold&quot;><th class=&quot;py-1 pr-2 text-left&quot;>Fila</th><th class=&quot;py-1 pr-2 text-left&quot;>Referencia</th><th class=&quot;py-1 text-left&quot;>Motivo</th></tr></thead><tbody>' + errores.map(e => '<tr class=&quot;border-b border-zinc-100&quot;><td class=&quot;py-1 pr-2 align-top&quot;>' + e.fila + '</td><td class=&quot;py-1 pr-2 align-top font-mono&quot;>' + e.referencia + '</td><td class=&quot;py-1 align-top&quot;>' + e.motivo + '</td></tr>').join('') + '</tbody></table></div>',
+                        confirmButtonText: 'Cerrar',
+                    })"
+                >
+                    Ver errores de importación (<span x-text="errores.length"></span>)
+                </x-manzer.button>
+            </div>
+        @endif
+
+        {{-- Modal: importar productos desde Excel. --}}
+        <x-manzer.modal id="importar-productos" title="Importar productos desde Excel" size="lg">
+            <form action="{{ route('catalogos.productos.importar') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="space-y-4">
+                    <div class="rounded-xl bg-primary-50 p-3 text-sm text-primary-800 dark:bg-primary-950/40 dark:text-primary-200">
+                        <p class="font-medium"><i class="bi bi-info-circle mr-1"></i>¿Cómo funciona?</p>
+                        <ul class="mt-1 list-disc space-y-0.5 pl-5">
+                            <li>Si la <strong>referencia</strong> ya existe, el producto se <strong>actualiza</strong>; si no, se <strong>crea</strong>.</li>
+                            <li>Al actualizar, las celdas vacías conservan el valor actual.</li>
+                            <li>Descarga la plantilla para usar el formato correcto.</li>
+                        </ul>
+                        <a href="{{ route('catalogos.productos.importar.plantilla') }}" class="mt-2 inline-flex items-center gap-1 font-medium underline">
+                            <i class="bi bi-download"></i> Descargar plantilla
+                        </a>
+                    </div>
+
+                    <div>
+                        <label for="archivo" class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                            <i class="bi bi-file-earmark-excel mr-1"></i>Archivo Excel o CSV
+                        </label>
+                        <input
+                            type="file"
+                            id="archivo"
+                            name="archivo"
+                            accept=".xlsx,.xls,.csv,.txt"
+                            required
+                            class="input"
+                        >
+                        <p class="mt-1 text-xs text-zinc-500">Formatos: .xlsx, .xls, .csv (máx. 5 MB).</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-2">
+                    <x-manzer.button
+                        type="button"
+                        variant="secondary"
+                        x-on:click="$dispatch('close-modal', 'importar-productos')"
+                    >
+                        Cancelar
+                    </x-manzer.button>
+                    <x-manzer.button type="submit" variant="primary" icon="upload">
+                        Importar
+                    </x-manzer.button>
+                </div>
+            </form>
+        </x-manzer.modal>
 
         {{-- Mensajes flash y errores de validación se renderizan globalmente vía <x-flash-messages /> en el layout. --}}
 

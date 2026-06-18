@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MonedaController;
 use App\Http\Controllers\Admin\PlantillaFacturaController;
 use App\Http\Controllers\Admin\PuertoController;
 use App\Http\Controllers\Admin\SiigoController;
+use App\Http\Controllers\Admin\TallaController;
 use App\Http\Controllers\Admin\TipoDescuentoController;
 use App\Http\Controllers\Admin\TipoPagoController;
 use App\Http\Controllers\Catalogo\ClienteController;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])
         Route::resource('incoterms', IncotermController::class)->except(['show']);
         Route::resource('puertos', PuertoController::class)->except(['show']);
         Route::resource('tipos-pago', TipoPagoController::class)->except(['show']);
+        Route::resource('tallas', TallaController::class)->except(['show']);
 
         Route::get('siigo', [SiigoController::class, 'edit'])->name('siigo.edit');
         Route::put('siigo', [SiigoController::class, 'update'])->name('siigo.update');
@@ -70,6 +72,13 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])
     ->prefix('catalogos')
     ->name('catalogos.')
     ->group(function () {
+        // Importación/plantilla de productos vía Excel (deben ir ANTES del
+        // resource para no colisionar con rutas tipo productos/{producto}).
+        Route::get('productos/importar/plantilla', [ProductoController::class, 'plantillaImportacion'])->name('productos.importar.plantilla');
+        Route::post('productos/importar', [ProductoController::class, 'importar'])
+            ->middleware('throttle:30,1')
+            ->name('productos.importar');
+
         Route::resource('productos', ProductoController::class)
             ->except(['show'])
             ->middleware(['store' => 'throttle:60,1', 'update' => 'throttle:60,1']);
@@ -89,6 +98,7 @@ Route::middleware(['auth', 'verified', 'role:Administrador'])
         // colisionar con rutas tipo facturas/{factura}).
         Route::get('facturas/importar/plantilla', [FacturaController::class, 'plantillaImportacion'])->name('facturas.importar.plantilla');
         Route::post('facturas/importar', [FacturaController::class, 'importarItems'])->name('facturas.importar');
+        Route::get('facturas/tasa-cambio', [FacturaController::class, 'tasaCambio'])->name('facturas.tasa-cambio');
 
         Route::resource('facturas', FacturaController::class)->except(['show']);
         Route::post('facturas/{factura}/emitir', [FacturaController::class, 'emitir'])->name('facturas.emitir');

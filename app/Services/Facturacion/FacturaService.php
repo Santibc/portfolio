@@ -128,25 +128,42 @@ class FacturaService
     }
 
     /**
-     * Normaliza el campo de tallas (texto libre "S, M, L" o array) a un array de
-     * strings limpio, o null si no hay tallas. Es lo que consume formatearTallas().
+     * Normaliza el campo de tallas a un mapa {talla: cantidad} limpio, o null si
+     * no hay tallas con cantidad. Es lo que consume formatearTallas().
+     *
+     * Formato esperado: mapa {"L": 2, "M": 3} (talla → cantidad). Descarta tallas
+     * con cantidad <= 0 o vacías. También acepta una lista legada ["S","M","L"]
+     * (se conserva tal cual como nombres sin cantidad).
      *
      * @param  mixed  $tallas
-     * @return array<int, string>|null
+     * @return array<string, float>|array<int, string>|null
      */
     private function parsearTallas($tallas): ?array
     {
-        if (is_array($tallas)) {
-            $partes = array_map('strval', $tallas);
-        } elseif (is_string($tallas) && trim($tallas) !== '') {
-            $partes = explode(',', $tallas);
-        } else {
+        if (! is_array($tallas) || $tallas === []) {
             return null;
         }
 
-        $partes = array_values(array_filter(array_map('trim', $partes), fn ($t) => $t !== ''));
+        $mapa = [];
+        foreach ($tallas as $nombre => $cantidad) {
+            // Lista legada de nombres (claves numéricas): se conserva como string.
+            if (is_int($nombre)) {
+                $valor = trim((string) $cantidad);
+                if ($valor !== '') {
+                    $mapa[] = $valor;
+                }
 
-        return $partes === [] ? null : $partes;
+                continue;
+            }
+
+            $nombre = trim((string) $nombre);
+            $cant = is_numeric($cantidad) ? (float) $cantidad : 0.0;
+            if ($nombre !== '' && $cant > 0) {
+                $mapa[$nombre] = $cant;
+            }
+        }
+
+        return $mapa === [] ? null : $mapa;
     }
 
     public function recalcular(Factura $factura): void

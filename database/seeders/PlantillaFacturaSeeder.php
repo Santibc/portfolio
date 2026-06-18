@@ -239,7 +239,7 @@ HTML;
                 <div class="caja">
                     <table>
                         <tr><td class="label">ORIGIN</td><td>{{cliente.origen}}</td><td class="label">Cod</td><td>{{factura.cod}}</td></tr>
-                        <tr><td class="label">CURRENCY</td><td>{{factura.moneda}}</td><td class="label">Remisión</td><td>{{factura.remision}}</td></tr>
+                        <tr><td class="label">CURRENCY</td><td>{{factura.moneda}}</td><td></td><td></td></tr>
                         <tr><td class="label">DESTINATION</td><td>{{cliente.destino}}</td><td></td><td></td></tr>
                         <tr><td class="label">PAYMENT TERMS</td><td colspan="3">{{factura.payment_terms}}</td></tr>
                     </table>

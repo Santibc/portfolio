@@ -180,6 +180,16 @@
                             <span>Tipos de pago</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('admin.tallas.index') }}" @class([
+                            'flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition',
+                            'nav-item-active' => request()->routeIs('admin.tallas.*'),
+                            'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-100' => ! request()->routeIs('admin.tallas.*'),
+                        ])>
+                            <i class="bi bi-rulers text-xs"></i>
+                            <span>Tallas</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li>

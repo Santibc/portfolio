@@ -15,8 +15,12 @@ class PlantillaImportacionFacturaExport implements FromArray, ShouldAutoSize, Wi
 {
     /**
      * @param  list<array<int, mixed>>  $ejemplos
+     * @param  list<string>  $tallas  Nombres de las tallas activas (una columna por talla)
      */
-    public function __construct(private readonly array $ejemplos = []) {}
+    public function __construct(
+        private readonly array $ejemplos = [],
+        private readonly array $tallas = [],
+    ) {}
 
     /**
      * @return list<array<int, mixed>>
@@ -27,13 +31,17 @@ class PlantillaImportacionFacturaExport implements FromArray, ShouldAutoSize, Wi
     }
 
     /**
+     * Encabezados: una columna por talla activa (cantidad por talla) entre la
+     * referencia y la cantidad total. Para prendas, la cantidad se calcula como
+     * la suma de las tallas; para no-prendas usa la columna "Cantidad".
+     *
      * @return list<string>
      */
     public function headings(): array
     {
         return [
             'Referencia',
-            'Tallas (ej: S, M, L)',
+            ...array_values($this->tallas),
             'Cantidad',
             'Precio unitario',
             'Descuento',

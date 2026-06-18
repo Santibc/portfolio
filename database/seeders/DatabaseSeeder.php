@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             PaisesSeeder::class,
             PuertoSeeder::class,
             TipoPagoSeeder::class,
+            TallaSeeder::class,
             ConfiguracionSeeder::class,
             PlantillaFacturaSeeder::class,
         ]);

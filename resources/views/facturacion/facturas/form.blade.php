@@ -38,10 +38,13 @@
                 'descuento' => (float) $i->descuento,
                 'descuento_tipo' => $i->descuento_tipo ?? 'valor',
                 'impuesto_porcentaje' => (float) $i->impuesto_porcentaje,
-                'tallas' => is_array($i->tallas_json) ? implode(', ', $i->tallas_json) : '',
+                'tallas' => is_array($i->tallas_json) ? $i->tallas_json : [],
             ])->values()->all() ?? []),
+            tallasCatalogo: @js($tallas->pluck('nombre')->values()->all()),
             monedaId: {{ $monedaInicialId ?? 'null' }},
             monedaCopId: {{ $monedaCopId ?? 'null' }},
+            monedasCodigo: @js($monedas->pluck('codigo', 'id')->all()),
+            tasaCambioUrl: '{{ route('facturacion.facturas.tasa-cambio') }}',
             tasaCambio: '{{ old('tasa_cambio', $factura->tasa_cambio) }}',
             flete: {{ (float) old('flete', $factura->flete ?? 0) }},
             seguro: {{ (float) old('seguro', $factura->seguro ?? 0) }},
@@ -190,6 +193,7 @@
                                 name="fecha"
                                 value="{{ old('fecha', $factura->fecha?->format('Y-m-d') ?? now()->toDateString()) }}"
                                 required
+                                @change="obtenerTasaAuto()"
                                 class="input {{ $errors->has('fecha') ? 'ring-red-500 focus:ring-red-500' : '' }}"
                             >
                             @error('fecha')
@@ -223,6 +227,7 @@
                                 name="moneda_id"
                                 required
                                 x-model.number="monedaId"
+                                @change="obtenerTasaAuto()"
                                 class="input {{ $errors->has('moneda_id') ? 'ring-red-500 focus:ring-red-500' : '' }}"
                             >
                                 @foreach ($monedas as $m)
@@ -235,8 +240,15 @@
                         </div>
 
                         <div class="space-y-1.5">
-                            <label for="tasa_cambio" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                <i class="bi bi-arrow-left-right mr-1"></i>Tasa de cambio
+                            <label for="tasa_cambio" class="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                <span><i class="bi bi-arrow-left-right mr-1"></i>Tasa de cambio</span>
+                                <span
+                                    x-show="tasaCargando"
+                                    class="inline-flex items-center gap-1 text-xs font-normal text-primary-600 dark:text-primary-400"
+                                    style="display: none;"
+                                >
+                                    <i class="bi bi-arrow-repeat animate-spin"></i> Consultando…
+                                </span>
                             </label>
                             <input
                                 type="number"
@@ -245,9 +257,18 @@
                                 step="0.0001"
                                 min="0"
                                 x-model="tasaCambio"
-                                class="input {{ $errors->has('tasa_cambio') ? 'ring-red-500 focus:ring-red-500' : '' }}"
+                                :disabled="tasaCargando"
+                                class="input disabled:opacity-60 {{ $errors->has('tasa_cambio') ? 'ring-red-500 focus:ring-red-500' : '' }}"
                             >
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Tasa COP por unidad de moneda (solo si moneda ≠ COP).</p>
+                            {{-- Fuente cuando la tasa se obtuvo automáticamente --}}
+                            <p x-show="tasaFuente" class="text-xs text-emerald-600 dark:text-emerald-400" style="display: none;">
+                                <i class="bi bi-check-circle mr-1"></i><span x-text="tasaFuente"></span>
+                            </p>
+                            {{-- Aviso si la API falló: se digita manualmente --}}
+                            <p x-show="tasaError" class="text-xs text-amber-600 dark:text-amber-400" style="display: none;">
+                                <i class="bi bi-exclamation-triangle mr-1"></i><span x-text="tasaError"></span>
+                            </p>
+                            <p x-show="!tasaFuente && !tasaError" class="text-xs text-zinc-500 dark:text-zinc-400">Tasa COP por unidad de moneda (solo si moneda ≠ COP). Se autocompleta al elegir moneda; puedes editarla.</p>
                             @error('tasa_cambio')
                                 <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
@@ -321,25 +342,6 @@
                             >
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">Empresa transportadora (DHL, FedEx, etc.).</p>
                             @error('shipper')
-                                <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="space-y-1.5">
-                            <label for="remision" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                <i class="bi bi-file-earmark-text mr-1"></i>Remisión
-                            </label>
-                            <input
-                                type="text"
-                                id="remision"
-                                name="remision"
-                                value="{{ old('remision', $factura->remision) }}"
-                                maxlength="60"
-                                placeholder="Ej: REM-2026-0006"
-                                class="input {{ $errors->has('remision') ? 'ring-red-500 focus:ring-red-500' : '' }}"
-                            >
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Número de remisión asociado a la factura.</p>
-                            @error('remision')
                                 <p class="text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
@@ -501,9 +503,9 @@
                             <thead class="bg-zinc-50 dark:bg-zinc-800/50">
                                 <tr>
                                     <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Ref.</th>
-                                    <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Descripción</th>
-                                    <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Color</th>
-                                    <th class="whitespace-nowrap px-2 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Talla</th>
+                                    @foreach ($tallas as $t)
+                                        <th class="whitespace-nowrap px-2 py-2 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{{ $t->nombre }}</th>
+                                    @endforeach
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Cant.</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">P. Unit.</th>
                                     <th class="whitespace-nowrap px-2 py-2 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Descuento</th>
@@ -540,25 +542,21 @@
                                                 </template>
                                             </select>
                                         </td>
-                                        <td class="px-2 py-2">
-                                            <input type="hidden" :name="'items['+idx+'][descripcion]'" :value="item.descripcion ?? ''">
-                                            <span class="block min-w-[12rem] text-sm text-zinc-700 dark:text-zinc-300" x-text="item.descripcion || '—'"></span>
-                                        </td>
-                                        <td class="px-2 py-2">
-                                            <input type="hidden" :name="'items['+idx+'][color]'" :value="item.color ?? ''">
-                                            <span class="block w-24 text-sm text-zinc-600 dark:text-zinc-400" x-text="item.color || '—'"></span>
-                                        </td>
-                                        <td class="px-2 py-2">
-                                            <input
-                                                type="text"
-                                                :name="'items['+idx+'][tallas]'"
-                                                x-model="item.tallas"
-                                                maxlength="100"
-                                                placeholder="S, M, L"
-                                                title="Tallas separadas por coma. Se muestran en el campo size de la plantilla."
-                                                class="input input-sm w-24"
-                                            >
-                                        </td>
+                                        @foreach ($tallas as $t)
+                                            <td class="px-2 py-2">
+                                                <input
+                                                    type="number"
+                                                    :name="'items['+idx+'][tallas][{{ $t->nombre }}]'"
+                                                    x-model.number="item.tallas['{{ $t->nombre }}']"
+                                                    @input="sincronizarCantidad(item)"
+                                                    :disabled="!esPrenda(item)"
+                                                    min="0"
+                                                    step="1"
+                                                    :title="esPrenda(item) ? 'Cantidad de la talla {{ $t->nombre }}' : 'Solo aplica a prendas'"
+                                                    class="input input-sm mx-auto w-14 text-right disabled:cursor-not-allowed disabled:opacity-40"
+                                                >
+                                            </td>
+                                        @endforeach
                                         <td class="px-2 py-2">
                                             <input
                                                 type="number"
@@ -878,7 +876,12 @@
                 items: inicial.items && inicial.items.length ? inicial.items : [],
                 monedaId: inicial.monedaId,
                 monedaCopId: inicial.monedaCopId,
+                monedasCodigo: inicial.monedasCodigo || {},
+                tasaCambioUrl: inicial.tasaCambioUrl,
                 tasaCambio: inicial.tasaCambio,
+                tasaCargando: false,
+                tasaFuente: '',
+                tasaError: '',
                 flete: inicial.flete,
                 seguro: inicial.seguro,
                 plantillaId: inicial.plantillaId || '',
@@ -886,12 +889,47 @@
                 clientesMoneda: inicial.clientesMoneda || {},
                 plantillasTipo: inicial.plantillasTipo || {},
                 productos: inicial.productos,
+                tallasCatalogo: inicial.tallasCatalogo || [],
                 productoBuscar: '',
                 importUrl: inicial.importUrl,
                 csrf: inicial.csrf,
                 erroresImport: [],
                 importando: false,
                 modalErrores: false,
+
+                /** Normaliza las tallas de los ítems iniciales a un objeto con todas
+                 *  las tallas del catálogo (necesario para que Alpine las reactive). */
+                init() {
+                    this.items.forEach(it => { it.tallas = this.tallasObj(it.tallas); });
+                },
+
+                /**
+                 * Devuelve un objeto {talla: cantidad} con TODAS las tallas activas
+                 * como claves (pre-inicializadas), tomando los valores existentes en
+                 * `base`. Garantiza reactividad de cada celda de talla.
+                 */
+                tallasObj(base) {
+                    const src = (base && typeof base === 'object') ? base : {};
+                    const out = {};
+                    this.tallasCatalogo.forEach(n => {
+                        const v = src[n];
+                        out[n] = (v === 0 || v) ? v : '';
+                    });
+                    return out;
+                },
+
+                /** ¿El producto de la línea es una prenda (se desglosa por tallas)? */
+                esPrenda(item) {
+                    const p = this.productoPorId(item.producto_id);
+                    return p ? !!p.es_prenda : false;
+                },
+
+                /** Auto-suma: para prendas, la cantidad total = suma de cantidades por
+                 *  talla. El usuario aún puede editar la cantidad manualmente después. */
+                sincronizarCantidad(item) {
+                    if (!this.esPrenda(item)) return;
+                    item.cantidad = Object.values(item.tallas).reduce((s, v) => s + (Number(v) || 0), 0);
+                },
 
                 /** La factura es internacional si la plantilla seleccionada lo es. */
                 get esInternacional() {
@@ -946,6 +984,54 @@
                     const monedaPreferida = this.clientesMoneda[clienteId];
                     if (monedaPreferida) {
                         this.monedaId = Number(monedaPreferida);
+                        this.obtenerTasaAuto();
+                    }
+                },
+
+                /** Código (USD/EUR/COP…) de la moneda actualmente seleccionada. */
+                get monedaCodigoSel() {
+                    return this.monedasCodigo[this.monedaId] || '';
+                },
+
+                /**
+                 * Consulta automáticamente la tasa de cambio al backend cuando la
+                 * moneda seleccionada no es COP. Rellena el campo (que sigue siendo
+                 * editable). Si la API falla, deja un aviso y la tasa se digita a mano.
+                 */
+                async obtenerTasaAuto() {
+                    const codigo = this.monedaCodigoSel;
+
+                    // COP (o sin moneda) no usa tasa de cambio: limpia estado.
+                    if (!codigo || codigo === 'COP' || this.monedaId === this.monedaCopId) {
+                        this.tasaFuente = '';
+                        this.tasaError = '';
+                        return;
+                    }
+
+                    this.tasaCargando = true;
+                    this.tasaFuente = '';
+                    this.tasaError = '';
+
+                    const fecha = document.getElementById('fecha')?.value || '';
+                    const params = new URLSearchParams({ moneda: codigo, fecha });
+
+                    try {
+                        const resp = await fetch(`${this.tasaCambioUrl}?${params.toString()}`, {
+                            headers: { 'Accept': 'application/json' },
+                        });
+                        const data = await resp.json().catch(() => ({}));
+
+                        if (!resp.ok) {
+                            this.tasaError = data.message || `No se pudo obtener la tasa de ${codigo}. Ingrésala manualmente.`;
+                            return;
+                        }
+
+                        this.tasaCambio = data.tasa;
+                        this.tasaFuente = data.fuente || '';
+                    } catch (e) {
+                        this.tasaError = `No se pudo obtener la tasa de ${codigo}. Ingrésala manualmente.`;
+                    } finally {
+                        this.tasaCargando = false;
                     }
                 },
 
@@ -972,7 +1058,7 @@
                         descuento: 0,
                         descuento_tipo: 'valor',
                         impuesto_porcentaje: this.ivaPorDefecto,
-                        tallas: '',
+                        tallas: this.tallasObj({}),
                     });
                     this.productoBuscar = '';
                 },
@@ -990,7 +1076,7 @@
                         descuento: 0,
                         descuento_tipo: 'valor',
                         impuesto_porcentaje: this.ivaPorDefecto,
-                        tallas: '',
+                        tallas: this.tallasObj({}),
                     });
                 },
 
@@ -1037,7 +1123,7 @@
                             descuento: Number(it.descuento) || 0,
                             descuento_tipo: it.descuento_tipo === 'porcentaje' ? 'porcentaje' : 'valor',
                             impuesto_porcentaje: Number(it.impuesto_porcentaje) || 0,
-                            tallas: it.tallas || '',
+                            tallas: this.tallasObj(it.tallas || {}),
                         }));
 
                         this.items.push(...nuevos);

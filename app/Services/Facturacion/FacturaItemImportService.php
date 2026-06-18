@@ -3,6 +3,7 @@
 namespace App\Services\Facturacion;
 
 use App\Models\Producto;
+use App\Models\Talla;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
@@ -11,8 +12,12 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  * el resto de campos editables (cantidad, precio, descuento, IVA) se toman del
  * archivo con valores por defecto sensatos.
  *
- * Columnas esperadas (en orden, con fila de encabezado):
- *   Referencia | Tallas | Cantidad | Precio unitario | Descuento | Tipo descuento | IVA %
+ * Las columnas se identifican por ENCABEZADO (no por posición), porque hay una
+ * columna por cada talla activa del catálogo. Encabezados esperados:
+ *   Referencia | <Talla1> | <Talla2> | … | Cantidad | Precio unitario | Descuento | Tipo descuento | IVA %
+ *
+ * Para prendas, la cantidad de la línea es la suma de las cantidades por talla;
+ * para productos sin tallas se usa la columna "Cantidad".
  */
 class FacturaItemImportService
 {
@@ -24,6 +29,43 @@ class FacturaItemImportService
         $hoja = IOFactory::load($rutaArchivo)->getActiveSheet();
         /** @var array<int, array<int, mixed>> $filas */
         $filas = $hoja->toArray(null, true, false, false);
+
+        if ($filas === []) {
+            return ['items' => [], 'errores' => []];
+        }
+
+        // Catálogo de tallas activas indexado por nombre normalizado → nombre canónico.
+        $tallasCanonicas = Talla::activas()->orderBy('orden')->orderBy('nombre')
+            ->pluck('nombre')
+            ->mapWithKeys(fn ($n) => [$this->normalizar((string) $n) => (string) $n])
+            ->all();
+
+        // Mapeo de columnas a partir de la fila de encabezado (índice 0).
+        $colReferencia = $colCantidad = $colPrecio = $colDescuento = $colDescuentoTipo = $colIva = null;
+        /** @var array<int, string> $colsTalla  índice de columna → nombre canónico de talla */
+        $colsTalla = [];
+
+        foreach ($filas[0] as $idx => $titulo) {
+            $h = $this->normalizar((string) ($titulo ?? ''));
+            if ($h === '') {
+                continue;
+            }
+            if (isset($tallasCanonicas[$h])) {
+                $colsTalla[$idx] = $tallasCanonicas[$h];
+            } elseif (str_contains($h, 'REFERENCIA')) {
+                $colReferencia = $idx;
+            } elseif (str_contains($h, 'TIPO') && str_contains($h, 'DESCUENTO')) {
+                $colDescuentoTipo = $idx;
+            } elseif (str_contains($h, 'DESCUENTO')) {
+                $colDescuento = $idx;
+            } elseif (str_contains($h, 'PRECIO')) {
+                $colPrecio = $idx;
+            } elseif (str_contains($h, 'CANTIDAD')) {
+                $colCantidad = $idx;
+            } elseif (str_contains($h, 'IVA')) {
+                $colIva = $idx;
+            }
+        }
 
         // Mapa de productos activos indexado por referencia normalizada.
         $porReferencia = Producto::where('activo', true)->get()
@@ -39,7 +81,7 @@ class FacturaItemImportService
             }
 
             $numeroFila = $indice + 1;
-            $referencia = trim((string) ($fila[0] ?? ''));
+            $referencia = trim((string) ($colReferencia !== null ? ($fila[$colReferencia] ?? '') : ''));
 
             // Fila totalmente vacía: se ignora en silencio.
             if ($referencia === '' && $this->filaVacia($fila)) {
@@ -59,19 +101,30 @@ class FacturaItemImportService
                 continue;
             }
 
-            $tallas = trim((string) ($fila[1] ?? ''));
+            // Tallas: mapa {nombre: cantidad} con solo las que tienen cantidad > 0.
+            $tallas = [];
+            foreach ($colsTalla as $idx => $nombre) {
+                $cant = $this->numero($fila[$idx] ?? null);
+                if ($cant !== null && $cant > 0) {
+                    $tallas[$nombre] = $cant;
+                }
+            }
 
-            $cantidad = $this->numero($fila[2] ?? null) ?? 1.0;
+            // Cantidad de la línea: suma de tallas si hay; si no, columna "Cantidad".
+            $cantidad = $tallas !== []
+                ? (float) array_sum($tallas)
+                : ($this->numero($colCantidad !== null ? ($fila[$colCantidad] ?? null) : null) ?? 1.0);
+
             if ($cantidad <= 0) {
                 $errores[] = ['fila' => $numeroFila, 'referencia' => $referencia, 'motivo' => 'La cantidad debe ser mayor que 0.'];
 
                 continue;
             }
 
-            $precio = $this->numero($fila[3] ?? null) ?? (float) $producto->precio_unitario;
-            $descuento = $this->numero($fila[4] ?? null) ?? 0.0;
-            $descuentoTipo = $this->tipoDescuento($fila[5] ?? null);
-            $iva = $this->numero($fila[6] ?? null) ?? $ivaPorDefecto;
+            $precio = $this->numero($colPrecio !== null ? ($fila[$colPrecio] ?? null) : null) ?? (float) $producto->precio_unitario;
+            $descuento = $this->numero($colDescuento !== null ? ($fila[$colDescuento] ?? null) : null) ?? 0.0;
+            $descuentoTipo = $this->tipoDescuento($colDescuentoTipo !== null ? ($fila[$colDescuentoTipo] ?? null) : null);
+            $iva = $this->numero($colIva !== null ? ($fila[$colIva] ?? null) : null) ?? $ivaPorDefecto;
 
             $items[] = [
                 'producto_id' => $producto->id,
@@ -85,7 +138,7 @@ class FacturaItemImportService
                 'descuento' => max($descuento, 0.0),
                 'descuento_tipo' => $descuentoTipo,
                 'impuesto_porcentaje' => max($iva, 0.0),
-                'tallas' => $tallas,
+                'tallas' => (object) $tallas,
             ];
         }
 

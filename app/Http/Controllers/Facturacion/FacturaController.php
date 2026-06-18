@@ -11,8 +11,10 @@ use App\Models\Impuesto;
 use App\Models\Moneda;
 use App\Models\PlantillaFactura;
 use App\Models\Producto;
+use App\Models\Talla;
 use App\Services\Facturacion\FacturaItemImportService;
 use App\Services\Facturacion\FacturaService;
+use App\Services\Facturacion\TasaCambioService;
 use App\Services\Facturacion\TemplateRenderer;
 use App\Services\Siigo\SiigoEmisionService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -218,14 +220,18 @@ class FacturaController extends Controller
      */
     public function plantillaImportacion(): BinaryFileResponse
     {
+        $tallas = Talla::activas()->orderBy('orden')->orderBy('nombre')->pluck('nombre')->all();
+        // Celdas vacías para cada columna de talla en las filas de ejemplo.
+        $tallasVacias = array_fill(0, count($tallas), '');
+
         $ejemplos = Producto::where('activo', true)
             ->orderBy('referencia')
             ->take(3)
             ->get()
-            ->map(fn (Producto $p) => [$p->referencia, '', 1, (float) $p->precio_unitario, 0, 'valor', 19])
+            ->map(fn (Producto $p) => [$p->referencia, ...$tallasVacias, 1, (float) $p->precio_unitario, 0, 'valor', 19])
             ->all();
 
-        return Excel::download(new PlantillaImportacionFacturaExport($ejemplos), 'plantilla-lineas-factura.xlsx');
+        return Excel::download(new PlantillaImportacionFacturaExport($ejemplos, $tallas), 'plantilla-lineas-factura.xlsx');
     }
 
     /**
@@ -244,6 +250,31 @@ class FacturaController extends Controller
             (string) $request->file('archivo')->getRealPath(),
             (float) ($datos['iva_default'] ?? 19),
         );
+
+        return response()->json($resultado);
+    }
+
+    /**
+     * Devuelve la tasa de cambio (COP por unidad de moneda) para una moneda y
+     * fecha dadas. Lo consume el formulario para autocompletar el campo
+     * `tasa_cambio` al elegir una moneda distinta de COP. Si la fuente falla,
+     * responde 422 con un mensaje y el usuario digita la tasa manualmente.
+     */
+    public function tasaCambio(Request $request, TasaCambioService $tasaCambio): JsonResponse
+    {
+        $datos = $request->validate([
+            'moneda' => ['required', 'string', 'max:10'],
+            'fecha' => ['nullable', 'date'],
+        ]);
+
+        try {
+            $resultado = $tasaCambio->obtener(
+                $datos['moneda'],
+                $datos['fecha'] ?? now()->toDateString(),
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json($resultado);
     }
@@ -269,6 +300,7 @@ class FacturaController extends Controller
             'monedas' => Moneda::activas()->orderBy('codigo')->get(),
             'impuestos' => Impuesto::where('activo', true)->orderBy('porcentaje')->get(),
             'plantillas' => PlantillaFactura::activas()->orderByDesc('es_default')->get(),
+            'tallas' => Talla::activas()->orderBy('orden')->orderBy('nombre')->get(),
         ];
     }
 
@@ -387,23 +419,43 @@ class FacturaController extends Controller
     }
 
     /**
-     * Formatea el JSON de tallas como string "S, M, L". Acepta array, string JSON o null.
+     * Formatea el JSON de tallas para la columna SIZE de la plantilla.
+     *
+     * Formato actual: mapa {talla: cantidad} → "2L, 1XS, 3M" (cantidad + talla).
+     * Compatibilidad legada: lista ["S","M","L"] → "S, M, L" (solo nombres).
+     * Acepta array, string JSON o null.
      *
      * @param  mixed  $tallas
      */
     private function formatearTallas($tallas): string
     {
-        if (is_array($tallas)) {
-            return implode(', ', array_map('strval', $tallas));
+        if (is_string($tallas) && $tallas !== '') {
+            $tallas = json_decode($tallas, true);
         }
 
-        if (is_string($tallas) && $tallas !== '') {
-            $decoded = json_decode($tallas, true);
-            if (is_array($decoded)) {
-                return implode(', ', array_map('strval', $decoded));
+        if (! is_array($tallas) || $tallas === []) {
+            return '';
+        }
+
+        $partes = [];
+        foreach ($tallas as $nombre => $cantidad) {
+            // Mapa {talla: cantidad}: claves no numéricas con cantidad.
+            if (is_string($nombre)) {
+                $cant = (float) $cantidad;
+                if ($cant > 0) {
+                    $partes[] = (rtrim(rtrim(number_format($cant, 2, '.', ''), '0'), '.')).$nombre;
+                }
+
+                continue;
+            }
+
+            // Lista legada ["S","M","L"]: solo nombres.
+            $valor = trim((string) $cantidad);
+            if ($valor !== '') {
+                $partes[] = $valor;
             }
         }
 
-        return '';
+        return implode(', ', $partes);
     }
 }

@@ -264,7 +264,6 @@
                 { label: 'AWB',                 value: '{{factura.awb}}' },
                 { label: 'Shipper',             value: '{{factura.shipper}}' },
                 { label: 'Cod',                 value: '{{factura.cod}}' },
-                { label: 'Remisión',            value: '{{factura.remision}}' },
                 { label: 'Payment Terms',       value: '{{factura.payment_terms}}' },
                 { label: 'Versión plantilla',   value: '{{factura.version}}' },
             ]},

@@ -48,9 +48,10 @@ class FacturaRequest extends FormRequest
             'items.*.descuento' => ['nullable', 'numeric', 'min:0'],
             'items.*.descuento_tipo' => ['nullable', 'in:valor,porcentaje'],
             'items.*.impuesto_porcentaje' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            // Tallas como texto libre separado por comas (ej: "S, M, L" o "1S").
-            // Se normaliza a un array de strings en FacturaService.
-            'items.*.tallas' => ['nullable', 'string', 'max:100'],
+            // Tallas como mapa {talla: cantidad} (ej: {"L": 2, "M": 3}).
+            // Se normaliza a un mapa limpio en FacturaService::parsearTallas().
+            'items.*.tallas' => ['nullable', 'array'],
+            'items.*.tallas.*' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
