@@ -935,6 +935,64 @@ function insertarGrupoCompleto(grupoId) {
     });
 }
 
+// --- Panel flotante de Bosquejos (modeless) ---
+
+function abrirPanelBosquejos() {
+    renderPanelBosquejos();
+    var panel = document.getElementById('panelBosquejos');
+    if (panel) panel.style.display = 'flex';
+}
+
+function cerrarPanelBosquejos() {
+    var panel = document.getElementById('panelBosquejos');
+    if (panel) panel.style.display = 'none';
+}
+
+function setBosquejosPorFila(n) {
+    var galeria = document.getElementById('galeriaBosquejos');
+    if (galeria) galeria.style.setProperty('--cols', n);
+    $('#panelBosquejosColsGroup button').removeClass('active');
+    $('#panelBosquejosColsGroup button[data-cols="' + n + '"]').addClass('active');
+}
+
+function renderPanelBosquejos() {
+    var $galeria = $('#galeriaBosquejos');
+    if (!$galeria.length) return;
+    $galeria.empty();
+
+    var count = 0;
+    $('#tbodyPiezas tr.pieza-row').each(function() {
+        var $row = $(this);
+        var bIdx = $row.attr('data-bosquejo-index');
+        if (bIdx === '' || bIdx === undefined) return;
+
+        // Usar la miniatura ya resuelta en la fila (evita problemas de rutas)
+        var imgSrc = $row.find('.pieza-bosquejo-thumb').attr('src');
+        if (!imgSrc) return;
+
+        var nombreBosquejo = ($row.find('.bosquejo-name-text').text() || '').trim();
+        var nombrePieza = ($row.find('.pieza-nombre').val() || '').trim();
+        var caption = nombreBosquejo || nombrePieza || 'Bosquejo';
+        if (nombrePieza && nombreBosquejo && nombrePieza !== nombreBosquejo) {
+            caption = nombrePieza + ' · ' + nombreBosquejo;
+        }
+
+        var $item = $('<div class="bosquejo-galeria-item"></div>');
+        $item.append($('<img>').attr('src', imgSrc).attr('alt', caption).attr('loading', 'lazy'));
+        $item.append($('<div class="bosquejo-galeria-caption text-truncate"></div>').text(caption).attr('title', caption));
+        $galeria.append($item);
+        count++;
+    });
+
+    $('#panelBosquejosCount').text(count);
+    if (count === 0) {
+        $galeria.html('<div class="text-center text-muted py-4" style="grid-column:1/-1;">'
+            + '<i class="bi bi-images fs-1 d-block mb-2 opacity-50"></i>'
+            + '<p class="mb-0">No hay bosquejos en las piezas. Agregue piezas con su bosquejo para verlos aqui.</p>'
+            + '</div>');
+    }
+}
+
 // --- Funciones legacy (stubs para compatibilidad) ---
 
 function renderizarGrillaBosquejos() { /* Deprecado: bosquejos ahora en celdas de piezas */ }

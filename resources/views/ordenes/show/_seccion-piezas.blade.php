@@ -1,7 +1,15 @@
 {{-- Seccion: Piezas (con bosquejos integrados) --}}
 <div class="card border-0 shadow-sm mt-3">
-    <div class="card-header bg-white border-0 px-4 pt-3 pb-0">
+    @php
+        $totalObservaciones = $orden->piezas->sum(fn($p) => $p->observaciones->count());
+    @endphp
+    <div class="card-header bg-white border-0 px-4 pt-3 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h6 class="mb-0 fw-semibold"><i class="bi bi-puzzle me-2 text-primary"></i>Piezas ({{ $orden->piezas->count() }})</h6>
+        @if($totalObservaciones > 0)
+            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#modalTodasObservaciones">
+                <i class="bi bi-chat-left-text me-1"></i>Ver todas las observaciones ({{ $totalObservaciones }})
+            </button>
+        @endif
     </div>
     <div class="card-body px-4 pb-3 pt-2">
         @if($orden->piezas->count() > 0)
@@ -109,7 +117,31 @@
                                         <i class="bi bi-box-arrow-right me-1"></i>Ver entregas
                                     </a>
                                 @endif
+
+                                {{-- Observaciones de la pieza (colapsable) --}}
+                                @if($pieza->observaciones->count() > 0)
+                                    <a class="small text-info" data-bs-toggle="collapse" href="#observaciones{{ $pieza->id }}">
+                                        <i class="bi bi-chat-left-text me-1"></i>Ver observaciones ({{ $pieza->observaciones->count() }})
+                                    </a>
+                                @endif
                             </div>
+
+                            {{-- Observaciones colapsable --}}
+                            @if($pieza->observaciones->count() > 0)
+                                <div class="collapse mt-2" id="observaciones{{ $pieza->id }}">
+                                    <div class="historial-timeline">
+                                        @foreach($pieza->observaciones->sortByDesc('created_at') as $obs)
+                                            <div class="historial-entry">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="fw-medium small">{{ $obs->usuario->name ?? '-' }}</span>
+                                                    <span class="text-muted small">{{ $obs->created_at->format('d/m/Y H:i') }}</span>
+                                                </div>
+                                                <div class="small"><i class="bi bi-chat-text me-1"></i>{{ $obs->observacion }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
 
                             {{-- Historial de avances colapsable --}}
                             @if($historialVisible->count() > 0)
@@ -167,6 +199,51 @@
                 </div>
             </div>
         @endif
+    </div>
+</div>
+
+{{-- Modal Todas las Observaciones --}}
+<div class="modal fade" id="modalTodasObservaciones" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-chat-left-text me-2 text-info"></i>Observaciones de las piezas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @php
+                    $piezasConObs = $orden->piezas->filter(fn($p) => $p->observaciones->count() > 0);
+                @endphp
+                @if($piezasConObs->count() > 0)
+                    @foreach($piezasConObs as $pieza)
+                        <div class="mb-4">
+                            <h6 class="fw-semibold mb-2">
+                                <i class="bi bi-puzzle me-1 text-primary"></i>{{ $pieza->nombre }}
+                                <span class="text-muted small">({{ $pieza->observaciones->count() }})</span>
+                            </h6>
+                            <div class="historial-timeline">
+                                @foreach($pieza->observaciones->sortByDesc('created_at') as $obs)
+                                    <div class="historial-entry">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-medium small">{{ $obs->usuario->name ?? '-' }}</span>
+                                            <span class="text-muted small">{{ $obs->created_at->format('d/m/Y H:i') }}</span>
+                                        </div>
+                                        <div class="small"><i class="bi bi-chat-text me-1"></i>{{ $obs->observacion }}</div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-muted text-center mb-0 py-3">No hay observaciones registradas.</p>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
 

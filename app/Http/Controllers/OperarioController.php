@@ -7,6 +7,7 @@ use App\Exports\OperarioOrdenesAsignadasExport;
 use App\Models\ConfiguracionSistema;
 use App\Models\Orden;
 use App\Models\OrdenPieza;
+use App\Models\OrdenPiezaObservacion;
 use App\Models\User;
 use App\Services\BloqueoService;
 use App\Services\DashboardService;
@@ -171,7 +172,7 @@ class OperarioController extends Controller
         $piezas = $orden->piezas()
             ->where('operario_actual_id', $user->id)
             ->where('porcentaje_avance', '<', 100)
-            ->with(['bosquejo', 'historialAvances.operario', 'fotos', 'asignaciones.asignadoDesde'])
+            ->with(['bosquejo', 'historialAvances.operario', 'fotos', 'asignaciones.asignadoDesde', 'observaciones.usuario'])
             ->orderBy('orden_visual')
             ->get();
 
@@ -546,6 +547,45 @@ class OperarioController extends Controller
             'foto' => [
                 'id' => $foto->id,
                 'url' => asset($foto->ruta_archivo),
+            ],
+        ]);
+    }
+
+    /**
+     * POST /operario/piezas/{pieza}/observacion
+     */
+    public function guardarObservacion(Request $request, OrdenPieza $pieza)
+    {
+        $request->validate([
+            'observacion' => 'required|string|max:2000',
+        ], [
+            'observacion.required' => 'Debe escribir una observacion.',
+            'observacion.max' => 'La observacion no puede superar los 2000 caracteres.',
+        ]);
+
+        $user = auth()->user();
+
+        $observacion = OrdenPiezaObservacion::create([
+            'orden_id' => $pieza->orden_id,
+            'orden_pieza_id' => $pieza->id,
+            'user_id' => $user->id,
+            'observacion' => $request->input('observacion'),
+        ]);
+
+        $this->registrarCreacion(
+            'pieza.observacion_agregada',
+            "Observacion agregada a pieza de orden {$pieza->orden->numero_orden}",
+            $observacion,
+            $pieza->orden_id
+        );
+
+        return response()->json([
+            'success' => true,
+            'observacion' => [
+                'id' => $observacion->id,
+                'texto' => $observacion->observacion,
+                'usuario' => $user->name,
+                'fecha' => $observacion->created_at->format('d/m/Y H:i'),
             ],
         ]);
     }

@@ -20,6 +20,7 @@
 
         initSliders();
         initFotoUploads();
+        initObservaciones();
         initTransferButtons();
         initDejarColaButtons();
         initActualizarOrden();
@@ -202,6 +203,79 @@
                 Swal.fire({ icon: 'error', title: 'Error', text: msg });
             }
         });
+    }
+
+    // ==========================================
+    // OBSERVACIONES
+    // ==========================================
+    function initObservaciones() {
+        $(document).on('click', '.btn-observacion', function() {
+            var piezaId = $(this).data('pieza-id');
+            var piezaNombre = $(this).data('pieza-nombre');
+
+            Swal.fire({
+                title: 'Observacion',
+                html: '<p class="text-muted small mb-2">' + piezaNombre + '</p>',
+                input: 'textarea',
+                inputPlaceholder: 'Escribe la observacion de esta pieza...',
+                inputAttributes: { 'maxlength': 2000, 'rows': 4 },
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#4A7C59',
+                inputValidator: function(value) {
+                    if (!value || !value.trim()) {
+                        return 'Debes escribir una observacion.';
+                    }
+                }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    guardarObservacionAjax(piezaId, result.value.trim());
+                }
+            });
+        });
+    }
+
+    function guardarObservacionAjax(piezaId, texto) {
+        $.ajax({
+            url: '/operario/piezas/' + piezaId + '/observacion',
+            method: 'POST',
+            data: { _token: CSRF_TOKEN, observacion: texto },
+            success: function(data) {
+                if (data.success) {
+                    showToast('success', 'Observacion guardada', 'La observacion se registro correctamente.');
+
+                    var obs = data.observacion;
+                    var itemHtml = '<div class="timeline-item">' +
+                        '<strong>' + escapeHtml(obs.usuario) + '</strong> ' +
+                        '<small class="text-muted">(' + obs.fecha + ')</small><br>' +
+                        '<small><i class="bi bi-chat-text me-1"></i>' + escapeHtml(obs.texto) + '</small>' +
+                        '</div>';
+                    // Prepend (mas reciente primero)
+                    $('#obsList' + piezaId).prepend(itemHtml);
+
+                    // Mostrar toggle y actualizar contador
+                    var wrapper = $('#obsWrapper' + piezaId);
+                    var toggle = wrapper.find('.obs-toggle');
+                    toggle.removeClass('d-none');
+                    var countEl = toggle.find('.obs-count');
+                    countEl.text((parseInt(countEl.text(), 10) || 0) + 1);
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo guardar la observacion.' });
+                }
+            },
+            error: function(xhr) {
+                var msg = 'No se pudo guardar la observacion.';
+                if (xhr.responseJSON && xhr.responseJSON.errors && xhr.responseJSON.errors.observacion) {
+                    msg = xhr.responseJSON.errors.observacion[0];
+                }
+                Swal.fire({ icon: 'error', title: 'Error', text: msg });
+            }
+        });
+    }
+
+    function escapeHtml(str) {
+        return $('<div>').text(str == null ? '' : str).html();
     }
 
     // ==========================================
