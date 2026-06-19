@@ -58,6 +58,69 @@ php artisan test
 php artisan config:clear && php artisan route:clear && php artisan view:clear
 ```
 
+---
+
+## Despliegue a producción (Hostinger shared hosting)
+
+Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
+`sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
+y la mayoría de cambios de UI viven en Blade inline). El repo en el servidor está en
+la rama `sopas`, igual que el desarrollo.
+
+**Las credenciales SSH/BD y la plantilla `askpass` están en `CLAUDE.local.md`**
+(archivo gitignored, cargado automáticamente en contexto). NUNCA escribir esas
+contraseñas en archivos versionados.
+
+### Datos de conexión (no sensibles)
+- Servidor: `212.85.6.28`, puerto SSH `65002`, usuario `u454224791`.
+- Ruta del proyecto: `/home/u454224791/domains/sopasysopitaspms.com/portfolio`.
+- BD producción: `u454224791_sopas` (host `localhost` desde el servidor).
+- URL: https://sopasysopitaspms.com
+
+### Procedimiento "commit, push y subir a producción"
+
+Cuando el usuario diga *"haz commit, push y pull en producción"* (o similar):
+
+1. **Local:** `git add <archivos> && git commit && git push origin sopas`
+   (mensaje de commit en español; el repo trabaja en la rama `sopas`).
+2. **Producción (vía SSH, usando el helper askpass de `CLAUDE.local.md`):**
+   ```bash
+   cd /home/u454224791/domains/sopasysopitaspms.com/portfolio
+   git pull origin sopas
+   php artisan view:clear          # siempre tras cambios de Blade
+   php artisan config:clear        # si tocaste config/.env
+   php artisan route:clear         # si tocaste rutas
+   php artisan migrate --force     # SOLO si hay migraciones nuevas (preguntar antes)
+   ```
+3. Verificar que el `HEAD` remoto quedó en el commit esperado (`git log -1 --oneline`).
+
+> ⚠️ `migrate --force` modifica la BD de producción. Aplica **RULE 0**: no lo corras
+> sin confirmación explícita del usuario para esa ejecución puntual.
+
+### Traer copia de la BD de producción a local
+
+```bash
+# En el servidor: dump comprimido por la red (sin dejar archivo en el server).
+# (usar el helper askpass de CLAUDE.local.md para el ssh)
+ssh ... 'MYSQL_PWD="<pass>" mysqldump --no-tablespaces --single-transaction \
+  --skip-lock-tables --routines --events -u u454224791_ssh u454224791_sopas | gzip -c' \
+  > backup_produccion_sopasysopitaspms_<fecha>.sql.gz
+
+gunzip -kf backup_produccion_sopasysopitaspms_<fecha>.sql.gz
+# El dump de MariaDB 11.8 trae una directiva sandbox que MariaDB 10.4 (XAMPP) no
+# entiende — quitarla antes de importar:
+sed -i '/enable the sandbox mode/d' backup_produccion_sopasysopitaspms_<fecha>.sql
+
+# Importar a una BD local nueva (no pisar la que esté en uso) y apuntar el .env ahí.
+mysql -u root -h 127.0.0.1 -e "CREATE DATABASE \`sopas_prod_<fecha>\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -h 127.0.0.1 sopas_prod_<fecha> < backup_produccion_sopasysopitaspms_<fecha>.sql
+# Editar .env -> DB_DATABASE=sopas_prod_<fecha> ; luego php artisan config:clear
+```
+
+Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
+
+---
+
 ## Architecture
 
 ### Roles & Permissions

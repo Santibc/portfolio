@@ -3,6 +3,8 @@
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\DashboardCajaController;
 use App\Http\Controllers\DashboardMercadoController;
+use App\Http\Controllers\DashboardNominaController;
+use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ListaMercadoController;
 use App\Http\Controllers\ListaMercadoItemController;
@@ -10,7 +12,11 @@ use App\Http\Controllers\ListaMercadoPlantillaController;
 use App\Http\Controllers\MenuDiaController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MetodoPagoController;
+use App\Http\Controllers\NominaController;
 use App\Http\Controllers\PagoAhorroController;
+use App\Http\Controllers\PagoAhorroNominaController;
+use App\Http\Controllers\PagoNominaController;
+use App\Http\Controllers\PrestacionController;
 use App\Http\Controllers\ProductoMercadoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistroMercadoController;
@@ -113,12 +119,49 @@ Route::middleware('auth')->group(function () {
     Route::get('trabajadores-turno/{trabajadorTurno}/historial-ahorro', [TrabajadorTurnoController::class, 'historialAhorro'])
         ->name('trabajadores-turno.historial-ahorro');
 
+    Route::get('gastos/pago-masivo',  [GastoController::class, 'pagoMasivoTurnos'])->name('gastos.pago-masivo');
+    Route::post('gastos/pago-masivo', [GastoController::class, 'pagoMasivoTurnosStore'])->name('gastos.pago-masivo.store');
+
     Route::resource('gastos', GastoController::class)
         ->except(['show']);
 
     Route::get('pagos-ahorros',                  [PagoAhorroController::class, 'index'])->name('pagos-ahorros.index');
     Route::post('pagos-ahorros',                 [PagoAhorroController::class, 'store'])->name('pagos-ahorros.store');
     Route::delete('pagos-ahorros/{pagoAhorro}',  [PagoAhorroController::class, 'destroy'])->name('pagos-ahorros.destroy');
+});
+
+// === MÓDULO NÓMINA ===
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::resource('empleados', EmpleadoController::class)->except(['show']);
+    Route::patch('empleados/{empleado}/activo', [EmpleadoController::class, 'toggleActivo'])
+        ->name('empleados.toggle-activo');
+
+    Route::get('nomina/dashboard',          [DashboardNominaController::class, 'index'])->name('nomina-dashboard.index');
+
+    Route::get('nomina',                    [NominaController::class, 'index'])->name('nomina.index');
+    Route::get('nomina/liquidar',           [NominaController::class, 'create'])->name('nomina.create');
+    Route::post('nomina',                   [NominaController::class, 'store'])->name('nomina.store');
+    Route::get('nomina/{nomina}',           [NominaController::class, 'show'])->name('nomina.show');
+    Route::get('nomina/{nomina}/edit',      [NominaController::class, 'edit'])->name('nomina.edit');
+    Route::put('nomina/{nomina}',           [NominaController::class, 'update'])->name('nomina.update');
+    Route::patch('nomina/{nomina}/aprobar', [NominaController::class, 'aprobar'])->name('nomina.aprobar');
+    Route::delete('nomina/{nomina}',        [NominaController::class, 'destroy'])->name('nomina.destroy');
+
+    Route::get('nomina-pagos/masivo',          [PagoNominaController::class, 'pagoMasivo'])->name('nomina-pagos.masivo');
+    Route::post('nomina-pagos/masivo',         [PagoNominaController::class, 'pagoMasivoStore'])->name('nomina-pagos.masivo.store');
+    Route::get('nomina-pagos/{detalle}/crear', [PagoNominaController::class, 'create'])->name('nomina-pagos.create');
+    Route::post('nomina-pagos',                [PagoNominaController::class, 'store'])->name('nomina-pagos.store');
+    Route::delete('nomina-pagos/{pago}',       [PagoNominaController::class, 'destroy'])->name('nomina-pagos.destroy');
+
+    Route::get('prestaciones',                      [PrestacionController::class, 'index'])->name('prestaciones.index');
+    Route::get('prestaciones/liquidar',             [PrestacionController::class, 'create'])->name('prestaciones.create');
+    Route::post('prestaciones',                     [PrestacionController::class, 'store'])->name('prestaciones.store');
+    Route::patch('prestaciones/{prestacion}/pagar', [PrestacionController::class, 'marcarPagada'])->name('prestaciones.pagar');
+    Route::delete('prestaciones/{prestacion}',      [PrestacionController::class, 'destroy'])->name('prestaciones.destroy');
+
+    Route::get('nomina-ahorros',          [PagoAhorroNominaController::class, 'index'])->name('nomina-ahorros.index');
+    Route::post('nomina-ahorros',         [PagoAhorroNominaController::class, 'store'])->name('nomina-ahorros.store');
+    Route::delete('nomina-ahorros/{pago}', [PagoAhorroNominaController::class, 'destroy'])->name('nomina-ahorros.destroy');
 });
 
 require __DIR__.'/auth.php';

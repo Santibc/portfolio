@@ -41,8 +41,9 @@
     </div>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <x-stat-card icon="trending-down" color="rose" label="Total gastos" :value="'$ ' . number_format($totalGastos, 0, ',', '.')" />
+        <x-stat-card icon="shopping-basket" color="rose" label="Gastos mercado" :value="'$ ' . number_format($totalGastosMercado, 0, ',', '.')" />
         <x-stat-card icon="piggy-bank"    color="primary" label="Ahorros descontados" :value="'$ ' . number_format($totalAhorros, 0, ',', '.')" />
-        <x-stat-card icon="trending-up"   :color="$neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − ahorros)" :value="($neto < 0 ? '-' : '') . '$ ' . number_format(abs($neto), 0, ',', '.')" />
+        <x-stat-card icon="trending-up"   :color="$neto >= 0 ? 'emerald' : 'rose'" label="Neto (ventas − gastos − mercado − ahorros)" :value="($neto < 0 ? '-' : '') . '$ ' . number_format(abs($neto), 0, ',', '.')" />
     </div>
 
     {{-- Total por método de pago en el rango: recibido − gastado --}}

@@ -8,14 +8,19 @@ use App\Enums\EstadoMercado;
 use App\Enums\EstadoMercadoItem;
 use App\Http\Requests\RegistrarMercadoItemRequest;
 use App\Models\MercadoItem;
+use App\Models\MetodoPago;
 use App\Services\MercadoSessionService;
+use App\Services\TurnoCajaService;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class ListaMercadoItemController extends Controller
 {
-    public function __construct(private MercadoSessionService $session) {}
+    public function __construct(
+        private MercadoSessionService $session,
+        private TurnoCajaService $turnos,
+    ) {}
 
     public function create(MercadoItem $item): View|RedirectResponse
     {
@@ -31,16 +36,25 @@ class ListaMercadoItemController extends Controller
                 ->with('error', 'Este item ya fue procesado.');
         }
 
-        return view('lista-mercado.item-create', compact('item'));
+        $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
+        $turnoActivo = $this->turnos->turnoActivo();
+
+        return view('lista-mercado.item-create', compact('item', 'metodos', 'turnoActivo'));
     }
 
     public function store(RegistrarMercadoItemRequest $request, MercadoItem $item): RedirectResponse
     {
         try {
+            $turnoCajaId = $request->boolean('vincular_caja')
+                ? $this->turnos->turnoActivo()?->id
+                : null;
+
             $this->session->registrarItem(
                 $item,
                 (float) $request->validated('cantidad'),
                 (int) $request->validated('valor'),
+                (int) $request->validated('metodo_pago_id'),
+                $turnoCajaId,
             );
         } catch (DomainException $e) {
             return back()->withInput()->with('error', $e->getMessage());

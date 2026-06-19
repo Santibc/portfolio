@@ -42,6 +42,25 @@
         />
     </div>
 
+    @if ($totalesPorMetodo->isNotEmpty())
+        @php $coloresMetodo = ['primary', 'accent', 'sky', 'emerald', 'rose']; @endphp
+        <div class="mb-4">
+            <p class="text-xs uppercase tracking-wider font-semibold text-cream-600 dark:text-cream-400 mb-2">
+                Total por método de pago
+            </p>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                @foreach ($totalesPorMetodo as $i => $metodo)
+                    <x-stat-card
+                        icon="credit-card"
+                        :label="$metodo['nombre'] . ' · ' . number_format($metodo['count'], 0, ',', '.') . ' reg.'"
+                        :value="'$ ' . number_format($metodo['total'], 0, ',', '.')"
+                        :color="$coloresMetodo[$i % count($coloresMetodo)]"
+                    />
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <form action="{{ route('mercado-dashboard.index') }}" method="GET"
           class="sticky top-16 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3
                  bg-cream-50/95 dark:bg-surface-dark/95 backdrop-blur

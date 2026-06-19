@@ -51,6 +51,11 @@ class TurnoCaja extends Model
         return $this->hasMany(Gasto::class);
     }
 
+    public function gastosMercado(): HasMany
+    {
+        return $this->hasMany(RegistroMercado::class, 'turno_caja_id');
+    }
+
     public function scopeAbierto(Builder $query): Builder
     {
         return $query->whereNull('cerrado_en');
@@ -112,15 +117,20 @@ class TurnoCaja extends Model
         return (int) $this->gastos->sum('ahorro');
     }
 
+    public function getTotalGastosMercadoAttribute(): int
+    {
+        return (int) $this->gastosMercado->sum('valor');
+    }
+
     public function getNetoAttribute(): int
     {
-        return $this->total_ventas - $this->total_gastos - $this->total_ahorros;
+        return $this->total_ventas - $this->total_gastos - $this->total_ahorros - $this->total_gastos_mercado;
     }
 
     public function getEfectivoEsperadoAttribute(): int
     {
         // total_efectivo ya viene neto del cambio; el cambio no se resta aquí.
-        return (int) $this->base_inicial + $this->total_efectivo - $this->total_gastos - $this->total_ahorros;
+        return (int) $this->base_inicial + $this->total_efectivo - $this->total_gastos - $this->total_ahorros - $this->total_gastos_mercado;
     }
 
     public function getDiferenciaCierreAttribute(): ?int
@@ -160,6 +170,11 @@ class TurnoCaja extends Model
     public function getTotalAhorrosFormateadoAttribute(): string
     {
         return '$ ' . number_format($this->total_ahorros, 0, ',', '.');
+    }
+
+    public function getTotalGastosMercadoFormateadoAttribute(): string
+    {
+        return '$ ' . number_format($this->total_gastos_mercado, 0, ',', '.');
     }
 
     public function getNetoFormateadoAttribute(): string

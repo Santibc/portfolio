@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TipoGasto;
 use App\Http\Requests\StoreGastoRequest;
+use App\Http\Requests\StorePagoMasivoTurnosRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Models\Gasto;
 use App\Models\MetodoPago;
@@ -101,6 +102,43 @@ class GastoController extends Controller
             'valoresAhorroDefault' => $valoresAhorroDefault,
             'gasto'                => null,
         ]);
+    }
+
+    public function pagoMasivoTurnos(): View
+    {
+        $turnoActivo = $this->turnos->turnoActivo();
+        if ($turnoActivo !== null) {
+            $turnoActivo->load('ventas');
+        }
+
+        $trabajadores   = TrabajadorTurno::activos()->orderBy('nombre')->get();
+        $metodosOptions = $this->metodosOptions();
+
+        return view('gastos.pago-masivo', [
+            'turnoActivo'    => $turnoActivo,
+            'trabajadores'   => $trabajadores,
+            'metodosOptions' => $metodosOptions,
+            'metodoDefault'  => empty($metodosOptions) ? null : array_key_first($metodosOptions),
+        ]);
+    }
+
+    public function pagoMasivoTurnosStore(StorePagoMasivoTurnosRequest $request): RedirectResponse
+    {
+        try {
+            $cantidad = $this->gastos->crearMasivoTurnos(
+                $request->validated()['items'],
+                (int) $request->user()->id,
+            );
+        } catch (DomainException $e) {
+            return redirect()
+                ->route('gastos.pago-masivo')
+                ->withInput()
+                ->withErrors(['gasto' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('gastos.index')
+            ->with('success', $cantidad.' pago(s) de turno registrados correctamente.');
     }
 
     public function store(StoreGastoRequest $request): RedirectResponse

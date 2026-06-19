@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
             TrabajadoresTurnoSeeder::class,
             TurnosCajaVentasGastosSeeder::class,
             PagosAhorroSeeder::class,
+            // Nómina
+            EmpleadoSeeder::class,
+            NominaDemoSeeder::class,
             // Reintento con títulos alternativos para imágenes que Wikipedia no resolvió en el primer paso
             BackfillImagenesFaltantesSeeder::class,
         ]);

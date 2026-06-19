@@ -170,6 +170,71 @@
         </div>
     </div>
 
+    @php
+        $nominaActive = request()->routeIs('nomina.*')
+            || request()->routeIs('nomina-dashboard.*')
+            || request()->routeIs('empleados.*')
+            || request()->routeIs('nomina-pagos.*')
+            || request()->routeIs('prestaciones.*')
+            || request()->routeIs('nomina-ahorros.*');
+    @endphp
+    <div x-data="{ open: @js($nominaActive) }">
+        <button type="button" @click="open = !open"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                       {{ $nominaActive
+                            ? 'bg-primary-100 text-primary-800 shadow-sm dark:bg-primary-900/40 dark:text-primary-100'
+                            : 'text-cream-700 hover:bg-cream-100 hover:text-cream-900 dark:text-cream-300 dark:hover:bg-cream-900 dark:hover:text-cream-50' }}">
+            <x-icon name="banknote" class="w-4 h-4" />
+            <span class="flex-1 text-left">Nómina</span>
+            <x-icon name="chevron-down" class="w-4 h-4 transition-transform duration-200"
+                    x-bind:class="open ? 'rotate-180' : ''" />
+        </button>
+
+        <div x-show="open" x-transition.duration.150ms class="mt-1 ml-3 pl-3 border-l border-cream-200 dark:border-cream-800 space-y-1" x-cloak>
+            @php [$active, $cls] = $navItem('nomina-dashboard.index', 'gauge', 'Dashboard', 'nomina-dashboard.*'); @endphp
+            <a href="{{ route('nomina-dashboard.index') }}" class="{{ $cls }}">
+                <x-icon name="gauge" class="w-4 h-4" />
+                <span class="flex-1">Dashboard</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('nomina.index', 'banknote', 'Nóminas', 'nomina.*'); @endphp
+            <a href="{{ route('nomina.index') }}" class="{{ $cls }}">
+                <x-icon name="banknote" class="w-4 h-4" />
+                <span class="flex-1">Nóminas</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('empleados.index', 'users', 'Empleados', 'empleados.*'); @endphp
+            <a href="{{ route('empleados.index') }}" class="{{ $cls }}">
+                <x-icon name="users" class="w-4 h-4" />
+                <span class="flex-1">Empleados</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('nomina-pagos.masivo', 'credit-card', 'Pago masivo', 'nomina-pagos.*'); @endphp
+            <a href="{{ route('nomina-pagos.masivo') }}" class="{{ $cls }}">
+                <x-icon name="credit-card" class="w-4 h-4" />
+                <span class="flex-1">Pago masivo</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('prestaciones.index', 'receipt', 'Prestaciones', 'prestaciones.*'); @endphp
+            <a href="{{ route('prestaciones.index') }}" class="{{ $cls }}">
+                <x-icon name="receipt" class="w-4 h-4" />
+                <span class="flex-1">Prestaciones</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('nomina-ahorros.index', 'piggy-bank', 'Ahorros', 'nomina-ahorros.*'); @endphp
+            <a href="{{ route('nomina-ahorros.index') }}" class="{{ $cls }}">
+                <x-icon name="piggy-bank" class="w-4 h-4" />
+                <span class="flex-1">Ahorros</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+        </div>
+    </div>
+
     <p class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-cream-500">Cuenta</p>
 
     @php [$active, $cls] = $navItem('profile.edit', 'user-cog', 'Mi perfil'); @endphp

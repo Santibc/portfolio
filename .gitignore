@@ -22,6 +22,9 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Backups de base de datos (datos sensibles — nunca al remoto)
+/backup_*.sql
+*.sql
 # Secretos de despliegue (credenciales SSH/BD de produccion) — NUNCA versionar
 CLAUDE.local.md
 /backup_produccion_*.sql

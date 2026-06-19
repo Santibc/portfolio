@@ -20,6 +20,8 @@ class RegistroMercado extends Model
         'mercado_id',
         'cantidad',
         'valor',
+        'metodo_pago_id',
+        'turno_caja_id',
     ];
 
     protected $casts = [
@@ -35,6 +37,16 @@ class RegistroMercado extends Model
     public function mercado(): BelongsTo
     {
         return $this->belongsTo(Mercado::class, 'mercado_id');
+    }
+
+    public function metodoPago(): BelongsTo
+    {
+        return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
+    }
+
+    public function turno(): BelongsTo
+    {
+        return $this->belongsTo(TurnoCaja::class, 'turno_caja_id');
     }
 
     public function mercadoItem(): HasOne
