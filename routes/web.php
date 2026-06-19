@@ -65,6 +65,11 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion|Contabilida
         Route::get('/clientes/export-pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export-pdf');
         Route::patch('/clientes/{cliente}/toggle-activo', [ClienteController::class, 'toggleActivo'])->name('clientes.toggle-activo')->middleware('role:Administrador');
         Route::resource('clientes', ClienteController::class);
+
+        // Ordenes - Exportacion/PDF listado (Admin/Recepcion/Contabilidad). Rutas literales ANTES de {orden}.
+        Route::get('/ordenes/export-pdf', [OrdenController::class, 'exportPdf'])->name('ordenes.export-pdf');
+        Route::get('/ordenes/pdf-multiple', [OrdenPdfController::class, 'multiple'])->name('ordenes.pdf-multiple');
+        Route::get('/ordenes/pdf-zip', [OrdenPdfController::class, 'zip'])->name('ordenes.pdf-zip');
     });
 
 // ==========================================
@@ -84,11 +89,6 @@ Route::middleware(['auth', 'verified', 'role:Administrador|Recepcion'])
         Route::get('/items/import-history', [CatalogoItemController::class, 'importHistory'])->name('items.import-history');
         Route::get('/items/import-detail/{import}', [CatalogoItemController::class, 'importDetail'])->name('items.import-detail');
         Route::resource('items', CatalogoItemController::class)->except(['show', 'destroy'])->parameters(['items' => 'item']);
-
-        // Ordenes - Exportacion listado (rutas literales ANTES de {orden})
-        Route::get('/ordenes/export-pdf', [OrdenController::class, 'exportPdf'])->name('ordenes.export-pdf');
-        Route::get('/ordenes/pdf-multiple', [OrdenPdfController::class, 'multiple'])->name('ordenes.pdf-multiple');
-        Route::get('/ordenes/pdf-zip', [OrdenPdfController::class, 'zip'])->name('ordenes.pdf-zip');
 
         // Ordenes - Creacion (Wizard)
         Route::get('/ordenes/crear', [OrdenController::class, 'create'])->name('ordenes.crear');

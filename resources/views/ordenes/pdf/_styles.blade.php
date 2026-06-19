@@ -80,7 +80,7 @@ body { font-family: sans-serif; font-size: 10px; color: #1f2937; line-height: 1.
 .estado-anulada { background: #fee2e2; color: #991b1b; }
 .estado-pendiente { background: #f3f4f6; color: #374151; }
 .estado-completada { background: #dcfce7; color: #166534; }
-.estado-entregada { background: #dbeafe; color: #1d4ed8; }
+.estado-entregada { background: #dcfce7; color: #166534; }
 
 /* Financiero */
 .financial-box {

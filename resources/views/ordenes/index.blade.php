@@ -43,7 +43,7 @@
             {{-- Excel disponible para todos los roles --}}
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-excel"
                 href="#" onclick="exportarListado('excel'); return false;">Excel</x-sinden.button>
-            @hasanyrole('Administrador|Recepcion')
+            @hasanyrole('Administrador|Recepcion|Contabilidad')
             <x-sinden.button variant="outline" icon="bi bi-file-earmark-pdf"
                 href="#" onclick="exportarListado('pdf'); return false;">PDF</x-sinden.button>
             <div class="dropdown d-inline-block">
@@ -67,6 +67,8 @@
                     </li>
                 </ul>
             </div>
+            @endhasanyrole
+            @hasanyrole('Administrador|Recepcion')
             <x-sinden.button variant="primary" icon="bi bi-plus-lg"
                 href="{{ route('recepcion.ordenes.crear') }}">Nueva Orden</x-sinden.button>
             @endhasanyrole
