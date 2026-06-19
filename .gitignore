@@ -21,3 +21,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Secretos de despliegue (credenciales SSH/BD de produccion) — NUNCA versionar
+CLAUDE.local.md
+/backup_produccion_*.sql
+/backup_produccion_*.sql.gz
