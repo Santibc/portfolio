@@ -31,6 +31,7 @@
                         <tr>
                             <th>Orden #</th>
                             <th>Cliente</th>
+                            <th>Fecha Creacion</th>
                             <th>Fecha Entrega</th>
                             <th>Mis Piezas</th>
                             <th>Estado</th>
@@ -54,6 +55,7 @@ $(function() {
         columns: [
             { data: 'numero_orden', name: 'numero_orden', className: 'fw-semibold' },
             { data: 'cliente_nombre', name: 'cliente_nombre' },
+            { data: 'fecha_creacion_fmt', name: 'created_at', className: 'text-center' },
             { data: 'fecha_entrega_fmt', name: 'fecha_entrega', className: 'text-center' },
             { data: 'mis_piezas', name: 'mis_piezas', orderable: false, searchable: false, className: 'text-center' },
             { data: 'estado', name: 'estado_trabajo', orderable: true, searchable: false, className: 'text-center' },

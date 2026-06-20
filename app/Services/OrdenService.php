@@ -277,7 +277,7 @@ class OrdenService
                 if (empty($item['cantidad']) || $item['cantidad'] <= 0) {
                     $errores[] = "Item {$num}: cantidad debe ser mayor a 0.";
                 }
-                if (!isset($item['precio_unitario']) || $item['precio_unitario'] < 0) {
+                if (!isset($item['precio_unitario']) || $this->normalizarMonto($item['precio_unitario']) < 0) {
                     $errores[] = "Item {$num}: precio no valido.";
                 }
             }
@@ -298,6 +298,25 @@ class OrdenService
     // ========================================
 
     /**
+     * Normaliza un monto que puede llegar como numero o como string formateado
+     * en pesos (ej. "1.500.000,50"). Garantiza que el resto del sistema reciba
+     * siempre un float, sin importar el formato del input del frontend.
+     */
+    protected function normalizarMonto($valor): float
+    {
+        if (is_numeric($valor)) {
+            return (float) $valor;
+        }
+        if (is_string($valor)) {
+            // Quitar simbolos y separadores de miles (.), coma decimal -> punto
+            $limpio = str_replace(['$', ' ', '.'], '', $valor);
+            $limpio = str_replace(',', '.', $limpio);
+            return is_numeric($limpio) ? (float) $limpio : 0.0;
+        }
+        return 0.0;
+    }
+
+    /**
      * Sincroniza items: delete-and-recreate.
      */
     protected function sincronizarItems(Orden $orden, array $items): void
@@ -306,7 +325,7 @@ class OrdenService
 
         foreach ($items as $item) {
             $cantidad = floatval($item['cantidad'] ?? 0);
-            $precioUnitario = floatval($item['precio_unitario'] ?? 0);
+            $precioUnitario = $this->normalizarMonto($item['precio_unitario'] ?? 0);
             $porcentajeIva = floatval($item['porcentaje_iva'] ?? 19);
             $descuentoPorcentaje = max(0, min(100, floatval($item['descuento_porcentaje'] ?? 0)));
 
@@ -609,7 +628,7 @@ class OrdenService
     {
         // Total recalculado a partir de items recien sincronizados (BD)
         $totalCalculado = (float) $orden->items()->sum('subtotal') + (float) $orden->items()->sum('monto_iva');
-        $sumaSolicitada = (float) collect($pagos)->sum(fn($p) => floatval($p['monto'] ?? 0));
+        $sumaSolicitada = (float) collect($pagos)->sum(fn($p) => $this->normalizarMonto($p['monto'] ?? 0));
         if ($sumaSolicitada > $totalCalculado + 0.005) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'pagos' => [
@@ -624,7 +643,7 @@ class OrdenService
         $autoAprueba = $user->hasAnyRole(['Administrador', 'Contabilidad']);
 
         foreach ($pagos as $pago) {
-            $monto = floatval($pago['monto'] ?? 0);
+            $monto = $this->normalizarMonto($pago['monto'] ?? 0);
             if ($monto <= 0) continue;
 
             Pago::create([

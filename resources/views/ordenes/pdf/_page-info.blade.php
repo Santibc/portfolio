@@ -10,8 +10,9 @@
             @endif
         </td>
         <td style="width: 60%; text-align: right;">
-            <div class="orden-title">ORDEN DE TRABAJO</div>
-            <div class="orden-numero">{{ $orden->numero_orden ?? 'BORRADOR #' . $orden->id }}</div>
+            @php $esBorrador = $orden->estado_trabajo === 'borrador'; @endphp
+            <div class="orden-title">{{ $esBorrador ? 'COTIZACIÓN' : 'ORDEN DE TRABAJO' }}</div>
+            <div class="orden-numero">{{ $orden->numero_orden ?? 'COTIZACIÓN #' . $orden->id }}</div>
             <div style="font-size: 9px; color: #6b7280; margin-top: 3px;">
                 @php
                     $labelTrabajo = [

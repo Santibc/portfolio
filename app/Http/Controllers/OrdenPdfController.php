@@ -21,7 +21,9 @@ class OrdenPdfController extends Controller
         $pdf = Pdf::loadView('ordenes.pdf.orden', $data)
             ->setPaper('letter', 'portrait');
 
-        $filename = 'Orden-' . ($orden->numero_orden ?? 'Borrador-' . $orden->id) . '.pdf';
+        $filename = $orden->estado_trabajo === 'borrador'
+            ? 'Cotizacion-Borrador-' . $orden->id . '.pdf'
+            : 'Orden-' . ($orden->numero_orden ?? 'Borrador-' . $orden->id) . '.pdf';
 
         if ($request->input('download', 1)) {
             return $pdf->download($filename);

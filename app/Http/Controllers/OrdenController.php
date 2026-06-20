@@ -376,9 +376,13 @@ class OrdenController extends Controller
                         $html .= '<button type="button" class="action-btn" title="Copiar" onclick="copiarOrden(' . $o->id . ')"><i class="bi bi-copy"></i></button>';
                     }
 
-                    if (!in_array($o->estado_trabajo, ['anulada', 'borrador'])) {
+                    if ($o->estado_trabajo !== 'anulada') {
                         $pdfUrl = route('recepcion.ordenes.pdf', $o);
-                        $html .= '<a href="' . $pdfUrl . '" class="action-btn" title="PDF" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>';
+                        $pdfTitle = $o->estado_trabajo === 'borrador' ? 'Cotizacion PDF' : 'PDF';
+                        $html .= '<a href="' . $pdfUrl . '" class="action-btn" title="' . $pdfTitle . '" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>';
+                    }
+
+                    if (!in_array($o->estado_trabajo, ['anulada', 'borrador'])) {
                         if ($puedeEscribir) {
                             $html .= '<button type="button" class="action-btn delete" title="Anular" onclick="anularOrden(' . $o->id . ', \'' . addslashes($o->numero_orden) . '\')"><i class="bi bi-x-circle"></i></button>';
                         }

@@ -48,7 +48,7 @@ function cargarItems() {
         $row.find('.item-codigo').val(item.codigo || '');
         $row.find('.item-descripcion').val(item.descripcion || '');
         $row.find('.item-cantidad').val(item.cantidad || 1).each(function(){ autoExpandCantidad(this); });
-        $row.find('.item-precio').val(item.precio_unitario || 0);
+        setValorMoneda($row.find('.item-precio'), item.precio_unitario || 0);
         $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
         $row.find('.item-descuento').val(parseInt(item.descuento_porcentaje, 10) || 0).each(function(){ autoExpandCantidad(this); });
         $row.find('.item-categoria').val(item.categoria || 'servicio');
@@ -151,7 +151,7 @@ function cargarPagos() {
         var idx = wizardState.pagoCounter;
         var $row = $('#pagoRow_' + idx);
 
-        $row.find('.pago-monto').val(pago.monto || 0);
+        setValorMoneda($row.find('.pago-monto'), pago.monto || 0);
         var $metodoSel = $row.find('.pago-metodo');
         var metodo = pago.metodo_pago || (window.TIPOS_PAGO && window.TIPOS_PAGO[0] ? window.TIPOS_PAGO[0].codigo : 'efectivo');
         // Si el codigo historico ya no esta en el select (tipo desactivado/eliminado), agregarlo como option para preservar el valor.

@@ -199,6 +199,55 @@ function parseCOP(str) {
     return parseFloat(String(str).replace(/[$.]/g, '').replace(',', '.')) || 0;
 }
 
+/**
+ * Formatea en vivo un input de moneda mientras el usuario escribe.
+ * Miles separados por punto; decimales opcionales (max 2) tras una coma.
+ * Los decimales NO aparecen por defecto: solo si el usuario los escribe.
+ */
+function formatearMoneda(input) {
+    var posIni = input.selectionStart;
+    var largoIni = input.value.length;
+
+    // Dejar solo digitos y comas
+    var val = input.value.replace(/[^0-9,]/g, '');
+    var primeraComa = val.indexOf(',');
+    var entero, decimal = null;
+    if (primeraComa !== -1) {
+        entero = val.slice(0, primeraComa).replace(/,/g, '');
+        decimal = val.slice(primeraComa + 1).replace(/,/g, '').slice(0, 2);
+    } else {
+        entero = val;
+    }
+    // Quitar ceros a la izquierda dejando al menos un digito
+    entero = entero.replace(/^0+(?=\d)/, '');
+    var enteroFmt = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    var resultado = enteroFmt;
+    if (decimal !== null) {
+        resultado += ',' + decimal;
+    }
+    input.value = resultado;
+
+    // Reposicionar el cursor compensando el cambio de longitud
+    var nuevaPos = posIni + (input.value.length - largoIni);
+    if (nuevaPos < 0) nuevaPos = 0;
+    if (nuevaPos > input.value.length) nuevaPos = input.value.length;
+    try { input.setSelectionRange(nuevaPos, nuevaPos); } catch (e) { /* noop */ }
+}
+
+/**
+ * Asigna un valor numerico a un input de moneda con formato de pesos.
+ * Sin decimales si el valor es entero; los muestra (max 2) si existen.
+ */
+function setValorMoneda($el, num) {
+    num = parseFloat(num);
+    if (isNaN(num)) num = 0;
+    var str = num.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+    var partes = str.split('.');
+    var enteroFmt = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    $el.val(enteroFmt + (partes[1] ? ',' + partes[1] : ''));
+}
+
 function handleAjaxError(xhr, contexto) {
     var msg = 'Error al ' + contexto + '.';
     if (xhr.responseJSON) {
@@ -382,7 +431,7 @@ function agregarFilaItem(opts) {
         + '</td>'
         + '<td><input type="text" class="form-control form-control-sm item-descripcion" placeholder="Descripcion del item"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-center item-cantidad cantidad-auto-expand" value="1" min="0.01" step="0.01" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
-        + '<td><input type="number" class="form-control form-control-sm text-end item-precio" value="0" min="0" step="0.01" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
+        + '<td><input type="text" inputmode="decimal" class="form-control form-control-sm text-end item-precio money-input" value="0" oninput="formatearMoneda(this);calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-center"><input type="checkbox" class="form-check-input item-iva-check" checked onchange="calcularTotalFila(' + idx + ')"></td>'
         + '<td><input type="number" class="form-control form-control-sm text-center item-descuento cantidad-auto-expand" value="0" min="0" max="100" step="1" inputmode="numeric" style="width:75px" onchange="calcularTotalFila(' + idx + ')" onkeyup="calcularTotalFila(' + idx + ')"></td>'
         + '<td class="text-end fw-semibold item-subtotal-display">$0</td>'
@@ -468,7 +517,7 @@ function seleccionarItemCatalogo(idx, item) {
     $row.find('.item-codigo').val(item.codigo).prop('readonly', true).addClass('item-readonly');
     $row.find('.item-catalogo-id').val(item.id);
     $row.find('.item-descripcion').val(item.descripcion).prop('readonly', true).addClass('item-readonly');
-    $row.find('.item-precio').val(item.precio_unitario);
+    setValorMoneda($row.find('.item-precio'), item.precio_unitario);
     $row.find('.item-iva-check').prop('checked', parseFloat(item.porcentaje_iva) > 0);
     $row.find('.item-categoria').val(item.categoria);
     $row.find('.btn-desvincular-item').show();
@@ -489,7 +538,7 @@ function desvincularItemCatalogo(idx) {
 function calcularTotalFila(idx) {
     var $row = $('#itemRow_' + idx);
     var cantidad = parseFloat($row.find('.item-cantidad').val()) || 0;
-    var precio = parseFloat($row.find('.item-precio').val()) || 0;
+    var precio = parseCOP($row.find('.item-precio').val());
     var base = cantidad * precio;
     $row.find('.item-subtotal-display').text(formatCOP(base));
     recalcularTotales();
@@ -502,7 +551,7 @@ function recalcularTotales() {
 
     $('#tbodyItems tr').each(function() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
-        var precio = parseFloat($(this).find('.item-precio').val()) || 0;
+        var precio = parseCOP($(this).find('.item-precio').val());
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
         var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
         var base = cantidad * precio;
@@ -1243,7 +1292,7 @@ function agregarFilaPago(opts) {
         + '  <div class="col-sm-4">'
         + '    <div class="input-group input-group-sm">'
         + '      <span class="input-group-text">$</span>'
-        + '      <input type="number" class="form-control pago-monto" placeholder="Monto" min="0.01" step="0.01" onchange="recalcularSaldo()" onkeyup="recalcularSaldo()">'
+        + '      <input type="text" inputmode="decimal" class="form-control pago-monto money-input" placeholder="Monto" oninput="formatearMoneda(this);recalcularSaldo()">'
         + '    </div>'
         + '  </div>'
         + '  <div class="col-sm-4">'
@@ -1290,14 +1339,14 @@ function eliminarFilaPago(idx) {
 function recalcularSaldo() {
     var totalAbonado = 0;
     $('#pagosContainer .pago-monto').each(function() {
-        totalAbonado += parseFloat($(this).val()) || 0;
+        totalAbonado += parseCOP($(this).val());
     });
 
     // Obtener total con retenciones de items (lo que paga el cliente)
     var totalGeneral = 0;
     $('#tbodyItems tr').each(function() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
-        var precio = parseFloat($(this).find('.item-precio').val()) || 0;
+        var precio = parseCOP($(this).find('.item-precio').val());
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
         var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
         var base = cantidad * precio;
@@ -1353,7 +1402,7 @@ function recopilarDatosFormulario() {
             codigo: $(this).find('.item-codigo').val(),
             descripcion: $(this).find('.item-descripcion').val(),
             cantidad: parseFloat($(this).find('.item-cantidad').val()) || 0,
-            precio_unitario: parseFloat($(this).find('.item-precio').val()) || 0,
+            precio_unitario: parseCOP($(this).find('.item-precio').val()),
             porcentaje_iva: $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0,
             descuento_porcentaje: Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0)),
             categoria: $(this).find('.item-categoria').val() || 'servicio'
@@ -1399,7 +1448,7 @@ function recopilarDatosFormulario() {
 
     var pagos = [];
     $('#pagosContainer .pago-row').each(function() {
-        var monto = parseFloat($(this).find('.pago-monto').val()) || 0;
+        var monto = parseCOP($(this).find('.pago-monto').val());
         if (monto > 0) {
             pagos.push({
                 monto: monto,
@@ -1604,13 +1653,13 @@ function validarParaGenerar(data) {
 function validarSobrepagoWizard() {
     var totalAbonado = 0;
     $('#pagosContainer .pago-monto').each(function() {
-        totalAbonado += parseFloat($(this).val()) || 0;
+        totalAbonado += parseCOP($(this).val());
     });
 
     var totalGeneral = 0;
     $('#tbodyItems tr').each(function() {
         var cantidad = parseFloat($(this).find('.item-cantidad').val()) || 0;
-        var precio = parseFloat($(this).find('.item-precio').val()) || 0;
+        var precio = parseCOP($(this).find('.item-precio').val());
         var iva = $(this).find('.item-iva-check').is(':checked') ? WIZARD_CONFIG.ivaDefecto : 0;
         var descPct = Math.max(0, Math.min(100, parseFloat($(this).find('.item-descuento').val()) || 0));
         var base = cantidad * precio;

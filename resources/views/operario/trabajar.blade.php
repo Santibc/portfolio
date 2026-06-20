@@ -55,6 +55,40 @@
         </div>
     </div>
 
+    {{-- Documentos adjuntos (subidos por recepcion) --}}
+    @if($orden->documentos->isNotEmpty())
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0 px-4 pt-3 pb-0">
+            <h6 class="mb-0 fw-bold">
+                <i class="bi bi-paperclip me-1"></i>Documentos adjuntos
+                <span class="badge bg-secondary ms-1">{{ $orden->documentos->count() }}</span>
+            </h6>
+        </div>
+        <div class="card-body px-4 py-3">
+            <div class="row g-2">
+                @foreach($orden->documentos as $doc)
+                <div class="col-md-6 col-lg-4">
+                    <a href="{{ route('recepcion.ordenes.documentos.descargar', ['orden' => $orden->id, 'documento' => $doc->id]) }}"
+                       class="d-flex align-items-center gap-2 p-2 border rounded text-decoration-none text-body doc-descargar"
+                       title="Descargar {{ $doc->nombre_original }}">
+                        <i class="bi {{ $doc->icono }} fs-4"></i>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="text-truncate fw-semibold">{{ $doc->nombre_original }}</div>
+                            <small class="text-muted">
+                                {{ $doc->tamano_legible }}
+                                @if($doc->subidoPorUsuario) &middot; {{ $doc->subidoPorUsuario->name }} @endif
+                                @if($doc->created_at) &middot; {{ $doc->created_at->format('d/m/Y') }} @endif
+                            </small>
+                        </div>
+                        <i class="bi bi-download text-primary"></i>
+                    </a>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Piezas de trabajo --}}
     @foreach($piezas as $pieza)
     <div class="pieza-card pieza-trabajo mb-4" id="pieza-{{ $pieza->id }}" data-pieza-id="{{ $pieza->id }}" data-porcentaje-original="{{ (float) $pieza->porcentaje_avance }}">

@@ -78,6 +78,9 @@ class OperarioController extends Controller
                 ->addColumn('cliente_nombre', function ($orden) {
                     return $orden->cliente->nombre ?? 'Sin cliente';
                 })
+                ->addColumn('fecha_creacion_fmt', function ($orden) {
+                    return $orden->created_at ? $orden->created_at->format('d/m/Y') : '-';
+                })
                 ->addColumn('fecha_entrega_fmt', function ($orden) {
                     return $orden->fecha_entrega ? $orden->fecha_entrega->format('d/m/Y') : '-';
                 })
@@ -184,8 +187,8 @@ class OperarioController extends Controller
         // Intentar adquirir bloqueo
         $lockResult = $this->bloqueoService->bloquear($orden, $user);
 
-        // Cargar datos de la orden
-        $orden->load('cliente');
+        // Cargar datos de la orden + documentos adjuntos (subidos por recepcion)
+        $orden->load(['cliente', 'documentos.subidoPorUsuario']);
 
         // Obtener operarios para dropdown de transferencia
         $operarios = User::role('Operario')
