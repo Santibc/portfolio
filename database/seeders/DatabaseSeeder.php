@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             TrabajadoresTurnoSeeder::class,
             TurnosCajaVentasGastosSeeder::class,
             PagosAhorroSeeder::class,
+            // Gastos fijos mensuales
+            ConceptosGastoFijoSeeder::class,
             // Nómina
             EmpleadoSeeder::class,
             NominaDemoSeeder::class,

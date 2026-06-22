@@ -20,6 +20,13 @@
         @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
     </a>
 
+    @php [$active, $cls] = $navItem('consolidado.index', 'pie-chart', 'Consolidado', 'consolidado.*'); @endphp
+    <a href="{{ route('consolidado.index') }}" class="{{ $cls }}">
+        <x-icon name="pie-chart" class="w-4 h-4" />
+        <span class="flex-1">Consolidado</span>
+        @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+    </a>
+
     @php
         $mercadoActive = request()->routeIs('productos-mercado.*')
             || request()->routeIs('registro-mercado.*')
@@ -230,6 +237,45 @@
             <a href="{{ route('nomina-ahorros.index') }}" class="{{ $cls }}">
                 <x-icon name="piggy-bank" class="w-4 h-4" />
                 <span class="flex-1">Ahorros</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+        </div>
+    </div>
+
+    @php
+        $gastosFijosActive = request()->routeIs('gastos-fijos.*');
+    @endphp
+    <div x-data="{ open: @js($gastosFijosActive) }">
+        <button type="button" @click="open = !open"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                       {{ $gastosFijosActive
+                            ? 'bg-primary-100 text-primary-800 shadow-sm dark:bg-primary-900/40 dark:text-primary-100'
+                            : 'text-cream-700 hover:bg-cream-100 hover:text-cream-900 dark:text-cream-300 dark:hover:bg-cream-900 dark:hover:text-cream-50' }}">
+            <x-icon name="receipt" class="w-4 h-4" />
+            <span class="flex-1 text-left">Gastos fijos</span>
+            <x-icon name="chevron-down" class="w-4 h-4 transition-transform duration-200"
+                    x-bind:class="open ? 'rotate-180' : ''" />
+        </button>
+
+        <div x-show="open" x-transition.duration.150ms class="mt-1 ml-3 pl-3 border-l border-cream-200 dark:border-cream-800 space-y-1" x-cloak>
+            @php
+                $registrarActive = request()->routeIs('gastos-fijos.index', 'gastos-fijos.create', 'gastos-fijos.edit');
+                $registrarCls = 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ' . (
+                    $registrarActive
+                        ? 'bg-primary-100 text-primary-800 shadow-sm dark:bg-primary-900/40 dark:text-primary-100'
+                        : 'text-cream-700 hover:bg-cream-100 hover:text-cream-900 dark:text-cream-300 dark:hover:bg-cream-900 dark:hover:text-cream-50'
+                );
+            @endphp
+            <a href="{{ route('gastos-fijos.index') }}" class="{{ $registrarCls }}">
+                <x-icon name="receipt" class="w-4 h-4" />
+                <span class="flex-1">Registrar</span>
+                @if ($registrarActive)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('gastos-fijos.conceptos.index', 'settings', 'Conceptos', 'gastos-fijos.conceptos.*'); @endphp
+            <a href="{{ route('gastos-fijos.conceptos.index') }}" class="{{ $cls }}">
+                <x-icon name="settings" class="w-4 h-4" />
+                <span class="flex-1">Conceptos</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
         </div>
