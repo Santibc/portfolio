@@ -95,6 +95,51 @@ function confirmarAnulacion() {
 }
 
 // ==========================================
+// Eliminar Borrador
+// ==========================================
+function eliminarBorrador() {
+    Swal.fire({
+        title: 'Borrar borrador?',
+        html: 'Esta accion eliminara permanentemente este borrador y todos sus items, bosquejos, piezas y archivos adjuntos.<br><br><span class="text-danger fw-semibold">No se puede deshacer.</span>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Si, borrar',
+        cancelButtonText: 'Cancelar'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({ title: 'Borrando...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+
+        $.ajax({
+            url: ROUTES_DETALLE.destroy,
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Borrador eliminado',
+                        text: response.message || 'El borrador ha sido eliminado.',
+                        confirmButtonColor: '#4A7C59'
+                    }).then(function() {
+                        window.location.href = ROUTES_DETALLE.index;
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: response.message || 'No se pudo eliminar.' });
+                }
+            },
+            error: function(xhr) {
+                var msg = 'Error al eliminar el borrador.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                Swal.fire({ icon: 'error', title: 'Error', text: msg });
+            }
+        });
+    });
+}
+
+// ==========================================
 // Registrar Pago
 // ==========================================
 function registrarPago() {

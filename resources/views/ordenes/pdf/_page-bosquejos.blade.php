@@ -3,7 +3,6 @@
     <div class="section-title" style="margin-bottom: 12px;">BOSQUEJOS</div>
 
     @php $cols = $bosquejosCols; @endphp
-    <div class="avoid-break-section">
     <table class="bosquejos-table">
         @foreach($bosquejosData->chunk($cols) as $row)
             <tr>
@@ -26,5 +25,4 @@
             </tr>
         @endforeach
     </table>
-    </div>
 </div>

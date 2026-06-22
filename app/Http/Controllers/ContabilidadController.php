@@ -989,9 +989,9 @@ class ContabilidadController extends Controller
     protected function badgeMetodoPago(string $metodo): string
     {
         $mapa = TipoPago::mapaBadges();
-        $cfg = $mapa[$metodo] ?? ['color' => 'secondary', 'icono' => 'bi-three-dots', 'nombre' => ucfirst($metodo), 'etiqueta' => ucfirst($metodo)];
-        $bgClass = $cfg['color'] === 'purple' ? 'bg-purple' : 'bg-' . $cfg['color'];
+        $sec = TipoPago::paletaColores()['secondary'];
+        $cfg = $mapa[$metodo] ?? ['icono' => 'bi-three-dots', 'nombre' => ucfirst($metodo), 'etiqueta' => ucfirst($metodo), 'hex' => $sec['hex'], 'bg' => $sec['bg']];
         $texto = $cfg['etiqueta'] ?? $cfg['nombre'];
-        return '<span class="badge ' . $bgClass . ' bg-opacity-10 text-dark border"><i class="bi ' . $cfg['icono'] . ' me-1"></i>' . e($texto) . '</span>';
+        return '<span class="badge border" style="background-color: ' . $cfg['bg'] . '; color: ' . $cfg['hex'] . '; border-color: ' . $cfg['hex'] . '33 !important;"><i class="bi ' . $cfg['icono'] . ' me-1"></i>' . e($texto) . '</span>';
     }
 }

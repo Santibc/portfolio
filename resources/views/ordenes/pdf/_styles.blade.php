@@ -108,6 +108,7 @@ body { font-family: sans-serif; font-size: 10px; color: #1f2937; line-height: 1.
 
 /* Bosquejos grid */
 .bosquejos-table { width: 100%; border-collapse: collapse; }
+.bosquejos-table tr { page-break-inside: avoid; }
 .bosquejos-table td {
     text-align: center;
     padding: 8px;

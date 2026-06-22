@@ -32,13 +32,22 @@
                 </button>
             @endif
             @endhasanyrole
-            @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
+            @if($orden->estado_trabajo !== 'anulada')
                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDescargarPdf">
                     <i class="bi bi-file-earmark-pdf me-1"></i>PDF
                 </button>
+            @endif
+            @if(!in_array($orden->estado_trabajo, ['anulada', 'borrador']))
                 @hasanyrole('Administrador|Recepcion')
                 <button type="button" class="btn btn-outline-danger" onclick="$('#modalAnularOrden').modal('show')">
                     <i class="bi bi-x-circle me-1"></i>Anular
+                </button>
+                @endhasanyrole
+            @endif
+            @if($orden->estado_trabajo === 'borrador')
+                @hasanyrole('Administrador|Recepcion')
+                <button type="button" class="btn btn-outline-danger" onclick="eliminarBorrador()">
+                    <i class="bi bi-trash me-1"></i>Borrar
                 </button>
                 @endhasanyrole
             @endif
@@ -288,6 +297,7 @@ var ORDEN_SALDO_DISPONIBLE = {{ $orden->montoDisponibleNuevoPago() }};
 var ROUTES_DETALLE = {
     copiar: '{{ route("recepcion.ordenes.copiar", $orden) }}',
     anular: '{{ route("recepcion.ordenes.anular", $orden) }}',
+    destroy: '{{ route("recepcion.ordenes.destroy", $orden) }}',
     comentarios: '{{ route("recepcion.ordenes.comentarios.store", $orden) }}',
     pagos: '{{ $esContabilidad ? route("contabilidad.ordenes.pagos.store", $orden) : route("recepcion.ordenes.pagos.store", $orden) }}',
     index: '{{ route("recepcion.ordenes.index") }}',

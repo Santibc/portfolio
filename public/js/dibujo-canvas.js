@@ -55,6 +55,57 @@
     var STROKE_COMMIT_PX = 10;      // movimiento minimo para considerar el trazo deliberado
 
     // =============================================
+    // SCROLL LOCK (evitar auto-scroll al enfocar el textarea de texto)
+    // =============================================
+    // Al entrar en edicion de texto, Fabric crea/enfoca un <textarea> oculto.
+    // El navegador desplaza TODOS los contenedores con scroll (la ventana y el
+    // .modal de Bootstrap) para "traerlo a la vista", moviendo el lienzo solo.
+    // Capturamos el scroll de cada ancestro desplazable y lo restauramos.
+    function capturarScrollAncestros(el) {
+        var saved = [];
+        var node = el;
+        while (node && node !== document.body && node !== document.documentElement) {
+            // Guardamos cada ancestro (incluso los que estan en 0) por si el
+            // navegador los desplaza al enfocar el textarea.
+            saved.push({ el: node, top: node.scrollTop, left: node.scrollLeft });
+            node = node.parentElement;
+        }
+        saved.push({
+            win: true,
+            top: window.scrollY || window.pageYOffset,
+            left: window.scrollX || window.pageXOffset
+        });
+        return saved;
+    }
+
+    function restaurarScrollAncestros(saved) {
+        if (!saved) return;
+        saved.forEach(function(s) {
+            if (s.win) {
+                window.scrollTo(s.left, s.top);
+            } else {
+                s.el.scrollTop = s.top;
+                s.el.scrollLeft = s.left;
+            }
+        });
+    }
+
+    // Snapshot del scroll tomado ANTES de entrar en edicion de texto. Fabric
+    // enfoca su textarea oculto internamente (sin preventScroll) dentro de
+    // enterEditing(), antes de que se dispare 'text:editing:entered', por lo que
+    // hay que capturar la posicion previa y restaurarla en cada oportunidad.
+    var textScrollSnapshot = null;
+
+    // Restaura el snapshot ahora y en los siguientes frames (el navegador puede
+    // desplazar de forma asincrona, p.ej. al abrir el teclado en tablets).
+    function restaurarSnapshotScroll() {
+        if (!textScrollSnapshot) return;
+        restaurarScrollAncestros(textScrollSnapshot);
+        requestAnimationFrame(function() { restaurarScrollAncestros(textScrollSnapshot); });
+        setTimeout(function() { restaurarScrollAncestros(textScrollSnapshot); }, 0);
+    }
+
+    // =============================================
     // INICIALIZACION
     // =============================================
     window.initDibujoCanvas = function() {
@@ -290,6 +341,12 @@
 
             // Texto: crear IText al hacer click
             if (currentTool === 'text') {
+                // Capturar el scroll YA: tanto al crear un texto nuevo como al
+                // reeditar uno existente (Fabric enfoca su textarea y desplazaria
+                // el modal). Se restaura desde 'text:editing:entered'.
+                textScrollSnapshot = capturarScrollAncestros(
+                    document.getElementById('dibujoCanvasWrapper') || document.body
+                );
                 // Si hacemos click sobre un IText existente, dejar que Fabric lo maneje
                 var clickTarget = fabricCanvas.findTarget(e);
                 if (clickTarget && clickTarget.type === 'i-text') return;
@@ -312,11 +369,9 @@
                 setTimeout(function() {
                     if (itext) {
                         var wrapper = document.getElementById('dibujoCanvasWrapper');
-                        // Guardar el scroll del wrapper: al enfocar el textarea el navegador
-                        // intenta "traerlo a la vista" y desplaza el lienzo. Lo restauramos.
-                        var sTop = wrapper ? wrapper.scrollTop : 0;
-                        var sLeft = wrapper ? wrapper.scrollLeft : 0;
-
+                        // Capturar el scroll ANTES de enterEditing(): Fabric enfoca su
+                        // textarea internamente (sin preventScroll) y eso desplazaria el modal.
+                        textScrollSnapshot = capturarScrollAncestros(wrapper || document.body);
                         itext.enterEditing();
                         // Fabric.js crea el hidden textarea en <body>, pero Bootstrap modal
                         // atrapa el focus dentro del modal. Moverlo dentro del modal.
@@ -327,12 +382,8 @@
                             try { itext.hiddenTextarea.focus({ preventScroll: true }); }
                             catch (err) { itext.hiddenTextarea.focus(); }
                         }
-
-                        // Restaurar la posicion del lienzo (no se debe mover al poner texto)
-                        if (wrapper) {
-                            wrapper.scrollTop = sTop;
-                            wrapper.scrollLeft = sLeft;
-                        }
+                        // Restaurar la posicion previa (Fabric ya pudo haber desplazado).
+                        restaurarSnapshotScroll();
                     }
                 }, 100);
                 return;
@@ -546,7 +597,11 @@
                 if (wrapper && itext.hiddenTextarea.parentElement !== wrapper) {
                     wrapper.appendChild(itext.hiddenTextarea);
                 }
-                itext.hiddenTextarea.focus();
+                try { itext.hiddenTextarea.focus({ preventScroll: true }); }
+                catch (err) { itext.hiddenTextarea.focus(); }
+                // Restaurar el scroll capturado antes de entrar en edicion (este
+                // handler corre DENTRO de enterEditing, despues del focus interno).
+                restaurarSnapshotScroll();
             }
         });
 
