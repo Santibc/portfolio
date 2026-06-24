@@ -82,12 +82,19 @@
     <x-card padding="p-0" class="mb-5">
         <div x-data="{
             rows: @js($desglosePorItem),
+            search: '',
             sortKey: 'total', sortAsc: false,
-            page: 1, perPage: 25,
+            page: 1, perPage: 5,
+            init() { this.$watch('search', () => { this.page = 1; }); },
             sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get filtered() {
+                if (!this.search) return this.rows;
+                const q = this.search.toLowerCase();
+                return this.rows.filter(r => [r.nombre, r.cantidad, r.total].some(v => String(v).toLowerCase().includes(q)));
+            },
             get sorted() {
                 const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
-                return [...this.rows].sort((a, b) => {
+                return [...this.filtered].sort((a, b) => {
                     const x = a[k], y = b[k];
                     return (typeof x === 'number' && typeof y === 'number')
                         ? (x - y) * dir
@@ -97,16 +104,22 @@
             get effPerPage() { return this.perPage === 0 ? Math.max(this.sorted.length, 1) : this.perPage; },
             get pages() { return Math.max(1, Math.ceil(this.sorted.length / this.effPerPage)); },
             get pageRows() { const s = (this.page - 1) * this.effPerPage; return this.sorted.slice(s, s + this.effPerPage); },
-            get totalCantidad() { return this.rows.reduce((a, r) => a + r.cantidad, 0); },
-            get totalTotal() { return this.rows.reduce((a, r) => a + r.total, 0); },
+            get totalCantidad() { return this.filtered.reduce((a, r) => a + r.cantidad, 0); },
+            get totalTotal() { return this.filtered.reduce((a, r) => a + r.total, 0); },
             fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
         }">
-        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
+        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex flex-wrap items-center justify-between gap-3">
             <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="utensils-crossed" class="w-4 h-4" />
                 Items vendidos
                 <span class="text-xs font-normal text-cream-600 dark:text-cream-400" x-text="`(${rows.length})`"></span>
             </h3>
+            <div class="relative w-full sm:w-auto sm:max-w-[14rem]">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-cream-500">
+                    <x-icon name="search" class="w-4 h-4" />
+                </span>
+                <input x-model.debounce.200ms="search" type="search" placeholder="Buscar item..." class="w-full rounded-xl border-cream-300 bg-white pl-9 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100" />
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -150,13 +163,12 @@
                             <td class="px-4 py-2.5 text-right tabular-nums font-semibold text-cream-900 dark:text-cream-50" x-text="'$ ' + fmt(item.total)"></td>
                         </tr>
                     </template>
-                    <tr x-show="rows.length === 0">
-                        <td colspan="3" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
-                            No se vendieron items en este turno todavía.
-                        </td>
+                    <tr x-show="filtered.length === 0">
+                        <td colspan="3" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400"
+                            x-text="search ? 'Sin resultados para la búsqueda.' : 'No se vendieron items en este turno todavía.'"></td>
                     </tr>
                 </tbody>
-                <tfoot x-show="rows.length > 0" class="border-t-2 border-cream-200 dark:border-cream-800 bg-cream-50 dark:bg-cream-900/30">
+                <tfoot x-show="filtered.length > 0" class="border-t-2 border-cream-200 dark:border-cream-800 bg-cream-50 dark:bg-cream-900/30">
                     <tr class="font-semibold text-cream-900 dark:text-cream-50">
                         <td class="px-4 py-2.5 whitespace-nowrap">Total</td>
                         <td class="px-4 py-2.5 text-right tabular-nums" x-text="fmt(totalCantidad)"></td>
@@ -171,6 +183,7 @@
             <label class="flex items-center gap-2 text-xs text-cream-600 dark:text-cream-400">
                 Filas por página
                 <select x-model.number="perPage" @change="page = 1" class="rounded-lg border-cream-300 bg-white py-1 pl-2 pr-7 text-xs focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                    <option :value="5">5</option>
                     <option :value="10">10</option>
                     <option :value="25">25</option>
                     <option :value="50">50</option>
@@ -199,12 +212,24 @@
             ventas: @js($ventasData),
             csrf: '{{ csrf_token() }}',
             open: null,
+            search: '',
             sortKey: 'ts', sortAsc: false,
-            page: 1, perPage: 25,
+            page: 1, perPage: 5,
+            init() { this.$watch('search', () => { this.page = 1; this.open = null; }); },
             sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get filtered() {
+                if (!this.search) return this.ventas;
+                const q = this.search.toLowerCase();
+                return this.ventas.filter(v => {
+                    const base = [v.hora, v.cajero, v.total_fmt, v.cambio_fmt, v.notas].join(' ');
+                    const pagos = (v.pagos || []).map(p => (p.nombre || '') + ' ' + (p.referencia || '')).join(' ');
+                    const items = (v.items || []).map(it => it.label || '').join(' ');
+                    return (base + ' ' + pagos + ' ' + items).toLowerCase().includes(q);
+                });
+            },
             get sorted() {
                 const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
-                return [...this.ventas].sort((a, b) => {
+                return [...this.filtered].sort((a, b) => {
                     const x = a[k], y = b[k];
                     return (typeof x === 'number' && typeof y === 'number')
                         ? (x - y) * dir
@@ -217,12 +242,18 @@
             fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
             confirmDelete(e) { if (!confirm('¿Eliminar esta venta?')) e.preventDefault(); },
         }">
-        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
+        <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex flex-wrap items-center justify-between gap-3">
             <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="list" class="w-4 h-4" />
                 Ventas del turno
                 <span class="text-xs font-normal text-cream-600 dark:text-cream-400" x-text="`(${ventas.length})`"></span>
             </h3>
+            <div class="relative w-full sm:w-auto sm:max-w-[16rem]">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-cream-500">
+                    <x-icon name="search" class="w-4 h-4" />
+                </span>
+                <input x-model.debounce.200ms="search" type="search" placeholder="Buscar (cajero, método, item...)" class="w-full rounded-xl border-cream-300 bg-white pl-9 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100" />
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -360,11 +391,10 @@
                         </template>
                     </tbody>
                 </template>
-                <tbody x-show="ventas.length === 0">
+                <tbody x-show="filtered.length === 0">
                     <tr>
-                        <td colspan="7" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400">
-                            No hay ventas en este turno todavía.
-                        </td>
+                        <td colspan="7" class="px-4 py-10 text-center text-cream-600 dark:text-cream-400"
+                            x-text="search ? 'Sin resultados para la búsqueda.' : 'No hay ventas en este turno todavía.'"></td>
                     </tr>
                 </tbody>
             </table>
@@ -375,6 +405,7 @@
             <label class="flex items-center gap-2 text-xs text-cream-600 dark:text-cream-400">
                 Filas por página
                 <select x-model.number="perPage" @change="page = 1" class="rounded-lg border-cream-300 bg-white py-1 pl-2 pr-7 text-xs focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
+                    <option :value="5">5</option>
                     <option :value="10">10</option>
                     <option :value="25">25</option>
                     <option :value="50">50</option>
@@ -398,7 +429,11 @@
     </x-card>
 
     {{-- Tabla de gastos del turno --}}
-    <x-card padding="p-0" class="mt-5">
+    <x-table-enhanced
+        class="mt-5"
+        :filters="[['col' => 1, 'label' => 'Tipo'], ['col' => 5, 'label' => 'Método']]"
+        search-placeholder="Buscar gasto..."
+    >
         <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex items-center justify-between gap-3">
             <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="wallet" class="w-4 h-4" />
@@ -419,19 +454,19 @@
             <table class="w-full text-sm">
                 <thead class="bg-cream-50 dark:bg-cream-900/30 text-cream-700 dark:text-cream-300">
                     <tr>
-                        <th class="text-left px-4 py-2 font-semibold">Hora</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-2 font-semibold">Hora</x-th-sort>
                         <th class="text-left px-4 py-2 font-semibold">Tipo</th>
                         <th class="text-left px-4 py-2 font-semibold">Concepto / Trabajador</th>
-                        <th class="text-right px-4 py-2 font-semibold">Valor</th>
+                        <x-th-sort :col="3" align="right" class="text-right px-4 py-2 font-semibold">Valor</x-th-sort>
                         <th class="text-right px-4 py-2 font-semibold">Ahorro</th>
                         <th class="text-left px-4 py-2 font-semibold">Método</th>
                         <th class="text-left px-4 py-2 font-semibold">Cajero</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($turno->gastos as $g)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-2.5 font-mono text-xs text-cream-700 dark:text-cream-300">{{ $g->created_at->format('H:i:s') }}</td>
                             <td class="px-4 py-2.5">
                                 @if ($g->tipo === \App\Enums\TipoGasto::Turno)
@@ -489,10 +524,14 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 
     {{-- Tabla de gastos de mercado (registros vinculados a este turno) --}}
-    <x-card padding="p-0" class="mt-5">
+    <x-table-enhanced
+        class="mt-5"
+        :filters="[['col' => 5, 'label' => 'Método']]"
+        search-placeholder="Buscar producto..."
+    >
         <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex items-center justify-between gap-3">
             <h3 class="font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="shopping-basket" class="w-4 h-4" />
@@ -508,18 +547,18 @@
             <table class="w-full text-sm">
                 <thead class="bg-cream-50 dark:bg-cream-900/30 text-cream-700 dark:text-cream-300">
                     <tr>
-                        <th class="text-left px-4 py-2 font-semibold">Hora</th>
-                        <th class="text-left px-4 py-2 font-semibold">Producto</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-2 font-semibold">Hora</x-th-sort>
+                        <x-th-sort :col="1" class="text-left px-4 py-2 font-semibold">Producto</x-th-sort>
                         <th class="text-right px-4 py-2 font-semibold">Cantidad</th>
                         <th class="text-right px-4 py-2 font-semibold">Unitario</th>
-                        <th class="text-right px-4 py-2 font-semibold">Valor</th>
+                        <x-th-sort :col="4" align="right" class="text-right px-4 py-2 font-semibold">Valor</x-th-sort>
                         <th class="text-left px-4 py-2 font-semibold">Método</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($turno->gastosMercado as $r)
                         @php $unitario = $r->cantidad > 0 ? (int) round($r->valor / $r->cantidad) : 0; @endphp
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-2.5 font-mono text-xs text-cream-700 dark:text-cream-300">{{ $r->created_at->format('H:i:s') }}</td>
                             <td class="px-4 py-2.5 text-cream-800 dark:text-cream-200 font-medium">{{ $r->producto?->nombre ?? '—' }}</td>
                             <td class="px-4 py-2.5 text-right tabular-nums text-cream-700 dark:text-cream-300">
@@ -548,5 +587,5 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 @endsection

@@ -31,7 +31,8 @@
         :rows="$rows"
         :searchable="true"
         :paginate="true"
-        :perPage="10"
+        :perPage="5"
+        :filters="[['key' => 'tipo', 'label' => 'Tipo'], ['key' => 'activo', 'label' => 'Estado']]"
         empty="Aún no hay productos. Crea el primero con el botón “Nuevo producto”."
     />
 @endsection

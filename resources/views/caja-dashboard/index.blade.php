@@ -71,25 +71,28 @@
     @endif
 
     {{-- Tabla de turnos --}}
-    <x-card padding="p-0">
+    <x-table-enhanced
+        :filters="[['col' => 9, 'label' => 'Estado']]"
+        search-placeholder="Buscar turno..."
+    >
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-cream-800 dark:text-cream-200">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold">Fecha</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-3 font-semibold">Fecha</x-th-sort>
                         <th class="text-left px-4 py-3 font-semibold">Apertura</th>
                         <th class="text-left px-4 py-3 font-semibold">Cierre</th>
                         <th class="text-right px-4 py-3 font-semibold">Base</th>
-                        <th class="text-right px-4 py-3 font-semibold">Ventas</th>
+                        <x-th-sort :col="4" align="right" class="text-right px-4 py-3 font-semibold">Ventas</x-th-sort>
                         <th class="text-right px-4 py-3 font-semibold">Gastos</th>
-                        <th class="text-right px-4 py-3 font-semibold">Neto</th>
+                        <x-th-sort :col="6" align="right" class="text-right px-4 py-3 font-semibold">Neto</x-th-sort>
                         <th class="text-right px-4 py-3 font-semibold">Declarado</th>
                         <th class="text-right px-4 py-3 font-semibold">Diferencia</th>
                         <th class="text-center px-4 py-3 font-semibold">Estado</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($turnos as $t)
                         @php
                             $abierto    = $t->cerrado_en === null;
@@ -98,7 +101,7 @@
                                 ? 'neutral'
                                 : ($diferencia > 0 ? 'success' : ($diferencia < 0 ? 'danger' : 'neutral'));
                         @endphp
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 font-medium text-cream-900 dark:text-cream-50">{{ $t->abierto_en->format('Y-m-d') }}</td>
                             <td class="px-4 py-3 text-cream-700 dark:text-cream-300">
                                 {{ $t->abierto_en->format('H:i') }}
@@ -148,5 +151,5 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 @endsection

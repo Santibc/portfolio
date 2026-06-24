@@ -47,7 +47,7 @@
     </div>
 
     {{-- Tabla por método de pago (pieza central) --}}
-    <x-card padding="p-0" class="mb-5">
+    <x-table-enhanced class="mb-5" search-placeholder="Buscar método...">
         <div class="px-6 py-4 border-b border-cream-200 dark:border-cream-800">
             <h3 class="text-base font-semibold text-cream-900 dark:text-cream-50 flex items-center gap-2">
                 <x-icon name="credit-card" class="w-4 h-4 text-primary-600 dark:text-primary-300" />
@@ -58,15 +58,15 @@
             <table class="w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-cream-800 dark:text-cream-200">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold">Método</th>
-                        <th class="text-right px-4 py-3 font-semibold">Ingresos</th>
-                        <th class="text-right px-4 py-3 font-semibold">Egresos</th>
-                        <th class="text-right px-4 py-3 font-semibold">Neto</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-3 font-semibold">Método</x-th-sort>
+                        <x-th-sort :col="1" align="right" class="text-right px-4 py-3 font-semibold">Ingresos</x-th-sort>
+                        <x-th-sort :col="2" align="right" class="text-right px-4 py-3 font-semibold">Egresos</x-th-sort>
+                        <x-th-sort :col="3" align="right" class="text-right px-4 py-3 font-semibold">Neto</x-th-sort>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($porMetodo as $row)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 font-medium text-cream-900 dark:text-cream-50">
                                 <span class="inline-flex items-center gap-2">
                                     <x-icon :name="$row['es_efectivo'] ? 'banknote' : 'credit-card'" class="w-4 h-4 text-cream-500" />
@@ -105,7 +105,7 @@
                 @endif
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 
     {{-- Egresos por módulo --}}
     <x-card padding="p-4" class="mb-5">

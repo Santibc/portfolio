@@ -60,7 +60,10 @@
     </div>
 
     {{-- Tabla de movimientos (aportes + pagos) --}}
-    <x-card padding="p-0">
+    <x-table-enhanced
+        :filters="[['col' => 1, 'label' => 'Movimiento']]"
+        search-placeholder="Buscar movimiento..."
+    >
         <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800 flex items-center justify-between gap-3">
             <h2 class="font-semibold text-cream-900 dark:text-cream-50">Movimientos de ahorro en el rango</h2>
             <span class="text-xs text-cream-600 dark:text-cream-400">{{ $movimientos->count() }} registros</span>
@@ -69,19 +72,19 @@
             <table class="w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-cream-800 dark:text-cream-200">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold">Fecha</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-3 font-semibold">Fecha</x-th-sort>
                         <th class="text-left px-4 py-3 font-semibold">Movimiento</th>
                         <th class="text-left px-4 py-3 font-semibold">Trabajador</th>
-                        <th class="text-right px-4 py-3 font-semibold">Monto</th>
+                        <x-th-sort :col="3" align="right" class="text-right px-4 py-3 font-semibold">Monto</x-th-sort>
                         <th class="text-left px-4 py-3 font-semibold">Detalle</th>
                         <th class="text-left px-4 py-3 font-semibold">Registrado por</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($movimientos as $m)
                         @php $esAhorro = $m['tipo'] === 'ahorro'; @endphp
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 text-cream-700 dark:text-cream-300 whitespace-nowrap">{{ $m['fecha']?->format('Y-m-d H:i') ?? '—' }}</td>
                             <td class="px-4 py-3">
                                 @if ($esAhorro)
@@ -130,5 +133,5 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 @endsection

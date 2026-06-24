@@ -321,7 +321,7 @@
 </x-section>
 
 {{-- ===== Tablas ===== --}}
-<x-section title="Tablas" description="Tabla con busqueda, sort y paginacion (cliente)" id="tables">
+<x-section title="Tablas" description="Tabla con busqueda global, filtros por columna, sort, selector de filas por pagina (5/10/25/50/100/Todas) y paginacion — todo en cliente. La busqueda y los filtros operan sobre el texto visible, no sobre el HTML de la celda." id="tables">
     <x-data-table
         :columns="[
             ['key' => 'plato', 'label' => 'Plato', 'sortable' => true],
@@ -329,6 +329,7 @@
             ['key' => 'estado', 'label' => 'Estado'],
             ['key' => 'pedidos', 'label' => 'Pedidos', 'sortable' => true],
         ]"
+        :filters="[['key' => 'estado', 'label' => 'Estado']]"
         :rows="[
             ['plato' => 'Ajiaco', 'precio' => '$18,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 124],
             ['plato' => 'Sancocho', 'precio' => '$22,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 87],

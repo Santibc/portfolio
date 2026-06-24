@@ -67,7 +67,8 @@
         :rows="$rows"
         :searchable="true"
         :paginate="true"
-        :perPage="15"
+        :perPage="5"
+        :filters="[['key' => 'activo', 'label' => 'Estado']]"
         empty="Aún no hay trabajadores de turno. Crea el primero con el botón “Nuevo trabajador”."
     />
 

@@ -38,7 +38,8 @@
         :rows="$rows"
         :searchable="true"
         :paginate="true"
-        :perPage="15"
+        :perPage="5"
+        :filters="[['key' => 'tipo', 'label' => 'Tipo']]"
         empty="Aún no hay gastos registrados. Crea el primero con el botón “Nuevo gasto”."
     />
 @endsection

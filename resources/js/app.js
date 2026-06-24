@@ -123,6 +123,9 @@ import ScrollReveal from 'scrollreveal';
 import './theme-toggle';
 
 const renderIcons = () => createIcons({ icons: usedIcons, attrs: { 'stroke-width': 1.75 } });
+// Exponer para que los componentes (p.ej. <x-data-table>) fuercen el re-render de iconos
+// despues de paginar/filtrar/ordenar, sin depender solo del MutationObserver global.
+window.renderIcons = renderIcons;
 
 const initTomSelect = (root = document) => {
     root.querySelectorAll('select[data-tom-select]').forEach((el) => {
@@ -182,6 +185,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let running = false;
     let needsIcons = false;
     let needsPreline = false;
+    let pendingRescan = false;
+
+    // Marca needsIcons/needsPreline segun los nodos insertados. Setear flags es idempotente
+    // y barato, asi que es seguro escanear siempre (incluso mutaciones del propio flush).
+    const scanNodes = (mutations) => {
+        for (const m of mutations) {
+            for (const n of m.addedNodes) {
+                if (n.nodeType !== 1) continue;
+                if (!needsIcons && (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]'))) {
+                    needsIcons = true;
+                }
+                if (!needsPreline && (n.querySelector?.('[data-hs-overlay], [class*="hs-"]') || n.matches?.('[data-hs-overlay]'))) {
+                    needsPreline = true;
+                }
+                if (needsIcons && needsPreline) break;
+            }
+            if (needsIcons && needsPreline) break;
+        }
+    };
+
+    const schedule = () => {
+        if ((needsIcons || needsPreline) && !scheduled) {
+            scheduled = true;
+            requestAnimationFrame(flush);
+        }
+    };
 
     const flush = () => {
         scheduled = false;
@@ -196,27 +225,25 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             running = false;
         }
+        // Re-procesar mutaciones llegadas mientras corria el flush (p.ej. Alpine repintando
+        // una pagina nueva con <i data-lucide>) en vez de descartarlas. Converge porque
+        // renderIcons/autoInit son idempotentes y no dejan nodos pendientes nuevos.
+        if (pendingRescan) {
+            pendingRescan = false;
+            const queued = observer.takeRecords();
+            if (queued.length) scanNodes(queued);
+            schedule();
+        }
     };
 
     const observer = new MutationObserver((mutations) => {
-        if (running) return; // ignorar mutaciones provocadas por el propio flush()
-        for (const m of mutations) {
-            for (const n of m.addedNodes) {
-                if (n.nodeType !== 1) continue;
-                if (!needsIcons && (n.querySelector?.('[data-lucide]') || n.matches?.('[data-lucide]'))) {
-                    needsIcons = true;
-                }
-                if (!needsPreline && (n.querySelector?.('[data-hs-overlay], [class*="hs-"]') || n.matches?.('[data-hs-overlay]'))) {
-                    needsPreline = true;
-                }
-                if (needsIcons && needsPreline) break;
-            }
-            if (needsIcons && needsPreline) break;
+        if (running) {
+            // No descartar: re-escanear al terminar el flush en curso.
+            pendingRescan = true;
+            return;
         }
-        if ((needsIcons || needsPreline) && !scheduled) {
-            scheduled = true;
-            requestAnimationFrame(flush);
-        }
+        scanNodes(mutations);
+        schedule();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -254,6 +281,98 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         Toast.fire({ icon, title });
     };
+});
+
+// Componente reutilizable para realzar una tabla Blade existente (con sus modales, forms y
+// footer intactos) agregando busqueda global, filtros por columna, orden y paginacion EN
+// CLIENTE, operando sobre las <tr> reales del DOM: pagina ocultando filas (style.display) y
+// ordena moviendo nodos (appendChild) — nunca re-renderiza, asi se conservan listeners, forms
+// DELETE y los iconos ya convertidos. Marca en la tabla del modulo: tbody[data-enhance],
+// tr[data-row] en las filas de datos, y @click="sortBy(i)" en los <th> ordenables (i = indice
+// de columna, base 0). Footers en <tfoot> (fuera del tbody) quedan intactos.
+window.tableEnhanced = (cfg = {}) => ({
+    search: '',
+    page: 1,
+    perPage: cfg.perPage ?? 5,
+    sortIdx: null,
+    sortAsc: true,
+    filterDefs: cfg.filters || [],   // [{ col: 2, label: 'Estado' }]
+    activeFilters: {},
+    rowsMeta: [],
+    tbody: null,
+    _reordered: false,
+    _norm(s) { return (s || '').replace(/\s+/g, ' ').trim(); },
+    // Parsea numeros es-CO ('.' miles, ',' decimal) tolerando '$'/unidades; NaN para texto/fechas.
+    _num(s) {
+        const t = String(s).trim();
+        if (!/\d/.test(t) || !/^-?\s*\$?\s*[\d.,]+\s*[a-zA-Z%º°]{0,5}\.?$/.test(t)) return NaN;
+        const c = t.replace(/[^\d.,-]/g, '').replace(/\./g, '').replace(',', '.');
+        return (c === '' || c === '-') ? NaN : parseFloat(c);
+    },
+    init() {
+        this.tbody = this.$root.querySelector('tbody[data-enhance]');
+        if (!this.tbody) return;
+        const trs = [...this.tbody.querySelectorAll(':scope > tr[data-row]')];
+        this.rowsMeta = trs.map((tr) => ({
+            el: tr,
+            text: this._norm(tr.textContent).toLowerCase(),
+            cells: [...tr.children].map((td) => this._norm(td.textContent)),
+        }));
+        for (const f of this.filterDefs) {
+            if (!(f.col in this.activeFilters)) this.activeFilters[f.col] = '';
+        }
+        this.$watch('search', () => { this.page = 1; this.apply(); });
+        this.$watch('perPage', () => { this.page = 1; this.apply(); });
+        this.$watch('activeFilters', () => { this.page = 1; this.apply(); });
+        this.apply();
+    },
+    get filterOptions() {
+        const out = {};
+        for (const f of this.filterDefs) {
+            const set = new Set();
+            this.rowsMeta.forEach((r) => { const v = r.cells[f.col]; if (v) set.add(v); });
+            out[f.col] = [...set].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+        }
+        return out;
+    },
+    get visibleRows() {
+        const q = this.search.toLowerCase();
+        return this.rowsMeta.filter((r) =>
+            (!q || r.text.includes(q)) &&
+            this.filterDefs.every((f) => !this.activeFilters[f.col] || r.cells[f.col] === this.activeFilters[f.col]));
+    },
+    get effPerPage() { return this.perPage === 0 ? Math.max(this.visibleRows.length, 1) : this.perPage; },
+    get pages() { return Math.max(1, Math.ceil(this.visibleRows.length / this.effPerPage)); },
+    goTo(p) { this.page = Math.min(this.pages, Math.max(1, p)); this.apply(); },
+    sortBy(idx) {
+        if (this.sortIdx === idx) this.sortAsc = !this.sortAsc;
+        else { this.sortIdx = idx; this.sortAsc = true; }
+        this.page = 1;
+        this.apply();
+    },
+    apply() {
+        if (!this.tbody) return;
+        if (this.page > this.pages) this.page = this.pages;
+        let ordered = this.visibleRows;
+        if (this.sortIdx !== null) {
+            const k = this.sortIdx, dir = this.sortAsc ? 1 : -1;
+            ordered = ordered.slice().sort((a, b) => {
+                const x = a.cells[k] ?? '', y = b.cells[k] ?? '';
+                const nx = this._num(x), ny = this._num(y);
+                if (!isNaN(nx) && !isNaN(ny)) return (nx - ny) * dir;
+                return String(x).localeCompare(String(y), 'es', { numeric: true }) * dir;
+            });
+            ordered.forEach((r) => this.tbody.appendChild(r.el));
+            this._reordered = true;
+        } else if (this._reordered) {
+            // Restaurar el orden original de captura (solo si antes se reordeno)
+            this.rowsMeta.forEach((r) => this.tbody.appendChild(r.el));
+            this._reordered = false;
+        }
+        const start = (this.page - 1) * this.effPerPage;
+        const pageSet = new Set(ordered.slice(start, start + this.effPerPage));
+        this.rowsMeta.forEach((r) => { r.el.style.display = pageSet.has(r) ? '' : 'none'; });
+    },
 });
 
 Alpine.start();

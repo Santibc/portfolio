@@ -49,29 +49,33 @@
     </div>
 
     {{-- Detalle por empleado --}}
-    <x-card padding="p-0" class="mb-5">
+    <x-table-enhanced
+        class="mb-5"
+        :filters="[['col' => 11, 'label' => 'Pago']]"
+        search-placeholder="Buscar empleado..."
+    >
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-left text-xs font-semibold uppercase tracking-wide text-cream-600 dark:text-cream-400">
                     <tr>
-                        <th class="px-3 py-3">Empleado</th>
+                        <x-th-sort :col="0" class="px-3 py-3">Empleado</x-th-sort>
                         <th class="px-3 py-3 text-center">Días</th>
                         <th class="px-3 py-3 text-right">Básico</th>
                         <th class="px-3 py-3 text-right">Bono</th>
                         <th class="px-3 py-3 text-right">Auxilio</th>
                         <th class="px-3 py-3 text-right">Salud</th>
                         <th class="px-3 py-3 text-right">Pensión</th>
-                        <th class="px-3 py-3 text-right">Neto</th>
+                        <x-th-sort :col="7" align="right" class="px-3 py-3 text-right">Neto</x-th-sort>
                         <th class="px-3 py-3 text-right">Ahorro</th>
                         <th class="px-3 py-3 text-right">Pagado</th>
-                        <th class="px-3 py-3 text-right">Saldo</th>
+                        <x-th-sort :col="10" align="right" class="px-3 py-3 text-right">Saldo</x-th-sort>
                         <th class="px-3 py-3 text-center">Pago</th>
                         <th class="px-3 py-3"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @foreach ($nomina->detalles as $d)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-3 py-3 font-medium text-cream-900 dark:text-cream-50">{{ $d->empleado_nombre }}</td>
                             <td class="px-3 py-3 text-center tabular-nums text-cream-600 dark:text-cream-400">{{ $d->dias }}</td>
                             <td class="px-3 py-3 text-right tabular-nums">{{ $d->basico_formateado }}</td>
@@ -101,12 +105,15 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 
     {{-- Pagos registrados --}}
     @php($pagos = $nomina->detalles->flatMap->pagos->sortByDesc('fecha_pago'))
     @if ($pagos->isNotEmpty())
-        <x-card padding="p-0">
+        <x-table-enhanced
+            :filters="[['col' => 2, 'label' => 'Método']]"
+            search-placeholder="Buscar pago..."
+        >
             <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
                 <h3 class="font-semibold text-sm text-cream-800 dark:text-cream-200">Pagos registrados</h3>
             </div>
@@ -114,17 +121,17 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-cream-50 dark:bg-cream-900/20 text-left text-xs font-semibold uppercase tracking-wide text-cream-500">
                         <tr>
-                            <th class="px-4 py-2">Fecha</th>
-                            <th class="px-4 py-2">Empleado</th>
+                            <x-th-sort :col="0" class="px-4 py-2">Fecha</x-th-sort>
+                            <x-th-sort :col="1" class="px-4 py-2">Empleado</x-th-sort>
                             <th class="px-4 py-2">Método</th>
                             <th class="px-4 py-2">Referencia</th>
-                            <th class="px-4 py-2 text-right">Monto</th>
+                            <x-th-sort :col="4" align="right" class="px-4 py-2 text-right">Monto</x-th-sort>
                             <th class="px-4 py-2"></th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                    <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                         @foreach ($pagos as $p)
-                            <tr>
+                            <tr data-row>
                                 <td class="px-4 py-2 tabular-nums text-cream-700 dark:text-cream-300">{{ $p->fecha_pago->format('Y-m-d') }}</td>
                                 <td class="px-4 py-2 text-cream-900 dark:text-cream-50">{{ $p->detalle?->empleado_nombre }}</td>
                                 <td class="px-4 py-2 text-cream-700 dark:text-cream-300">{{ $p->metodoPago?->nombre ?? '—' }}</td>
@@ -142,7 +149,7 @@
                     </tbody>
                 </table>
             </div>
-        </x-card>
+        </x-table-enhanced>
     @endif
 
     {{-- Modal: registrar pago --}}

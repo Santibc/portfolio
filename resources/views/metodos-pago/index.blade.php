@@ -20,22 +20,25 @@
         </x-slot:actions>
     </x-page-header>
 
-    <x-card padding="p-0">
+    <x-table-enhanced
+        :filters="[['col' => 2, 'label' => 'Es efectivo'], ['col' => 4, 'label' => 'Estado']]"
+        search-placeholder="Buscar método..."
+    >
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-cream-800 dark:text-cream-200">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold">Código</th>
-                        <th class="text-left px-4 py-3 font-semibold">Nombre</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-3 font-semibold">Código</x-th-sort>
+                        <x-th-sort :col="1" class="text-left px-4 py-3 font-semibold">Nombre</x-th-sort>
                         <th class="text-left px-4 py-3 font-semibold">Es efectivo</th>
-                        <th class="text-left px-4 py-3 font-semibold">Orden</th>
+                        <x-th-sort :col="3" class="text-left px-4 py-3 font-semibold">Orden</x-th-sort>
                         <th class="text-left px-4 py-3 font-semibold">Estado</th>
                         <th class="text-right px-4 py-3 font-semibold">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($metodos as $m)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 font-mono text-xs text-cream-700 dark:text-cream-300">{{ $m->codigo }}</td>
                             <td class="px-4 py-3 font-medium text-cream-900 dark:text-cream-50">{{ $m->nombre }}</td>
                             <td class="px-4 py-3">
@@ -82,7 +85,7 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 
     {{-- Modal nuevo --}}
     <div x-show="nuevoOpen" x-cloak

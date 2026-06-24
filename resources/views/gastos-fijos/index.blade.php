@@ -46,7 +46,8 @@
         :rows="$rows"
         :searchable="true"
         :paginate="true"
-        :perPage="15"
+        :perPage="5"
+        :filters="[['key' => 'metodo', 'label' => 'Método']]"
         empty="Aún no hay gastos fijos registrados. Crea el primero con el botón “Registrar gasto fijo”."
     />
 @endsection

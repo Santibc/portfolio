@@ -78,7 +78,10 @@
     </div>
 
     {{-- Tabla de períodos --}}
-    <x-card padding="p-0">
+    <x-table-enhanced
+        :filters="[['col' => 4, 'label' => 'Estado']]"
+        search-placeholder="Buscar período..."
+    >
         <div class="px-4 py-3 border-b border-cream-200 dark:border-cream-800">
             <h3 class="font-semibold text-sm text-cream-800 dark:text-cream-200">Períodos en el rango</h3>
         </div>
@@ -86,17 +89,17 @@
             <table class="w-full text-sm">
                 <thead class="bg-cream-50 dark:bg-cream-900/20 text-cream-800 dark:text-cream-200">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold">Período</th>
-                        <th class="text-right px-4 py-3 font-semibold">Neto</th>
+                        <x-th-sort :col="0" class="text-left px-4 py-3 font-semibold">Período</x-th-sort>
+                        <x-th-sort :col="1" align="right" class="text-right px-4 py-3 font-semibold">Neto</x-th-sort>
                         <th class="text-right px-4 py-3 font-semibold">Pagado</th>
-                        <th class="text-right px-4 py-3 font-semibold">Pendiente</th>
+                        <x-th-sort :col="3" align="right" class="text-right px-4 py-3 font-semibold">Pendiente</x-th-sort>
                         <th class="text-center px-4 py-3 font-semibold">Estado</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($nominas as $n)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 font-medium text-cream-900 dark:text-cream-50">{{ $n->descripcion }}</td>
                             <td class="px-4 py-3 text-right tabular-nums font-semibold text-primary-700 dark:text-primary-300">{{ $n->total_neto_formateado }}</td>
                             <td class="px-4 py-3 text-right tabular-nums text-emerald-700 dark:text-emerald-400">{{ $n->total_pagado_formateado }}</td>
@@ -114,5 +117,5 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 @endsection

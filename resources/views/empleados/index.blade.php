@@ -19,7 +19,8 @@
         :rows="$rows"
         :searchable="true"
         :paginate="true"
-        :perPage="15"
+        :perPage="5"
+        :filters="[['key' => 'activo', 'label' => 'Estado']]"
         empty="Aún no hay empleados. Crea el primero con el botón “Nuevo empleado”."
     />
 @endsection

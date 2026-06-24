@@ -20,25 +20,28 @@
         </x-slot:actions>
     </x-page-header>
 
-    <x-card padding="p-0">
+    <x-table-enhanced
+        :filters="[['col' => 1, 'label' => 'Tipo'], ['col' => 7, 'label' => 'Estado']]"
+        search-placeholder="Buscar prestación..."
+    >
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="bg-cream-100 dark:bg-cream-900/40 text-left text-xs font-semibold uppercase tracking-wide text-cream-600 dark:text-cream-400">
                     <tr>
-                        <th class="px-4 py-3">Empleado</th>
+                        <x-th-sort :col="0" class="px-4 py-3">Empleado</x-th-sort>
                         <th class="px-4 py-3">Tipo</th>
                         <th class="px-4 py-3">Período</th>
                         <th class="px-4 py-3 text-center">Días</th>
                         <th class="px-4 py-3 text-right">Base</th>
-                        <th class="px-4 py-3 text-right">Valor</th>
+                        <x-th-sort :col="5" align="right" class="px-4 py-3 text-right">Valor</x-th-sort>
                         <th class="px-4 py-3">Fondo</th>
                         <th class="px-4 py-3 text-center">Estado</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-cream-200 dark:divide-cream-800">
+                <tbody data-enhance class="divide-y divide-cream-200 dark:divide-cream-800">
                     @forelse ($prestaciones as $p)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
+                        <tr data-row class="hover:bg-cream-50 dark:hover:bg-cream-900/30">
                             <td class="px-4 py-3 font-medium text-cream-900 dark:text-cream-50">{{ $p->empleado?->nombre ?? '—' }}</td>
                             <td class="px-4 py-3"><x-badge :variant="$p->tipo->badge()" size="sm">{{ $p->tipo->label() }}</x-badge></td>
                             <td class="px-4 py-3 text-cream-700 dark:text-cream-300 tabular-nums text-xs">{{ $p->fecha_inicio->format('Y-m-d') }} → {{ $p->fecha_fin->format('Y-m-d') }}</td>
@@ -87,7 +90,7 @@
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </x-table-enhanced>
 
     {{-- Modal: marcar pagada --}}
     <div x-show="open" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-cream-950/60 backdrop-blur-sm"
