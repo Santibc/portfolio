@@ -132,10 +132,9 @@ class GarantiaController extends Controller
             'tipo' => 'required|in:cambio_producto,descuento,nota_credito,otro',
             'tipo_otro_descripcion' => 'required_if:tipo,otro|nullable|max:500',
             'observacion_creacion' => 'nullable|string|max:1000',
-            'documentos' => 'required|array|min:1',
+            'documentos' => 'nullable|array',
             'documentos.*' => 'file|max:10240',
         ], [
-            'documentos.required' => 'Debes adjuntar al menos un documento.',
             'documentos.*.max' => 'Cada documento no puede superar los 10MB.',
             'tipo_otro_descripcion.required_if' => 'Debes especificar el tipo cuando seleccionas "Otro".',
         ]);
@@ -153,42 +152,45 @@ class GarantiaController extends Controller
                 'usuario_creador_id' => auth()->id(),
             ]);
 
-            $directorio = public_path('uploads/garantias/documentos/' . $garantia->id);
-            if (!File::exists($directorio)) {
-                File::makeDirectory($directorio, 0755, true);
-            }
-
-            foreach ($request->file('documentos') as $archivo) {
-                if (!$archivo || !$archivo->isValid()) {
-                    throw new \Exception('Archivo inválido o subida fallida: ' . ($archivo?->getClientOriginalName() ?? 'desconocido'));
+            // Los documentos son opcionales: solo se procesan si se adjuntó alguno.
+            if ($request->hasFile('documentos')) {
+                $directorio = public_path('uploads/garantias/documentos/' . $garantia->id);
+                if (!File::exists($directorio)) {
+                    File::makeDirectory($directorio, 0755, true);
                 }
 
-                $nombreOriginal = $archivo->getClientOriginalName();
-                $mimeType = $archivo->getClientMimeType() ?: 'application/octet-stream';
-                $tamano = $archivo->getSize();
-                $nombreSeguro = preg_replace('/[^A-Za-z0-9._-]/', '_', $nombreOriginal);
-                $nombre = time() . '_' . uniqid() . '_' . $nombreSeguro;
+                foreach ($request->file('documentos') as $archivo) {
+                    if (!$archivo || !$archivo->isValid()) {
+                        throw new \Exception('Archivo inválido o subida fallida: ' . ($archivo?->getClientOriginalName() ?? 'desconocido'));
+                    }
 
-                $rutaTemp = $archivo->getPathname();
-                $rutaDestino = $directorio . DIRECTORY_SEPARATOR . $nombre;
+                    $nombreOriginal = $archivo->getClientOriginalName();
+                    $mimeType = $archivo->getClientMimeType() ?: 'application/octet-stream';
+                    $tamano = $archivo->getSize();
+                    $nombreSeguro = preg_replace('/[^A-Za-z0-9._-]/', '_', $nombreOriginal);
+                    $nombre = time() . '_' . uniqid() . '_' . $nombreSeguro;
 
-                if (!file_exists($rutaTemp) || !is_readable($rutaTemp)) {
-                    throw new \Exception('El archivo temporal no se encuentra disponible: ' . $rutaTemp);
+                    $rutaTemp = $archivo->getPathname();
+                    $rutaDestino = $directorio . DIRECTORY_SEPARATOR . $nombre;
+
+                    if (!file_exists($rutaTemp) || !is_readable($rutaTemp)) {
+                        throw new \Exception('El archivo temporal no se encuentra disponible: ' . $rutaTemp);
+                    }
+
+                    if (!@copy($rutaTemp, $rutaDestino)) {
+                        throw new \Exception('No se pudo guardar el archivo: ' . $nombreOriginal);
+                    }
+                    @unlink($rutaTemp);
+
+                    GarantiaDocumento::create([
+                        'garantia_id' => $garantia->id,
+                        'nombre_original' => $nombreOriginal,
+                        'nombre_archivo' => $nombre,
+                        'ruta_relativa' => 'uploads/garantias/documentos/' . $garantia->id . '/' . $nombre,
+                        'mime_type' => $mimeType,
+                        'tamano' => $tamano,
+                    ]);
                 }
-
-                if (!@copy($rutaTemp, $rutaDestino)) {
-                    throw new \Exception('No se pudo guardar el archivo: ' . $nombreOriginal);
-                }
-                @unlink($rutaTemp);
-
-                GarantiaDocumento::create([
-                    'garantia_id' => $garantia->id,
-                    'nombre_original' => $nombreOriginal,
-                    'nombre_archivo' => $nombre,
-                    'ruta_relativa' => 'uploads/garantias/documentos/' . $garantia->id . '/' . $nombre,
-                    'mime_type' => $mimeType,
-                    'tamano' => $tamano,
-                ]);
             }
 
             DB::commit();

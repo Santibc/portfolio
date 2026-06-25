@@ -100,8 +100,8 @@
             </div>
 
             <div class="mb-3">
-              <label for="documentos" class="form-label fw-semibold">Documentos adjuntos <span class="text-danger">*</span></label>
-              <input type="file" name="documentos[]" id="documentos" class="form-control" multiple required>
+              <label for="documentos" class="form-label fw-semibold">Documentos adjuntos <span class="text-muted">(opcional)</span></label>
+              <input type="file" name="documentos[]" id="documentos" class="form-control" multiple>
               <small class="text-muted">Puedes adjuntar uno o más archivos de cualquier tipo. Máximo 10MB cada uno.</small>
               <div id="listaArchivos" class="mt-2"></div>
             </div>
@@ -250,10 +250,6 @@
           Swal.fire('Descripción requerida', 'Debes especificar el tipo de garantía cuando seleccionas "Otro".', 'warning');
           return;
         }
-      }
-      if (document.getElementById('documentos').files.length === 0) {
-        e.preventDefault();
-        Swal.fire('Documentos requeridos', 'Debes adjuntar al menos un documento.', 'warning');
       }
     });
 
