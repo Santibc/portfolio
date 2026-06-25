@@ -188,8 +188,11 @@
             success: function(data) {
                 if (data.success) {
                     showToast('success', 'Foto subida', 'La foto se adjunto correctamente.');
-                    // Add thumbnail to preview area
-                    var previewHtml = '<img src="' + data.foto.url + '" class="foto-thumb rounded border" style="width:60px;height:60px;object-fit:cover;">';
+                    // Add clickable thumbnail to preview area
+                    var url = data.foto.url;
+                    var previewHtml = '<img src="' + url + '" class="foto-thumb rounded border cursor-pointer" ' +
+                        'style="width:60px;height:60px;object-fit:cover;" ' +
+                        'onclick="abrirLightbox(\'' + url + '\', \'Foto de avance\')" alt="Foto de avance">';
                     $('#fotoPreview' + piezaId).append(previewHtml);
                 } else {
                     Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo subir la foto.' });

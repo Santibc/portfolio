@@ -261,11 +261,19 @@
                     <i class="bi bi-chat-left-text me-1"></i>Ingresar Observación
                 </button>
             </div>
-            <div class="foto-preview mt-2" id="fotoPreview{{ $pieza->id }}"></div>
+            <div class="foto-preview mt-2 d-flex flex-wrap gap-2" id="fotoPreview{{ $pieza->id }}">
+                @foreach($pieza->fotos as $foto)
+                    <img src="{{ asset($foto->ruta_archivo) }}"
+                         class="foto-thumb rounded border cursor-pointer"
+                         style="width:60px;height:60px;object-fit:cover;"
+                         onclick="abrirLightbox('{{ asset($foto->ruta_archivo) }}', 'Foto de avance')"
+                         alt="Foto de avance">
+                @endforeach
+            </div>
 
             {{-- Acciones: Transferir / Dejar en cola --}}
             <div class="d-flex gap-2 mt-3 flex-wrap">
-                <button class="btn btn-sm btn-outline-warning btn-transferir"
+                <button class="btn btn-sm btn-outline-secondary btn-transferir"
                         data-pieza-id="{{ $pieza->id }}" data-pieza-nombre="{{ e($pieza->nombre) }}">
                     <i class="bi bi-arrow-left-right me-1"></i>Transferir a Operario
                 </button>
