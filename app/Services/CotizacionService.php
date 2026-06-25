@@ -260,6 +260,12 @@ class CotizacionService
                 'editada_por' => $usuarioId,
             ]);
 
+            // Recargar la relación de ítems con los recién creados. Sin esto, $solicitud->items
+            // conserva en caché los ítems VIEJOS (ya borrados arriba) y reservarParaCotizacion
+            // intentaría insertar reservas con un item_solicitud_id inexistente -> falla el FK y
+            // la cotización quedaba sin reservas en cada edición.
+            $solicitud->load('items');
+
             // Crear nuevas reservas
             $reservaResultado = $this->reservaService->reservarParaCotizacion($solicitud);
 
