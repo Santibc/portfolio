@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ReservaStock;
 use App\Models\StockProducto;
+use App\Models\ItemTrasladoStock;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -269,23 +270,37 @@ class RepararStockReservado extends Command
         $corregidos = 0;
 
         foreach ($stocks as $stock) {
-            // Calcular la suma real de reservas activas para este stock
+            // Calcular la suma real de reservas activas para este stock (cotizaciones)
             $sumaReservasActivas = ReservaStock::where('stock_producto_id', $stock->id)
                 ->where('estado', ReservaStock::ESTADO_ACTIVA)
                 ->sum('cantidad_reservada');
 
+            // Sumar también lo apartado por TRASLADOS PENDIENTES cuyo origen es esta ubicación.
+            // Esa reserva no es un registro ReservaStock; vive directamente en cantidad_reservada,
+            // por eso hay que contarla aquí para no borrarla al recalcular.
+            $sumaTraslados = ItemTrasladoStock::whereHas('traslado', function ($t) use ($stock) {
+                    $t->where('estado', 'pendiente')
+                      ->where('ubicacion_origen_id', $stock->ubicacion_id);
+                })
+                ->where('producto_id', $stock->producto_id)
+                ->when($stock->variante_producto_id,
+                    fn($q) => $q->where('variante_producto_id', $stock->variante_producto_id),
+                    fn($q) => $q->whereNull('variante_producto_id'))
+                ->sum('cantidad');
+
+            $reservadoCorrecto = (int) $sumaReservasActivas + (int) $sumaTraslados;
             $reservadoActual = $stock->cantidad_reservada;
 
-            if ((int) $reservadoActual !== (int) $sumaReservasActivas) {
+            if ((int) $reservadoActual !== $reservadoCorrecto) {
                 $producto = $stock->producto;
                 $nombreProducto = $producto ? $producto->nombre : "ID {$stock->producto_id}";
 
                 $this->warn("  CORREGIR: [{$stock->producto_id}] {$nombreProducto}");
-                $this->line("    Stock #{$stock->id} | reservada actual: {$reservadoActual} → debe ser: {$sumaReservasActivas} (diferencia: " . ($reservadoActual - $sumaReservasActivas) . ")");
+                $this->line("    Stock #{$stock->id} | reservada actual: {$reservadoActual} → debe ser: {$reservadoCorrecto} (cotiz: {$sumaReservasActivas} + traslados: {$sumaTraslados})");
 
                 if (!$dryRun) {
-                    $stock->update(['cantidad_reservada' => $sumaReservasActivas]);
-                    Log::info("Stock reparado: producto_id={$stock->producto_id}, stock_id={$stock->id}, reservada {$reservadoActual} → {$sumaReservasActivas}");
+                    $stock->update(['cantidad_reservada' => $reservadoCorrecto]);
+                    Log::info("Stock reparado: producto_id={$stock->producto_id}, stock_id={$stock->id}, reservada {$reservadoActual} → {$reservadoCorrecto}");
                 }
 
                 $corregidos++;

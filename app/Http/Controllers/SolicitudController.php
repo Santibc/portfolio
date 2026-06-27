@@ -1400,11 +1400,16 @@ class SolicitudController extends Controller
         $cantidadRequerida = (int) $item->cantidad;
         $numeroSolicitud = $item->solicitudCotizacion->numero_solicitud;
 
-        // Candidatos de stock SOLO en ubicaciones reales (nunca el registro "fantasma" sin
-        // ubicación), priorizando la bodega principal y luego la ubicación con más disponible.
+        // Candidatos de stock SOLO en ubicaciones de BODEGA (nunca el registro "fantasma" sin
+        // ubicación, ni tiendas/ferias como Centro de Experiencia o Nail Fest): las cotizaciones
+        // mayoristas se descuentan desde la bodega (CEDI), igual que se reservan. Si la bodega
+        // está en 0, debe bloquear (stock insuficiente) y no "caer" al stock de las tiendas.
         $candidatos = StockProducto::with('ubicacionRelacion')
             ->where('producto_id', $producto->id)
             ->whereNotNull('ubicacion_id')
+            ->whereHas('ubicacionRelacion', function ($u) {
+                $u->where('tipo', '!=', 'tienda');
+            })
             ->when($item->variante_producto_id, function ($q) use ($item) {
                 $q->where('variante_producto_id', $item->variante_producto_id);
             }, function ($q) {
@@ -1418,7 +1423,22 @@ class SolicitudController extends Controller
             })
             ->values();
 
-        $disponibleTotal = (int) $candidatos->sum('cantidad_disponible');
+        // Reservas activas de ESTA cotización para este ítem (por registro de stock): la cotización
+        // SÍ puede consumir lo que ella misma reservó, pero NO lo reservado por traslados u otras
+        // cotizaciones. Disponible para mí = disponible - reservado + mi_propia_reserva.
+        $reservasPropias = ReservaStock::where('solicitud_cotizacion_id', $solicitudId)
+            ->where('item_solicitud_id', $item->id)
+            ->where('estado', 'activa')
+            ->get()
+            ->groupBy('stock_producto_id')
+            ->map(fn($g) => (int) $g->sum('cantidad_reservada'));
+
+        $dispParaMi = function ($stock) use ($reservasPropias) {
+            $propia = (int) ($reservasPropias[$stock->id] ?? 0);
+            return max(0, (int) $stock->cantidad_disponible - (int) $stock->cantidad_reservada + $propia);
+        };
+
+        $disponibleTotal = (int) $candidatos->sum($dispParaMi);
 
         // Verificar disponibilidad real total (sumando todas las ubicaciones válidas)
         if ($disponibleTotal < $cantidadRequerida && !$producto->permitir_venta_sin_stock) {
@@ -1435,9 +1455,10 @@ class SolicitudController extends Controller
 
         foreach ($candidatos as $stock) {
             if ($pendiente <= 0) break;
-            if ($stock->cantidad_disponible <= 0) continue;
+            $libreAqui = $dispParaMi($stock);
+            if ($libreAqui <= 0) continue;
 
-            $aDescontar = min($pendiente, (int) $stock->cantidad_disponible);
+            $aDescontar = min($pendiente, $libreAqui);
             $this->ejecutarSalidaDesdeUbicacion($stock, $aDescontar, $usuarioId, $solicitudId, $numeroSolicitud);
             $pendiente -= $aDescontar;
             $detalle[] = $aDescontar . ' en ' . (optional($stock->ubicacionRelacion)->nombre ?? 'ubicación');

@@ -356,7 +356,7 @@ class TrasladosController extends Controller
                 'usuario_creador_id' => auth()->id(),
             ]);
 
-            // Crear ítems (sin descontar stock; eso ocurre al enviar)
+            // Crear ítems (no descuenta disponible todavía; eso ocurre al enviar/despachar)
             foreach ($request->items as $itemData) {
                 ItemTrasladoStock::create([
                     'traslado_stock_id' => $traslado->id,
@@ -364,6 +364,40 @@ class TrasladosController extends Controller
                     'variante_producto_id' => $itemData['variante_producto_id'] ?? null,
                     'cantidad' => (int) $itemData['cantidad'],
                 ]);
+            }
+
+            // RESERVA DE TRASLADO: apartar la cantidad en la bodega ORIGEN al solicitar el traslado.
+            // El stock físico sigue ahí (cantidad_disponible no cambia) pero queda comprometido
+            // (cantidad_reservada +=), de modo que una cotización no pueda venderlo antes de que el
+            // traslado se despache. Al despachar se consume; al cancelar (pendiente) se libera.
+            $nombreDestino = Ubicacion::find($request->ubicacion_destino_id)->nombre;
+            foreach ($itemsAgrupados as $item) {
+                $stockOrigen = StockProducto::where('producto_id', $item['producto_id'])
+                    ->where('ubicacion_id', $ubicacionOrigenId)
+                    ->when($item['variante_producto_id'],
+                        fn($q) => $q->where('variante_producto_id', $item['variante_producto_id']),
+                        fn($q) => $q->whereNull('variante_producto_id'))
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stockOrigen) {
+                    $stockOrigen->increment('cantidad_reservada', $item['cantidad']);
+
+                    MovimientoStock::create([
+                        'producto_id' => $item['producto_id'],
+                        'variante_producto_id' => $item['variante_producto_id'],
+                        'ubicacion_id' => $ubicacionOrigenId,
+                        'tipo_movimiento' => 'reserva',
+                        'cantidad' => $item['cantidad'],
+                        'stock_anterior' => $stockOrigen->cantidad_disponible,
+                        'stock_nuevo' => $stockOrigen->cantidad_disponible,
+                        'referencia_documento' => $traslado->numero_traslado,
+                        'origen' => 'traslado',
+                        'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
+                        'motivo' => 'Reserva por traslado a ' . $nombreDestino,
+                        'usuario_id' => auth()->id(),
+                    ]);
+                }
             }
 
             DB::commit();
@@ -730,6 +764,19 @@ class TrasladosController extends Controller
                     ]);
                     $restante -= $descontar;
                 }
+
+                // Liberar la reserva de traslado en el origen: al despachar, lo apartado se consume
+                // (ya bajó el disponible arriba), por lo que la reserva debe soltarse.
+                $stockOrigenRes = StockProducto::where('producto_id', $item->producto_id)
+                    ->where('ubicacion_id', $traslado->ubicacion_origen_id)
+                    ->when($item->variante_producto_id,
+                        fn($q) => $q->where('variante_producto_id', $item->variante_producto_id),
+                        fn($q) => $q->whereNull('variante_producto_id'))
+                    ->lockForUpdate()
+                    ->first();
+                if ($stockOrigenRes && $stockOrigenRes->cantidad_reservada > 0) {
+                    $stockOrigenRes->decrement('cantidad_reservada', min($item->cantidad, $stockOrigenRes->cantidad_reservada));
+                }
             }
 
             $traslado->enviar();
@@ -927,6 +974,37 @@ class TrasladosController extends Controller
                             'origen' => 'traslado',
                             'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
                             'motivo' => 'Cancelación de traslado',
+                            'usuario_id' => auth()->id(),
+                        ]);
+                    }
+                }
+            } else {
+                // Estaba PENDIENTE: liberar la reserva de traslado del origen
+                // (lo apartado vuelve a quedar disponible para venta).
+                foreach ($traslado->items as $item) {
+                    $stockOrigen = StockProducto::where('producto_id', $item->producto_id)
+                        ->where('ubicacion_id', $traslado->ubicacion_origen_id)
+                        ->when($item->variante_producto_id,
+                            fn($q) => $q->where('variante_producto_id', $item->variante_producto_id),
+                            fn($q) => $q->whereNull('variante_producto_id'))
+                        ->lockForUpdate()
+                        ->first();
+                    if ($stockOrigen && $stockOrigen->cantidad_reservada > 0) {
+                        $liberar = min($item->cantidad, $stockOrigen->cantidad_reservada);
+                        $stockOrigen->decrement('cantidad_reservada', $liberar);
+
+                        MovimientoStock::create([
+                            'producto_id' => $item->producto_id,
+                            'variante_producto_id' => $item->variante_producto_id,
+                            'ubicacion_id' => $traslado->ubicacion_origen_id,
+                            'tipo_movimiento' => 'liberacion',
+                            'cantidad' => $liberar,
+                            'stock_anterior' => $stockOrigen->cantidad_disponible,
+                            'stock_nuevo' => $stockOrigen->cantidad_disponible,
+                            'referencia_documento' => $traslado->numero_traslado,
+                            'origen' => 'traslado',
+                            'tipo_operacion' => $traslado->tipo_operacion ?? 'general',
+                            'motivo' => 'Liberación de reserva por cancelación de traslado',
                             'usuario_id' => auth()->id(),
                         ]);
                     }
