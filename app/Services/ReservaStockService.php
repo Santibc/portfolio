@@ -124,12 +124,15 @@ class ReservaStockService
                 $producto = $stock->producto;
                 $permiteVentaSinStock = $producto && $producto->permitir_venta_sin_stock;
 
-                // Si no hay suficiente stock y no permite venta sin stock
+                // Si no hay suficiente stock en bodega y no permite venta sin stock
                 if ($disponibleReal < $item->cantidad && !$permiteVentaSinStock) {
+                    $faltan = $item->cantidad - $disponibleReal;
+                    $nombreProducto = $item->nombre_producto ?? ($producto->nombre ?? "ID {$item->producto_id}");
+                    $infoVariante = $item->info_variante ? " ({$item->info_variante})" : '';
                     $resultado['errores'][] = [
                         'item_id' => $item->id,
                         'producto_id' => $item->producto_id,
-                        'mensaje' => "Stock insuficiente para {$item->nombre_producto}",
+                        'mensaje' => "Stock insuficiente en bodega para {$nombreProducto}{$infoVariante}: disponible {$disponibleReal}, solicitado {$item->cantidad} (faltan {$faltan}).",
                     ];
                     $resultado['exito'] = false;
                     continue;
@@ -171,7 +174,7 @@ class ReservaStockService
                 $resultado['reservas_creadas']++;
             }
 
-            if ($resultado['exito'] || $resultado['reservas_creadas'] > 0) {
+            if ($resultado['exito']) {
                 // Actualizar la solicitud
                 $solicitud->update([
                     'tiene_reserva_stock' => true,
@@ -181,7 +184,11 @@ class ReservaStockService
 
                 DB::commit();
             } else {
+                // Bloqueo: si algún ítem no se pudo reservar completo desde bodega, NO dejamos
+                // reservas parciales (dejarían la cotización "medio apartada" y confundirían el
+                // inventario). Revertimos todo y el llamador bloquea el guardado avisando al usuario.
                 DB::rollBack();
+                $resultado['reservas_creadas'] = 0;
             }
 
         } catch (Exception $e) {

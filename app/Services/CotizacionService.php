@@ -97,9 +97,18 @@ class CotizacionService
             $reservaResultado = $this->reservaService->reservarParaCotizacion($solicitud);
 
             if (!$reservaResultado['exito']) {
+                // BLOQUEO: no creamos la cotización si algún producto no se puede reservar completo
+                // desde bodega. Así se evita que quede sin apartar y otras cotizaciones tomen esas
+                // unidades (sobreventa). Revertimos y avisamos claro qué falta.
+                DB::rollBack();
+                $resultado['exito'] = false;
                 foreach ($reservaResultado['errores'] as $error) {
-                    $resultado['advertencias'][] = $error['mensaje'];
+                    $resultado['errores'][] = $error['mensaje'];
                 }
+                if (empty($resultado['errores'])) {
+                    $resultado['errores'][] = 'No se pudo reservar el stock de uno o más productos desde la bodega.';
+                }
+                return $resultado;
             }
 
             $resultado['solicitud'] = $solicitud->fresh(['items', 'cliente', 'reservas']);
@@ -270,9 +279,18 @@ class CotizacionService
             $reservaResultado = $this->reservaService->reservarParaCotizacion($solicitud);
 
             if (!$reservaResultado['exito']) {
+                // BLOQUEO: si algún producto no se puede reservar completo desde bodega, no
+                // guardamos la edición (dejaría líneas sin apartar y otras cotizaciones tomarían
+                // esas unidades -> sobreventa). Revertimos y avisamos claro qué falta.
+                DB::rollBack();
+                $resultado['exito'] = false;
                 foreach ($reservaResultado['errores'] as $error) {
-                    $resultado['advertencias'][] = $error['mensaje'];
+                    $resultado['errores'][] = $error['mensaje'];
                 }
+                if (empty($resultado['errores'])) {
+                    $resultado['errores'][] = 'No se pudo reservar el stock de uno o más productos desde la bodega.';
+                }
+                return $resultado;
             }
 
             // Registrar log de cambios
