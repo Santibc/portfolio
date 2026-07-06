@@ -77,7 +77,7 @@ class CatalogoController extends Controller
             'cliente_id' => 'required|exists:clientes,id'
         ]);
 
-        $cliente = Cliente::with(['sucursalesActivas', 'garantiasPendientes.documentos', 'garantiasPendientes.producto', 'garantiasPendientes.variante'])
+        $cliente = Cliente::with(['sucursalesActivas', 'garantiasPendientes.documentos', 'garantiasPendientes.producto', 'garantiasPendientes.variante', 'garantiasPendientes.items.producto', 'garantiasPendientes.items.variante'])
             ->findOrFail($request->cliente_id);
 
         $categorias = Categoria::activas()->get();

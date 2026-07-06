@@ -293,10 +293,21 @@
             liberacion = `<div class="mt-3"><strong>Cotización vinculada:</strong> <span class="badge bg-info">${escapeHtml(g.cotizacion.numero)}</span></div>`;
           }
 
+          let productosHtml = '';
+          if (Array.isArray(g.items) && g.items.length > 0) {
+            productosHtml = '<ul class="mb-0 ps-3">' + g.items.map(it => {
+              let n = escapeHtml(it.producto) || 'Sin producto';
+              if (it.variante) n += ' — ' + escapeHtml(it.variante);
+              return `<li>${n} <span class="badge bg-secondary">x${it.cantidad}</span></li>`;
+            }).join('') + '</ul>';
+          } else {
+            productosHtml = '<span class="text-muted">Sin productos asociados</span>';
+          }
+
           document.getElementById('verContent').innerHTML = `
             <div class="row g-3">
               <div class="col-md-6"><strong>Cliente:</strong><br>${escapeHtml(g.cliente) || '—'}</div>
-              <div class="col-md-6"><strong>Producto:</strong><br>${escapeHtml(g.producto) || '—'}${g.variante ? ' — ' + escapeHtml(g.variante) : ''}</div>
+              <div class="col-md-6"><strong>Productos:</strong><br>${productosHtml}</div>
               <div class="col-md-6"><strong>Tipo:</strong><br>${escapeHtml(g.tipo_legible)}</div>
               <div class="col-md-6"><strong>Estado:</strong><br><span class="badge bg-${g.estado === 'pendiente' ? 'warning text-dark' : 'success'}">${escapeHtml(g.estado)}</span></div>
               <div class="col-md-6"><strong>Creada por:</strong><br>${escapeHtml(g.usuario_creador) || '—'}</div>

@@ -98,6 +98,44 @@ class Garantia extends Model
         return $this->hasMany(GarantiaProductoLiberacion::class, 'garantia_id');
     }
 
+    /**
+     * Productos reclamados en la garantía (0..N, con cantidad).
+     */
+    public function items()
+    {
+        return $this->hasMany(GarantiaItem::class, 'garantia_id');
+    }
+
+    /**
+     * Resumen legible de los productos reclamados. Usa garantia_items;
+     * cae al producto único (registros viejos) como respaldo.
+     */
+    public function itemsResumen(): string
+    {
+        if ($this->relationLoaded('items') ? $this->items->isNotEmpty() : $this->items()->exists()) {
+            return $this->items->map(function ($it) {
+                $nombre = $it->producto?->nombre ?? 'Sin producto';
+                if ($it->variante && $it->variante->nombre_variante) {
+                    $nombre .= ' — ' . $it->variante->nombre_variante;
+                }
+                if ((int) $it->cantidad > 1) {
+                    $nombre .= ' (x' . (int) $it->cantidad . ')';
+                }
+                return $nombre;
+            })->implode(', ');
+        }
+
+        if ($this->producto) {
+            $nombre = $this->producto->nombre;
+            if ($this->variante && $this->variante->nombre_variante) {
+                $nombre .= ' — ' . $this->variante->nombre_variante;
+            }
+            return $nombre;
+        }
+
+        return '—';
+    }
+
     public function scopePendientes($query)
     {
         return $query->where('estado', self::ESTADO_PENDIENTE);

@@ -19,7 +19,7 @@
                     <div class="card-body py-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
-                                <strong>{{ $g->producto?->nombre ?? '—' }}</strong>@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
+                                <strong>{{ $g->itemsResumen() }}</strong>
                                 <span class="badge bg-warning text-dark ms-2">Pendiente</span>
                                 <div class="small text-muted">{{ $g->tipoLegible() }} · Registrada el {{ $g->created_at?->format('d/m/Y H:i') }}</div>
                                 @if($g->observacion_creacion)
@@ -55,7 +55,7 @@
             @foreach($garantiasLiberadasEnEsta as $g)
                 <div class="card mb-2 border-success">
                     <div class="card-body py-2">
-                        <strong>{{ $g->producto?->nombre ?? '—' }}</strong>@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
+                        <strong>{{ $g->itemsResumen() }}</strong>
                         <span class="badge bg-success ms-2">Liberada</span>
                         <div class="small text-muted">{{ $g->tipoLegible() }}</div>
                         @if($g->observacion_creacion)

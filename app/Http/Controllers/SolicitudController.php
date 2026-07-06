@@ -961,14 +961,14 @@ class SolicitudController extends Controller
         $html .= '</div>';
 
         // Sección de Garantías
-        $garantiasPendientes = \App\Models\Garantia::with(['producto', 'variante', 'documentos'])
+        $garantiasPendientes = \App\Models\Garantia::with(['producto', 'variante', 'items.producto', 'items.variante', 'documentos'])
             ->where('cliente_id', $solicitud->cliente_id)
             ->pendientes()
             ->orderBy('created_at', 'desc')
             ->get();
 
         $garantiasLiberadasEnEsta = \App\Models\Garantia::with([
-                'producto', 'variante', 'usuarioLiberador',
+                'producto', 'variante', 'items.producto', 'items.variante', 'usuarioLiberador',
                 'productosLiberacion.producto',
                 'productosLiberacion.variante',
                 'productosLiberacion.ubicacionRelacion',

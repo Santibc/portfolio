@@ -64,17 +64,27 @@
               </select>
             </div>
 
-            <div class="mb-3 position-relative">
-              <label for="buscarProducto" class="form-label fw-semibold">Producto <span class="text-danger">*</span></label>
+            <div class="mb-2 position-relative">
+              <label for="buscarProducto" class="form-label fw-semibold">Productos <small class="text-muted fw-normal">(opcional — puedes agregar varios)</small></label>
               <input type="text" id="buscarProducto" class="form-control" placeholder="Buscar por nombre, referencia, SKU o código de barras..." autocomplete="off">
-              <input type="hidden" name="producto_id" id="producto_id" value="{{ old('producto_id') }}">
-              <input type="hidden" name="variante_producto_id" id="variante_producto_id" value="{{ old('variante_producto_id') }}">
               <div id="resultadosBusqueda" class="position-absolute bg-white border rounded shadow-sm w-100" style="z-index: 1050; max-height: 320px; overflow-y: auto; display: none;"></div>
-              <div id="productoSeleccionado" class="mt-2" style="display: none;">
-                <div class="alert alert-success py-2 mb-0 d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-check-circle"></i> <span id="productoSeleccionadoTexto"></span></span>
-                  <button type="button" class="btn-close" onclick="limpiarProducto()"></button>
-                </div>
+              <small class="text-muted d-block mt-1">Busca y selecciona un producto para agregarlo a la lista. La garantía se puede registrar sin productos.</small>
+            </div>
+
+            <div class="mb-3">
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0" id="tablaProductos">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Producto</th>
+                      <th style="width: 140px;">Cantidad</th>
+                      <th style="width: 50px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="cuerpoProductos">
+                    <tr id="filaVaciaProductos"><td colspan="3" class="text-center text-muted py-3">Sin productos agregados</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -131,9 +141,9 @@
   document.addEventListener('DOMContentLoaded', () => {
     const inputBusqueda = document.getElementById('buscarProducto');
     const resultados = document.getElementById('resultadosBusqueda');
-    const seleccionado = document.getElementById('productoSeleccionado');
-    const seleccionadoTexto = document.getElementById('productoSeleccionadoTexto');
+    const cuerpoProductos = document.getElementById('cuerpoProductos');
     let timeout = null;
+    let filaIndex = 0;
 
     inputBusqueda.addEventListener('input', function() {
       clearTimeout(timeout);
@@ -182,7 +192,7 @@
           `).join('');
           document.querySelectorAll('.resultado-item').forEach(el => {
             el.addEventListener('click', function() {
-              seleccionarProducto(
+              agregarProducto(
                 this.dataset.productoId,
                 this.dataset.varianteId || null,
                 this.dataset.nombre
@@ -200,20 +210,70 @@
       });
     }
 
-    function seleccionarProducto(productoId, varianteId, nombre) {
-      document.getElementById('producto_id').value = productoId;
-      document.getElementById('variante_producto_id').value = varianteId || '';
-      seleccionadoTexto.textContent = nombre;
-      seleccionado.style.display = 'block';
+    function toggleFilaVacia() {
+      const vacia = document.getElementById('filaVaciaProductos');
+      const hayFilas = cuerpoProductos.querySelectorAll('tr.fila-producto').length > 0;
+      if (vacia) vacia.style.display = hayFilas ? 'none' : '';
+    }
+
+    const escapeAttr = (str) => String(str ?? '').replace(/"/g, '&quot;');
+
+    function agregarProducto(productoId, varianteId, nombre, cantidad = 1) {
+      varianteId = varianteId || '';
+      // Si ya está el mismo producto+variante, solo sube la cantidad.
+      const existente = cuerpoProductos.querySelector(
+        `tr.fila-producto[data-producto-id="${productoId}"][data-variante-id="${varianteId}"]`
+      );
+      if (existente) {
+        const inp = existente.querySelector('input.cantidad-producto');
+        inp.value = (parseInt(inp.value || '1', 10) + 1);
+        inputBusqueda.value = '';
+        resultados.style.display = 'none';
+        inp.focus();
+        return;
+      }
+
+      const idx = filaIndex++;
+      const tr = document.createElement('tr');
+      tr.className = 'fila-producto';
+      tr.dataset.productoId = productoId;
+      tr.dataset.varianteId = varianteId;
+      tr.innerHTML = `
+        <td>
+          <i class="bi bi-box-seam text-primary"></i> ${escapeAttr(nombre)}
+          <input type="hidden" name="items[${idx}][producto_id]" value="${escapeAttr(productoId)}">
+          <input type="hidden" name="items[${idx}][variante_producto_id]" value="${escapeAttr(varianteId)}">
+        </td>
+        <td>
+          <input type="number" name="items[${idx}][cantidad]" class="form-control form-control-sm cantidad-producto" value="${parseInt(cantidad, 10) || 1}" min="1" step="1" required>
+        </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-quitar-producto" title="Quitar"><i class="bi bi-trash"></i></button>
+        </td>`;
+      cuerpoProductos.appendChild(tr);
+      tr.querySelector('.btn-quitar-producto').addEventListener('click', function() {
+        tr.remove();
+        toggleFilaVacia();
+      });
+      toggleFilaVacia();
       inputBusqueda.value = '';
       resultados.style.display = 'none';
     }
 
-    window.limpiarProducto = function() {
-      document.getElementById('producto_id').value = '';
-      document.getElementById('variante_producto_id').value = '';
-      seleccionado.style.display = 'none';
-    };
+    // Repoblar si hubo error de validación.
+    @if(old('items'))
+      @foreach(old('items') as $it)
+        @php $prod = \App\Models\Producto::find($it['producto_id'] ?? null); @endphp
+        @if($prod)
+          agregarProducto(
+            @json($it['producto_id']),
+            @json($it['variante_producto_id'] ?? ''),
+            @json($prod->nombre),
+            @json((int)($it['cantidad'] ?? 1))
+          );
+        @endif
+      @endforeach
+    @endif
 
     window.toggleOtroTipo = function() {
       const tipo = document.getElementById('tipo').value;
@@ -236,12 +296,7 @@
     });
 
     document.getElementById('formGarantia').addEventListener('submit', function(e) {
-      const productoId = document.getElementById('producto_id').value;
-      if (!productoId) {
-        e.preventDefault();
-        Swal.fire('Producto requerido', 'Debes seleccionar un producto antes de continuar.', 'warning');
-        return;
-      }
+      // El producto es opcional: la garantía puede registrarse sin productos.
       const tipo = document.getElementById('tipo').value;
       if (tipo === 'otro') {
         const desc = document.getElementById('tipo_otro_descripcion').value.trim();

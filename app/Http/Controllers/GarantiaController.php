@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Garantia;
 use App\Models\GarantiaDocumento;
+use App\Models\GarantiaItem;
 use App\Models\GarantiaProductoLiberacion;
 use App\Models\MovimientoStock;
 use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\Ubicacion;
 use App\Models\VarianteProducto;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -26,6 +28,8 @@ class GarantiaController extends Controller
                 'cliente',
                 'producto',
                 'variante',
+                'items.producto',
+                'items.variante',
                 'solicitud',
                 'usuarioCreador',
                 'usuarioLiberador',
@@ -62,14 +66,7 @@ class GarantiaController extends Controller
                     return $row->cliente->nombre_completo ?? 'N/A';
                 })
                 ->addColumn('producto_nombre', function ($row) {
-                    $nombre = $row->producto->nombre ?? 'N/A';
-                    if ($row->variante) {
-                        $sufijo = $row->variante->nombre_variante ?? null;
-                        if ($sufijo) {
-                            $nombre .= ' — ' . $sufijo;
-                        }
-                    }
-                    return $nombre;
+                    return $row->itemsResumen();
                 })
                 ->addColumn('tipo_badge', function ($row) {
                     $tipos = Garantia::tiposDisponibles();
@@ -96,10 +93,11 @@ class GarantiaController extends Controller
                     return $row->created_at?->format('d/m/Y H:i');
                 })
                 ->addColumn('action', function ($row) use ($puedeLiberar) {
-                    $btns = '<div class="d-flex gap-1">';
-                    $btns .= '<button type="button" class="btn btn-sm btn-outline-info" onclick="verGarantia(' . $row->id . ')" title="Ver"><i class="bi bi-eye"></i></button>';
+                    $btns = '<div class="d-flex gap-1 flex-nowrap justify-content-center" style="white-space:nowrap;">';
+                    $btns .= '<button type="button" class="btn btn-sm btn-info text-white flex-shrink-0" onclick="verGarantia(' . $row->id . ')" title="Ver"><i class="bi bi-eye"></i></button>';
+                    $btns .= '<a href="' . route('garantias.pdf', $row->id) . '" class="btn btn-sm btn-danger flex-shrink-0" title="Descargar PDF" target="_blank"><i class="bi bi-file-earmark-pdf"></i></a>';
                     if ($puedeLiberar && $row->estaPendiente()) {
-                        $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="liberarGarantia(' . $row->id . ')" title="Liberar"><i class="bi bi-unlock"></i> Liberar</button>';
+                        $btns .= '<button type="button" class="btn btn-sm btn-success flex-shrink-0" onclick="liberarGarantia(' . $row->id . ')" title="Liberar"><i class="bi bi-unlock"></i></button>';
                     }
                     $btns .= '</div>';
                     return $btns;
@@ -127,8 +125,12 @@ class GarantiaController extends Controller
     {
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'producto_id' => 'required|exists:productos,id',
-            'variante_producto_id' => 'nullable|exists:variantes_productos,id',
+            // El producto es OPCIONAL: la garantía puede registrarse sin productos.
+            // Si se agregan, cada uno debe tener producto y cantidad (>= 1).
+            'items' => 'nullable|array',
+            'items.*.producto_id' => 'required|integer|exists:productos,id',
+            'items.*.variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
+            'items.*.cantidad' => 'required|integer|min:1',
             'tipo' => 'required|in:cambio_producto,descuento,nota_credito,otro',
             'tipo_otro_descripcion' => 'required_if:tipo,otro|nullable|max:500',
             'observacion_creacion' => 'nullable|string|max:1000',
@@ -137,20 +139,47 @@ class GarantiaController extends Controller
         ], [
             'documentos.*.max' => 'Cada documento no puede superar los 10MB.',
             'tipo_otro_descripcion.required_if' => 'Debes especificar el tipo cuando seleccionas "Otro".',
+            'items.*.producto_id.required' => 'Cada producto agregado debe estar seleccionado.',
+            'items.*.cantidad.required' => 'Cada producto agregado debe tener una cantidad.',
+            'items.*.cantidad.min' => 'La cantidad de cada producto debe ser al menos 1.',
         ]);
+
+        $items = $request->input('items', []) ?: [];
+
+        // Cada variante debe pertenecer a su producto.
+        foreach ($items as $idx => $item) {
+            if (!empty($item['variante_producto_id'])) {
+                $pertenece = VarianteProducto::where('id', $item['variante_producto_id'])
+                    ->where('producto_id', $item['producto_id'])
+                    ->exists();
+                if (!$pertenece) {
+                    return back()->withInput()->with('error', 'La variante del producto #' . ($idx + 1) . ' no pertenece al producto seleccionado.');
+                }
+            }
+        }
 
         DB::beginTransaction();
         try {
             $garantia = Garantia::create([
                 'cliente_id' => $request->cliente_id,
-                'producto_id' => $request->producto_id,
-                'variante_producto_id' => $request->variante_producto_id,
+                // Los productos reclamados viven ahora en garantia_items.
+                'producto_id' => null,
+                'variante_producto_id' => null,
                 'tipo' => $request->tipo,
                 'tipo_otro_descripcion' => $request->tipo === Garantia::TIPO_OTRO ? $request->tipo_otro_descripcion : null,
                 'observacion_creacion' => $request->filled('observacion_creacion') ? trim($request->observacion_creacion) : null,
                 'estado' => Garantia::ESTADO_PENDIENTE,
                 'usuario_creador_id' => auth()->id(),
             ]);
+
+            foreach ($items as $item) {
+                GarantiaItem::create([
+                    'garantia_id' => $garantia->id,
+                    'producto_id' => $item['producto_id'],
+                    'variante_producto_id' => $item['variante_producto_id'] ?? null,
+                    'cantidad' => (int) ($item['cantidad'] ?? 1),
+                ]);
+            }
 
             // Los documentos son opcionales: solo se procesan si se adjuntó alguno.
             if ($request->hasFile('documentos')) {
@@ -215,6 +244,8 @@ class GarantiaController extends Controller
             'cliente',
             'producto',
             'variante',
+            'items.producto',
+            'items.variante',
             'solicitud',
             'usuarioCreador',
             'usuarioLiberador',
@@ -229,6 +260,13 @@ class GarantiaController extends Controller
             'cliente' => $garantia->cliente?->nombre_completo,
             'producto' => $garantia->producto?->nombre,
             'variante' => $garantia->variante?->nombre_variante,
+            'items' => $garantia->items->map(function ($it) {
+                return [
+                    'producto' => $it->producto?->nombre,
+                    'variante' => $it->variante?->nombre_variante,
+                    'cantidad' => (int) $it->cantidad,
+                ];
+            }),
             'tipo' => $garantia->tipo,
             'tipo_legible' => $garantia->tipoLegible(),
             'tipo_otro_descripcion' => $garantia->tipo_otro_descripcion,
@@ -382,6 +420,30 @@ class GarantiaController extends Controller
             'success' => true,
             'mensaje' => 'Garantía liberada correctamente.',
         ]);
+    }
+
+    public function descargarPdf($id)
+    {
+        $garantia = Garantia::with([
+            'cliente',
+            'items.producto',
+            'items.variante',
+            'solicitud',
+            'usuarioCreador',
+            'usuarioLiberador',
+            'documentos',
+            'productosLiberacion.producto',
+            'productosLiberacion.variante',
+            'productosLiberacion.ubicacionRelacion',
+        ])->findOrFail($id);
+
+        $logoPath = public_path('images/logo.png');
+        $logo = File::exists($logoPath) ? $logoPath : null;
+
+        $pdf = Pdf::loadView('garantias.pdf', compact('garantia', 'logo'));
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->download('garantia-' . $garantia->id . '.pdf');
     }
 
     public function productosPorUbicacion($ubicacionId)
@@ -541,7 +603,7 @@ class GarantiaController extends Controller
         $cliente = Cliente::findOrFail($clienteId);
 
         $garantias = $cliente->garantiasPendientes()
-            ->with(['producto', 'variante', 'documentos', 'usuarioCreador'])
+            ->with(['producto', 'variante', 'items.producto', 'items.variante', 'documentos', 'usuarioCreador'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -549,8 +611,13 @@ class GarantiaController extends Controller
             'data' => $garantias->map(function ($g) {
                 return [
                     'id' => $g->id,
-                    'producto' => $g->producto?->nombre,
-                    'variante' => $g->variante?->nombre_variante,
+                    'producto' => $g->itemsResumen(),
+                    'variante' => null,
+                    'items' => $g->items->map(fn($it) => [
+                        'producto' => $it->producto?->nombre,
+                        'variante' => $it->variante?->nombre_variante,
+                        'cantidad' => (int) $it->cantidad,
+                    ]),
                     'tipo' => $g->tipo,
                     'tipo_legible' => $g->tipoLegible(),
                     'observacion_creacion' => $g->observacion_creacion,

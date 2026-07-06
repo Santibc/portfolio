@@ -20,7 +20,7 @@
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <h6 class="mb-0">
-                    {{ $g->producto?->nombre ?? '—' }}@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
+                    {{ $g->itemsResumen() }}
                   </h6>
                   <span class="badge bg-warning text-dark">Pendiente</span>
                 </div>
