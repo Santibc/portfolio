@@ -46,7 +46,7 @@ class RegistroMercadoController extends Controller
 
     public function store(StoreRegistroMercadoRequest $request): RedirectResponse
     {
-        $data = $request->safe()->only(['producto_mercado_id', 'cantidad', 'valor', 'metodo_pago_id']);
+        $data = $request->safe()->only(['producto_mercado_id', 'cantidad', 'valor', 'metodo_pago_id', 'observacion']);
 
         if ($request->boolean('vincular_caja')) {
             $data['turno_caja_id'] = $this->turnos->turnoActivo()?->id;

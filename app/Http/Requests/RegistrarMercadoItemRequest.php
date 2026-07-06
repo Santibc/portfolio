@@ -22,6 +22,7 @@ class RegistrarMercadoItemRequest extends FormRequest
             'valor'          => ['required', 'integer', 'min:1', 'max:999999999'],
             'metodo_pago_id' => ['required', 'integer', 'exists:metodos_pago,id'],
             'vincular_caja'  => ['nullable', 'boolean'],
+            'observacion'    => ['nullable', 'string', 'max:500'],
         ];
     }
 

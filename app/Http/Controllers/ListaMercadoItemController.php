@@ -55,6 +55,7 @@ class ListaMercadoItemController extends Controller
                 (int) $request->validated('valor'),
                 (int) $request->validated('metodo_pago_id'),
                 $turnoCajaId,
+                $request->validated('observacion'),
             );
         } catch (DomainException $e) {
             return back()->withInput()->with('error', $e->getMessage());

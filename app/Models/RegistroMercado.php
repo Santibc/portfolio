@@ -22,6 +22,7 @@ class RegistroMercado extends Model
         'valor',
         'metodo_pago_id',
         'turno_caja_id',
+        'observacion',
     ];
 
     protected $casts = [

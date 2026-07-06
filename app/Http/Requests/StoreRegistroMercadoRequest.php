@@ -22,6 +22,7 @@ class StoreRegistroMercadoRequest extends FormRequest
             'metodo_pago_id'      => ['required', 'integer', 'exists:metodos_pago,id'],
             'vincular_caja'       => ['nullable', 'boolean'],
             'tipo_id'             => ['nullable', 'integer', 'exists:tipos_producto_mercado,id'],
+            'observacion'         => ['nullable', 'string', 'max:500'],
         ];
     }
 

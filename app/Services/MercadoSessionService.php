@@ -62,9 +62,9 @@ class MercadoSessionService
         });
     }
 
-    public function registrarItem(MercadoItem $item, float $cantidad, int $valor, ?int $metodoPagoId = null, ?int $turnoCajaId = null): RegistroMercado
+    public function registrarItem(MercadoItem $item, float $cantidad, int $valor, ?int $metodoPagoId = null, ?int $turnoCajaId = null, ?string $observacion = null): RegistroMercado
     {
-        return DB::transaction(function () use ($item, $cantidad, $valor, $metodoPagoId, $turnoCajaId) {
+        return DB::transaction(function () use ($item, $cantidad, $valor, $metodoPagoId, $turnoCajaId, $observacion) {
             $mercado = $item->mercado;
 
             if ($mercado->estado !== EstadoMercado::EnProgreso) {
@@ -78,6 +78,7 @@ class MercadoSessionService
                 'valor'               => $valor,
                 'metodo_pago_id'      => $metodoPagoId,
                 'turno_caja_id'       => $turnoCajaId,
+                'observacion'         => $observacion,
             ]);
 
             $item->update([

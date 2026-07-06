@@ -108,6 +108,15 @@
                         </div>
                     @endif
 
+                    <x-textarea
+                        label="Observación (opcional)"
+                        name="observacion"
+                        :value="old('observacion')"
+                        rows="2"
+                        maxlength="500"
+                        placeholder="Nota sobre esta compra (marca, calidad, proveedor, etc.)"
+                    />
+
                     <div class="pt-1 border-t border-cream-200 dark:border-cream-800">
                         @if ($turnoActivo)
                             <x-checkbox

@@ -63,6 +63,13 @@ class DashboardMercadoController extends Controller
             $deleteUrl = route('mercado-dashboard.destroy', $r);
             $csrf = csrf_token();
 
+            $observacion = $r->observacion
+                ? '<span class="inline-flex items-center gap-1 align-middle" style="max-width:240px" title="' . e($r->observacion) . '">'
+                    . '<i data-lucide="message-circle" class="w-3.5 h-3.5 shrink-0 text-primary-600 dark:text-primary-400"></i>'
+                    . '<span class="truncate text-cream-700 dark:text-cream-300" style="min-width:0">' . e($r->observacion) . '</span>'
+                  . '</span>'
+                : '<span class="text-cream-400 dark:text-cream-600">—</span>';
+
             $acciones = '<div class="inline-flex items-center gap-2">'
                 . '<a href="' . $editUrl . '" class="inline-flex items-center gap-1 text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 font-medium"><i data-lucide="edit" class="w-3.5 h-3.5"></i>Editar</a>'
                 . '<form action="' . $deleteUrl . '" method="POST" class="inline" onsubmit="return confirm(\'¿Eliminar este registro?\');">'
@@ -79,6 +86,7 @@ class DashboardMercadoController extends Controller
                 'cantidad'  => $cantidad,
                 'unitario'  => $unitarioFmt,
                 'total'     => $r->valor_formateado,
+                'observacion' => $observacion,
                 'acciones'  => $acciones,
             ];
         })->values()->all();
@@ -90,6 +98,7 @@ class DashboardMercadoController extends Controller
             ['key' => 'cantidad', 'label' => 'Cantidad',  'sortable' => false],
             ['key' => 'unitario', 'label' => 'Unitario',  'sortable' => false],
             ['key' => 'total',    'label' => 'Total',     'sortable' => false],
+            ['key' => 'observacion', 'label' => 'Observación', 'sortable' => false],
             ['key' => 'acciones', 'label' => 'Acciones',  'sortable' => false],
         ];
 

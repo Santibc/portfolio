@@ -78,6 +78,15 @@
                         <span class="font-semibold text-cream-900 dark:text-cream-50"
                               x-text="'$ ' + (Math.round(valor / cantidad)).toLocaleString('es-CO')"></span>
                     </p>
+
+                    <x-textarea
+                        label="Observación (opcional)"
+                        name="observacion"
+                        :value="old('observacion', $registro->observacion)"
+                        rows="2"
+                        maxlength="500"
+                        placeholder="Nota sobre esta compra (marca, calidad, proveedor, etc.)"
+                    />
                 </div>
             </x-card>
 
