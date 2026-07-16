@@ -70,7 +70,7 @@ class PrefacturasController extends Controller
 
         $ubicaciones = Ubicacion::activas()->tiendas()->get();
         $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
-        $vendedorasPrefactura = Prefactura::VENDEDORAS_PREFACTURA;
+        $vendedorasPrefactura = \App\Models\VendedoraPrefactura::nombresActivos();
 
         return view('pdv.prefacturas.crear', compact('listasPrecios', 'ubicaciones', 'descuentoMaximo', 'vendedorasPrefactura'));
     }
@@ -80,7 +80,7 @@ class PrefacturasController extends Controller
         $request->validate([
             'lista_precio_id' => 'required|exists:listas_precios,id',
             'ubicacion_id' => 'required|exists:ubicaciones,id',
-            'vendedora_prefactura' => 'required|in:' . implode(',', Prefactura::VENDEDORAS_PREFACTURA),
+            'vendedora_prefactura' => ['required', \Illuminate\Validation\Rule::in(\App\Models\VendedoraPrefactura::nombresActivos())],
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',

@@ -1117,7 +1117,7 @@ class SolicitudController extends Controller
             ]);
 
             $garantiasVinculadas = \App\Models\Garantia::with([
-                    'producto', 'variante', 'usuarioCreador', 'usuarioLiberador',
+                    'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
                     'documentos',
                     'productosLiberacion.producto',
                     'productosLiberacion.variante',
@@ -1580,7 +1580,7 @@ class SolicitudController extends Controller
         ]);
 
         $garantiasVinculadas = \App\Models\Garantia::with([
-                'producto', 'variante', 'usuarioCreador', 'usuarioLiberador',
+                'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
                 'documentos',
                 'productosLiberacion.producto',
                 'productosLiberacion.variante',

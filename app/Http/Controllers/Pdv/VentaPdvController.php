@@ -7,6 +7,7 @@ use App\Models\VentaPdv;
 use App\Models\Cliente;
 use App\Models\ListaPrecio;
 use App\Models\ConfiguracionPdv;
+use App\Models\Feria;
 use App\Models\Producto;
 use App\Models\PrecioVariante;
 use App\Models\SesionCaja;
@@ -123,17 +124,24 @@ class VentaPdvController extends Controller
 
         $ubicacionIdDefault = $sesion->caja->ubicacion_id;
 
+        // Precios de FERIA por ubicación: si la ubicación de la caja tiene una feria ACTIVA,
+        // el POS cobra con la lista de esa feria — cualquier caja del stand — sin tocar las
+        // listas regulares. Si no hay feria activa, respeta el override propio de la caja.
+        $cajaListaPrecioId = $this->listaPrecioFeriaDeSesion($sesion) ?? $sesion->caja->lista_precio_id;
+
         $listasPrecioPdvConfig = ConfiguracionPdv::obtener('listas_precio_pdv', '');
         $listasPrecioIds = array_filter(explode(',', $listasPrecioPdvConfig));
 
-        if (!empty($listasPrecioIds)) {
+        if ($cajaListaPrecioId) {
+            $listasPrecios = ListaPrecio::where('activo', true)->where('id', $cajaListaPrecioId)->get();
+        } elseif (!empty($listasPrecioIds)) {
             $listasPrecios = ListaPrecio::where('activo', true)->whereIn('id', $listasPrecioIds)->orderBy('orden')->get();
         } else {
             $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
         }
         $listasPrecioIdsPermitidas = $listasPrecios->pluck('id')->toArray();
 
-        $listaPrecioDefault = ConfiguracionPdv::obtener('lista_precio_consumidor_final', 1);
+        $listaPrecioDefault = $cajaListaPrecioId ?: ConfiguracionPdv::obtener('lista_precio_consumidor_final', 1);
         $ivaPorcentaje = ConfiguracionPdv::obtenerNumero('iva_porcentaje', 0);
         $descuentoMaximo = ConfiguracionPdv::obtenerNumero('descuento_maximo_cajero', 15);
         $requierePinDescuento = ConfiguracionPdv::obtener('requiere_pin_descuento_global', 'true') === 'true';
@@ -438,6 +446,25 @@ class VentaPdvController extends Controller
         return view('pdv.pdf.ticket', ['venta' => $venta, 'mode' => 'html']);
     }
 
+    /**
+     * Si la ubicación de la caja de la sesión tiene una feria ACTIVA, devuelve la lista
+     * de precios de esa feria; si no, null. Así cualquier caja abierta en el stand de una
+     * feria cobra con los precios de la feria, sin tocar las listas regulares.
+     */
+    private function listaPrecioFeriaDeSesion($sesion): ?int
+    {
+        if (!$sesion || !$sesion->caja) {
+            return null;
+        }
+
+        $feria = Feria::activas()
+            ->where('ubicacion_id', $sesion->caja->ubicacion_id)
+            ->latest('id')
+            ->first();
+
+        return $feria?->lista_precio_id;
+    }
+
     public function buscarProductos(Request $request)
     {
         $termino = $request->q ?? '';
@@ -447,7 +474,9 @@ class VentaPdvController extends Controller
 
         $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
         $ubicacionId = $sesion ? $sesion->caja->ubicacion_id : ($request->ubicacion_id ?? 0);
-        $listaPrecioId = $request->lista_precio_id;
+        // Feria por ubicación: en un stand de feria activa, la búsqueda usa siempre la lista
+        // de la feria (a prueba de errores, sin importar qué mande el frontend).
+        $listaPrecioId = $this->listaPrecioFeriaDeSesion($sesion) ?? $request->lista_precio_id;
 
         $productos = $this->ventaService->buscarProductos($termino, $ubicacionId, $listaPrecioId);
 
@@ -541,7 +570,9 @@ class VentaPdvController extends Controller
             'items.*.variante_producto_id' => 'nullable|exists:variantes_productos,id',
         ]);
 
-        $listaPrecioId = $request->lista_precio_id;
+        // Feria por ubicación: si el POS está en un stand de feria activa, forzamos su lista.
+        $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
+        $listaPrecioId = $this->listaPrecioFeriaDeSesion($sesion) ?? $request->lista_precio_id;
         $precios = [];
 
         foreach ($request->items as $item) {

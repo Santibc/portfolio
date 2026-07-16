@@ -173,6 +173,11 @@
                 <i class="bi bi-geo-alt"></i>
                 <span>Ubicaciones</span>
             </a>
+            <a href="{{ route('ferias.index') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('ferias*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-shop-window"></i>
+                <span>Ferias</span>
+            </a>
             <a href="{{ route('productos.importacion.historial') }}"
                class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('productos/historial-importaciones*') || request()->is('productos/importacion*') ? 'active' : 'text-dark' }}">
                 <i class="bi bi-upload"></i>
@@ -204,6 +209,11 @@
                    class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.siigo.*') ? 'active' : 'text-dark' }}">
                     <i class="bi bi-cloud-arrow-up"></i>
                     <span>Config. SIIGO</span>
+                </a>
+                <a href="{{ route('pdv.vendedoras.index') }}"
+                   class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->routeIs('pdv.vendedoras.*') ? 'active' : 'text-dark' }}">
+                    <i class="bi bi-person-vcard"></i>
+                    <span>Vendedoras</span>
                 </a>
             @endif
 

@@ -15,6 +15,7 @@ class Caja extends Model
         'nombre',
         'codigo',
         'ubicacion_id',
+        'lista_precio_id',
         'cajero_asignado_id',
         'estado',
         'activo',
@@ -28,6 +29,11 @@ class Caja extends Model
     public function ubicacion()
     {
         return $this->belongsTo(Ubicacion::class);
+    }
+
+    public function listaPrecio()
+    {
+        return $this->belongsTo(ListaPrecio::class, 'lista_precio_id');
     }
 
     public function cajeroAsignado()

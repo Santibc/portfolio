@@ -18,6 +18,8 @@ use App\Http\Controllers\ListaPreciosController;
 use App\Http\Controllers\UbicacionesController;
 use App\Http\Controllers\TrasladosController;
 use App\Http\Controllers\GarantiaController;
+use App\Http\Controllers\FeriaController;
+use App\Http\Controllers\VendedoraPrefacturaController;
 use App\Http\Controllers\PortalClienteController;
 use App\Http\Controllers\PuntoVentaController;
 use App\Http\Controllers\Pdv\PdvDashboardController;
@@ -369,6 +371,36 @@ Route::middleware(['auth', 'role:admin,garantias'])->prefix('garantias')->group(
     Route::get('/{id}/pdf', [GarantiaController::class, 'descargarPdf'])->name('garantias.pdf');
     Route::get('/{id}', [GarantiaController::class, 'show'])->name('garantias.show');
     Route::post('/{id}/liberar', [GarantiaController::class, 'liberar'])->name('garantias.liberar');
+});
+
+// ============================================================
+// VENDEDORAS DE PREFACTURA (Admin) — CRUD
+// ============================================================
+Route::middleware(['auth', 'role:admin'])->prefix('pdv/vendedoras')->name('pdv.vendedoras.')->group(function () {
+    Route::get('/', [VendedoraPrefacturaController::class, 'index'])->name('index');
+    Route::post('/', [VendedoraPrefacturaController::class, 'store'])->name('store');
+    Route::post('/{id}', [VendedoraPrefacturaController::class, 'update'])->name('update');
+    Route::post('/{id}/toggle', [VendedoraPrefacturaController::class, 'toggle'])->name('toggle');
+    Route::post('/{id}/eliminar', [VendedoraPrefacturaController::class, 'destroy'])->name('destroy');
+});
+
+// ============================================================
+// MÓDULO DE FERIAS (Admin e Inventarios)
+// ============================================================
+Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->prefix('ferias')->group(function () {
+    Route::get('/', [FeriaController::class, 'index'])->name('ferias.index');
+    Route::get('/crear', [FeriaController::class, 'create'])->name('ferias.crear');
+    Route::post('/', [FeriaController::class, 'store'])->name('ferias.store');
+    Route::get('/{id}/buscar-productos', [FeriaController::class, 'buscarProductos'])->name('ferias.buscar-productos');
+    Route::post('/{id}/precio', [FeriaController::class, 'actualizarPrecio'])->name('ferias.actualizar-precio');
+    Route::post('/{id}/precios-masivos', [FeriaController::class, 'preciosMasivos'])->name('ferias.precios-masivos');
+    Route::get('/{id}/inventario', [FeriaController::class, 'inventario'])->name('ferias.inventario');
+    Route::get('/{id}/buscar-bodega', [FeriaController::class, 'buscarProductosBodega'])->name('ferias.buscar-bodega');
+    Route::post('/{id}/inventario/cargar', [FeriaController::class, 'prepararInventario'])->name('ferias.inventario.cargar');
+    Route::post('/{id}/inventario/devolver', [FeriaController::class, 'devolverInventario'])->name('ferias.inventario.devolver');
+    Route::post('/{id}/activar', [FeriaController::class, 'activar'])->name('ferias.activar');
+    Route::post('/{id}/cerrar', [FeriaController::class, 'cerrar'])->name('ferias.cerrar');
+    Route::get('/{id}', [FeriaController::class, 'show'])->name('ferias.show');
 });
 
 // ============================================================

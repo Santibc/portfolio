@@ -494,7 +494,7 @@
                         <tr>
                             <td style="vertical-align: top;">
                                 <strong style="color: #382E65;">Garantía #{{ $g->id }}</strong>
-                                — {{ $g->producto?->nombre ?? '—' }}@if($g->variante && $g->variante->nombre_variante) — {{ $g->variante->nombre_variante }}@endif
+                                — {{ $g->itemsResumen() }}
                             </td>
                             <td style="width: 90px; text-align: right; vertical-align: top;">
                                 <span style="background-color: {{ $estadoBg }}; color: {{ $estadoColor }}; padding: 2px 8px; border-radius: 3px; font-size: 8pt; font-weight: bold;">{{ $estadoTexto }}</span>
