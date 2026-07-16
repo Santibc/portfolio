@@ -14,9 +14,10 @@ class UpdateRegistroMercadoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cantidad'    => ['required', 'numeric', 'min:0.01', 'max:99999', 'decimal:0,2'],
-            'valor'       => ['required', 'integer', 'min:1', 'max:999999999'],
-            'observacion' => ['nullable', 'string', 'max:500'],
+            'cantidad'       => ['required', 'numeric', 'min:0.01', 'max:99999', 'decimal:0,2'],
+            'valor'          => ['required', 'integer', 'min:1', 'max:999999999'],
+            'metodo_pago_id' => ['nullable', 'integer', 'exists:metodos_pago,id'],
+            'observacion'    => ['nullable', 'string', 'max:500'],
         ];
     }
 

@@ -15,8 +15,10 @@
         </x-slot:actions>
     </x-page-header>
 
+    @php $metodoDefault = old('metodo_pago_id', $registro->metodo_pago_id); @endphp
+
     <div class="max-w-md mx-auto"
-         x-data="{ cantidad: {{ (float) $registro->cantidad }}, valor: {{ (int) $registro->valor }} }"
+         x-data="{ cantidad: {{ (float) $registro->cantidad }}, valor: {{ (int) $registro->valor }}, metodoPago: {{ $metodoDefault ? (int) $metodoDefault : 'null' }} }"
          x-on:currency-changed="valor = $event.detail">
 
         <x-card padding="p-4">
@@ -78,6 +80,27 @@
                         <span class="font-semibold text-cream-900 dark:text-cream-50"
                               x-text="'$ ' + (Math.round(valor / cantidad)).toLocaleString('es-CO')"></span>
                     </p>
+
+                    @if ($metodos->isNotEmpty())
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-cream-700 dark:text-cream-300">Método de pago</label>
+                            <input type="hidden" name="metodo_pago_id" :value="metodoPago">
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($metodos as $m)
+                                    <button type="button" @click="metodoPago = {{ $m->id }}"
+                                            :class="metodoPago == {{ $m->id }}
+                                                ? 'bg-primary-500 border-primary-500 text-white shadow-sm'
+                                                : 'bg-white border-cream-300 text-cream-700 hover:border-primary-400 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-200 dark:hover:border-primary-500'"
+                                            class="px-4 py-2 rounded-xl border text-sm font-semibold transition-colors active:scale-95">
+                                        {{ $m->nombre }}
+                                    </button>
+                                @endforeach
+                            </div>
+                            @error('metodo_pago_id')
+                                <p class="text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
 
                     <x-textarea
                         label="Observación (opcional)"

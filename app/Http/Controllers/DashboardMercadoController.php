@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateRegistroMercadoRequest;
+use App\Models\MetodoPago;
 use App\Models\ProductoMercado;
 use App\Models\RegistroMercado;
 use Carbon\Carbon;
@@ -59,6 +60,10 @@ class DashboardMercadoController extends Controller
             $unitario = $r->cantidad > 0 ? intval($r->valor / $r->cantidad) : 0;
             $unitarioFmt = '$ ' . number_format($unitario, 0, ',', '.');
 
+            $metodo = $r->metodoPago
+                ? '<span class="inline-flex items-center font-semibold rounded-full bg-accent-100 text-accent-800 dark:bg-accent-900/40 dark:text-accent-200 text-[10px] px-1.5 py-0.5">' . e($r->metodoPago->nombre) . '</span>'
+                : '<span class="text-cream-400 dark:text-cream-600">—</span>';
+
             $editUrl = route('mercado-dashboard.edit', $r);
             $deleteUrl = route('mercado-dashboard.destroy', $r);
             $csrf = csrf_token();
@@ -86,6 +91,7 @@ class DashboardMercadoController extends Controller
                 'cantidad'  => $cantidad,
                 'unitario'  => $unitarioFmt,
                 'total'     => $r->valor_formateado,
+                'metodo'    => $metodo,
                 'observacion' => $observacion,
                 'acciones'  => $acciones,
             ];
@@ -98,6 +104,7 @@ class DashboardMercadoController extends Controller
             ['key' => 'cantidad', 'label' => 'Cantidad',  'sortable' => false],
             ['key' => 'unitario', 'label' => 'Unitario',  'sortable' => false],
             ['key' => 'total',    'label' => 'Total',     'sortable' => false],
+            ['key' => 'metodo',   'label' => 'Método',    'sortable' => false],
             ['key' => 'observacion', 'label' => 'Observación', 'sortable' => false],
             ['key' => 'acciones', 'label' => 'Acciones',  'sortable' => false],
         ];
@@ -113,7 +120,9 @@ class DashboardMercadoController extends Controller
     {
         $registro->load('producto.tipo');
 
-        return view('mercado-dashboard.edit', compact('registro'));
+        $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
+
+        return view('mercado-dashboard.edit', compact('registro', 'metodos'));
     }
 
     public function update(UpdateRegistroMercadoRequest $request, RegistroMercado $registro): RedirectResponse
