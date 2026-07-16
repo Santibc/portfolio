@@ -478,7 +478,7 @@
     @if(isset($garantiasVinculadas) && $garantiasVinculadas->isNotEmpty())
     <div style="margin-top: 14px; margin-bottom: 10px; page-break-inside: avoid;">
         <div style="background-color: #382E65; color: #FFFFFF; padding: 6px 12px; font-size: 10pt; font-weight: bold; border-radius: 4px 4px 0 0;">
-            GARANTÍAS VINCULADAS A ESTA COTIZACIÓN
+            GARANTÍAS DEL CLIENTE / VINCULADAS A ESTA COTIZACIÓN
         </div>
         <div style="border: 1px solid #BCA9F5; border-top: 0; padding: 8px 12px; border-radius: 0 0 4px 4px;">
             @foreach($garantiasVinculadas as $g)

@@ -1116,17 +1116,18 @@ class SolicitudController extends Controller
                 'aplicadaPor'
             ]);
 
-            $garantiasVinculadas = \App\Models\Garantia::with([
-                    'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
-                    'documentos',
-                    'productosLiberacion.producto',
-                    'productosLiberacion.variante',
-                    'productosLiberacion.ubicacionRelacion',
-                ])
-                ->where('solicitud_cotizacion_id', $solicitud->id)
-                ->orderBy('liberado_en', 'desc')
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $withGarantias = [
+                'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
+                'documentos', 'productosLiberacion.producto', 'productosLiberacion.variante', 'productosLiberacion.ubicacionRelacion',
+            ];
+            $garantiasVinculadas = \App\Models\Garantia::with($withGarantias)
+                ->where('cliente_id', $solicitud->cliente_id)->pendientes()
+                ->orderBy('created_at', 'desc')->get()
+                ->concat(
+                    \App\Models\Garantia::with($withGarantias)
+                        ->where('solicitud_cotizacion_id', $solicitud->id)->liberadas()
+                        ->orderBy('liberado_en', 'desc')->get()
+                );
 
             // Generar PDF con nuevo formato
             $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud', 'garantiasVinculadas'));
@@ -1579,17 +1580,20 @@ class SolicitudController extends Controller
             'pagos.registradoPor'
         ]);
 
-        $garantiasVinculadas = \App\Models\Garantia::with([
-                'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
-                'documentos',
-                'productosLiberacion.producto',
-                'productosLiberacion.variante',
-                'productosLiberacion.ubicacionRelacion',
-            ])
-            ->where('solicitud_cotizacion_id', $solicitud->id)
-            ->orderBy('liberado_en', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Mismo criterio que el detalle en pantalla: garantías PENDIENTES del cliente
+        // + garantías LIBERADAS ligadas a esta cotización.
+        $withGarantias = [
+            'producto', 'variante', 'items.producto', 'items.variante', 'usuarioCreador', 'usuarioLiberador',
+            'documentos', 'productosLiberacion.producto', 'productosLiberacion.variante', 'productosLiberacion.ubicacionRelacion',
+        ];
+        $garantiasVinculadas = \App\Models\Garantia::with($withGarantias)
+            ->where('cliente_id', $solicitud->cliente_id)->pendientes()
+            ->orderBy('created_at', 'desc')->get()
+            ->concat(
+                \App\Models\Garantia::with($withGarantias)
+                    ->where('solicitud_cotizacion_id', $solicitud->id)->liberadas()
+                    ->orderBy('liberado_en', 'desc')->get()
+            );
 
         $pdf = PDF::loadView('pdf.cotizacion-excel-format', compact('solicitud', 'garantiasVinculadas'));
         $pdf->setPaper('letter', 'portrait');
