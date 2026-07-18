@@ -419,9 +419,14 @@
                                                     </div>
                                                     <div class="card-footer">
                                                         <button class="btn btn-warning btn-sm"
-                                                            onclick="editService({{ $service->id }}, '{{ $service->icon_class }}', '{{ $service->title }}', '{{ addslashes($service->description) }}')">
+                                                            onclick="editService({{ $service->id }})">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
+                                                        @if($service->slug)
+                                                            <a href="{{ route('services.show', $service->slug) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver en el sitio">
+                                                                <i class="bi bi-box-arrow-up-right"></i>
+                                                            </a>
+                                                        @endif
                                                         <form
                                                             action="{{ route('admin.landing.services.delete', $service->id) }}"
                                                             method="POST" class="d-inline">
@@ -1918,16 +1923,41 @@
                 });
             });
 
-            function editService(id, iconClass, title, description) {
-                document.getElementById('editServiceId').value = id;
-                document.getElementById('editServiceIconClass').value = iconClass;
-                document.getElementById('editServiceTitle').value = title;
-                document.getElementById('editServiceDescription').value = description;
+            function editService(id) {
+                fetch("{{ url('admin/landing/services') }}/" + id + "/data", {
+                    headers: { 'Accept': 'application/json' }
+                })
+                    .then(r => r.json())
+                    .then(s => {
+                        document.getElementById('editServiceId').value = s.id;
+                        document.getElementById('editServiceIconClass').value = s.icon_class || '';
+                        document.getElementById('editServiceTitle').value = s.title || '';
+                        document.getElementById('editServiceSlug').value = s.slug || '';
+                        document.getElementById('editServiceSubtitle').value = s.subtitle || '';
+                        document.getElementById('editServiceShortDescription').value = s.short_description || '';
+                        document.getElementById('editServiceDescription').value = s.description || '';
+                        document.getElementById('editServiceContentHtml').value = s.content_html || '';
+                        document.getElementById('editServiceMetaTitle').value = s.meta_title || '';
+                        document.getElementById('editServiceMetaDescription').value = s.meta_description || '';
+                        document.getElementById('editServiceMetaKeywords').value = s.meta_keywords || '';
+                        document.getElementById('editServiceFocusKeyword').value = s.focus_keyword || '';
+                        document.getElementById('edit_is_published').checked = !!s.is_published;
 
-                const editForm = document.getElementById('editServiceForm');
-                editForm.action = editForm.action.replace('/0', '/' + id);
+                        const heroInfo = document.getElementById('editServiceHeroPreview');
+                        if (s.hero_image_path) {
+                            heroInfo.innerHTML = 'Actual: <a href="/' + s.hero_image_path + '" target="_blank">ver imagen</a>';
+                        } else {
+                            heroInfo.textContent = 'No hay imagen cargada.';
+                        }
 
-                new bootstrap.Modal(document.getElementById('editServiceModal')).show();
+                        const editForm = document.getElementById('editServiceForm');
+                        editForm.action = "{{ url('admin/landing/services') }}/" + id;
+
+                        new bootstrap.Modal(document.getElementById('editServiceModal')).show();
+                    })
+                    .catch(err => {
+                        alert('Error cargando el servicio: ' + err);
+                    });
             }
 
             // Character counters for SEO fields

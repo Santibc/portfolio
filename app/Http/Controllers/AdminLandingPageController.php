@@ -128,41 +128,109 @@ class AdminLandingPageController extends Controller
         $request->validate([
             'icon_class' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'description' => 'required|string'
+            'description' => 'required|string',
+            'slug' => 'nullable|string|max:200|unique:landing_services,slug',
+            'subtitle' => 'nullable|string|max:255',
+            'short_description' => 'nullable|string|max:300',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'content_html' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:150',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string|max:500',
+            'focus_keyword' => 'nullable|string|max:100',
+            'is_published' => 'nullable|boolean',
         ]);
-        
+
         $maxOrder = LandingService::max('order') ?? 0;
-        
-        LandingService::create([
-            'icon_class' => $request->icon_class,
-            'title' => $request->title,
-            'description' => $request->description,
-            'order' => $maxOrder + 1
+
+        $data = $request->only([
+            'icon_class', 'title', 'subtitle', 'short_description',
+            'description', 'content_html',
+            'meta_title', 'meta_description', 'meta_keywords', 'focus_keyword',
         ]);
-        
+        $data['slug'] = $request->filled('slug')
+            ? LandingService::uniqueSlug($request->input('slug'))
+            : null; // model booted() will fill it from title
+        $data['order'] = $maxOrder + 1;
+        $data['is_published'] = $request->boolean('is_published', true);
+
+        if ($request->hasFile('hero_image')) {
+            $data['hero_image_path'] = $this->storeServiceImage($request->file('hero_image'));
+        }
+
+        LandingService::create($data);
+
         return redirect()->back()->with('success', 'Servicio agregado correctamente.');
     }
-    
+
     public function updateService(Request $request, $id)
     {
         $request->validate([
             'icon_class' => 'required|string|max:255',
             'title' => 'required|string|max:255',
-            'description' => 'required|string'
+            'description' => 'required|string',
+            'slug' => 'nullable|string|max:200|unique:landing_services,slug,' . $id,
+            'subtitle' => 'nullable|string|max:255',
+            'short_description' => 'nullable|string|max:300',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'content_html' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:150',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string|max:500',
+            'focus_keyword' => 'nullable|string|max:100',
+            'is_published' => 'nullable|boolean',
         ]);
-        
+
         $service = LandingService::findOrFail($id);
-        $service->update($request->all());
-        
+
+        $data = $request->only([
+            'icon_class', 'title', 'subtitle', 'short_description',
+            'description', 'content_html',
+            'meta_title', 'meta_description', 'meta_keywords', 'focus_keyword',
+        ]);
+        if ($request->filled('slug')) {
+            $data['slug'] = LandingService::uniqueSlug($request->input('slug'), $service->id);
+        }
+        $data['is_published'] = $request->boolean('is_published', $service->is_published);
+
+        if ($request->hasFile('hero_image')) {
+            if ($service->hero_image_path && file_exists(public_path($service->hero_image_path))) {
+                @unlink(public_path($service->hero_image_path));
+            }
+            $data['hero_image_path'] = $this->storeServiceImage($request->file('hero_image'));
+        }
+
+        $service->update($data);
+
         return redirect()->back()->with('success', 'Servicio actualizado correctamente.');
     }
-    
+
     public function deleteService($id)
     {
         $service = LandingService::findOrFail($id);
+        if ($service->hero_image_path && file_exists(public_path($service->hero_image_path))) {
+            @unlink(public_path($service->hero_image_path));
+        }
         $service->delete();
-        
+
         return redirect()->back()->with('success', 'Servicio eliminado correctamente.');
+    }
+
+    public function getService($id)
+    {
+        $service = LandingService::findOrFail($id);
+        return response()->json($service);
+    }
+
+    private function storeServiceImage($file): string
+    {
+        $folder = public_path('images/services');
+        if (!is_dir($folder)) {
+            @mkdir($folder, 0755, true);
+        }
+        $filename = 'service_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->move($folder, $filename);
+        return 'images/services/' . $filename;
     }
     
     public function storeStep(Request $request)

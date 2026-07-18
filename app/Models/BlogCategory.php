@@ -6,47 +6,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class LandingService extends Model
+class BlogCategory extends Model
 {
     use HasFactory;
 
-    protected $table = 'landing_services';
+    protected $table = 'blog_categories';
 
     protected $fillable = [
+        'name',
         'slug',
-        'icon_class',
-        'title',
-        'subtitle',
-        'short_description',
-        'hero_image_path',
         'description',
-        'content_html',
         'meta_title',
         'meta_description',
-        'meta_keywords',
-        'focus_keyword',
         'order',
         'is_active',
-        'is_published',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'is_published' => 'boolean',
     ];
 
     protected static function booted()
     {
-        static::saving(function (self $service) {
-            if (empty($service->slug)) {
-                $service->slug = self::uniqueSlug($service->title, $service->id);
+        static::saving(function (self $cat) {
+            if (empty($cat->slug)) {
+                $cat->slug = self::uniqueSlug($cat->name, $cat->id);
             }
         });
     }
 
     public static function uniqueSlug(string $source, ?int $ignoreId = null): string
     {
-        $base = Str::slug($source) ?: 'service-' . uniqid();
+        $base = Str::slug($source) ?: 'category-' . uniqid();
         $slug = $base;
         $i = 2;
         while (static::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
@@ -55,13 +46,18 @@ class LandingService extends Model
         return $slug;
     }
 
-    public function scopePublished($query)
+    public function posts()
     {
-        return $query->where('is_active', true)->where('is_published', true);
+        return $this->hasMany(BlogPost::class, 'category_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     public function getUrlAttribute(): string
     {
-        return $this->slug ? route('services.show', $this->slug) : route('servicios');
+        return route('blog.category', $this->slug);
     }
 }

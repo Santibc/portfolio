@@ -189,6 +189,193 @@
     <!-- Testimonials Section -->
     <section id="testimonials" class="testimonials section">
 
+        <style>
+            #testimonials {
+                padding: 80px 0 90px;
+                background: linear-gradient(180deg, #f8f6f2 0%, #fdfcfa 100%);
+                position: relative;
+                overflow: hidden;
+            }
+            #testimonials::before {
+                content: "";
+                position: absolute;
+                top: -80px; right: -80px;
+                width: 260px; height: 260px;
+                border-radius: 50%;
+                background: rgba(70, 205, 207, 0.08);
+                z-index: 0;
+            }
+            #testimonials::after {
+                content: "";
+                position: absolute;
+                bottom: -100px; left: -60px;
+                width: 220px; height: 220px;
+                border-radius: 50%;
+                background: rgba(114, 135, 156, 0.08);
+                z-index: 0;
+            }
+            #testimonials .container { position: relative; z-index: 1; }
+
+            #testimonials .section-title h2 {
+                font-weight: 700;
+                font-size: 2.2rem;
+                color: #2d3a4a;
+                margin-bottom: 8px;
+            }
+            #testimonials .section-title h2::after {
+                content: "";
+                display: block;
+                width: 60px;
+                height: 3px;
+                margin: 14px auto 0;
+                background: var(--accent-color);
+                border-radius: 2px;
+            }
+            #testimonials .section-title p {
+                color: #6c7684;
+                font-size: 1rem;
+                max-width: 560px;
+                margin: 0 auto;
+            }
+
+            .testimonial-slider {
+                padding: 50px 4px 60px !important;
+            }
+            .testimonial-slider .swiper-slide {
+                height: auto;
+                display: flex;
+            }
+            .testimonial-item {
+                background: #ffffff;
+                border-radius: 18px;
+                padding: 32px 32px 28px;
+                box-shadow: 0 10px 40px rgba(45, 58, 74, 0.08);
+                border: 1px solid rgba(114, 135, 156, 0.08);
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+            }
+            .testimonial-item:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 20px 50px rgba(45, 58, 74, 0.14);
+                border-color: rgba(70, 205, 207, 0.2);
+            }
+            .testimonial-item .quote-mark {
+                position: absolute;
+                top: 22px;
+                right: 26px;
+                color: rgba(70, 205, 207, 0.18);
+                font-size: 2.2rem;
+                line-height: 1;
+                pointer-events: none;
+            }
+
+            .testimonial-item .rating {
+                display: flex;
+                gap: 4px;
+                margin-bottom: 18px;
+            }
+            .testimonial-item .rating i {
+                color: #fbbf24;
+                font-size: 1.15rem;
+            }
+            .testimonial-item .rating i.bi-star {
+                color: #e5e7eb;
+            }
+
+            .testimonial-item .testimonial-body p {
+                color: #3f4b5b;
+                font-size: 1.02rem;
+                line-height: 1.7;
+                font-style: italic;
+                margin-bottom: 24px;
+                flex-grow: 1;
+                min-height: 108px;
+            }
+
+            .testimonial-item .testimonial-footer {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding-top: 22px;
+                border-top: 1px solid rgba(114, 135, 156, 0.15);
+                margin-top: auto;
+            }
+            .testimonial-item .avatar {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--accent-color), #3ab5b8);
+                color: #fff;
+                display: flex; align-items: center; justify-content: center;
+                font-weight: 600;
+                font-size: 1.15rem;
+                text-transform: uppercase;
+                flex-shrink: 0;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(70, 205, 207, 0.35);
+            }
+            .testimonial-item .avatar img {
+                width: 100%; height: 100%; object-fit: cover;
+            }
+            .testimonial-item .client-info { flex-grow: 1; }
+            .testimonial-item .client-info h5 {
+                font-size: 1rem;
+                font-weight: 600;
+                color: #2d3a4a;
+                margin: 0 0 2px 0;
+            }
+            .testimonial-item .client-info span {
+                font-size: 0.85rem;
+                color: #8892a0;
+            }
+            .testimonial-item .verified {
+                color: var(--accent-color);
+                font-size: 1rem;
+            }
+
+            .testimonial-slider .swiper-button-prev,
+            .testimonial-slider .swiper-button-next {
+                position: static;
+                display: inline-flex;
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: #fff;
+                color: var(--accent-color);
+                margin: 0 8px;
+                box-shadow: 0 4px 16px rgba(45, 58, 74, 0.12);
+                transition: all 0.3s ease;
+            }
+            .testimonial-slider .swiper-button-prev:hover,
+            .testimonial-slider .swiper-button-next:hover {
+                background: var(--accent-color);
+                color: #fff;
+                transform: translateY(-2px);
+            }
+            .testimonial-slider .swiper-button-prev::after,
+            .testimonial-slider .swiper-button-next::after {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+            .testimonial-nav-wrapper {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin-top: 30px;
+            }
+
+            @media (max-width: 768px) {
+                #testimonials { padding: 60px 0 70px; }
+                #testimonials .section-title h2 { font-size: 1.7rem; }
+                .testimonial-item { padding: 34px 26px 26px; }
+                .testimonial-item .testimonial-body p { min-height: auto; }
+            }
+        </style>
+
         <!-- Section Title -->
         <div class="container section-title">
             <h2>Client Testimonials</h2>
@@ -203,7 +390,8 @@
               "loop": true,
               "speed": 600,
               "autoplay": {
-                "delay": 5000
+                "delay": 5000,
+                "disableOnInteraction": false
               },
               "slidesPerView": 1,
               "spaceBetween": 30,
@@ -228,23 +416,33 @@
                         @foreach ($testimonials as $testimonial)
                             <div class="swiper-slide">
                                 <div class="testimonial-item">
-                                    <div class="testimonial-header">
-                                        <div class="rating">
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <i class="bi bi-star{{ $i <= $testimonial->rating ? '-fill' : '' }}"></i>
-                                            @endfor
-                                        </div>
+                                    <i class="bi bi-quote quote-mark"></i>
+                                    <div class="rating">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="bi bi-star{{ $i <= $testimonial->rating ? '-fill' : '' }}"></i>
+                                        @endfor
                                     </div>
                                     <div class="testimonial-body">
-                                        <p>"{{ $testimonial->testimonial }}"</p>
+                                        <p>{{ $testimonial->testimonial }}</p>
                                     </div>
                                     <div class="testimonial-footer">
-                                        <h5>{{ $testimonial->client_name }}</h5>
-                                        @if ($testimonial->client_role)
-                                            <span>{{ $testimonial->client_role }}</span>
-                                        @endif
-                                        <div class="quote-icon">
-                                            <i class="bi bi-chat-quote-fill"></i>
+                                        <div class="avatar">
+                                            @if($testimonial->client_image_path)
+                                                <img src="{{ asset($testimonial->client_image_path) }}" alt="{{ $testimonial->client_name }}">
+                                            @else
+                                                {{ strtoupper(substr($testimonial->client_name, 0, 1)) }}
+                                            @endif
+                                        </div>
+                                        <div class="client-info">
+                                            <h5>{{ $testimonial->client_name }}</h5>
+                                            @if ($testimonial->client_role)
+                                                <span>{{ $testimonial->client_role }}</span>
+                                            @else
+                                                <span>Verified customer</span>
+                                            @endif
+                                        </div>
+                                        <div class="verified" title="Verified customer">
+                                            <i class="bi bi-patch-check-fill"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -253,6 +451,9 @@
                     @endif
 
                 </div>
+            </div>
+
+            <div class="testimonial-nav-wrapper">
                 <div class="swiper-button-prev"></div>
                 <div class="swiper-button-next"></div>
             </div>

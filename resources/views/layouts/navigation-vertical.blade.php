@@ -25,6 +25,14 @@
             <span>Landing Page</span>
         </a>
 
+        {{-- Blog --}}
+        <a href="{{ route('admin.blog.posts.index') }}"
+           class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/blog*') ? 'active' : 'text-dark' }}"
+           title="Blog">
+            <i class="bi bi-journal-text"></i>
+            <span>Blog</span>
+        </a>
+
         {{-- Blocked Zones --}}
         <a href="{{ route('admin.blocked-zones.index') }}"
            class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('admin/blocked-zones*') ? 'active' : 'text-dark' }}"

@@ -119,6 +119,8 @@
                             @if (Route::currentRouteName() == 'servicios') class="active" @endif>Services</a></li>
                     <li><a href="{{ route('services.calculator') }}"
                             @if (Route::currentRouteName() == 'services.calculator') class="active" @endif>BOOK</a></li>
+                    <li><a href="{{ route('blog.index') }}"
+                            @if (str_starts_with(Route::currentRouteName() ?? '', 'blog.')) class="active" @endif>Blog</a></li>
                     <li><a href="{{ route('contacto') }}"
                             @if (Route::currentRouteName() == 'contacto') class="active" @endif>Contact</a></li>
                 </ul>
@@ -177,6 +179,7 @@
                             <li><a href="{{ route('nosotros') }}"><i class="bi bi-chevron-right"></i> About</a></li>
                             <li><a href="{{ route('servicios') }}"><i class="bi bi-chevron-right"></i> Services</a>
                             </li>
+                            <li><a href="{{ route('blog.index') }}"><i class="bi bi-chevron-right"></i> Blog</a></li>
                             <li><a href="{{ route('contacto') }}"><i class="bi bi-chevron-right"></i> Contact</a></li>
                         </ul>
                     </div>

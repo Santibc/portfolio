@@ -68,7 +68,7 @@ class HomeController extends Controller
 
     public function servicios()
     {
-        $services = LandingService::orderBy('order')->get();
+        $services = LandingService::published()->orderBy('order')->get();
         $layoutConfig = LandingLayoutConfig::first();
 
         // Cargar SEO para la página servicios (solo si está activo)
@@ -76,6 +76,66 @@ class HomeController extends Controller
         $seo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
         return view('landing_page.servicios', compact('services', 'layoutConfig', 'seo'));
+    }
+
+    public function serviceShow(string $slug)
+    {
+        $service = LandingService::published()->where('slug', $slug)->firstOrFail();
+        $layoutConfig = LandingLayoutConfig::first();
+        $relatedServices = LandingService::published()
+            ->where('id', '!=', $service->id)
+            ->orderBy('order')
+            ->limit(3)
+            ->get();
+
+        // Últimos posts publicados para enlazado interno blog -> servicios
+        $relatedPosts = collect();
+        if (class_exists(\App\Models\BlogPost::class) && \Illuminate\Support\Facades\Schema::hasTable('blog_posts')) {
+            $relatedPosts = \App\Models\BlogPost::published()->latest('published_at')->limit(3)->get();
+        }
+
+        // SEO: usar meta del propio servicio; fallback al meta general de /servicios
+        $page = Page::where('slug', 'servicios')->first();
+        $baseSeo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
+
+        $seo = new Seo([
+            'meta_title' => $service->meta_title ?: ($service->title . ' | ' . ($layoutConfig->site_title ?? 'Clean Me Adelaide')),
+            'meta_description' => $service->meta_description ?: $service->short_description ?: $service->description,
+            'meta_keywords' => $service->meta_keywords ?: ($baseSeo->meta_keywords ?? null),
+            'canonical_url' => null,
+            'robots' => 'index,follow',
+            'focus_keyword' => $service->focus_keyword,
+            'og_title' => $service->meta_title ?: $service->title,
+            'og_description' => $service->meta_description ?: $service->short_description ?: $service->description,
+            'og_image_path' => $service->hero_image_path ?: ($baseSeo->og_image_path ?? null),
+            'og_type' => 'article',
+            'twitter_card' => 'summary_large_image',
+            'twitter_title' => $service->title,
+            'twitter_description' => $service->short_description ?: $service->description,
+            'twitter_image_path' => $service->hero_image_path ?: ($baseSeo->og_image_path ?? null),
+            'schema_type' => 'Service',
+            'schema_data' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'Service',
+                'name' => $service->title,
+                'description' => $service->short_description ?: strip_tags($service->description),
+                'provider' => [
+                    '@type' => 'LocalBusiness',
+                    'name' => $layoutConfig->site_title ?? 'Clean Me Adelaide',
+                    'url' => url('/'),
+                ],
+                'areaServed' => [
+                    '@type' => 'City',
+                    'name' => 'Adelaide',
+                ],
+                'url' => route('services.show', $service->slug),
+            ],
+            'is_active' => true,
+        ]);
+
+        return view('landing_page.service_show', compact(
+            'service', 'relatedServices', 'relatedPosts', 'layoutConfig', 'seo'
+        ));
     }
 
     public function contacto()

@@ -5,6 +5,47 @@
     <section id="services" style="padding: 160px 0 100px 0;" class="services section">
 
       <style>
+        .services .service-card {
+          background: #fff;
+          padding: 34px 28px;
+          border-radius: 14px;
+          height: 100%;
+          border: 1px solid #eef0f2;
+          transition: all 0.3s ease;
+          display: flex;
+          flex-direction: column;
+        }
+        .services .service-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+          border-color: var(--accent-color);
+        }
+        .services .service-card .service-icon {
+          font-size: 2.4rem;
+          color: var(--accent-color);
+          margin-bottom: 18px;
+        }
+        .services .service-card h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+        .services .service-card p {
+          color: #6c7684;
+          font-size: 0.98rem;
+          flex-grow: 1;
+        }
+        .services .service-card .learn-more {
+          color: var(--accent-color);
+          text-decoration: none;
+          font-weight: 500;
+          font-size: 0.9rem;
+          margin-top: 14px;
+          display: inline-block;
+        }
+        .services .service-card .learn-more:hover {
+          text-decoration: underline;
+        }
         .services .btn-primary {
           background: var(--accent-color);
           color: var(--contrast-color);
@@ -63,20 +104,25 @@
         @if($services && $services->count() > 0)
           <div class="row gy-4 mb-5">
             @foreach($services as $service)
-              <div class="col-lg-6 col-md-6">
+              <div class="col-lg-4 col-md-6">
                 <div class="service-card">
                   <div class="service-icon">
                     <i class="{{ $service->icon_class }}"></i>
                   </div>
                   <h3>{{ $service->title }}</h3>
-                  <p>{{ $service->description }}</p>
+                  <p>{{ $service->short_description ?: Str::limit($service->description, 140) }}</p>
+                  @if($service->slug)
+                    <a href="{{ route('services.show', $service->slug) }}" class="learn-more">
+                      Learn more <i class="bi bi-arrow-right"></i>
+                    </a>
+                  @endif
                 </div>
               </div>
             @endforeach
           </div>
         @else
           <div class="alert alert-info text-center">
-            <p class="mb-0">No hay servicios disponibles en este momento. Por favor, contacte con nosotros para más información.</p>
+            <p class="mb-0">No services available at the moment. Please contact us for more information.</p>
           </div>
         @endif
 

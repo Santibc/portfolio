@@ -31,8 +31,17 @@ Route::get('/dashboard',[HomeController::class, 'index'] )->middleware(['auth', 
 Route::get('/nosotros',[HomeController::class, 'nosotros'] )->name('nosotros');
 Route::get('/equipo',[HomeController::class, 'equipo'] )->name('equipo');
 Route::get('/servicios',[HomeController::class, 'servicios'] )->name('servicios');
+Route::get('/services/{slug}', [HomeController::class, 'serviceShow'])->name('services.show');
 Route::get('/contacto',[HomeController::class, 'contacto'] )->name('contacto');
 Route::get('/services-calculator',[HomeController::class, 'servicesCalculator'] )->name('services.calculator');
+
+// Blog público
+Route::get('/blog', [App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/category/{slug}', [App\Http\Controllers\BlogController::class, 'category'])->name('blog.category');
+Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
+// SEO técnico: sitemap dinámico
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 
 // Ruta para envío de correo desde formulario de contacto del landing page
 Route::post('/contact/send', [AdminLandingPageController::class, 'sendContactEmail'])->name('contact.send');
@@ -89,6 +98,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/services/store', [AdminLandingPageController::class, 'storeService'])->name('services.store');
         Route::put('/services/{id}', [AdminLandingPageController::class, 'updateService'])->name('services.update');
         Route::delete('/services/{id}', [AdminLandingPageController::class, 'deleteService'])->name('services.delete');
+        Route::get('/services/{id}/data', [AdminLandingPageController::class, 'getService'])->name('services.data');
         Route::post('/steps/store', [AdminLandingPageController::class, 'storeStep'])->name('steps.store');
         Route::put('/steps/{id}', [AdminLandingPageController::class, 'updateStep'])->name('steps.update');
         Route::delete('/steps/{id}', [AdminLandingPageController::class, 'deleteStep'])->name('steps.delete');
@@ -131,6 +141,27 @@ Route::middleware('auth')->group(function () {
 
         // Base Pricing Configuration
         Route::put('/pricing/update-base', [AdminLandingPageController::class, 'updateBasePricing'])->name('pricing.update-base');
+    });
+
+    // Blog admin
+    Route::prefix('admin/blog')->name('admin.blog.')->group(function () {
+        // Posts
+        Route::get('/', [App\Http\Controllers\Admin\BlogController::class, 'index'])->name('posts.index');
+        Route::get('/create', [App\Http\Controllers\Admin\BlogController::class, 'create'])->name('posts.create');
+        Route::post('/', [App\Http\Controllers\Admin\BlogController::class, 'store'])->name('posts.store');
+        Route::get('/{post}/edit', [App\Http\Controllers\Admin\BlogController::class, 'edit'])->name('posts.edit');
+        Route::put('/{post}', [App\Http\Controllers\Admin\BlogController::class, 'update'])->name('posts.update');
+        Route::delete('/{post}', [App\Http\Controllers\Admin\BlogController::class, 'destroy'])->name('posts.destroy');
+
+        // Image upload for Quill editor
+        Route::post('/upload-image', [App\Http\Controllers\Admin\BlogController::class, 'uploadImage'])->name('upload-image');
+
+        // Categories
+        Route::get('/categories', [App\Http\Controllers\Admin\BlogController::class, 'categoriesIndex'])->name('categories.index');
+        Route::post('/categories', [App\Http\Controllers\Admin\BlogController::class, 'categoriesStore'])->name('categories.store');
+        Route::post('/categories/quick', [App\Http\Controllers\Admin\BlogController::class, 'categoriesQuickCreate'])->name('categories.quick');
+        Route::put('/categories/{category}', [App\Http\Controllers\Admin\BlogController::class, 'categoriesUpdate'])->name('categories.update');
+        Route::delete('/categories/{category}', [App\Http\Controllers\Admin\BlogController::class, 'categoriesDestroy'])->name('categories.destroy');
     });
 
 Route::get('ajax/ciudades', [CiudadController::class,'byDepartamento'])
