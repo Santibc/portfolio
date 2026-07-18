@@ -397,10 +397,9 @@
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Servicios</h5>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#addServiceModal">
+                                <a href="{{ route('admin.landing.services.create') }}" class="btn btn-primary btn-sm">
                                     <i class="bi bi-plus-lg me-1"></i>Agregar Servicio
-                                </button>
+                                </a>
                             </div>
                             <div class="card-body">
                                 @if ($services->count() > 0)
@@ -410,30 +409,33 @@
                                                 <div class="card h-100">
                                                     <div class="card-body">
                                                         <div class="text-center mb-3">
-                                                            <i
-                                                                class="{{ $service->icon_class }} fa-2x text-primary"></i>
+                                                            <i class="{{ $service->icon_class }} fa-2x text-primary" style="font-size: 2rem;"></i>
                                                         </div>
-                                                        <h6 class="card-title">{{ $service->title }}</h6>
-                                                        <p class="card-text">{{ $service->description }}</p>
-                                                        <small class="text-muted">Orden: {{ $service->order }}</small>
+                                                        <h6 class="card-title">
+                                                            {{ $service->title }}
+                                                            @if(!$service->is_published)
+                                                                <span class="badge bg-secondary ms-1">Oculto</span>
+                                                            @endif
+                                                        </h6>
+                                                        <p class="card-text small text-muted">{{ Str::limit($service->short_description ?: $service->description, 100) }}</p>
+                                                        <small class="text-muted">Orden: {{ $service->order }} · /services/{{ $service->slug }}</small>
                                                     </div>
-                                                    <div class="card-footer">
-                                                        <button class="btn btn-warning btn-sm"
-                                                            onclick="editService({{ $service->id }})">
+                                                    <div class="card-footer d-flex gap-1">
+                                                        <a href="{{ route('admin.landing.services.edit', $service->id) }}" class="btn btn-warning btn-sm" title="Editar">
                                                             <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        @if($service->slug)
+                                                        </a>
+                                                        @if($service->slug && $service->is_published)
                                                             <a href="{{ route('services.show', $service->slug) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Ver en el sitio">
                                                                 <i class="bi bi-box-arrow-up-right"></i>
                                                             </a>
                                                         @endif
                                                         <form
                                                             action="{{ route('admin.landing.services.delete', $service->id) }}"
-                                                            method="POST" class="d-inline">
+                                                            method="POST" class="d-inline ms-auto">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-danger btn-sm"
-                                                                onclick="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                                                onclick="return confirm('¿Eliminar este servicio? Esta acción no se puede deshacer.')">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
@@ -1634,7 +1636,7 @@
     </div>
 
     <!-- Modales -->
-    @include('admin.landing.modals.service')
+    {{-- El modal de servicio fue reemplazado por la página dedicada admin/landing/services/{create,edit} --}}
 
     <!-- Add Hero Value Modal -->
     <div class="modal fade" id="addHeroValueModal" tabindex="-1">
@@ -1923,42 +1925,7 @@
                 });
             });
 
-            function editService(id) {
-                fetch("{{ url('admin/landing/services') }}/" + id + "/data", {
-                    headers: { 'Accept': 'application/json' }
-                })
-                    .then(r => r.json())
-                    .then(s => {
-                        document.getElementById('editServiceId').value = s.id;
-                        document.getElementById('editServiceIconClass').value = s.icon_class || '';
-                        document.getElementById('editServiceTitle').value = s.title || '';
-                        document.getElementById('editServiceSlug').value = s.slug || '';
-                        document.getElementById('editServiceSubtitle').value = s.subtitle || '';
-                        document.getElementById('editServiceShortDescription').value = s.short_description || '';
-                        document.getElementById('editServiceDescription').value = s.description || '';
-                        document.getElementById('editServiceContentHtml').value = s.content_html || '';
-                        document.getElementById('editServiceMetaTitle').value = s.meta_title || '';
-                        document.getElementById('editServiceMetaDescription').value = s.meta_description || '';
-                        document.getElementById('editServiceMetaKeywords').value = s.meta_keywords || '';
-                        document.getElementById('editServiceFocusKeyword').value = s.focus_keyword || '';
-                        document.getElementById('edit_is_published').checked = !!s.is_published;
-
-                        const heroInfo = document.getElementById('editServiceHeroPreview');
-                        if (s.hero_image_path) {
-                            heroInfo.innerHTML = 'Actual: <a href="/' + s.hero_image_path + '" target="_blank">ver imagen</a>';
-                        } else {
-                            heroInfo.textContent = 'No hay imagen cargada.';
-                        }
-
-                        const editForm = document.getElementById('editServiceForm');
-                        editForm.action = "{{ url('admin/landing/services') }}/" + id;
-
-                        new bootstrap.Modal(document.getElementById('editServiceModal')).show();
-                    })
-                    .catch(err => {
-                        alert('Error cargando el servicio: ' + err);
-                    });
-            }
+            // La edición de servicios ahora usa la página dedicada admin/landing/services/{id}/edit
 
             // Character counters for SEO fields
             function updateCharacterCount(inputId, counterId) {

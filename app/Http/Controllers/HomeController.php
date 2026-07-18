@@ -94,42 +94,51 @@ class HomeController extends Controller
             $relatedPosts = \App\Models\BlogPost::published()->latest('published_at')->limit(3)->get();
         }
 
-        // SEO: usar meta del propio servicio; fallback al meta general de /servicios
         $page = Page::where('slug', 'servicios')->first();
         $baseSeo = $page && $page->seo && $page->seo->is_active ? $page->seo : null;
 
-        $seo = new Seo([
-            'meta_title' => $service->meta_title ?: ($service->title . ' | ' . ($layoutConfig->site_title ?? 'Clean Me Adelaide')),
-            'meta_description' => $service->meta_description ?: $service->short_description ?: $service->description,
-            'meta_keywords' => $service->meta_keywords ?: ($baseSeo->meta_keywords ?? null),
-            'canonical_url' => null,
-            'robots' => 'index,follow',
-            'focus_keyword' => $service->focus_keyword,
-            'og_title' => $service->meta_title ?: $service->title,
-            'og_description' => $service->meta_description ?: $service->short_description ?: $service->description,
-            'og_image_path' => $service->hero_image_path ?: ($baseSeo->og_image_path ?? null),
-            'og_type' => 'article',
-            'twitter_card' => 'summary_large_image',
-            'twitter_title' => $service->title,
-            'twitter_description' => $service->short_description ?: $service->description,
-            'twitter_image_path' => $service->hero_image_path ?: ($baseSeo->og_image_path ?? null),
-            'schema_type' => 'Service',
-            'schema_data' => [
-                '@context' => 'https://schema.org',
-                '@type' => 'Service',
-                'name' => $service->title,
-                'description' => $service->short_description ?: strip_tags($service->description),
-                'provider' => [
-                    '@type' => 'LocalBusiness',
-                    'name' => $layoutConfig->site_title ?? 'Clean Me Adelaide',
-                    'url' => url('/'),
-                ],
-                'areaServed' => [
-                    '@type' => 'City',
-                    'name' => 'Adelaide',
-                ],
-                'url' => route('services.show', $service->slug),
+        $siteName = $layoutConfig->site_title ?? 'Clean Me Adelaide';
+        $shortDesc = $service->short_description ?: strip_tags($service->description ?: '');
+        $schemaType = $service->schema_type ?: 'Service';
+        $customSchema = is_array($service->schema_data) ? $service->schema_data : null;
+
+        $autoSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => $schemaType,
+            'name' => $service->title,
+            'description' => $shortDesc,
+            'provider' => [
+                '@type' => 'LocalBusiness',
+                'name' => $siteName,
+                'url' => url('/'),
             ],
+            'areaServed' => [
+                '@type' => 'City',
+                'name' => 'Adelaide',
+            ],
+            'url' => route('services.show', $service->slug),
+        ];
+        if ($service->hero_image_path) {
+            $autoSchema['image'] = asset($service->hero_image_path);
+        }
+
+        $seo = new Seo([
+            'meta_title' => $service->meta_title ?: ($service->title . ' | ' . $siteName),
+            'meta_description' => $service->meta_description ?: $shortDesc,
+            'meta_keywords' => $service->meta_keywords ?: ($baseSeo->meta_keywords ?? null),
+            'canonical_url' => $service->canonical_url,
+            'robots' => $service->robots ?: 'index,follow',
+            'focus_keyword' => $service->focus_keyword,
+            'og_title' => $service->og_title ?: ($service->meta_title ?: $service->title),
+            'og_description' => $service->og_description ?: ($service->meta_description ?: $shortDesc),
+            'og_image_path' => $service->og_image_path ?: ($service->hero_image_path ?: ($baseSeo->og_image_path ?? null)),
+            'og_type' => $service->og_type ?: 'website',
+            'twitter_card' => $service->twitter_card ?: 'summary_large_image',
+            'twitter_title' => $service->twitter_title ?: ($service->og_title ?: $service->title),
+            'twitter_description' => $service->twitter_description ?: ($service->og_description ?: $shortDesc),
+            'twitter_image_path' => $service->twitter_image_path ?: ($service->og_image_path ?: $service->hero_image_path),
+            'schema_type' => $schemaType,
+            'schema_data' => $customSchema ?: $autoSchema,
             'is_active' => true,
         ]);
 

@@ -95,10 +95,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/config/update', [AdminLandingPageController::class, 'updateConfig'])->name('config.update');
         Route::post('/carousel/store', [AdminLandingPageController::class, 'storeCarouselImage'])->name('carousel.store');
         Route::delete('/carousel/{id}', [AdminLandingPageController::class, 'deleteCarouselImage'])->name('carousel.delete');
+        Route::get('/services/create', [AdminLandingPageController::class, 'createService'])->name('services.create');
+        Route::get('/services/{id}/edit', [AdminLandingPageController::class, 'editService'])->name('services.edit');
         Route::post('/services/store', [AdminLandingPageController::class, 'storeService'])->name('services.store');
         Route::put('/services/{id}', [AdminLandingPageController::class, 'updateService'])->name('services.update');
         Route::delete('/services/{id}', [AdminLandingPageController::class, 'deleteService'])->name('services.delete');
         Route::get('/services/{id}/data', [AdminLandingPageController::class, 'getService'])->name('services.data');
+        Route::post('/services/upload-image', [AdminLandingPageController::class, 'uploadServiceImage'])->name('services.upload-image');
         Route::post('/steps/store', [AdminLandingPageController::class, 'storeStep'])->name('steps.store');
         Route::put('/steps/{id}', [AdminLandingPageController::class, 'updateStep'])->name('steps.update');
         Route::delete('/steps/{id}', [AdminLandingPageController::class, 'deleteStep'])->name('steps.delete');

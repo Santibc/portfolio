@@ -25,6 +25,18 @@ class LandingService extends Model
         'meta_description',
         'meta_keywords',
         'focus_keyword',
+        'canonical_url',
+        'robots',
+        'og_title',
+        'og_description',
+        'og_image_path',
+        'og_type',
+        'twitter_card',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image_path',
+        'schema_type',
+        'schema_data',
         'order',
         'is_active',
         'is_published',
@@ -33,6 +45,7 @@ class LandingService extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_published' => 'boolean',
+        'schema_data' => 'array',
     ];
 
     protected static function booted()
