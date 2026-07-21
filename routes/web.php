@@ -14,6 +14,9 @@ use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\ActualizacionPreciosController;
+use App\Http\Controllers\AlmacenController;
+use App\Http\Controllers\MetaController;
+use App\Http\Controllers\VentaController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -80,10 +83,28 @@ Route::prefix('productos')->middleware('auth')->group(function () {
     Route::get('/{producto}/imagenes-ajax', [ProductosController::class, 'imagenesAjax'])->name('productos.imagenes-ajax');
     Route::get('/{producto}/precios-ajax', [ProductosController::class, 'preciosAjax'])->name('productos.precios-ajax');
 });
-Route::get('actualizaciones/{id}/descargar', 
+Route::get('actualizaciones/{id}/descargar',
     [ActualizacionPreciosController::class, 'descargarArchivoActualizacion']
 )->name('actualizaciones.descargar');
 
+    // ============================================================
+    // MÓDULO DE VENTAS — Almacenes / Metas / Ventas (solo admin en Almacenes)
+    // ============================================================
+    Route::get('almacenes', [AlmacenController::class, 'index'])->name('almacenes');
+    Route::get('almacenes/form/{almacen?}', [AlmacenController::class, 'form'])->name('almacenes.form');
+    Route::post('almacenes/guardar', [AlmacenController::class, 'guardar'])->name('almacenes.guardar');
+
+    Route::get('metas', [MetaController::class, 'index'])->name('metas');
+    Route::get('metas/form/{meta?}', [MetaController::class, 'form'])->name('metas.form');
+    Route::post('metas/guardar', [MetaController::class, 'guardar'])->name('metas.guardar');
+
+    Route::get('ventas', [VentaController::class, 'index'])->name('ventas');
+    Route::get('ventas/form/{venta?}', [VentaController::class, 'form'])->name('ventas.form');
+    Route::post('ventas/guardar', [VentaController::class, 'guardar'])->name('ventas.guardar');
+    Route::get('ventas/buscar-productos', [VentaController::class, 'buscarProductos'])->name('ventas.buscar-productos');
+    Route::get('ventas/importar', [VentaController::class, 'importarForm'])->name('ventas.importar');
+    Route::post('ventas/importar', [VentaController::class, 'importar'])->name('ventas.importar.procesar');
+    Route::get('ventas/importar/plantilla', [VentaController::class, 'descargarPlantilla'])->name('ventas.importar.plantilla');
 
 });
 // Rutas del Catálogo Interactivo

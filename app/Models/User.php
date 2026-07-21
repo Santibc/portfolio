@@ -24,7 +24,8 @@ class User extends Authenticatable
         'password',
         'telefono',
         'activo',
-        'ultimo_login'
+        'ultimo_login',
+        'almacen_id',
     ];
 
     /**
@@ -67,6 +68,21 @@ class User extends Authenticatable
     public function actualizacionesPrecios()
     {
         return $this->hasMany(ActualizacionPrecio::class, 'usuario_id');
+    }
+
+    public function almacen()
+    {
+        return $this->belongsTo(Almacen::class, 'almacen_id');
+    }
+
+    public function metas()
+    {
+        return $this->hasMany(Meta::class, 'user_id');
+    }
+
+    public function ventas()
+    {
+        return $this->hasMany(Venta::class, 'user_id');
     }
 
     public function esAdmin()

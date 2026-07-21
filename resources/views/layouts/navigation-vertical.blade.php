@@ -78,6 +78,25 @@
                 <i class="bi bi-tags"></i>
                 <span>Categorías</span>
             </a>
+            <a href="{{ route('almacenes') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('almacenes*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-building"></i>
+                <span>Almacenes</span>
+            </a>
+            <a href="{{ route('metas') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('metas*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-bullseye"></i>
+                <span>Metas</span>
+            </a>
+        @endif
+
+        {{-- Ventas (para vendedor y admin — el vendedor ve solo las suyas) --}}
+        @if(auth()->user()->hasRole(['vendedor', 'admin']))
+            <a href="{{ route('ventas') }}"
+               class="nav-link mb-2 d-flex align-items-center gap-2 {{ request()->is('ventas*') ? 'active' : 'text-dark' }}">
+                <i class="bi bi-cash-coin"></i>
+                <span>Ventas</span>
+            </a>
         @endif
 
         {{-- Productos (para vendedor y admin) --}}
