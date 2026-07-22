@@ -66,7 +66,33 @@ class Ubicacion extends Model
     // =========================================
     public function getTipoNombreAttribute(): string
     {
+        // Las ubicaciones de feria se guardan como tipo 'tienda' (para la lógica de stock),
+        // pero se muestran como "Feria".
+        if ($this->esFeria()) {
+            return 'Feria';
+        }
+
         return self::tipos()[$this->tipo] ?? $this->tipo;
+    }
+
+    /**
+     * Relación con la feria que usa esta ubicación (si existe).
+     */
+    public function feria()
+    {
+        return $this->hasOne(Feria::class, 'ubicacion_id');
+    }
+
+    /**
+     * ¿Esta ubicación pertenece a alguna feria? (para mostrarla como "Feria").
+     */
+    public function esFeria(): bool
+    {
+        if ($this->relationLoaded('feria')) {
+            return (bool) $this->feria;
+        }
+
+        return Feria::where('ubicacion_id', $this->id)->exists();
     }
 
     // =========================================

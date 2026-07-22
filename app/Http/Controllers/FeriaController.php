@@ -8,6 +8,7 @@ use App\Models\PrecioProducto;
 use App\Models\PrecioVariante;
 use App\Models\Producto;
 use App\Models\StockProducto;
+use App\Models\TrasladoStock;
 use App\Models\Ubicacion;
 use App\Models\VarianteProducto;
 use App\Services\FeriaService;
@@ -72,7 +73,11 @@ class FeriaController extends Controller
         $feria = Feria::with(['ubicacion', 'listaPrecio', 'listaPrecioBase', 'caja', 'creador'])
             ->findOrFail($id);
 
-        return view('ferias.show', compact('feria'));
+        $tieneInventario = StockProducto::where('ubicacion_id', $feria->ubicacion_id)
+            ->where('cantidad_disponible', '>', 0)
+            ->exists();
+
+        return view('ferias.show', compact('feria', 'tieneInventario'));
     }
 
     public function activar($id)
@@ -81,6 +86,15 @@ class FeriaController extends Controller
         if ($feria->estaCerrada()) {
             return back()->with('error', 'Una feria cerrada no se puede reactivar.');
         }
+
+        // No se puede activar sin inventario cargado en el stand (nada para vender).
+        $tieneInventario = StockProducto::where('ubicacion_id', $feria->ubicacion_id)
+            ->where('cantidad_disponible', '>', 0)
+            ->exists();
+        if (!$tieneInventario) {
+            return back()->with('error', 'No puedes activar la feria sin inventario. Carga al menos un producto al stand (desde el CEDI) antes de activarla.');
+        }
+
         $feria->update(['estado' => Feria::ESTADO_ACTIVA]);
 
         return back()->with('success', 'Feria activada. Ya se puede vender con sus precios en la caja de la feria.');
@@ -117,22 +131,35 @@ class FeriaController extends Controller
             ->limit(40)
             ->get();
 
-        $filas = [];
+        // Filas de "producto" (todos los tonos / producto simple) primero, luego cada tono.
+        $filasProducto = [];
+        $filasVariante = [];
         foreach ($productos as $producto) {
             if ($producto->tiene_variantes && $producto->variantes->isNotEmpty()) {
+                // Ajuste rápido de TODA la línea (todos los tonos a la vez).
+                $filasProducto[] = [
+                    'producto_id' => $producto->id,
+                    'variante_producto_id' => null,
+                    'todas_variantes' => true,
+                    'referencia' => $producto->referencia,
+                    'nombre' => $producto->nombre . '  ·  TODOS los tonos',
+                    'precio' => null,
+                ];
                 foreach ($producto->variantes as $variante) {
-                    $filas[] = [
+                    $filasVariante[] = [
                         'producto_id' => $producto->id,
                         'variante_producto_id' => $variante->id,
+                        'todas_variantes' => false,
                         'referencia' => $variante->referencia_variante ?: $producto->referencia,
                         'nombre' => $producto->nombre . ($variante->nombre_variante ? ' — ' . $variante->nombre_variante : ''),
                         'precio' => $variante->getPrecioFinal($listaId),
                     ];
                 }
             } else {
-                $filas[] = [
+                $filasProducto[] = [
                     'producto_id' => $producto->id,
                     'variante_producto_id' => null,
+                    'todas_variantes' => false,
                     'referencia' => $producto->referencia,
                     'nombre' => $producto->nombre,
                     'precio' => $producto->getPrecioPorLista($listaId),
@@ -140,7 +167,9 @@ class FeriaController extends Controller
             }
         }
 
-        return response()->json(['data' => array_slice($filas, 0, 30)]);
+        $filas = array_merge($filasProducto, $filasVariante);
+
+        return response()->json(['data' => array_slice($filas, 0, 40)]);
     }
 
     /**
@@ -152,13 +181,30 @@ class FeriaController extends Controller
             'producto_id' => 'required|integer|exists:productos,id',
             'variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
             'precio' => 'required|numeric|min:0',
+            'aplicar_todas_variantes' => 'nullable|boolean',
         ]);
 
         $feria = Feria::findOrFail($id);
         $precio = round((float) $request->precio, 2);
-        $varianteId = $request->variante_producto_id ? (int) $request->variante_producto_id : null;
+        $productoId = (int) $request->producto_id;
 
-        $this->feriaService->fijarPrecioFeria($feria, (int) $request->producto_id, $varianteId, $precio);
+        // "Todos los tonos": aplica el mismo precio a todas las variantes del producto.
+        if ($request->boolean('aplicar_todas_variantes')) {
+            $producto = Producto::with('variantes')->findOrFail($productoId);
+            if ($producto->variantes->isNotEmpty()) {
+                foreach ($producto->variantes as $v) {
+                    $this->feriaService->fijarPrecioFeria($feria, $productoId, $v->id, $precio);
+                }
+                return response()->json([
+                    'success' => true,
+                    'mensaje' => 'Precio aplicado a los ' . $producto->variantes->count() . ' tonos.',
+                    'precio' => $precio,
+                ]);
+            }
+        }
+
+        $varianteId = $request->variante_producto_id ? (int) $request->variante_producto_id : null;
+        $this->feriaService->fijarPrecioFeria($feria, $productoId, $varianteId, $precio);
 
         return response()->json(['success' => true, 'mensaje' => 'Precio actualizado en la feria.', 'precio' => $precio]);
     }
@@ -174,6 +220,7 @@ class FeriaController extends Controller
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|integer|exists:productos,id',
             'items.*.variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
+            'items.*.todas_variantes' => 'nullable|boolean',
         ], [
             'items.required' => 'Debes seleccionar al menos un producto.',
         ]);
@@ -288,6 +335,58 @@ class FeriaController extends Controller
         }
 
         return response()->json(['data' => array_slice($filas, 0, 30)]);
+    }
+
+    /**
+     * F3 — Traslados EN TRÁNSITO hacia esta feria, pendientes de recibir.
+     */
+    public function trasladosPendientes($id)
+    {
+        $feria = Feria::findOrFail($id);
+
+        $traslados = TrasladoStock::with(['items.producto', 'items.varianteProducto', 'ubicacionOrigen'])
+            ->where('ubicacion_destino_id', $feria->ubicacion_id)
+            ->where('estado', TrasladoStock::ESTADO_EN_TRANSITO)
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($t) {
+                return [
+                    'id' => $t->id,
+                    'numero' => $t->numero_traslado,
+                    'origen' => $t->ubicacionOrigen?->nombre ?? '—',
+                    'enviado_en' => $t->enviado_en?->format('d/m/Y H:i'),
+                    'items' => $t->items->map(function ($i) {
+                        $nombre = $i->producto?->nombre ?? 'N/A';
+                        if ($i->varianteProducto && $i->varianteProducto->nombre_variante) {
+                            $nombre .= ' — ' . $i->varianteProducto->nombre_variante;
+                        }
+                        return ['nombre' => $nombre, 'cantidad' => (int) $i->cantidad];
+                    }),
+                ];
+            });
+
+        return response()->json(['data' => $traslados]);
+    }
+
+    /**
+     * F3 — Recibir en la feria un traslado en tránsito (suma el stock al stand).
+     */
+    public function recibirTraslado($id, $trasladoId)
+    {
+        $feria = Feria::findOrFail($id);
+        $traslado = TrasladoStock::with('items')->findOrFail($trasladoId);
+
+        if ((int) $traslado->ubicacion_destino_id !== (int) $feria->ubicacion_id) {
+            return response()->json(['error' => 'Ese traslado no es hacia esta feria.'], 422);
+        }
+
+        try {
+            $this->feriaService->recibirTraslado($traslado, auth()->id());
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true, 'mensaje' => 'Traslado recibido. El stock ya está en el stand.']);
     }
 
     /**

@@ -285,28 +285,67 @@ class FeriaService
 
             foreach ($items as $it) {
                 $productoId = (int) $it['producto_id'];
+
+                // "Todos los tonos": expande a todas las variantes del producto y aplica la
+                // operación a CADA una según su propio precio actual en la feria.
+                if (!empty($it['todas_variantes'])) {
+                    $producto = Producto::with('variantes')->find($productoId);
+                    if ($producto && $producto->variantes->isNotEmpty()) {
+                        foreach ($producto->variantes as $v) {
+                            $actual = $this->precioActualFeria($feria, $productoId, $v->id) ?? 0;
+                            $nuevo = $this->calcularPrecioNuevo($tipo, $valor, $actual);
+                            $this->fijarPrecioFeria($feria, $productoId, $v->id, $nuevo);
+                            $aplicados[] = ['producto_id' => $productoId, 'variante_producto_id' => $v->id, 'precio' => $nuevo];
+                        }
+                        continue;
+                    }
+                }
+
                 $varianteId = !empty($it['variante_producto_id']) ? (int) $it['variante_producto_id'] : null;
-
                 $actual = $this->precioActualFeria($feria, $productoId, $varianteId) ?? 0;
-
-                $nuevo = match ($tipo) {
-                    'fijo' => $valor,
-                    'descuento_pct' => $actual * (1 - $valor / 100),
-                    'aumento_pct' => $actual * (1 + $valor / 100),
-                    default => $actual,
-                };
-                $nuevo = max(0, round($nuevo, 2));
-
+                $nuevo = $this->calcularPrecioNuevo($tipo, $valor, $actual);
                 $this->fijarPrecioFeria($feria, $productoId, $varianteId, $nuevo);
-
-                $aplicados[] = [
-                    'producto_id' => $productoId,
-                    'variante_producto_id' => $varianteId,
-                    'precio' => $nuevo,
-                ];
+                $aplicados[] = ['producto_id' => $productoId, 'variante_producto_id' => $varianteId, 'precio' => $nuevo];
             }
 
             return $aplicados;
+        });
+    }
+
+    private function calcularPrecioNuevo(string $tipo, float $valor, float $actual): float
+    {
+        $nuevo = match ($tipo) {
+            'fijo' => $valor,
+            'descuento_pct' => $actual * (1 - $valor / 100),
+            'aumento_pct' => $actual * (1 + $valor / 100),
+            default => $actual,
+        };
+
+        return max(0, round($nuevo, 2));
+    }
+
+    /**
+     * Recibe en la feria un traslado que venía EN TRÁNSITO hacia su ubicación: suma el stock
+     * al stand (entrada + movimiento) y marca el traslado como completado.
+     */
+    public function recibirTraslado(TrasladoStock $traslado, int $usuarioId): void
+    {
+        if ($traslado->estado !== TrasladoStock::ESTADO_EN_TRANSITO) {
+            throw new RuntimeException('El traslado no está en tránsito, no se puede recibir.');
+        }
+
+        DB::transaction(function () use ($traslado, $usuarioId) {
+            $destinoId = $traslado->ubicacion_destino_id;
+
+            foreach ($traslado->items as $item) {
+                $stock = StockProducto::firstOrCreate(
+                    ['producto_id' => $item->producto_id, 'variante_producto_id' => $item->variante_producto_id, 'ubicacion_id' => $destinoId],
+                    ['cantidad_disponible' => 0, 'cantidad_reservada' => 0, 'stock_minimo' => 0, 'alerta_stock_bajo' => true]
+                );
+                $stock->entrada($item->cantidad, 'traslado', $traslado->numero_traslado, 'Recepción de traslado en feria');
+            }
+
+            $traslado->completar($usuarioId);
         });
     }
 

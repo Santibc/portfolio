@@ -25,7 +25,7 @@
               @if(!$feria->estaActiva() && !$feria->estaCerrada())
                 <form action="{{ route('ferias.activar', $feria->id) }}" method="POST" onsubmit="return confirm('¿Activar la feria? Ya se podrá vender con sus precios.')">
                   @csrf
-                  <button class="btn btn-success btn-sm"><i class="bi bi-play-fill"></i> Activar feria</button>
+                  <button id="btnActivarFeria" class="btn btn-success btn-sm" {{ ($tieneInventario ?? true) ? '' : 'disabled' }} title="{{ ($tieneInventario ?? true) ? 'Activar la feria' : 'Carga al menos un producto al stand para poder activar' }}"><i class="bi bi-play-fill"></i> Activar feria</button>
                 </form>
               @endif
               @if(!$feria->estaCerrada())
@@ -58,6 +58,20 @@
         <div class="p-6">
           <h5 class="font-semibold mb-1">Preparar inventario del stand</h5>
           <p class="text-muted small">Carga mercancía desde la <strong>Bodega Principal (CEDI)</strong> al stand de la feria. Queda lista al instante (sale del CEDI y entra al stand en un paso).</p>
+
+          {{-- Traslados en tránsito hacia la feria, pendientes de recibir --}}
+          <div id="bloqueTrasladosPendientes" style="display:none;" class="mb-4">
+            <div class="alert alert-warning py-2 mb-2"><i class="bi bi-truck"></i> <strong>Traslados en camino hacia el stand</strong> (recíbelos para que el stock entre a la feria):</div>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                  <tr><th>Traslado</th><th>Origen</th><th>Productos</th><th style="width:120px;"></th></tr>
+                </thead>
+                <tbody id="cuerpoTrasladosPendientes"></tbody>
+              </table>
+            </div>
+            <hr class="my-3">
+          </div>
 
           {{-- Buscar y agregar productos a cargar --}}
           <div class="position-relative mb-2" style="max-width: 560px;">
@@ -106,40 +120,11 @@
         </div>
       </div>
 
-      {{-- Ajuste ágil de precios --}}
+      {{-- Precios de la feria (unificado) --}}
       <div class="bg-white shadow-sm rounded-lg overflow-hidden">
         <div class="p-6">
           <h5 class="font-semibold mb-1">Precios de la feria</h5>
-          <p class="text-muted small">Busca un producto y ajusta su precio <strong>solo para esta feria</strong>. No afecta las listas regulares.</p>
-
-          <div class="position-relative mb-3" style="max-width: 520px;">
-            <input type="text" id="buscarProductoFeria" class="form-control" placeholder="Buscar producto por nombre, referencia o código..." autocomplete="off">
-            <div id="resultadosFeria" class="position-absolute bg-white border rounded shadow-sm w-100" style="z-index:1050; max-height:300px; overflow-y:auto; display:none;"></div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-sm align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>Producto</th>
-                  <th style="width:150px;">Precio actual</th>
-                  <th style="width:170px;">Nuevo precio</th>
-                  <th style="width:120px;"></th>
-                </tr>
-              </thead>
-              <tbody id="cuerpoPreciosFeria">
-                <tr id="filaVaciaPrecios"><td colspan="4" class="text-center text-muted py-3">Busca productos arriba para ajustar sus precios.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {{-- F2: Precios masivos / promociones --}}
-      <div class="bg-white shadow-sm rounded-lg overflow-hidden mt-4">
-        <div class="p-6">
-          <h5 class="font-semibold mb-1">Precios masivos / promociones</h5>
-          <p class="text-muted small">Selecciona varios productos o tonos y aplícales una promoción de una: <strong>precio fijo</strong>, <strong>% de descuento</strong> o <strong>% de aumento</strong>. Solo afecta a esta feria.</p>
+          <p class="text-muted small">Busca y selecciona productos, tonos o <strong>«todos los tonos»</strong> y ajústales el precio <strong>solo para esta feria</strong>: <strong>precio fijo</strong>, <strong>% de descuento</strong> o <strong>% de aumento</strong>. No afecta las listas regulares.</p>
 
           {{-- Buscar y agregar a la selección --}}
           <div class="position-relative mb-2" style="max-width: 560px;">
@@ -195,83 +180,6 @@
   </div>
 
   @push('scripts')
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const CSRF = '{{ csrf_token() }}';
-    const urlBuscar = '{{ route('ferias.buscar-productos', $feria->id) }}';
-    const urlPrecio = '{{ route('ferias.actualizar-precio', $feria->id) }}';
-    const input = document.getElementById('buscarProductoFeria');
-    const resultados = document.getElementById('resultadosFeria');
-    const cuerpo = document.getElementById('cuerpoPreciosFeria');
-    let timeout = null;
-
-    const fmt = n => (n === null || n === undefined) ? '—' : '$' + Number(n).toLocaleString('es-CO');
-    const esc = s => String(s ?? '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-
-    input.addEventListener('input', function() {
-      clearTimeout(timeout);
-      const q = this.value.trim();
-      if (q.length < 2) { resultados.style.display='none'; return; }
-      timeout = setTimeout(() => buscar(q), 300);
-    });
-    document.addEventListener('click', e => { if (!input.contains(e.target) && !resultados.contains(e.target)) resultados.style.display='none'; });
-
-    function buscar(q) {
-      fetch(`${urlBuscar}?q=${encodeURIComponent(q)}`, {headers:{'Accept':'application/json'}})
-        .then(r => r.json())
-        .then(p => {
-          const items = p.data || [];
-          resultados.innerHTML = items.length ? items.map(it => `
-            <div class="p-2 border-bottom res-item" style="cursor:pointer"
-                 data-pid="${it.producto_id}" data-vid="${it.variante_producto_id ?? ''}"
-                 data-nombre="${esc(it.nombre)}" data-precio="${it.precio ?? ''}">
-              <div class="fw-semibold">${esc(it.nombre)}</div>
-              <small class="text-muted">Ref: ${esc(it.referencia) || '—'} · Precio feria: ${fmt(it.precio)}</small>
-            </div>`).join('') : '<div class="p-3 text-muted text-center">Sin resultados</div>';
-          resultados.style.display='block';
-          resultados.querySelectorAll('.res-item').forEach(el => el.addEventListener('click', () => {
-            agregarFila(el.dataset.pid, el.dataset.vid || null, el.dataset.nombre, el.dataset.precio);
-            input.value=''; resultados.style.display='none';
-          }));
-        });
-    }
-
-    function agregarFila(pid, vid, nombre, precio) {
-      const key = pid + '-' + (vid || '');
-      if (cuerpo.querySelector(`tr[data-key="${key}"]`)) return;
-      const vacia = document.getElementById('filaVaciaPrecios'); if (vacia) vacia.remove();
-      const tr = document.createElement('tr');
-      tr.dataset.key = key;
-      tr.innerHTML = `
-        <td>${esc(nombre)}</td>
-        <td class="precio-actual">${fmt(precio === '' ? null : precio)}</td>
-        <td><input type="number" class="form-control form-control-sm nuevo-precio" min="0" step="1" value="${precio || ''}"></td>
-        <td><button type="button" class="btn btn-sm btn-primary btn-guardar"><i class="bi bi-check-lg"></i> Guardar</button></td>`;
-      cuerpo.appendChild(tr);
-      tr.querySelector('.btn-guardar').addEventListener('click', () => guardar(tr, pid, vid));
-    }
-
-    function guardar(tr, pid, vid) {
-      const val = tr.querySelector('.nuevo-precio').value;
-      if (val === '' || Number(val) < 0) { Swal.fire('Precio inválido','Ingresa un precio válido.','warning'); return; }
-      const btn = tr.querySelector('.btn-guardar'); btn.disabled = true;
-      fetch(urlPrecio, {
-        method:'POST',
-        headers:{'X-CSRF-TOKEN':CSRF,'Content-Type':'application/json','Accept':'application/json'},
-        body: JSON.stringify({producto_id: pid, variante_producto_id: vid || null, precio: Number(val)})
-      })
-      .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.mensaje || 'Error'); return d; })
-      .then(d => {
-        tr.querySelector('.precio-actual').textContent = fmt(d.precio);
-        btn.disabled=false; btn.classList.remove('btn-primary'); btn.classList.add('btn-success');
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Guardado';
-        setTimeout(()=>{ btn.classList.add('btn-primary'); btn.classList.remove('btn-success'); btn.innerHTML='<i class="bi bi-check-lg"></i> Guardar'; }, 1500);
-      })
-      .catch(e => { btn.disabled=false; Swal.fire('Error', e.message, 'error'); });
-    }
-  });
-  </script>
-
   {{-- F3: preparar inventario --}}
   <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -280,6 +188,8 @@
     const urlInventario   = '{{ route('ferias.inventario', $feria->id) }}';
     const urlCargar       = '{{ route('ferias.inventario.cargar', $feria->id) }}';
     const urlDevolver     = '{{ route('ferias.inventario.devolver', $feria->id) }}';
+    const urlTraslados    = '{{ route('ferias.traslados-pendientes', $feria->id) }}';
+    const urlRecibirBase  = '{{ url('ferias/'.$feria->id.'/traslados') }}';
 
     const input = document.getElementById('buscarBodega');
     const resultados = document.getElementById('resultadosBodega');
@@ -368,6 +278,13 @@
         .then(r => r.json())
         .then(p => {
           const rows = p.data || [];
+          // Habilitar "Activar feria" solo si hay algo cargado para vender.
+          const hayStock = rows.some(r => Number(r.disponible) > 0);
+          const btnAct = document.getElementById('btnActivarFeria');
+          if (btnAct) {
+            btnAct.disabled = !hayStock;
+            btnAct.title = hayStock ? 'Activar la feria' : 'Carga al menos un producto al stand para poder activar';
+          }
           if (!rows.length) { cuerpoInv.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">El stand aún no tiene inventario.</td></tr>'; return; }
           cuerpoInv.innerHTML = rows.map(r => `
             <tr>
@@ -401,7 +318,42 @@
       });
     }
 
+    // ---- traslados en tránsito pendientes de recibir ----
+    const bloqueTr = document.getElementById('bloqueTrasladosPendientes');
+    const cuerpoTr = document.getElementById('cuerpoTrasladosPendientes');
+
+    function cargarTrasladosPendientes() {
+      fetch(urlTraslados, {headers:{'Accept':'application/json'}})
+        .then(r => r.json())
+        .then(p => {
+          const rows = p.data || [];
+          if (!rows.length) { bloqueTr.style.display = 'none'; cuerpoTr.innerHTML=''; return; }
+          bloqueTr.style.display = 'block';
+          cuerpoTr.innerHTML = rows.map(t => {
+            const prods = t.items.map(i => `${esc(i.nombre)} <span class="badge bg-secondary">x${i.cantidad}</span>`).join('<br>');
+            return `<tr>
+              <td><strong>${esc(t.numero)}</strong><div class="small text-muted">${esc(t.enviado_en) || ''}</div></td>
+              <td>${esc(t.origen)}</td>
+              <td class="small">${prods}</td>
+              <td><button type="button" class="btn btn-sm btn-success btn-recibir" data-id="${t.id}"><i class="bi bi-box-arrow-in-down"></i> Recibir</button></td>
+            </tr>`;
+          }).join('');
+          cuerpoTr.querySelectorAll('.btn-recibir').forEach(b => b.addEventListener('click', () => recibirTraslado(b.dataset.id, b)));
+        });
+    }
+
+    function recibirTraslado(trasladoId, btn) {
+      btn.disabled = true;
+      fetch(`${urlRecibirBase}/${trasladoId}/recibir`, {
+        method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Content-Type':'application/json','Accept':'application/json'}, body:'{}'
+      })
+      .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || 'Error'); return d; })
+      .then(d => { Swal.fire('Recibido', d.mensaje, 'success'); cargarTrasladosPendientes(); cargarInventario(); })
+      .catch(e => { btn.disabled=false; Swal.fire('Error', e.message, 'error'); });
+    }
+
     cargarInventario();
+    cargarTrasladosPendientes();
   });
   </script>
 
@@ -458,7 +410,7 @@
           btnTodos.disabled = ultimosResultados.length === 0;
           resultados.innerHTML = ultimosResultados.length ? ultimosResultados.map((it,i) => `
             <div class="p-2 border-bottom res-m" style="cursor:pointer" data-i="${i}">
-              <div class="fw-semibold">${esc(it.nombre)}</div>
+              <div class="fw-semibold">${esc(it.nombre)} ${it.todas_variantes ? '<span class="badge bg-info text-dark">todos los tonos</span>' : ''}</div>
               <small class="text-muted">Ref: ${esc(it.referencia) || '—'} · Actual: ${fmt(it.precio)}</small>
             </div>`).join('') : '<div class="p-3 text-muted text-center">Sin resultados</div>';
           resultados.style.display='block';
@@ -473,15 +425,17 @@
 
     function agregar(it) {
       if (!it) return;
-      const key = it.producto_id + '-' + (it.variante_producto_id || '');
+      const todas = !!it.todas_variantes;
+      const key = it.producto_id + '-' + (it.variante_producto_id || '') + (todas ? '-all' : '');
       if (cuerpo.querySelector(`tr[data-key="${key}"]`)) return;
       const tr = document.createElement('tr');
       tr.className = 'fila-masivo'; tr.dataset.key = key;
       tr.dataset.pid = it.producto_id; tr.dataset.vid = it.variante_producto_id || '';
+      tr.dataset.todas = todas ? '1' : '0';
       tr.dataset.actual = (it.precio ?? 0);
       tr.innerHTML = `
-        <td>${esc(it.nombre)}</td>
-        <td class="p-actual">${fmt(it.precio)}</td>
+        <td>${esc(it.nombre)} ${todas ? '<span class="badge bg-info text-dark">todos los tonos</span>' : ''}</td>
+        <td class="p-actual">${todas ? '<span class="text-muted">varios</span>' : fmt(it.precio)}</td>
         <td class="p-nuevo text-muted">—</td>
         <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-quitar-m"><i class="bi bi-x-lg"></i></button></td>`;
       cuerpo.appendChild(tr);
@@ -501,10 +455,15 @@
       const v = parseFloat(valorInp.value || '');
       if (isNaN(v) || v < 0) { Swal.fire('Valor requerido','Ingresa el valor de la promoción.','warning'); return; }
       filas().forEach(tr => {
-        const nuevo = calcularNuevo(parseFloat(tr.dataset.actual || '0'));
         const cel = tr.querySelector('.p-nuevo');
-        cel.textContent = fmt(nuevo);
         cel.classList.remove('text-muted'); cel.classList.add('fw-semibold','text-success');
+        if (tr.dataset.todas === '1') {
+          // Cada tono se recalcula sobre su propio precio.
+          if (tipoSel.value === 'fijo') cel.textContent = fmt(Math.max(0, Math.round(v)));
+          else cel.textContent = (tipoSel.value === 'descuento_pct' ? '−' : '+') + v + '% a cada tono';
+        } else {
+          cel.textContent = fmt(calcularNuevo(parseFloat(tr.dataset.actual || '0')));
+        }
       });
     });
 
@@ -513,7 +472,11 @@
       const v = parseFloat(valorInp.value || '');
       if (isNaN(v) || v < 0) { Swal.fire('Valor requerido','Ingresa el valor de la promoción.','warning'); return; }
       if (tipoSel.value === 'descuento_pct' && v > 100) { Swal.fire('Descuento inválido','El descuento no puede superar 100%.','warning'); return; }
-      const items = filas().map(tr => ({ producto_id: parseInt(tr.dataset.pid,10), variante_producto_id: tr.dataset.vid || null }));
+      const items = filas().map(tr => ({
+        producto_id: parseInt(tr.dataset.pid,10),
+        variante_producto_id: (tr.dataset.todas === '1' ? null : (tr.dataset.vid || null)),
+        todas_variantes: tr.dataset.todas === '1' ? 1 : 0,
+      }));
       if (!items.length) return;
 
       Swal.fire({
@@ -527,12 +490,19 @@
           body: JSON.stringify({ tipo: tipoSel.value, valor: v, items }) })
           .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || d.mensaje || 'Error'); return d; })
           .then(d => {
-            // actualizar precio actual con lo aplicado
+            // Filas por variante/producto individual: actualizar con el precio aplicado.
             (d.aplicados || []).forEach(a => {
               const key = a.producto_id + '-' + (a.variante_producto_id || '');
               const tr = cuerpo.querySelector(`tr[data-key="${key}"]`);
-              if (tr) { tr.dataset.actual = a.precio; tr.querySelector('.p-actual').textContent = fmt(a.precio); tr.querySelector('.p-nuevo').textContent = '—'; tr.querySelector('.p-nuevo').className='p-nuevo text-muted'; }
+              if (tr) { tr.dataset.actual = a.precio; tr.querySelector('.p-actual').textContent = fmt(a.precio); }
             });
+            // Filas "todos los tonos": si fue precio fijo, todos quedaron igual; si fue %, varían.
+            filas().filter(tr => tr.dataset.todas === '1').forEach(tr => {
+              tr.querySelector('.p-actual').innerHTML = (tipoSel.value === 'fijo')
+                ? fmt(Math.max(0, Math.round(v)))
+                : '<span class="text-muted">varios</span>';
+            });
+            filas().forEach(tr => { const c = tr.querySelector('.p-nuevo'); c.textContent = '—'; c.className = 'p-nuevo text-muted'; });
             btnAplicar.disabled = false;
             Swal.fire('Listo', d.mensaje, 'success');
           })
