@@ -325,6 +325,39 @@ class FeriaService
     }
 
     /**
+     * Devuelve TODO el inventario disponible del stand a la Bodega Principal en un solo
+     * traslado (para el cierre de la feria).
+     */
+    public function devolverTodoInventario(Feria $feria, int $usuarioId): TrasladoStock
+    {
+        $bodega = $this->bodegaPrincipal();
+
+        $items = StockProducto::where('ubicacion_id', $feria->ubicacion_id)
+            ->whereRaw('(cantidad_disponible - cantidad_reservada) > 0')
+            ->get()
+            ->map(fn($s) => [
+                'producto_id' => $s->producto_id,
+                'variante_producto_id' => $s->variante_producto_id,
+                'cantidad' => max(0, $s->cantidad_disponible - $s->cantidad_reservada),
+            ])
+            ->filter(fn($i) => $i['cantidad'] > 0)
+            ->values()
+            ->all();
+
+        if (empty($items)) {
+            throw new RuntimeException('El stand no tiene inventario disponible para devolver.');
+        }
+
+        return $this->moverInventario(
+            $feria->ubicacion_id,
+            $bodega->id,
+            $items,
+            $usuarioId,
+            'Devolución TOTAL de inventario de la feria: ' . $feria->nombre
+        );
+    }
+
+    /**
      * Recibe en la feria un traslado que venía EN TRÁNSITO hacia su ubicación: suma el stock
      * al stand (entrada + movimiento) y marca el traslado como completado.
      */

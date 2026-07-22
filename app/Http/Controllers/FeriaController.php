@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\FeriaInventarioExport;
 use App\Models\Feria;
 use App\Models\ListaPrecio;
 use App\Models\PrecioProducto;
@@ -338,6 +339,18 @@ class FeriaController extends Controller
     }
 
     /**
+     * F3 — Excel del inventario de la feria (cargado / vendido / devuelto / actual),
+     * para el cuadre del antes y después de la devolución.
+     */
+    public function exportarInventarioExcel($id)
+    {
+        $feria = Feria::findOrFail($id);
+        $nombre = 'inventario-feria-' . \Illuminate\Support\Str::slug($feria->nombre) . '-' . now()->format('Ymd-His') . '.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new FeriaInventarioExport($feria), $nombre);
+    }
+
+    /**
      * F3 — Traslados EN TRÁNSITO hacia esta feria, pendientes de recibir.
      */
     public function trasladosPendientes($id)
@@ -412,6 +425,25 @@ class FeriaController extends Controller
         return response()->json([
             'success' => true,
             'mensaje' => 'Inventario cargado al stand (traslado ' . $traslado->numero_traslado . ').',
+        ]);
+    }
+
+    /**
+     * F3 — Devolver TODO el inventario disponible del stand a la Bodega Principal (cierre de feria).
+     */
+    public function devolverTodo($id)
+    {
+        $feria = Feria::findOrFail($id);
+
+        try {
+            $traslado = $this->feriaService->devolverTodoInventario($feria, auth()->id());
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => 'Todo el inventario del stand fue devuelto a la Bodega Principal (traslado ' . $traslado->numero_traslado . ').',
         ]);
     }
 

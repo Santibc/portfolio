@@ -395,11 +395,13 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->p
     Route::post('/{id}/precio', [FeriaController::class, 'actualizarPrecio'])->name('ferias.actualizar-precio');
     Route::post('/{id}/precios-masivos', [FeriaController::class, 'preciosMasivos'])->name('ferias.precios-masivos');
     Route::get('/{id}/inventario', [FeriaController::class, 'inventario'])->name('ferias.inventario');
+    Route::get('/{id}/inventario/excel', [FeriaController::class, 'exportarInventarioExcel'])->name('ferias.inventario.excel');
     Route::get('/{id}/traslados-pendientes', [FeriaController::class, 'trasladosPendientes'])->name('ferias.traslados-pendientes');
     Route::post('/{id}/traslados/{trasladoId}/recibir', [FeriaController::class, 'recibirTraslado'])->name('ferias.recibir-traslado');
     Route::get('/{id}/buscar-bodega', [FeriaController::class, 'buscarProductosBodega'])->name('ferias.buscar-bodega');
     Route::post('/{id}/inventario/cargar', [FeriaController::class, 'prepararInventario'])->name('ferias.inventario.cargar');
     Route::post('/{id}/inventario/devolver', [FeriaController::class, 'devolverInventario'])->name('ferias.inventario.devolver');
+    Route::post('/{id}/inventario/devolver-todo', [FeriaController::class, 'devolverTodo'])->name('ferias.inventario.devolver-todo');
     Route::post('/{id}/activar', [FeriaController::class, 'activar'])->name('ferias.activar');
     Route::post('/{id}/cerrar', [FeriaController::class, 'cerrar'])->name('ferias.cerrar');
     Route::get('/{id}', [FeriaController::class, 'show'])->name('ferias.show');

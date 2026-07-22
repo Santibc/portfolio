@@ -101,7 +101,17 @@
           <hr class="my-4">
 
           {{-- Inventario actual en el stand --}}
-          <h6 class="font-semibold mb-2">Inventario actual en el stand</h6>
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <h6 class="font-semibold mb-0">Inventario actual en el stand</h6>
+            <div class="d-flex gap-2">
+              <a href="{{ route('ferias.inventario.excel', $feria->id) }}" class="btn btn-sm btn-outline-success" title="Descarga el cuadre: cargado, vendido, devuelto y stock actual (con hoja de movimientos con fecha y hora). Bájalo antes y después de devolver.">
+                <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+              </a>
+              <button type="button" id="btnDevolverTodo" class="btn btn-sm btn-outline-danger" title="Devuelve todo el inventario disponible del stand a la Bodega Principal (cierre de feria)">
+                <i class="bi bi-arrow-return-left"></i> Devolver TODO al CEDI
+              </button>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle">
               <thead class="table-light">
@@ -188,6 +198,7 @@
     const urlInventario   = '{{ route('ferias.inventario', $feria->id) }}';
     const urlCargar       = '{{ route('ferias.inventario.cargar', $feria->id) }}';
     const urlDevolver     = '{{ route('ferias.inventario.devolver', $feria->id) }}';
+    const urlDevolverTodo = '{{ route('ferias.inventario.devolver-todo', $feria->id) }}';
     const urlTraslados    = '{{ route('ferias.traslados-pendientes', $feria->id) }}';
     const urlRecibirBase  = '{{ url('ferias/'.$feria->id.'/traslados') }}';
 
@@ -351,6 +362,21 @@
       .then(d => { Swal.fire('Recibido', d.mensaje, 'success'); cargarTrasladosPendientes(); cargarInventario(); })
       .catch(e => { btn.disabled=false; Swal.fire('Error', e.message, 'error'); });
     }
+
+    // ---- devolver TODO al CEDI (cierre de feria) ----
+    document.getElementById('btnDevolverTodo')?.addEventListener('click', () => {
+      Swal.fire({
+        title: '¿Devolver TODO al CEDI?',
+        html: 'Se regresará todo el inventario disponible del stand a la Bodega Principal.<br><small class="text-muted">Tip: descarga primero el Excel para dejar el cuadre del «antes».</small>',
+        icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, devolver todo', cancelButtonText: 'Cancelar'
+      }).then(res => {
+        if (!res.isConfirmed) return;
+        fetch(urlDevolverTodo, { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Content-Type':'application/json','Accept':'application/json'}, body:'{}' })
+          .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || 'Error'); return d; })
+          .then(d => { Swal.fire('Devuelto', d.mensaje, 'success'); cargarInventario(); })
+          .catch(e => Swal.fire('Error', e.message, 'error'));
+      });
+    });
 
     cargarInventario();
     cargarTrasladosPendientes();
