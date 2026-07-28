@@ -1331,9 +1331,30 @@
             autorizadorPrecio = null;
             document.getElementById('clienteInfo').classList.add('d-none');
             document.getElementById('descuentoGlobal').value = 0;
-            document.getElementById('montoRecibido').value = '';
             document.getElementById('notasVenta').value = '';
             document.getElementById('cambioContainer').style.display = 'none';
+
+            // Reiniciar TODOS los campos de pago (efectivo, transferencia y mixto).
+            document.getElementById('montoRecibido').value = '';
+            document.getElementById('montoMixtoEfectivo').value = '';
+            document.getElementById('montoMixtoTransferencia').value = '';
+            if (document.getElementById('archivoComprobante')) document.getElementById('archivoComprobante').value = '';
+            if (document.getElementById('archivoComprobanteMixto')) document.getElementById('archivoComprobanteMixto').value = '';
+            const cubiertoEl = document.getElementById('totalCubierto');
+            if (cubiertoEl) cubiertoEl.textContent = '$' + nfCOP(0);
+            const faltanteEl = document.getElementById('faltanteMixto');
+            if (faltanteEl) faltanteEl.classList.add('d-none');
+
+            // Volver a "Efectivo" como método por defecto y ocultar las secciones de los otros.
+            const radioEfectivo = document.getElementById('pagoEfectivo');
+            if (radioEfectivo) radioEfectivo.checked = true;
+            const secTransf = document.getElementById('seccionTransferencia');
+            if (secTransf) secTransf.style.display = 'none';
+            const secMixto = document.getElementById('seccionMixto');
+            if (secMixto) secMixto.style.display = 'none';
+            const secEfectivo = document.getElementById('seccionEfectivo');
+            if (secEfectivo) secEfectivo.style.display = 'block';
+
             document.getElementById('btnProcesar').disabled = true;
             document.getElementById('btnProcesar').innerHTML = '<i class="bi bi-check-circle me-2"></i>Procesar Venta';
             renderItems();
