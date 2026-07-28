@@ -40,9 +40,11 @@
                                 <label class="form-label fw-semibold">Monto Inicial en Efectivo (Base) <span class="text-danger">*</span></label>
                                 <div class="input-group input-group-lg">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" name="monto_apertura" class="form-control @error('monto_apertura') is-invalid @enderror"
-                                           step="0.01" min="0" value="{{ old('monto_apertura', 0) }}" required autofocus>
+                                    <input type="text" id="monto_apertura_display" inputmode="numeric" autocomplete="off"
+                                           class="form-control @error('monto_apertura') is-invalid @enderror"
+                                           value="{{ old('monto_apertura', 0) }}" required autofocus>
                                 </div>
+                                <input type="hidden" name="monto_apertura" id="monto_apertura_raw" value="{{ old('monto_apertura', 0) }}">
                                 @error('monto_apertura') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                                 <small class="text-muted">Ingrese el monto de efectivo con el que inicia el turno</small>
                             </div>
@@ -56,4 +58,39 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        (function () {
+            const display = document.getElementById('monto_apertura_display');
+            const raw = document.getElementById('monto_apertura_raw');
+            if (!display || !raw) return;
+
+            // Deja solo dígitos y devuelve el valor formateado con puntos de miles (es-CO).
+            function formatear(valor) {
+                const digitos = String(valor).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+                if (digitos === '') return { texto: '', numero: '' };
+                return {
+                    texto: Number(digitos).toLocaleString('es-CO'),
+                    numero: digitos,
+                };
+            }
+
+            function sincronizar() {
+                const r = formatear(display.value);
+                display.value = r.texto;
+                raw.value = r.numero === '' ? '0' : r.numero;
+            }
+
+            // Estado inicial (respeta el old() tras un error de validación).
+            sincronizar();
+
+            display.addEventListener('input', sincronizar);
+            // Al enviar, asegura que el campo oculto tenga el número limpio.
+            display.form.addEventListener('submit', function () {
+                raw.value = formatear(display.value).numero || '0';
+            });
+        })();
+    </script>
+    @endpush
 </x-app-layout>
