@@ -300,6 +300,22 @@ class FeriaController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
 
+        // Enriquecer con el nombre para mostrar el listado de "precios aplicados".
+        $productos = Producto::whereIn('id', collect($aplicados)->pluck('producto_id')->unique())->get()->keyBy('id');
+        $varIds = collect($aplicados)->pluck('variante_producto_id')->filter()->unique();
+        $variantes = $varIds->isNotEmpty()
+            ? VarianteProducto::whereIn('id', $varIds)->get()->keyBy('id')
+            : collect();
+
+        $aplicados = collect($aplicados)->map(function ($a) use ($productos, $variantes) {
+            $nombre = $productos->get($a['producto_id'])?->nombre ?? ('ID ' . $a['producto_id']);
+            if ($a['variante_producto_id'] && ($v = $variantes->get($a['variante_producto_id'])) && $v->nombre_variante) {
+                $nombre .= ' — ' . $v->nombre_variante;
+            }
+            $a['nombre'] = $nombre;
+            return $a;
+        })->all();
+
         return response()->json([
             'success' => true,
             'mensaje' => 'Promoción aplicada a ' . count($aplicados) . ' producto(s) de la feria.',

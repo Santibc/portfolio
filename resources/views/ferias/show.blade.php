@@ -204,6 +204,22 @@
               </tbody>
             </table>
           </div>
+
+          {{-- Precios ya aplicados en esta feria (se llena al aplicar) --}}
+          <div id="bloqueAplicados" class="mt-4" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="font-semibold mb-0">Precios aplicados en esta feria</h6>
+              <button type="button" id="btnLimpiarAplicados" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eraser"></i> Limpiar lista</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead class="table-light">
+                  <tr><th>Producto / tono</th><th style="width:170px;">Precio aplicado</th></tr>
+                </thead>
+                <tbody id="cuerpoAplicados"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -419,6 +435,9 @@
     const btnTodos = document.getElementById('btnAgregarTodos');
     const btnAplicar = document.getElementById('btnAplicarMasivo');
     const contador = document.getElementById('contadorSel');
+    const cuerpoAplicados = document.getElementById('cuerpoAplicados');
+    const bloqueAplicados = document.getElementById('bloqueAplicados');
+    document.getElementById('btnLimpiarAplicados')?.addEventListener('click', () => { cuerpoAplicados.innerHTML=''; bloqueAplicados.style.display='none'; });
     let timeout = null, ultimosResultados = [];
 
     const esc = s => String(s ?? '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -540,19 +559,19 @@
           body: JSON.stringify({ tipo: tipoSel.value, valor: v, items }) })
           .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || d.mensaje || 'Error'); return d; })
           .then(d => {
-            // Filas por variante/producto individual: actualizar con el precio aplicado.
+            // Acumular en la lista de "precios aplicados" (actualiza si el mismo ya estaba).
             (d.aplicados || []).forEach(a => {
               const key = a.producto_id + '-' + (a.variante_producto_id || '');
-              const tr = cuerpo.querySelector(`tr[data-key="${key}"]`);
-              if (tr) { tr.dataset.actual = a.precio; tr.querySelector('.p-actual').textContent = fmt(a.precio); }
+              let row = cuerpoAplicados.querySelector(`tr[data-k="${key}"]`);
+              if (!row) { row = document.createElement('tr'); row.dataset.k = key; cuerpoAplicados.prepend(row); }
+              row.innerHTML = `<td>${esc(a.nombre)}</td><td class="fw-semibold text-success">${fmt(a.precio)}</td>`;
             });
-            // Filas "todos los tonos": si fue precio fijo, todos quedaron igual; si fue %, varían.
-            filas().filter(tr => tr.dataset.todas === '1').forEach(tr => {
-              tr.querySelector('.p-actual').innerHTML = (tipoSel.value === 'fijo')
-                ? fmt(Math.max(0, Math.round(v)))
-                : '<span class="text-muted">varios</span>';
-            });
-            filas().forEach(tr => { const c = tr.querySelector('.p-nuevo'); c.textContent = '—'; c.className = 'p-nuevo text-muted'; });
+            if (cuerpoAplicados.children.length) bloqueAplicados.style.display = 'block';
+
+            // Vaciar la selección para que la próxima tanda sea independiente.
+            cuerpo.innerHTML = '';
+            valorInp.value = '';
+            refrescarEstado();
             btnAplicar.disabled = false;
             Swal.fire('Listo', d.mensaje, 'success');
           })
