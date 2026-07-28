@@ -83,11 +83,15 @@
                             </label>
                             <select name="ubicacion_id" class="form-control">
                                 <option value="">— Sin sede asignada (ve todas) —</option>
-                                @foreach($ubicaciones as $ubicacion)
-                                    <option value="{{ $ubicacion->id }}"
-                                        {{ (string) old('ubicacion_id', $user->ubicacion_id) === (string) $ubicacion->id ? 'selected' : '' }}>
-                                        {{ $ubicacion->nombre }} ({{ ucfirst($ubicacion->tipo) }})
-                                    </option>
+                                @foreach($ubicaciones->groupBy('tipo_nombre') as $tipoNombre => $grupo)
+                                    <optgroup label="{{ $tipoNombre === 'Feria' ? 'Ferias' : ($tipoNombre === 'Tienda' ? 'Tiendas' : $tipoNombre.'s') }}">
+                                        @foreach($grupo as $ubicacion)
+                                            <option value="{{ $ubicacion->id }}"
+                                                {{ (string) old('ubicacion_id', $user->ubicacion_id) === (string) $ubicacion->id ? 'selected' : '' }}>
+                                                {{ $ubicacion->esFeria() ? '🎪 ' : '' }}{{ $ubicacion->nombre }} ({{ $tipoNombre }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                             <small class="text-muted">Si se asigna, el usuario solo verá el stock de su sede</small>

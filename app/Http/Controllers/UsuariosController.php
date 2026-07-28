@@ -64,7 +64,7 @@ class UsuariosController extends Controller
     {
         $user  = $user ?? new User();
         $roles = Role::where('name', '!=', 'cliente')->pluck('name','name');
-        $ubicaciones = Ubicacion::activas()->orderBy('nombre')->get();
+        $ubicaciones = Ubicacion::activas()->with('feria')->orderBy('nombre')->get();
 
         return view('usuarios.usuarios_form', compact('user','roles','ubicaciones'));
     }
