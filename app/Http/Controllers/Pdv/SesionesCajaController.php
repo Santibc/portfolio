@@ -30,18 +30,14 @@ class SesionesCajaController extends Controller
             return true;
         }
 
-        // Debe ser la caja asignada al cajero.
-        if ((int) $caja->cajero_asignado_id !== (int) $user->id) {
-            return false;
+        // Si el cajero tiene una Sede/Ubicación asignada (feria o tienda), manda la SEDE:
+        // solo puede abrir las cajas de ESA ubicación.
+        if (!empty($user->ubicacion_id)) {
+            return (int) $caja->ubicacion_id === (int) $user->ubicacion_id;
         }
 
-        // Si el cajero tiene una Sede/Ubicación asignada (feria o tienda), solo puede abrir
-        // la caja de ESA ubicación.
-        if (!empty($user->ubicacion_id) && (int) $caja->ubicacion_id !== (int) $user->ubicacion_id) {
-            return false;
-        }
-
-        return true;
+        // Sin sede asignada: se conserva el comportamiento anterior (solo su caja asignada).
+        return (int) $caja->cajero_asignado_id === (int) $user->id;
     }
 
     public function formAbrir($cajaId)
