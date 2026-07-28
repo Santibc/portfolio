@@ -362,6 +362,72 @@ class FeriaService
     }
 
     /**
+     * Cierra la feria con CONTEO FÍSICO: por cada producto se indica cuánto regresó
+     * realmente. Devuelve lo contado al CEDI (traslado) y registra la diferencia
+     * (lo que faltó por robo/novedad/daño) como MERMA (salida origen 'novedad'),
+     * dejando el stand en 0 y cuadrado. Luego marca la feria como cerrada.
+     *
+     * @param array $conteos cada uno: producto_id, variante_producto_id (opcional), cantidad_fisica
+     */
+    public function cerrarConConteo(Feria $feria, array $conteos, int $usuarioId): array
+    {
+        return DB::transaction(function () use ($feria, $conteos, $usuarioId) {
+            $ubic = $feria->ubicacion_id;
+
+            $conteoMap = collect($conteos)->keyBy(
+                fn($c) => $c['producto_id'] . '|' . (!empty($c['variante_producto_id']) ? $c['variante_producto_id'] : '')
+            );
+
+            $stocks = StockProducto::where('ubicacion_id', $ubic)
+                ->where('cantidad_disponible', '>', 0)
+                ->get();
+
+            $devolver = [];
+            $planMermas = [];
+            foreach ($stocks as $s) {
+                $key = $s->producto_id . '|' . ($s->variante_producto_id ?? '');
+                $disp = (int) $s->cantidad_disponible;
+                $fisico = isset($conteoMap[$key]) ? (int) $conteoMap[$key]['cantidad_fisica'] : 0;
+                $fisico = max(0, min($fisico, $disp)); // entre 0 y lo que dice el sistema
+
+                if ($fisico > 0) {
+                    $devolver[] = ['producto_id' => $s->producto_id, 'variante_producto_id' => $s->variante_producto_id, 'cantidad' => $fisico];
+                }
+                $merma = $disp - $fisico;
+                if ($merma > 0) {
+                    $planMermas[] = ['id' => $s->id, 'cantidad' => $merma];
+                }
+            }
+
+            // 1) Devolver al CEDI SOLO lo que realmente regresó.
+            $traslado = null;
+            if (!empty($devolver)) {
+                $bodega = $this->bodegaPrincipal();
+                $traslado = $this->moverInventario($ubic, $bodega->id, $devolver, $usuarioId, 'Cierre de feria (conteo físico): ' . $feria->nombre);
+            }
+
+            // 2) Registrar el faltante como MERMA (salida por novedad) -> stand queda en 0.
+            $totalMerma = 0;
+            foreach ($planMermas as $pm) {
+                $stock = StockProducto::find($pm['id']);
+                if ($stock) {
+                    $stock->salida($pm['cantidad'], 'novedad', 'MERMA-FERIA-' . $feria->id, 'Faltante/merma al cerrar la feria: ' . $feria->nombre);
+                    $totalMerma += $pm['cantidad'];
+                }
+            }
+
+            // 3) Cerrar la feria.
+            $feria->update(['estado' => Feria::ESTADO_CERRADA]);
+
+            return [
+                'traslado' => $traslado,
+                'total_devuelto' => collect($devolver)->sum('cantidad'),
+                'total_merma' => $totalMerma,
+            ];
+        });
+    }
+
+    /**
      * Recibe en la feria un traslado que venía EN TRÁNSITO hacia su ubicación: suma el stock
      * al stand (entrada + movimiento) y marca el traslado como completado.
      */

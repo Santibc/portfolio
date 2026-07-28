@@ -521,6 +521,38 @@ class FeriaController extends Controller
     }
 
     /**
+     * F3 — Cerrar la feria con CONTEO FÍSICO: se devuelve al CEDI solo lo que realmente
+     * regresó y el faltante (robo/novedad/daño) se registra como merma. La feria queda cerrada.
+     */
+    public function cerrarConConteo(Request $request, $id)
+    {
+        $request->validate([
+            'conteos' => 'nullable|array',
+            'conteos.*.producto_id' => 'required|integer|exists:productos,id',
+            'conteos.*.variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
+            'conteos.*.cantidad_fisica' => 'required|integer|min:0',
+        ]);
+
+        $feria = Feria::findOrFail($id);
+        if ($feria->estaCerrada()) {
+            return response()->json(['error' => 'La feria ya está cerrada.'], 422);
+        }
+
+        try {
+            $r = $this->feriaService->cerrarConConteo($feria, $request->input('conteos', []), auth()->id());
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        $msg = 'Feria cerrada. Devuelto al CEDI: ' . $r['total_devuelto'] . ' und.';
+        if ($r['total_merma'] > 0) {
+            $msg .= ' Merma/faltante registrada: ' . $r['total_merma'] . ' und.';
+        }
+
+        return response()->json(['success' => true, 'mensaje' => $msg]);
+    }
+
+    /**
      * F3 — Devolver una línea del stand a la Bodega Principal.
      */
     public function devolverInventario(Request $request, $id)

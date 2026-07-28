@@ -127,7 +127,12 @@
               <a href="{{ route('ferias.inventario.excel', $feria->id) }}" class="btn btn-sm btn-outline-success" title="Descarga el cuadre: cargado, vendido, devuelto y stock actual (con hoja de movimientos con fecha y hora). Bájalo antes y después de devolver.">
                 <i class="bi bi-file-earmark-excel"></i> Descargar Excel
               </a>
-              <button type="button" id="btnDevolverTodo" class="btn btn-sm btn-outline-danger" title="Devuelve todo el inventario disponible del stand a la Bodega Principal (cierre de feria)">
+              @if(!$feria->estaCerrada())
+              <button type="button" id="btnCerrarConteo" class="btn btn-sm btn-danger" title="Cuenta físicamente lo que regresó: devuelve al CEDI solo lo real y registra el faltante como merma. Cierra la feria.">
+                <i class="bi bi-clipboard-check"></i> Cerrar con conteo
+              </button>
+              @endif
+              <button type="button" id="btnDevolverTodo" class="btn btn-sm btn-outline-danger" title="Devuelve todo el inventario disponible del stand a la Bodega Principal (sin conteo, asume que todo regresó)">
                 <i class="bi bi-arrow-return-left"></i> Devolver TODO al CEDI
               </button>
             </div>
@@ -146,6 +151,52 @@
                 <tr><td colspan="4" class="text-center text-muted py-3">Cargando…</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      {{-- Modal: Cerrar con conteo (devolver lo real + registrar merma) --}}
+      <div class="modal fade" id="modalConteo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><i class="bi bi-clipboard-check"></i> Cerrar feria con conteo físico</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-warning small">
+                Escribe cuánto <strong>regresó físicamente</strong> de cada producto. Se devolverá al CEDI solo eso;
+                la diferencia (robo, daño, novedad) se registra como <strong>merma</strong> y la feria queda <strong>cerrada</strong>.
+                <br><span class="text-muted">Tip: descarga el Excel primero para dejar el cuadre del «antes».</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Producto</th>
+                      <th class="text-center" style="width:110px;">En sistema</th>
+                      <th class="text-center" style="width:140px;">Contado físico</th>
+                      <th class="text-center" style="width:110px;">Merma</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cuerpoConteo">
+                    <tr><td colspan="4" class="text-center text-muted py-3">Cargando…</td></tr>
+                  </tbody>
+                  <tfoot class="table-light">
+                    <tr class="fw-bold">
+                      <td class="text-end">Totales:</td>
+                      <td class="text-center" id="totSistema">0</td>
+                      <td class="text-center text-success" id="totDevuelto">0</td>
+                      <td class="text-center text-danger" id="totMerma">0</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" id="btnConfirmarConteo" class="btn btn-danger"><i class="bi bi-check2-circle"></i> Devolver lo contado y cerrar feria</button>
+            </div>
           </div>
         </div>
       </div>
@@ -235,6 +286,7 @@
     const urlCargar       = '{{ route('ferias.inventario.cargar', $feria->id) }}';
     const urlDevolver     = '{{ route('ferias.inventario.devolver', $feria->id) }}';
     const urlDevolverTodo = '{{ route('ferias.inventario.devolver-todo', $feria->id) }}';
+    const urlCerrarConteo = '{{ route('ferias.cerrar-con-conteo', $feria->id) }}';
     const urlTraslados    = '{{ route('ferias.traslados-pendientes', $feria->id) }}';
     const urlRecibirBase  = '{{ url('ferias/'.$feria->id.'/traslados') }}';
 
@@ -411,6 +463,80 @@
           .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || 'Error'); return d; })
           .then(d => { Swal.fire('Devuelto', d.mensaje, 'success'); cargarInventario(); })
           .catch(e => Swal.fire('Error', e.message, 'error'));
+      });
+    });
+
+    // ---- cerrar con conteo físico (devolver lo real + registrar merma) ----
+    const cuerpoConteo = document.getElementById('cuerpoConteo');
+    let modalConteo = null;
+
+    function recalcularConteo() {
+      let tSis = 0, tDev = 0, tMer = 0;
+      cuerpoConteo.querySelectorAll('tr.fila-conteo').forEach(tr => {
+        const disp = parseInt(tr.dataset.disp || '0', 10);
+        const inp = tr.querySelector('.inp-contado');
+        let cont = parseInt(inp.value || '0', 10);
+        if (isNaN(cont) || cont < 0) cont = 0;
+        if (cont > disp) { cont = disp; inp.value = disp; }
+        const merma = disp - cont;
+        tr.querySelector('.cel-merma').textContent = num(merma);
+        tr.querySelector('.cel-merma').classList.toggle('text-danger', merma > 0);
+        tSis += disp; tDev += cont; tMer += merma;
+      });
+      document.getElementById('totSistema').textContent = num(tSis);
+      document.getElementById('totDevuelto').textContent = num(tDev);
+      document.getElementById('totMerma').textContent = num(tMer);
+    }
+
+    document.getElementById('btnCerrarConteo')?.addEventListener('click', () => {
+      cuerpoConteo.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Cargando…</td></tr>';
+      if (!modalConteo) modalConteo = new bootstrap.Modal(document.getElementById('modalConteo'));
+      modalConteo.show();
+      fetch(urlInventario, {headers:{'Accept':'application/json'}})
+        .then(r => r.json())
+        .then(p => {
+          const rows = (p.data || []).filter(r => Number(r.disponible) > 0);
+          if (!rows.length) {
+            cuerpoConteo.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">El stand no tiene inventario para cerrar.</td></tr>';
+            document.getElementById('totSistema').textContent = '0';
+            document.getElementById('totDevuelto').textContent = '0';
+            document.getElementById('totMerma').textContent = '0';
+            return;
+          }
+          cuerpoConteo.innerHTML = rows.map(r => `
+            <tr class="fila-conteo" data-pid="${r.producto_id}" data-vid="${r.variante_producto_id ?? ''}" data-disp="${r.disponible}">
+              <td>${esc(r.nombre)}</td>
+              <td class="text-center">${num(r.disponible)}</td>
+              <td><input type="number" class="form-control form-control-sm inp-contado text-center" min="0" max="${r.disponible}" step="1" value="${r.disponible}"></td>
+              <td class="text-center cel-merma">0</td>
+            </tr>`).join('');
+          cuerpoConteo.querySelectorAll('.inp-contado').forEach(i => i.addEventListener('input', recalcularConteo));
+          recalcularConteo();
+        })
+        .catch(e => { cuerpoConteo.innerHTML = `<tr><td colspan="4" class="text-danger text-center py-3">${esc(e.message)}</td></tr>`; });
+    });
+
+    document.getElementById('btnConfirmarConteo')?.addEventListener('click', (ev) => {
+      const btn = ev.currentTarget;
+      const conteos = [...cuerpoConteo.querySelectorAll('tr.fila-conteo')].map(tr => {
+        let c = parseInt(tr.querySelector('.inp-contado').value || '0', 10);
+        if (isNaN(c) || c < 0) c = 0;
+        return { producto_id: parseInt(tr.dataset.pid, 10), variante_producto_id: tr.dataset.vid ? parseInt(tr.dataset.vid, 10) : null, cantidad_fisica: c };
+      });
+      if (!conteos.length) { Swal.fire('Sin inventario', 'No hay productos para cerrar.', 'info'); return; }
+      const totMerma = document.getElementById('totMerma').textContent;
+      Swal.fire({
+        title: '¿Cerrar la feria?',
+        html: `Se devolverá al CEDI lo contado y se registrará una <strong>merma de ${totMerma} und.</strong> La feria quedará cerrada.`,
+        icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, cerrar', cancelButtonText: 'Revisar'
+      }).then(res => {
+        if (!res.isConfirmed) return;
+        btn.disabled = true;
+        fetch(urlCerrarConteo, { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Content-Type':'application/json','Accept':'application/json'},
+          body: JSON.stringify({ conteos }) })
+          .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || 'Error'); return d; })
+          .then(d => { Swal.fire({icon:'success', title:'Feria cerrada', text:d.mensaje}).then(() => location.reload()); })
+          .catch(e => { btn.disabled = false; Swal.fire('Error', e.message, 'error'); });
       });
     });
 

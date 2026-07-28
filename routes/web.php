@@ -402,6 +402,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->p
     Route::post('/{id}/inventario/cargar', [FeriaController::class, 'prepararInventario'])->name('ferias.inventario.cargar');
     Route::post('/{id}/inventario/devolver', [FeriaController::class, 'devolverInventario'])->name('ferias.inventario.devolver');
     Route::post('/{id}/inventario/devolver-todo', [FeriaController::class, 'devolverTodo'])->name('ferias.inventario.devolver-todo');
+    Route::post('/{id}/cerrar-con-conteo', [FeriaController::class, 'cerrarConConteo'])->name('ferias.cerrar-con-conteo');
     Route::post('/{id}/activar', [FeriaController::class, 'activar'])->name('ferias.activar');
     Route::post('/{id}/cajera', [FeriaController::class, 'asignarCajera'])->name('ferias.asignar-cajera');
     Route::post('/{id}/cerrar', [FeriaController::class, 'cerrar'])->name('ferias.cerrar');
