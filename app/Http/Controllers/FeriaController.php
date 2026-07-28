@@ -152,31 +152,55 @@ class FeriaController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $productos = Producto::activos()
-            ->where(function ($q) use ($termino) {
+        // Solo productos/tonos que ESTÁN cargados en el stand de la feria (no todo el catálogo).
+        $stockStand = StockProducto::where('ubicacion_id', $feria->ubicacion_id)
+            ->where(function ($q) {
+                $q->where('cantidad_disponible', '>', 0)->orWhere('cantidad_reservada', '>', 0);
+            })
+            ->whereHas('producto', function ($q) use ($termino) {
                 $q->where('nombre', 'like', "%{$termino}%")
                     ->orWhere('referencia', 'like', "%{$termino}%")
                     ->orWhere('codigo_barras', 'like', "%{$termino}%");
             })
-            ->with('variantes')
-            ->limit(40)
             ->get();
+
+        // producto_id => [ids de variante en el stand] (null => registro de producto simple).
+        $variantesPorProducto = [];
+        foreach ($stockStand as $s) {
+            $variantesPorProducto[$s->producto_id][] = $s->variante_producto_id;
+        }
+
+        $productos = Producto::whereIn('id', array_keys($variantesPorProducto))
+            ->with('variantes')
+            ->get()
+            ->keyBy('id');
 
         // Filas de "producto" (todos los tonos / producto simple) primero, luego cada tono.
         $filasProducto = [];
         $filasVariante = [];
-        foreach ($productos as $producto) {
-            if ($producto->tiene_variantes && $producto->variantes->isNotEmpty()) {
-                // Ajuste rápido de TODA la línea (todos los tonos a la vez).
+        foreach ($variantesPorProducto as $productoId => $variantesStand) {
+            $producto = $productos->get($productoId);
+            if (!$producto) {
+                continue;
+            }
+
+            $idsTonosStand = array_values(array_unique(array_filter($variantesStand, fn($v) => $v !== null)));
+
+            if ($producto->tiene_variantes && !empty($idsTonosStand)) {
+                // Ajuste rápido de TODA la línea, PERO solo sobre los tonos que están en el stand.
                 $filasProducto[] = [
                     'producto_id' => $producto->id,
                     'variante_producto_id' => null,
                     'todas_variantes' => true,
+                    'variante_ids' => $idsTonosStand,
                     'referencia' => $producto->referencia,
-                    'nombre' => $producto->nombre . '  ·  TODOS los tonos',
+                    'nombre' => $producto->nombre . '  ·  TODOS los tonos del stand',
                     'precio' => null,
                 ];
                 foreach ($producto->variantes as $variante) {
+                    if (!in_array($variante->id, $idsTonosStand, true)) {
+                        continue; // el tono no está cargado en la feria
+                    }
                     $filasVariante[] = [
                         'producto_id' => $producto->id,
                         'variante_producto_id' => $variante->id,
@@ -187,6 +211,7 @@ class FeriaController extends Controller
                     ];
                 }
             } else {
+                // Producto simple cargado en el stand.
                 $filasProducto[] = [
                     'producto_id' => $producto->id,
                     'variante_producto_id' => null,
@@ -200,7 +225,7 @@ class FeriaController extends Controller
 
         $filas = array_merge($filasProducto, $filasVariante);
 
-        return response()->json(['data' => array_slice($filas, 0, 40)]);
+        return response()->json(['data' => array_slice($filas, 0, 60)]);
     }
 
     /**
@@ -252,6 +277,8 @@ class FeriaController extends Controller
             'items.*.producto_id' => 'required|integer|exists:productos,id',
             'items.*.variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
             'items.*.todas_variantes' => 'nullable|boolean',
+            'items.*.variante_ids' => 'nullable|array',
+            'items.*.variante_ids.*' => 'integer|exists:variantes_productos,id',
         ], [
             'items.required' => 'Debes seleccionar al menos un producto.',
         ]);

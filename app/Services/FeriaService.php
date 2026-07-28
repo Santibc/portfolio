@@ -286,16 +286,20 @@ class FeriaService
             foreach ($items as $it) {
                 $productoId = (int) $it['producto_id'];
 
-                // "Todos los tonos": expande a todas las variantes del producto y aplica la
-                // operación a CADA una según su propio precio actual en la feria.
+                // "Todos los tonos": aplica la operación a CADA tono según su propio precio actual.
+                // Si vienen `variante_ids` (los tonos cargados en el stand) se limita a esos;
+                // si no, cae al comportamiento previo (todas las variantes del producto).
                 if (!empty($it['todas_variantes'])) {
-                    $producto = Producto::with('variantes')->find($productoId);
-                    if ($producto && $producto->variantes->isNotEmpty()) {
-                        foreach ($producto->variantes as $v) {
-                            $actual = $this->precioActualFeria($feria, $productoId, $v->id) ?? 0;
+                    $idsTonos = !empty($it['variante_ids']) && is_array($it['variante_ids'])
+                        ? array_values(array_unique(array_map('intval', $it['variante_ids'])))
+                        : Producto::with('variantes')->find($productoId)?->variantes->pluck('id')->all() ?? [];
+
+                    if (!empty($idsTonos)) {
+                        foreach ($idsTonos as $varId) {
+                            $actual = $this->precioActualFeria($feria, $productoId, $varId) ?? 0;
                             $nuevo = $this->calcularPrecioNuevo($tipo, $valor, $actual);
-                            $this->fijarPrecioFeria($feria, $productoId, $v->id, $nuevo);
-                            $aplicados[] = ['producto_id' => $productoId, 'variante_producto_id' => $v->id, 'precio' => $nuevo];
+                            $this->fijarPrecioFeria($feria, $productoId, $varId, $nuevo);
+                            $aplicados[] = ['producto_id' => $productoId, 'variante_producto_id' => $varId, 'precio' => $nuevo];
                         }
                         continue;
                     }

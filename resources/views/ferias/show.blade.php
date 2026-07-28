@@ -478,6 +478,7 @@
       tr.className = 'fila-masivo'; tr.dataset.key = key;
       tr.dataset.pid = it.producto_id; tr.dataset.vid = it.variante_producto_id || '';
       tr.dataset.todas = todas ? '1' : '0';
+      tr.dataset.varianteIds = (todas && Array.isArray(it.variante_ids)) ? it.variante_ids.join(',') : '';
       tr.dataset.actual = (it.precio ?? 0);
       tr.innerHTML = `
         <td>${esc(it.nombre)} ${todas ? '<span class="badge bg-info text-dark">todos los tonos</span>' : ''}</td>
@@ -522,6 +523,9 @@
         producto_id: parseInt(tr.dataset.pid,10),
         variante_producto_id: (tr.dataset.todas === '1' ? null : (tr.dataset.vid || null)),
         todas_variantes: tr.dataset.todas === '1' ? 1 : 0,
+        variante_ids: (tr.dataset.todas === '1' && tr.dataset.varianteIds)
+          ? tr.dataset.varianteIds.split(',').map(n => parseInt(n,10))
+          : undefined,
       }));
       if (!items.length) return;
 
