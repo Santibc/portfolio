@@ -32,6 +32,12 @@ class PdvDashboardController extends Controller
 
         if (!$user->hasRole('admin')) {
             $cajasQuery->where('cajero_asignado_id', $user->id);
+
+            // Si el cajero tiene una Sede/Ubicación asignada (feria o tienda), solo ve/abre
+            // la caja de ESA ubicación.
+            if (!empty($user->ubicacion_id)) {
+                $cajasQuery->where('ubicacion_id', $user->ubicacion_id);
+            }
         }
 
         $cajas = $cajasQuery->get();
