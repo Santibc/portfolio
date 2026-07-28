@@ -407,9 +407,9 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2 justify-content-center mt-4">
-                        <a id="btnImprimirTicket" href="#" class="btn btn-outline-danger" target="_blank">
+                        <button type="button" id="btnImprimirTicket" data-venta-id="" class="btn btn-outline-danger" onclick="imprimirTicket()">
                             <i class="bi bi-printer me-1"></i>Imprimir Ticket
-                        </a>
+                        </button>
                         <button class="btn btn-miracle" onclick="nuevaVenta()">
                             <i class="bi bi-plus me-1"></i>Nueva Venta
                         </button>
@@ -1117,7 +1117,7 @@
                 if (result.exito) {
                     ultimaVentaResult = result;
                     document.getElementById('exitoMensaje').textContent = result.mensaje;
-                    document.getElementById('btnImprimirTicket').href = `/pdv/ventas/${result.venta.id}/ticket-print`;
+                    document.getElementById('btnImprimirTicket').dataset.ventaId = result.venta.id;
 
                     if (siigoActivo) {
                         // Build client data for pre-filling the invoice form
@@ -1258,6 +1258,43 @@
         function nuevaVenta() {
             bootstrap.Modal.getInstance(document.getElementById('modalExito')).hide();
             limpiarVenta();
+        }
+
+        // Imprime el ticket SIN abrir una pestaña extra: carga el ticket en un iframe
+        // oculto y manda a imprimir directo. Si Chrome está en modo "kiosk printing"
+        // (impresión silenciosa), sale de una sin diálogo, como el software anterior.
+        function imprimirTicket() {
+            var btn = document.getElementById('btnImprimirTicket');
+            var ventaId = btn ? btn.dataset.ventaId : null;
+            if (!ventaId) return;
+
+            var anterior = document.getElementById('ticketPrintFrame');
+            if (anterior) anterior.remove();
+
+            var iframe = document.createElement('iframe');
+            iframe.id = 'ticketPrintFrame';
+            iframe.setAttribute('aria-hidden', 'true');
+            iframe.style.position = 'fixed';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            iframe.style.right = '0';
+            iframe.style.bottom = '0';
+            iframe.src = `/pdv/ventas/${ventaId}/ticket-print?embed=1`;
+
+            iframe.onload = function () {
+                setTimeout(function () {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                    } catch (e) {
+                        // Fallback: si el navegador bloquea la impresión embebida, abre el ticket.
+                        window.open(`/pdv/ventas/${ventaId}/ticket-print`, '_blank');
+                    }
+                }, 300);
+            };
+
+            document.body.appendChild(iframe);
         }
 
         function limpiarVenta() {

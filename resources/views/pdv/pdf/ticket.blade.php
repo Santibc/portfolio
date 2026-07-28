@@ -261,7 +261,7 @@
     <div class="line-solid"></div>
     <div class="gracias">**GRACIAS POR SU COMPRA**</div>
 
-    @if($mode === 'html')
+    @if($mode === 'html' && !request()->boolean('embed'))
     <script>
         window.addEventListener('load', function () {
             // Pequeño retraso para que las imágenes terminen de cargar antes de imprimir.
