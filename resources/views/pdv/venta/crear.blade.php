@@ -458,6 +458,12 @@
         const listasPrecioPermitidas = @json($listasPrecioIdsPermitidas);
         let searchTimeout;
         let ultimaVentaResult = null; // Stores last sale result for SIIGO flow
+        let totalVentaRaw = 0; // Total numérico de la venta (fuente de verdad; no leer del texto del DOM)
+
+        // Formatea un monto en pesos colombianos con separador de miles: 17000 -> "17.000,00"
+        function nfCOP(n) {
+            return (Number(n) || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
         // Product Search
         const buscarInput = document.getElementById('buscarProducto');
@@ -485,7 +491,7 @@
                             <small class="text-muted">${subRef}</small>
                         </div>
                         <div class="text-end">
-                            <div class="fw-bold">$${parseFloat(f.precio || 0).toFixed(2)}</div>
+                            <div class="fw-bold">$${nfCOP(f.precio || 0)}</div>
                             <small class="badge ${stockClass}">${stockText}</small>
                         </div>
                     </div>`;
@@ -651,7 +657,7 @@
                         <input type="number" class="form-control form-control-sm price-input" value="${item.precio_unitario.toFixed(2)}"
                                min="0" step="0.01" onchange="cambiarPrecio(${i}, this.value)">
                     </td>
-                    <td class="text-end fw-semibold">$${subtotal.toFixed(2)}</td>
+                    <td class="text-end fw-semibold">$${nfCOP(subtotal)}</td>
                 </tr>`;
             }).join('');
 
@@ -706,12 +712,13 @@
             const baseGravable = ivaPorcentaje > 0 ? totalConIva / factor : totalConIva;
             const iva = totalConIva - baseGravable;
 
-            document.getElementById('subtotalDisplay').textContent = '$' + subtotalConIva.toFixed(2);
-            document.getElementById('totalDisplay').textContent = '$' + totalConIva.toFixed(2);
+            totalVentaRaw = totalConIva; // fuente de verdad para cálculos (cambio, mixto, procesar)
+            document.getElementById('subtotalDisplay').textContent = '$' + nfCOP(subtotalConIva);
+            document.getElementById('totalDisplay').textContent = '$' + nfCOP(totalConIva);
             document.getElementById('itemsCountDisplay').textContent = `${totalItems} producto${totalItems !== 1 ? 's' : ''}`;
 
             if (document.getElementById('ivaDisplay')) {
-                document.getElementById('ivaDisplay').textContent = '$' + iva.toFixed(2);
+                document.getElementById('ivaDisplay').textContent = '$' + nfCOP(iva);
             }
 
             const itemsSinHomologar = items.filter(it => !it.siigo_product_code);
@@ -766,7 +773,7 @@
 
         // Change Calculation
         function calcularCambio() {
-            const total = parseFloat(document.getElementById('totalDisplay').textContent.replace('$', '').replace(',', '')) || 0;
+            const total = totalVentaRaw;
             const recibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
             const cambio = recibido - total;
             const container = document.getElementById('cambioContainer');
@@ -774,7 +781,7 @@
             if (recibido > 0) {
                 container.style.display = 'block';
                 container.style.background = cambio >= 0 ? '#d4edda' : '#f8d7da';
-                document.getElementById('cambioDisplay').textContent = '$' + Math.max(0, cambio).toFixed(2);
+                document.getElementById('cambioDisplay').textContent = '$' + nfCOP(Math.max(0, cambio));
                 document.getElementById('cambioDisplay').className = 'fs-4 fw-bold ' + (cambio >= 0 ? 'text-success' : 'text-danger');
             } else {
                 container.style.display = 'none';
@@ -785,15 +792,15 @@
         // Mixed Payment Calculation
         ['montoMixtoEfectivo', 'montoMixtoTransferencia'].forEach(id => {
             document.getElementById(id).addEventListener('input', function() {
-                const total = parseFloat(document.getElementById('totalDisplay').textContent.replace('$', '').replace(',', '')) || 0;
+                const total = totalVentaRaw;
                 const efectivo = parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0;
                 const transferencia = parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0;
                 const cubierto = efectivo + transferencia;
-                document.getElementById('totalCubierto').textContent = '$' + cubierto.toFixed(2);
+                document.getElementById('totalCubierto').textContent = '$' + nfCOP(cubierto);
                 const faltante = total - cubierto;
                 const faltanteEl = document.getElementById('faltanteMixto');
                 if (faltante > 0.01) {
-                    faltanteEl.textContent = 'Falta: $' + faltante.toFixed(2);
+                    faltanteEl.textContent = 'Falta: $' + nfCOP(faltante);
                     faltanteEl.classList.remove('d-none');
                 } else {
                     faltanteEl.classList.add('d-none');
@@ -1015,7 +1022,7 @@
                 return;
             }
 
-            const total = parseFloat(document.getElementById('totalDisplay').textContent.replace('$', '').replace(',', '')) || 0;
+            const total = totalVentaRaw;
             const metodo = document.querySelector('input[name="metodoPago"]:checked').value;
 
             // Validate payment
@@ -1253,6 +1260,10 @@
             }
 
             new bootstrap.Modal(document.getElementById('modalExito')).show();
+
+            // Imprime el ticket automáticamente al procesar la venta (sin dar clic aparte).
+            // En Chrome modo kiosk-printing sale directo, sin el cuadro de impresión.
+            imprimirTicket();
         }
 
         function nuevaVenta() {
