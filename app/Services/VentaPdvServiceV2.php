@@ -274,6 +274,17 @@ class VentaPdvServiceV2
             }
         }
 
+        // Solo mostrar los productos PRESENTES en la ubicación/sede asignada (con stock
+        // disponible en esa sede). Se conservan los que no controlan stock o que permiten
+        // venta sin stock, porque son vendibles a propósito sin estar atados a la sede.
+        if ($ubicacionId > 0) {
+            $filas = array_values(array_filter($filas, function ($f) {
+                return empty($f['controla_stock'])
+                    || !empty($f['permite_sin_stock'])
+                    || $f['stock_disponible'] > 0;
+            }));
+        }
+
         if ($pareceCodigoBarras) {
             usort($filas, function ($a, $b) use ($terminoTrim) {
                 $ma = $a['codigo_barras'] === $terminoTrim ? 1 : 0;
