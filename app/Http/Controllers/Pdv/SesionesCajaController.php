@@ -18,9 +18,27 @@ class SesionesCajaController extends Controller
         $this->cajaService = $cajaService;
     }
 
+    /**
+     * Un usuario que no es admin solo puede abrir cajas ASIGNADAS a él
+     * (p. ej. la cajera de una feria solo puede abrir la caja de esa feria).
+     */
+    private function puedeAbrirCaja(Caja $caja): bool
+    {
+        if (auth()->user()->hasRole('admin')) {
+            return true;
+        }
+
+        return (int) $caja->cajero_asignado_id === (int) auth()->id();
+    }
+
     public function formAbrir($cajaId)
     {
         $caja = Caja::with('ubicacion')->findOrFail($cajaId);
+
+        if (!$this->puedeAbrirCaja($caja)) {
+            return redirect()->route('pdv.dashboard')
+                ->with('error', 'Esta caja no está asignada a ti. Solo puedes abrir tu caja asignada.');
+        }
 
         if ($caja->estaAbierta()) {
             return redirect()->route('pdv.dashboard')
@@ -36,6 +54,12 @@ class SesionesCajaController extends Controller
             'caja_id' => 'required|exists:cajas,id',
             'monto_apertura' => 'required|numeric|min:0',
         ]);
+
+        $caja = Caja::findOrFail($request->caja_id);
+        if (!$this->puedeAbrirCaja($caja)) {
+            return redirect()->route('pdv.dashboard')
+                ->with('error', 'Esta caja no está asignada a ti. Solo puedes abrir tu caja asignada.');
+        }
 
         $resultado = $this->cajaService->abrirSesion(
             $request->caja_id,

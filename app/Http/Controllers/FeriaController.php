@@ -44,7 +44,13 @@ class FeriaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:150',
+            'nombre' => [
+                'required', 'string', 'max:150',
+                // Evita duplicados (p. ej. doble clic): no puede haber otra feria con el
+                // mismo nombre en borrador o activa.
+                \Illuminate\Validation\Rule::unique('ferias', 'nombre')
+                    ->where(fn($q) => $q->where('estado', '!=', Feria::ESTADO_CERRADA)),
+            ],
             'lista_precio_base_id' => 'required|exists:listas_precios,id',
             'ubicacion_modo' => 'required|in:nueva,existente',
             'ubicacion_id' => 'required_if:ubicacion_modo,existente|nullable|exists:ubicaciones,id',
@@ -53,6 +59,7 @@ class FeriaController extends Controller
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
             'notas' => 'nullable|string|max:1000',
         ], [
+            'nombre.unique' => 'Ya existe una feria con ese nombre (en borrador o activa). Revisa la lista de ferias.',
             'ubicacion_id.required_if' => 'Debes seleccionar la ubicación existente.',
             'ubicacion_nombre.required_if' => 'Debes indicar el nombre de la ubicación nueva.',
             'fecha_fin.after_or_equal' => 'La fecha fin no puede ser anterior a la fecha inicio.',
@@ -71,14 +78,18 @@ class FeriaController extends Controller
 
     public function show($id)
     {
-        $feria = Feria::with(['ubicacion', 'listaPrecio', 'listaPrecioBase', 'caja', 'creador'])
+        $feria = Feria::with(['ubicacion', 'listaPrecio', 'listaPrecioBase', 'caja.cajeroAsignado', 'creador'])
             ->findOrFail($id);
 
         $tieneInventario = StockProducto::where('ubicacion_id', $feria->ubicacion_id)
             ->where('cantidad_disponible', '>', 0)
             ->exists();
 
-        return view('ferias.show', compact('feria', 'tieneInventario'));
+        $cajeras = \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'cajero_principal'))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('ferias.show', compact('feria', 'tieneInventario', 'cajeras'));
     }
 
     public function activar($id)
@@ -107,6 +118,25 @@ class FeriaController extends Controller
         $feria->update(['estado' => Feria::ESTADO_CERRADA]);
 
         return back()->with('success', 'Feria cerrada.');
+    }
+
+    /**
+     * Asigna la cajera de la caja de la feria: solo ella (además del admin) podrá abrirla.
+     */
+    public function asignarCajera(Request $request, $id)
+    {
+        $request->validate(['user_id' => 'nullable|exists:users,id']);
+
+        $feria = Feria::with('caja')->findOrFail($id);
+        if (!$feria->caja) {
+            return back()->with('error', 'La feria no tiene caja asociada.');
+        }
+
+        $feria->caja->update(['cajero_asignado_id' => $request->user_id ?: null]);
+
+        return back()->with('success', $request->user_id
+            ? 'Cajera asignada. Solo ella (y el admin) podrá abrir la caja de esta feria.'
+            : 'La caja de la feria quedó sin cajera asignada.');
     }
 
     /**

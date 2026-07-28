@@ -41,8 +41,28 @@
             <div class="col-md-3"><div class="text-muted small">Ubicación</div><div>{{ $feria->ubicacion?->nombre ?? '—' }}</div></div>
             <div class="col-md-3"><div class="text-muted small">Lista de precios (feria)</div><div>{{ $feria->listaPrecio?->nombre ?? '—' }}</div></div>
             <div class="col-md-3"><div class="text-muted small">Copiada de</div><div>{{ $feria->listaPrecioBase?->nombre ?? '—' }}</div></div>
-            <div class="col-md-3"><div class="text-muted small">Caja POS</div><div>{{ $feria->caja?->nombre ?? '—' }}</div></div>
+            <div class="col-md-3">
+              <div class="text-muted small">Caja POS</div>
+              <div>{{ $feria->caja?->nombre ?? '—' }}</div>
+              <div class="small text-muted">Cajera: <strong>{{ $feria->caja?->cajeroAsignado?->name ?? 'sin asignar' }}</strong></div>
+            </div>
           </div>
+
+          {{-- Asignar cajera de la feria --}}
+          @if($feria->caja)
+          <form action="{{ route('ferias.asignar-cajera', $feria->id) }}" method="POST" class="d-flex gap-2 align-items-center mt-3 flex-wrap">
+            @csrf
+            <span class="small fw-semibold">Cajera de la feria:</span>
+            <select name="user_id" class="form-select form-select-sm" style="max-width:280px;">
+              <option value="">— Sin asignar —</option>
+              @foreach($cajeras ?? [] as $cj)
+                <option value="{{ $cj->id }}" {{ $feria->caja->cajero_asignado_id == $cj->id ? 'selected' : '' }}>{{ $cj->name }}</option>
+              @endforeach
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-person-check"></i> Asignar</button>
+            <span class="small text-muted">Solo la cajera asignada (y el admin) podrá abrir esta caja.</span>
+          </form>
+          @endif
 
           <div class="alert alert-info mt-3 mb-0 small">
             <i class="bi bi-info-circle"></i>

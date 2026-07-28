@@ -403,6 +403,7 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->p
     Route::post('/{id}/inventario/devolver', [FeriaController::class, 'devolverInventario'])->name('ferias.inventario.devolver');
     Route::post('/{id}/inventario/devolver-todo', [FeriaController::class, 'devolverTodo'])->name('ferias.inventario.devolver-todo');
     Route::post('/{id}/activar', [FeriaController::class, 'activar'])->name('ferias.activar');
+    Route::post('/{id}/cajera', [FeriaController::class, 'asignarCajera'])->name('ferias.asignar-cajera');
     Route::post('/{id}/cerrar', [FeriaController::class, 'cerrar'])->name('ferias.cerrar');
     Route::get('/{id}', [FeriaController::class, 'show'])->name('ferias.show');
 });
