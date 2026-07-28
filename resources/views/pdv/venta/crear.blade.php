@@ -229,7 +229,7 @@
                                 <label class="form-label small fw-semibold">Monto recibido</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="montoRecibido" class="form-control" step="0.01" min="0">
+                                    <input type="text" inputmode="numeric" autocomplete="off" id="montoRecibido" class="form-control" placeholder="0">
                                 </div>
                             </div>
                             <div class="p-2 rounded text-center" id="cambioContainer" style="display: none;">
@@ -267,14 +267,14 @@
                                 <label class="form-label small fw-semibold">Efectivo</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="montoMixtoEfectivo" class="form-control" step="0.01" min="0">
+                                    <input type="text" inputmode="numeric" autocomplete="off" id="montoMixtoEfectivo" class="form-control" placeholder="0">
                                 </div>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label small fw-semibold">Transferencia</label>
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" id="montoMixtoTransferencia" class="form-control" step="0.01" min="0">
+                                    <input type="text" inputmode="numeric" autocomplete="off" id="montoMixtoTransferencia" class="form-control" placeholder="0">
                                 </div>
                             </div>
                             <div class="mb-2">
@@ -463,6 +463,18 @@
         // Formatea un monto en pesos colombianos con separador de miles: 17000 -> "17.000,00"
         function nfCOP(n) {
             return (Number(n) || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Formatea un input de dinero EN VIVO con puntos de miles (solo enteros): 17000 -> "17.000"
+        function formatMilesInput(input) {
+            const raw = (input.value || '').replace(/[^\d]/g, '');
+            input.value = raw ? Number(raw).toLocaleString('es-CO') : '';
+        }
+
+        // Devuelve el valor numérico real de un input de dinero formateado (quita los puntos)
+        function valMonto(id) {
+            const raw = (document.getElementById(id).value || '').replace(/[^\d]/g, '');
+            return raw ? Number(raw) : 0;
         }
 
         // Product Search
@@ -774,7 +786,7 @@
         // Change Calculation
         function calcularCambio() {
             const total = totalVentaRaw;
-            const recibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+            const recibido = valMonto('montoRecibido') || 0;
             const cambio = recibido - total;
             const container = document.getElementById('cambioContainer');
 
@@ -787,14 +799,18 @@
                 container.style.display = 'none';
             }
         }
-        document.getElementById('montoRecibido').addEventListener('input', calcularCambio);
+        document.getElementById('montoRecibido').addEventListener('input', function () {
+            formatMilesInput(this);
+            calcularCambio();
+        });
 
         // Mixed Payment Calculation
         ['montoMixtoEfectivo', 'montoMixtoTransferencia'].forEach(id => {
             document.getElementById(id).addEventListener('input', function() {
+                formatMilesInput(this);
                 const total = totalVentaRaw;
-                const efectivo = parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0;
-                const transferencia = parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0;
+                const efectivo = valMonto('montoMixtoEfectivo') || 0;
+                const transferencia = valMonto('montoMixtoTransferencia') || 0;
                 const cubierto = efectivo + transferencia;
                 document.getElementById('totalCubierto').textContent = '$' + nfCOP(cubierto);
                 const faltante = total - cubierto;
@@ -1027,14 +1043,14 @@
 
             // Validate payment
             if (metodo === 'efectivo') {
-                const recibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+                const recibido = valMonto('montoRecibido') || 0;
                 if (recibido < total) {
                     Swal.fire('Error', 'El monto recibido es menor al total', 'warning');
                     return;
                 }
             } else if (metodo === 'mixto') {
-                const efec = parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0;
-                const trans = parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0;
+                const efec = valMonto('montoMixtoEfectivo') || 0;
+                const trans = valMonto('montoMixtoTransferencia') || 0;
                 if ((efec + trans) < total - 0.01) {
                     Swal.fire('Error', 'La suma de los pagos no cubre el total', 'warning');
                     return;
@@ -1072,13 +1088,13 @@
                 lista_precio_id: document.getElementById('listaPrecio').value,
                 descuento_global: descuentoGlobal,
                 metodo_pago: metodo,
-                monto_efectivo: metodo === 'efectivo' ? (parseFloat(document.getElementById('montoRecibido').value) || total) : (metodo === 'mixto' ? (parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0) : null),
-                monto_transferencia: metodo === 'transferencia' ? total : (metodo === 'mixto' ? (parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0) : null),
-                monto_recibido: metodo === 'efectivo' ? (parseFloat(document.getElementById('montoRecibido').value) || 0) : null,
+                monto_efectivo: metodo === 'efectivo' ? (valMonto('montoRecibido') || total) : (metodo === 'mixto' ? (valMonto('montoMixtoEfectivo') || 0) : null),
+                monto_transferencia: metodo === 'transferencia' ? total : (metodo === 'mixto' ? (valMonto('montoMixtoTransferencia') || 0) : null),
+                monto_recibido: metodo === 'efectivo' ? (valMonto('montoRecibido') || 0) : null,
                 cambio: metodo === 'efectivo'
-                    ? Math.max(0, (parseFloat(document.getElementById('montoRecibido').value) || 0) - total)
+                    ? Math.max(0, (valMonto('montoRecibido') || 0) - total)
                     : (metodo === 'mixto'
-                        ? Math.max(0, ((parseFloat(document.getElementById('montoMixtoEfectivo').value) || 0) + (parseFloat(document.getElementById('montoMixtoTransferencia').value) || 0)) - total)
+                        ? Math.max(0, ((valMonto('montoMixtoEfectivo') || 0) + (valMonto('montoMixtoTransferencia') || 0)) - total)
                         : null),
                 tipo_transferencia: metodo === 'transferencia' ? document.getElementById('tipoTransferencia').value : (metodo === 'mixto' ? document.getElementById('tipoTransferenciaMixto').value : null),
                 notas: document.getElementById('notasVenta').value,
