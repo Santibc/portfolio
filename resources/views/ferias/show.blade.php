@@ -240,6 +240,36 @@
             </div>
           </div>
 
+          {{-- Promoción por tiempo (happy hour) --}}
+          <div class="border rounded p-3 mb-3" style="background:#fffdf5;">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <i class="bi bi-clock-history text-warning"></i>
+              <strong class="small">Promoción por tiempo (solo entre ciertas horas)</strong>
+            </div>
+            <p class="text-muted small mb-2">Usa el <strong>Tipo</strong>, <strong>Valor</strong> y la <strong>selección</strong> de arriba, define el horario y prográmala. Durante esa ventana el POS cobra el precio promo; fuera de ella, el precio normal de la feria. No cambia las listas.</p>
+            <div class="row g-2 align-items-end">
+              <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1">Inicia</label>
+                <input type="datetime-local" id="promoInicia" class="form-control form-control-sm">
+              </div>
+              <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1">Termina</label>
+                <input type="datetime-local" id="promoTermina" class="form-control form-control-sm">
+              </div>
+              <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1 d-block">Rápido (desde ahora)</label>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-secondary btn-dur" data-min="30">30 min</button>
+                  <button type="button" class="btn btn-outline-secondary btn-dur" data-min="60">1 hora</button>
+                  <button type="button" class="btn btn-outline-secondary btn-dur" data-min="120">2 horas</button>
+                </div>
+              </div>
+              <div class="col-auto">
+                <button type="button" id="btnProgramarPromo" class="btn btn-warning btn-sm" disabled><i class="bi bi-clock"></i> Programar promoción por tiempo</button>
+              </div>
+            </div>
+          </div>
+
           <div class="table-responsive">
             <table class="table table-sm align-middle">
               <thead class="table-light">
@@ -268,6 +298,25 @@
                   <tr><th>Producto / tono</th><th style="width:170px;">Precio aplicado</th></tr>
                 </thead>
                 <tbody id="cuerpoAplicados"></tbody>
+              </table>
+            </div>
+          </div>
+
+          {{-- Promociones por tiempo (programadas / activas) --}}
+          <div id="bloquePromos" class="mt-4" style="display:none;">
+            <h6 class="font-semibold mb-2"><i class="bi bi-clock-history text-warning"></i> Promociones por tiempo</h6>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Producto / tono</th>
+                    <th style="width:130px;">Precio promo</th>
+                    <th style="width:250px;">Horario</th>
+                    <th style="width:160px;">Estado</th>
+                    <th style="width:60px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="cuerpoPromos"></tbody>
               </table>
             </div>
           </div>
@@ -551,6 +600,9 @@
     const CSRF = '{{ csrf_token() }}';
     const urlBuscar = '{{ route('ferias.buscar-productos', $feria->id) }}';
     const urlMasivo = '{{ route('ferias.precios-masivos', $feria->id) }}';
+    const urlPromos = '{{ route('ferias.promociones', $feria->id) }}';
+    const urlPromoCrear = '{{ route('ferias.promociones.crear', $feria->id) }}';
+    const urlPromoBase = '{{ url('ferias/'.$feria->id.'/promociones') }}';
 
     const input = document.getElementById('buscarMasivo');
     const resultados = document.getElementById('resultadosMasivo');
@@ -574,6 +626,8 @@
       const n = filas().length;
       contador.textContent = n + ' seleccionado' + (n === 1 ? '' : 's');
       btnAplicar.disabled = n === 0;
+      const btnProg = document.getElementById('btnProgramarPromo');
+      if (btnProg) btnProg.disabled = n === 0;
       const vacia = document.getElementById('filaVaciaMasivo');
       if (n > 0 && vacia) vacia.remove();
       if (n === 0 && !vacia) cuerpo.innerHTML = '<tr id="filaVaciaMasivo"><td colspan="4" class="text-center text-muted py-3">Busca y agrega productos/tonos para aplicarles una promoción.</td></tr>';
@@ -704,6 +758,121 @@
           .catch(e => { btnAplicar.disabled = false; Swal.fire('Error', e.message, 'error'); });
       });
     });
+
+    // ===== PROMOCIÓN POR TIEMPO (happy hour) =====
+    const promoIniciaInp = document.getElementById('promoInicia');
+    const promoTerminaInp = document.getElementById('promoTermina');
+    const btnProgramarPromo = document.getElementById('btnProgramarPromo');
+    const bloquePromos = document.getElementById('bloquePromos');
+    const cuerpoPromos = document.getElementById('cuerpoPromos');
+
+    // Date -> valor de <input type=datetime-local> en hora LOCAL (America/Bogota en el server).
+    function toLocalInput(d) {
+      const p = n => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+
+    // Botones rápidos: desde AHORA + N minutos.
+    document.querySelectorAll('.btn-dur').forEach(b => b.addEventListener('click', () => {
+      const min = parseInt(b.dataset.min, 10);
+      const ahora = new Date();
+      promoIniciaInp.value = toLocalInput(ahora);
+      promoTerminaInp.value = toLocalInput(new Date(ahora.getTime() + min * 60000));
+    }));
+
+    function itemsSeleccion() {
+      return filas().map(tr => ({
+        producto_id: parseInt(tr.dataset.pid,10),
+        variante_producto_id: (tr.dataset.todas === '1' ? null : (tr.dataset.vid || null)),
+        todas_variantes: tr.dataset.todas === '1' ? 1 : 0,
+        variante_ids: (tr.dataset.todas === '1' && tr.dataset.varianteIds)
+          ? tr.dataset.varianteIds.split(',').map(n => parseInt(n,10))
+          : undefined,
+      }));
+    }
+
+    btnProgramarPromo?.addEventListener('click', () => {
+      const v = parseFloat(valorInp.value || '');
+      if (isNaN(v) || v < 0) { Swal.fire('Valor requerido','Ingresa el valor de la promoción.','warning'); return; }
+      if (tipoSel.value === 'descuento_pct' && v > 100) { Swal.fire('Descuento inválido','El descuento no puede superar 100%.','warning'); return; }
+      const inicia = promoIniciaInp.value, termina = promoTerminaInp.value;
+      if (!inicia || !termina) { Swal.fire('Horario requerido','Define la hora de inicio y de fin.','warning'); return; }
+      if (new Date(termina) <= new Date(inicia)) { Swal.fire('Horario inválido','La hora de fin debe ser posterior a la de inicio.','warning'); return; }
+      const items = itemsSeleccion();
+      if (!items.length) return;
+
+      Swal.fire({
+        title: '¿Programar la promoción?',
+        html: `${items.length} producto(s) con precio especial<br><small class="text-muted">Del ${inicia.replace('T',' ')} al ${termina.replace('T',' ')}</small>`,
+        icon: 'question', showCancelButton: true, confirmButtonText: 'Programar'
+      }).then(res => {
+        if (!res.isConfirmed) return;
+        btnProgramarPromo.disabled = true;
+        fetch(urlPromoCrear, { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Content-Type':'application/json','Accept':'application/json'},
+          body: JSON.stringify({ tipo: tipoSel.value, valor: v, inicia_en: inicia.replace('T',' '), termina_en: termina.replace('T',' '), items }) })
+          .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error || d.mensaje || 'Error'); return d; })
+          .then(d => {
+            cuerpo.innerHTML = ''; valorInp.value = '';
+            promoIniciaInp.value = ''; promoTerminaInp.value = '';
+            refrescarEstado();
+            cargarPromos();
+            Swal.fire('Programada', d.mensaje, 'success');
+          })
+          .catch(e => { btnProgramarPromo.disabled = false; Swal.fire('Error', e.message, 'error'); });
+      });
+    });
+
+    const badgePromo = { activa:'success', programada:'info', vencida:'secondary', cancelada:'dark' };
+    let promosData = [];
+
+    function cuentaRegresiva(ms) {
+      if (ms <= 0) return '';
+      const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+      const p = n => String(n).padStart(2,'0');
+      return (h>0 ? h+'h ' : '') + p(m) + ':' + p(ss);
+    }
+
+    function pintarPromos() {
+      const ahora = Date.now();
+      if (!promosData.length) { bloquePromos.style.display='none'; cuerpoPromos.innerHTML=''; return; }
+      bloquePromos.style.display='block';
+      cuerpoPromos.innerHTML = promosData.map(p => {
+        let estado, extra = '';
+        if (ahora < p.inicia_ts) { estado='programada'; extra = 'empieza en ' + cuentaRegresiva(p.inicia_ts - ahora); }
+        else if (ahora <= p.termina_ts) { estado='activa'; extra = 'termina en ' + cuentaRegresiva(p.termina_ts - ahora); }
+        else { estado='vencida'; }
+        return `<tr>
+          <td>${esc(p.nombre)}</td>
+          <td class="fw-semibold text-success">${fmt(p.precio)}${p.precio_referencia ? `<br><small class="text-muted text-decoration-line-through">${fmt(p.precio_referencia)}</small>` : ''}</td>
+          <td class="small">${esc(p.inicia_en)}<br>→ ${esc(p.termina_en)}</td>
+          <td><span class="badge bg-${badgePromo[estado]||'secondary'}">${estado}</span>${extra ? `<div class="small text-muted">${extra}</div>` : ''}</td>
+          <td>${estado !== 'vencida' ? `<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-promo" data-id="${p.id}" title="Cancelar"><i class="bi bi-x-lg"></i></button>` : ''}</td>
+        </tr>`;
+      }).join('');
+      cuerpoPromos.querySelectorAll('.btn-cancel-promo').forEach(b => b.addEventListener('click', () => cancelarPromo(b.dataset.id)));
+    }
+
+    function cargarPromos() {
+      fetch(urlPromos, {headers:{'Accept':'application/json'}})
+        .then(r => r.json())
+        .then(d => { promosData = d.data || []; pintarPromos(); })
+        .catch(() => {});
+    }
+
+    function cancelarPromo(promoId) {
+      Swal.fire({ title:'¿Cancelar la promoción?', text:'Dejará de aplicarse de inmediato en el POS.', icon:'warning', showCancelButton:true, confirmButtonText:'Sí, cancelar' })
+        .then(res => {
+          if (!res.isConfirmed) return;
+          fetch(`${urlPromoBase}/${promoId}/eliminar`, { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} })
+            .then(async r => { const d = await r.json(); if(!r.ok) throw new Error(d.error||'Error'); return d; })
+            .then(() => cargarPromos())
+            .catch(e => Swal.fire('Error', e.message, 'error'));
+        });
+    }
+
+    setInterval(pintarPromos, 1000);   // contador en vivo
+    setInterval(cargarPromos, 30000);  // re-sincroniza estados cada 30s
+    cargarPromos();
   });
   </script>
   @endpush

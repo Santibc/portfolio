@@ -293,6 +293,25 @@ class VentaPdvServiceV2
             });
         }
 
+        // Promoción por tiempo de la feria (por ubicación): si hay una promo vigente AHORA,
+        // se muestra ese precio en el buscador del POS (y luego se cobra igual).
+        if ($ubicacionId > 0) {
+            $feria = \App\Models\Feria::activas()->where('ubicacion_id', $ubicacionId)->latest('id')->first();
+            if ($feria) {
+                foreach ($filas as &$f) {
+                    $promo = \App\Models\FeriaPromocion::precioVigente(
+                        $feria->id,
+                        (int) $f['producto_id'],
+                        !empty($f['variante_producto_id']) ? (int) $f['variante_producto_id'] : null
+                    );
+                    if ($promo !== null) {
+                        $f['precio'] = (float) $promo;
+                    }
+                }
+                unset($f);
+            }
+        }
+
         return array_slice($filas, 0, $limiteFilas);
     }
 

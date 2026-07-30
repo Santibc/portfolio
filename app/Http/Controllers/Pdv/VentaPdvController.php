@@ -451,18 +451,21 @@ class VentaPdvController extends Controller
      * de precios de esa feria; si no, null. Así cualquier caja abierta en el stand de una
      * feria cobra con los precios de la feria, sin tocar las listas regulares.
      */
-    private function listaPrecioFeriaDeSesion($sesion): ?int
+    private function feriaActivaDeSesion($sesion): ?Feria
     {
         if (!$sesion || !$sesion->caja) {
             return null;
         }
 
-        $feria = Feria::activas()
+        return Feria::activas()
             ->where('ubicacion_id', $sesion->caja->ubicacion_id)
             ->latest('id')
             ->first();
+    }
 
-        return $feria?->lista_precio_id;
+    private function listaPrecioFeriaDeSesion($sesion): ?int
+    {
+        return $this->feriaActivaDeSesion($sesion)?->lista_precio_id;
     }
 
     public function buscarProductos(Request $request)
@@ -572,7 +575,8 @@ class VentaPdvController extends Controller
 
         // Feria por ubicación: si el POS está en un stand de feria activa, forzamos su lista.
         $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
-        $listaPrecioId = $this->listaPrecioFeriaDeSesion($sesion) ?? $request->lista_precio_id;
+        $feria = $this->feriaActivaDeSesion($sesion);
+        $listaPrecioId = $feria?->lista_precio_id ?? $request->lista_precio_id;
         $precios = [];
 
         foreach ($request->items as $item) {
@@ -586,6 +590,14 @@ class VentaPdvController extends Controller
                 $precio = $precioVariante ? $precioVariante->precio : ($producto->getPrecioPorLista($listaPrecioId) ?? 0);
             } else {
                 $precio = $producto->getPrecioPorLista($listaPrecioId) ?? 0;
+            }
+
+            // Promoción por tiempo: si hay una promo vigente AHORA en la feria, manda ese precio.
+            if ($feria) {
+                $promo = \App\Models\FeriaPromocion::precioVigente($feria->id, (int) $item['producto_id'], $varianteId ? (int) $varianteId : null);
+                if ($promo !== null) {
+                    $precio = $promo;
+                }
             }
 
             $precios[] = [

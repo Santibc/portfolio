@@ -394,6 +394,9 @@ Route::middleware(['auth', 'role:admin,auxiliar_administrativo,inventarios'])->p
     Route::get('/{id}/buscar-productos', [FeriaController::class, 'buscarProductos'])->name('ferias.buscar-productos');
     Route::post('/{id}/precio', [FeriaController::class, 'actualizarPrecio'])->name('ferias.actualizar-precio');
     Route::post('/{id}/precios-masivos', [FeriaController::class, 'preciosMasivos'])->name('ferias.precios-masivos');
+    Route::get('/{id}/promociones', [FeriaController::class, 'promociones'])->name('ferias.promociones');
+    Route::post('/{id}/promociones', [FeriaController::class, 'crearPromocion'])->name('ferias.promociones.crear');
+    Route::post('/{id}/promociones/{promoId}/eliminar', [FeriaController::class, 'eliminarPromocion'])->name('ferias.promociones.eliminar');
     Route::get('/{id}/inventario', [FeriaController::class, 'inventario'])->name('ferias.inventario');
     Route::get('/{id}/inventario/excel', [FeriaController::class, 'exportarInventarioExcel'])->name('ferias.inventario.excel');
     Route::get('/{id}/traslados-pendientes', [FeriaController::class, 'trasladosPendientes'])->name('ferias.traslados-pendientes');

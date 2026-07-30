@@ -316,6 +316,59 @@ class FeriaService
         });
     }
 
+    /**
+     * Programa una PROMOCIÓN POR TIEMPO: crea precios promocionales que solo aplican en el POS
+     * entre $iniciaEn y $terminaEn. Fuera de esa ventana rige el precio normal de la feria
+     * (no se toca la lista). Reusa el mismo cálculo fijo/descuento/aumento de los precios masivos.
+     *
+     * @param array  $items cada uno: producto_id, variante_producto_id (opcional), todas_variantes, variante_ids
+     * @param string $tipo  'fijo' | 'descuento_pct' | 'aumento_pct'
+     */
+    public function crearPromocion(Feria $feria, array $items, string $tipo, float $valor, $iniciaEn, $terminaEn): array
+    {
+        return DB::transaction(function () use ($feria, $items, $tipo, $valor, $iniciaEn, $terminaEn) {
+            $creadas = [];
+
+            $crear = function (int $productoId, ?int $varianteId) use ($feria, $tipo, $valor, $iniciaEn, $terminaEn, &$creadas) {
+                $ref = $this->precioActualFeria($feria, $productoId, $varianteId) ?? 0;
+                $precio = $this->calcularPrecioNuevo($tipo, $valor, $ref);
+
+                $creadas[] = \App\Models\FeriaPromocion::create([
+                    'feria_id' => $feria->id,
+                    'producto_id' => $productoId,
+                    'variante_producto_id' => $varianteId,
+                    'precio' => $precio,
+                    'precio_referencia' => $ref,
+                    'inicia_en' => $iniciaEn,
+                    'termina_en' => $terminaEn,
+                    'activo' => true,
+                ]);
+            };
+
+            foreach ($items as $it) {
+                $productoId = (int) $it['producto_id'];
+
+                if (!empty($it['todas_variantes'])) {
+                    $idsTonos = !empty($it['variante_ids']) && is_array($it['variante_ids'])
+                        ? array_values(array_unique(array_map('intval', $it['variante_ids'])))
+                        : Producto::with('variantes')->find($productoId)?->variantes->pluck('id')->all() ?? [];
+
+                    if (!empty($idsTonos)) {
+                        foreach ($idsTonos as $varId) {
+                            $crear($productoId, $varId);
+                        }
+                        continue;
+                    }
+                }
+
+                $varianteId = !empty($it['variante_producto_id']) ? (int) $it['variante_producto_id'] : null;
+                $crear($productoId, $varianteId);
+            }
+
+            return $creadas;
+        });
+    }
+
     private function calcularPrecioNuevo(string $tipo, float $valor, float $actual): float
     {
         $nuevo = match ($tipo) {

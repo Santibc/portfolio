@@ -67,6 +67,11 @@ class Feria extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function promociones()
+    {
+        return $this->hasMany(FeriaPromocion::class);
+    }
+
     public function scopeActivas($query)
     {
         return $query->where('estado', self::ESTADO_ACTIVA);

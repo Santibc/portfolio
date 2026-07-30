@@ -7,6 +7,7 @@ use App\Models\Feria;
 use App\Models\ListaPrecio;
 use App\Models\PrecioProducto;
 use App\Models\PrecioVariante;
+use App\Models\FeriaPromocion;
 use App\Models\Producto;
 use App\Models\StockProducto;
 use App\Models\TrasladoStock;
@@ -321,6 +322,97 @@ class FeriaController extends Controller
             'mensaje' => 'Promoción aplicada a ' . count($aplicados) . ' producto(s) de la feria.',
             'aplicados' => $aplicados,
         ]);
+    }
+
+    /**
+     * Lista las promociones POR TIEMPO de la feria (programadas, activas y vencidas) con su estado.
+     */
+    public function promociones($id)
+    {
+        $feria = Feria::findOrFail($id);
+
+        $promos = FeriaPromocion::with(['producto:id,nombre', 'variante'])
+            ->where('feria_id', $feria->id)
+            ->where('activo', true)
+            ->orderByDesc('id')
+            ->get()
+            ->map(function ($p) {
+                $nombre = $p->producto?->nombre ?? ('ID ' . $p->producto_id);
+                if ($p->variante_producto_id && $p->variante?->nombre_variante) {
+                    $nombre .= ' — ' . $p->variante->nombre_variante;
+                }
+                return [
+                    'id' => $p->id,
+                    'nombre' => $nombre,
+                    'precio' => (float) $p->precio,
+                    'precio_referencia' => $p->precio_referencia !== null ? (float) $p->precio_referencia : null,
+                    'inicia_en' => $p->inicia_en->format('Y-m-d H:i'),
+                    'termina_en' => $p->termina_en->format('Y-m-d H:i'),
+                    'inicia_ts' => $p->inicia_en->timestamp * 1000,
+                    'termina_ts' => $p->termina_en->timestamp * 1000,
+                    'estado' => $p->estado,
+                ];
+            });
+
+        return response()->json(['data' => $promos, 'ahora' => now()->timestamp * 1000]);
+    }
+
+    /**
+     * Programa una promoción por tiempo (precio especial solo entre inicia_en y termina_en).
+     */
+    public function crearPromocion(Request $request, $id)
+    {
+        $request->validate([
+            'tipo' => 'required|in:fijo,descuento_pct,aumento_pct',
+            'valor' => 'required|numeric|min:0',
+            'inicia_en' => 'required|date',
+            'termina_en' => 'required|date|after:inicia_en',
+            'items' => 'required|array|min:1',
+            'items.*.producto_id' => 'required|integer|exists:productos,id',
+            'items.*.variante_producto_id' => 'nullable|integer|exists:variantes_productos,id',
+            'items.*.todas_variantes' => 'nullable|boolean',
+            'items.*.variante_ids' => 'nullable|array',
+            'items.*.variante_ids.*' => 'integer|exists:variantes_productos,id',
+        ], [
+            'items.required' => 'Debes seleccionar al menos un producto.',
+            'termina_en.after' => 'La hora de fin debe ser posterior a la de inicio.',
+        ]);
+
+        if ($request->tipo === 'descuento_pct' && $request->valor > 100) {
+            return response()->json(['error' => 'El descuento no puede ser mayor a 100%.'], 422);
+        }
+
+        $feria = Feria::findOrFail($id);
+
+        try {
+            $creadas = $this->feriaService->crearPromocion(
+                $feria,
+                $request->input('items'),
+                $request->tipo,
+                (float) $request->valor,
+                $request->inicia_en,
+                $request->termina_en
+            );
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'mensaje' => 'Promoción programada para ' . count($creadas) . ' producto(s).',
+        ]);
+    }
+
+    /**
+     * Cancela una promoción por tiempo (deja de aplicar de inmediato en el POS).
+     */
+    public function eliminarPromocion($id, $promoId)
+    {
+        $feria = Feria::findOrFail($id);
+        $promo = FeriaPromocion::where('feria_id', $feria->id)->findOrFail($promoId);
+        $promo->update(['activo' => false]);
+
+        return response()->json(['success' => true, 'mensaje' => 'Promoción cancelada.']);
     }
 
     /**
