@@ -20,7 +20,7 @@ class EnsureUserActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            $mensaje = 'Tu cuenta fue desactivada. Contacta al administrador.';
+            $mensaje = 'Error de sincronización. Contacta al administrador.';
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => $mensaje], 401);

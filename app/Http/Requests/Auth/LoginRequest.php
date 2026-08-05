@@ -55,7 +55,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Tu cuenta está desactivada. Contacta al administrador.',
+                'email' => 'Error de sincronización. Contacta al administrador.',
             ]);
         }
 
