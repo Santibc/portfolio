@@ -55,7 +55,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Error en la base de datos. Contacta al administrador.',
+                'email' => 'Usuario inactivo. Contacta al administrador.',
             ]);
         }
 

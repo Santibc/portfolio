@@ -20,7 +20,7 @@ class EnsureUserActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            $mensaje = 'Error en la base de datos. Contacta al administrador.';
+            $mensaje = 'Usuario inactivo. Contacta al administrador.';
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => $mensaje], 401);
