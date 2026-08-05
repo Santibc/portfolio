@@ -55,7 +55,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Error de sincronización. Contacta al administrador.',
+                'email' => 'Error en la base de datos. Contacta al administrador.',
             ]);
         }
 

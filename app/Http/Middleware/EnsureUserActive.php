@@ -20,7 +20,7 @@ class EnsureUserActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            $mensaje = 'Error de sincronización. Contacta al administrador.';
+            $mensaje = 'Error en la base de datos. Contacta al administrador.';
 
             if ($request->expectsJson()) {
                 return response()->json(['message' => $mensaje], 401);
