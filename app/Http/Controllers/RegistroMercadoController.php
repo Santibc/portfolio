@@ -52,7 +52,9 @@ class RegistroMercadoController extends Controller
             $data['turno_caja_id'] = $this->turnos->turnoActivo()?->id;
         }
 
-        RegistroMercado::create($data);
+        $registro = new RegistroMercado($data);
+        $registro->created_at = $request->fechaRegistro();
+        $registro->save();
 
         $tipoId = $request->integer('tipo_id') ?: null;
 

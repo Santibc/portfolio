@@ -11,10 +11,20 @@
         </x-slot:actions>
     </x-page-header>
 
-    @php $metodoDefault = old('metodo_pago_id', $metodos->first()?->id); @endphp
+    @php
+        $metodoDefault = old('metodo_pago_id', $metodos->first()?->id);
+        $hoy = today()->toDateString();
+        $fechaDefault = old('fecha', $hoy);
+    @endphp
 
     <div class="max-w-md mx-auto"
-         x-data="{ cantidad: 0, valor: 0, metodoPago: {{ $metodoDefault ? (int) $metodoDefault : 'null' }} }"
+         x-data="{
+             cantidad: 0,
+             valor: 0,
+             metodoPago: {{ $metodoDefault ? (int) $metodoDefault : 'null' }},
+             hoy: '{{ $hoy }}',
+             fecha: '{{ $fechaDefault }}',
+         }"
          x-on:currency-changed="valor = $event.detail">
 
         <x-card padding="p-0" clip>
@@ -51,6 +61,29 @@
 
             <x-card>
                 <div class="space-y-5">
+                    <div>
+                        <x-input
+                            label="Fecha de la compra"
+                            name="fecha"
+                            type="date"
+                            :value="$fechaDefault"
+                            icon="calendar"
+                            required
+                            x-model="fecha"
+                            :max="$hoy"
+                            :min="today()->subYears(2)->toDateString()"
+                        />
+                        <p class="mt-1.5 text-xs text-cream-600 dark:text-cream-400" x-show="fecha === hoy">
+                            Hoy. Cámbiala si estás registrando una compra de otro día.
+                        </p>
+                        <p class="mt-1.5 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400"
+                           x-show="fecha !== hoy" x-cloak>
+                            <x-icon name="info" class="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                            <span>Este gasto quedará guardado con fecha
+                                <span class="font-semibold" x-text="fecha"></span>, no con la de hoy.</span>
+                        </p>
+                    </div>
+
                     <x-input
                         label="Cantidad ({{ $producto->unidad_empaque }})"
                         name="cantidad"
@@ -114,16 +147,27 @@
 
                     <div class="pt-1 border-t border-cream-200 dark:border-cream-800">
                         @if ($turnoActivo)
-                            <x-checkbox
-                                name="vincular_caja"
-                                value="1"
-                                :checked="(bool) old('vincular_caja', false)"
-                                label="Vincular con la caja abierta"
-                                description="Este gasto se descontará del turno de caja abierto y aparecerá en su dashboard."
-                            />
-                            @error('vincular_caja')
-                                <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                            @enderror
+                            {{-- La caja abierta es la de hoy: un registro con fecha anterior no se puede vincular. --}}
+                            <template x-if="fecha === hoy">
+                                <div>
+                                    <x-checkbox
+                                        name="vincular_caja"
+                                        value="1"
+                                        :checked="(bool) old('vincular_caja', false)"
+                                        label="Vincular con la caja abierta"
+                                        description="Este gasto se descontará del turno de caja abierto y aparecerá en su dashboard."
+                                    />
+                                    @error('vincular_caja')
+                                        <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </template>
+                            <template x-if="fecha !== hoy">
+                                <div class="flex items-start gap-2 rounded-lg bg-cream-100 dark:bg-cream-900/40 px-3 py-2 text-xs text-cream-600 dark:text-cream-400">
+                                    <x-icon name="info" class="w-4 h-4 shrink-0 mt-0.5" />
+                                    <span>Como es un registro de una fecha anterior, no se vinculará con la caja abierta de hoy.</span>
+                                </div>
+                            </template>
                         @else
                             <div class="flex items-start gap-2 rounded-lg bg-cream-100 dark:bg-cream-900/40 px-3 py-2 text-xs text-cream-600 dark:text-cream-400">
                                 <x-icon name="info" class="w-4 h-4 shrink-0 mt-0.5" />
