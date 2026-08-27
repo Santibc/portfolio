@@ -980,14 +980,19 @@ class SiigoFacturacionService
     }
 
     /**
-     * Convertir precio del catálogo (con IVA incluido) a base gravable redondeada.
+     * Convertir precio del catálogo (con IVA incluido) a base gravable.
      * Los productos en SIIGO Nube están homologados sin IVA, así que SIIGO suma
-     * el 19% por encima del precio enviado. Por eso se divide entre 1.19 para
-     * que al recalcular el total coincida con el precio del catálogo.
+     * el 19% por encima del precio enviado. Se divide entre 1.19 para que al
+     * recalcular el total coincida con el precio del catálogo.
+     *
+     * OJO: se usan 4 decimales (no 2) porque con 2 decimales, precios "redondos"
+     * como $17.000 dan base=14285.71 → SIIGO calcula 14285.71*1.19=16999.99 y
+     * como enviamos payment=17000 rechaza con 500 "Unhandled" (mismatch de 1 ct).
+     * Con base=14285.7143 → SIIGO redondea a 17000.00 exacto.
      */
     private function calcularPrecioBase(float $precioConIva): float
     {
-        return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 2);
+        return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 4);
     }
 
     /**
@@ -1070,10 +1075,10 @@ class SiigoFacturacionService
         $taxId = ConfiguracionPdv::obtener('siigo_tax_id');
         $ivaTasa = self::SIIGO_IVA_PORCENTAJE / 100;
 
-        // Replicar el algoritmo de SIIGO: base * qty, descuento, redondear IVA POR LÍNEA y sumar.
-        // SIIGO redondea iva_línea = round(base_subtotal * 0.19, 2). Si aquí solo multiplicamos
-        // por 1.19 sin redondear, los milicentavos se acumulan y SIIGO rechaza con
-        // invalid_total_payments en facturas con muchos ítems.
+        // Replicar EXACTO el redondeo de SIIGO por línea: line_total = round(base * qty * (1 + IVA), 2).
+        // Antes usábamos round(iva) + subtotal y quedaba 1 centavo por debajo del total real de SIIGO
+        // (ej. base=14285.71 → 14285.71 + round(2714.2849,2)=2714.28 = 16999.99, pero SIIGO calcula
+        //  round(14285.71*1.19,2)=17000.00). Ese descuadre disparaba 500 "Unhandled" al validar el pago.
         $totalItems = 0.0;
         foreach ($venta->items as $item) {
             $precioBase = $taxId
@@ -1088,8 +1093,7 @@ class SiigoFacturacionService
             }
 
             if ($taxId) {
-                $iva = round($itemSubtotal * $ivaTasa, 2);
-                $itemTotal = round($itemSubtotal + $iva, 2);
+                $itemTotal = round($itemSubtotal * (1 + $ivaTasa), 2);
             } else {
                 $itemTotal = round($itemSubtotal, 2);
             }
