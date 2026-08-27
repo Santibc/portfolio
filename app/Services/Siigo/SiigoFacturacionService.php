@@ -71,10 +71,11 @@ class SiigoFacturacionService
 
         try {
             $factura->incrementarIntento();
-            $response = $this->api->post('/v1/invoices', $payload, $factura->id);
+            [$response, $payload] = $this->postFacturaConAjustePago('/v1/invoices', $payload, $factura);
 
             $factura->update([
                 'siigo_response' => $response,
+                'siigo_request' => $payload,
                 'siigo_invoice_id' => $response['id'] ?? null,
                 'numero_factura' => isset($response['prefix'], $response['number'])
                     ? $response['prefix'] . '-' . $response['number']
@@ -127,10 +128,11 @@ class SiigoFacturacionService
             // Ensure Consumidor Final exists in SIIGO
             $this->asegurarConsumidorFinalEnSiigo($nitConsumidorFinal);
 
-            $response = $this->api->post('/v1/invoices', $payload, $factura->id);
+            [$response, $payload] = $this->postFacturaConAjustePago('/v1/invoices', $payload, $factura);
 
             $factura->update([
                 'siigo_response' => $response,
+                'siigo_request' => $payload,
                 'siigo_invoice_id' => $response['id'] ?? null,
                 'numero_factura' => isset($response['prefix'], $response['number'])
                     ? $response['prefix'] . '-' . $response['number']
@@ -560,8 +562,7 @@ class SiigoFacturacionService
 
         try {
             $factura->incrementarIntento();
-
-            $response = $this->api->post($endpoint, $payload, $factura->id);
+            [$response, $payload] = $this->postFacturaConAjustePago($endpoint, $payload, $factura);
 
             $factura->update([
                 'siigo_response' => $response,
@@ -997,6 +998,32 @@ class SiigoFacturacionService
     private function calcularPrecioBase(float $precioConIva): float
     {
         return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 6);
+    }
+
+    /**
+     * POST factura con fix adaptativo: si SIIGO responde "total invoice calculated is X.XX",
+     * ajusta payment.value a ese valor y reintenta UNA vez. Evita perseguir la matemática
+     * interna de SIIGO (que redondea prices distinto de nosotros según el ticket).
+     * Solo aplica al endpoint /v1/invoices. Retorna [respuesta, payload_efectivamente_enviado].
+     */
+    private function postFacturaConAjustePago(string $endpoint, array $payload, FacturaSiigo $factura): array
+    {
+        try {
+            $response = $this->api->post($endpoint, $payload, $factura->id);
+            return [$response, $payload];
+        } catch (Exception $e) {
+            if ($endpoint === '/v1/invoices'
+                && isset($payload['payments'][0]['value'])
+                && preg_match('/total invoice calculated is\s+([0-9]+(?:\.[0-9]+)?)/i', $e->getMessage(), $m)
+            ) {
+                $totalSiigo = (float) $m[1];
+                Log::info("SIIGO ajuste adaptativo factura {$factura->id}: payment {$payload['payments'][0]['value']} -> {$totalSiigo}");
+                $payload['payments'][0]['value'] = round($totalSiigo, 2);
+                $response = $this->api->post($endpoint, $payload, $factura->id);
+                return [$response, $payload];
+            }
+            throw $e;
+        }
     }
 
     /**
