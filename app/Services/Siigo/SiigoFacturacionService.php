@@ -955,6 +955,9 @@ class SiigoFacturacionService
      */
     private function construirPayloadFactura(VentaPdv $venta, string $customerIdentification, bool $sendEmail = true, ?string $emailDestino = null): array
     {
+        // Asegurar precisión completa al serializar floats (por si el hosting tiene serialize_precision < 0).
+        @ini_set('serialize_precision', '-1');
+
         $documentTypeId = (int) ConfiguracionPdv::obtener('siigo_document_type_id');
         $sellerId = (int) ConfiguracionPdv::obtener('siigo_seller_id');
 
@@ -971,7 +974,8 @@ class SiigoFacturacionService
             ],
             'stamp' => ['send' => true],
             'mail' => ['send' => $sendEmail],
-            'observations' => "Venta PdV #{$venta->numero_venta}",
+            // Marcador de versión de código para verificar deploy (ver logs SIIGO)
+            'observations' => "Venta PdV #{$venta->numero_venta} [v-precision-6]",
             'items' => $this->construirItems($venta),
             'payments' => $this->construirPayments($venta),
         ];
@@ -992,7 +996,7 @@ class SiigoFacturacionService
      */
     private function calcularPrecioBase(float $precioConIva): float
     {
-        return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 4);
+        return round($precioConIva / (1 + self::SIIGO_IVA_PORCENTAJE / 100), 6);
     }
 
     /**
