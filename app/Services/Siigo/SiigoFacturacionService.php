@@ -564,6 +564,9 @@ class SiigoFacturacionService
             $factura->incrementarIntento();
             [$response, $payload] = $this->postFacturaConAjustePago($endpoint, $payload, $factura);
 
+            // Al aceptar SIIGO limpiamos estado 'error'/'rechazada' y errores previos
+            // (procesarEstadoRespuesta lo elevará a 'aprobada' si trae CUFE, o dejará
+            // 'pendiente' mientras DIAN valida).
             $factura->update([
                 'siigo_response' => $response,
                 'siigo_request' => $payload,
@@ -571,6 +574,8 @@ class SiigoFacturacionService
                 'numero_factura' => isset($response['prefix'], $response['number'])
                     ? $response['prefix'] . '-' . $response['number']
                     : ($response['name'] ?? null),
+                'estado_dian' => 'pendiente',
+                'errores' => null,
             ]);
 
             $this->procesarEstadoRespuesta($factura, $response);
