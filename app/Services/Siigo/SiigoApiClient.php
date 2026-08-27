@@ -140,55 +140,80 @@ class SiigoApiClient
 
     private function request(string $method, string $endpoint, array $query = [], ?array $data = null, ?int $facturaSiigoId = null, bool $isRetry = false): array
     {
-        $token = $this->getToken();
-        $start = microtime(true);
+        // Reintenta hasta 3 veces en fallos transitorios (red caída, SIIGO 5xx, 429).
+        // Backoff: 1s, 3s. Los errores 4xx (validación) NO se reintentan.
+        $maxIntentos = 3;
+        $intento = 0;
 
-        $http = Http::withToken($token)
-            ->withHeaders(['Partner-Id' => $this->partnerId])
-            ->acceptJson()
-            ->timeout(30);
+        while (true) {
+            $intento++;
+            $token = $this->getToken();
+            $start = microtime(true);
 
-        $url = self::BASE_URL . $endpoint;
+            $http = Http::withToken($token)
+                ->withHeaders(['Partner-Id' => $this->partnerId])
+                ->acceptJson()
+                ->timeout(30);
 
-        try {
-            $response = match ($method) {
-                'GET' => $http->get($url, $query),
-                'POST' => $http->post($url, $data ?? []),
-                'PUT' => $http->put($url, $data ?? []),
-                'DELETE' => $http->delete($url),
-            };
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            $url = self::BASE_URL . $endpoint;
+            $connectionError = null;
+            $response = null;
+
+            try {
+                $response = match ($method) {
+                    'GET' => $http->get($url, $query),
+                    'POST' => $http->post($url, $data ?? []),
+                    'PUT' => $http->put($url, $data ?? []),
+                    'DELETE' => $http->delete($url),
+                };
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                $connectionError = $e;
+            }
+
             $duracion = (int) ((microtime(true) - $start) * 1000);
-            $this->log($endpoint, $method, $data ?? $query, null, null, $duracion, false, $facturaSiigoId, 'Connection timeout: ' . $e->getMessage());
-            throw new Exception('No se pudo conectar con SIIGO. Verifique su conexión a internet.');
+
+            if ($connectionError) {
+                $errorMsg = 'Connection timeout (intento ' . $intento . '/' . $maxIntentos . '): ' . $connectionError->getMessage();
+                $this->log($endpoint, $method, $data ?? $query, null, null, $duracion, false, $facturaSiigoId, $errorMsg);
+
+                if ($intento < $maxIntentos) {
+                    sleep($intento);
+                    continue;
+                }
+                throw new Exception('No se pudo conectar con SIIGO tras ' . $maxIntentos . ' intentos. Verifique la conectividad hacia api.siigo.com.');
+            }
+
+            $this->log(
+                $endpoint,
+                $method,
+                $data ?? ($query ?: null),
+                $response->status(),
+                $response->json(),
+                $duracion,
+                $response->successful(),
+                $facturaSiigoId,
+                $response->successful() ? null : $this->extractError($response->json())
+            );
+
+            // On 401, refresh token and retry once (no cuenta contra $maxIntentos)
+            if ($response->status() === 401 && !$isRetry) {
+                Cache::forget(self::TOKEN_CACHE_KEY);
+                return $this->request($method, $endpoint, $query, $data, $facturaSiigoId, true);
+            }
+
+            // Reintentar en 5xx (SIIGO caído) o 429 (rate limit). 4xx = validación, NO reintentar.
+            if (in_array($response->status(), [500, 502, 503, 504, 429]) && $intento < $maxIntentos) {
+                sleep($intento);
+                continue;
+            }
+
+            if (!$response->successful()) {
+                $error = $this->extractError($response->json());
+                throw new Exception("SIIGO API Error ({$response->status()}): {$error}");
+            }
+
+            return $response->json() ?? [];
         }
-
-        $duracion = (int) ((microtime(true) - $start) * 1000);
-
-        $this->log(
-            $endpoint,
-            $method,
-            $data ?? ($query ?: null),
-            $response->status(),
-            $response->json(),
-            $duracion,
-            $response->successful(),
-            $facturaSiigoId,
-            $response->successful() ? null : $this->extractError($response->json())
-        );
-
-        // On 401, refresh token and retry once
-        if ($response->status() === 401 && !$isRetry) {
-            Cache::forget(self::TOKEN_CACHE_KEY);
-            return $this->request($method, $endpoint, $query, $data, $facturaSiigoId, true);
-        }
-
-        if (!$response->successful()) {
-            $error = $this->extractError($response->json());
-            throw new Exception("SIIGO API Error ({$response->status()}): {$error}");
-        }
-
-        return $response->json() ?? [];
     }
 
     private function extractError(?array $body): string
