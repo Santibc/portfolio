@@ -33,6 +33,12 @@ class PrefacturasController extends Controller
                 $query->where('usuario_creador_id', $user->id);
             }
 
+            // Aislamiento por sede: cada usuario ve únicamente las prefacturas de su
+            // tienda asignada (users.ubicacion_id). El admin ve todas las sedes.
+            if (!$user->hasRole('admin') && $user->ubicacion_id) {
+                $query->where('ubicacion_id', $user->ubicacion_id);
+            }
+
             if ($request->estado) {
                 $query->where('estado', $request->estado);
             }
@@ -68,7 +74,12 @@ class PrefacturasController extends Controller
             $listasPrecios = ListaPrecio::where('activo', true)->orderBy('orden')->get();
         }
 
-        $ubicaciones = Ubicacion::activas()->tiendas()->get();
+        // Aislamiento por sede: un usuario no-admin solo puede crear en su tienda asignada.
+        $user = auth()->user();
+        $ubicaciones = Ubicacion::activas()->tiendas()
+            ->when(!$user->hasRole('admin') && $user->ubicacion_id,
+                fn($q) => $q->where('id', $user->ubicacion_id))
+            ->get();
         $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
         $vendedorasPrefactura = \App\Models\VendedoraPrefactura::nombresActivos();
 
@@ -87,8 +98,17 @@ class PrefacturasController extends Controller
             'items.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
+        $datos = $request->only(['cliente_id', 'nombre_cliente', 'lista_precio_id', 'ubicacion_id', 'descuento_global', 'iva', 'observaciones', 'vendedora_prefactura']);
+
+        // Aislamiento por sede: un usuario no-admin siempre crea en su tienda asignada,
+        // sin importar lo que llegue en el request.
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && $user->ubicacion_id) {
+            $datos['ubicacion_id'] = $user->ubicacion_id;
+        }
+
         $resultado = $this->prefacturaService->crear(
-            $request->only(['cliente_id', 'nombre_cliente', 'lista_precio_id', 'ubicacion_id', 'descuento_global', 'iva', 'observaciones', 'vendedora_prefactura']),
+            $datos,
             $request->items,
             auth()->id()
         );
@@ -151,6 +171,8 @@ class PrefacturasController extends Controller
             'metodo_pago' => 'required|in:efectivo,transferencia,mixto',
         ]);
 
+        $this->verificarSede(Prefactura::findOrFail($id));
+
         $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
         if (!$sesion) {
             return response()->json(['exito' => false, 'mensaje' => 'Debe tener una caja abierta'], 422);
@@ -181,6 +203,8 @@ class PrefacturasController extends Controller
             'motivo_anulacion' => 'required|string|min:5',
         ]);
 
+        $this->verificarSede(Prefactura::findOrFail($id));
+
         $resultado = $this->prefacturaService->anular($id, auth()->id(), $request->motivo_anulacion);
 
         return response()->json($resultado, $resultado['exito'] ? 200 : 422);
@@ -202,6 +226,8 @@ class PrefacturasController extends Controller
             'items.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
+        $this->verificarSede(Prefactura::findOrFail($id));
+
         $datos = $request->only([
             'cliente_id', 'nombre_cliente', 'lista_precio_id',
             'descuento_global', 'observaciones',
@@ -217,6 +243,21 @@ class PrefacturasController extends Controller
         $prefactura = Prefactura::with('items.producto', 'items.variante', 'usuarioCreador', 'usuarioCajero', 'cliente')
             ->findOrFail($id);
 
+        $this->verificarSede($prefactura);
+
         return view('pdv.prefacturas.partials.detalle', compact('prefactura'));
+    }
+
+    /**
+     * Aislamiento por sede: un usuario no-admin solo puede ver/gestionar prefacturas
+     * de su propia tienda asignada (users.ubicacion_id). El admin no tiene restricción.
+     */
+    private function verificarSede(Prefactura $prefactura): void
+    {
+        $user = auth()->user();
+        if (!$user->hasRole('admin') && $user->ubicacion_id
+            && (int) $prefactura->ubicacion_id !== (int) $user->ubicacion_id) {
+            abort(403, 'No tiene acceso a prefacturas de otra sede.');
+        }
     }
 }
