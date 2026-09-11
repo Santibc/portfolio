@@ -8,7 +8,7 @@
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h4 class="text-2xl font-semibold mb-0">Vendedoras de Prefactura</h4>
           </div>
-          <p class="text-muted small">Estas son las vendedoras que aparecen para escoger al <strong>crear una prefactura</strong>. Cada vendedora se puede asignar a una <strong>sede</strong>: solo aparecerá en esa tienda. Si la dejas en <strong>“Todas las sedes”</strong>, aparece en todas.</p>
+          <p class="text-muted small">Estas son las vendedoras que aparecen para escoger al <strong>crear una prefactura</strong>. Cada vendedora <strong>debe tener una sede</strong>: solo aparece en esa tienda. Una vendedora <strong>sin sede asignada NO aparece en ninguna</strong> tienda.</p>
 
           @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -27,7 +27,7 @@
             <div class="col-auto">
               <label class="form-label small fw-semibold">Sede</label>
               <select name="ubicacion_id" class="form-select">
-                <option value="">Todas las sedes</option>
+                <option value="">— Sin asignar (no aparece) —</option>
                 @foreach($ubicaciones as $u)
                   <option value="{{ $u->id }}" @selected(old('ubicacion_id')==$u->id)>{{ $u->nombre }}</option>
                 @endforeach
@@ -57,7 +57,7 @@
                         @csrf
                         <input type="text" name="nombre" class="form-control form-control-sm" value="{{ $v->nombre }}" maxlength="150" required style="max-width:220px;">
                         <select name="ubicacion_id" class="form-select form-select-sm" style="max-width:200px;">
-                          <option value="">Todas las sedes</option>
+                          <option value="">— Sin asignar (no aparece) —</option>
                           @foreach($ubicaciones as $u)
                             <option value="{{ $u->id }}" @selected($v->ubicacion_id==$u->id)>{{ $u->nombre }}</option>
                           @endforeach
@@ -69,7 +69,7 @@
                       @if($v->ubicacion)
                         <span class="badge bg-info text-dark">{{ $v->ubicacion->nombre }}</span>
                       @else
-                        <span class="badge bg-light text-muted border">Todas las sedes</span>
+                        <span class="badge bg-warning text-dark">Sin asignar · no aparece</span>
                       @endif
                     </td>
                     <td>

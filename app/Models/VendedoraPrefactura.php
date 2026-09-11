@@ -41,19 +41,19 @@ class VendedoraPrefactura extends Model
     }
 
     /**
-     * Nombres de vendedoras activas visibles para una sede: las asignadas a esa
-     * ubicación + las globales (sin sede asignada). Si $ubicacionId es null,
-     * devuelve todas las activas.
+     * Nombres de vendedoras activas visibles para una sede: SOLO las asignadas a
+     * esa ubicación. Las que no tienen sede asignada NO aparecen en ninguna
+     * tienda (deben asignarse a una sede para poder usarse). Si $ubicacionId es
+     * null (p. ej. admin), devuelve todas las activas.
      */
     public static function nombresActivosPorUbicacion(?int $ubicacionId): array
     {
+        if (!$ubicacionId) {
+            return static::nombresActivos();
+        }
+
         return static::activas()
-            ->when($ubicacionId, function ($q) use ($ubicacionId) {
-                $q->where(function ($w) use ($ubicacionId) {
-                    $w->where('ubicacion_id', $ubicacionId)
-                      ->orWhereNull('ubicacion_id');
-                });
-            })
+            ->where('ubicacion_id', $ubicacionId)
             ->orderBy('nombre')
             ->pluck('nombre')
             ->all();
