@@ -81,17 +81,27 @@ class PrefacturasController extends Controller
                 fn($q) => $q->where('id', $user->ubicacion_id))
             ->get();
         $descuentoMaximo = (float) ConfiguracionPdv::obtener('descuento_maximo_cajero', 15);
-        $vendedorasPrefactura = \App\Models\VendedoraPrefactura::nombresActivos();
+        // Vendedoras filtradas por la sede del usuario (las de su tienda + las globales).
+        // El admin ve todas.
+        $vendedorasPrefactura = ($user->hasRole('admin') || !$user->ubicacion_id)
+            ? \App\Models\VendedoraPrefactura::nombresActivos()
+            : \App\Models\VendedoraPrefactura::nombresActivosPorUbicacion($user->ubicacion_id);
 
         return view('pdv.prefacturas.crear', compact('listasPrecios', 'ubicaciones', 'descuentoMaximo', 'vendedorasPrefactura'));
     }
 
     public function guardar(Request $request)
     {
+        $user = auth()->user();
+        // Vendedoras permitidas según la sede del usuario (su tienda + globales); admin todas.
+        $vendedorasPermitidas = ($user->hasRole('admin') || !$user->ubicacion_id)
+            ? \App\Models\VendedoraPrefactura::nombresActivos()
+            : \App\Models\VendedoraPrefactura::nombresActivosPorUbicacion($user->ubicacion_id);
+
         $request->validate([
             'lista_precio_id' => 'required|exists:listas_precios,id',
             'ubicacion_id' => 'required|exists:ubicaciones,id',
-            'vendedora_prefactura' => ['required', \Illuminate\Validation\Rule::in(\App\Models\VendedoraPrefactura::nombresActivos())],
+            'vendedora_prefactura' => ['required', \Illuminate\Validation\Rule::in($vendedorasPermitidas)],
             'items' => 'required|array|min:1',
             'items.*.producto_id' => 'required|exists:productos,id',
             'items.*.cantidad' => 'required|integer|min:1',
@@ -102,7 +112,6 @@ class PrefacturasController extends Controller
 
         // Aislamiento por sede: un usuario no-admin siempre crea en su tienda asignada,
         // sin importar lo que llegue en el request.
-        $user = auth()->user();
         if (!$user->hasRole('admin') && $user->ubicacion_id) {
             $datos['ubicacion_id'] = $user->ubicacion_id;
         }
