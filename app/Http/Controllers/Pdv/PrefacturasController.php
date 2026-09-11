@@ -136,7 +136,8 @@ class PrefacturasController extends Controller
 
     public function pendientes(Request $request)
     {
-        $sesion = $this->cajaService->obtenerSesionActivaDeUsuario(auth()->id());
+        $user = auth()->user();
+        $sesion = $this->cajaService->obtenerSesionActivaDeUsuario($user->id);
 
         $query = Prefactura::with([
                 'usuarioCreador',
@@ -147,7 +148,12 @@ class PrefacturasController extends Controller
             ->pendientes()
             ->orderByDesc('created_at');
 
-        if ($sesion) {
+        // Aislamiento por sede: un usuario no-admin ve únicamente las pendientes de
+        // su sede asignada, tenga o no una caja abierta. El admin (o usuario sin
+        // sede) conserva el filtro por la caja abierta, si la hay.
+        if (!$user->hasRole('admin') && $user->ubicacion_id) {
+            $query->where('ubicacion_id', $user->ubicacion_id);
+        } elseif ($sesion) {
             $query->where('ubicacion_id', $sesion->caja->ubicacion_id);
         }
 
