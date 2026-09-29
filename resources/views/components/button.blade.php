@@ -9,7 +9,7 @@
 
 @php
     $variants = [
-        'primary'   => 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white shadow-soft hover:shadow-glow border border-primary-500',
+        'primary'   => 'bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white shadow-soft hover:shadow-glow border border-primary-500 dark:bg-primary-400 dark:hover:bg-primary-300 dark:active:bg-primary-500 dark:border-primary-400 dark:hover:text-primary-950',
         'secondary' => 'bg-white hover:bg-cream-100 active:bg-cream-200 text-cream-900 border border-cream-300 dark:bg-cream-900 dark:hover:bg-cream-800 dark:text-cream-100 dark:border-cream-700',
         'ghost'     => 'bg-transparent hover:bg-cream-100 text-cream-800 dark:hover:bg-cream-800 dark:text-cream-200',
         'danger'    => 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-white shadow-soft border border-red-500',

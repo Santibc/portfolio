@@ -1,0 +1,302 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - link "Consolidado" [ref=e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=e17]
+        - generic [ref=e20]: Consolidado
+      - generic [ref=e21]:
+        - button "Mercado" [ref=e22] [cursor=pointer]:
+          - img [ref=e23]
+          - generic [ref=e29]: Mercado
+          - img [ref=e30]
+        - generic [ref=e32]:
+          - link "Dashboard" [ref=e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=e34]
+            - generic [ref=e37]: Dashboard
+          - link "Productos" [ref=e39] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=e40]
+            - generic [ref=e46]: Productos
+          - link "Registrar" [ref=e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=e48]
+            - generic [ref=e52]: Registrar
+          - link "Lista mercado" [ref=e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=e54]
+            - generic [ref=e57]: Lista mercado
+          - link "Plantilla" [ref=e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=e59]
+            - generic [ref=e62]: Plantilla
+      - button "Caja" [ref=e64] [cursor=pointer]:
+        - img [ref=e65]
+        - generic [ref=e68]: Caja
+        - img [ref=e69]
+      - button "Nómina" [ref=e72] [cursor=pointer]:
+        - img [ref=e73]
+        - generic [ref=e76]: Nómina
+        - img [ref=e77]
+      - button "Gastos fijos" [ref=e80] [cursor=pointer]:
+        - img [ref=e81]
+        - generic [ref=e84]: Gastos fijos
+        - img [ref=e85]
+      - paragraph [ref=e87]: Cuenta
+      - link "Mi perfil" [ref=e88] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e89]
+        - generic [ref=e101]: Mi perfil
+      - paragraph [ref=e102]: Sistema
+      - link "Componentes UI" [ref=e103] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e104]
+        - generic [ref=e109]: Componentes UI
+    - button "Cerrar sesion" [ref=e112] [cursor=pointer]:
+      - img [ref=e113]
+      - text: Cerrar sesion
+  - banner [ref=e116]:
+    - generic [ref=e117]:
+      - button "Mostrar menu" [ref=e118] [cursor=pointer]:
+        - img [ref=e119]
+      - generic [ref=e120]: Dashboard Mercado
+      - generic [ref=e121]:
+        - button "Cambiar tema" [ref=e122] [cursor=pointer]:
+          - img [ref=e124]
+        - button "A Admin admin" [ref=e131] [cursor=pointer]:
+          - generic [ref=e132]: A
+          - generic [ref=e133]:
+            - generic [ref=e134]: Admin
+            - generic [ref=e135]: admin
+          - img [ref=e136]
+  - main [ref=e138]:
+    - generic [ref=e139]:
+      - generic [ref=e141]:
+        - img [ref=e143]
+        - generic [ref=e146]:
+          - heading "Dashboard Mercado" [level=1] [ref=e147]
+          - paragraph [ref=e148]: Auditoría de compras registradas
+      - link "Gráficas" [ref=e150] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard/graficas
+        - img [ref=e151]
+        - text: Gráficas
+    - generic [ref=e153]:
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - paragraph [ref=e157]: Total gastado
+          - paragraph [ref=e158]: $ 16.284.314
+        - img [ref=e160]
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - paragraph [ref=e165]: Registros
+          - paragraph [ref=e166]: "122"
+        - img [ref=e168]
+      - generic [ref=e170]:
+        - generic [ref=e171]:
+          - paragraph [ref=e172]: Productos distintos
+          - paragraph [ref=e173]: "76"
+        - img [ref=e175]
+      - generic [ref=e182]:
+        - generic [ref=e183]:
+          - paragraph [ref=e184]: Promedio / registro
+          - paragraph [ref=e185]: $ 133.478
+        - img [ref=e187]
+    - generic [ref=e190]:
+      - paragraph [ref=e191]: Total por método de pago
+      - generic [ref=e192]:
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - paragraph [ref=e196]: Sin método · 57 reg.
+            - paragraph [ref=e197]: $ 10.638.019
+          - img [ref=e199]
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - paragraph [ref=e204]: Efectivo · 46 reg.
+            - paragraph [ref=e205]: $ 3.748.082
+          - img [ref=e207]
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - paragraph [ref=e212]: Nequi · 13 reg.
+            - paragraph [ref=e213]: $ 1.436.713
+          - img [ref=e215]
+        - generic [ref=e218]:
+          - generic [ref=e219]:
+            - paragraph [ref=e220]: QR · 5 reg.
+            - paragraph [ref=e221]: $ 378.500
+          - img [ref=e223]
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - paragraph [ref=e228]: Daviplata · 1 reg.
+            - paragraph [ref=e229]: $ 83.000
+          - img [ref=e231]
+    - generic [ref=e234]:
+      - generic [ref=e235]:
+        - generic [ref=e236]: Desde
+        - textbox [ref=e237]: 2020-01-01
+      - generic [ref=e238]:
+        - generic [ref=e239]: Hasta
+        - textbox [ref=e240]: 2027-01-01
+      - link "Hoy" [ref=e241] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard
+        - img [ref=e242]
+        - text: Hoy
+    - generic [ref=e244]:
+      - generic [ref=e245]:
+        - generic [ref=e246]:
+          - img [ref=e248]
+          - searchbox "Buscar..." [ref=e251]
+        - combobox [ref=e253]:
+          - 'option "Tipo: todos" [selected]'
+          - option "Arepas"
+          - option "Aseo"
+          - option "Cerdo"
+          - option "Desechables"
+          - option "Gaseosas"
+          - option "Pescado"
+          - option "Plaza"
+          - option "Pollo"
+          - option "Salsamentaria"
+          - option "Varios"
+          - option "Vísceras"
+        - generic [ref=e254]: 122 registros
+      - table [ref=e256]:
+        - rowgroup [ref=e257]:
+          - row "Fecha Producto Tipo Cantidad Unitario Total Acciones" [ref=e258]:
+            - columnheader "Fecha" [ref=e259]:
+              - button "Fecha" [ref=e260] [cursor=pointer]
+            - columnheader "Producto" [ref=e261]
+            - columnheader "Tipo" [ref=e262]
+            - columnheader "Cantidad" [ref=e263]
+            - columnheader "Unitario" [ref=e264]
+            - columnheader "Total" [ref=e265]
+            - columnheader "Acciones" [ref=e266]
+        - rowgroup [ref=e267]:
+          - row "19 Jun, 06:30 Aguacate Plaza 25,6 Kilogramo $ 11.718 $ 300.000 Editar Eliminar" [ref=e268]:
+            - cell "19 Jun, 06:30" [ref=e269]
+            - cell "Aguacate" [ref=e270]:
+              - generic [ref=e271]:
+                - img [ref=e273]
+                - generic [ref=e277]: Aguacate
+            - cell "Plaza" [ref=e278]:
+              - generic [ref=e279]: Plaza
+            - cell "25,6 Kilogramo" [ref=e280]
+            - cell "$ 11.718" [ref=e281]
+            - cell "$ 300.000" [ref=e282]
+            - cell "Editar Eliminar" [ref=e283]:
+              - generic [ref=e284]:
+                - link "Editar" [ref=e285] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/276/edit
+                  - img [ref=e286]
+                  - text: Editar
+                - button "Eliminar" [ref=e290] [cursor=pointer]:
+                  - img [ref=e291]
+                  - text: Eliminar
+          - row "19 Jun, 06:29 Pezuña Cerdo 20,3 Kilogramo $ 9.000 $ 182.700 Editar Eliminar" [ref=e294]:
+            - cell "19 Jun, 06:29" [ref=e295]
+            - cell "Pezuña" [ref=e296]:
+              - generic [ref=e297]:
+                - img [ref=e299]
+                - generic [ref=e303]: Pezuña
+            - cell "Cerdo" [ref=e304]:
+              - generic [ref=e305]: Cerdo
+            - cell "20,3 Kilogramo" [ref=e306]
+            - cell "$ 9.000" [ref=e307]
+            - cell "$ 182.700" [ref=e308]
+            - cell "Editar Eliminar" [ref=e309]:
+              - generic [ref=e310]:
+                - link "Editar" [ref=e311] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/275/edit
+                  - img [ref=e312]
+                  - text: Editar
+                - button "Eliminar" [ref=e316] [cursor=pointer]:
+                  - img [ref=e317]
+                  - text: Eliminar
+          - row "18 Jun, 03:42 Aguacate Plaza 27,3 Kilogramo $ 10.989 $ 300.000 Editar Eliminar" [ref=e320]:
+            - cell "18 Jun, 03:42" [ref=e321]
+            - cell "Aguacate" [ref=e322]:
+              - generic [ref=e323]:
+                - img [ref=e325]
+                - generic [ref=e329]: Aguacate
+            - cell "Plaza" [ref=e330]:
+              - generic [ref=e331]: Plaza
+            - cell "27,3 Kilogramo" [ref=e332]
+            - cell "$ 10.989" [ref=e333]
+            - cell "$ 300.000" [ref=e334]
+            - cell "Editar Eliminar" [ref=e335]:
+              - generic [ref=e336]:
+                - link "Editar" [ref=e337] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/274/edit
+                  - img [ref=e338]
+                  - text: Editar
+                - button "Eliminar" [ref=e342] [cursor=pointer]:
+                  - img [ref=e343]
+                  - text: Eliminar
+          - row "18 Jun, 03:41 Murillo Cerdo 1 Kilogramo $ 15.000 $ 15.000 Editar Eliminar" [ref=e346]:
+            - cell "18 Jun, 03:41" [ref=e347]
+            - cell "Murillo" [ref=e348]:
+              - generic [ref=e349]:
+                - img [ref=e351]
+                - generic [ref=e355]: Murillo
+            - cell "Cerdo" [ref=e356]:
+              - generic [ref=e357]: Cerdo
+            - cell "1 Kilogramo" [ref=e358]
+            - cell "$ 15.000" [ref=e359]
+            - cell "$ 15.000" [ref=e360]
+            - cell "Editar Eliminar" [ref=e361]:
+              - generic [ref=e362]:
+                - link "Editar" [ref=e363] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/273/edit
+                  - img [ref=e364]
+                  - text: Editar
+                - button "Eliminar" [ref=e368] [cursor=pointer]:
+                  - img [ref=e369]
+                  - text: Eliminar
+          - row "18 Jun, 03:41 Pulpa de cerdo Cerdo 1 Kilogramo $ 15.000 $ 15.000 Editar Eliminar" [ref=e372]:
+            - cell "18 Jun, 03:41" [ref=e373]
+            - cell "Pulpa de cerdo" [ref=e374]:
+              - generic [ref=e375]:
+                - img [ref=e377]
+                - generic [ref=e381]: Pulpa de cerdo
+            - cell "Cerdo" [ref=e382]:
+              - generic [ref=e383]: Cerdo
+            - cell "1 Kilogramo" [ref=e384]
+            - cell "$ 15.000" [ref=e385]
+            - cell "$ 15.000" [ref=e386]
+            - cell "Editar Eliminar" [ref=e387]:
+              - generic [ref=e388]:
+                - link "Editar" [ref=e389] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/272/edit
+                  - img [ref=e390]
+                  - text: Editar
+                - button "Eliminar" [ref=e394] [cursor=pointer]:
+                  - img [ref=e395]
+                  - text: Eliminar
+      - generic [ref=e398]:
+        - generic [ref=e399]:
+          - text: Filas por página
+          - combobox "Filas por página" [ref=e400]:
+            - option "5" [selected]
+            - option "10"
+            - option "25"
+            - option "50"
+            - option "100"
+            - option "Todas"
+        - generic [ref=e401]:
+          - generic [ref=e402]: Pagina 1 de 25
+          - generic [ref=e403]:
+            - button [disabled] [ref=e404]:
+              - img [ref=e405]
+            - button [ref=e407] [cursor=pointer]:
+              - img [ref=e408]

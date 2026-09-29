@@ -5,14 +5,15 @@
 <div class="space-y-6">
 
     {{-- Hero --}}
-    <div data-reveal class="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white shadow-soft-lg">
-        <div class="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
-        <div class="absolute -bottom-10 -left-10 w-56 h-56 rounded-full bg-accent-300/20 blur-3xl"></div>
+    <div data-reveal class="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-primary-500 via-primary-700 to-primary-900 text-white shadow-soft-lg">
+        <div class="absolute -top-12 -right-12 w-56 h-56 rounded-full bg-accent-400/30 blur-3xl"></div>
+        <div class="absolute -bottom-12 -left-10 w-56 h-56 rounded-full bg-flame-500/25 blur-3xl"></div>
+        <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-accent-300 via-flame-500 to-accent-400"></div>
 
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <p class="brand-script text-2xl text-white/90">¡Hola de nuevo!</p>
-                <h1 class="font-display text-2xl md:text-3xl font-bold mt-1">
+                <p class="brand-script text-2xl tracking-wide text-accent-300">¡Hola de nuevo!</p>
+                <h1 class="font-display text-2xl md:text-3xl font-bold mt-1 text-white">
                     Bienvenido, {{ Auth::user()->name }}
                 </h1>
                 <p class="text-white/80 mt-1.5 text-sm">

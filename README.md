@@ -1,4 +1,4 @@
-# Sopas y Sopitas
+# DorilokosMix
 
 Aplicacion web base construida sobre Laravel 9 con autenticacion, gestion de perfil, layout con sidebar y modo oscuro/claro listos para extender.
 

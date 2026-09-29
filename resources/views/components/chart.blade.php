@@ -17,9 +17,9 @@
             'toolbar' => ['show' => false],
             'animations' => ['enabled' => true, 'easing' => 'easeinout', 'speed' => 600],
         ],
-        'colors' => ['#aab808', '#b89875', '#c8d62e', '#a1887f', '#838c00'],
+        'colors' => ['#5f306a', '#f39030', '#e3262a', '#f5c020', '#8f5aa3'],
         'stroke' => ['curve' => 'smooth', 'width' => 3],
-        'grid' => ['borderColor' => '#efdfc0', 'strokeDashArray' => 4],
+        'grid' => ['borderColor' => '#ddd4e3', 'strokeDashArray' => 4],
         'dataLabels' => ['enabled' => false],
         'series' => $series,
     ];

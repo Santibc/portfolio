@@ -4,20 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sopas y Sopitas') }}@hasSection('title') · @yield('title')@endif</title>
+    @include('layouts.partials.brand-head')
+    <title>{{ config('app.name', 'DorilokosMix') }}@hasSection('title') · @yield('title')@endif</title>
 
     {{-- Theme bootstrap (anti-FOUC) --}}
     <script>
         (function () {
             var serverTheme = @json(Auth::user()?->theme);
-            var stored = localStorage.getItem('sopas-theme');
+            var stored = localStorage.getItem('dorilokos-theme');
             var preference = stored || (serverTheme ? serverTheme : 'auto');
             var resolved = preference;
             if (preference === 'auto') {
                 resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
-            if (!stored && serverTheme) localStorage.setItem('sopas-theme', serverTheme);
+            if (!stored && serverTheme) localStorage.setItem('dorilokos-theme', serverTheme);
             var html = document.documentElement;
             html.setAttribute('data-theme', resolved);
             html.setAttribute('data-bs-theme', resolved);
@@ -28,8 +28,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body x-data="{ sidebarCollapsed: localStorage.getItem('sopas-sidebar-collapsed') === '1' }"
-      x-init="$watch('sidebarCollapsed', v => localStorage.setItem('sopas-sidebar-collapsed', v ? '1' : '0'))"
+<body x-data="{ sidebarCollapsed: localStorage.getItem('dorilokos-sidebar-collapsed') === '1' }"
+      x-init="$watch('sidebarCollapsed', v => localStorage.setItem('dorilokos-sidebar-collapsed', v ? '1' : '0'))"
       class="min-h-screen bg-cream-50 dark:bg-surface-dark text-cream-900 dark:text-cream-100 font-sans antialiased">
 
     {{-- ============== SIDEBAR (drawer mobile + fijo/colapsable desktop) ============== --}}
@@ -37,13 +37,16 @@
         :class="sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'"
         class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform fixed top-0 start-0 bottom-0 z-[60] w-72 lg:end-auto lg:bottom-0 bg-white dark:bg-cream-950/80 backdrop-blur border-e border-cream-200 dark:border-cream-800 flex flex-col">
 
+        {{-- Franja fuego de marca --}}
+        <div aria-hidden="true" class="h-1 shrink-0 bg-gradient-to-r from-primary-500 via-flame-500 to-accent-400"></div>
+
         {{-- Brand --}}
-        <div class="px-6 py-5 flex items-center gap-3 border-b border-cream-200 dark:border-cream-800">
+        <div class="px-6 py-4 flex items-center gap-3 border-b border-cream-200 dark:border-cream-800">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sopas y Sopitas') }}" class="h-10 w-10 object-contain shrink-0">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'DorilokosMix') }}" class="h-12 w-12 object-contain shrink-0 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
                 <span class="flex flex-col leading-tight">
-                    <span class="font-display font-bold text-cream-900 dark:text-cream-50">{{ config('app.name', 'Sopas y Sopitas') }}</span>
-                    <span class="brand-script text-xs text-primary-600 dark:text-primary-300 -mt-0.5">comida con cariño</span>
+                    <span class="brand-script text-xl tracking-wide text-primary-600 dark:text-primary-200">{{ config('app.name', 'DorilokosMix') }}</span>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-accent-600 dark:text-accent-300">¡Sabor bien loko!</span>
                 </span>
             </a>
         </div>
@@ -66,6 +69,7 @@
     {{-- ============== HEADER ============== --}}
     <header :class="sidebarCollapsed ? 'lg:ms-0' : 'lg:ms-72'"
         class="sticky top-0 z-40 transition-all duration-300 bg-cream-50/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-cream-200/80 dark:border-cream-800/80">
+        <div aria-hidden="true" class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary-500 via-flame-500 to-accent-400"></div>
         <div class="flex items-center justify-between gap-3 h-16 px-4 sm:px-6">
             {{-- Sidebar toggle (mobile: Preline overlay) --}}
             <button type="button"

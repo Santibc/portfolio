@@ -49,14 +49,14 @@
 </x-card>
 
 {{-- ===== Tipografia ===== --}}
-<x-section title="Tipografia" description="Plus Jakarta Sans + Caveat (acentos)" id="typography">
+<x-section title="Tipografia" description="Plus Jakarta Sans + Lilita One (marca)" id="typography">
     <x-card>
         <div class="space-y-3">
-            <h1 class="text-4xl font-extrabold">Heading H1 — comida con amor</h1>
+            <h1 class="text-4xl font-extrabold">Heading H1 — sabor bien loko</h1>
             <h2 class="text-3xl font-bold">Heading H2</h2>
             <h3 class="text-2xl font-semibold">Heading H3</h3>
             <h4 class="text-xl font-semibold">Heading H4</h4>
-            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">Sopas y Sopitas (Caveat)</p>
+            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">DorilokosMix (Lilita One)</p>
             <p class="text-base text-cream-700 dark:text-cream-300">
                 Lorem ipsum dolor sit amet consectetur. <strong>Bold inline</strong>, <em>italica</em>, <a href="#" class="text-primary-700 dark:text-primary-300 underline">enlace</a>.
             </p>
@@ -125,11 +125,11 @@
         </x-card>
         <x-card>
             <x-select label="TomSelect (busqueda + tagging)" tomselect placeholder="Selecciona platos">
-                <option value="ajiaco">Ajiaco</option>
-                <option value="sancocho">Sancocho</option>
-                <option value="sopa-pollo">Sopa de pollo</option>
-                <option value="crema-tomate">Crema de tomate</option>
-                <option value="caldo">Caldo de costilla</option>
+                <option value="dorilocos">Dorilocos</option>
+                <option value="salchipapa">Salchipapa</option>
+                <option value="mazorcada">Mazorcada</option>
+                <option value="picada">Picada</option>
+                <option value="hamburguesa">Hamburguesa</option>
             </x-select>
         </x-card>
     </div>
@@ -284,7 +284,7 @@
         </x-card>
 
         <x-accordion :items="[
-            ['title' => '¿Que tipos de comida ofrecen?', 'content' => 'Comida casera, sopas, y opciones saludables.'],
+            ['title' => '¿Que tipos de comida ofrecen?', 'content' => 'Dorilocos, salchipapas, mazorcadas y combos para compartir.'],
             ['title' => '¿Hacen domicilios?', 'content' => 'Si, en toda la ciudad con tarifa segun zona.'],
             ['title' => '¿Aceptan reservas?', 'content' => 'Si, llamar con al menos 4 horas de anticipacion.'],
         ]" />
@@ -331,17 +331,17 @@
         ]"
         :filters="[['key' => 'estado', 'label' => 'Estado']]"
         :rows="[
-            ['plato' => 'Ajiaco', 'precio' => '$18,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 124],
-            ['plato' => 'Sancocho', 'precio' => '$22,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 87],
-            ['plato' => 'Crema de tomate', 'precio' => '$12,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold dark:bg-amber-900/40 dark:text-amber-200&quot;>Agotado</span>', 'pedidos' => 45],
-            ['plato' => 'Sopa de pollo', 'precio' => '$15,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 198],
-            ['plato' => 'Caldo de costilla', 'precio' => '$16,500', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 156],
-            ['plato' => 'Mute santandereano', 'precio' => '$24,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold dark:bg-rose-900/40 dark:text-rose-200&quot;>Inactivo</span>', 'pedidos' => 12],
-            ['plato' => 'Sopa de lentejas', 'precio' => '$10,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 78],
-            ['plato' => 'Sopa de pasta', 'precio' => '$11,500', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 60],
-            ['plato' => 'Crema de espinaca', 'precio' => '$13,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 32],
-            ['plato' => 'Sopa de pescado', 'precio' => '$28,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold dark:bg-amber-900/40 dark:text-amber-200&quot;>Agotado</span>', 'pedidos' => 21],
-            ['plato' => 'Crema de zanahoria', 'precio' => '$11,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 55],
+            ['plato' => 'Dorilocos clásico', 'precio' => '$18,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 124],
+            ['plato' => 'Dorilocos mix', 'precio' => '$22,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 87],
+            ['plato' => 'Salchipapa', 'precio' => '$12,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold dark:bg-amber-900/40 dark:text-amber-200&quot;>Agotado</span>', 'pedidos' => 45],
+            ['plato' => 'Mazorcada', 'precio' => '$15,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 198],
+            ['plato' => 'Picada personal', 'precio' => '$16,500', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 156],
+            ['plato' => 'Picada familiar', 'precio' => '$24,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold dark:bg-rose-900/40 dark:text-rose-200&quot;>Inactivo</span>', 'pedidos' => 12],
+            ['plato' => 'Choriperro', 'precio' => '$10,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 78],
+            ['plato' => 'Hamburguesa', 'precio' => '$11,500', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 60],
+            ['plato' => 'Papas cheddar', 'precio' => '$13,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 32],
+            ['plato' => 'Combo pareja', 'precio' => '$28,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold dark:bg-amber-900/40 dark:text-amber-200&quot;>Agotado</span>', 'pedidos' => 21],
+            ['plato' => 'Limonada de coco', 'precio' => '$11,000', 'estado' => '<span class=&quot;inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold dark:bg-emerald-900/40 dark:text-emerald-200&quot;>Activo</span>', 'pedidos' => 55],
         ]"
     />
 </x-section>
@@ -377,7 +377,7 @@
             <x-chart
                 type="donut"
                 :series="[44, 55, 13, 33]"
-                :options="['labels' => ['Sopas', 'Cremas', 'Caldos', 'Otros'], 'legend' => ['position' => 'bottom']]"
+                :options="['labels' => ['Dorilocos', 'Salchipapas', 'Combos', 'Bebidas'], 'legend' => ['position' => 'bottom']]"
                 :height="280"
             />
         </x-card>
@@ -401,11 +401,11 @@
 <x-section title="Estado vacio" id="empty">
     <x-card>
         <x-empty-state
-            title="Sin sopas en el menu"
+            title="Sin productos en el menu"
             description="Cuando agregues platos al catalogo apareceran aqui."
         >
             <x-slot:actions>
-                <x-button variant="primary" icon="plus" onclick="window.showToast('success', 'Demo: agregar sopa')">Agregar sopa</x-button>
+                <x-button variant="primary" icon="plus" onclick="window.showToast('success', 'Demo: agregar producto')">Agregar producto</x-button>
                 <x-button variant="ghost" icon="upload" onclick="window.showToast('info', 'Demo: importar CSV')">Importar CSV</x-button>
             </x-slot:actions>
         </x-empty-state>

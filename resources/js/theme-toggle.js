@@ -1,5 +1,5 @@
 /**
- * Sopas y Sopitas - Theme Toggle (Dark Mode)
+ * DorilokosMix - Theme Toggle (Dark Mode)
  *
  * Mecanismo:
  *   - data-theme="dark" en <html>: activa CSS variables custom y overrides Tailwind
@@ -7,7 +7,7 @@
  *   - clase "dark" en <html>: activa Tailwind darkMode: 'class'
  *
  * Persistencia:
- *   - localStorage 'sopas-theme': 'light' | 'dark' | 'auto'
+ *   - localStorage 'dorilokos-theme': 'light' | 'dark' | 'auto'
  *   - PATCH /profile/theme: sincroniza con BD (solo autenticado)
  *
  * El bootstrap inicial (anti-FOUC) ya se aplica desde un <script> inline
@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    const STORAGE_KEY = 'sopas-theme';
+    const STORAGE_KEY = 'dorilokos-theme';
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     /**
@@ -44,7 +44,7 @@
         }
 
         // Notificar a otros componentes (Swal, etc.) por si necesitan reaccionar
-        window.dispatchEvent(new CustomEvent('sopas:theme-changed', {
+        window.dispatchEvent(new CustomEvent('dorilokos:theme-changed', {
             detail: { theme: resolved }
         }));
     }
@@ -125,7 +125,7 @@
     });
 
     // Exponer API para uso programático
-    window.SopasTheme = {
+    window.DorilokosTheme = {
         toggle: toggleTheme,
         set: setPreference,
         get: getPreference,

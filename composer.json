@@ -1,8 +1,8 @@
 {
-    "name": "sopas/sopas-y-sopitas",
+    "name": "dorilokos/dorilokosmix",
     "type": "project",
-    "description": "Sopas y Sopitas - aplicacion web base sobre Laravel 9.",
-    "keywords": ["laravel", "sopas-y-sopitas"],
+    "description": "DorilokosMix - sistema de gestion del restaurante sobre Laravel 9.",
+    "keywords": ["laravel", "dorilokosmix"],
     "license": "MIT",
     "require": {
         "php": "^8.0.2",

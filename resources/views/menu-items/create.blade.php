@@ -43,7 +43,7 @@
                             label="Nombre"
                             name="nombre"
                             :value="old('nombre')"
-                            placeholder="Ej. Ajiaco"
+                            placeholder="Ej. Dorilocos mix"
                             required
                         />
 

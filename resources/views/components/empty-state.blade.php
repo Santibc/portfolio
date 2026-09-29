@@ -9,13 +9,12 @@
         @if ($icon)
             <x-icon :name="$icon" class="w-10 h-10 text-primary-600 dark:text-primary-300" />
         @else
-            {{-- Default: cuenco/sopa SVG --}}
+            {{-- Default: triángulo tipo nacho (marca DorilokosMix) --}}
             <svg class="w-12 h-12 text-primary-600 dark:text-primary-300" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 28h48v4a16 16 0 01-16 16H24a16 16 0 01-16-16v-4z" />
-                <path d="M22 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M32 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M42 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M4 56h56" />
+                <path d="M8 10 L58 30 L18 56 Z" />
+                <path d="M17 19 L46 31 L22 46 Z" class="text-accent-500" stroke="currentColor" />
+                <circle cx="27" cy="31" r="1.5" fill="currentColor" />
+                <circle cx="33" cy="36" r="1.5" fill="currentColor" />
             </svg>
         @endif
     </div>

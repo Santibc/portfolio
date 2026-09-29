@@ -13,66 +13,81 @@ export default {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
         display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        brand: ['Caveat', 'cursive'],
+        brand: ['"Lilita One"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
 
       colors: {
-        // Oliva / mostaza (primary)
+        // Morado DorilokosMix (primary) — 500 = morado del logo
         primary: {
-          50:  '#f7faea',
-          100: '#ecf2c1',
-          200: '#d6e285',
-          300: '#c8d62e',
-          400: '#bbcb1c',
-          500: '#aab808', // base
-          600: '#949f06',
-          700: '#838c00',
-          800: '#5d6716',
-          900: '#3d4310',
-          950: '#2a2e0a',
+          50:  '#f6f1f8',
+          100: '#ece1f0',
+          200: '#d9c2e1',
+          300: '#bd97ca',
+          400: '#8f5aa3',
+          500: '#5f306a', // base
+          600: '#532a5d',
+          700: '#46234f',
+          800: '#381c3f',
+          900: '#2a152f',
+          950: '#1b0d1f',
         },
 
-        // Camel / wheat (accent)
+        // Fuego naranja / dorado (accent) — 500 = naranja del logo
         accent: {
-          50:  '#fbf6ed',
-          100: '#f4ead0',
-          200: '#e2caa1',
-          300: '#d2b27c',
-          400: '#c2a07d',
-          500: '#b89875', // base
-          600: '#a07e5b',
-          700: '#85664a',
-          800: '#6b513c',
-          900: '#574232',
-          950: '#2f2218',
+          50:  '#fff8eb',
+          100: '#ffecc6',
+          200: '#fdd889',
+          300: '#f5c020',
+          400: '#f5a524',
+          500: '#f39030', // base
+          600: '#dc6f14',
+          700: '#b65112',
+          800: '#934016',
+          900: '#783616',
+          950: '#451a07',
         },
 
-        // Cream / cafe / beige (surfaces)
+        // Rojo "MIX" (resaltes, badges llamativos, degradado fuego)
+        flame: {
+          50:  '#fef2f2',
+          100: '#fde3e3',
+          200: '#fbcbcc',
+          300: '#f7a4a6',
+          400: '#f06d70',
+          500: '#e3262a', // base
+          600: '#c01a1e',
+          700: '#9f171b',
+          800: '#83181c',
+          900: '#6d191c',
+          950: '#3b080a',
+        },
+
+        // Neutros con tinte lavanda (surfaces, textos, bordes)
         cream: {
-          50:  '#fffdfa',
-          100: '#fbf5e9',
-          200: '#f5e9d2',
-          300: '#efdfc0',
-          400: '#e2caa1',
-          500: '#d7ccc8',
-          600: '#a1887f',
-          700: '#75605a',
-          800: '#4e342e',
-          900: '#3e2723',
-          950: '#241410',
+          50:  '#fcfbfd',
+          100: '#f5f2f7',
+          200: '#ebe5ef',
+          300: '#ddd4e3',
+          400: '#c3b6cc',
+          500: '#a497ae',
+          600: '#7d7087',
+          700: '#5c5066',
+          800: '#3e3447',
+          900: '#2a2231',
+          950: '#19131e',
         },
 
         // Surface base (light/dark)
         surface: {
-          DEFAULT: '#fffdfa',
-          dark: '#1a1610',
+          DEFAULT: '#fcfbfd',
+          dark: '#140f18',
         },
       },
 
       boxShadow: {
         soft: '0 4px 24px -4px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04)',
         'soft-lg': '0 12px 40px -8px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.06)',
-        glow: '0 0 0 4px rgb(170 184 8 / 0.15)',
+        glow: '0 0 0 4px rgb(243 144 48 / 0.25)',
       },
 
       borderRadius: {

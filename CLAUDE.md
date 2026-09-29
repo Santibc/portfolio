@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
+**DorilokosMix** — sistema de gestión de restaurante sobre Laravel 9 (derivado de la plantilla "Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
 
 **Tech Stack:**
 - Laravel 9 (PHP 8.0+), Vite 4 (everything is bundled — zero CDN in production)
@@ -18,7 +18,7 @@ Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` 
 
 ## RULE 0 — NUNCA borres la base de datos ni datos del usuario (crítico)
 
-**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `sopasysopitas` (o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
+**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `dorilokosmix` (o cualquier otra base local como `sopas_prod_*`, o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
 
 Prohibido sin permiso explícito:
 - `php artisan migrate:fresh`, `migrate:fresh --seed`, `migrate:refresh`, `migrate:reset`, `db:wipe`.
@@ -45,7 +45,8 @@ npm run dev                             # Vite hot-reload
 npm run build                           # Compile assets to public/build/
 
 # Database
-php artisan migrate:fresh --seed        # Wipe + re-run migrations + admin seeder
+php artisan migrate:fresh --seed        # Wipe + re-run migrations + seed base (admin + tablas de referencia)
+php artisan db:seed --class=DemoSeeder  # Datos demo (heredados de Sopas) — solo en BD de pruebas
 
 # Testing
 php artisan test
@@ -61,6 +62,12 @@ php artisan config:clear && php artisan route:clear && php artisan view:clear
 ---
 
 ## Despliegue a producción (Hostinger shared hosting)
+
+> 🚧 **PENDIENTE para DorilokosMix.** Este proyecto aún no está desplegado: usará el
+> mismo servidor SSH pero con **dominio, ruta y BD nuevos (por definir)**, y trabaja en
+> la rama `dorilokos`. Los datos de abajo son los de **Sopas y Sopitas** (proyecto
+> origen): **NO** usarlos para desplegar DorilokosMix — harías `git pull` sobre la app
+> de Sopas en producción. Actualizar esta sección cuando se configure el dominio.
 
 Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
 `sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
@@ -179,7 +186,7 @@ Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_perm
 Every new module, view and component MUST work correctly in both modes. The layout already wires el mecanismo — el codigo nuevo debe respetarlo, no reinventarlo.
 
 **Como se aplica el tema:**
-- El script anti-FOUC en `layouts/app.blade.php` y `layouts/guest.blade.php` lee la preferencia (`users.theme` + `localStorage['sopas-theme']`) y setea en `<html>`:
+- El script anti-FOUC en `layouts/app.blade.php` y `layouts/guest.blade.php` lee la preferencia (`users.theme` + `localStorage['dorilokos-theme']`) y setea en `<html>`:
   - `data-theme="light|dark"` (atributo custom)
   - `data-bs-theme="light|dark"` (legacy compat)
   - `class="dark"` (Tailwind `darkMode: 'class'`)
@@ -192,26 +199,29 @@ Every new module, view and component MUST work correctly in both modes. The layo
 4. Para CSS custom: scope con `[data-theme="dark"] .your-class { ... }`. No crees una hoja oscura aparte.
 5. **Verifica en ambos modos** antes de marcar la tarea completada — toggle del header, revisa contrast, hovers, modales, tablas, forms, estados disabled. Si no puedes toggle en navegador, dilo explicitamente.
 6. Imagenes/iconos: usa SVG con `stroke="currentColor"` o `fill="currentColor"` para que hereden color (los Lucide ya hacen esto). Si necesitas una imagen distinta para dark, swap via `[data-theme="dark"] img { content: url(...) }`.
-7. JS dinamico que inserta DOM debe usar las mismas clases Tailwind/componentes — no leer `localStorage['sopas-theme']` para ramificar estilos en JS, que la cascada CSS lo resuelva.
+7. JS dinamico que inserta DOM debe usar las mismas clases Tailwind/componentes — no leer `localStorage['dorilokos-theme']` para ramificar estilos en JS, que la cascada CSS lo resuelva.
 
 ---
 
-## RULE 3 — Brand palette (oliva / camel / beige)
+## RULE 3 — Brand palette (morado + fuego, del logo DorilokosMix)
 
 Paleta del proyecto, definida en `tailwind.config.js` `theme.extend.colors`. **Usa los tokens, no hex inline.**
 
 | Token | Light | Dark | Uso |
 |---|---|---|---|
-| `primary-500` | `#aab808` (oliva) | `#c8d62e` (auto) | CTAs, links activos, sidebar item activo, badges primary |
-| `primary-700` | `#838c00` | — | hover/active de primary |
-| `primary-300` | `#c8d62e` | — | gradientes, ilustraciones |
-| `accent-500` | `#b89875` (camel) | — | header gradient, badges secondary |
-| `accent-200` | `#e2caa1` (wheat) | — | fondos suaves cálidos |
-| `cream-50/100/200` | tonos beige claros | — | surfaces, cards, backgrounds |
-| `cream-900/950` | café oscuro | — | textos sobre fondo claro / fondos en dark |
-| `surface.DEFAULT` | `#fffdfa` | `#1a1610` | body background |
+| `primary-500` | `#5f306a` (morado logo) | usar `primary-400`/`300` | CTAs, links activos, sidebar item activo, badges primary |
+| `primary-600/700` | `#532a5d` / `#46234f` | — | hover/active de primary, degradados |
+| `primary-300` | `#bd97ca` | — | textos/links en dark, ilustraciones |
+| `accent-500` | `#f39030` (naranja fuego) | — | acentos, punto activo del sidebar, CTAs sobre fondo morado |
+| `accent-300` | `#f5c020` (dorado) | — | taglines sobre morado, degradados fuego |
+| `flame-500` | `#e3262a` (rojo "MIX") | — | resaltes, franja degradada de marca (`from-primary-500 via-flame-500 to-accent-400`) |
+| `cream-50/100/200` | neutros claros con tinte lavanda | — | surfaces, cards, backgrounds |
+| `cream-900/950` | morado-gris muy oscuro | — | textos sobre fondo claro / fondos en dark |
+| `surface.DEFAULT` | `#fcfbfd` | `#140f18` | body background |
 
-Tailwind tip: para tonos complementarios reach for `amber-*`, `stone-*`, `neutral-*` (food-app vibe). Para semantica: `emerald` (success), `rose` (danger), `amber` (warning), `sky` (info).
+Fuente de marca: `font-brand` / `.brand-script` = **Lilita One** (solo peso 400). Logo fuente en `resources/images/dorilokos-mix-original.png`; derivados en `public/images/` y `public/favicon.ico`.
+
+Tailwind tip: para tonos complementarios reach for `amber-*`, `orange-*`, `violet-*`. Para semantica: `emerald` (success), `rose` (danger), `amber` (warning), `sky` (info).
 
 ---
 
