@@ -1,0 +1,879 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Métodos de pago" [ref=e55] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e56]
+            - generic [ref=e58]: Métodos de pago
+          - link "Gastos" [ref=e59] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+            - img [ref=e60]
+            - generic [ref=e63]: Gastos
+          - link "Trabajadores turno" [ref=e64] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+            - img [ref=e65]
+            - generic [ref=e70]: Trabajadores turno
+          - link "Pagos ahorros" [ref=e71] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/pagos-ahorros
+            - img [ref=e72]
+            - generic [ref=e75]: Pagos ahorros
+      - paragraph [ref=e76]: Cuenta
+      - link "Mi perfil" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e78]
+        - generic [ref=e90]: Mi perfil
+      - paragraph [ref=e91]: Sistema
+      - link "Componentes UI" [ref=e92] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e93]
+        - generic [ref=e98]: Componentes UI
+    - button "Cerrar sesion" [ref=e101] [cursor=pointer]:
+      - img [ref=e102]
+      - text: Cerrar sesion
+  - banner [ref=e105]:
+    - generic [ref=e106]:
+      - button "Ocultar menu" [expanded] [ref=e107] [cursor=pointer]:
+        - img [ref=e108]
+      - generic [ref=e109]: Turno de caja
+      - generic [ref=e110]:
+        - button "Cambiar tema" [ref=e111] [cursor=pointer]:
+          - img [ref=e113]
+        - button "A Admin admin" [ref=e116] [cursor=pointer]:
+          - generic [ref=e117]: A
+          - generic [ref=e118]:
+            - generic [ref=e119]: Admin
+            - generic [ref=e120]: admin
+          - img [ref=e121]
+  - main [ref=e123]:
+    - generic [ref=e124]:
+      - generic [ref=e126]:
+        - img [ref=e128]
+        - generic [ref=e131]:
+          - heading "Turno · 2026-06-01" [level=1] [ref=e132]
+          - paragraph [ref=e133]: Apertura 10:49 · por Admin
+      - generic [ref=e134]:
+        - link "Volver" [ref=e135] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/caja/dashboard
+          - img [ref=e136]
+          - text: Volver
+        - link "Ir a la caja" [ref=e138] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/caja
+          - img [ref=e139]
+          - text: Ir a la caja
+    - generic [ref=e143]:
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Total ventas
+          - paragraph [ref=e148]: $ 6.509.500
+        - img [ref=e150]
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - paragraph [ref=e156]: Base inicial
+          - paragraph [ref=e157]: $ 900.000
+        - img [ref=e159]
+    - generic [ref=e161]:
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - paragraph [ref=e165]: Total gastos
+          - paragraph [ref=e166]: $ 0
+        - img [ref=e168]
+      - generic [ref=e172]:
+        - generic [ref=e173]:
+          - paragraph [ref=e174]: Ahorros descontados
+          - paragraph [ref=e175]: $ 0
+        - img [ref=e177]
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - paragraph [ref=e183]: Neto (ventas − gastos − ahorros)
+          - paragraph [ref=e184]: $ 6.509.500
+        - img [ref=e186]
+    - generic [ref=e189]:
+      - heading "Desglose por método de pago" [level=3] [ref=e190]
+      - generic [ref=e191]:
+        - generic [ref=e192]:
+          - paragraph [ref=e193]:
+            - img [ref=e194]
+            - text: Efectivo
+          - paragraph [ref=e197]: $ 3.676.000
+        - generic [ref=e198]:
+          - paragraph [ref=e199]:
+            - img [ref=e200]
+            - text: Daviplata
+          - paragraph [ref=e202]: $ 410.000
+        - generic [ref=e203]:
+          - paragraph [ref=e204]:
+            - img [ref=e205]
+            - text: QR
+          - paragraph [ref=e207]: $ 1.169.000
+        - generic [ref=e208]:
+          - paragraph [ref=e209]:
+            - img [ref=e210]
+            - text: Nequi
+          - paragraph [ref=e212]: $ 1.254.500
+    - generic [ref=e214]:
+      - heading "Items vendidos (12)" [level=3] [ref=e216]:
+        - img [ref=e217]
+        - text: Items vendidos
+        - generic [ref=e222]: (12)
+      - table [ref=e224]:
+        - rowgroup [ref=e225]:
+          - row "Item Cantidad Total vendido" [ref=e226]:
+            - columnheader "Item" [ref=e227]:
+              - button "Item" [ref=e228] [cursor=pointer]
+            - columnheader "Cantidad" [ref=e229]:
+              - button "Cantidad" [ref=e230] [cursor=pointer]
+            - columnheader "Total vendido" [ref=e231]:
+              - button "Total vendido" [ref=e232] [cursor=pointer]:
+                - text: Total vendido
+                - img [ref=e234]
+        - rowgroup [ref=e236]:
+          - row "Ajiaco 144 $ 2.520.000" [ref=e237]:
+            - cell "Ajiaco" [ref=e238]
+            - cell "144" [ref=e239]
+            - cell "$ 2.520.000" [ref=e240]
+          - row "Mondongo 57 $ 997.500" [ref=e241]:
+            - cell "Mondongo" [ref=e242]
+            - cell "57" [ref=e243]
+            - cell "$ 997.500" [ref=e244]
+          - row "Ajiaco mondongo lengua en salsa 41 $ 881.500" [ref=e245]:
+            - cell "Ajiaco mondongo lengua en salsa" [ref=e246]
+            - cell "41" [ref=e247]
+            - cell "$ 881.500" [ref=e248]
+          - row "Ajiaco mondongo arroz con pollo 27 $ 580.500" [ref=e249]:
+            - cell "Ajiaco mondongo arroz con pollo" [ref=e250]
+            - cell "27" [ref=e251]
+            - cell "$ 580.500" [ref=e252]
+          - row "Sancocho de Pescado 26 $ 481.000" [ref=e253]:
+            - cell "Sancocho de Pescado" [ref=e254]
+            - cell "26" [ref=e255]
+            - cell "$ 481.000" [ref=e256]
+          - row "Mazamorra chiquita 24 $ 432.000" [ref=e257]:
+            - cell "Mazamorra chiquita" [ref=e258]
+            - cell "24" [ref=e259]
+            - cell "$ 432.000" [ref=e260]
+          - row "Arroz con pollo 15 $ 277.500" [ref=e261]:
+            - cell "Arroz con pollo" [ref=e262]
+            - cell "15" [ref=e263]
+            - cell "$ 277.500" [ref=e264]
+          - row "Lengua en salsa 11 $ 203.500" [ref=e265]:
+            - cell "Lengua en salsa" [ref=e266]
+            - cell "11" [ref=e267]
+            - cell "$ 203.500" [ref=e268]
+          - row "Ajiaco Pequeño 8 $ 128.000" [ref=e269]:
+            - cell "Ajiaco Pequeño" [ref=e270]
+            - cell "8" [ref=e271]
+            - cell "$ 128.000" [ref=e272]
+          - row "Gaseosa 1 $ 3.500" [ref=e273]:
+            - cell "Gaseosa" [ref=e274]
+            - cell "1" [ref=e275]
+            - cell "$ 3.500" [ref=e276]
+          - row "Arroz 1 $ 3.000" [ref=e277]:
+            - cell "Arroz" [ref=e278]
+            - cell "1" [ref=e279]
+            - cell "$ 3.000" [ref=e280]
+          - row "agua 1 $ 1.500" [ref=e281]:
+            - cell "agua" [ref=e282]
+            - cell "1" [ref=e283]
+            - cell "$ 1.500" [ref=e284]
+        - rowgroup [ref=e285]:
+          - row "Total 356 $ 6.509.500" [ref=e286]:
+            - cell "Total" [ref=e287]
+            - cell "356" [ref=e288]
+            - cell "$ 6.509.500" [ref=e289]
+      - generic [ref=e290]:
+        - generic [ref=e291]:
+          - text: Filas por página
+          - combobox "Filas por página" [ref=e292]:
+            - option "10"
+            - option "25" [selected]
+            - option "50"
+            - option "100"
+            - option "Todas"
+        - generic [ref=e293]:
+          - generic [ref=e294]: Página 1 de 1
+          - generic [ref=e295]:
+            - button [disabled] [ref=e296]:
+              - img [ref=e297]
+            - button [disabled] [ref=e299]:
+              - img [ref=e300]
+    - generic [ref=e303]:
+      - heading "Ventas del turno (186)" [level=3] [ref=e305]:
+        - img [ref=e306]
+        - text: Ventas del turno
+        - generic [ref=e307]: (186)
+      - table [ref=e309]:
+        - rowgroup [ref=e310]:
+          - row "Hora Cajero Items Total Cambio Métodos" [ref=e311]:
+            - columnheader "Hora" [ref=e312]:
+              - button "Hora" [ref=e313] [cursor=pointer]:
+                - text: Hora
+                - img [ref=e315]
+            - columnheader "Cajero" [ref=e317]:
+              - button "Cajero" [ref=e318] [cursor=pointer]
+            - columnheader "Items" [ref=e319]:
+              - button "Items" [ref=e320] [cursor=pointer]
+            - columnheader "Total" [ref=e321]:
+              - button "Total" [ref=e322] [cursor=pointer]
+            - columnheader "Cambio" [ref=e323]:
+              - button "Cambio" [ref=e324] [cursor=pointer]
+            - columnheader "Métodos" [ref=e325]
+            - columnheader [ref=e326]
+        - rowgroup [ref=e327]:
+          - row "13:00:06 Admin 2 $ 35.000 $ 0 Efectivo $ 35.000 Ver Editar" [ref=e328]:
+            - cell "13:00:06" [ref=e329]
+            - cell "Admin" [ref=e330]
+            - cell "2" [ref=e331]
+            - cell "$ 35.000" [ref=e332]
+            - cell "$ 0" [ref=e333]
+            - cell "Efectivo $ 35.000" [ref=e334]:
+              - generic [ref=e336]:
+                - generic [ref=e337]: Efectivo
+                - generic [ref=e338]: $ 35.000
+            - cell "Ver Editar" [ref=e339]:
+              - generic [ref=e340]:
+                - button "Ver" [ref=e341] [cursor=pointer]:
+                  - img [ref=e342]
+                  - generic [ref=e345]: Ver
+                - link "Editar" [ref=e346] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/186/edit
+                  - img [ref=e347]
+                  - text: Editar
+                - button [ref=e351] [cursor=pointer]:
+                  - img [ref=e352]
+        - rowgroup [ref=e355]:
+          - row "12:59:43 Admin 2 $ 40.000 $ 0 Efectivo $ 40.000 Ver Editar" [ref=e356]:
+            - cell "12:59:43" [ref=e357]
+            - cell "Admin" [ref=e358]
+            - cell "2" [ref=e359]
+            - cell "$ 40.000" [ref=e360]
+            - cell "$ 0" [ref=e361]
+            - cell "Efectivo $ 40.000" [ref=e362]:
+              - generic [ref=e364]:
+                - generic [ref=e365]: Efectivo
+                - generic [ref=e366]: $ 40.000
+            - cell "Ver Editar" [ref=e367]:
+              - generic [ref=e368]:
+                - button "Ver" [ref=e369] [cursor=pointer]:
+                  - img [ref=e370]
+                  - generic [ref=e373]: Ver
+                - link "Editar" [ref=e374] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/185/edit
+                  - img [ref=e375]
+                  - text: Editar
+                - button [ref=e379] [cursor=pointer]:
+                  - img [ref=e380]
+        - rowgroup [ref=e383]:
+          - row "12:59:20 Admin 1 $ 21.500 $ 0 Efectivo $ 21.500 Ver Editar" [ref=e384]:
+            - cell "12:59:20" [ref=e385]
+            - cell "Admin" [ref=e386]
+            - cell "1" [ref=e387]
+            - cell "$ 21.500" [ref=e388]
+            - cell "$ 0" [ref=e389]
+            - cell "Efectivo $ 21.500" [ref=e390]:
+              - generic [ref=e392]:
+                - generic [ref=e393]: Efectivo
+                - generic [ref=e394]: $ 21.500
+            - cell "Ver Editar" [ref=e395]:
+              - generic [ref=e396]:
+                - button "Ver" [ref=e397] [cursor=pointer]:
+                  - img [ref=e398]
+                  - generic [ref=e401]: Ver
+                - link "Editar" [ref=e402] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/184/edit
+                  - img [ref=e403]
+                  - text: Editar
+                - button [ref=e407] [cursor=pointer]:
+                  - img [ref=e408]
+        - rowgroup [ref=e411]:
+          - row "12:59:01 Admin 3 $ 54.500 $ 0 Efectivo $ 54.500 Ver Editar" [ref=e412]:
+            - cell "12:59:01" [ref=e413]
+            - cell "Admin" [ref=e414]
+            - cell "3" [ref=e415]
+            - cell "$ 54.500" [ref=e416]
+            - cell "$ 0" [ref=e417]
+            - cell "Efectivo $ 54.500" [ref=e418]:
+              - generic [ref=e420]:
+                - generic [ref=e421]: Efectivo
+                - generic [ref=e422]: $ 54.500
+            - cell "Ver Editar" [ref=e423]:
+              - generic [ref=e424]:
+                - button "Ver" [ref=e425] [cursor=pointer]:
+                  - img [ref=e426]
+                  - generic [ref=e429]: Ver
+                - link "Editar" [ref=e430] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/183/edit
+                  - img [ref=e431]
+                  - text: Editar
+                - button [ref=e435] [cursor=pointer]:
+                  - img [ref=e436]
+        - rowgroup [ref=e439]:
+          - row "12:58:16 Admin 3 $ 52.500 $ 0 Efectivo $ 17.500 Nequi $ 35.000 Ver Editar" [ref=e440]:
+            - cell "12:58:16" [ref=e441]
+            - cell "Admin" [ref=e442]
+            - cell "3" [ref=e443]
+            - cell "$ 52.500" [ref=e444]
+            - cell "$ 0" [ref=e445]
+            - cell "Efectivo $ 17.500 Nequi $ 35.000" [ref=e446]:
+              - generic [ref=e447]:
+                - generic [ref=e448]:
+                  - generic [ref=e449]: Efectivo
+                  - generic [ref=e450]: $ 17.500
+                - generic [ref=e451]:
+                  - generic [ref=e452]: Nequi
+                  - generic [ref=e453]: $ 35.000
+            - cell "Ver Editar" [ref=e454]:
+              - generic [ref=e455]:
+                - button "Ver" [ref=e456] [cursor=pointer]:
+                  - img [ref=e457]
+                  - generic [ref=e460]: Ver
+                - link "Editar" [ref=e461] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/182/edit
+                  - img [ref=e462]
+                  - text: Editar
+                - button [ref=e466] [cursor=pointer]:
+                  - img [ref=e467]
+        - rowgroup [ref=e470]:
+          - row "12:56:54 Admin 1 $ 18.500 $ 0 QR $ 18.500 Ver Editar" [ref=e471]:
+            - cell "12:56:54" [ref=e472]
+            - cell "Admin" [ref=e473]
+            - cell "1" [ref=e474]
+            - cell "$ 18.500" [ref=e475]
+            - cell "$ 0" [ref=e476]
+            - cell "QR $ 18.500" [ref=e477]:
+              - generic [ref=e479]:
+                - generic [ref=e480]: QR
+                - generic [ref=e481]: $ 18.500
+            - cell "Ver Editar" [ref=e482]:
+              - generic [ref=e483]:
+                - button "Ver" [ref=e484] [cursor=pointer]:
+                  - img [ref=e485]
+                  - generic [ref=e488]: Ver
+                - link "Editar" [ref=e489] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/181/edit
+                  - img [ref=e490]
+                  - text: Editar
+                - button [ref=e494] [cursor=pointer]:
+                  - img [ref=e495]
+        - rowgroup [ref=e498]:
+          - row "12:56:23 Admin 1 $ 18.000 $ 0 Nequi $ 18.000 Ver Editar" [ref=e499]:
+            - cell "12:56:23" [ref=e500]
+            - cell "Admin" [ref=e501]
+            - cell "1" [ref=e502]
+            - cell "$ 18.000" [ref=e503]
+            - cell "$ 0" [ref=e504]
+            - cell "Nequi $ 18.000" [ref=e505]:
+              - generic [ref=e507]:
+                - generic [ref=e508]: Nequi
+                - generic [ref=e509]: $ 18.000
+            - cell "Ver Editar" [ref=e510]:
+              - generic [ref=e511]:
+                - button "Ver" [ref=e512] [cursor=pointer]:
+                  - img [ref=e513]
+                  - generic [ref=e516]: Ver
+                - link "Editar" [ref=e517] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/180/edit
+                  - img [ref=e518]
+                  - text: Editar
+                - button [ref=e522] [cursor=pointer]:
+                  - img [ref=e523]
+        - rowgroup [ref=e526]:
+          - row "12:56:05 Admin 2 $ 35.000 $ 0 Nequi $ 35.000 Ver Editar" [ref=e527]:
+            - cell "12:56:05" [ref=e528]
+            - cell "Admin" [ref=e529]
+            - cell "2" [ref=e530]
+            - cell "$ 35.000" [ref=e531]
+            - cell "$ 0" [ref=e532]
+            - cell "Nequi $ 35.000" [ref=e533]:
+              - generic [ref=e535]:
+                - generic [ref=e536]: Nequi
+                - generic [ref=e537]: $ 35.000
+            - cell "Ver Editar" [ref=e538]:
+              - generic [ref=e539]:
+                - button "Ver" [ref=e540] [cursor=pointer]:
+                  - img [ref=e541]
+                  - generic [ref=e544]: Ver
+                - link "Editar" [ref=e545] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/179/edit
+                  - img [ref=e546]
+                  - text: Editar
+                - button [ref=e550] [cursor=pointer]:
+                  - img [ref=e551]
+        - rowgroup [ref=e554]:
+          - row "12:55:33 Admin 3 $ 53.500 $ 0 Efectivo $ 53.500 Ver Editar" [ref=e555]:
+            - cell "12:55:33" [ref=e556]
+            - cell "Admin" [ref=e557]
+            - cell "3" [ref=e558]
+            - cell "$ 53.500" [ref=e559]
+            - cell "$ 0" [ref=e560]
+            - cell "Efectivo $ 53.500" [ref=e561]:
+              - generic [ref=e563]:
+                - generic [ref=e564]: Efectivo
+                - generic [ref=e565]: $ 53.500
+            - cell "Ver Editar" [ref=e566]:
+              - generic [ref=e567]:
+                - button "Ver" [ref=e568] [cursor=pointer]:
+                  - img [ref=e569]
+                  - generic [ref=e572]: Ver
+                - link "Editar" [ref=e573] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/178/edit
+                  - img [ref=e574]
+                  - text: Editar
+                - button [ref=e578] [cursor=pointer]:
+                  - img [ref=e579]
+        - rowgroup [ref=e582]:
+          - row "12:55:12 Admin 2 $ 37.000 $ 0 Efectivo $ 37.000 Ver Editar" [ref=e583]:
+            - cell "12:55:12" [ref=e584]
+            - cell "Admin" [ref=e585]
+            - cell "2" [ref=e586]
+            - cell "$ 37.000" [ref=e587]
+            - cell "$ 0" [ref=e588]
+            - cell "Efectivo $ 37.000" [ref=e589]:
+              - generic [ref=e591]:
+                - generic [ref=e592]: Efectivo
+                - generic [ref=e593]: $ 37.000
+            - cell "Ver Editar" [ref=e594]:
+              - generic [ref=e595]:
+                - button "Ver" [ref=e596] [cursor=pointer]:
+                  - img [ref=e597]
+                  - generic [ref=e600]: Ver
+                - link "Editar" [ref=e601] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/177/edit
+                  - img [ref=e602]
+                  - text: Editar
+                - button [ref=e606] [cursor=pointer]:
+                  - img [ref=e607]
+        - rowgroup [ref=e610]:
+          - row "12:54:48 Admin 4 $ 83.000 $ 0 Efectivo $ 21.500 Efectivo $ 61.500 Ver Editar" [ref=e611]:
+            - cell "12:54:48" [ref=e612]
+            - cell "Admin" [ref=e613]
+            - cell "4" [ref=e614]
+            - cell "$ 83.000" [ref=e615]
+            - cell "$ 0" [ref=e616]
+            - cell "Efectivo $ 21.500 Efectivo $ 61.500" [ref=e617]:
+              - generic [ref=e618]:
+                - generic [ref=e619]:
+                  - generic [ref=e620]: Efectivo
+                  - generic [ref=e621]: $ 21.500
+                - generic [ref=e622]:
+                  - generic [ref=e623]: Efectivo
+                  - generic [ref=e624]: $ 61.500
+            - cell "Ver Editar" [ref=e625]:
+              - generic [ref=e626]:
+                - button "Ver" [ref=e627] [cursor=pointer]:
+                  - img [ref=e628]
+                  - generic [ref=e631]: Ver
+                - link "Editar" [ref=e632] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/176/edit
+                  - img [ref=e633]
+                  - text: Editar
+                - button [ref=e637] [cursor=pointer]:
+                  - img [ref=e638]
+        - rowgroup [ref=e641]:
+          - row "12:53:21 Admin 3 $ 60.500 $ 0 QR $ 60.500 Ver Editar" [ref=e642]:
+            - cell "12:53:21" [ref=e643]
+            - cell "Admin" [ref=e644]
+            - cell "3" [ref=e645]
+            - cell "$ 60.500" [ref=e646]
+            - cell "$ 0" [ref=e647]
+            - cell "QR $ 60.500" [ref=e648]:
+              - generic [ref=e650]:
+                - generic [ref=e651]: QR
+                - generic [ref=e652]: $ 60.500
+            - cell "Ver Editar" [ref=e653]:
+              - generic [ref=e654]:
+                - button "Ver" [ref=e655] [cursor=pointer]:
+                  - img [ref=e656]
+                  - generic [ref=e659]: Ver
+                - link "Editar" [ref=e660] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/175/edit
+                  - img [ref=e661]
+                  - text: Editar
+                - button [ref=e665] [cursor=pointer]:
+                  - img [ref=e666]
+        - rowgroup [ref=e669]:
+          - row "12:52:49 Admin 2 $ 43.000 $ 0 Nequi $ 43.000 Ver Editar" [ref=e670]:
+            - cell "12:52:49" [ref=e671]
+            - cell "Admin" [ref=e672]
+            - cell "2" [ref=e673]
+            - cell "$ 43.000" [ref=e674]
+            - cell "$ 0" [ref=e675]
+            - cell "Nequi $ 43.000" [ref=e676]:
+              - generic [ref=e678]:
+                - generic [ref=e679]: Nequi
+                - generic [ref=e680]: $ 43.000
+            - cell "Ver Editar" [ref=e681]:
+              - generic [ref=e682]:
+                - button "Ver" [ref=e683] [cursor=pointer]:
+                  - img [ref=e684]
+                  - generic [ref=e687]: Ver
+                - link "Editar" [ref=e688] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/174/edit
+                  - img [ref=e689]
+                  - text: Editar
+                - button [ref=e693] [cursor=pointer]:
+                  - img [ref=e694]
+        - rowgroup [ref=e697]:
+          - row "12:52:30 Admin 4 $ 82.000 $ 0 Nequi $ 21.500 Efectivo $ 60.500 Ver Editar" [ref=e698]:
+            - cell "12:52:30" [ref=e699]
+            - cell "Admin" [ref=e700]
+            - cell "4" [ref=e701]
+            - cell "$ 82.000" [ref=e702]
+            - cell "$ 0" [ref=e703]
+            - cell "Nequi $ 21.500 Efectivo $ 60.500" [ref=e704]:
+              - generic [ref=e705]:
+                - generic [ref=e706]:
+                  - generic [ref=e707]: Nequi
+                  - generic [ref=e708]: $ 21.500
+                - generic [ref=e709]:
+                  - generic [ref=e710]: Efectivo
+                  - generic [ref=e711]: $ 60.500
+            - cell "Ver Editar" [ref=e712]:
+              - generic [ref=e713]:
+                - button "Ver" [ref=e714] [cursor=pointer]:
+                  - img [ref=e715]
+                  - generic [ref=e718]: Ver
+                - link "Editar" [ref=e719] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/173/edit
+                  - img [ref=e720]
+                  - text: Editar
+                - button [ref=e724] [cursor=pointer]:
+                  - img [ref=e725]
+        - rowgroup [ref=e728]:
+          - row "12:51:38 Admin 2 $ 43.000 $ 0 Daviplata $ 43.000 Ver Editar" [ref=e729]:
+            - cell "12:51:38" [ref=e730]
+            - cell "Admin" [ref=e731]
+            - cell "2" [ref=e732]
+            - cell "$ 43.000" [ref=e733]
+            - cell "$ 0" [ref=e734]
+            - cell "Daviplata $ 43.000" [ref=e735]:
+              - generic [ref=e737]:
+                - generic [ref=e738]: Daviplata
+                - generic [ref=e739]: $ 43.000
+            - cell "Ver Editar" [ref=e740]:
+              - generic [ref=e741]:
+                - button "Ver" [ref=e742] [cursor=pointer]:
+                  - img [ref=e743]
+                  - generic [ref=e746]: Ver
+                - link "Editar" [ref=e747] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/172/edit
+                  - img [ref=e748]
+                  - text: Editar
+                - button [ref=e752] [cursor=pointer]:
+                  - img [ref=e753]
+        - rowgroup [ref=e756]:
+          - row "12:51:15 Admin 4 $ 75.000 $ 0 Nequi $ 18.500 Efectivo $ 56.500 Ver Editar" [ref=e757]:
+            - cell "12:51:15" [ref=e758]
+            - cell "Admin" [ref=e759]
+            - cell "4" [ref=e760]
+            - cell "$ 75.000" [ref=e761]
+            - cell "$ 0" [ref=e762]
+            - cell "Nequi $ 18.500 Efectivo $ 56.500" [ref=e763]:
+              - generic [ref=e764]:
+                - generic [ref=e765]:
+                  - generic [ref=e766]: Nequi
+                  - generic [ref=e767]: $ 18.500
+                - generic [ref=e768]:
+                  - generic [ref=e769]: Efectivo
+                  - generic [ref=e770]: $ 56.500
+            - cell "Ver Editar" [ref=e771]:
+              - generic [ref=e772]:
+                - button "Ver" [ref=e773] [cursor=pointer]:
+                  - img [ref=e774]
+                  - generic [ref=e777]: Ver
+                - link "Editar" [ref=e778] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/171/edit
+                  - img [ref=e779]
+                  - text: Editar
+                - button [ref=e783] [cursor=pointer]:
+                  - img [ref=e784]
+        - rowgroup [ref=e787]:
+          - row "12:50:17 Admin 3 $ 57.500 $ 0 QR $ 40.000 Daviplata $ 17.500 Ver Editar" [ref=e788]:
+            - cell "12:50:17" [ref=e789]
+            - cell "Admin" [ref=e790]
+            - cell "3" [ref=e791]
+            - cell "$ 57.500" [ref=e792]
+            - cell "$ 0" [ref=e793]
+            - cell "QR $ 40.000 Daviplata $ 17.500" [ref=e794]:
+              - generic [ref=e795]:
+                - generic [ref=e796]:
+                  - generic [ref=e797]: QR
+                  - generic [ref=e798]: $ 40.000
+                - generic [ref=e799]:
+                  - generic [ref=e800]: Daviplata
+                  - generic [ref=e801]: $ 17.500
+            - cell "Ver Editar" [ref=e802]:
+              - generic [ref=e803]:
+                - button "Ver" [ref=e804] [cursor=pointer]:
+                  - img [ref=e805]
+                  - generic [ref=e808]: Ver
+                - link "Editar" [ref=e809] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/170/edit
+                  - img [ref=e810]
+                  - text: Editar
+                - button [ref=e814] [cursor=pointer]:
+                  - img [ref=e815]
+        - rowgroup [ref=e818]:
+          - row "12:49:14 Admin 2 $ 43.000 $ 0 QR $ 43.000 Ver Editar" [ref=e819]:
+            - cell "12:49:14" [ref=e820]
+            - cell "Admin" [ref=e821]
+            - cell "2" [ref=e822]
+            - cell "$ 43.000" [ref=e823]
+            - cell "$ 0" [ref=e824]
+            - cell "QR $ 43.000" [ref=e825]:
+              - generic [ref=e827]:
+                - generic [ref=e828]: QR
+                - generic [ref=e829]: $ 43.000
+            - cell "Ver Editar" [ref=e830]:
+              - generic [ref=e831]:
+                - button "Ver" [ref=e832] [cursor=pointer]:
+                  - img [ref=e833]
+                  - generic [ref=e836]: Ver
+                - link "Editar" [ref=e837] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/169/edit
+                  - img [ref=e838]
+                  - text: Editar
+                - button [ref=e842] [cursor=pointer]:
+                  - img [ref=e843]
+        - rowgroup [ref=e846]:
+          - row "12:48:49 Admin 1 $ 18.500 $ 0 Efectivo $ 18.500 Ver Editar" [ref=e847]:
+            - cell "12:48:49" [ref=e848]
+            - cell "Admin" [ref=e849]
+            - cell "1" [ref=e850]
+            - cell "$ 18.500" [ref=e851]
+            - cell "$ 0" [ref=e852]
+            - cell "Efectivo $ 18.500" [ref=e853]:
+              - generic [ref=e855]:
+                - generic [ref=e856]: Efectivo
+                - generic [ref=e857]: $ 18.500
+            - cell "Ver Editar" [ref=e858]:
+              - generic [ref=e859]:
+                - button "Ver" [ref=e860] [cursor=pointer]:
+                  - img [ref=e861]
+                  - generic [ref=e864]: Ver
+                - link "Editar" [ref=e865] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/168/edit
+                  - img [ref=e866]
+                  - text: Editar
+                - button [ref=e870] [cursor=pointer]:
+                  - img [ref=e871]
+        - rowgroup [ref=e874]:
+          - row "12:48:33 Admin 2 $ 43.000 $ 0 Efectivo $ 43.000 Ver Editar" [ref=e875]:
+            - cell "12:48:33" [ref=e876]
+            - cell "Admin" [ref=e877]
+            - cell "2" [ref=e878]
+            - cell "$ 43.000" [ref=e879]
+            - cell "$ 0" [ref=e880]
+            - cell "Efectivo $ 43.000" [ref=e881]:
+              - generic [ref=e883]:
+                - generic [ref=e884]: Efectivo
+                - generic [ref=e885]: $ 43.000
+            - cell "Ver Editar" [ref=e886]:
+              - generic [ref=e887]:
+                - button "Ver" [ref=e888] [cursor=pointer]:
+                  - img [ref=e889]
+                  - generic [ref=e892]: Ver
+                - link "Editar" [ref=e893] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/167/edit
+                  - img [ref=e894]
+                  - text: Editar
+                - button [ref=e898] [cursor=pointer]:
+                  - img [ref=e899]
+        - rowgroup [ref=e902]:
+          - row "12:48:06 Admin 1 $ 17.500 $ 0 QR $ 17.500 Ver Editar" [ref=e903]:
+            - cell "12:48:06" [ref=e904]
+            - cell "Admin" [ref=e905]
+            - cell "1" [ref=e906]
+            - cell "$ 17.500" [ref=e907]
+            - cell "$ 0" [ref=e908]
+            - cell "QR $ 17.500" [ref=e909]:
+              - generic [ref=e911]:
+                - generic [ref=e912]: QR
+                - generic [ref=e913]: $ 17.500
+            - cell "Ver Editar" [ref=e914]:
+              - generic [ref=e915]:
+                - button "Ver" [ref=e916] [cursor=pointer]:
+                  - img [ref=e917]
+                  - generic [ref=e920]: Ver
+                - link "Editar" [ref=e921] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/166/edit
+                  - img [ref=e922]
+                  - text: Editar
+                - button [ref=e926] [cursor=pointer]:
+                  - img [ref=e927]
+        - rowgroup [ref=e930]:
+          - row "12:47:52 Admin 2 $ 43.000 $ 0 QR $ 21.500 Nequi $ 21.500 Ver Editar" [ref=e931]:
+            - cell "12:47:52" [ref=e932]
+            - cell "Admin" [ref=e933]
+            - cell "2" [ref=e934]
+            - cell "$ 43.000" [ref=e935]
+            - cell "$ 0" [ref=e936]
+            - cell "QR $ 21.500 Nequi $ 21.500" [ref=e937]:
+              - generic [ref=e938]:
+                - generic [ref=e939]:
+                  - generic [ref=e940]: QR
+                  - generic [ref=e941]: $ 21.500
+                - generic [ref=e942]:
+                  - generic [ref=e943]: Nequi
+                  - generic [ref=e944]: $ 21.500
+            - cell "Ver Editar" [ref=e945]:
+              - generic [ref=e946]:
+                - button "Ver" [ref=e947] [cursor=pointer]:
+                  - img [ref=e948]
+                  - generic [ref=e951]: Ver
+                - link "Editar" [ref=e952] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/165/edit
+                  - img [ref=e953]
+                  - text: Editar
+                - button [ref=e957] [cursor=pointer]:
+                  - img [ref=e958]
+        - rowgroup [ref=e961]:
+          - row "12:47:22 Admin 1 $ 21.500 $ 0 Efectivo $ 21.500 Ver Editar" [ref=e962]:
+            - cell "12:47:22" [ref=e963]
+            - cell "Admin" [ref=e964]
+            - cell "1" [ref=e965]
+            - cell "$ 21.500" [ref=e966]
+            - cell "$ 0" [ref=e967]
+            - cell "Efectivo $ 21.500" [ref=e968]:
+              - generic [ref=e970]:
+                - generic [ref=e971]: Efectivo
+                - generic [ref=e972]: $ 21.500
+            - cell "Ver Editar" [ref=e973]:
+              - generic [ref=e974]:
+                - button "Ver" [ref=e975] [cursor=pointer]:
+                  - img [ref=e976]
+                  - generic [ref=e979]: Ver
+                - link "Editar" [ref=e980] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/164/edit
+                  - img [ref=e981]
+                  - text: Editar
+                - button [ref=e985] [cursor=pointer]:
+                  - img [ref=e986]
+        - rowgroup [ref=e989]:
+          - row "12:46:50 Admin 1 $ 17.500 $ 0 QR $ 17.500 Ver Editar" [ref=e990]:
+            - cell "12:46:50" [ref=e991]
+            - cell "Admin" [ref=e992]
+            - cell "1" [ref=e993]
+            - cell "$ 17.500" [ref=e994]
+            - cell "$ 0" [ref=e995]
+            - cell "QR $ 17.500" [ref=e996]:
+              - generic [ref=e998]:
+                - generic [ref=e999]: QR
+                - generic [ref=e1000]: $ 17.500
+            - cell "Ver Editar" [ref=e1001]:
+              - generic [ref=e1002]:
+                - button "Ver" [ref=e1003] [cursor=pointer]:
+                  - img [ref=e1004]
+                  - generic [ref=e1007]: Ver
+                - link "Editar" [ref=e1008] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/163/edit
+                  - img [ref=e1009]
+                  - text: Editar
+                - button [ref=e1013] [cursor=pointer]:
+                  - img [ref=e1014]
+        - rowgroup [ref=e1017]:
+          - row "12:46:34 Admin 2 $ 40.000 $ 0 Nequi $ 21.500 Efectivo $ 18.500 Ver Editar" [ref=e1018]:
+            - cell "12:46:34" [ref=e1019]
+            - cell "Admin" [ref=e1020]
+            - cell "2" [ref=e1021]
+            - cell "$ 40.000" [ref=e1022]
+            - cell "$ 0" [ref=e1023]
+            - cell "Nequi $ 21.500 Efectivo $ 18.500" [ref=e1024]:
+              - generic [ref=e1025]:
+                - generic [ref=e1026]:
+                  - generic [ref=e1027]: Nequi
+                  - generic [ref=e1028]: $ 21.500
+                - generic [ref=e1029]:
+                  - generic [ref=e1030]: Efectivo
+                  - generic [ref=e1031]: $ 18.500
+            - cell "Ver Editar" [ref=e1032]:
+              - generic [ref=e1033]:
+                - button "Ver" [ref=e1034] [cursor=pointer]:
+                  - img [ref=e1035]
+                  - generic [ref=e1038]: Ver
+                - link "Editar" [ref=e1039] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/caja/ventas/162/edit
+                  - img [ref=e1040]
+                  - text: Editar
+                - button [ref=e1044] [cursor=pointer]:
+                  - img [ref=e1045]
+      - generic [ref=e1048]:
+        - generic [ref=e1049]:
+          - text: Filas por página
+          - combobox "Filas por página" [ref=e1050]:
+            - option "10"
+            - option "25" [selected]
+            - option "50"
+            - option "100"
+            - option "Todas"
+        - generic [ref=e1051]:
+          - generic [ref=e1052]: Página 1 de 8
+          - generic [ref=e1053]:
+            - button [disabled] [ref=e1054]:
+              - img [ref=e1055]
+            - button [ref=e1057] [cursor=pointer]:
+              - img [ref=e1058]
+    - generic [ref=e1060]:
+      - generic [ref=e1061]:
+        - heading "Gastos del turno (0)" [level=3] [ref=e1062]:
+          - img [ref=e1063]
+          - text: Gastos del turno
+          - generic [ref=e1066]: (0)
+        - generic [ref=e1067]:
+          - generic [ref=e1068]:
+            - text: "Generales:"
+            - strong [ref=e1069]: $ 0
+          - generic [ref=e1070]: ·
+          - generic [ref=e1071]:
+            - text: "Turnos:"
+            - strong [ref=e1072]: $ 0
+          - link "Nuevo" [ref=e1073] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos/create
+            - img [ref=e1074]
+            - text: Nuevo
+      - table [ref=e1076]:
+        - rowgroup [ref=e1077]:
+          - row "Hora Tipo Concepto / Trabajador Valor Ahorro Método Cajero" [ref=e1078]:
+            - columnheader "Hora" [ref=e1079]
+            - columnheader "Tipo" [ref=e1080]
+            - columnheader "Concepto / Trabajador" [ref=e1081]
+            - columnheader "Valor" [ref=e1082]
+            - columnheader "Ahorro" [ref=e1083]
+            - columnheader "Método" [ref=e1084]
+            - columnheader "Cajero" [ref=e1085]
+            - columnheader [ref=e1086]
+        - rowgroup [ref=e1087]:
+          - row "No hay gastos en este turno." [ref=e1088]:
+            - cell "No hay gastos en este turno." [ref=e1089]

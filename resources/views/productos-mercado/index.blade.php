@@ -47,8 +47,8 @@
             imageAlt: nombre,
             showConfirmButton: false,
             showCloseButton: true,
-            background: isDark ? '#1a1610' : '#fffdfa',
-            color: isDark ? '#fbf5e9' : '#3e2723',
+            background: isDark ? '#1b120a' : '#fffaf3',
+            color: isDark ? '#fcf2e3' : '#3a2718',
             customClass: {
                 popup: 'rounded-2xl',
                 image: 'rounded-xl max-h-[70vh] w-auto',

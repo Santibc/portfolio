@@ -1,0 +1,26 @@
+- generic [ref=e2]:
+  - link "Papas del Alma Papas del Alma hechas con el alma" [ref=e3] [cursor=pointer]:
+    - /url: http://127.0.0.1:8010
+    - img "Papas del Alma" [ref=e4]
+    - generic [ref=e5]: Papas del Alma
+    - generic [ref=e6]: hechas con el alma
+  - generic [ref=e7]:
+    - heading "Iniciar sesion" [level=2] [ref=e8]
+    - paragraph [ref=e9]: Bienvenido de nuevo. Ingresa tus credenciales.
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Correo *
+        - textbox "Correo *" [active] [ref=e14]
+      - generic [ref=e15]:
+        - generic [ref=e16]: Contrasena
+        - generic [ref=e17]:
+          - textbox [ref=e18]
+          - button [ref=e19] [cursor=pointer]
+      - generic [ref=e23]:
+        - generic [ref=e24] [cursor=pointer]:
+          - checkbox "Recordarme" [ref=e25]
+          - generic [ref=e26]: Recordarme
+        - link "Olvidaste la contrasena?" [ref=e28] [cursor=pointer]:
+          - /url: http://127.0.0.1:8010/forgot-password
+      - button "Ingresar" [ref=e29] [cursor=pointer]
+  - paragraph [ref=e32]: © 2026 Papas del Alma

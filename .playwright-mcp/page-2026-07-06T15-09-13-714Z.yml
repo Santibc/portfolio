@@ -1,0 +1,196 @@
+- generic [active] [ref=f3e1]:
+  - complementary [ref=f3e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=f3e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=f3e5]
+      - generic [ref=f3e6]:
+        - generic [ref=f3e7]: Sopas y Sopitas
+        - generic [ref=f3e8]: comida con cariño
+    - navigation [ref=f3e9]:
+      - paragraph [ref=f3e10]: Principal
+      - link "Inicio" [ref=f3e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=f3e12]
+        - generic [ref=f3e15]: Inicio
+      - link "Consolidado" [ref=f3e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=f3e17]
+        - generic [ref=f3e20]: Consolidado
+      - generic [ref=f3e21]:
+        - button "Mercado" [ref=f3e22] [cursor=pointer]:
+          - img [ref=f3e23]
+          - generic [ref=f3e29]: Mercado
+          - img [ref=f3e30]
+        - generic [ref=f3e32]:
+          - link "Dashboard" [ref=f3e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=f3e34]
+            - generic [ref=f3e37]: Dashboard
+          - link "Productos" [ref=f3e39] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=f3e40]
+            - generic [ref=f3e46]: Productos
+          - link "Registrar" [ref=f3e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=f3e48]
+            - generic [ref=f3e52]: Registrar
+          - link "Lista mercado" [ref=f3e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=f3e54]
+            - generic [ref=f3e57]: Lista mercado
+          - link "Plantilla" [ref=f3e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=f3e59]
+            - generic [ref=f3e62]: Plantilla
+      - button "Caja" [ref=f3e64] [cursor=pointer]:
+        - img [ref=f3e65]
+        - generic [ref=f3e68]: Caja
+        - img [ref=f3e69]
+      - button "Nómina" [ref=f3e72] [cursor=pointer]:
+        - img [ref=f3e73]
+        - generic [ref=f3e76]: Nómina
+        - img [ref=f3e77]
+      - button "Gastos fijos" [ref=f3e80] [cursor=pointer]:
+        - img [ref=f3e81]
+        - generic [ref=f3e84]: Gastos fijos
+        - img [ref=f3e85]
+      - paragraph [ref=f3e87]: Cuenta
+      - link "Mi perfil" [ref=f3e88] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=f3e89]
+        - generic [ref=f3e101]: Mi perfil
+      - paragraph [ref=f3e102]: Sistema
+      - link "Componentes UI" [ref=f3e103] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=f3e104]
+        - generic [ref=f3e109]: Componentes UI
+    - button "Cerrar sesion" [ref=f3e112] [cursor=pointer]:
+      - img [ref=f3e113]
+      - text: Cerrar sesion
+  - banner [ref=f3e116]:
+    - generic [ref=f3e117]:
+      - button "Mostrar menu" [ref=f3e118] [cursor=pointer]:
+        - img [ref=f3e119]
+      - generic [ref=f3e120]: Dashboard Mercado
+      - generic [ref=f3e121]:
+        - button "Cambiar tema" [ref=f3e122] [cursor=pointer]:
+          - img [ref=f3e124]
+        - button "A Admin admin" [ref=f3e127] [cursor=pointer]:
+          - generic [ref=f3e128]: A
+          - generic [ref=f3e129]:
+            - generic [ref=f3e130]: Admin
+            - generic [ref=f3e131]: admin
+          - img [ref=f3e132]
+  - main [ref=f3e134]:
+    - generic [ref=f3e135]:
+      - generic [ref=f3e137]:
+        - img [ref=f3e139]
+        - generic [ref=f3e142]:
+          - heading "Dashboard Mercado" [level=1] [ref=f3e143]
+          - paragraph [ref=f3e144]: Auditoría de compras registradas
+      - link "Gráficas" [ref=f3e146] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard/graficas
+        - img [ref=f3e147]
+        - text: Gráficas
+    - generic [ref=f3e149]:
+      - generic [ref=f3e151]:
+        - generic [ref=f3e152]:
+          - paragraph [ref=f3e153]: Total gastado
+          - paragraph [ref=f3e154]: $ 150.000
+        - img [ref=f3e156]
+      - generic [ref=f3e159]:
+        - generic [ref=f3e160]:
+          - paragraph [ref=f3e161]: Registros
+          - paragraph [ref=f3e162]: "1"
+        - img [ref=f3e164]
+      - generic [ref=f3e166]:
+        - generic [ref=f3e167]:
+          - paragraph [ref=f3e168]: Productos distintos
+          - paragraph [ref=f3e169]: "1"
+        - img [ref=f3e171]
+      - generic [ref=f3e178]:
+        - generic [ref=f3e179]:
+          - paragraph [ref=f3e180]: Promedio / registro
+          - paragraph [ref=f3e181]: $ 150.000
+        - img [ref=f3e183]
+    - generic [ref=f3e186]:
+      - paragraph [ref=f3e187]: Total por método de pago
+      - generic [ref=f3e190]:
+        - generic [ref=f3e191]:
+          - paragraph [ref=f3e192]: Efectivo · 1 reg.
+          - paragraph [ref=f3e193]: $ 150.000
+        - img [ref=f3e195]
+    - generic [ref=f3e198]:
+      - generic [ref=f3e199]:
+        - generic [ref=f3e200]: Desde
+        - textbox [ref=f3e201]: 2026-07-06
+      - generic [ref=f3e202]:
+        - generic [ref=f3e203]: Hasta
+        - textbox [ref=f3e204]: 2026-07-06
+      - link "Hoy" [ref=f3e205] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/mercado/dashboard
+        - img [ref=f3e206]
+        - text: Hoy
+    - generic [ref=f3e208]:
+      - generic [ref=f3e209]:
+        - generic [ref=f3e210]:
+          - img [ref=f3e212]
+          - searchbox "Buscar..." [ref=f3e215]
+        - combobox [ref=f3e217]:
+          - 'option "Tipo: todos" [selected]'
+          - option "Plaza"
+        - generic [ref=f3e218]: 1 registros
+      - table [ref=f3e220]:
+        - rowgroup [ref=f3e221]:
+          - row "Fecha Producto Tipo Cantidad Unitario Total Observación Acciones" [ref=f3e222]:
+            - columnheader "Fecha" [ref=f3e223]:
+              - button "Fecha" [ref=f3e224] [cursor=pointer]
+            - columnheader "Producto" [ref=f3e225]
+            - columnheader "Tipo" [ref=f3e226]
+            - columnheader "Cantidad" [ref=f3e227]
+            - columnheader "Unitario" [ref=f3e228]
+            - columnheader "Total" [ref=f3e229]
+            - columnheader "Observación" [ref=f3e230]
+            - columnheader "Acciones" [ref=f3e231]
+        - rowgroup [ref=f3e232]:
+          - 'row "06 Jul, 10:09 Aceite Plaza 2 Galón x 20 litros $ 75.000 $ 150.000 Prueba observación: marca Premier, buen precio en la plaza Editar Eliminar" [ref=f3e233]':
+            - cell "06 Jul, 10:09" [ref=f3e234]
+            - cell "Aceite" [ref=f3e235]:
+              - generic [ref=f3e236]:
+                - img [ref=f3e238]
+                - generic [ref=f3e242]: Aceite
+            - cell "Plaza" [ref=f3e243]:
+              - generic [ref=f3e244]: Plaza
+            - cell "2 Galón x 20 litros" [ref=f3e245]
+            - cell "$ 75.000" [ref=f3e246]
+            - cell "$ 150.000" [ref=f3e247]
+            - 'cell "Prueba observación: marca Premier, buen precio en la plaza" [ref=f3e248]':
+              - 'generic "Prueba observación: marca Premier, buen precio en la plaza" [ref=f3e249]':
+                - img [ref=f3e250]
+                - generic [ref=f3e252]: "Prueba observación: marca Premier, buen precio en la plaza"
+            - cell "Editar Eliminar" [ref=f3e253]:
+              - generic [ref=f3e254]:
+                - link "Editar" [ref=f3e255] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/mercado/dashboard/registros/277/edit
+                  - img [ref=f3e256]
+                  - text: Editar
+                - button "Eliminar" [ref=f3e260] [cursor=pointer]:
+                  - img [ref=f3e261]
+                  - text: Eliminar
+      - generic [ref=f3e264]:
+        - generic [ref=f3e265]:
+          - text: Filas por página
+          - combobox "Filas por página" [ref=f3e266]:
+            - option "5" [selected]
+            - option "10"
+            - option "25"
+            - option "50"
+            - option "100"
+            - option "Todas"
+        - generic [ref=f3e267]:
+          - generic [ref=f3e268]: Pagina 1 de 1
+          - generic [ref=f3e269]:
+            - button [disabled] [ref=f3e270]:
+              - img [ref=f3e271]
+            - button [disabled] [ref=f3e273]:
+              - img [ref=f3e274]

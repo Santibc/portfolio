@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Sopas y Sopitas'),
+    'name' => env('APP_NAME', 'Papas del Alma'),
 
     /*
     |--------------------------------------------------------------------------

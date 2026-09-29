@@ -1,0 +1,749 @@
+- generic [active] [ref=f2e1]:
+  - complementary [ref=f2e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=f2e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=f2e5]
+      - generic [ref=f2e6]:
+        - generic [ref=f2e7]: Sopas y Sopitas
+        - generic [ref=f2e8]: comida con cariño
+    - navigation [ref=f2e9]:
+      - paragraph [ref=f2e10]: Principal
+      - link "Inicio" [ref=f2e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=f2e12]
+        - generic [ref=f2e15]: Inicio
+      - link "Consolidado" [ref=f2e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=f2e17]
+        - generic [ref=f2e20]: Consolidado
+      - generic [ref=f2e21]:
+        - button "Mercado" [ref=f2e22] [cursor=pointer]:
+          - img [ref=f2e23]
+          - generic [ref=f2e29]: Mercado
+          - img [ref=f2e30]
+        - generic [ref=f2e32]:
+          - link "Dashboard" [ref=f2e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=f2e34]
+            - generic [ref=f2e37]: Dashboard
+          - link "Productos" [ref=f2e38] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=f2e39]
+            - generic [ref=f2e45]: Productos
+          - link "Registrar" [ref=f2e46] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=f2e47]
+            - generic [ref=f2e51]: Registrar
+          - link "Lista mercado" [ref=f2e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=f2e54]
+            - generic [ref=f2e57]: Lista mercado
+          - link "Plantilla" [ref=f2e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=f2e59]
+            - generic [ref=f2e62]: Plantilla
+      - button "Caja" [ref=f2e64] [cursor=pointer]:
+        - img [ref=f2e65]
+        - generic [ref=f2e68]: Caja
+        - img [ref=f2e69]
+      - button "Nómina" [ref=f2e72] [cursor=pointer]:
+        - img [ref=f2e73]
+        - generic [ref=f2e76]: Nómina
+        - img [ref=f2e77]
+      - button "Gastos fijos" [ref=f2e80] [cursor=pointer]:
+        - img [ref=f2e81]
+        - generic [ref=f2e84]: Gastos fijos
+        - img [ref=f2e85]
+      - paragraph [ref=f2e87]: Cuenta
+      - link "Mi perfil" [ref=f2e88] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=f2e89]
+        - generic [ref=f2e101]: Mi perfil
+      - paragraph [ref=f2e102]: Sistema
+      - link "Componentes UI" [ref=f2e103] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=f2e104]
+        - generic [ref=f2e109]: Componentes UI
+    - button "Cerrar sesion" [ref=f2e112] [cursor=pointer]:
+      - img [ref=f2e113]
+      - text: Cerrar sesion
+  - banner [ref=f2e116]:
+    - generic [ref=f2e117]:
+      - button "Mostrar menu" [ref=f2e118] [cursor=pointer]:
+        - img [ref=f2e119]
+      - generic [ref=f2e120]: Registrar Mercado
+      - generic [ref=f2e121]:
+        - button "Cambiar tema" [ref=f2e122] [cursor=pointer]:
+          - img [ref=f2e124]
+        - button "A Admin admin" [ref=f2e127] [cursor=pointer]:
+          - generic [ref=f2e128]: A
+          - generic [ref=f2e129]:
+            - generic [ref=f2e130]: Admin
+            - generic [ref=f2e131]: admin
+          - img [ref=f2e132]
+  - main [ref=f2e134]:
+    - generic [ref=f2e135]:
+      - img [ref=f2e136]
+      - generic [ref=f2e140]: Registro guardado.
+      - button [ref=f2e141] [cursor=pointer]:
+        - img [ref=f2e142]
+    - generic [ref=f2e147]:
+      - img [ref=f2e149]
+      - generic [ref=f2e153]:
+        - heading "Registrar Mercado" [level=1] [ref=f2e154]
+        - paragraph [ref=f2e155]: Toca un producto para registrar cantidad y valor
+    - combobox "Filtrar por tipo" [ref=f2e158]:
+      - option "Todos los tipos" [selected]
+      - option "Arepas"
+      - option "Aseo"
+      - option "Cerdo"
+      - option "Desechables"
+      - option "Gaseosas"
+      - option "Makro"
+      - option "Pescado"
+      - option "Plaza"
+      - option "Pollo"
+      - option "Salsamentaria"
+      - option "Varios"
+      - option "Vísceras"
+    - generic [ref=f2e159]:
+      - link "Aceite Plaza Galón x 20 litros" [ref=f2e160] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/58/registrar
+        - img [ref=f2e163]
+        - generic [ref=f2e167]:
+          - paragraph [ref=f2e168]: Aceite
+          - generic [ref=f2e169]:
+            - generic [ref=f2e170]: Plaza
+            - generic [ref=f2e171]: Galón x 20 litros
+      - link "Agua Gaseosas Botella x 24 ud" [ref=f2e172] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/62/registrar
+        - img [ref=f2e175]
+        - generic [ref=f2e179]:
+          - paragraph [ref=f2e180]: Agua
+          - generic [ref=f2e181]:
+            - generic [ref=f2e182]: Gaseosas
+            - generic [ref=f2e183]: Botella x 24 ud
+      - link "Aguacate Plaza Kilogramo" [ref=f2e184] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/90/registrar
+        - img [ref=f2e187]
+        - generic [ref=f2e191]:
+          - paragraph [ref=f2e192]: Aguacate
+          - generic [ref=f2e193]:
+            - generic [ref=f2e194]: Plaza
+            - generic [ref=f2e195]: Kilogramo
+      - link "Aji Plaza Kilogramo" [ref=f2e196] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/24/registrar
+        - img [ref=f2e199]
+        - generic [ref=f2e203]:
+          - paragraph [ref=f2e204]: Aji
+          - generic [ref=f2e205]:
+            - generic [ref=f2e206]: Plaza
+            - generic [ref=f2e207]: Kilogramo
+      - link "Ajo Plaza Manojo" [ref=f2e208] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/34/registrar
+        - img [ref=f2e211]
+        - generic [ref=f2e215]:
+          - paragraph [ref=f2e216]: Ajo
+          - generic [ref=f2e217]:
+            - generic [ref=f2e218]: Plaza
+            - generic [ref=f2e219]: Manojo
+      - link "Alcaparras Salsamentaria Tarro" [ref=f2e220] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/85/registrar
+        - img [ref=f2e223]
+        - generic [ref=f2e227]:
+          - paragraph [ref=f2e228]: Alcaparras
+          - generic [ref=f2e229]:
+            - generic [ref=f2e230]: Salsamentaria
+            - generic [ref=f2e231]: Tarro
+      - link "Alverja verde san isidro Plaza Kilogramo" [ref=f2e232] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/51/registrar
+        - img [ref=f2e235]
+        - generic [ref=f2e239]:
+          - paragraph [ref=f2e240]: Alverja verde san isidro
+          - generic [ref=f2e241]:
+            - generic [ref=f2e242]: Plaza
+            - generic [ref=f2e243]: Kilogramo
+      - link "Arepas Arepas Unidad" [ref=f2e244] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/89/registrar
+        - img [ref=f2e247]
+        - generic [ref=f2e251]:
+          - paragraph [ref=f2e252]: Arepas
+          - generic [ref=f2e253]:
+            - generic [ref=f2e254]: Arepas
+            - generic [ref=f2e255]: Unidad
+      - link "Arracacha Plaza Kilogramo" [ref=f2e256] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/37/registrar
+        - img [ref=f2e259]
+        - generic [ref=f2e263]:
+          - paragraph [ref=f2e264]: Arracacha
+          - generic [ref=f2e265]:
+            - generic [ref=f2e266]: Plaza
+            - generic [ref=f2e267]: Kilogramo
+      - link "Arroceros C1 Desechables Paquete x 200 ud" [ref=f2e268] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/61/registrar
+        - img [ref=f2e271]
+        - generic [ref=f2e275]:
+          - paragraph [ref=f2e276]: Arroceros C1
+          - generic [ref=f2e277]:
+            - generic [ref=f2e278]: Desechables
+            - generic [ref=f2e279]: Paquete x 200 ud
+      - link "Bagre Pescado Caja" [ref=f2e280] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/69/registrar
+        - img [ref=f2e283]
+        - generic [ref=f2e287]:
+          - paragraph [ref=f2e288]: Bagre
+          - generic [ref=f2e289]:
+            - generic [ref=f2e290]: Pescado
+            - generic [ref=f2e291]: Caja
+      - link "Banano Plaza Canastilla" [ref=f2e292] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/91/registrar
+        - img [ref=f2e295]
+        - generic [ref=f2e299]:
+          - paragraph [ref=f2e300]: Banano
+          - generic [ref=f2e301]:
+            - generic [ref=f2e302]: Plaza
+            - generic [ref=f2e303]: Canastilla
+      - link "Bolsas domicilios 15kl Desechables Paquete" [ref=f2e304] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/104/registrar
+        - img [ref=f2e307]
+        - generic [ref=f2e311]:
+          - paragraph [ref=f2e312]: Bolsas domicilios 15kl
+          - generic [ref=f2e313]:
+            - generic [ref=f2e314]: Desechables
+            - generic [ref=f2e315]: Paquete
+      - link "Bolsas Yumbo Aseo Paquete" [ref=f2e316] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/96/registrar
+        - img [ref=f2e319]
+        - generic [ref=f2e323]:
+          - paragraph [ref=f2e324]: Bolsas Yumbo
+          - generic [ref=f2e325]:
+            - generic [ref=f2e326]: Aseo
+            - generic [ref=f2e327]: Paquete
+      - link "Café Varios Kilogramo" [ref=f2e328] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/93/registrar
+        - img [ref=f2e331]
+        - generic [ref=f2e335]:
+          - paragraph [ref=f2e336]: Café
+          - generic [ref=f2e337]:
+            - generic [ref=f2e338]: Varios
+            - generic [ref=f2e339]: Kilogramo
+      - link "Callo Vísceras Kilogramo" [ref=f2e340] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/71/registrar
+        - img [ref=f2e343]
+        - generic [ref=f2e347]:
+          - paragraph [ref=f2e348]: Callo
+          - generic [ref=f2e349]:
+            - generic [ref=f2e350]: Vísceras
+            - generic [ref=f2e351]: Kilogramo
+      - link "Cebolla cabezona Plaza Bulto" [ref=f2e352] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/33/registrar
+        - img [ref=f2e355]
+        - generic [ref=f2e359]:
+          - paragraph [ref=f2e360]: Cebolla cabezona
+          - generic [ref=f2e361]:
+            - generic [ref=f2e362]: Plaza
+            - generic [ref=f2e363]: Bulto
+      - link "Cebolla Larga Plaza Kilogramo" [ref=f2e364] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/35/registrar
+        - img [ref=f2e367]
+        - generic [ref=f2e371]:
+          - paragraph [ref=f2e372]: Cebolla Larga
+          - generic [ref=f2e373]:
+            - generic [ref=f2e374]: Plaza
+            - generic [ref=f2e375]: Kilogramo
+      - link "Cebollín Plaza Libra" [ref=f2e376] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/26/registrar
+        - img [ref=f2e379]
+        - generic [ref=f2e383]:
+          - paragraph [ref=f2e384]: Cebollín
+          - generic [ref=f2e385]:
+            - generic [ref=f2e386]: Plaza
+            - generic [ref=f2e387]: Libra
+      - link "Champiñones Plaza Kilogramo" [ref=f2e388] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/23/registrar
+        - img [ref=f2e391]
+        - generic [ref=f2e395]:
+          - paragraph [ref=f2e396]: Champiñones
+          - generic [ref=f2e397]:
+            - generic [ref=f2e398]: Plaza
+            - generic [ref=f2e399]: Kilogramo
+      - link "Chocolate Varios Kilogramo" [ref=f2e400] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/94/registrar
+        - img [ref=f2e403]
+        - generic [ref=f2e407]:
+          - paragraph [ref=f2e408]: Chocolate
+          - generic [ref=f2e409]:
+            - generic [ref=f2e410]: Varios
+            - generic [ref=f2e411]: Kilogramo
+      - link "Cilantro Plaza Kilogramo" [ref=f2e412] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/30/registrar
+        - img [ref=f2e415]
+        - generic [ref=f2e419]:
+          - paragraph [ref=f2e420]: Cilantro
+          - generic [ref=f2e421]:
+            - generic [ref=f2e422]: Plaza
+            - generic [ref=f2e423]: Kilogramo
+      - link "Coca-Cola Gaseosas Paquete x 12 und" [ref=f2e424] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/63/registrar
+        - img [ref=f2e427]
+        - generic [ref=f2e431]:
+          - paragraph [ref=f2e432]: Coca-Cola
+          - generic [ref=f2e433]:
+            - generic [ref=f2e434]: Gaseosas
+            - generic [ref=f2e435]: Paquete x 12 und
+      - link "Crema de Leche Salsamentaria Libra" [ref=f2e436] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/87/registrar
+        - img [ref=f2e439]
+        - generic [ref=f2e443]:
+          - paragraph [ref=f2e444]: Crema de Leche
+          - generic [ref=f2e445]:
+            - generic [ref=f2e446]: Salsamentaria
+            - generic [ref=f2e447]: Libra
+      - link "Cucharas desechables Desechables Paquete" [ref=f2e448] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/99/registrar
+        - img [ref=f2e451]
+        - generic [ref=f2e455]:
+          - paragraph [ref=f2e456]: Cucharas desechables
+          - generic [ref=f2e457]:
+            - generic [ref=f2e458]: Desechables
+            - generic [ref=f2e459]: Paquete
+      - link "Espinaca Plaza Kilogramo" [ref=f2e460] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/29/registrar
+        - img [ref=f2e463]
+        - generic [ref=f2e467]:
+          - paragraph [ref=f2e468]: Espinaca
+          - generic [ref=f2e469]:
+            - generic [ref=f2e470]: Plaza
+            - generic [ref=f2e471]: Kilogramo
+      - link "Espinazo Cerdo Kilogramo" [ref=f2e472] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/66/registrar
+        - img [ref=f2e475]
+        - generic [ref=f2e479]:
+          - paragraph [ref=f2e480]: Espinazo
+          - generic [ref=f2e481]:
+            - generic [ref=f2e482]: Cerdo
+            - generic [ref=f2e483]: Kilogramo
+      - link "Esponja acerada Aseo Paquete x 12 und" [ref=f2e484] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/59/registrar
+        - img [ref=f2e487]
+        - generic [ref=f2e491]:
+          - paragraph [ref=f2e492]: Esponja acerada
+          - generic [ref=f2e493]:
+            - generic [ref=f2e494]: Aseo
+            - generic [ref=f2e495]: Paquete x 12 und
+      - link "Esponjilla de brillo Aseo Paquete" [ref=f2e496] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/95/registrar
+        - img [ref=f2e499]
+        - generic [ref=f2e503]:
+          - paragraph [ref=f2e504]: Esponjilla de brillo
+          - generic [ref=f2e505]:
+            - generic [ref=f2e506]: Aseo
+            - generic [ref=f2e507]: Paquete
+      - link "Frijol bola roja Plaza Kilogramo" [ref=f2e508] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/56/registrar
+        - img [ref=f2e511]
+        - generic [ref=f2e515]:
+          - paragraph [ref=f2e516]: Frijol bola roja
+          - generic [ref=f2e517]:
+            - generic [ref=f2e518]: Plaza
+            - generic [ref=f2e519]: Kilogramo
+      - link "Frijol verde Plaza Kilogramo" [ref=f2e520] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/49/registrar
+        - img [ref=f2e523]
+        - generic [ref=f2e527]:
+          - paragraph [ref=f2e528]: Frijol verde
+          - generic [ref=f2e529]:
+            - generic [ref=f2e530]: Plaza
+            - generic [ref=f2e531]: Kilogramo
+      - link "Guantes nitrilo Desechables Caja" [ref=f2e532] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/98/registrar
+        - img [ref=f2e535]
+        - generic [ref=f2e539]:
+          - paragraph [ref=f2e540]: Guantes nitrilo
+          - generic [ref=f2e541]:
+            - generic [ref=f2e542]: Desechables
+            - generic [ref=f2e543]: Caja
+      - link "Guascas Plaza Kilogramo" [ref=f2e544] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/32/registrar
+        - img [ref=f2e547]
+        - generic [ref=f2e551]:
+          - paragraph [ref=f2e552]: Guascas
+          - generic [ref=f2e553]:
+            - generic [ref=f2e554]: Plaza
+            - generic [ref=f2e555]: Kilogramo
+      - link "Habas Plaza Paquete" [ref=f2e556] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/48/registrar
+        - img [ref=f2e559]
+        - generic [ref=f2e563]:
+          - paragraph [ref=f2e564]: Habas
+          - generic [ref=f2e565]:
+            - generic [ref=f2e566]: Plaza
+            - generic [ref=f2e567]: Paquete
+      - link "Habichuela Plaza Kilogramo" [ref=f2e568] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/50/registrar
+        - img [ref=f2e571]
+        - generic [ref=f2e575]:
+          - paragraph [ref=f2e576]: Habichuela
+          - generic [ref=f2e577]:
+            - generic [ref=f2e578]: Plaza
+            - generic [ref=f2e579]: Kilogramo
+      - link "Jabón Rey Aseo Caja" [ref=f2e580] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/92/registrar
+        - img [ref=f2e583]
+        - generic [ref=f2e587]:
+          - paragraph [ref=f2e588]: Jabón Rey
+          - generic [ref=f2e589]:
+            - generic [ref=f2e590]: Aseo
+            - generic [ref=f2e591]: Caja
+      - link "Laurel y tomillo Plaza Paquete" [ref=f2e592] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/25/registrar
+        - img [ref=f2e595]
+        - generic [ref=f2e599]:
+          - paragraph [ref=f2e600]: Laurel y tomillo
+          - generic [ref=f2e601]:
+            - generic [ref=f2e602]: Plaza
+            - generic [ref=f2e603]: Paquete
+      - link "Lechuga Plaza Unidad" [ref=f2e604] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/28/registrar
+        - img [ref=f2e607]
+        - generic [ref=f2e611]:
+          - paragraph [ref=f2e612]: Lechuga
+          - generic [ref=f2e613]:
+            - generic [ref=f2e614]: Plaza
+            - generic [ref=f2e615]: Unidad
+      - link "Lengua Vísceras Kilogramo" [ref=f2e616] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/75/registrar
+        - img [ref=f2e619]
+        - generic [ref=f2e623]:
+          - paragraph [ref=f2e624]: Lengua
+          - generic [ref=f2e625]:
+            - generic [ref=f2e626]: Vísceras
+            - generic [ref=f2e627]: Kilogramo
+      - link "Libro Vísceras Kilogramo" [ref=f2e628] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/72/registrar
+        - img [ref=f2e631]
+        - generic [ref=f2e635]:
+          - paragraph [ref=f2e636]: Libro
+          - generic [ref=f2e637]:
+            - generic [ref=f2e638]: Vísceras
+            - generic [ref=f2e639]: Kilogramo
+      - link "Limón Plaza Bulto" [ref=f2e640] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/41/registrar
+        - img [ref=f2e643]
+        - generic [ref=f2e647]:
+          - paragraph [ref=f2e648]: Limón
+          - generic [ref=f2e649]:
+            - generic [ref=f2e650]: Plaza
+            - generic [ref=f2e651]: Bulto
+      - link "Magui Plaza caja x 270" [ref=f2e652] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/57/registrar
+        - img [ref=f2e655]
+        - generic [ref=f2e659]:
+          - paragraph [ref=f2e660]: Magui
+          - generic [ref=f2e661]:
+            - generic [ref=f2e662]: Plaza
+            - generic [ref=f2e663]: caja x 270
+      - link "Mapara Pescado Unidad" [ref=f2e664] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/70/registrar
+        - img [ref=f2e667]
+        - generic [ref=f2e671]:
+          - paragraph [ref=f2e672]: Mapara
+          - generic [ref=f2e673]:
+            - generic [ref=f2e674]: Pescado
+            - generic [ref=f2e675]: Unidad
+      - link "Maracuya Plaza Kilogramo" [ref=f2e676] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/36/registrar
+        - img [ref=f2e679]
+        - generic [ref=f2e683]:
+          - paragraph [ref=f2e684]: Maracuya
+          - generic [ref=f2e685]:
+            - generic [ref=f2e686]: Plaza
+            - generic [ref=f2e687]: Kilogramo
+      - link "Mayonesa Salsamentaria Kilogramo" [ref=f2e688] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/86/registrar
+        - img [ref=f2e691]
+        - generic [ref=f2e695]:
+          - paragraph [ref=f2e696]: Mayonesa
+          - generic [ref=f2e697]:
+            - generic [ref=f2e698]: Salsamentaria
+            - generic [ref=f2e699]: Kilogramo
+      - link "Mazorca desgranada Plaza Kilogramo" [ref=f2e700] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/46/registrar
+        - img [ref=f2e703]
+        - generic [ref=f2e707]:
+          - paragraph [ref=f2e708]: Mazorca desgranada
+          - generic [ref=f2e709]:
+            - generic [ref=f2e710]: Plaza
+            - generic [ref=f2e711]: Kilogramo
+      - link "Mazorca entera Plaza Bulto" [ref=f2e712] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/45/registrar
+        - img [ref=f2e715]
+        - generic [ref=f2e719]:
+          - paragraph [ref=f2e720]: Mazorca entera
+          - generic [ref=f2e721]:
+            - generic [ref=f2e722]: Plaza
+            - generic [ref=f2e723]: Bulto
+      - link "Murillo Cerdo Kilogramo" [ref=f2e724] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/80/registrar
+        - img [ref=f2e727]
+        - generic [ref=f2e731]:
+          - paragraph [ref=f2e732]: Murillo
+          - generic [ref=f2e733]:
+            - generic [ref=f2e734]: Cerdo
+            - generic [ref=f2e735]: Kilogramo
+      - link "Mute Arepas Libras" [ref=f2e736] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/88/registrar
+        - img [ref=f2e739]
+        - generic [ref=f2e743]:
+          - paragraph [ref=f2e744]: Mute
+          - generic [ref=f2e745]:
+            - generic [ref=f2e746]: Arepas
+            - generic [ref=f2e747]: Libras
+      - link "Papa criolla chery Plaza Paquete" [ref=f2e748] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/52/registrar
+        - img [ref=f2e751]
+        - generic [ref=f2e755]:
+          - paragraph [ref=f2e756]: Papa criolla chery
+          - generic [ref=f2e757]:
+            - generic [ref=f2e758]: Plaza
+            - generic [ref=f2e759]: Paquete
+      - link "Papa criolla superior Plaza Bulto" [ref=f2e760] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/53/registrar
+        - img [ref=f2e763]
+        - generic [ref=f2e767]:
+          - paragraph [ref=f2e768]: Papa criolla superior
+          - generic [ref=f2e769]:
+            - generic [ref=f2e770]: Plaza
+            - generic [ref=f2e771]: Bulto
+      - link "Papa pareja Plaza Bulto" [ref=f2e772] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/54/registrar
+        - img [ref=f2e775]
+        - generic [ref=f2e779]:
+          - paragraph [ref=f2e780]: Papa pareja
+          - generic [ref=f2e781]:
+            - generic [ref=f2e782]: Plaza
+            - generic [ref=f2e783]: Bulto
+      - link "Papa superior Plaza Bulto" [ref=f2e784] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/55/registrar
+        - img [ref=f2e787]
+        - generic [ref=f2e791]:
+          - paragraph [ref=f2e792]: Papa superior
+          - generic [ref=f2e793]:
+            - generic [ref=f2e794]: Plaza
+            - generic [ref=f2e795]: Bulto
+      - link "Papel Higienico Aseo Paquete x 18 und" [ref=f2e796] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/64/registrar
+        - img [ref=f2e799]
+        - generic [ref=f2e803]:
+          - paragraph [ref=f2e804]: Papel Higienico
+          - generic [ref=f2e805]:
+            - generic [ref=f2e806]: Aseo
+            - generic [ref=f2e807]: Paquete x 18 und
+      - link "Pasta de tomate Salsamentaria Paquete" [ref=f2e808] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/83/registrar
+        - img [ref=f2e811]
+        - generic [ref=f2e815]:
+          - paragraph [ref=f2e816]: Pasta de tomate
+          - generic [ref=f2e817]:
+            - generic [ref=f2e818]: Salsamentaria
+            - generic [ref=f2e819]: Paquete
+      - link "Patas Vísceras Unidad" [ref=f2e820] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/76/registrar
+        - img [ref=f2e823]
+        - generic [ref=f2e827]:
+          - paragraph [ref=f2e828]: Patas
+          - generic [ref=f2e829]:
+            - generic [ref=f2e830]: Vísceras
+            - generic [ref=f2e831]: Unidad
+      - link "Pechuga Pollo Kilogramo" [ref=f2e832] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/77/registrar
+        - img [ref=f2e835]
+        - generic [ref=f2e839]:
+          - paragraph [ref=f2e840]: Pechuga
+          - generic [ref=f2e841]:
+            - generic [ref=f2e842]: Pollo
+            - generic [ref=f2e843]: Kilogramo
+      - link "Perejil liso Plaza Kilogramo" [ref=f2e844] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/31/registrar
+        - img [ref=f2e847]
+        - generic [ref=f2e851]:
+          - paragraph [ref=f2e852]: Perejil liso
+          - generic [ref=f2e853]:
+            - generic [ref=f2e854]: Plaza
+            - generic [ref=f2e855]: Kilogramo
+      - link "Pezuña Cerdo Kilogramo" [ref=f2e856] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/68/registrar
+        - img [ref=f2e859]
+        - generic [ref=f2e863]:
+          - paragraph [ref=f2e864]: Pezuña
+          - generic [ref=f2e865]:
+            - generic [ref=f2e866]: Cerdo
+            - generic [ref=f2e867]: Kilogramo
+      - link "Pierna penil Pollo Kilogramo" [ref=f2e868] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/78/registrar
+        - img [ref=f2e871]
+        - generic [ref=f2e875]:
+          - paragraph [ref=f2e876]: Pierna penil
+          - generic [ref=f2e877]:
+            - generic [ref=f2e878]: Pollo
+            - generic [ref=f2e879]: Kilogramo
+      - link "Pimentón Plaza Kilogramo" [ref=f2e880] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/39/registrar
+        - img [ref=f2e883]
+        - generic [ref=f2e887]:
+          - paragraph [ref=f2e888]: Pimentón
+          - generic [ref=f2e889]:
+            - generic [ref=f2e890]: Plaza
+            - generic [ref=f2e891]: Kilogramo
+      - link "Pinchos Desechables Paquete x 12 und" [ref=f2e892] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/97/registrar
+        - img [ref=f2e895]
+        - generic [ref=f2e899]:
+          - paragraph [ref=f2e900]: Pinchos
+          - generic [ref=f2e901]:
+            - generic [ref=f2e902]: Desechables
+            - generic [ref=f2e903]: Paquete x 12 und
+      - link "Plátano maduro Plaza Kilogramo" [ref=f2e904] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/42/registrar
+        - img [ref=f2e907]
+        - generic [ref=f2e911]:
+          - paragraph [ref=f2e912]: Plátano maduro
+          - generic [ref=f2e913]:
+            - generic [ref=f2e914]: Plaza
+            - generic [ref=f2e915]: Kilogramo
+      - link "Plátano verde Plaza Kilogramo" [ref=f2e916] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/43/registrar
+        - img [ref=f2e919]
+        - generic [ref=f2e923]:
+          - paragraph [ref=f2e924]: Plátano verde
+          - generic [ref=f2e925]:
+            - generic [ref=f2e926]: Plaza
+            - generic [ref=f2e927]: Kilogramo
+      - link "Pulpa de cerdo Cerdo Kilogramo" [ref=f2e928] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/79/registrar
+        - img [ref=f2e931]
+        - generic [ref=f2e935]:
+          - paragraph [ref=f2e936]: Pulpa de cerdo
+          - generic [ref=f2e937]:
+            - generic [ref=f2e938]: Cerdo
+            - generic [ref=f2e939]: Kilogramo
+      - link "Repollo Plaza Unidad" [ref=f2e940] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/47/registrar
+        - img [ref=f2e943]
+        - generic [ref=f2e947]:
+          - paragraph [ref=f2e948]: Repollo
+          - generic [ref=f2e949]:
+            - generic [ref=f2e950]: Plaza
+            - generic [ref=f2e951]: Unidad
+      - link "Salsa de tomate Salsamentaria Paquete" [ref=f2e952] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/84/registrar
+        - img [ref=f2e955]
+        - generic [ref=f2e959]:
+          - paragraph [ref=f2e960]: Salsa de tomate
+          - generic [ref=f2e961]:
+            - generic [ref=f2e962]: Salsamentaria
+            - generic [ref=f2e963]: Paquete
+      - link "Servilletas Desechables Caja x 15 pq" [ref=f2e964] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/60/registrar
+        - img [ref=f2e967]
+        - generic [ref=f2e971]:
+          - paragraph [ref=f2e972]: Servilletas
+          - generic [ref=f2e973]:
+            - generic [ref=f2e974]: Desechables
+            - generic [ref=f2e975]: Caja x 15 pq
+      - link "Sonrisa Vísceras Kilogramo" [ref=f2e976] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/74/registrar
+        - img [ref=f2e979]
+        - generic [ref=f2e983]:
+          - paragraph [ref=f2e984]: Sonrisa
+          - generic [ref=f2e985]:
+            - generic [ref=f2e986]: Vísceras
+            - generic [ref=f2e987]: Kilogramo
+      - link "Tallos Plaza Kilogramo" [ref=f2e988] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/27/registrar
+        - img [ref=f2e991]
+        - generic [ref=f2e995]:
+          - paragraph [ref=f2e996]: Tallos
+          - generic [ref=f2e997]:
+            - generic [ref=f2e998]: Plaza
+            - generic [ref=f2e999]: Kilogramo
+      - link "Tazas 16 onzas Desechables Paquete" [ref=f2e1000] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/102/registrar
+        - img [ref=f2e1003]
+        - generic [ref=f2e1007]:
+          - paragraph [ref=f2e1008]: Tazas 16 onzas
+          - generic [ref=f2e1009]:
+            - generic [ref=f2e1010]: Desechables
+            - generic [ref=f2e1011]: Paquete
+      - link "Tazas 24 onzas Desechables Paquete" [ref=f2e1012] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/100/registrar
+        - img [ref=f2e1015]
+        - generic [ref=f2e1019]:
+          - paragraph [ref=f2e1020]: Tazas 24 onzas
+          - generic [ref=f2e1021]:
+            - generic [ref=f2e1022]: Desechables
+            - generic [ref=f2e1023]: Paquete
+      - link "Tazas 24 onzas Desechables Paquete" [ref=f2e1024] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/101/registrar
+        - img [ref=f2e1027]
+        - generic [ref=f2e1031]:
+          - paragraph [ref=f2e1032]: Tazas 24 onzas
+          - generic [ref=f2e1033]:
+            - generic [ref=f2e1034]: Desechables
+            - generic [ref=f2e1035]: Paquete
+      - link "Tocino Cerdo Kilogramo" [ref=f2e1036] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/67/registrar
+        - img [ref=f2e1039]
+        - generic [ref=f2e1043]:
+          - paragraph [ref=f2e1044]: Tocino
+          - generic [ref=f2e1045]:
+            - generic [ref=f2e1046]: Cerdo
+            - generic [ref=f2e1047]: Kilogramo
+      - link "Tomate Plaza Kilogramo" [ref=f2e1048] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/40/registrar
+        - img [ref=f2e1051]
+        - generic [ref=f2e1055]:
+          - paragraph [ref=f2e1056]: Tomate
+          - generic [ref=f2e1057]:
+            - generic [ref=f2e1058]: Plaza
+            - generic [ref=f2e1059]: Kilogramo
+      - link "Varios Varios Ninguno" [ref=f2e1060] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/65/registrar
+        - img [ref=f2e1063]
+        - generic [ref=f2e1067]:
+          - paragraph [ref=f2e1068]: Varios
+          - generic [ref=f2e1069]:
+            - generic [ref=f2e1070]: Varios
+            - generic [ref=f2e1071]: Ninguno
+      - link "Vasos 9 onzas Desechables Caja" [ref=f2e1072] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/103/registrar
+        - img [ref=f2e1075]
+        - generic [ref=f2e1079]:
+          - paragraph [ref=f2e1080]: Vasos 9 onzas
+          - generic [ref=f2e1081]:
+            - generic [ref=f2e1082]: Desechables
+            - generic [ref=f2e1083]: Caja
+      - link "Yuca Plaza Paquete" [ref=f2e1084] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/44/registrar
+        - img [ref=f2e1087]
+        - generic [ref=f2e1091]:
+          - paragraph [ref=f2e1092]: Yuca
+          - generic [ref=f2e1093]:
+            - generic [ref=f2e1094]: Plaza
+            - generic [ref=f2e1095]: Paquete
+      - link "Yuca precocida Salsamentaria Kilogramo" [ref=f2e1096] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/82/registrar
+        - img [ref=f2e1099]
+        - generic [ref=f2e1103]:
+          - paragraph [ref=f2e1104]: Yuca precocida
+          - generic [ref=f2e1105]:
+            - generic [ref=f2e1106]: Salsamentaria
+            - generic [ref=f2e1107]: Kilogramo
+      - link "Zanahoria Plaza Kilogramo" [ref=f2e1108] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado/38/registrar
+        - img [ref=f2e1111]
+        - generic [ref=f2e1115]:
+          - paragraph [ref=f2e1116]: Zanahoria
+          - generic [ref=f2e1117]:
+            - generic [ref=f2e1118]: Plaza
+            - generic [ref=f2e1119]: Kilogramo

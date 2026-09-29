@@ -56,7 +56,7 @@
             <h2 class="text-3xl font-bold">Heading H2</h2>
             <h3 class="text-2xl font-semibold">Heading H3</h3>
             <h4 class="text-xl font-semibold">Heading H4</h4>
-            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">Sopas y Sopitas (Caveat)</p>
+            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">Papas del Alma (Caveat)</p>
             <p class="text-base text-cream-700 dark:text-cream-300">
                 Lorem ipsum dolor sit amet consectetur. <strong>Bold inline</strong>, <em>italica</em>, <a href="#" class="text-primary-700 dark:text-primary-300 underline">enlace</a>.
             </p>
@@ -284,7 +284,7 @@
         </x-card>
 
         <x-accordion :items="[
-            ['title' => '¿Que tipos de comida ofrecen?', 'content' => 'Comida casera, sopas, y opciones saludables.'],
+            ['title' => '¿Que tipos de comida ofrecen?', 'content' => 'Papas rellenas, papas fritas, combos y adiciones.'],
             ['title' => '¿Hacen domicilios?', 'content' => 'Si, en toda la ciudad con tarifa segun zona.'],
             ['title' => '¿Aceptan reservas?', 'content' => 'Si, llamar con al menos 4 horas de anticipacion.'],
         ]" />
@@ -377,7 +377,7 @@
             <x-chart
                 type="donut"
                 :series="[44, 55, 13, 33]"
-                :options="['labels' => ['Sopas', 'Cremas', 'Caldos', 'Otros'], 'legend' => ['position' => 'bottom']]"
+                :options="['labels' => ['Papas', 'Combos', 'Bebidas', 'Otros'], 'legend' => ['position' => 'bottom']]"
                 :height="280"
             />
         </x-card>
@@ -401,7 +401,7 @@
 <x-section title="Estado vacio" id="empty">
     <x-card>
         <x-empty-state
-            title="Sin sopas en el menu"
+            title="Sin papas en el menu"
             description="Cuando agregues platos al catalogo apareceran aqui."
         >
             <x-slot:actions>

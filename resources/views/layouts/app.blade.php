@@ -4,20 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sopas y Sopitas') }}@hasSection('title') · @yield('title')@endif</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any"/>
+    <link rel="apple-touch-icon" href="{{ asset('images/icon-192.png') }}"/>
+    <meta name="theme-color" content="#e4550a"/>
+    <title>{{ config('app.name', 'Papas del Alma') }}@hasSection('title') · @yield('title')@endif</title>
 
     {{-- Theme bootstrap (anti-FOUC) --}}
     <script>
         (function () {
             var serverTheme = @json(Auth::user()?->theme);
-            var stored = localStorage.getItem('sopas-theme');
+            var stored = localStorage.getItem('papas-theme');
             var preference = stored || (serverTheme ? serverTheme : 'auto');
             var resolved = preference;
             if (preference === 'auto') {
                 resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
-            if (!stored && serverTheme) localStorage.setItem('sopas-theme', serverTheme);
+            if (!stored && serverTheme) localStorage.setItem('papas-theme', serverTheme);
             var html = document.documentElement;
             html.setAttribute('data-theme', resolved);
             html.setAttribute('data-bs-theme', resolved);
@@ -28,8 +30,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body x-data="{ sidebarCollapsed: localStorage.getItem('sopas-sidebar-collapsed') === '1' }"
-      x-init="$watch('sidebarCollapsed', v => localStorage.setItem('sopas-sidebar-collapsed', v ? '1' : '0'))"
+<body x-data="{ sidebarCollapsed: localStorage.getItem('papas-sidebar-collapsed') === '1' }"
+      x-init="$watch('sidebarCollapsed', v => localStorage.setItem('papas-sidebar-collapsed', v ? '1' : '0'))"
       class="min-h-screen bg-cream-50 dark:bg-surface-dark text-cream-900 dark:text-cream-100 font-sans antialiased">
 
     {{-- ============== SIDEBAR (drawer mobile + fijo/colapsable desktop) ============== --}}
@@ -40,10 +42,10 @@
         {{-- Brand --}}
         <div class="px-6 py-5 flex items-center gap-3 border-b border-cream-200 dark:border-cream-800">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sopas y Sopitas') }}" class="h-10 w-10 object-contain shrink-0">
+                <img src="{{ asset('images/logo.jpg') }}" alt="{{ config('app.name', 'Papas del Alma') }}" class="h-11 w-11 rounded-xl object-cover shrink-0 shadow-sm ring-1 ring-primary-600/20 transition-transform group-hover:scale-105">
                 <span class="flex flex-col leading-tight">
-                    <span class="font-display font-bold text-cream-900 dark:text-cream-50">{{ config('app.name', 'Sopas y Sopitas') }}</span>
-                    <span class="brand-script text-xs text-primary-600 dark:text-primary-300 -mt-0.5">comida con cariño</span>
+                    <span class="font-display font-bold text-cream-900 dark:text-cream-50">{{ config('app.name', 'Papas del Alma') }}</span>
+                    <span class="brand-script text-xs text-primary-600 dark:text-primary-300 -mt-0.5">hechas con el alma</span>
                 </span>
             </a>
         </div>

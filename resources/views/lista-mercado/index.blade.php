@@ -162,8 +162,8 @@
                     text: 'Continúa con el siguiente lugar.',
                     timer: 2500,
                     showConfirmButton: false,
-                    background: isDark ? '#1a1610' : '#fffdfa',
-                    color: isDark ? '#fbf5e9' : '#3e2723',
+                    background: isDark ? '#1b120a' : '#fffaf3',
+                    color: isDark ? '#fcf2e3' : '#3a2718',
                 });
             });
         </script>

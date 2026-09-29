@@ -31,7 +31,7 @@ window.makeChart = (selector, options) => {
     if (isDark()) {
         options.theme = { ...(options.theme || {}), mode: 'dark' };
         options.chart = { ...(options.chart || {}), background: 'transparent' };
-        options.grid = { ...(options.grid || {}), borderColor: '#75605a' };
+        options.grid = { ...(options.grid || {}), borderColor: '#735a48' };
     }
 
     const chart = new ApexCharts(el, options);
@@ -56,12 +56,12 @@ window.makeChart = (selector, options) => {
         ro.observe(container);
     }
 
-    window.addEventListener('sopas:theme-changed', (e) => {
+    window.addEventListener('papas:theme-changed', (e) => {
         const dark = e.detail.theme === 'dark';
         chart.updateOptions({
             theme: { mode: dark ? 'dark' : 'light' },
             chart: { background: 'transparent' },
-            grid: { borderColor: dark ? '#75605a' : '#efdfc0' },
+            grid: { borderColor: dark ? '#735a48' : '#ecd6b3' },
         }, false, false);
     });
 
@@ -147,18 +147,18 @@ const initTomSelect = (root = document) => {
 
 // Surface JS errors visibly (en consola, no romper UI silenciosamente)
 window.addEventListener('error', (e) => {
-    console.error('[sopas] error global:', e.error || e.message);
+    console.error('[papas] error global:', e.error || e.message);
 });
 window.addEventListener('unhandledrejection', (e) => {
-    console.error('[sopas] promise rechazada:', e.reason);
+    console.error('[papas] promise rechazada:', e.reason);
 });
 
 const initPreline = () => {
     if (window.HSStaticMethods?.autoInit) {
         try { window.HSStaticMethods.autoInit(); }
-        catch (err) { console.error('[sopas] Preline autoInit fallo:', err); }
+        catch (err) { console.error('[papas] Preline autoInit fallo:', err); }
     } else {
-        console.warn('[sopas] window.HSStaticMethods no esta disponible');
+        console.warn('[papas] window.HSStaticMethods no esta disponible');
     }
 };
 
@@ -257,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showCancelButton: true,
             confirmButtonText: opts.confirmButtonText || 'Sí, continuar',
             cancelButtonText: opts.cancelButtonText || 'Cancelar',
-            confirmButtonColor: opts.confirmButtonColor || '#aab808',
-            cancelButtonColor: '#75605a',
-            background: isDark ? '#1a1610' : '#fffdfa',
-            color: isDark ? '#fbf5e9' : '#3e2723',
+            confirmButtonColor: opts.confirmButtonColor || '#e4550a',
+            cancelButtonColor: '#735a48',
+            background: isDark ? '#1b120a' : '#fffaf3',
+            color: isDark ? '#fcf2e3' : '#3a2718',
             customClass: { popup: 'rounded-2xl' },
         }).then((result) => {
             if (result.isConfirmed && form) form.submit();
@@ -276,8 +276,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showConfirmButton: false,
             timer: 3500,
             timerProgressBar: true,
-            background: document.documentElement.classList.contains('dark') ? '#1a1610' : '#fffdfa',
-            color: document.documentElement.classList.contains('dark') ? '#fbf5e9' : '#3e2723',
+            background: document.documentElement.classList.contains('dark') ? '#1b120a' : '#fffaf3',
+            color: document.documentElement.classList.contains('dark') ? '#fcf2e3' : '#3a2718',
         });
         Toast.fire({ icon, title });
     };

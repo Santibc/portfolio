@@ -1,0 +1,1688 @@
+[   15212ms] [WARNING] Alpine Expression Error: Invalid or unexpected token
+
+Expression: "{
+            rows: @js($desglosePorItem),
+            sortKey: 'total', sortAsc: false,
+            page: 1, perPage: 25,
+            sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get sorted() {
+                const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+                return [...this.rows].sort((a, b) => {
+                    const x = a[k], y = b[k];
+                    return (typeof x === 'number' && typeof y === 'number')
+                        ? (x - y) * dir
+                        : String(x).localeCompare(String(y), 'es', { numeric: true }) * dir;
+                });
+            },
+            get effPerPage() { return this.perPage === 0 ? Math.max(this.sorted.length, 1) : this.perPage; },
+            get pages() { return Math.max(1, Math.ceil(this.sorted.length / this.effPerPage)); },
+            get pageRows() { const s = (this.page - 1) * this.effPerPage; return this.sorted.slice(s, s + this.effPerPage); },
+            get totalCantidad() { return this.rows.reduce((a, r) => a + r.cantidad, 0); },
+            get totalTotal() { return this.rows.reduce((a, r) => a + r.total, 0); },
+            fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
+        }"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15217ms] [WARNING] Alpine Expression Error: Invalid or unexpected token
+
+Expression: "{
+            ventas: @js($ventasData),
+            csrf: 'QCTnic32KmOJX22PB1kYUcd20AZ3rGd8HUFBvmeW',
+            open: null,
+            sortKey: 'ts', sortAsc: false,
+            page: 1, perPage: 25,
+            sort(k) { this.sortKey === k ? (this.sortAsc = !this.sortAsc) : (this.sortKey = k, this.sortAsc = true); this.page = 1; },
+            get sorted() {
+                const k = this.sortKey, dir = this.sortAsc ? 1 : -1;
+                return [...this.ventas].sort((a, b) => {
+                    const x = a[k], y = b[k];
+                    return (typeof x === 'number' && typeof y === 'number')
+                        ? (x - y) * dir
+                        : String(x).localeCompare(String(y), 'es', { numeric: true }) * dir;
+                });
+            },
+            get effPerPage() { return this.perPage === 0 ? Math.max(this.sorted.length, 1) : this.perPage; },
+            get pages() { return Math.max(1, Math.ceil(this.sorted.length / this.effPerPage)); },
+            get pageRows() { const s = (this.page - 1) * this.effPerPage; return this.sorted.slice(s, s + this.effPerPage); },
+            fmt(n) { return new Intl.NumberFormat('es-CO').format(n); },
+            confirmDelete(e) { if (!confirm('¿Eliminar esta venta?')) e.preventDefault(); },
+        }"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: rows is not defined
+
+Expression: "`(${rows.length})`"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'nombre'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'cantidad'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'total'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: pageRows is not defined
+
+Expression: "pageRows"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: rows is not defined
+
+Expression: "rows.length === 0"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: rows is not defined
+
+Expression: "rows.length > 0"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: fmt is not defined
+
+Expression: "fmt(totalCantidad)"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: fmt is not defined
+
+Expression: "'$ ' + fmt(totalTotal)"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: rows is not defined
+
+Expression: "rows.length > 0"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15220ms] [WARNING] Alpine Expression Error: perPage is not defined
+
+Expression: "perPage"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "`Página ${page} de ${pages}`"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "page === 1"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "page === pages"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: ventas is not defined
+
+Expression: "`(${ventas.length})`"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'ts'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'cajero'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'items_count'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'total'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortKey is not defined
+
+Expression: "sortKey === 'cambio'"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15221ms] [WARNING] Alpine Expression Error: pageRows is not defined
+
+Expression: "pageRows"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: ventas is not defined
+
+Expression: "ventas.length === 0"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: ventas is not defined
+
+Expression: "ventas.length > 0"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: perPage is not defined
+
+Expression: "perPage"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "`Página ${page} de ${pages}`"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "page === 1"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15222ms] [WARNING] Alpine Expression Error: page is not defined
+
+Expression: "page === pages"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15236ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15237ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15237ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15237ms] [WARNING] Alpine Expression Error: sortAsc is not defined
+
+Expression: "!sortAsc"
+
+ JSHandle@node @ http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:425
+[   15242ms] [ERROR] [sopas] error global: SyntaxError: Invalid or unexpected token
+    at new AsyncFunction (<anonymous>)
+    at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19)
+    at generateFunctionFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:490:14)
+    at generateEvaluatorFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:495:14)
+    at normalEvaluator (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:457:109)
+    at evaluateLater (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:447:10)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:3)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5) @ http://[::1]:5173/resources/js/app.js:146
+[   15242ms] SyntaxError: Invalid or unexpected token
+    at new AsyncFunction (<anonymous>)
+    at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19)
+    at generateFunctionFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:490:14)
+    at generateEvaluatorFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:495:14)
+    at normalEvaluator (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:457:109)
+    at evaluateLater (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:447:10)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:3)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5)
+[   15244ms] [ERROR] [sopas] error global: SyntaxError: Invalid or unexpected token
+    at new AsyncFunction (<anonymous>)
+    at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19)
+    at generateFunctionFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:490:14)
+    at generateEvaluatorFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:495:14)
+    at normalEvaluator (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:457:109)
+    at evaluateLater (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:447:10)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:3)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5) @ http://[::1]:5173/resources/js/app.js:146
+[   15244ms] SyntaxError: Invalid or unexpected token
+    at new AsyncFunction (<anonymous>)
+    at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19)
+    at generateFunctionFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:490:14)
+    at generateEvaluatorFromString (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:495:14)
+    at normalEvaluator (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:457:109)
+    at evaluateLater (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:447:10)
+    at evaluate (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:443:3)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2943:15)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+    at stopDeferring (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:592:5)
+[   15244ms] [ERROR] [sopas] error global: ReferenceError: rows is not defined
+    at [Alpine] `(${rows.length})` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:36)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15244ms] ReferenceError: rows is not defined
+    at [Alpine] `(${rows.length})` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:36)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15245ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'nombre' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15245ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'nombre' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15245ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15246ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15245ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15247ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15245ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cantidad' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15248ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cantidad' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15246ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15250ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15246ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15250ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15246ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'total' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15250ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'total' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15246ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15250ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15250ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: pageRows is not defined
+    at [Alpine] pageRows (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at loop (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3043:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:3) @ http://[::1]:5173/resources/js/app.js:146
+[   15251ms] ReferenceError: pageRows is not defined
+    at [Alpine] pageRows (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at loop (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3043:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:3)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: rows is not defined
+    at [Alpine] rows.length === 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15251ms] ReferenceError: rows is not defined
+    at [Alpine] rows.length === 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: rows is not defined
+    at [Alpine] rows.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15255ms] ReferenceError: rows is not defined
+    at [Alpine] rows.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: fmt is not defined
+    at [Alpine] fmt(totalCantidad) (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:16)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: fmt is not defined
+    at [Alpine] fmt(totalCantidad) (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:16)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15247ms] [ERROR] [sopas] error global: ReferenceError: fmt is not defined
+    at [Alpine] '$ ' + fmt(totalTotal) (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:16)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: fmt is not defined
+    at [Alpine] '$ ' + fmt(totalTotal) (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:16)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15248ms] [ERROR] [sopas] error global: ReferenceError: rows is not defined
+    at [Alpine] rows.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: rows is not defined
+    at [Alpine] rows.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15248ms] [ERROR] [sopas] error global: ReferenceError: perPage is not defined
+    at [Alpine] perPage (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at getValue (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2730:5)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2789:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2788:3) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: perPage is not defined
+    at [Alpine] perPage (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at getValue (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2730:5)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2789:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2788:3)
+[   15248ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] `Página ${page} de ${pages}` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:42)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: page is not defined
+    at [Alpine] `Página ${page} de ${pages}` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:42)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15248ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] page === 1 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: page is not defined
+    at [Alpine] page === 1 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15248ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] page === pages (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: page is not defined
+    at [Alpine] page === pages (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15249ms] [ERROR] [sopas] error global: ReferenceError: ventas is not defined
+    at [Alpine] `(${ventas.length})` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:36)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15256ms] ReferenceError: ventas is not defined
+    at [Alpine] `(${ventas.length})` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:36)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15249ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'ts' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'ts' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15249ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15249ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15249ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cajero' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cajero' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'items_count' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'items_count' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15257ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15250ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'total' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15258ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'total' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15251ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15251ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15251ms] [ERROR] [sopas] error global: ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cambio' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: sortKey is not defined
+    at [Alpine] sortKey === 'cambio' (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15251ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15252ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15252ms] [ERROR] [sopas] error global: ReferenceError: pageRows is not defined
+    at [Alpine] pageRows (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at loop (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3043:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:3) @ http://[::1]:5173/resources/js/app.js:146
+[   15265ms] ReferenceError: pageRows is not defined
+    at [Alpine] pageRows (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at loop (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3043:3)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3028:3)
+[   15252ms] [ERROR] [sopas] error global: ReferenceError: ventas is not defined
+    at [Alpine] ventas.length === 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: ventas is not defined
+    at [Alpine] ventas.length === 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15252ms] [ERROR] [sopas] error global: ReferenceError: ventas is not defined
+    at [Alpine] ventas.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: ventas is not defined
+    at [Alpine] ventas.length > 0 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15252ms] [ERROR] [sopas] error global: ReferenceError: perPage is not defined
+    at [Alpine] perPage (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at getValue (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2730:5)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2789:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2788:3) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: perPage is not defined
+    at [Alpine] perPage (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at getValue (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2730:5)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2789:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2788:3)
+[   15253ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] `Página ${page} de ${pages}` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:42)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: page is not defined
+    at [Alpine] `Página ${page} de ${pages}` (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:42)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2875:5
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2874:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15253ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] page === 1 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: page is not defined
+    at [Alpine] page === 1 (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15253ms] [ERROR] [sopas] error global: ReferenceError: page is not defined
+    at [Alpine] page === pages (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: page is not defined
+    at [Alpine] page === pages (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at handler2 (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:2912:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15254ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15254ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15266ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15254ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15254ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15255ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15255ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15256ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15256ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15267ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15256ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15275ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15256ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15275ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15257ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15275ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15257ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15275ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15257ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15276ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15257ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15276ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15258ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15276ms] ReferenceError: sortAsc is not defined
+    at [Alpine] sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:32)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)
+[   15258ms] [ERROR] [sopas] error global: ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46) @ http://[::1]:5173/resources/js/app.js:146
+[   15276ms] ReferenceError: sortAsc is not defined
+    at [Alpine] !sortAsc (eval at safeAsyncFunction (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:477:19), <anonymous>:3:33)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:502:21
+    at tryCatch (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:416:12)
+    at http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:17
+    at reactiveEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1746:16)
+    at Object.effect2 [as effect] (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:1721:5)
+    at effect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:51:33)
+    at wrappedEffect (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:67:27)
+    at Function.<anonymous> (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:3008:3)
+    at flushHandlers (http://[::1]:5173/node_modules/.vite/deps/alpinejs.js?v=415d4dfb:587:46)

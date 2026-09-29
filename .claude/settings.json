@@ -29,7 +29,10 @@
       "PowerShell($p = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue; if \\($p\\) { \"PORT 8000 LISTENING pid=$\\($p.OwningProcess\\)\" } else { \"PORT 8000 NOT LISTENING\" })",
       "Bash(Get-ChildItem -Path \"f:\\\\xamppPro80\\\\htdocs\\\\sopasysopitas\\\\routes\" -Name)",
       "Bash(Get-ChildItem -Path \"f:\\\\xamppPro80\\\\htdocs\\\\sopasysopitas\" -Recurse -Include \"*productos-mercado*\", \"*registro-mercado*\", \"*mercado*\" -ErrorAction SilentlyContinue)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(./vendor/bin/pint --dirty)",
+      "Bash(f:/xamppPro80/mysql/bin/mysql.exe -u root -h 127.0.0.1 sopas_prod_20260619 -e \"SHOW TABLES;\")",
+      "Bash(git -C f:/xamppPro80/htdocs/sopasysopitas grep -rn \"registrar\" -- routes/web.php)"
     ],
     "additionalDirectories": [
       "f:\\xamppPro80\\mysql\\bin",

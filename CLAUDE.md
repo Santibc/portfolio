@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
+Laravel 9 app del restaurante **Papas del Alma** (creada a partir de la base "Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
 
 **Tech Stack:**
 - Laravel 9 (PHP 8.0+), Vite 4 (everything is bundled — zero CDN in production)
@@ -18,7 +18,7 @@ Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` 
 
 ## RULE 0 — NUNCA borres la base de datos ni datos del usuario (crítico)
 
-**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `sopasysopitas` (o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
+**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `papasdelalma` (o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
 
 Prohibido sin permiso explícito:
 - `php artisan migrate:fresh`, `migrate:fresh --seed`, `migrate:refresh`, `migrate:reset`, `db:wipe`.
@@ -61,6 +61,10 @@ php artisan config:clear && php artisan route:clear && php artisan view:clear
 ---
 
 ## Despliegue a producción (Hostinger shared hosting)
+
+> **⚠️ Pendiente (Papas del Alma):** esta sección aún describe el despliegue de *Sopas y Sopitas*.
+> Papas del Alma usará el mismo servidor/SSH pero con **otro dominio, ruta, rama y BD** — actualizar
+> estos datos cuando se configure el hosting. No hacer deploy con estos valores.
 
 Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
 `sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
@@ -179,7 +183,7 @@ Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_perm
 Every new module, view and component MUST work correctly in both modes. The layout already wires el mecanismo — el codigo nuevo debe respetarlo, no reinventarlo.
 
 **Como se aplica el tema:**
-- El script anti-FOUC en `layouts/app.blade.php` y `layouts/guest.blade.php` lee la preferencia (`users.theme` + `localStorage['sopas-theme']`) y setea en `<html>`:
+- El script anti-FOUC en `layouts/app.blade.php` y `layouts/guest.blade.php` lee la preferencia (`users.theme` + `localStorage['papas-theme']`) y setea en `<html>`:
   - `data-theme="light|dark"` (atributo custom)
   - `data-bs-theme="light|dark"` (legacy compat)
   - `class="dark"` (Tailwind `darkMode: 'class'`)
@@ -192,24 +196,24 @@ Every new module, view and component MUST work correctly in both modes. The layo
 4. Para CSS custom: scope con `[data-theme="dark"] .your-class { ... }`. No crees una hoja oscura aparte.
 5. **Verifica en ambos modos** antes de marcar la tarea completada — toggle del header, revisa contrast, hovers, modales, tablas, forms, estados disabled. Si no puedes toggle en navegador, dilo explicitamente.
 6. Imagenes/iconos: usa SVG con `stroke="currentColor"` o `fill="currentColor"` para que hereden color (los Lucide ya hacen esto). Si necesitas una imagen distinta para dark, swap via `[data-theme="dark"] img { content: url(...) }`.
-7. JS dinamico que inserta DOM debe usar las mismas clases Tailwind/componentes — no leer `localStorage['sopas-theme']` para ramificar estilos en JS, que la cascada CSS lo resuelva.
+7. JS dinamico que inserta DOM debe usar las mismas clases Tailwind/componentes — no leer `localStorage['papas-theme']` para ramificar estilos en JS, que la cascada CSS lo resuelva.
 
 ---
 
-## RULE 3 — Brand palette (oliva / camel / beige)
+## RULE 3 — Brand palette (naranja / dorado papa / café) — sacada del logo
 
 Paleta del proyecto, definida en `tailwind.config.js` `theme.extend.colors`. **Usa los tokens, no hex inline.**
 
 | Token | Light | Dark | Uso |
 |---|---|---|---|
-| `primary-500` | `#aab808` (oliva) | `#c8d62e` (auto) | CTAs, links activos, sidebar item activo, badges primary |
-| `primary-700` | `#838c00` | — | hover/active de primary |
-| `primary-300` | `#c8d62e` | — | gradientes, ilustraciones |
-| `accent-500` | `#b89875` (camel) | — | header gradient, badges secondary |
-| `accent-200` | `#e2caa1` (wheat) | — | fondos suaves cálidos |
-| `cream-50/100/200` | tonos beige claros | — | surfaces, cards, backgrounds |
-| `cream-900/950` | café oscuro | — | textos sobre fondo claro / fondos en dark |
-| `surface.DEFAULT` | `#fffdfa` | `#1a1610` | body background |
+| `primary-500` | `#e4550a` (naranja del logo) | `primary-300/400` | CTAs, links activos, sidebar item activo, badges primary |
+| `primary-600/700` | `#c9460a` / `#a6360c` | — | hover/active de primary, degradados |
+| `primary-300` | `#fda571` | — | gradientes, ilustraciones, texto primary en dark |
+| `accent-500` | `#d8a654` (dorado papa) | — | badges secondary, acentos cálidos |
+| `accent-700` | `#a4672a` (caramelo) | — | texto/acentos dorados sobre fondo claro |
+| `cream-50/100/200` | cremas (`#fffaf3` → `#f5e6cd`) | — | surfaces, cards, backgrounds |
+| `cream-700…950` | café tostado (`#735a48` → `#22160c`) | — | textos sobre fondo claro / fondos en dark |
+| `surface.DEFAULT` | `#fffaf3` | `#1b120a` | body background |
 
 Tailwind tip: para tonos complementarios reach for `amber-*`, `stone-*`, `neutral-*` (food-app vibe). Para semantica: `emerald` (success), `rose` (danger), `amber` (warning), `sky` (info).
 

@@ -93,7 +93,7 @@ class BackfillImagenesFaltantesSeeder extends Seeder
             'http' => [
                 'timeout'         => 12,
                 'follow_location' => 1,
-                'user_agent'      => 'SopasYSopitas/1.0 (https://github.com/sopas; contact@sopas.local)',
+                'user_agent'      => 'PapasDelAlma/1.0 (https://github.com/Santibc; contact@papasdelalma.local)',
             ],
         ]);
 
@@ -154,7 +154,7 @@ class BackfillImagenesFaltantesSeeder extends Seeder
             'http' => [
                 'timeout'         => 10,
                 'follow_location' => 1,
-                'user_agent'      => 'SopasYSopitas/1.0 (https://github.com/sopas; contact@sopas.local)',
+                'user_agent'      => 'PapasDelAlma/1.0 (https://github.com/Santibc; contact@papasdelalma.local)',
                 'header'          => "Accept: application/json\r\n",
             ],
         ]);

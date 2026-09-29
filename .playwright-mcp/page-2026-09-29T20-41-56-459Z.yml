@@ -1,0 +1,121 @@
+- generic [active] [ref=f1e1]:
+  - complementary [ref=f1e2]:
+    - link "Papas del Alma Papas del Alma hechas con el alma" [ref=f1e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8010/dashboard
+      - img "Papas del Alma" [ref=f1e5]
+      - generic [ref=f1e6]:
+        - generic [ref=f1e7]: Papas del Alma
+        - generic [ref=f1e8]: hechas con el alma
+    - navigation [ref=f1e9]:
+      - paragraph [ref=f1e10]: Principal
+      - link "Inicio" [ref=f1e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8010/dashboard
+      - link "Consolidado" [ref=f1e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8010/consolidado
+      - button "Mercado" [ref=f1e23] [cursor=pointer]
+      - button "Caja" [ref=f1e34] [cursor=pointer]
+      - button "Nómina" [ref=f1e42] [cursor=pointer]
+      - button "Gastos fijos" [ref=f1e50] [cursor=pointer]
+      - paragraph [ref=f1e57]: Cuenta
+      - link "Mi perfil" [ref=f1e58] [cursor=pointer]:
+        - /url: http://127.0.0.1:8010/profile
+      - paragraph [ref=f1e72]: Sistema
+      - link "Componentes UI" [ref=f1e73] [cursor=pointer]:
+        - /url: http://127.0.0.1:8010/components
+    - button "Cerrar sesion" [ref=f1e82] [cursor=pointer]
+  - banner [ref=f1e86]:
+    - generic [ref=f1e87]:
+      - button "Ocultar menu" [expanded] [ref=f1e88] [cursor=pointer]
+      - generic [ref=f1e90]:
+        - button "Cambiar tema" [ref=f1e91] [cursor=pointer]
+        - button "A Admin admin" [ref=f1e96] [cursor=pointer]:
+          - generic [ref=f1e97]: A
+          - generic [ref=f1e98]:
+            - generic [ref=f1e99]: Admin
+            - generic [ref=f1e100]: admin
+  - main [ref=f1e103]:
+    - generic [ref=f1e104]:
+      - generic [ref=f1e108]:
+        - generic [ref=f1e109]:
+          - paragraph [ref=f1e110]: ¡Hola de nuevo!
+          - heading "Bienvenido, Admin" [level=1] [ref=f1e111]
+          - paragraph [ref=f1e112]: Aqui esta el resumen de tu actividad.
+        - generic [ref=f1e113]:
+          - link "Mi perfil" [ref=f1e114] [cursor=pointer]:
+            - /url: http://127.0.0.1:8010/profile
+          - link "Ver componentes" [ref=f1e127] [cursor=pointer]:
+            - /url: http://127.0.0.1:8010/components
+      - generic [ref=f1e133]:
+        - generic [ref=f1e137]:
+          - paragraph [ref=f1e138]: Usuarios
+          - paragraph [ref=f1e139]: "1"
+          - paragraph [ref=f1e140]:
+            - text: +0%
+            - generic [ref=f1e144]: vs mes anterior
+        - generic [ref=f1e154]:
+          - paragraph [ref=f1e155]: Roles activos
+          - paragraph [ref=f1e156]: "1"
+        - generic [ref=f1e164]:
+          - paragraph [ref=f1e165]: Sesiones
+          - paragraph [ref=f1e166]: —
+        - generic [ref=f1e173]:
+          - paragraph [ref=f1e174]: Estado
+          - paragraph [ref=f1e175]: OK
+      - generic [ref=f1e179]:
+        - generic [ref=f1e181]:
+          - generic [ref=f1e183]:
+            - generic [ref=f1e184]:
+              - heading "Actividad de la semana" [level=3] [ref=f1e185]
+              - paragraph [ref=f1e186]: Datos de demostracion
+            - generic [ref=f1e187]: +12.4%
+          - generic [ref=f1e192]:
+            - 'application "area chart with 1 data series: Visitas" [ref=f1e193]':
+              - generic [ref=f1e202]:
+                - generic "Lun" [ref=f1e203]
+                - generic "Mar" [ref=f1e204]
+                - generic "Mie" [ref=f1e205]
+                - generic "Jue" [ref=f1e206]
+                - generic "Vie" [ref=f1e207]
+                - generic "Sab" [ref=f1e208]
+                - generic "Dom" [ref=f1e209]
+              - generic [ref=f1e211]:
+                - generic "35" [ref=f1e212]
+                - generic "30" [ref=f1e213]
+                - generic "25" [ref=f1e214]
+                - generic "20" [ref=f1e215]
+                - generic "15" [ref=f1e216]
+                - generic "10" [ref=f1e217]
+            - status [ref=f1e218]
+            - tooltip [aria-hidden]: ●
+        - generic [ref=f1e220]:
+          - heading "Ultimas acciones" [level=3] [ref=f1e222]
+          - list [ref=f1e223]:
+            - listitem [ref=f1e224]:
+              - generic [ref=f1e229]:
+                - paragraph [ref=f1e230]: Inicio de sesion
+                - paragraph [ref=f1e231]: hace 2 min
+            - listitem [ref=f1e232]:
+              - generic [ref=f1e238]:
+                - paragraph [ref=f1e239]: Perfil actualizado
+                - paragraph [ref=f1e240]: hace 1 hora
+            - listitem [ref=f1e241]:
+              - generic [ref=f1e246]:
+                - paragraph [ref=f1e247]: Nuevo usuario admin
+                - paragraph [ref=f1e248]: ayer
+      - generic [ref=f1e250]:
+        - heading "Accesos rapidos" [level=3] [ref=f1e251]
+        - generic [ref=f1e252]:
+          - link [ref=f1e253] [cursor=pointer]:
+            - /url: http://127.0.0.1:8010/profile
+            - generic [ref=f1e267]:
+              - paragraph [ref=f1e268]: Mi perfil
+              - paragraph [ref=f1e269]: Datos y foto
+          - link [ref=f1e273] [cursor=pointer]:
+            - /url: http://127.0.0.1:8010/components
+            - generic [ref=f1e280]:
+              - paragraph [ref=f1e281]: Componentes UI
+              - paragraph [ref=f1e282]: Showcase visual
+          - button [ref=f1e287] [cursor=pointer]:
+            - generic [ref=f1e292]:
+              - paragraph [ref=f1e293]: Cerrar sesion
+              - paragraph [ref=f1e294]: Salir de la cuenta

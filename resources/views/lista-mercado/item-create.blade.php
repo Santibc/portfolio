@@ -151,7 +151,7 @@
         </form>
 
         <form action="{{ route('lista-mercado.item.saltar', $item) }}" method="POST" class="mt-3"
-              onsubmit="event.preventDefault(); return swalConfirm(this, {title: '¿Saltar este producto?', text: 'Quedará como no comprado en este mercado.', icon: 'question', confirmButtonText: 'Sí, saltar', confirmButtonColor: '#75605a'});">
+              onsubmit="event.preventDefault(); return swalConfirm(this, {title: '¿Saltar este producto?', text: 'Quedará como no comprado en este mercado.', icon: 'question', confirmButtonText: 'Sí, saltar', confirmButtonColor: '#735a48'});">
             @csrf
             <x-button type="submit" variant="ghost" size="md" icon="skip-forward"
                       class="w-full justify-center text-cream-700 dark:text-cream-300">
@@ -171,8 +171,8 @@
             imageAlt: nombre,
             showConfirmButton: false,
             showCloseButton: true,
-            background: isDark ? '#1a1610' : '#fffdfa',
-            color: isDark ? '#fbf5e9' : '#3e2723',
+            background: isDark ? '#1b120a' : '#fffaf3',
+            color: isDark ? '#fcf2e3' : '#3a2718',
             customClass: {
                 popup: 'rounded-2xl',
                 image: 'rounded-xl max-h-[70vh] w-auto',

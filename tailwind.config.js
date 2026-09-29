@@ -17,62 +17,62 @@ export default {
       },
 
       colors: {
-        // Oliva / mostaza (primary)
+        // Naranja Papas del Alma (primary) — fondo del logo
         primary: {
-          50:  '#f7faea',
-          100: '#ecf2c1',
-          200: '#d6e285',
-          300: '#c8d62e',
-          400: '#bbcb1c',
-          500: '#aab808', // base
-          600: '#949f06',
-          700: '#838c00',
-          800: '#5d6716',
-          900: '#3d4310',
-          950: '#2a2e0a',
+          50:  '#fff5ed',
+          100: '#ffe8d4',
+          200: '#fecca8',
+          300: '#fda571',
+          400: '#f87a38',
+          500: '#e4550a', // base
+          600: '#c9460a',
+          700: '#a6360c',
+          800: '#852e12',
+          900: '#6c2912',
+          950: '#3b1207',
         },
 
-        // Camel / wheat (accent)
+        // Dorado papa / caramelo (accent)
         accent: {
-          50:  '#fbf6ed',
-          100: '#f4ead0',
-          200: '#e2caa1',
-          300: '#d2b27c',
-          400: '#c2a07d',
-          500: '#b89875', // base
-          600: '#a07e5b',
-          700: '#85664a',
-          800: '#6b513c',
-          900: '#574232',
-          950: '#2f2218',
+          50:  '#fcf8ef',
+          100: '#f8eed6',
+          200: '#f0dcab',
+          300: '#e7c57c',
+          400: '#dfb266',
+          500: '#d8a654', // base
+          600: '#c08937',
+          700: '#a4672a',
+          800: '#865227',
+          900: '#6e4424',
+          950: '#3d2311',
         },
 
-        // Cream / cafe / beige (surfaces)
+        // Crema / café tostado (surfaces y texto)
         cream: {
-          50:  '#fffdfa',
-          100: '#fbf5e9',
-          200: '#f5e9d2',
-          300: '#efdfc0',
-          400: '#e2caa1',
-          500: '#d7ccc8',
-          600: '#a1887f',
-          700: '#75605a',
-          800: '#4e342e',
-          900: '#3e2723',
-          950: '#241410',
+          50:  '#fffaf3',
+          100: '#fcf2e3',
+          200: '#f5e6cd',
+          300: '#ecd6b3',
+          400: '#dcbf98',
+          500: '#c9ad91',
+          600: '#9e8068',
+          700: '#735a48',
+          800: '#4f3a2c',
+          900: '#3a2718',
+          950: '#22160c',
         },
 
         // Surface base (light/dark)
         surface: {
-          DEFAULT: '#fffdfa',
-          dark: '#1a1610',
+          DEFAULT: '#fffaf3',
+          dark: '#1b120a',
         },
       },
 
       boxShadow: {
         soft: '0 4px 24px -4px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04)',
         'soft-lg': '0 12px 40px -8px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.06)',
-        glow: '0 0 0 4px rgb(170 184 8 / 0.15)',
+        glow: '0 0 0 4px rgb(228 85 10 / 0.18)',
       },
 
       borderRadius: {

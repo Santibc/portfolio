@@ -3,12 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sopas y Sopitas') }}</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any"/>
+    <link rel="apple-touch-icon" href="{{ asset('images/icon-192.png') }}"/>
+    <meta name="theme-color" content="#e4550a"/>
+    <title>{{ config('app.name', 'Papas del Alma') }}</title>
 
     <script>
         (function () {
-            var stored = localStorage.getItem('sopas-theme') || 'auto';
+            var stored = localStorage.getItem('papas-theme') || 'auto';
             var resolved = stored === 'auto'
                 ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                 : stored;
@@ -29,7 +31,7 @@
     <main class="relative h-full flex flex-col px-4 py-8 text-center">
         <div class="flex-1 flex flex-col items-center justify-center">
             <div data-reveal class="mb-8">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sopas y Sopitas') }}" class="max-w-[280px] h-auto" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo.jpg') }}" alt="{{ config('app.name', 'Papas del Alma') }}" class="w-full max-w-[280px] h-auto rounded-4xl shadow-soft-lg" onerror="this.style.display='none'">
             </div>
 
             <h1 data-reveal class="font-display text-4xl md:text-6xl font-extrabold tracking-tight text-cream-900 dark:text-cream-50 max-w-3xl">
@@ -58,7 +60,7 @@
         </div>
 
         <p data-reveal class="text-xs text-cream-600 dark:text-cream-400">
-            &copy; {{ date('Y') }} {{ config('app.name', 'Sopas y Sopitas') }}. Todos los derechos reservados.
+            &copy; {{ date('Y') }} {{ config('app.name', 'Papas del Alma') }}. Todos los derechos reservados.
         </p>
     </main>
 </body>
