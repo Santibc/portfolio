@@ -20,6 +20,9 @@ class DemoSeeder extends Seeder
             TrabajadoresTurnoSeeder::class,
             TurnosCajaVentasGastosSeeder::class,
             PagosAhorroSeeder::class,
+            // Inventario (después de las ventas demo, que no descuentan stock): Doritos/gaseosas
+            // con stock inicial y items del menú que los descuentan
+            InventarioDemoSeeder::class,
             // Nómina
             EmpleadoSeeder::class,
             NominaDemoSeeder::class,
