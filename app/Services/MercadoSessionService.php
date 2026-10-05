@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\DB;
 
 class MercadoSessionService
 {
+    public function __construct(private InventarioService $inventario)
+    {
+    }
+
     public function obtenerMercadoActivo(): ?Mercado
     {
         return Mercado::enProgreso()->latest('iniciado_en')->first();
@@ -80,6 +84,8 @@ class MercadoSessionService
                 'turno_caja_id'       => $turnoCajaId,
                 'observacion'         => $observacion,
             ]);
+
+            $this->inventario->registrarCompra($registro, $mercado->user_id);
 
             $item->update([
                 'estado'              => EstadoMercadoItem::Registrado->value,

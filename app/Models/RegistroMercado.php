@@ -55,6 +55,11 @@ class RegistroMercado extends Model
         return $this->hasOne(MercadoItem::class, 'registro_mercado_id');
     }
 
+    public function movimientoInventario(): HasOne
+    {
+        return $this->hasOne(MovimientoInventario::class, 'registro_mercado_id');
+    }
+
     public function getValorFormateadoAttribute(): string
     {
         return '$ ' . number_format((int) $this->valor, 0, ',', '.');
@@ -62,14 +67,7 @@ class RegistroMercado extends Model
 
     public function getCantidadFormateadaAttribute(): string
     {
-        $cantidad = (float) $this->cantidad;
-
-        // Sin decimales si es entero; con hasta 2 decimales (sin ceros de relleno) si no.
-        if (floor($cantidad) === $cantidad) {
-            return number_format($cantidad, 0, ',', '.');
-        }
-
-        return rtrim(rtrim(number_format($cantidad, 2, ',', '.'), '0'), ',');
+        return ProductoMercado::formatearCantidad((float) $this->cantidad);
     }
 
     public function scopeDeHoy(Builder $query): Builder

@@ -42,6 +42,11 @@ class MenuItem extends Model
         return $this->hasMany(VentaItem::class);
     }
 
+    public function componentes(): HasMany
+    {
+        return $this->hasMany(MenuItemComponente::class)->orderBy('orden')->orderBy('id');
+    }
+
     public function dias(): BelongsToMany
     {
         return $this->belongsToMany(DiaSemana::class, 'menu_dia', 'menu_item_id', 'dia_semana_id')

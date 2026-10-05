@@ -47,6 +47,11 @@
                     <x-badge variant="accent" icon="list">
                         Sugerido: {{ $sugerida }}
                     </x-badge>
+                    @if ($stock !== null)
+                        <x-badge :variant="$stock > 0 ? 'sky' : 'danger'" icon="package">
+                            Stock actual: {{ \App\Models\ProductoMercado::formatearCantidad($stock) }}
+                        </x-badge>
+                    @endif
                 </div>
             </div>
         </x-card>

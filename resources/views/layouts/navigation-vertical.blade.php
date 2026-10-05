@@ -31,7 +31,8 @@
         $mercadoActive = request()->routeIs('productos-mercado.*')
             || request()->routeIs('registro-mercado.*')
             || request()->routeIs('mercado-dashboard.*')
-            || request()->routeIs('lista-mercado.*');
+            || request()->routeIs('lista-mercado.*')
+            || request()->routeIs('inventario.*');
     @endphp
     <div x-data="{ open: @js($mercadoActive) }">
         <button type="button" @click="open = !open"
@@ -57,6 +58,13 @@
             <a href="{{ route('productos-mercado.index') }}" class="{{ $cls }}">
                 <x-icon name="shopping-basket" class="w-4 h-4" />
                 <span class="flex-1">Productos</span>
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+            </a>
+
+            @php [$active, $cls] = $navItem('inventario.index', 'package', 'Inventario', 'inventario.*'); @endphp
+            <a href="{{ route('inventario.index') }}" class="{{ $cls }}">
+                <x-icon name="package" class="w-4 h-4" />
+                <span class="flex-1">Inventario</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
             </a>
 

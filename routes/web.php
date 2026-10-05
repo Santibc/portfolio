@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AjusteInventarioController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ConceptoGastoFijoController;
 use App\Http\Controllers\DashboardCajaController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\DashboardNominaController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\GastoFijoController;
+use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\ListaMercadoController;
 use App\Http\Controllers\ListaMercadoItemController;
 use App\Http\Controllers\ListaMercadoPlantillaController;
@@ -82,6 +84,10 @@ Route::middleware('auth')->group(function () {
     Route::post('lista-mercado/plantilla/items', [ListaMercadoPlantillaController::class, 'storeItem'])->name('lista-mercado.plantilla.items.store');
     Route::patch('lista-mercado/plantilla/items/{item}', [ListaMercadoPlantillaController::class, 'updateItem'])->name('lista-mercado.plantilla.items.update');
     Route::delete('lista-mercado/plantilla/items/{item}', [ListaMercadoPlantillaController::class, 'destroyItem'])->name('lista-mercado.plantilla.items.destroy');
+
+    // === INVENTARIO (productos de mercado que controlan stock; caja descuenta al vender) ===
+    Route::get('inventario', [InventarioController::class, 'index'])->name('inventario.index');
+    Route::get('inventario/{producto}', [InventarioController::class, 'show'])->name('inventario.show');
 
     // === MÓDULO CAJA ===
     Route::resource('menu-items/tipos', TipoMenuItemController::class)
@@ -175,6 +181,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('gastos-fijos', GastoFijoController::class)
         ->except(['show'])
         ->parameters(['gastos-fijos' => 'gastoFijo']);
+
+    // === AJUSTES MANUALES DE INVENTARIO (stock inicial, conteo físico, mermas) ===
+    Route::post('inventario/{producto}/ajustes', [AjusteInventarioController::class, 'store'])->name('inventario.ajustes.store');
 
     // === DASHBOARD CONSOLIDADO (todos los módulos por método de pago) ===
     Route::get('/consolidado', [DashboardConsolidadoController::class, 'index'])->name('consolidado.index');

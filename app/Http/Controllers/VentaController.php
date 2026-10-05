@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateVentaRequest;
 use App\Models\MenuItem;
 use App\Models\MetodoPago;
 use App\Models\Venta;
+use App\Services\CatalogoCajaService;
 use App\Services\VentaService;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -15,18 +16,25 @@ use Illuminate\View\View;
 
 class VentaController extends Controller
 {
-    public function __construct(private VentaService $ventas)
-    {
+    public function __construct(
+        private VentaService $ventas,
+        private CatalogoCajaService $catalogo,
+    ) {
     }
 
     public function edit(Venta $venta): View
     {
-        $venta->load(['items', 'pagos.metodo', 'turno']);
-        $items   = MenuItem::activos()->with('tipo')->orderBy('orden')->orderBy('nombre')->get();
+        $venta->load(['items.movimientosInventario', 'items.menuItem.componentes.opciones', 'pagos.metodo', 'turno']);
+        $items   = MenuItem::activos()->with(['tipo', 'componentes.opciones'])->orderBy('orden')->orderBy('nombre')->get();
         $tipos   = $items->pluck('tipo')->unique('id')->sortBy('orden')->values();
         $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
 
-        return view('caja-dashboard.venta-edit', compact('venta', 'items', 'tipos', 'metodos'));
+        // El stock disponible al editar incluye lo que esta misma venta ya había descontado.
+        $menuPayload  = $this->catalogo->menuPayload($items);
+        $stockPayload = $this->catalogo->stockPayload($items, $this->catalogo->consumoDeVenta($venta));
+        $opcionesPorLinea = $venta->items->mapWithKeys(fn ($it) => [$it->id => $this->catalogo->opcionesElegidas($it)])->all();
+
+        return view('caja-dashboard.venta-edit', compact('venta', 'tipos', 'metodos', 'menuPayload', 'stockPayload', 'opcionesPorLinea'));
     }
 
     public function update(UpdateVentaRequest $request, Venta $venta): RedirectResponse

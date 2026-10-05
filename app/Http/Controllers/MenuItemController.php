@@ -7,8 +7,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreMenuItemRequest;
 use App\Http\Requests\UpdateMenuItemRequest;
 use App\Models\MenuItem;
+use App\Models\ProductoMercado;
 use App\Models\TipoMenuItem;
 use App\Services\MenuItemService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,7 +24,7 @@ class MenuItemController extends Controller
     public function index(Request $request): View
     {
         $tipoId = $request->integer('tipo_id') ?: null;
-        $query  = MenuItem::with('tipo')->orderBy('orden')->orderBy('nombre');
+        $query  = MenuItem::with('tipo')->withCount('componentes')->orderBy('orden')->orderBy('nombre');
         if ($tipoId !== null) {
             $query->where('tipo_id', $tipoId);
         }
@@ -35,8 +37,9 @@ class MenuItemController extends Controller
     public function create(): View
     {
         $tipos = TipoMenuItem::orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id');
+        $productosInventario = $this->productosInventario();
 
-        return view('menu-items.create', compact('tipos'));
+        return view('menu-items.create', compact('tipos', 'productosInventario'));
     }
 
     public function store(StoreMenuItemRequest $request): RedirectResponse
@@ -56,8 +59,13 @@ class MenuItemController extends Controller
     public function edit(MenuItem $menuItem): View
     {
         $tipos = TipoMenuItem::orderBy('orden')->orderBy('nombre')->pluck('nombre', 'id');
+        $menuItem->load('componentes.opciones');
 
-        return view('menu-items.edit', ['item' => $menuItem, 'tipos' => $tipos]);
+        return view('menu-items.edit', [
+            'item'                => $menuItem,
+            'tipos'               => $tipos,
+            'productosInventario' => $this->productosInventario(),
+        ]);
     }
 
     public function update(UpdateMenuItemRequest $request, MenuItem $menuItem): RedirectResponse
@@ -81,5 +89,11 @@ class MenuItemController extends Controller
         return redirect()
             ->route('menu-items.index')
             ->with('success', 'Item eliminado.');
+    }
+
+    /** Productos de mercado que pueden descontarse desde caja. */
+    private function productosInventario(): Collection
+    {
+        return ProductoMercado::conInventario()->orderBy('nombre')->get(['id', 'nombre', 'unidad_empaque']);
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidaComponentesInventario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMenuItemRequest extends FormRequest
 {
+    use ValidaComponentesInventario;
+
     public function authorize(): bool
     {
         return true;
@@ -22,6 +25,11 @@ class StoreMenuItemRequest extends FormRequest
             'imagen'  => ['nullable', 'mimes:jpeg,png,jpg,gif,webp,avif', 'max:2048'],
             'activo'  => ['nullable', 'boolean'],
             'orden'   => ['nullable', 'integer', 'min:0', 'max:65535'],
-        ];
+        ] + $this->reglasComponentes();
+    }
+
+    public function messages(): array
+    {
+        return $this->mensajesComponentes();
     }
 }

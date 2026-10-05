@@ -70,6 +70,13 @@
                         <span class="absolute top-2 right-2 inline-flex items-center font-semibold rounded-full bg-primary-500/95 text-white text-[10px] px-2 py-0.5 shadow-soft">
                             {{ $item->tipo?->nombre }}
                         </span>
+
+                        @if ($item->componentes_count > 0)
+                            <span class="absolute bottom-2 left-2 inline-flex items-center gap-1 font-semibold rounded-full bg-sky-600/95 text-white text-[10px] px-2 py-0.5 shadow-soft"
+                                  title="Descuenta inventario de mercado al venderse">
+                                <x-icon name="package" class="w-3 h-3" /> Inventario
+                            </span>
+                        @endif
                     </div>
 
                     <div class="p-3 flex-1 flex flex-col">
