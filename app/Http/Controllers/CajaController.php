@@ -10,6 +10,7 @@ use App\Http\Requests\StoreVentaRequest;
 use App\Models\MenuItem;
 use App\Models\MetodoPago;
 use App\Models\TurnoCaja;
+use App\Services\CatalogoCajaService;
 use App\Services\TurnoCajaService;
 use App\Services\VentaService;
 use DomainException;
@@ -21,6 +22,7 @@ class CajaController extends Controller
     public function __construct(
         private TurnoCajaService $turnos,
         private VentaService $ventas,
+        private CatalogoCajaService $catalogo,
     ) {}
 
     public function index(): View
@@ -33,14 +35,17 @@ class CajaController extends Controller
         $diaIso = (int) now()->dayOfWeekIso;
         $hayMenuDelDia = MenuItem::activos()->paraDia($diaIso)->exists();
 
-        $items = MenuItem::activos()->with('tipo')
+        $items = MenuItem::activos()->with(['tipo', 'componentes.opciones'])
             ->when($hayMenuDelDia, fn ($q) => $q->paraDia($diaIso))
             ->orderBy('orden')->orderBy('nombre')
             ->get();
         $tipos = $items->pluck('tipo')->unique('id')->sortBy('orden')->values();
         $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
 
-        return view('caja.index', compact('turno', 'items', 'tipos', 'metodos'));
+        $menuPayload = $this->catalogo->menuPayload($items);
+        $stockPayload = $this->catalogo->stockPayload($items);
+
+        return view('caja.index', compact('turno', 'tipos', 'metodos', 'menuPayload', 'stockPayload'));
     }
 
     public function abrir(AbrirTurnoRequest $request): RedirectResponse

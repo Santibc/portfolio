@@ -134,11 +134,12 @@ class DashboardCajaController extends Controller
             ->where('tipo', \App\Enums\TipoGasto::Turno)
             ->sum('valor');
 
-        // Desglose de items vendidos en el turno: agrupados por item de menú,
+        // Desglose de items vendidos en el turno: agrupados por item de menú y opción elegida
+        // (ej. "Dorilokos de pollo · Doritos picantes" aparte de "· Doritos normales"),
         // con la cantidad total y el total vendido (suma de subtotales).
         $desglosePorItem = $turno->ventas
             ->flatMap(fn ($venta) => $venta->items)
-            ->groupBy('menu_item_id')
+            ->groupBy(fn ($item) => $item->menu_item_id.'|'.$item->nombre_snapshot)
             ->map(fn ($items) => [
                 'nombre'   => $items->first()->nombre_snapshot,
                 'cantidad' => (int) $items->sum('cantidad'),

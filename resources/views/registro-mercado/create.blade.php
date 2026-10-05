@@ -48,6 +48,11 @@
                         <x-badge>{{ $producto->tipo->nombre }}</x-badge>
                     @endif
                     <span class="text-cream-600 dark:text-cream-400">{{ $producto->unidad_empaque }}</span>
+                    @if ($stock !== null)
+                        <x-badge :variant="$stock > 0 ? 'sky' : 'danger'" icon="package">
+                            Stock actual: {{ \App\Models\ProductoMercado::formatearCantidad($stock) }}
+                        </x-badge>
+                    @endif
                 </div>
             </div>
         </x-card>
