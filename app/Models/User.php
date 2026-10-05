@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RolUsuario;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -46,6 +47,24 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    /** Usuario de caja: solo puede abrir/cerrar turno y registrar ventas (ver RestringirRolVentas). */
+    public function esVendedor(): bool
+    {
+        return $this->hasRole('ventas') && ! $this->isAdmin();
+    }
+
+    /** Rol asignado desde el módulo de usuarios (null si no tiene ninguno conocido). */
+    public function rolUsuario(): ?RolUsuario
+    {
+        foreach (RolUsuario::cases() as $rol) {
+            if ($this->hasRole($rol->value)) {
+                return $rol;
+            }
+        }
+
+        return null;
     }
 
     public function getProfilePhotoUrlAttribute(): string
