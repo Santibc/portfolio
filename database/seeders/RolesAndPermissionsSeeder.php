@@ -14,6 +14,7 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $admin = Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'ventas']);
 
         $user = User::firstOrCreate(
             ['email' => 'admin@admin.com'],
