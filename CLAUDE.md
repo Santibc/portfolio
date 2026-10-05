@@ -140,12 +140,13 @@ Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
 ## Architecture
 
 ### Roles & autorización (estado real)
-- Single role: `admin` (seeded in `database/seeders/RolesAndPermissionsSeeder.php`). Default user: `admin@admin.com` / `12345678`. No hay ruta de registro.
-- `User` usa `HasRoles` (Spatie) + helper `isAdmin()`.
-- **La autorización hoy es solo a nivel de ruta.** `routes/web.php` tiene dos grupos:
+- Roles (`App\Enums\RolUsuario`, uno por usuario): `admin` (todo) y `ventas` (solo caja). Seeded en `database/seeders/RolesAndPermissionsSeeder.php`; además `UsuarioService` hace `Role::findOrCreate`, así que no hace falta seedear en producción. Default user: `admin@admin.com` / `12345678`. No hay registro: los usuarios se crean en el módulo **Usuarios** (`/usuarios`, solo admin; no deja quitar el último admin ni borrar usuarios con ventas/turnos).
+- `User` usa `HasRoles` (Spatie) + helpers `isAdmin()`, `esVendedor()`, `rolUsuario()`.
+- **Rol ventas:** lo restringe `App\Http\Middleware\RestringirRolVentas` (en el grupo `web` del Kernel, cubre todas las rutas): solo permite `caja.index`, `caja.turno.abrir|cerrar`, `caja.venta.store` y perfil; un GET a otra ruta redirige a la caja y cualquier otro método da 403. **Si agregas una ruta que ventas deba usar, agrégala a `RUTAS_PERMITIDAS`.** El sidebar le muestra solo la caja.
+- **La autorización es a nivel de ruta.** `routes/web.php` tiene dos grupos:
   - `middleware('auth')` — Caja, Mercado, Lista de mercado, Trabajadores de turno, Gastos, Pagos de ahorro, Perfil, `/components`.
-  - `middleware(['auth', 'role:admin'])` — Nómina (empleados, nómina, pagos, prestaciones, ahorros), Gastos fijos y `/consolidado`.
-- **No existen Policies** (`AuthServiceProvider::$policies = []`, no hay `app/Policies/`) y todos los Form Requests retornan `authorize(): true`. El sidebar no oculta links por rol: un usuario sin `admin` ve Nómina/Gastos fijos/Consolidado y recibe 403. Los tests de módulos admin hacen `Role::findOrCreate('admin','web')` + `assignRole('admin')` y verifican `assertForbidden()` para no-admin.
+  - `middleware(['auth', 'role:admin'])` — Nómina (empleados, nómina, pagos, prestaciones, ahorros), Gastos fijos, `/consolidado`, Usuarios y ajustes de inventario.
+- **No existen Policies** (`AuthServiceProvider::$policies = []`, no hay `app/Policies/`) y todos los Form Requests retornan `authorize(): true`. Un usuario sin rol entra a todo lo de `auth` y recibe 403 en lo de `role:admin` (el sidebar no oculta esos links). Los tests de módulos admin hacen `Role::findOrCreate('admin','web')` + `assignRole('admin')` y verifican `assertForbidden()` para no-admin.
 
 ### Módulos de negocio (cómo se conectan)
 Flujo típico: Controller → Service (`app/Services/`) → Model; estados como backed enums en `app/Enums/` (con `label()`/`color()`).
