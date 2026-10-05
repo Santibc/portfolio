@@ -62,15 +62,6 @@
             $totalNoEfvo = (int) $turno->total_no_efectivo;
             $efvoEspera  = (int) $turno->efectivo_esperado;
 
-            $menuPayload = $items->map(fn ($i) => [
-                'id'        => $i->id,
-                'nombre'    => $i->nombre,
-                'precio'    => (int) $i->precio,
-                'tipo_id'   => $i->tipo_id,
-                'tipo'      => $i->tipo?->nombre,
-                'imagen'    => $i->imagen_url ?: null,
-            ])->values();
-
             $metodosPayload = $metodos->map(fn ($m) => [
                 'id'          => $m->id,
                 'nombre'      => $m->nombre,
@@ -85,7 +76,7 @@
             ];
         @endphp
 
-        <div x-data='pos(@json($menuPayload), @json($metodosPayload), @json($tiposPayload), @json($oldData))'>
+        <div x-data='pos(@json($menuPayload), @json($metodosPayload), @json($tiposPayload), @json($oldData), @json((object) $stockPayload))'>
 
             {{-- Header sticky (colapsable para ganar espacio vertical) --}}
             <div x-show="infoOpen" x-cloak
@@ -163,8 +154,9 @@
                     {{-- Grid de items --}}
                     <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                         <template x-for="item in itemsFiltrados" :key="item.id">
-                            <button type="button" @click="addToCart(item)"
-                                    class="group h-full bg-white dark:bg-cream-900/40 rounded-xl shadow-soft border border-cream-200 dark:border-cream-800 overflow-hidden flex flex-col text-left hover:border-primary-400 hover:shadow-soft-lg transition-all active:scale-[0.98]">
+                            <button type="button" @click="addToCart(item)" :disabled="itemAgotado(item)"
+                                    :class="itemAgotado(item) ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:border-primary-400 hover:shadow-soft-lg active:scale-[0.98]'"
+                                    class="group h-full bg-white dark:bg-cream-900/40 rounded-xl shadow-soft border border-cream-200 dark:border-cream-800 overflow-hidden flex flex-col text-left transition-all">
                                 <div class="relative w-full pt-[100%] bg-cream-100 dark:bg-cream-800 overflow-hidden">
                                     <template x-if="item.imagen">
                                         <img :src="item.imagen" :alt="item.nombre" class="absolute inset-0 w-full h-full object-cover">
@@ -175,6 +167,7 @@
                                         </div>
                                     </template>
                                     <span class="absolute top-1.5 right-1.5 inline-flex items-center font-semibold rounded-full bg-primary-500/95 text-white text-[9px] px-1.5 py-0.5 shadow-soft" x-text="item.tipo"></span>
+                                    @include('caja._badge-stock')
                                 </div>
                                 <div class="p-2 flex-1 flex flex-col">
                                     <h3 class="font-semibold text-xs text-cream-900 dark:text-cream-50 line-clamp-2 min-h-[2rem] leading-tight" x-text="item.nombre"></h3>
@@ -212,10 +205,11 @@
                                     Toca un item del catálogo para agregarlo.
                                 </p>
                             </template>
-                            <template x-for="(c, idx) in cart" :key="c.id">
+                            <template x-for="(c, idx) in cart" :key="c.key">
                                 <div class="px-4 py-3 flex items-center gap-3">
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-cream-900 dark:text-cream-50 truncate" x-text="c.nombre"></p>
+                                        <p x-show="c.etiqueta" class="text-xs font-semibold text-accent-700 dark:text-accent-300 truncate" x-text="c.etiqueta"></p>
                                         {{-- Precio unitario editable: a veces se cobra más o menos que el de catálogo --}}
                                         <div class="mt-1 flex items-center gap-1.5">
                                             <div class="relative w-24">
@@ -236,11 +230,11 @@
                                         </div>
                                     </div>
                                     <div class="inline-flex items-center gap-1.5">
-                                        <button type="button" @click="setQty(c.id, c.cantidad - 1)" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-cream-800 dark:bg-cream-800 dark:hover:bg-cream-700 dark:text-cream-100">
+                                        <button type="button" @click="setQty(c.key, c.cantidad - 1)" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-cream-800 dark:bg-cream-800 dark:hover:bg-cream-700 dark:text-cream-100">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
                                         </button>
                                         <span class="min-w-[2rem] text-center text-sm font-semibold tabular-nums" x-text="c.cantidad"></span>
-                                        <button type="button" @click="setQty(c.id, c.cantidad + 1)" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-cream-800 dark:bg-cream-800 dark:hover:bg-cream-700 dark:text-cream-100">
+                                        <button type="button" @click="setQty(c.key, c.cantidad + 1)" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-cream-800 dark:bg-cream-800 dark:hover:bg-cream-700 dark:text-cream-100">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                         </button>
                                     </div>
@@ -349,6 +343,9 @@
                         <input type="hidden" :name="'items[' + i + '][menu_item_id]'" :value="c.id">
                         <input type="hidden" :name="'items[' + i + '][cantidad]'" :value="c.cantidad">
                         <input type="hidden" :name="'items[' + i + '][precio_unitario]'" :value="c.precio">
+                        <template x-for="par in Object.entries(c.opciones)" :key="par[0]">
+                            <input type="hidden" :name="'items[' + i + '][opciones][' + par[0] + ']'" :value="par[1]">
+                        </template>
                     </div>
                 </template>
                 <template x-for="(p, i) in pagos" :key="'p'+i">
@@ -359,6 +356,8 @@
                 </template>
                 <input type="hidden" name="notas" :value="notas">
             </form>
+
+            @include('caja._selector-opciones')
 
             {{-- ===== MODAL CERRAR CAJA ===== --}}
             <div id="modal-cerrar-caja" class="hidden fixed inset-0 z-50 overflow-y-auto bg-cream-950/60 backdrop-blur-sm">
@@ -423,10 +422,13 @@
     @endif
 @endsection
 
+@include('caja._pos-inventario-script')
+
 @push('scripts')
 <script>
-    function pos(menuItems, metodos, tipos, oldData) {
-        return {
+    function pos(menuItems, metodos, tipos, oldData, stock) {
+        // addToCart / setQty / selector de opciones / topes de stock vienen de posInventario().
+        return Object.assign({
             menuItems,
             metodos,
             tipos,
@@ -447,7 +449,7 @@
                             const precio = (row.precio_unitario !== undefined && row.precio_unitario !== null && row.precio_unitario !== '')
                                 ? (parseInt(row.precio_unitario) || 0)
                                 : mi.precio;
-                            this.cart.push({ id: mi.id, nombre: mi.nombre, precio, precioOrig: mi.precio, cantidad: parseInt(row.cantidad) || 1 });
+                            this.restaurarLinea(row, precio, mi.precio);
                         }
                     });
                 }
@@ -499,17 +501,6 @@
                 });
             },
 
-            addToCart(item) {
-                const e = this.cart.find(c => c.id === item.id);
-                if (e) e.cantidad++;
-                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, precioOrig: item.precio, cantidad: 1 });
-            },
-            setQty(id, n) {
-                if (n <= 0) { this.cart = this.cart.filter(c => c.id !== id); return; }
-                if (n > 99) n = 99;
-                const c = this.cart.find(c => c.id === id);
-                if (c) c.cantidad = n;
-            },
             addPago() {
                 // Pre-llenar con el primer método activo si no hay. Se agrega arriba (unshift)
                 // para que el método recién creado quede primero en la lista.
@@ -557,7 +548,7 @@
             },
 
             fmt(n) { return '$ ' + (parseInt(n) || 0).toLocaleString('es-CO'); },
-        };
+        }, window.posInventario(stock));
     }
 </script>
 @endpush

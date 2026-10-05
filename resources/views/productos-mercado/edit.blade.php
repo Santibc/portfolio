@@ -92,6 +92,29 @@
                     description="Si está apagado, el producto queda oculto sin borrarse"
                     :checked="(bool) old('activo', $producto->activo)"
                 />
+
+                <input type="hidden" name="controla_inventario" value="0" />
+                <x-toggle
+                    name="controla_inventario"
+                    label="Controla inventario"
+                    description="Las compras suman stock y las ventas de caja vinculadas lo descuentan (ej. gaseosas, Doritos). Registra las compras en la unidad en que se vende."
+                    :checked="(bool) old('controla_inventario', $producto->controla_inventario)"
+                />
+                @error('controla_inventario')
+                    <p class="-mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <x-icon name="alert-circle" class="w-3.5 h-3.5" /> {{ $message }}
+                    </p>
+                @enderror
+                @if ($stock !== null)
+                    <p class="-mt-2 pl-14 text-sm text-cream-700 dark:text-cream-300 flex flex-wrap items-center gap-2">
+                        <x-icon name="package" class="w-4 h-4 text-primary-500 dark:text-primary-300" />
+                        Stock actual:
+                        <strong class="text-cream-900 dark:text-cream-50">{{ \App\Models\ProductoMercado::formatearCantidad($stock) }} {{ $producto->unidad_empaque }}</strong>
+                        <a href="{{ route('inventario.show', $producto) }}" class="font-medium text-primary-700 hover:text-primary-900 dark:text-primary-300 dark:hover:text-primary-100 underline underline-offset-2">
+                            Ver kardex / ajustar
+                        </a>
+                    </p>
+                @endif
             </div>
 
             <x-slot:footer>

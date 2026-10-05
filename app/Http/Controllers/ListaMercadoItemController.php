@@ -9,6 +9,7 @@ use App\Enums\EstadoMercadoItem;
 use App\Http\Requests\RegistrarMercadoItemRequest;
 use App\Models\MercadoItem;
 use App\Models\MetodoPago;
+use App\Services\InventarioService;
 use App\Services\MercadoSessionService;
 use App\Services\TurnoCajaService;
 use DomainException;
@@ -20,6 +21,7 @@ class ListaMercadoItemController extends Controller
     public function __construct(
         private MercadoSessionService $session,
         private TurnoCajaService $turnos,
+        private InventarioService $inventario,
     ) {}
 
     public function create(MercadoItem $item): View|RedirectResponse
@@ -38,8 +40,11 @@ class ListaMercadoItemController extends Controller
 
         $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
         $turnoActivo = $this->turnos->turnoActivo();
+        $stock = $item->producto?->controla_inventario
+            ? $this->inventario->stockDeProducto($item->producto->id)
+            : null;
 
-        return view('lista-mercado.item-create', compact('item', 'metodos', 'turnoActivo'));
+        return view('lista-mercado.item-create', compact('item', 'metodos', 'turnoActivo', 'stock'));
     }
 
     public function store(RegistrarMercadoItemRequest $request, MercadoItem $item): RedirectResponse

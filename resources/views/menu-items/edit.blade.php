@@ -95,6 +95,14 @@
                 </div>
             </div>
 
+            @include('menu-items._componentes', [
+                'componentesIniciales' => old('componentes', $item->componentes->map(fn ($c) => [
+                    'nombre'    => $c->nombre,
+                    'cantidad'  => (string) (float) $c->cantidad,
+                    'productos' => $c->opciones->pluck('id')->all(),
+                ])->all()),
+            ])
+
             <x-slot:footer>
                 <div class="flex items-center justify-end gap-2">
                     <x-button variant="ghost" :href="route('menu-items.index')">Cancelar</x-button>

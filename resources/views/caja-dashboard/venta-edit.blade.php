@@ -24,15 +24,6 @@
     </x-page-header>
 
     @php
-        $menuPayload = $items->map(fn ($i) => [
-            'id'      => $i->id,
-            'nombre'  => $i->nombre,
-            'precio'  => (int) $i->precio,
-            'tipo_id' => $i->tipo_id,
-            'tipo'    => $i->tipo?->nombre,
-            'imagen'  => $i->imagen_url ?: null,
-        ])->values();
-
         $metodosPayload = $metodos->map(fn ($m) => [
             'id'          => $m->id,
             'nombre'      => $m->nombre,
@@ -44,6 +35,7 @@
             'cantidad'     => $it->cantidad,
             'nombre'       => $it->nombre_snapshot,
             'precio'       => (int) $it->precio_unitario,
+            'opciones'     => (object) ($opcionesPorLinea[$it->id] ?? []),
         ])->all());
 
         $pagosInicial = old('pagos', $venta->pagos->map(fn ($p) => [
@@ -61,7 +53,7 @@
         ];
     @endphp
 
-    <div x-data='ventaEditor(@json($menuPayload), @json($metodosPayload), @json($tiposPayload), @json($oldData))'>
+    <div x-data='ventaEditor(@json($menuPayload), @json($metodosPayload), @json($tiposPayload), @json($oldData), @json((object) $stockPayload))'>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {{-- Catálogo --}}
@@ -79,8 +71,9 @@
 
                 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                     <template x-for="item in itemsFiltrados" :key="item.id">
-                        <button type="button" @click="addToCart(item)"
-                                class="h-full bg-white dark:bg-cream-900/40 rounded-xl shadow-soft border border-cream-200 dark:border-cream-800 overflow-hidden flex flex-col text-left hover:border-primary-400 transition-all">
+                        <button type="button" @click="addToCart(item)" :disabled="itemAgotado(item)"
+                                :class="itemAgotado(item) ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:border-primary-400'"
+                                class="h-full bg-white dark:bg-cream-900/40 rounded-xl shadow-soft border border-cream-200 dark:border-cream-800 overflow-hidden flex flex-col text-left transition-all">
                             <div class="relative w-full pt-[100%] bg-cream-100 dark:bg-cream-800 overflow-hidden">
                                 <template x-if="item.imagen"><img :src="item.imagen" class="absolute inset-0 w-full h-full object-cover" :alt="item.nombre"></template>
                                 <template x-if="!item.imagen">
@@ -88,6 +81,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/><path d="m2.1 21.8 6.4-6.3"/><path d="m19 5-7 7"/></svg>
                                     </div>
                                 </template>
+                                @include('caja._badge-stock')
                             </div>
                             <div class="p-1.5 flex-1 flex flex-col">
                                 <h3 class="font-semibold text-[11px] text-cream-900 dark:text-cream-50 line-clamp-2 min-h-[1.75rem] leading-tight" x-text="item.nombre"></h3>
@@ -106,10 +100,11 @@
                     </div>
 
                     <div class="max-h-64 overflow-y-auto divide-y divide-cream-200 dark:divide-cream-800">
-                        <template x-for="c in cart" :key="c.id">
+                        <template x-for="c in cart" :key="c.key">
                             <div class="px-4 py-2.5 flex items-center gap-2">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-cream-900 dark:text-cream-50 truncate" x-text="c.nombre"></p>
+                                    <p x-show="c.etiqueta" class="text-xs font-semibold text-accent-700 dark:text-accent-300 truncate" x-text="c.etiqueta"></p>
                                     {{-- Precio unitario editable --}}
                                     <div class="mt-1 flex items-center gap-1.5">
                                         <div class="relative w-24">
@@ -129,9 +124,9 @@
                                     </div>
                                 </div>
                                 <div class="inline-flex items-center gap-1">
-                                    <button type="button" @click="setQty(c.id, c.cantidad - 1)" class="w-6 h-6 rounded bg-cream-100 dark:bg-cream-800"><x-icon name="minus" class="w-3 h-3 mx-auto" /></button>
+                                    <button type="button" @click="setQty(c.key, c.cantidad - 1)" class="w-6 h-6 rounded bg-cream-100 dark:bg-cream-800"><x-icon name="minus" class="w-3 h-3 mx-auto" /></button>
                                     <span class="min-w-[1.5rem] text-center text-sm font-semibold" x-text="c.cantidad"></span>
-                                    <button type="button" @click="setQty(c.id, c.cantidad + 1)" class="w-6 h-6 rounded bg-cream-100 dark:bg-cream-800"><x-icon name="plus" class="w-3 h-3 mx-auto" /></button>
+                                    <button type="button" @click="setQty(c.key, c.cantidad + 1)" class="w-6 h-6 rounded bg-cream-100 dark:bg-cream-800"><x-icon name="plus" class="w-3 h-3 mx-auto" /></button>
                                 </div>
                                 <span class="text-sm font-bold w-20 text-right tabular-nums" x-text="fmt(c.precio * c.cantidad)"></span>
                             </div>
@@ -209,6 +204,9 @@
                     <input type="hidden" :name="'items[' + i + '][menu_item_id]'" :value="c.id">
                     <input type="hidden" :name="'items[' + i + '][cantidad]'" :value="c.cantidad">
                     <input type="hidden" :name="'items[' + i + '][precio_unitario]'" :value="c.precio">
+                    <template x-for="par in Object.entries(c.opciones)" :key="par[0]">
+                        <input type="hidden" :name="'items[' + i + '][opciones][' + par[0] + ']'" :value="par[1]">
+                    </template>
                 </div>
             </template>
             <template x-for="(p, i) in pagos" :key="'p'+i">
@@ -219,13 +217,19 @@
             </template>
             <input type="hidden" name="notas" :value="notas">
         </form>
+
+        @include('caja._selector-opciones')
     </div>
 @endsection
 
+@include('caja._pos-inventario-script')
+
 @push('scripts')
 <script>
-    function ventaEditor(menuItems, metodos, tipos, oldData) {
-        return {
+    function ventaEditor(menuItems, metodos, tipos, oldData, stock) {
+        // addToCart / setQty / selector de opciones / topes de stock vienen de posInventario().
+        // `stock` ya incluye lo que esta venta había descontado.
+        return Object.assign({
             menuItems, metodos, tipos,
             cart: [],
             pagos: [],
@@ -246,7 +250,7 @@
                         } else if (row.precio !== undefined) {
                             precio = parseInt(row.precio) || 0;
                         }
-                        this.cart.push({ id: parseInt(row.menu_item_id), nombre, precio, precioOrig: precioCatalogo, cantidad: parseInt(row.cantidad) || 1 });
+                        this.restaurarLinea(row, precio, precioCatalogo, nombre);
                     });
                 }
                 if (Array.isArray(oldData.pagos)) {
@@ -264,16 +268,6 @@
                 return this.tipoFiltro
                     ? this.menuItems.filter(i => i.tipo_id === this.tipoFiltro)
                     : this.menuItems;
-            },
-            addToCart(item) {
-                const e = this.cart.find(c => c.id === item.id);
-                if (e) e.cantidad++;
-                else this.cart.push({ id: item.id, nombre: item.nombre, precio: item.precio, precioOrig: item.precio, cantidad: 1 });
-            },
-            setQty(id, n) {
-                if (n <= 0) { this.cart = this.cart.filter(c => c.id !== id); return; }
-                const c = this.cart.find(c => c.id === id);
-                if (c) c.cantidad = Math.min(99, n);
             },
             addPago() { const m = this.metodos[0]; this.pagos.push({ metodo_pago_id: m ? m.id : null, monto: 0, referencia: '' }); },
             removePago(i) { this.pagos.splice(i, 1); },
@@ -310,7 +304,7 @@
                 this.$nextTick(() => document.getElementById('form-venta-edit').submit());
             },
             fmt(n) { return '$ ' + (parseInt(n) || 0).toLocaleString('es-CO'); },
-        };
+        }, window.posInventario(stock));
     }
 </script>
 @endpush

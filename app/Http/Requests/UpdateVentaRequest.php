@@ -23,6 +23,8 @@ class UpdateVentaRequest extends FormRequest
             'items.*.menu_item_id'   => ['required', 'integer', 'exists:menu_items,id'],
             'items.*.cantidad'       => ['required', 'integer', 'min:1', 'max:99'],
             'items.*.precio_unitario' => ['nullable', 'integer', 'min:0', 'max:99999999'],
+            'items.*.opciones'        => ['nullable', 'array'],
+            'items.*.opciones.*'      => ['integer'],
 
             'pagos'                  => ['required', 'array', 'min:1'],
             'pagos.*.metodo_pago_id' => ['required', 'integer', 'exists:metodos_pago,id'],

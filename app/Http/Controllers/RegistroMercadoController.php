@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRegistroMercadoRequest;
 use App\Models\MetodoPago;
 use App\Models\ProductoMercado;
-use App\Models\RegistroMercado;
 use App\Models\TipoProductoMercado;
+use App\Services\InventarioService;
+use App\Services\RegistroMercadoService;
 use App\Services\TurnoCajaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,11 @@ use Illuminate\View\View;
 
 class RegistroMercadoController extends Controller
 {
-    public function __construct(private TurnoCajaService $turnos) {}
+    public function __construct(
+        private TurnoCajaService $turnos,
+        private RegistroMercadoService $registros,
+        private InventarioService $inventario,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -40,8 +45,9 @@ class RegistroMercadoController extends Controller
 
         $metodos = MetodoPago::activos()->orderBy('orden')->orderBy('nombre')->get();
         $turnoActivo = $this->turnos->turnoActivo();
+        $stock = $producto->controla_inventario ? $this->inventario->stockDeProducto($producto->id) : null;
 
-        return view('registro-mercado.create', compact('producto', 'tipoId', 'metodos', 'turnoActivo'));
+        return view('registro-mercado.create', compact('producto', 'tipoId', 'metodos', 'turnoActivo', 'stock'));
     }
 
     public function store(StoreRegistroMercadoRequest $request): RedirectResponse
@@ -52,9 +58,7 @@ class RegistroMercadoController extends Controller
             $data['turno_caja_id'] = $this->turnos->turnoActivo()?->id;
         }
 
-        $registro = new RegistroMercado($data);
-        $registro->created_at = $request->fechaRegistro();
-        $registro->save();
+        $this->registros->crear($data, $request->fechaRegistro(), $request->user()->id);
 
         $tipoId = $request->integer('tipo_id') ?: null;
 

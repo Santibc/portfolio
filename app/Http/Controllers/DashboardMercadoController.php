@@ -6,7 +6,9 @@ use App\Http\Requests\UpdateRegistroMercadoRequest;
 use App\Models\MetodoPago;
 use App\Models\ProductoMercado;
 use App\Models\RegistroMercado;
+use App\Services\RegistroMercadoService;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +16,8 @@ use Illuminate\View\View;
 
 class DashboardMercadoController extends Controller
 {
+    public function __construct(private RegistroMercadoService $registros) {}
+
     public function index(Request $request): View
     {
         $hoy = today()->toDateString();
@@ -127,7 +131,11 @@ class DashboardMercadoController extends Controller
 
     public function update(UpdateRegistroMercadoRequest $request, RegistroMercado $registro): RedirectResponse
     {
-        $registro->update($request->validated());
+        try {
+            $this->registros->actualizar($registro, $request->validated());
+        } catch (DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('mercado-dashboard.index')
@@ -136,7 +144,11 @@ class DashboardMercadoController extends Controller
 
     public function destroy(RegistroMercado $registro): RedirectResponse
     {
-        $registro->delete();
+        try {
+            $this->registros->eliminar($registro);
+        } catch (DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('mercado-dashboard.index')

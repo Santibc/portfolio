@@ -11,11 +11,11 @@
     $id = $id ?? $name;
 @endphp
 
-<label for="{{ $id }}" class="flex items-start gap-2.5 cursor-pointer select-none">
+<label @if ($id) for="{{ $id }}" @endif class="flex items-start gap-2.5 cursor-pointer select-none">
     <input
         type="checkbox"
         @if ($name) name="{{ $name }}" @endif
-        id="{{ $id }}"
+        @if ($id) id="{{ $id }}" @endif
         value="{{ $value }}"
         @checked($checked)
         {{ $attributes->merge([

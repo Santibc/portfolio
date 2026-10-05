@@ -78,6 +78,36 @@
                     description="Si está apagado, el producto queda oculto sin borrarse"
                     :checked="old('activo', '1') == '1'"
                 />
+
+                <div x-data="{ inventario: @js(old('controla_inventario', '0') == '1') }" class="space-y-4">
+                    <input type="hidden" name="controla_inventario" value="0" />
+                    <x-toggle
+                        name="controla_inventario"
+                        label="Controla inventario"
+                        description="Las compras suman stock y las ventas de caja vinculadas lo descuentan (ej. gaseosas, Doritos). Registra las compras en la unidad en que se vende."
+                        :checked="old('controla_inventario', '0') == '1'"
+                        x-on:change="inventario = $event.target.checked"
+                    />
+
+                    <div x-show="inventario" x-cloak class="pl-14">
+                        @if (auth()->user()->isAdmin())
+                            <x-input
+                                label="Stock inicial"
+                                name="stock_inicial"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                :value="old('stock_inicial')"
+                                placeholder="Ej. 24"
+                                hint="Lo que ya tienes físicamente, en la unidad de empaque. Queda en el kardex como ajuste “Stock inicial”. Déjalo vacío si arranca en 0."
+                            />
+                        @else
+                            <x-alert variant="info">
+                                El producto arranca con stock 0. Un administrador puede cargar el stock inicial desde Inventario.
+                            </x-alert>
+                        @endif
+                    </div>
+                </div>
             </div>
 
             <x-slot:footer>
