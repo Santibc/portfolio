@@ -78,6 +78,13 @@ class CajaController extends Controller
             return back()->withErrors(['caja' => $e->getMessage()])->withInput();
         }
 
+        // El rol ventas no ve el dashboard de caja: vuelve a la caja (cerrada).
+        if ($request->user()->esVendedor()) {
+            return redirect()
+                ->route('caja.index')
+                ->with('success', 'Caja cerrada correctamente.');
+        }
+
         return redirect()
             ->route('caja-dashboard.show', $turno)
             ->with('success', 'Caja cerrada. Revisa el resumen del turno.');

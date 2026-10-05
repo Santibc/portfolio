@@ -111,7 +111,7 @@
                         <x-avatar :src="Auth::user()->hasProfilePhoto() ? Auth::user()->profile_photo_url : null" :name="Auth::user()->name" size="sm" />
                         <span class="hidden sm:flex flex-col items-start leading-tight pr-1">
                             <span class="text-sm font-semibold text-cream-900 dark:text-cream-50 truncate max-w-[12ch]">{{ Auth::user()->name }}</span>
-                            <span class="text-[11px] text-cream-600 dark:text-cream-400">{{ Auth::user()->roles->first()->name ?? 'Usuario' }}</span>
+                            <span class="text-[11px] text-cream-600 dark:text-cream-400">{{ Auth::user()->rolUsuario()?->label() ?? (Auth::user()->roles->first()->name ?? 'Usuario') }}</span>
                         </span>
                         <x-icon name="chevron-down" class="w-4 h-4 text-cream-500 hidden sm:inline" />
                     </button>
@@ -124,9 +124,11 @@
                         <x-dropdown-item href="{{ route('profile.edit') }}" icon="user-cog">
                             Mi perfil
                         </x-dropdown-item>
-                        <x-dropdown-item href="{{ route('components.showcase') }}" icon="component">
-                            Componentes UI
-                        </x-dropdown-item>
+                        @unless (Auth::user()->esVendedor())
+                            <x-dropdown-item href="{{ route('components.showcase') }}" icon="component">
+                                Componentes UI
+                            </x-dropdown-item>
+                        @endunless
                         <div class="my-1 h-px bg-cream-200 dark:bg-cream-800"></div>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

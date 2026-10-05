@@ -28,6 +28,7 @@ use App\Http\Controllers\RegistroMercadoController;
 use App\Http\Controllers\TipoMenuItemController;
 use App\Http\Controllers\TipoProductoMercadoController;
 use App\Http\Controllers\TrabajadorTurnoController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -181,6 +182,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('gastos-fijos', GastoFijoController::class)
         ->except(['show'])
         ->parameters(['gastos-fijos' => 'gastoFijo']);
+
+    // === USUARIOS (crear usuarios y asignar rol: admin o ventas) ===
+    Route::resource('usuarios', UsuarioController::class)->except(['show']);
 
     // === AJUSTES MANUALES DE INVENTARIO (stock inicial, conteo físico, mermas) ===
     Route::post('inventario/{producto}/ajustes', [AjusteInventarioController::class, 'store'])->name('inventario.ajustes.store');

@@ -7,9 +7,22 @@
             : 'text-cream-700 hover:bg-cream-100 hover:text-cream-900 dark:text-cream-300 dark:hover:bg-cream-900 dark:hover:text-cream-50';
         return [$active, $base . ' ' . $cls];
     };
+    // Rol ventas: solo ve la caja y su perfil (el acceso lo controla RestringirRolVentas).
+    $soloCaja = auth()->user()?->esVendedor() ?? false;
 @endphp
 
 <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+
+    @if ($soloCaja)
+    <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-cream-500">Caja</p>
+
+    @php [$active, $cls] = $navItem('caja.index', 'shopping-cart', 'Registrar ventas', 'caja.index'); @endphp
+    <a href="{{ route('caja.index') }}" class="{{ $cls }}">
+        <x-icon name="shopping-cart" class="w-4 h-4" />
+        <span class="flex-1">Registrar ventas</span>
+        @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+    </a>
+    @else
 
     <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-cream-500">Principal</p>
 
@@ -288,6 +301,7 @@
             </a>
         </div>
     </div>
+    @endif
 
     <p class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-cream-500">Cuenta</p>
 
@@ -298,7 +312,17 @@
         @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
     </a>
 
+    @unless ($soloCaja)
     <p class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-cream-500">Sistema</p>
+
+    @if (auth()->user()?->isAdmin())
+        @php [$active, $cls] = $navItem('usuarios.index', 'users', 'Usuarios', 'usuarios.*'); @endphp
+        <a href="{{ route('usuarios.index') }}" class="{{ $cls }}">
+            <x-icon name="users" class="w-4 h-4" />
+            <span class="flex-1">Usuarios</span>
+            @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+        </a>
+    @endif
 
     @php [$active, $cls] = $navItem('components.showcase', 'component', 'Componentes'); @endphp
     <a href="{{ route('components.showcase') }}" class="{{ $cls }}">
@@ -306,4 +330,5 @@
         <span class="flex-1">Componentes UI</span>
         @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
     </a>
+    @endunless
 </nav>
