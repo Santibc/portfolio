@@ -4,12 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**DorilokosMix** — sistema de gestión de restaurante sobre Laravel 9 (derivado de la plantilla "Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
+**DorilokosMix** — sistema de gestión de restaurante sobre Laravel 9 (derivado de la plantilla "Sopas y Sopitas"): caja/ventas por turno, mercado (compras), nómina, gastos y un dashboard consolidado, sobre un app-shell (sidebar + header) con dark/light theming y una librería curada de componentes Tailwind/Preline. Locale `es`, timezone `America/Bogota`, moneda COP.
+
+**Repo multi-cliente:** el remoto `origin` aloja un proyecto distinto por rama (`sopas`, `montano`, `sinden`, `agromarket`, `dorilokos`…). La carpeta local se llama `agromarket`, pero la app de esta rama es **DorilokosMix** (rama `dorilokos`, derivada de `sopas`). Lo que veas con nombre "sopas"/"montano" (seeders, `.claude/`, `.playwright-mcp/`) es herencia de otras ramas.
 
 **Tech Stack:**
-- Laravel 9 (PHP 8.0+), Vite 4 (everything is bundled — zero CDN in production)
+- Laravel 9 (PHP 8.0+), Vite 4 (todo JS/CSS bundleado; la única carga externa es la fuente de Bunny Fonts importada en `resources/css/app.css`)
 - Tailwind CSS 3.4 + `@tailwindcss/forms` + `@tailwindcss/typography` + Preline UI 4 (vanilla JS components)
-- Alpine.js for ligero reactivity, Lucide icons (curated subset), ApexCharts (lazy), ScrollReveal, TomSelect, SweetAlert2
+- Alpine.js for ligero reactivity, Lucide icons (curated subset), ApexCharts (import eager, via `window.makeChart`), ScrollReveal, TomSelect, SweetAlert2
+- En `composer.json` hay paquetes heredados **sin uso** en el código: livewire, yajra/laravel-datatables, maatwebsite/excel, barryvdh/laravel-dompdf, intervention/image
 - MySQL, XAMPP (Windows local)
 - Laravel Breeze (auth), Spatie Laravel-Permission (roles)
 - Deploy target: **Hostinger shared hosting** — only PHP runtime, all JS/CSS must compile via `npm run build`
@@ -18,11 +21,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## RULE 0 — NUNCA borres la base de datos ni datos del usuario (crítico)
 
-**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `dorilokosmix` (o cualquier otra base local como `sopas_prod_*`, o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
+**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `dorilokos` (valor de `DB_DATABASE` en `.env`) (o cualquier otra base local como `sopas_prod_*`, o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
 
 Prohibido sin permiso explícito:
 - `php artisan migrate:fresh`, `migrate:fresh --seed`, `migrate:refresh`, `migrate:reset`, `db:wipe`.
-- `php artisan test` / `phpunit` **mientras la suite use la conexión real** (los tests con `RefreshDatabase` ejecutan `migrate:fresh` contra la base configurada). Antes de correr tests, **verifica** que `phpunit.xml` fuerce una base de pruebas aislada (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`) y que NO esté comentada. Si no lo está, **no corras tests** — arréglalo primero o pregunta.
+- `php artisan test` / `phpunit` **mientras la suite use la conexión real** (los tests con `RefreshDatabase` ejecutan `migrate:fresh` contra la base configurada). Antes de correr tests, **verifica** que `phpunit.xml` fuerce una base de pruebas aislada (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`) y que NO esté comentada. Si no lo está, **no corras tests** — arréglalo primero o pregunta. (Hoy `phpunit.xml` líneas 24–25 sí lo fuerzan; verifica que siga así.)
 - `DROP`, `TRUNCATE`, `DELETE` masivos vía tinker/SQL directo.
 - Cualquier seeder o script que limpie tablas existentes.
 
@@ -38,22 +41,27 @@ Reglas operativas:
 
 ```bash
 # Development
-/dev-start                              # XAMPP + Laravel + Vite + Chrome
-/dev-stop                               # Stop services
+/dev-start                              # OJO: .claude/commands/dev-start.md apunta al proyecto montano — revisar antes de usar
+/dev-stop                               # Mata TODOS los procesos php/node/Apache/MySQL
 php artisan serve --host=127.0.0.1 --port=8000
 npm run dev                             # Vite hot-reload
-npm run build                           # Compile assets to public/build/
+npm run build                           # Compile assets to public/build/ (se versiona; no hay build en el servidor)
 
-# Database
-php artisan migrate:fresh --seed        # Wipe + re-run migrations + seed base (admin + tablas de referencia)
-php artisan db:seed --class=DemoSeeder  # Datos demo (heredados de Sopas) — solo en BD de pruebas
+# Database (RULE 0: migrate:fresh solo con permiso explícito)
+php artisan migrate                     # Aplicar migraciones nuevas (aditivas)
+php artisan db:seed                     # Seeders base idempotentes (updateOrCreate): no borran, pero restauran valores sembrados
+php artisan migrate:fresh --seed        # Wipe + seed base: rol admin, dias_semana, tipos_menu_item, metodos_pago, conceptos_gasto_fijo
+php artisan db:seed --class=DemoSeeder  # Datos demo de todos los módulos — solo en BD de pruebas; descarga imágenes de Wikipedia (requiere red)
 
-# Testing
+# Testing (phpunit.xml usa SQLite :memory:)
 php artisan test
-./vendor/bin/phpunit --filter=TestName
+php artisan test --filter=NominaTest                  # una clase
+php artisan test tests/Unit/CalculadoraNominaTest.php # un archivo
 
 # Code formatting
-./vendor/bin/pint                       # Laravel Pint (PHP CS Fixer)
+# Ojo: el código existente NO sigue Pint (CRLF + `=>` alineados). Correr pint sobre un archivo
+# existente reformatea todo el archivo; sigue el estilo del archivo que estás tocando.
+./vendor/bin/pint --test <archivo>      # Solo revisar
 
 # Cache (after config / route / view edits)
 php artisan config:clear && php artisan route:clear && php artisan view:clear
@@ -76,7 +84,8 @@ la rama `sopas`, igual que el desarrollo.
 
 **Las credenciales SSH/BD y la plantilla `askpass` están en `CLAUDE.local.md`**
 (archivo gitignored, cargado automáticamente en contexto). NUNCA escribir esas
-contraseñas en archivos versionados.
+contraseñas en archivos versionados. En este checkout `CLAUDE.local.md` **no existe**
+todavía — si se necesita, pedir las credenciales al usuario.
 
 ### Datos de conexión (no sensibles)
 - Servidor: `212.85.6.28`, puerto SSH `65002`, usuario `u454224791`.
@@ -130,26 +139,39 @@ Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
 
 ## Architecture
 
-### Roles & Permissions
-- Single role: `admin` (seeded in `database/seeders/RolesAndPermissionsSeeder.php`)
-- Default user: `admin@admin.com` / `12345678`
-- `User` model uses `HasRoles` (Spatie). Use middleware: `->middleware('role:admin')`
+### Roles & autorización (estado real)
+- Single role: `admin` (seeded in `database/seeders/RolesAndPermissionsSeeder.php`). Default user: `admin@admin.com` / `12345678`. No hay ruta de registro.
+- `User` usa `HasRoles` (Spatie) + helper `isAdmin()`.
+- **La autorización hoy es solo a nivel de ruta.** `routes/web.php` tiene dos grupos:
+  - `middleware('auth')` — Caja, Mercado, Lista de mercado, Trabajadores de turno, Gastos, Pagos de ahorro, Perfil, `/components`.
+  - `middleware(['auth', 'role:admin'])` — Nómina (empleados, nómina, pagos, prestaciones, ahorros), Gastos fijos y `/consolidado`.
+- **No existen Policies** (`AuthServiceProvider::$policies = []`, no hay `app/Policies/`) y todos los Form Requests retornan `authorize(): true`. El sidebar no oculta links por rol: un usuario sin `admin` ve Nómina/Gastos fijos/Consolidado y recibe 403. Los tests de módulos admin hacen `Role::findOrCreate('admin','web')` + `assignRole('admin')` y verifican `assertForbidden()` para no-admin.
 
-### Routes
-- `routes/web.php` — `/`, `/dashboard`, `/profile/*`, `/components` (showcase)
-- `routes/auth.php` — Breeze authentication routes
+### Módulos de negocio (cómo se conectan)
+Flujo típico: Controller → Service (`app/Services/`) → Model; estados como backed enums en `app/Enums/` (con `label()`/`color()`).
+
+- **Caja** — `TurnoCajaService` abre/cierra el `TurnoCaja` (uno activo a la vez); `VentaService` registra `Venta` → `VentaItem` (→ `MenuItem`) + `VentaPago` (→ `MetodoPago`, multi-método, con cambio en efectivo). `MenuDiaService` define qué `MenuItem` se ofrecen cada día (`menu_dia` ↔ `dias_semana`). El cuadre vive en accessors de `TurnoCaja` (`efectivo_esperado = base + efectivo − gastos − ahorros − mercado pagado desde caja`).
+- **Mercado** — catálogo `ProductoMercado`/`TipoProductoMercado`; cada compra es un `RegistroMercado` (con `metodo_pago_id` y `turno_caja_id` opcional si se pagó con la caja abierta). La **lista de mercado** (`ListaMercado` plantilla → sesión `Mercado` con `MercadoItem`s pendiente/registrado/saltado) la orquesta `MercadoSessionService`; `RegistroMercadoObserver` (registrado en `AppServiceProvider::boot`) devuelve el item a "pendiente" si se borra su registro.
+- **Inventario** (une Mercado → Caja) — `ProductoMercado.controla_inventario` marca qué se cuenta. El stock **no se guarda**: es `SUM(cantidad)` del kardex `movimientos_inventario` (compra +, venta −, ajuste ±), y **toda** escritura pasa por `InventarioService` (nunca queda negativo; bloquea con `lockForUpdate`). Compras: `RegistroMercadoService` / `MercadoSessionService::registrarItem`. Ventas: un `MenuItem` tiene `componentes` (cantidad + 1..N `opciones` = productos con inventario); con 2+ opciones el cajero elige (ej. "Sabor de Doritos") y llega como `items[i][opciones][componente_id] = producto_id`. `VentaService` descuenta al crear, revierte+re-descuenta al editar y devuelve al borrar. UI del POS compartida en `resources/views/caja/_pos-inventario-script.blade.php` (`window.posInventario`). Ajustes manuales solo `role:admin`. Los ajustes no son `RegistroMercado`, así que no afectan el consolidado.
+- **Gastos / Trabajadores de turno / Ahorro** — `GastoService` (gastos de turno con `valor` + `ahorro` del trabajador), `PagoAhorroService` (devolución del ahorro acumulado).
+- **Nómina** (independiente de Caja; solo comparte `metodos_pago`) — `LiquidacionNominaService` genera `Nomina` + `NominaDetalle` (snapshots congelados: nombre, salario, %); el saldo/estado de pago se deriva de `Σ pagos_nomina`, no se almacena. Toda la matemática está en `App\Services\CalculadoraNomina` (estática, pura, enteros COP, redondeo half-up; básico = salario × días / 30, salud/pensión sobre el **básico**) con parámetros legales en `config/nomina.php`. Re-liquidar un periodo hace `forceDelete` de nóminas soft-deleted del mismo rango (índice único `fecha_inicio, fecha_fin`).
+- **Gastos fijos** — `GastoFijoService` + catálogo `ConceptoGastoFijo`.
+- **Consolidado** — `ConsolidadoContableService::resumen()` cruza todo por método de pago: ingresos = ventas de caja (cambio descontado del efectivo); egresos = gastos de caja (valor + ahorro) + `RegistroMercado` + `PagoNomina` + `GastoFijo`, cada uno una sola vez por su fecha. **Un módulo nuevo que genere egresos debe sumarse aquí** (y en `tests/Feature/DashboardConsolidadoTest.php`).
+
+Deuda conocida: varios controllers de catálogo (`ProductoMercadoController`, `EmpleadoController`, `TipoMenuItemController`, `MetodoPagoController`…) y los dashboards (`DashboardMercadoController`, `DashboardCajaController`, `DashboardNominaController`) escriben/agregan con Eloquent directo sin service. No los tomes como patrón; los módulos de referencia son Nómina y Gastos fijos.
 
 ### Frontend
 - Layouts: `resources/views/layouts/app.blade.php` (autenticado, sidebar drawer en mobile + fijo en desktop), `guest.blade.php` (login)
 - Sidebar nav: `resources/views/layouts/navigation-vertical.blade.php`
-- Vite entries: `resources/css/app.css`, `resources/js/app.js`
-- Theme toggle source: `resources/js/theme-toggle.js` (bundleado)
-- Globals expuestos en `window`: `Alpine`, `Swal`, `TomSelect`, `showToast(icon, title)`
+- Vite entries: `resources/css/app.css`, `resources/js/app.js`, `resources/images/logoico.png`
+- Theme toggle source: `resources/js/theme-toggle.js` (bundleado; emite el evento `dorilokos:theme-changed`)
+- Globals en `window`: `Alpine`, `HSStaticMethods` (Preline), `Swal`, `TomSelect`, `ApexCharts`, `makeChart(selector, opts)` (theme-aware, lo usa `<x-chart>`), `renderIcons()`, `tableEnhanced(cfg)` (factory Alpine de `<x-table-enhanced>`), `_`, `axios`. `swalConfirm(form, opts)` y `showToast(icon, title)` se definen dentro de `DOMContentLoaded`.
+- Un `MutationObserver` global re-renderiza iconos Lucide y re-ejecuta `HSStaticMethods.autoInit()` cuando se inserta DOM; `select[data-tom-select]` se auto-inicializa con TomSelect.
 
 ### Database
-MySQL en 127.0.0.1:3306 (sin password en XAMPP local). Nombre en `.env` (`DB_DATABASE`).
+MySQL en 127.0.0.1:3306 (sin password en XAMPP local). Nombre en `.env` (`DB_DATABASE`). Tests: SQLite `:memory:`.
 
-Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`, `password_resets`, `failed_jobs`, `personal_access_tokens`.
+Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`, `password_resets`, `failed_jobs`, `personal_access_tokens`. Las tablas de módulos usan soft deletes en casi todos los modelos; `metodos_pago` es el lookup compartido entre Caja, Mercado, Gastos y Nómina. Migraciones nuevas deben ser **aditivas** (la BD local tiene datos reales).
 
 ---
 
@@ -163,8 +185,8 @@ Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_perm
 |---|---|
 | Layout | `<x-page-header>`, `<x-section>`, `<x-card>`, `<x-breadcrumb>` |
 | Acciones | `<x-button>` (variants: primary, secondary, ghost, danger, success, link / sizes: xs, sm, md, lg) |
-| Forms | `<x-input>`, `<x-textarea>`, `<x-select>` (con `tomselect` flag), `<x-checkbox>`, `<x-radio>`, `<x-toggle>` |
-| Datos | `<x-stat-card>`, `<x-data-table>` (Alpine: search/sort/paginate cliente), `<x-chart>` (ApexCharts lazy), `<x-progress>`, `<x-spinner>` |
+| Forms | `<x-input>`, `<x-textarea>`, `<x-select>` (con `tomselect` flag), `<x-checkbox>`, `<x-radio>`, `<x-toggle>`, `<x-input-currency>` (RULE 7), `<x-quantity-stepper>` |
+| Datos | `<x-stat-card>`, `<x-data-table>` (Alpine: search/sort/paginate cliente), `<x-table-enhanced>` + `<x-th-sort>`, `<x-chart>` (ApexCharts vía `window.makeChart`), `<x-progress>`, `<x-spinner>` |
 | Feedback | `<x-alert>` (info/success/warning/danger, dismissible), `<x-badge>`, `<x-empty-state>`, `<x-tooltip>` |
 | Overlays | `<x-modal>` (Preline), `<x-dropdown>` + `<x-dropdown-item>` |
 | Nav | `<x-tabs>`, `<x-accordion>` |
@@ -175,9 +197,13 @@ Core tables: `users`, `roles`, `permissions`, `model_has_roles`, `model_has_perm
 **Rules when reusing:**
 1. Si necesitas algo que no existe, **primero extiende un componente** vía slots/atributos antes de crear uno nuevo. Si genuinamente falta, **crealo en `resources/views/components/`** siguiendo el mismo patrón (props + `$attributes->merge()` + variantes light/dark) y registralo en el showcase `resources/views/components-showcase.blade.php` para que quede visible.
 2. Si estas tentado a copiar Bootstrap classes (`form-control`, `btn`, `card`, `alert-*`, `badge`, `bg-primary`...): **NO**. Bootstrap fue removido. Usa `<x-button>`, `<x-input>`, `<x-card>`, `<x-alert>`, etc.
-3. Para iconos usa **siempre** `<x-icon name="kebab-case">` (Lucide). Si el icono que necesitas no esta en `usedIcons` de `resources/js/app.js`, **agregalo al import curado** ahi mismo (named import desde `lucide`); de lo contrario el icono no se renderiza para evitar inflar el bundle.
+3. Para iconos usa **siempre** `<x-icon name="kebab-case">` (Lucide). Si el icono que necesitas no esta en `resources/js/app.js`, agregalo en **los dos lugares**: el named import `import { ... } from 'lucide'` **y** el objeto `const usedIcons = { ... }` (PascalCase en ambos). Si falta en cualquiera, el icono no se renderiza.
 4. Iconos: respeta el set ya importado. Antes de inventar nuevos, revisa los disponibles en el showcase.
-5. Para tablas usa `<x-data-table>` (cliente, hasta ~1000 filas). Para datasets grandes paginados desde el servidor, crea una tabla server-side reutilizando los estilos del componente, no DataTables (no esta instalado).
+5. Tablas — dos opciones, ambas en cliente:
+   - `<x-data-table>`: la tabla se define por props/columnas (hasta ~1000 filas).
+   - `<x-table-enhanced>` (la más usada en los módulos): envuelve una `<table>` Blade ya renderizada y le agrega búsqueda/filtros/orden/paginación. Marca `<tbody data-enhance>`, cada `<tr data-row>`, y usa `<x-th-sort :col="N">` en los `<th>` ordenables; los `<tfoot>` de totales quedan intactos. Ejemplo: `resources/views/nomina/index.blade.php`.
+   - No hay DataTables JS (yajra está en composer pero sin uso). Para datasets grandes, paginación server-side con los estilos de estos componentes.
+6. `<x-table-enhanced>`, `<x-th-sort>` y `<x-quantity-stepper>` aún **no** están en el showcase — regístralos si los tocas.
 
 ---
 
@@ -274,7 +300,9 @@ Toda funcionalidad nueva debe seguir SOLID y los patrones que ya estan en uso. C
 
 ### Patrones recomendados (usalos cuando aplican, no a la fuerza)
 
-| Patron | Cuando usar | Ejemplo en este proyecto |
+> Los ejemplos `Pedido*` de esta tabla son **nombres ilustrativos**, no archivos existentes. Hoy existen `Services/`, `Enums/`, `Observers/` y `Http/Requests/`; **no** existen `Policies/`, `Actions/`, `Data/`, `Queries/`, `Events/`, `Listeners/` ni `Http/Resources/`, y `AppServiceProvider::register()` no tiene bindings. Créalos cuando el patrón aplique.
+
+| Patron | Cuando usar | Ejemplo (nombre ilustrativo) |
 |---|---|---|
 | **Service layer** | Logica de negocio reusable, transacciones, orquestacion. **Default para cualquier feature no-trivial.** | `app/Services/PedidoService.php` |
 | **Repository** (opcional) | Cuando quieres aislar Eloquent del codigo de negocio o tener fallbacks (cache, alternativos). En proyectos pequeños es over-engineering — **prefiere Eloquent directo en el service**. | Solo si la complejidad lo justifica |
@@ -426,12 +454,12 @@ Cuando vayas a agregar un modulo (ej. "Pedidos", "Productos"), recorre **en este
 5. **Policies** — `viewAny`, `view`, `create`, `update`, `delete`, etc. Registrar en `AuthServiceProvider::policies`.
 6. **Service / Action** — logica de negocio. Inyectada en controller. Usa transacciones cuando toca multiples tablas.
 7. **Controller** — delgado, resource standard. Llama service, retorna view/redirect/JSON.
-8. **Routes** — `routes/web.php` con middleware `auth` + `role:admin`. Resource routes preferido.
+8. **Routes** — `routes/web.php`, dentro del grupo `['auth', 'role:admin']` salvo que el módulo sea operativo diario (como Caja/Mercado, que están solo en `auth`) — pregunta si no está claro. Resource routes preferido.
 9. **Vistas** — `resources/views/<modulo>/`. **Reutiliza componentes** (RULE 1). Theme aware (RULE 2). Responsive mobile-first.
 9.5. **Uploads** — si el modulo recibe archivos (imagenes, PDFs, etc.), sigue **RULE 6**: directo a `public/uploads/{modulo}/`. Nunca `Storage::`.
 9.6. **Inputs de moneda** — si el modulo captura valores en pesos (precio, total, costo, valor), sigue **RULE 7**: usa `<x-input-currency>` y un accessor `getXxxFormateadoAttribute()` para mostrarlo. Nunca `<x-input type="number">` para dinero.
 10. **Sidebar** — agrega link en `resources/views/layouts/navigation-vertical.blade.php` con icono Lucide.
-11. **Seeder** — datos demo coherentes en `database/seeders/`. Ejecutar `migrate:fresh --seed` y confirmar.
+11. **Seeder** — datos demo coherentes en `database/seeders/`. Catálogos de referencia: seeder idempotente (`updateOrCreate`) llamado desde `DatabaseSeeder`; datos demo: llamarlo desde `DemoSeeder`. Verifica en SQLite/tests o en una BD de prueba — `migrate:fresh --seed` sobre la BD local solo con permiso (RULE 0).
 12. **Tests** — al menos un Feature test del happy path + autorizacion (`tests/Feature/<Modulo>Test.php`).
 13. **Verificacion manual** — abrir el modulo en navegador, recorrer create/edit/delete, modo claro y oscuro, mobile (DevTools 375px) y desktop. Lighthouse mobile > 90.
 14. **Build** — `npm run build` antes de cerrar la tarea, confirmar bundle no inflado.
