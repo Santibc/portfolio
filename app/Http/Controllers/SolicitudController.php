@@ -1203,6 +1203,10 @@ class SolicitudController extends Controller
      */
     public function descargarPdf(SolicitudCotizacion $solicitud)
     {
+        // Red de seguridad: cotizaciones con muchos ítems/imágenes pueden tardar.
+        @set_time_limit(300);
+        @ini_set('memory_limit', '512M');
+
         $user = Auth::user();
 
         // Verificar que sea admin o vendedor
