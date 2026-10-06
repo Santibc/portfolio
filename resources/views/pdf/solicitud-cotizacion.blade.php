@@ -250,7 +250,7 @@
             <tr>
                 <td class="text-center">
                     @if($item->producto && $item->producto->imagenPrincipal)
-                        <img src="{{ public_path($item->producto->imagenPrincipal->ruta_imagen) }}"
+                        <img src="{{ $item->producto->imagenPrincipal->rutaImagenPdf() }}"
                              class="product-image"
                              alt="{{ $item->nombre_producto }}">
                     @else
