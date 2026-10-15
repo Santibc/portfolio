@@ -322,6 +322,13 @@
             <span class="flex-1">Usuarios</span>
             @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(247,147,30,0.8)]"></span>@endif
         </a>
+
+        @php [$active, $cls] = $navItem('pagina-web.negocio.edit', 'globe', 'Página web', 'pagina-web.*'); @endphp
+        <a href="{{ route('pagina-web.negocio.edit') }}" class="{{ $cls }}">
+            <x-icon name="globe" class="w-4 h-4" />
+            <span class="flex-1">Página web</span>
+            @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(247,147,30,0.8)]"></span>@endif
+        </a>
     @endif
 
     @php [$active, $cls] = $navItem('components.showcase', 'component', 'Componentes'); @endphp

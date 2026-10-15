@@ -12,8 +12,10 @@
 ])
 
 @php
-    $id = $id ?? $name;
-    $err = $error ?? ($name ? $errors->first($name) : null);
+    // Nombres tipo "textos[hero]": el error vive en "textos.hero" y el id no lleva corchetes.
+    $clave = $name ? str_replace(['[]', '[', ']'], ['', '.', ''], $name) : null;
+    $id = $id ?? ($name ? str_replace(['[]', '[', ']'], ['', '-', ''], $name) : null);
+    $err = $error ?? ($clave ? $errors->first($clave) : null);
 @endphp
 
 <div class="w-full">

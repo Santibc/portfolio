@@ -1,3 +1,9 @@
+@php
+    use App\Enums\TextoLanding as T;
+
+    $fotoHero = $fotos->get('hero');
+    $fotoMini = $fotos->get('hero_mini');
+@endphp
 <section id="inicio" class="relative overflow-hidden pb-20 pt-28 sm:pt-32 lg:pb-28 lg:pt-40">
     {{-- Halos cálidos de fondo --}}
     <div aria-hidden="true" class="pointer-events-none absolute -right-48 -top-24 h-[38rem] w-[38rem] rounded-full bg-gold-300/30 blur-3xl dark:bg-primary-700/20"></div>
@@ -5,17 +11,16 @@
 
     <div class="relative mx-auto grid max-w-7xl items-center gap-16 px-5 sm:px-8 lg:grid-cols-12 lg:gap-10">
         <div class="lg:col-span-7 xl:col-span-6">
-            <p class="eyebrow" data-anim-hero="fade">Panadería &amp; Pastelería · {{ $negocio->barrio }}, Bogotá</p>
+            <p class="eyebrow" data-anim-hero="fade">{{ $textos->texto(T::HeroEtiqueta) }}</p>
 
             <h1 data-hero-titulo data-anim-hero="titulo"
-                class="mt-6 font-serif font-normal leading-[0.98] tracking-tight text-cream-950 dark:text-cream-50"
+                class="em-dorado mt-6 font-serif font-normal leading-[0.98] tracking-tight text-cream-950 dark:text-cream-50"
                 style="font-size: clamp(2.7rem, 1.4rem + 4vw, 5.3rem)">
-                Pan <em class="font-normal italic text-primary-500 dark:text-primary-300">dorado</em>, horneado con amor cada mañana.
+                {{ $textos->html(T::HeroTitulo) }}
             </h1>
 
             <p data-anim-hero="fade" class="mt-7 max-w-xl text-base leading-relaxed text-cream-700 sm:text-lg dark:text-cream-300">
-                Pan artesanal, pastelería y tortas por encargo, hechos a mano en nuestro horno del barrio {{ $negocio->barrio }}.
-                Escríbenos por WhatsApp y te lo tenemos listo.
+                {{ $textos->texto(T::HeroTexto) }}
             </p>
 
             <div data-anim-hero="fade" class="mt-9 flex flex-wrap items-center gap-3">
@@ -23,9 +28,11 @@
                     @include('landing.partials.icono-whatsapp', ['clase' => 'h-5 w-5'])
                     Pide por WhatsApp
                 </a>
-                <a href="#productos" class="btn-landing-secundario">
-                    Ver productos <x-icon name="arrow-right" class="h-4 w-4" />
-                </a>
+                @if ($productos->isNotEmpty())
+                    <a href="#productos" class="btn-landing-secundario">
+                        Ver productos <x-icon name="arrow-right" class="h-4 w-4" />
+                    </a>
+                @endif
             </div>
 
             <dl data-anim-hero="fade" class="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-cream-900/10 pt-7 dark:border-white/10">
@@ -44,32 +51,39 @@
                 <div aria-hidden="true" class="arco absolute inset-0 translate-x-4 translate-y-4 border border-gold-500/70 dark:border-gold-300/30"></div>
 
                 <div data-anim-hero="arco" class="arco relative aspect-[4/5] overflow-hidden bg-cream-200 shadow-[0_40px_80px_-30px_rgb(52_37_24/0.55)] dark:bg-cream-900">
-                    <img data-parallax="5"
-                         src="{{ asset('images/landing/hero-640.webp') }}"
-                         srcset="{{ asset('images/landing/hero-640.webp') }} 640w, {{ asset('images/landing/hero-1200.webp') }} 1200w"
-                         sizes="(min-width: 1024px) 30rem, 90vw"
-                         width="1200" height="1500" fetchpriority="high" decoding="async"
-                         alt="Panes artesanales recién horneados junto a espigas de trigo"
-                         class="absolute inset-x-0 -top-[6%] h-[112%] w-full object-cover">
+                    @if ($fotoHero?->hasImagen())
+                        <img data-parallax="5" src="{{ $fotoHero->imagen_url }}"
+                             @if ($fotoHero->imagen_srcset) srcset="{{ $fotoHero->imagen_srcset }}" sizes="(min-width: 1024px) 30rem, 90vw" @endif
+                             fetchpriority="high" decoding="async" alt="{{ $fotoHero->textoAlternativo() }}"
+                             class="absolute inset-x-0 -top-[6%] h-[112%] w-full object-cover">
+                    @else
+                        <x-landing.foto-pendiente texto="Foto principal" class="absolute inset-0 border-0" />
+                    @endif
                 </div>
 
                 {{-- Tarjeta flotante --}}
                 <div data-anim-hero="pop" class="absolute -left-3 bottom-8 flex items-center gap-3 rounded-2xl bg-white/90 p-2.5 pr-5 shadow-soft-lg backdrop-blur sm:-left-12 sm:bottom-12 dark:bg-cream-900/90">
-                    <img src="{{ asset('images/landing/hero-croissant-320.webp') }}" width="320" height="320" alt="" class="h-14 w-14 rounded-xl object-cover">
+                    @if ($fotoMini?->hasImagen())
+                        <img src="{{ $fotoMini->imagen_url }}" alt="" class="h-14 w-14 rounded-xl object-cover">
+                    @else
+                        <span class="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/60 dark:text-primary-200">
+                            <x-icon name="croissant" class="h-6 w-6" />
+                        </span>
+                    @endif
                     <div>
-                        <p class="font-serif text-xl leading-tight text-cream-950 dark:text-cream-50">Recién horneado</p>
-                        <p class="text-xs text-cream-600 dark:text-cream-400">Varias horneadas al día</p>
+                        <p class="font-serif text-xl leading-tight text-cream-950 dark:text-cream-50">{{ $textos->texto(T::HeroTarjetaTitulo) }}</p>
+                        <p class="text-xs text-cream-600 dark:text-cream-400">{{ $textos->texto(T::HeroTarjetaTexto) }}</p>
                     </div>
                 </div>
 
-                {{-- Sello giratorio con el lema del logo --}}
+                {{-- Sello giratorio con el lema y el nombre --}}
                 <div data-anim-hero="pop" class="absolute -right-2 -top-8 h-28 w-28 sm:-right-10 sm:h-36 sm:w-36">
                     <svg class="sello-giro absolute inset-0 h-full w-full text-primary-600 dark:text-gold-300" viewBox="0 0 200 200" aria-hidden="true">
                         <defs>
                             <path id="circulo-sello" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0" />
                         </defs>
                         <text fill="currentColor" font-size="15" font-weight="600" letter-spacing="2">
-                            <textPath href="#circulo-sello" textLength="500" lengthAdjust="spacing">CALIDAD &amp; SERVICIO · EL PAN DORADO DC ·</textPath>
+                            <textPath href="#circulo-sello" textLength="500" lengthAdjust="spacing">{{ mb_strtoupper($negocio->lema.' · '.$negocio->nombre.' ·') }}</textPath>
                         </text>
                     </svg>
                     <div class="absolute inset-[21%] grid place-items-center rounded-full bg-cream-50 shadow-soft dark:bg-cream-950">

@@ -10,6 +10,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolesAndPermissionsSeeder::class,
+            // Contenido inicial de la landing pública (módulo "Página web")
+            LandingSeeder::class,
             // Mercado / Productos
             TiposProductoMercadoSeeder::class,
             ProductosMercadoDemoSeeder::class,

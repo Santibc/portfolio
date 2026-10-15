@@ -19,6 +19,7 @@ use App\Http\Controllers\MenuDiaController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MetodoPagoController;
 use App\Http\Controllers\NominaController;
+use App\Http\Controllers\PaginaWeb;
 use App\Http\Controllers\PagoAhorroController;
 use App\Http\Controllers\PagoAhorroNominaController;
 use App\Http\Controllers\PagoNominaController;
@@ -185,6 +186,23 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // === USUARIOS (crear usuarios y asignar rol: admin o ventas) ===
     Route::resource('usuarios', UsuarioController::class)->except(['show']);
+
+    // Página web: contenido de la landing pública
+    Route::prefix('pagina-web')->name('pagina-web.')->group(function () {
+        Route::redirect('/', 'pagina-web/negocio')->name('index');
+        Route::get('negocio', [PaginaWeb\NegocioController::class, 'edit'])->name('negocio.edit');
+        Route::put('negocio', [PaginaWeb\NegocioController::class, 'update'])->name('negocio.update');
+        Route::get('textos', [PaginaWeb\TextoController::class, 'edit'])->name('textos.edit');
+        Route::put('textos', [PaginaWeb\TextoController::class, 'update'])->name('textos.update');
+        Route::get('fotos', [PaginaWeb\FotoController::class, 'index'])->name('fotos.index');
+        Route::put('fotos/{foto}', [PaginaWeb\FotoController::class, 'update'])->name('fotos.update');
+        Route::delete('fotos/{foto}', [PaginaWeb\FotoController::class, 'destroy'])->name('fotos.destroy');
+        Route::resource('productos', PaginaWeb\ProductoController::class)->except(['show']);
+        Route::resource('proceso', PaginaWeb\PasoController::class)->except(['show'])
+            ->parameters(['proceso' => 'paso']);
+        Route::resource('galeria', PaginaWeb\GaleriaController::class)->except(['show'])
+            ->parameters(['galeria' => 'foto']);
+    });
 
     // === AJUSTES MANUALES DE INVENTARIO (stock inicial, conteo físico, mermas) ===
     Route::post('inventario/{producto}/ajustes', [AjusteInventarioController::class, 'store'])->name('inventario.ajustes.store');

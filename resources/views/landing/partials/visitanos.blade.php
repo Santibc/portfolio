@@ -2,7 +2,7 @@
     <div class="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-12">
         <div class="lg:col-span-5">
             <p class="eyebrow">Visítanos</p>
-            <h2 data-split class="titulo-seccion mt-5">Te esperamos con el <em>horno</em> encendido</h2>
+            <h2 data-split class="titulo-seccion mt-5">{{ $textos->html(\App\Enums\TextoLanding::VisitanosTitulo) }}</h2>
 
             <ul class="mt-10 space-y-7">
                 <li data-anim class="flex gap-4">
@@ -12,7 +12,7 @@
                     <div>
                         <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-cream-600 dark:text-cream-400">Dirección</p>
                         <p class="mt-1 text-lg text-cream-950 dark:text-cream-50">{{ $negocio->direccion }}</p>
-                        <p class="text-cream-700 dark:text-cream-300">Barrio {{ $negocio->barrio }}, {{ $negocio->ciudad }}</p>
+                        <p class="text-cream-700 dark:text-cream-300">{{ $negocio->barrio ? 'Barrio '.$negocio->barrio.', ' : '' }}{{ $negocio->ciudad }}</p>
                     </div>
                 </li>
                 <li data-anim class="flex gap-4">
@@ -24,22 +24,24 @@
                         <a href="{{ $negocio->telUrl() }}" class="mt-1 inline-block text-lg text-cream-950 transition-colors hover:text-primary-600 dark:text-cream-50 dark:hover:text-primary-300">{{ $negocio->telefonoVisible() }}</a>
                     </div>
                 </li>
-                <li data-anim class="flex gap-4">
-                    <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 dark:bg-primary-900/60 dark:text-primary-200">
-                        <x-icon name="clock" class="h-5 w-5" />
-                    </span>
-                    <div class="flex-1">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-cream-600 dark:text-cream-400">Horario</p>
-                        <dl class="mt-1 space-y-1">
-                            @foreach ($negocio->horario as $franja)
-                                <div class="flex flex-wrap justify-between gap-x-6 text-cream-950 dark:text-cream-50">
-                                    <dt>{{ $franja['dias'] }}</dt>
-                                    <dd class="text-cream-700 dark:text-cream-300">{{ $franja['horas'] }}</dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    </div>
-                </li>
+                @if ($negocio->horario)
+                    <li data-anim class="flex gap-4">
+                        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 dark:bg-primary-900/60 dark:text-primary-200">
+                            <x-icon name="clock" class="h-5 w-5" />
+                        </span>
+                        <div class="flex-1">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-cream-600 dark:text-cream-400">Horario</p>
+                            <dl class="mt-1 space-y-1">
+                                @foreach ($negocio->horario as $franja)
+                                    <div class="flex flex-wrap justify-between gap-x-6 text-cream-950 dark:text-cream-50">
+                                        <dt>{{ $franja['dias'] }}</dt>
+                                        <dd class="text-cream-700 dark:text-cream-300">{{ $franja['horas'] }}</dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+                        </div>
+                    </li>
+                @endif
             </ul>
 
             <div data-anim class="mt-10 flex flex-wrap gap-3">

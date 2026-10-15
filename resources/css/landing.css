@@ -93,6 +93,15 @@ html.lenis body {
     @apply btn-landing border border-cream-900/15 text-cream-900 hover:border-primary-500 hover:text-primary-600 dark:border-cream-100/20 dark:text-cream-100 dark:hover:border-primary-300 dark:hover:text-primary-300;
   }
 
+  /* *Cursiva* de los títulos editables desde el panel (TextosLanding::html genera <em>) */
+  .em-dorado em {
+    @apply font-normal italic text-primary-500 dark:text-primary-300;
+  }
+
+  .em-oro em {
+    @apply font-normal italic !text-gold-300;
+  }
+
   /* Arco tipo vitrina de boulangerie */
   .arco {
     border-radius: 999px 999px 2rem 2rem;

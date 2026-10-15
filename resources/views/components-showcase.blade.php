@@ -420,6 +420,14 @@
     </div>
 </x-section>
 
+{{-- ===== Input de imagen ===== --}}
+<x-section title="Input de imagen" description="x-input-imagen: elige una foto con vista previa inmediata (props: label, name, actual, proporcion, quitable, hint)" id="input-imagen">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <x-input-imagen label="Sin foto" name="demo_imagen_1" />
+        <x-input-imagen label="Con foto actual (quitable)" name="demo_imagen_2" :actual="asset('images/landing/pasteleria-600.webp')" proporcion="aspect-[4/5]" quitable />
+    </div>
+</x-section>
+
 {{-- ===== Progress / Spinners ===== --}}
 <x-section title="Progress y spinners" id="progress">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

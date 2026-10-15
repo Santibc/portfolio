@@ -10,16 +10,17 @@ import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
 import {
     createIcons,
-    ArrowRight, ArrowUpRight, Award, Camera, Clock, HeartHandshake, MapPin, Menu, Moon,
-    Navigation, Phone, Sun, Sunrise, Wheat, X,
+    ArrowRight, ArrowUpRight, Award, CakeSlice, Camera, Clock, Coffee, Croissant, Heart, HeartHandshake,
+    Leaf, MapPin, Menu, Moon, Navigation, Phone, Sparkles, Store, Sun, Sunrise, Wheat, X,
 } from 'lucide';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
+// Incluye todos los iconos de App\Enums\IconoLanding (tarjetas de "Por qué elegirnos").
 createIcons({
     icons: {
-        ArrowRight, ArrowUpRight, Award, Camera, Clock, HeartHandshake, MapPin, Menu, Moon,
-        Navigation, Phone, Sun, Sunrise, Wheat, X,
+        ArrowRight, ArrowUpRight, Award, CakeSlice, Camera, Clock, Coffee, Croissant, Heart, HeartHandshake,
+        Leaf, MapPin, Menu, Moon, Navigation, Phone, Sparkles, Store, Sun, Sunrise, Wheat, X,
     },
 });
 

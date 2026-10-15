@@ -1,15 +1,17 @@
 @php
-    $titulo = $negocio->nombre.' · Panadería y pastelería en '.$negocio->barrio.', Bogotá';
-    $descripcion = 'Pan artesanal, pastelería y tortas por encargo en el barrio '.$negocio->barrio.', Bogotá. Haz tu pedido por WhatsApp al '.$negocio->telefonoVisible().'.';
+    $lugar = trim(($negocio->barrio ? $negocio->barrio.', ' : '').$negocio->ciudad);
+    $titulo = $negocio->nombre.' · Panadería y pastelería en '.$lugar;
+    $descripcion = 'Pan artesanal, pastelería y tortas por encargo en '.$lugar.'. Haz tu pedido por WhatsApp al '.$negocio->telefonoVisible().'.';
     $imagenSocial = asset('images/landing/og-1200.jpg');
-    // Anclas del menú (nav y footer)
-    $enlaces = [
+    $fotoHero = $fotos->get('hero');
+    // Anclas del menú (nav y footer): solo las secciones que tienen contenido
+    $enlaces = array_filter([
         'historia' => 'Nosotros',
-        'productos' => 'Productos',
-        'proceso' => 'Proceso',
-        'galeria' => 'Galería',
+        'productos' => $productos->isNotEmpty() ? 'Productos' : null,
+        'proceso' => $pasos->isNotEmpty() ? 'Proceso' : null,
+        'galeria' => $galeria->isNotEmpty() ? 'Galería' : null,
         'visitanos' => 'Visítanos',
-    ];
+    ]);
 @endphp
 <!DOCTYPE html>
 <html lang="es-CO">
@@ -35,9 +37,10 @@
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
 
-    <link rel="preload" as="image" href="{{ asset('images/landing/hero-640.webp') }}"
-          imagesrcset="{{ asset('images/landing/hero-640.webp') }} 640w, {{ asset('images/landing/hero-1200.webp') }} 1200w"
-          imagesizes="(min-width: 1024px) 30rem, 90vw" fetchpriority="high">
+    @if ($fotoHero?->hasImagen())
+        <link rel="preload" as="image" href="{{ $fotoHero->imagen_url }}" fetchpriority="high"
+              @if ($fotoHero->imagen_srcset) imagesrcset="{{ $fotoHero->imagen_srcset }}" imagesizes="(min-width: 1024px) 30rem, 90vw" @endif>
+    @endif
 
     {{-- Tema (anti-FOUC, misma clave que el panel) + estado inicial de animaciones --}}
     <script>
@@ -78,12 +81,13 @@
         @include('landing.partials.hero')
         @include('landing.partials.marquesina')
         @include('landing.partials.historia')
-        @include('landing.partials.productos')
-        @include('landing.partials.proceso')
+        {{-- Las listas vacías (sin contenido en el panel) ocultan su sección --}}
+        @includeWhen($productos->isNotEmpty(), 'landing.partials.productos')
+        @includeWhen($pasos->isNotEmpty(), 'landing.partials.proceso')
         @include('landing.partials.encargos')
-        @include('landing.partials.valores')
+        @includeWhen($valores->isNotEmpty(), 'landing.partials.valores')
         @include('landing.partials.mision')
-        @include('landing.partials.galeria')
+        @includeWhen($galeria->isNotEmpty(), 'landing.partials.galeria')
         @include('landing.partials.visitanos')
     </main>
 

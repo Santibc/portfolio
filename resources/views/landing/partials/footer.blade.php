@@ -3,9 +3,7 @@
         <div class="grid gap-12 border-b border-white/10 pb-14 sm:grid-cols-2 lg:grid-cols-12">
             <div class="sm:col-span-2 lg:col-span-4">
                 <img src="{{ asset('images/logo-horizontal-dark.png') }}" alt="{{ $negocio->nombre }}" width="720" height="129" class="h-12 w-auto" loading="lazy">
-                <p class="mt-6 max-w-sm leading-relaxed text-cream-300">
-                    Pan artesanal y pastelería hechos con {{ mb_strtolower($negocio->lema) }}, en el barrio {{ $negocio->barrio }} de Bogotá.
-                </p>
+                <p class="mt-6 max-w-sm leading-relaxed text-cream-300">{{ $textos->texto(\App\Enums\TextoLanding::PieTexto) }}</p>
                 @if ($negocio->redes)
                     <ul class="mt-6 flex flex-wrap gap-3">
                         @foreach ($negocio->redes as $red => $url)
@@ -27,20 +25,22 @@
             <div class="lg:col-span-3">
                 <h2 class="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-300">Contacto</h2>
                 <ul class="mt-5 space-y-3">
-                    <li>{{ $negocio->direccion }}<br><span class="text-cream-400">Barrio {{ $negocio->barrio }}, {{ $negocio->ciudad }}</span></li>
+                    <li>{{ $negocio->direccion }}<br><span class="text-cream-400">{{ $negocio->barrio ? 'Barrio '.$negocio->barrio.', ' : '' }}{{ $negocio->ciudad }}</span></li>
                     <li><a href="{{ $negocio->telUrl() }}" class="transition-colors hover:text-gold-300">{{ $negocio->telefonoVisible() }}</a></li>
                     <li><a href="{{ $negocio->whatsappUrl() }}" target="_blank" rel="noopener" class="transition-colors hover:text-gold-300">Pedidos por WhatsApp</a></li>
                 </ul>
             </div>
 
-            <div class="lg:col-span-3">
-                <h2 class="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-300">Horario</h2>
-                <ul class="mt-5 space-y-3">
-                    @foreach ($negocio->horario as $franja)
-                        <li>{{ $franja['dias'] }}<br><span class="whitespace-nowrap text-cream-400">{{ $franja['horas'] }}</span></li>
-                    @endforeach
-                </ul>
-            </div>
+            @if ($negocio->horario)
+                <div class="lg:col-span-3">
+                    <h2 class="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-300">Horario</h2>
+                    <ul class="mt-5 space-y-3">
+                        @foreach ($negocio->horario as $franja)
+                            <li>{{ $franja['dias'] }}<br><span class="whitespace-nowrap text-cream-400">{{ $franja['horas'] }}</span></li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
 
         <div class="flex flex-col gap-4 pt-8 text-sm text-cream-400 sm:flex-row sm:items-center sm:justify-between">

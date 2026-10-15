@@ -145,12 +145,15 @@ Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
 - Globals expuestos en `window`: `Alpine`, `Swal`, `TomSelect`, `showToast(icon, title)`
 
 ### Landing pública (`/`)
-- `LandingController` (invocable) → `resources/views/landing/index.blade.php` + secciones en `landing/partials/`. La ruta conserva el nombre `welcome` (lo usa `RestringirRolVentas`).
-- **Datos del negocio en `config/panaderia.php`** (teléfono/WhatsApp, dirección, horario, historia, misión, visión, productos…). Lo marcado `PENDIENTE` es texto genérico a la espera del cliente. `App\Data\Negocio` arma los enlaces (WhatsApp, `tel:`, mapa, cómo llegar) y el JSON-LD.
-- Mapa: sin `GOOGLE_MAPS_API_KEY` usa el embed público; con key, la Maps Embed API oficial.
+- `LandingController` (invocable) → `App\Queries\ContenidoLanding` → `resources/views/landing/index.blade.php` + secciones en `landing/partials/`. La ruta conserva el nombre `welcome` (lo usa `RestringirRolVentas`).
+- **Todo el contenido se edita en el módulo "Página web"** (`/pagina-web`, solo admin, controladores en `App\Http\Controllers\PaginaWeb\`): negocio y horario, textos (enum `TextoLanding`, `*palabra*` = cursiva dorada), fotos fijas (enum `FotoLanding`), productos, pasos del proceso y galería. Tablas `landing_*` (modelo en `docs/landing-modelo-datos.md`); escrituras en `App\Services\PaginaWebService`.
+- Fotos subidas: `App\Services\ImagenLandingService` → `public/uploads/landing/` (RULE 6), WebP ≤1600 px + variante `-800`, corrige orientación EXIF; acepta hasta 8 MB. `App\Data\Negocio` arma los enlaces (WhatsApp, `tel:`, mapa, cómo llegar) y el JSON-LD.
+- Contenido inicial: `LandingSeeder` (idempotente, no pisa lo editado). En un servidor nuevo: `php artisan migrate --force` + `php artisan db:seed --class=LandingSeeder --force`.
+- Mapa: sin `GOOGLE_MAPS_API_KEY` usa el embed público; con key, la Maps Embed API oficial (`config/panaderia.php`).
 - Bundle propio (no carga el del panel): `resources/css/landing.css` + `resources/js/landing.js` — GSAP (ScrollTrigger, SplitText), Lenis, Alpine, Lucide curado. Fuentes autoalojadas: EB Garamond (titulares; **no usar Cormorant**: su versión variable descoloca las tildes) + Plus Jakarta Sans.
 - Animaciones: `data-anim` (aparece al entrar), `data-split` (título por palabras), `data-parallax="n"`, `data-contador`. Todo respeta `prefers-reduced-motion`.
-- Fotos provisionales de Unsplash en `public/images/landing/` (origen en `docs/landing-imagenes.md`); espacios para fotos del cliente con `<x-landing.foto-pendiente>`.
+- Fotos provisionales de Unsplash en `public/images/landing/` (fuente del seeder; origen en `docs/landing-imagenes.md`). Sin foto, la landing muestra `<x-landing.foto-pendiente>`; las listas vacías ocultan su sección.
+- Los iconos de `IconoLanding` deben estar importados en `resources/js/landing.js`.
 
 ### Database
 MySQL en 127.0.0.1:3306 (sin password en XAMPP local). Nombre en `.env` (`DB_DATABASE`).

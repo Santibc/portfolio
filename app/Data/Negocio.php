@@ -4,70 +4,61 @@ declare(strict_types=1);
 
 namespace App\Data;
 
+use App\Models\LandingAjuste;
+
 /**
- * Datos públicos de la panadería (config/panaderia.php) y los enlaces derivados
- * que usa la landing: WhatsApp, llamada, mapa embebido y "cómo llegar".
+ * Datos públicos del negocio (módulo "Página web") y los enlaces derivados que usa la
+ * landing: WhatsApp, llamada, mapa embebido y "cómo llegar".
  */
 final class Negocio
 {
+    private const PAIS = 'Colombia';
+
     /**
-     * @param array<int, array{dias: string, horas: string}> $horario
-     * @param array<string, ?string> $redes
-     * @param array<int, string> $historia
-     * @param array<int, array{valor: int, prefijo: string, sufijo: string, texto: string}> $cifras
-     * @param array<int, array{icono: string, titulo: string, texto: string}> $valores
-     * @param array<int, array{titulo: string, descripcion: string, imagen: string}> $productos
+     * @param list<array{dias: string, horas: string}> $horario
+     * @param array<string, string> $redes red => URL
      */
     public function __construct(
         public readonly string $nombre,
         public readonly string $nombreLargo,
         public readonly string $lema,
-        public readonly string $propietaria,
-        public readonly string $propietariaCargo,
+        public readonly ?string $propietaria,
+        public readonly ?string $propietariaCargo,
         public readonly string $telefono,
         public readonly string $whatsapp,
         public readonly string $whatsappMensaje,
         public readonly string $direccion,
-        public readonly string $barrio,
+        public readonly ?string $barrio,
         public readonly string $ciudad,
-        public readonly string $pais,
         public readonly ?string $mapsApiKey,
         public readonly array $horario,
         public readonly array $redes,
-        public readonly array $historia,
-        public readonly array $cifras,
-        public readonly string $mision,
-        public readonly string $vision,
-        public readonly array $valores,
-        public readonly array $productos,
     ) {
     }
 
-    /** @param array<string, mixed> $config */
-    public static function desdeConfig(array $config): self
+    /** @param iterable<\App\Models\LandingHorario> $horarios */
+    public static function desde(LandingAjuste $ajuste, iterable $horarios, ?string $mapsApiKey): self
     {
+        $horario = [];
+        foreach ($horarios as $franja) {
+            $horario[] = ['dias' => $franja->dias, 'horas' => $franja->horas];
+        }
+
         return new self(
-            nombre: $config['nombre'],
-            nombreLargo: $config['nombre_largo'],
-            lema: $config['lema'],
-            propietaria: $config['propietaria'],
-            propietariaCargo: $config['propietaria_cargo'],
-            telefono: $config['telefono'],
-            whatsapp: $config['whatsapp'],
-            whatsappMensaje: $config['whatsapp_mensaje'],
-            direccion: $config['direccion'],
-            barrio: $config['barrio'],
-            ciudad: $config['ciudad'],
-            pais: $config['pais'],
-            mapsApiKey: $config['maps_api_key'] ?: null,
-            horario: $config['horario'],
-            redes: array_filter($config['redes']),
-            historia: $config['historia'],
-            cifras: $config['cifras'],
-            mision: $config['mision'],
-            vision: $config['vision'],
-            valores: $config['valores'],
-            productos: $config['productos'],
+            nombre: $ajuste->nombre,
+            nombreLargo: $ajuste->nombre_largo,
+            lema: $ajuste->lema,
+            propietaria: $ajuste->propietaria,
+            propietariaCargo: $ajuste->propietaria_cargo,
+            telefono: $ajuste->telefono,
+            whatsapp: $ajuste->whatsapp,
+            whatsappMensaje: $ajuste->whatsapp_mensaje,
+            direccion: $ajuste->direccion,
+            barrio: $ajuste->barrio,
+            ciudad: $ajuste->ciudad,
+            mapsApiKey: $mapsApiKey ?: null,
+            horario: $horario,
+            redes: $ajuste->redes(),
         );
     }
 
@@ -89,7 +80,7 @@ final class Negocio
 
     public function direccionCompleta(): string
     {
-        return "{$this->direccion}, {$this->barrio}, {$this->ciudad}";
+        return implode(', ', array_filter([$this->direccion, $this->barrio, $this->ciudad]));
     }
 
     public function mapaEmbedUrl(): string
@@ -135,6 +126,6 @@ final class Negocio
 
     private function direccionParaMapa(): string
     {
-        return "{$this->direccion}, {$this->ciudad}, {$this->pais}";
+        return "{$this->direccion}, {$this->ciudad}, ".self::PAIS;
     }
 }
