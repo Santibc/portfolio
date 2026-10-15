@@ -1,0 +1,393 @@
+- generic [active] [ref=f26e1]:
+  - link "Saltar al contenido" [ref=f26e2] [cursor=pointer]:
+    - /url: "#contenido"
+  - banner [ref=f26e3]:
+    - navigation "Principal" [ref=f26e4]:
+      - link "El Pan Dorado DC, ir al inicio" [ref=f26e5] [cursor=pointer]:
+        - /url: "#inicio"
+        - img "El Pan Dorado DC" [ref=f26e6]
+      - generic [ref=f26e7]:
+        - button "Cambiar entre modo claro y oscuro" [ref=f26e8] [cursor=pointer]
+        - button "Abrir menú" [ref=f26e12] [cursor=pointer]
+  - main [ref=f26e15]:
+    - generic [ref=f26e17]:
+      - generic [ref=f26e18]:
+        - paragraph [ref=f26e19]: Panadería & Pastelería · Primavera, Bogotá
+        - heading "Pan dorado, horneado con amor cada mañana." [level=1] [ref=f26e20]:
+          - generic [aria-hidden] [ref=f26e22]:
+            - generic [aria-hidden] [ref=f26e23]: Pan
+            - emphasis [ref=f26e24]:
+              - generic [aria-hidden] [ref=f26e25]: dorado
+            - generic [aria-hidden] [ref=f26e26]: ","
+          - generic [aria-hidden] [ref=f26e28]:
+            - generic [aria-hidden] [ref=f26e29]: horneado
+            - generic [aria-hidden] [ref=f26e30]: con
+            - generic [aria-hidden] [ref=f26e31]: amor
+          - generic [aria-hidden] [ref=f26e33]:
+            - generic [aria-hidden] [ref=f26e34]: cada
+            - generic [aria-hidden] [ref=f26e35]: mañana.
+        - paragraph [ref=f26e36]: Pan artesanal, pastelería y tortas por encargo, hechos a mano en nuestro horno del barrio Primavera. Escríbenos por WhatsApp y te lo tenemos listo.
+        - generic [ref=f26e37]:
+          - link "Pide por WhatsApp" [ref=f26e38] [cursor=pointer]:
+            - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20hacer%20un%20pedido.
+          - link "Ver productos" [ref=f26e41] [cursor=pointer]:
+            - /url: "#productos"
+        - generic [ref=f26e44]:
+          - generic [ref=f26e45]:
+            - term [ref=f26e46]: Horneado
+            - definition [ref=f26e47]: Diario
+          - generic [ref=f26e48]:
+            - term [ref=f26e49]: Recetas
+            - definition [ref=f26e50]: De casa
+          - generic [ref=f26e51]:
+            - term [ref=f26e52]: Pedidos
+            - definition [ref=f26e53]: WhatsApp
+      - generic [ref=f26e55]:
+        - img "Panes artesanales recién horneados junto a espigas de trigo" [ref=f26e58]
+        - generic [ref=f26e60]:
+          - paragraph [ref=f26e61]: Recién horneado
+          - paragraph [ref=f26e62]: Varias horneadas al día
+        - img [aria-hidden] [ref=f26e64]:
+          - generic [ref=f26e65]: CALIDAD & SERVICIO · EL PAN DORADO DC ·
+    - generic [ref=f26e68]:
+      - generic [ref=f26e69]: Pan artesanal
+      - generic [ref=f26e72]: Pastelería
+      - generic [ref=f26e75]: Tortas por encargo
+      - generic [ref=f26e78]: Hojaldres
+      - generic [ref=f26e81]: Desayunos
+      - generic [ref=f26e84]: Galletas
+      - generic [ref=f26e87]: Café
+      - generic [ref=f26e90]: Calidad & Servicio
+      - generic [ref=f26e93]: Pan artesanal
+      - generic [ref=f26e96]: Pastelería
+      - generic [ref=f26e99]: Tortas por encargo
+      - generic [ref=f26e102]: Hojaldres
+      - generic [ref=f26e105]: Desayunos
+      - generic [ref=f26e108]: Galletas
+      - generic [ref=f26e111]: Café
+      - generic [ref=f26e114]: Calidad & Servicio
+    - generic [ref=f26e118]:
+      - generic [ref=f26e119]:
+        - img "Croissants dorados recién horneados en la vitrina" [ref=f26e121]
+        - 'img "Foto del local: Próximamente" [ref=f26e123]':
+          - generic [ref=f26e128]: Foto del local
+          - generic [ref=f26e129]: Próximamente
+      - generic [ref=f26e130]:
+        - paragraph [ref=f26e131]: Nuestra historia
+        - heading "Una tradición que huele a pan recién hecho" [level=2] [ref=f26e132]:
+          - generic [aria-hidden] [ref=f26e134]:
+            - generic [aria-hidden] [ref=f26e135]: Una
+            - generic [aria-hidden] [ref=f26e136]: tradición
+            - generic [aria-hidden] [ref=f26e137]: que
+            - emphasis [ref=f26e138]:
+              - generic [aria-hidden] [ref=f26e139]: huele
+            - generic [aria-hidden] [ref=f26e140]: a
+          - generic [aria-hidden] [ref=f26e142]:
+            - generic [aria-hidden] [ref=f26e143]: pan
+            - generic [aria-hidden] [ref=f26e144]: recién
+            - generic [aria-hidden] [ref=f26e145]: hecho
+        - paragraph [ref=f26e146]: "Nacimos con una idea sencilla: que cada mañana el barrio despierte con el olor del pan recién horneado. Desde nuestro horno en Primavera preparamos panes, hojaldres y tortas con recetas de casa, ingredientes seleccionados y mucha paciencia."
+        - paragraph [ref=f26e147]: Creemos que el buen pan se hace sin afán. Por eso amasamos a mano, respetamos los tiempos de cada masa y horneamos varias veces al día, para que siempre encuentres algo calientico en nuestra vitrina.
+        - generic [ref=f26e150]:
+          - paragraph [ref=f26e151]: Dorahaliz Corzo Quijano
+          - paragraph [ref=f26e152]: Propietaria
+        - generic [ref=f26e153]:
+          - generic [ref=f26e154]:
+            - term [ref=f26e155]: productos horneados a diario
+            - definition [ref=f26e156]: "+0"
+          - generic [ref=f26e157]:
+            - term [ref=f26e158]: hecho en nuestro horno
+            - definition [ref=f26e159]: 0%
+          - generic [ref=f26e160]:
+            - term [ref=f26e161]: sale la primera horneada
+            - definition [ref=f26e162]: 0 a.m.
+    - generic [ref=f26e164]:
+      - generic [ref=f26e165]:
+        - generic [ref=f26e166]:
+          - paragraph [ref=f26e167]: Lo que horneamos
+          - heading "Hecho a mano, todos los días" [level=2] [ref=f26e168]:
+            - generic [aria-hidden] [ref=f26e170]:
+              - generic [aria-hidden] [ref=f26e171]: Hecho
+              - generic [aria-hidden] [ref=f26e172]: a
+              - generic [aria-hidden] [ref=f26e173]: mano,
+              - emphasis [ref=f26e174]:
+                - generic [aria-hidden] [ref=f26e175]: todos
+              - generic [aria-hidden] [ref=f26e176]: los
+            - generic [aria-hidden] [ref=f26e179]: días
+        - paragraph [ref=f26e180]: "Del pan de la mañana a la torta de tu celebración. Elige lo que se te antoje y pídelo por WhatsApp: te lo tenemos listo."
+      - generic [ref=f26e181]:
+        - article [ref=f26e183]:
+          - img "Pan artesanal" [ref=f26e184]
+          - generic [ref=f26e186]:
+            - text: "01"
+            - heading "Pan artesanal" [level=3] [ref=f26e187]
+            - paragraph [ref=f26e188]: Masas de fermentación lenta, corteza crujiente y miga suave.
+            - link "Pedir Pan artesanal" [ref=f26e189] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Pan%20artesanal.
+              - text: Pedir
+              - generic [ref=f26e190]: Pan artesanal
+        - article [ref=f26e195]:
+          - img "Pan tradicional" [ref=f26e196]
+          - generic [ref=f26e198]:
+            - text: "02"
+            - heading "Pan tradicional" [level=3] [ref=f26e199]
+            - paragraph [ref=f26e200]: Pan de sal, mogollas, roscones y los clásicos de la mañana.
+            - link "Pedir Pan tradicional" [ref=f26e201] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Pan%20tradicional.
+              - text: Pedir
+              - generic [ref=f26e202]: Pan tradicional
+        - article [ref=f26e207]:
+          - img "Pastelería" [ref=f26e208]
+          - generic [ref=f26e210]:
+            - text: "03"
+            - heading "Pastelería" [level=3] [ref=f26e211]
+            - paragraph [ref=f26e212]: Hojaldres, croissants y pasteles recién salidos del horno.
+            - link "Pedir Pastelería" [ref=f26e213] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Pasteler%C3%ADa.
+              - text: Pedir
+              - generic [ref=f26e214]: Pastelería
+        - article [ref=f26e219]:
+          - img "Tortas por encargo" [ref=f26e220]
+          - generic [ref=f26e222]:
+            - text: "04"
+            - heading "Tortas por encargo" [level=3] [ref=f26e223]
+            - paragraph [ref=f26e224]: Cumpleaños, bautizos y celebraciones, a tu gusto.
+            - link "Pedir Tortas por encargo" [ref=f26e225] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Tortas%20por%20encargo.
+              - text: Pedir
+              - generic [ref=f26e226]: Tortas por encargo
+        - article [ref=f26e231]:
+          - img "Desayunos y café" [ref=f26e232]
+          - generic [ref=f26e234]:
+            - text: "05"
+            - heading "Desayunos y café" [level=3] [ref=f26e235]
+            - paragraph [ref=f26e236]: Un buen café con algo recién horneado para empezar el día.
+            - link "Pedir Desayunos y café" [ref=f26e237] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Desayunos%20y%20caf%C3%A9.
+              - text: Pedir
+              - generic [ref=f26e238]: Desayunos y café
+        - article [ref=f26e243]:
+          - img "Galletas y postres" [ref=f26e244]
+          - generic [ref=f26e246]:
+            - text: "06"
+            - heading "Galletas y postres" [level=3] [ref=f26e247]
+            - paragraph [ref=f26e248]: Antojos dulces para compartir o llevar de regalo.
+            - link "Pedir Galletas y postres" [ref=f26e249] [cursor=pointer]:
+              - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20pedir%3A%20Galletas%20y%20postres.
+              - text: Pedir
+              - generic [ref=f26e250]: Galletas y postres
+    - generic [ref=f26e254]:
+      - generic [ref=f26e256]:
+        - generic [ref=f26e257]:
+          - paragraph [ref=f26e258]: Del horno a tu mesa
+          - heading "Así nace cada pan" [level=2] [ref=f26e259]:
+            - generic [aria-hidden] [ref=f26e261]:
+              - generic [aria-hidden] [ref=f26e262]: Así
+              - generic [aria-hidden] [ref=f26e263]: nace
+              - emphasis [ref=f26e264]:
+                - generic [aria-hidden] [ref=f26e265]: cada
+              - generic [aria-hidden] [ref=f26e266]: pan
+        - paragraph [ref=f26e267]: "Sin atajos: buenos ingredientes, manos expertas y el tiempo que cada masa necesita."
+      - list [ref=f26e269]:
+        - listitem [ref=f26e270]:
+          - article [ref=f26e271]:
+            - generic [ref=f26e272]:
+              - img "Harina y huevos frescos en un recipiente" [ref=f26e273]
+              - generic [ref=f26e274]: "01"
+            - generic [ref=f26e275]:
+              - heading "Ingredientes seleccionados" [level=3] [ref=f26e276]
+              - paragraph [ref=f26e277]: Harinas de calidad, mantequilla, huevos frescos y nada de afanes. Todo empieza por lo que ponemos en la mesa de trabajo.
+        - listitem [ref=f26e278]:
+          - article [ref=f26e279]:
+            - generic [ref=f26e280]:
+              - img "Manos amasando una masa de pan sobre harina" [ref=f26e281]
+              - generic [ref=f26e282]: "02"
+            - generic [ref=f26e283]:
+              - heading "Amasado a mano" [level=3] [ref=f26e284]
+              - paragraph [ref=f26e285]: Cada masa se trabaja con paciencia y respeta su tiempo de reposo, para lograr una miga suave y aireada.
+        - listitem [ref=f26e286]:
+          - article [ref=f26e287]:
+            - generic [ref=f26e288]:
+              - img "Panadero sacando pan del horno" [ref=f26e289]
+              - generic [ref=f26e290]: "03"
+            - generic [ref=f26e291]:
+              - heading "Horneado lento" [level=3] [ref=f26e292]
+              - paragraph [ref=f26e293]: Temperatura y tiempo justos para esa corteza dorada que cruje al partirla. Horneamos varias veces al día.
+        - listitem [ref=f26e294]:
+          - article [ref=f26e295]:
+            - generic [ref=f26e296]:
+              - img "Croissants recién horneados servidos con café" [ref=f26e297]
+              - generic [ref=f26e298]: "04"
+            - generic [ref=f26e299]:
+              - heading "Directo a tu mesa" [level=3] [ref=f26e300]
+              - paragraph [ref=f26e301]: Del horno a la vitrina y de la vitrina a tu casa, todavía calientico. Así de sencillo, así de rico.
+    - generic [ref=f26e304]:
+      - img "Porción de torta de frambuesas" [ref=f26e305]
+      - generic [ref=f26e307]:
+        - paragraph [ref=f26e308]: Encargos
+        - heading [level=2] [ref=f26e309]:
+          - text: ¿Una celebración especial?
+          - emphasis [ref=f26e310]: Hacemos tu torta
+          - text: a la medida.
+        - paragraph [ref=f26e311]: Cumpleaños, primeras comuniones, bautizos, matrimonios o simplemente porque sí. Cuéntanos la ocasión, el sabor y las porciones, y te ayudamos a diseñarla.
+        - generic [ref=f26e312]:
+          - link "Cotiza tu torta" [ref=f26e313] [cursor=pointer]:
+            - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20cotizar%20una%20torta%20por%20encargo.
+          - link "318 865 5792" [ref=f26e316] [cursor=pointer]:
+            - /url: tel:+573188655792
+    - generic [ref=f26e320]:
+      - generic [ref=f26e321]:
+        - paragraph [ref=f26e322]: Por qué elegirnos
+        - heading "Calidad & servicio en cada detalle" [level=2] [ref=f26e323]:
+          - generic [aria-hidden] [ref=f26e325]:
+            - generic [aria-hidden] [ref=f26e326]: Calidad
+            - emphasis [ref=f26e327]:
+              - generic [aria-hidden] [ref=f26e328]: "&"
+            - generic [aria-hidden] [ref=f26e329]: servicio
+            - generic [aria-hidden] [ref=f26e330]: en
+          - generic [aria-hidden] [ref=f26e332]:
+            - generic [aria-hidden] [ref=f26e333]: cada
+            - generic [aria-hidden] [ref=f26e334]: detalle
+      - generic [ref=f26e335]:
+        - generic [ref=f26e336]:
+          - heading "Calidad" [level=3] [ref=f26e341]
+          - paragraph [ref=f26e342]: Ingredientes seleccionados y recetas cuidadas en cada horneada.
+        - generic [ref=f26e343]:
+          - heading "Servicio" [level=3] [ref=f26e347]
+          - paragraph [ref=f26e348]: Atención cálida y cercana, como en casa.
+        - generic [ref=f26e349]:
+          - heading "Frescura" [level=3] [ref=f26e356]
+          - paragraph [ref=f26e357]: Horneamos varias veces al día para que todo llegue fresco.
+        - generic [ref=f26e358]:
+          - heading "Tradición" [level=3] [ref=f26e369]
+          - paragraph [ref=f26e370]: El sabor del pan de barrio de siempre, hecho con paciencia.
+    - generic [ref=f26e372]:
+      - article [ref=f26e373]:
+        - generic [aria-hidden] [ref=f26e374]: “
+        - heading "Nuestra misión" [level=2] [ref=f26e375]
+        - paragraph [ref=f26e376]: Llevar a cada hogar del barrio pan y pastelería frescos, hechos con ingredientes de calidad y recetas de tradición, acompañados de una atención cercana que haga de cada visita un buen momento.
+      - article [ref=f26e377]:
+        - generic [aria-hidden] [ref=f26e378]: “
+        - heading "Nuestra visión" [level=2] [ref=f26e379]
+        - paragraph [ref=f26e380]: Ser la panadería y pastelería de referencia en Bogotá por el sabor de nuestros productos, la calidad de nuestro servicio y el cariño con el que horneamos cada día.
+    - generic [ref=f26e382]:
+      - generic [ref=f26e383]:
+        - generic [ref=f26e384]:
+          - paragraph [ref=f26e385]: Galería
+          - heading "Un vistazo a nuestra vitrina" [level=2] [ref=f26e386]:
+            - generic [aria-hidden] [ref=f26e388]:
+              - generic [aria-hidden] [ref=f26e389]: Un
+              - generic [aria-hidden] [ref=f26e390]: vistazo
+              - generic [aria-hidden] [ref=f26e391]: a
+              - emphasis [ref=f26e392]:
+                - generic [aria-hidden] [ref=f26e393]: nuestra
+            - generic [aria-hidden] [ref=f26e396]: vitrina
+        - paragraph [ref=f26e397]: Muy pronto, fotos de nuestro local, de nuestro equipo y de todo lo que sale del horno cada día.
+      - generic [ref=f26e398]:
+        - figure [ref=f26e400]:
+          - img "Panadería con estantes de baguettes y canastas de pan" [ref=f26e401]
+        - 'img "Fachada del local: Próximamente" [ref=f26e403]':
+          - generic [ref=f26e408]: Fachada del local
+          - generic [ref=f26e409]: Próximamente
+        - figure [ref=f26e411]:
+          - img "Vitrina con hojaldres y panes dorados" [ref=f26e412]
+        - figure [ref=f26e414]:
+          - img "Rollos de canela recién horneados" [ref=f26e415]
+        - 'img "Nuestro equipo: Próximamente" [ref=f26e417]':
+          - generic [ref=f26e422]: Nuestro equipo
+          - generic [ref=f26e423]: Próximamente
+        - figure [ref=f26e425]:
+          - img "Baguettes enharinadas sobre una mesa oscura" [ref=f26e426]
+        - figure [ref=f26e428]:
+          - img "Pan artesanal tajado sobre una tabla de madera" [ref=f26e429]
+        - 'img "Interior del local: Próximamente" [ref=f26e431]':
+          - generic [ref=f26e436]: Interior del local
+          - generic [ref=f26e437]: Próximamente
+    - generic [ref=f26e439]:
+      - generic [ref=f26e440]:
+        - paragraph [ref=f26e441]: Visítanos
+        - heading "Te esperamos con el horno encendido" [level=2] [ref=f26e442]:
+          - generic [aria-hidden] [ref=f26e444]:
+            - generic [aria-hidden] [ref=f26e445]: Te
+            - generic [aria-hidden] [ref=f26e446]: esperamos
+            - generic [aria-hidden] [ref=f26e447]: con
+            - generic [aria-hidden] [ref=f26e448]: el
+          - generic [aria-hidden] [ref=f26e450]:
+            - emphasis [ref=f26e451]:
+              - generic [aria-hidden] [ref=f26e452]: horno
+            - generic [aria-hidden] [ref=f26e453]: encendido
+        - list [ref=f26e454]:
+          - listitem [ref=f26e455]:
+            - generic [ref=f26e460]:
+              - paragraph [ref=f26e461]: Dirección
+              - paragraph [ref=f26e462]: "Carrera 41A # 4-42"
+              - paragraph [ref=f26e463]: Barrio Primavera, Bogotá D.C.
+          - listitem [ref=f26e464]:
+            - generic [ref=f26e468]:
+              - paragraph [ref=f26e469]: Teléfono y WhatsApp
+              - link "318 865 5792" [ref=f26e470] [cursor=pointer]:
+                - /url: tel:+573188655792
+          - listitem [ref=f26e471]:
+            - generic [ref=f26e476]:
+              - paragraph [ref=f26e477]: Horario
+              - generic [ref=f26e478]:
+                - generic [ref=f26e479]:
+                  - term [ref=f26e480]: Lunes a sábado
+                  - definition [ref=f26e481]: 6:00 a.m. – 8:00 p.m.
+                - generic [ref=f26e482]:
+                  - term [ref=f26e483]: Domingos y festivos
+                  - definition [ref=f26e484]: 7:00 a.m. – 2:00 p.m.
+        - generic [ref=f26e485]:
+          - link "Cómo llegar" [ref=f26e486] [cursor=pointer]:
+            - /url: https://www.google.com/maps/dir/?api=1&destination=Carrera%2041A%20%23%204-42%2C%20Bogot%C3%A1%20D.C.%2C%20Colombia
+          - link "Escríbenos" [ref=f26e489] [cursor=pointer]:
+            - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20hacer%20un%20pedido.
+      - iframe [ref=f26e494]
+  - contentinfo [ref=f26e495]:
+    - generic [ref=f26e496]:
+      - generic [ref=f26e497]:
+        - generic [ref=f26e498]:
+          - img "El Pan Dorado DC" [ref=f26e499]
+          - paragraph [ref=f26e500]: Pan artesanal y pastelería hechos con calidad & servicio, en el barrio Primavera de Bogotá.
+        - navigation "Secciones" [ref=f26e501]:
+          - heading "Explora" [level=2] [ref=f26e502]
+          - list [ref=f26e503]:
+            - listitem [ref=f26e504]:
+              - link "Nosotros" [ref=f26e505] [cursor=pointer]:
+                - /url: "#historia"
+            - listitem [ref=f26e506]:
+              - link "Productos" [ref=f26e507] [cursor=pointer]:
+                - /url: "#productos"
+            - listitem [ref=f26e508]:
+              - link "Proceso" [ref=f26e509] [cursor=pointer]:
+                - /url: "#proceso"
+            - listitem [ref=f26e510]:
+              - link "Galería" [ref=f26e511] [cursor=pointer]:
+                - /url: "#galeria"
+            - listitem [ref=f26e512]:
+              - link "Visítanos" [ref=f26e513] [cursor=pointer]:
+                - /url: "#visitanos"
+        - generic [ref=f26e514]:
+          - heading "Contacto" [level=2] [ref=f26e515]
+          - list [ref=f26e516]:
+            - listitem [ref=f26e517]: "Carrera 41A # 4-42Barrio Primavera, Bogotá D.C."
+            - listitem [ref=f26e518]:
+              - link "318 865 5792" [ref=f26e519] [cursor=pointer]:
+                - /url: tel:+573188655792
+            - listitem [ref=f26e520]:
+              - link "Pedidos por WhatsApp" [ref=f26e521] [cursor=pointer]:
+                - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20hacer%20un%20pedido.
+        - generic [ref=f26e522]:
+          - heading "Horario" [level=2] [ref=f26e523]
+          - list [ref=f26e524]:
+            - listitem [ref=f26e525]: Lunes a sábado6:00 a.m. – 8:00 p.m.
+            - listitem [ref=f26e526]: Domingos y festivos7:00 a.m. – 2:00 p.m.
+      - generic [ref=f26e527]:
+        - paragraph [ref=f26e528]: © 2026 Panadería y Pastelería El Pan Dorado DC.
+        - generic [ref=f26e529]:
+          - generic [ref=f26e530]: Hecho con cariño en Bogotá
+          - link "Ir al panel" [ref=f26e531] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/dashboard
+    - paragraph [aria-hidden]: El Pan Dorado
+  - link "Escríbenos por WhatsApp al 318 865 5792" [ref=f26e533] [cursor=pointer]:
+    - /url: https://wa.me/573188655792?text=Hola%2C%20El%20Pan%20Dorado%20DC.%20Quisiera%20hacer%20un%20pedido.

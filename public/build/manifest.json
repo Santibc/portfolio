@@ -1,8 +1,88 @@
 {
+  "_lucide-6876760e.js": {
+    "file": "assets/lucide-6876760e.js"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-ext-wght-italic.woff2": {
+    "file": "assets/eb-garamond-cyrillic-ext-wght-italic-5a7499fa.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-ext-wght-normal-7738b600.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-wght-italic.woff2": {
+    "file": "assets/eb-garamond-cyrillic-wght-italic-640020b0.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-wght-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-wght-normal-197ed98b.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-cyrillic-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-ext-wght-italic.woff2": {
+    "file": "assets/eb-garamond-greek-ext-wght-italic-4caf65df.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-ext-wght-normal.woff2": {
+    "file": "assets/eb-garamond-greek-ext-wght-normal-3cd432d0.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-wght-italic.woff2": {
+    "file": "assets/eb-garamond-greek-wght-italic-288deb73.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-wght-normal.woff2": {
+    "file": "assets/eb-garamond-greek-wght-normal-f6475b2f.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-greek-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-ext-wght-italic.woff2": {
+    "file": "assets/eb-garamond-latin-ext-wght-italic-fa866520.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-ext-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-ext-wght-normal.woff2": {
+    "file": "assets/eb-garamond-latin-ext-wght-normal-f8d3fa06.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-wght-italic.woff2": {
+    "file": "assets/eb-garamond-latin-wght-italic-c664773f.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-wght-normal.woff2": {
+    "file": "assets/eb-garamond-latin-wght-normal-88603384.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-vietnamese-wght-italic.woff2": {
+    "file": "assets/eb-garamond-vietnamese-wght-italic-b086ea6d.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-vietnamese-wght-italic.woff2"
+  },
+  "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-vietnamese-wght-normal.woff2": {
+    "file": "assets/eb-garamond-vietnamese-wght-normal-af68d0b2.woff2",
+    "src": "node_modules/@fontsource-variable/eb-garamond/files/eb-garamond-vietnamese-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-cyrillic-ext-wght-normal-c46a510a.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-cyrillic-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-latin-ext-wght-normal-38e3b8fd.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-latin-wght-normal-153fc85b.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2": {
+    "file": "assets/plus-jakarta-sans-vietnamese-wght-normal-b275d125.woff2",
+    "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-3349d334.css",
+    "file": "assets/app-6803bf35.css",
     "isEntry": true,
     "src": "resources/css/app.css"
+  },
+  "resources/css/landing.css": {
+    "file": "assets/landing-c853c06b.css",
+    "isEntry": true,
+    "src": "resources/css/landing.css"
   },
   "resources/images/logoico.png": {
     "file": "assets/logoico-4ed993c7.js",
@@ -10,8 +90,19 @@
     "src": "resources/images/logoico.png"
   },
   "resources/js/app.js": {
-    "file": "assets/app-432f4c0e.js",
+    "file": "assets/app-3d050850.js",
+    "imports": [
+      "_lucide-6876760e.js"
+    ],
     "isEntry": true,
     "src": "resources/js/app.js"
+  },
+  "resources/js/landing.js": {
+    "file": "assets/landing-b23ecc79.js",
+    "imports": [
+      "_lucide-6876760e.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/landing.js"
   }
 }

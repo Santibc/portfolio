@@ -144,6 +144,14 @@ Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
 - Theme toggle source: `resources/js/theme-toggle.js` (bundleado)
 - Globals expuestos en `window`: `Alpine`, `Swal`, `TomSelect`, `showToast(icon, title)`
 
+### Landing pública (`/`)
+- `LandingController` (invocable) → `resources/views/landing/index.blade.php` + secciones en `landing/partials/`. La ruta conserva el nombre `welcome` (lo usa `RestringirRolVentas`).
+- **Datos del negocio en `config/panaderia.php`** (teléfono/WhatsApp, dirección, horario, historia, misión, visión, productos…). Lo marcado `PENDIENTE` es texto genérico a la espera del cliente. `App\Data\Negocio` arma los enlaces (WhatsApp, `tel:`, mapa, cómo llegar) y el JSON-LD.
+- Mapa: sin `GOOGLE_MAPS_API_KEY` usa el embed público; con key, la Maps Embed API oficial.
+- Bundle propio (no carga el del panel): `resources/css/landing.css` + `resources/js/landing.js` — GSAP (ScrollTrigger, SplitText), Lenis, Alpine, Lucide curado. Fuentes autoalojadas: EB Garamond (titulares; **no usar Cormorant**: su versión variable descoloca las tildes) + Plus Jakarta Sans.
+- Animaciones: `data-anim` (aparece al entrar), `data-split` (título por palabras), `data-parallax="n"`, `data-contador`. Todo respeta `prefers-reduced-motion`.
+- Fotos provisionales de Unsplash en `public/images/landing/` (origen en `docs/landing-imagenes.md`); espacios para fotos del cliente con `<x-landing.foto-pendiente>`.
+
 ### Database
 MySQL en 127.0.0.1:3306 (sin password en XAMPP local). Nombre en `.env` (`DB_DATABASE`).
 

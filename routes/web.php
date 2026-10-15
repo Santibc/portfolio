@@ -11,6 +11,7 @@ use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\GastoFijoController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ListaMercadoController;
 use App\Http\Controllers\ListaMercadoItemController;
 use App\Http\Controllers\ListaMercadoPlantillaController;
@@ -32,9 +33,8 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+// El nombre "welcome" lo usa RestringirRolVentas para mandar al vendedor a la caja.
+Route::get('/', LandingController::class)->name('welcome');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

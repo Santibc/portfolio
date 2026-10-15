@@ -1,0 +1,159 @@
+/* Landing pública — bundle propio (sin Preline/ApexCharts/TomSelect del panel). */
+
+/* Fuentes autoalojadas (las sirve Vite, sin CDN) */
+@import '@fontsource-variable/eb-garamond/wght.css';
+@import '@fontsource-variable/eb-garamond/wght-italic.css';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  [x-cloak] {
+    display: none !important;
+  }
+
+  html {
+    @apply antialiased;
+    scroll-padding-top: 4rem; /* altura del menú fijo al hacer scroll */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-cream-50 text-cream-900 font-sans;
+    font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  .dark body {
+    @apply bg-surface-dark text-cream-100;
+  }
+
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+
+  .dark ::selection {
+    @apply bg-primary-700 text-primary-50;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-cream-50;
+  }
+
+  .dark :focus-visible {
+    @apply ring-primary-300 ring-offset-surface-dark;
+  }
+}
+
+/* Lenis (de lenis/dist/lenis.css, sin la regla que desactiva los iframes:
+   el mapa de Google debe seguir siendo interactivo) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+@layer components {
+  /* Encabezado de sección: etiqueta pequeña en mayúsculas */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-accent-700 dark:text-accent-300;
+  }
+
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-8 bg-current opacity-70;
+  }
+
+  .titulo-seccion {
+    @apply font-serif font-normal leading-[1.04] tracking-tight text-cream-950 dark:text-cream-50;
+    font-size: clamp(2.2rem, 1.5rem + 2.7vw, 4.1rem);
+  }
+
+  .titulo-seccion em {
+    @apply font-normal italic text-primary-500 dark:text-primary-300;
+  }
+
+  .btn-landing {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-semibold transition-all duration-300;
+  }
+
+  .btn-landing-primario {
+    @apply btn-landing bg-primary-500 text-white shadow-[0_10px_30px_-10px_rgb(157_97_43/0.7)] hover:-translate-y-0.5 hover:bg-primary-600 hover:shadow-[0_18px_40px_-12px_rgb(157_97_43/0.8)] dark:bg-primary-400 dark:text-primary-950 dark:hover:bg-primary-300;
+  }
+
+  .btn-landing-secundario {
+    @apply btn-landing border border-cream-900/15 text-cream-900 hover:border-primary-500 hover:text-primary-600 dark:border-cream-100/20 dark:text-cream-100 dark:hover:border-primary-300 dark:hover:text-primary-300;
+  }
+
+  /* Arco tipo vitrina de boulangerie */
+  .arco {
+    border-radius: 999px 999px 2rem 2rem;
+  }
+}
+
+/* Grano sutil sobre toda la página (textura de papel/harina) */
+.grano::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.dark .grano::after {
+  opacity: 0.07;
+}
+
+/* Cinta infinita */
+@keyframes marquesina {
+  to { transform: translateX(-50%); }
+}
+
+.marquesina {
+  animation: marquesina 38s linear infinite;
+}
+
+/* Sello giratorio "Calidad & Servicio" */
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.sello-giro {
+  animation: girar 24s linear infinite;
+}
+
+/* Pulso del botón de WhatsApp */
+@keyframes pulso-wa {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+
+.pulso-wa {
+  animation: pulso-wa 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+/* Estado inicial de las animaciones. Solo aplica con html.anim, que pone el
+   script del <head> cuando hay movimiento permitido; si landing.js no carga,
+   ese mismo script quita la clase y todo queda visible. */
+.anim [data-anim],
+.anim [data-anim-hero] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquesina,
+  .sello-giro,
+  .pulso-wa {
+    animation: none;
+  }
+}

@@ -1,0 +1,2682 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - generic "Ocultar panel" [ref=f7e4] [cursor=pointer]: ←
+    - generic [ref=f7e5]:
+      - generic [ref=f7e6]:
+        - link [ref=f7e8] [cursor=pointer]:
+          - /url: index.php?lang=es
+          - img "phpMyAdmin" [ref=f7e9]
+        - generic [ref=f7e10]:
+          - link [ref=f7e11] [cursor=pointer]:
+            - /url: index.php?route=/&lang=es
+            - img "Página de inicio" [ref=f7e12]
+          - link [ref=f7e13] [cursor=pointer]:
+            - /url: index.php?route=/logout&lang=es
+            - img "Datos de sesión vacíos" [ref=f7e14]
+          - link [ref=f7e15] [cursor=pointer]:
+            - /url: ./doc/html/index.html
+            - img "Documentación de phpMyAdmin" [ref=f7e16]
+          - link [ref=f7e17] [cursor=pointer]:
+            - /url: ./url.php?url=https%3A%2F%2Fmariadb.com%2Fkb%2Fen%2Fdocumentation%2F
+            - img "Documentación de MariaDB" [ref=f7e18]
+          - link [ref=f7e19] [cursor=pointer]:
+            - /url: "#"
+            - img "Ajustes del panel de navegación" [ref=f7e20]
+          - link [ref=f7e21] [cursor=pointer]:
+            - /url: "#"
+            - img "Recargar el panel de navegación" [ref=f7e22]
+      - generic [ref=f7e23]:
+        - generic [ref=f7e24]:
+          - button "Reciente" [ref=f7e26] [cursor=pointer]
+          - button "Favoritas" [ref=f7e28] [cursor=pointer]
+        - list [ref=f7e29]:
+          - listitem [ref=f7e30]:
+            - generic [ref=f7e31]:
+              - link [ref=f7e32] [cursor=pointer]:
+                - /url: "#"
+                - img "Colapsar todos" [ref=f7e33]
+              - link [ref=f7e34] [cursor=pointer]:
+                - /url: "#"
+                - img "Deshacer enlace en el panel principal" [ref=f7e35]
+        - list [ref=f7e37]:
+          - listitem [ref=f7e38]:
+            - link [ref=f7e42] [cursor=pointer]:
+              - /url: index.php?route=/server/databases&lang=es
+              - img "Nueva" [ref=f7e43]
+            - link "Nueva" [ref=f7e44] [cursor=pointer]:
+              - /url: index.php?route=/server/databases&lang=es
+          - listitem [ref=f7e45]:
+            - link [ref=f7e49] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e50]
+            - link [ref=f7e52] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=agromarket&lang=es
+              - img "Opciones de la base de datos" [ref=f7e53]
+            - link "agromarket" [ref=f7e54] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=agromarket&lang=es
+          - listitem [ref=f7e55]:
+            - link [ref=f7e59] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e60]
+            - link [ref=f7e62] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=clc&lang=es
+              - img "Opciones de la base de datos" [ref=f7e63]
+            - link "clc" [ref=f7e64] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=clc&lang=es
+          - listitem [ref=f7e65]:
+            - link [ref=f7e69] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e70]
+            - link [ref=f7e72] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=cleanme&lang=es
+              - img "Opciones de la base de datos" [ref=f7e73]
+            - link "cleanme" [ref=f7e74] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=cleanme&lang=es
+          - listitem [ref=f7e75]:
+            - link [ref=f7e79] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e80]
+            - link [ref=f7e82] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=cleanme2&lang=es
+              - img "Opciones de la base de datos" [ref=f7e83]
+            - link "cleanme2" [ref=f7e84] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=cleanme2&lang=es
+          - listitem [ref=f7e85]:
+            - link [ref=f7e89] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e90]
+            - link [ref=f7e92] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=corotos&lang=es
+              - img "Opciones de la base de datos" [ref=f7e93]
+            - link "corotos" [ref=f7e94] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=corotos&lang=es
+          - listitem [ref=f7e95]:
+            - link [ref=f7e99] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e100]
+            - link [ref=f7e102] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=crm_prod&lang=es
+              - img "Opciones de la base de datos" [ref=f7e103]
+            - link "crm_prod" [ref=f7e104] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=crm_prod&lang=es
+          - listitem [ref=f7e105]:
+            - link [ref=f7e109] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e110]
+            - generic [ref=f7e111]:
+              - img "Grupos" [ref=f7e114]
+              - text: data
+          - listitem [ref=f7e115]:
+            - link [ref=f7e119] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e120]
+            - link [ref=f7e122] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=dorilokosmix&lang=es
+              - img "Opciones de la base de datos" [ref=f7e123]
+            - link "dorilokosmix" [ref=f7e124] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=dorilokosmix&lang=es
+          - listitem [ref=f7e125]:
+            - link [ref=f7e129] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e130]
+            - generic [ref=f7e131]:
+              - img "Grupos" [ref=f7e134]
+              - text: energy
+          - listitem [ref=f7e135]:
+            - link [ref=f7e139] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e140]
+            - link [ref=f7e142] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=information_schema&lang=es
+              - img "Opciones de la base de datos" [ref=f7e143]
+            - link "information_schema" [ref=f7e144] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=information_schema&lang=es
+          - listitem [ref=f7e145]:
+            - link [ref=f7e149] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e150]
+            - link [ref=f7e152] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=innova&lang=es
+              - img "Opciones de la base de datos" [ref=f7e153]
+            - link "innova" [ref=f7e154] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=innova&lang=es
+          - listitem [ref=f7e155]:
+            - link [ref=f7e159] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e160]
+            - link [ref=f7e162] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=manzer&lang=es
+              - img "Opciones de la base de datos" [ref=f7e163]
+            - link "manzer" [ref=f7e164] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=manzer&lang=es
+          - listitem [ref=f7e165]:
+            - link [ref=f7e169] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e170]
+            - generic [ref=f7e171]:
+              - img "Grupos" [ref=f7e174]
+              - text: miracle
+          - listitem [ref=f7e175]:
+            - link [ref=f7e179] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e180]
+            - link [ref=f7e182] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=montano&lang=es
+              - img "Opciones de la base de datos" [ref=f7e183]
+            - link "montano" [ref=f7e184] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=montano&lang=es
+          - listitem [ref=f7e185]:
+            - link [ref=f7e189] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e190]
+            - link [ref=f7e192] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=mysql&lang=es
+              - img "Opciones de la base de datos" [ref=f7e193]
+            - link "mysql" [ref=f7e194] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=mysql&lang=es
+          - listitem [ref=f7e195]:
+            - link [ref=f7e199] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e200]
+            - link [ref=f7e202] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=pandoradodc&lang=es
+              - img "Opciones de la base de datos" [ref=f7e203]
+            - link "pandoradodc" [ref=f7e204] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=pandoradodc&lang=es
+          - listitem [ref=f7e205]:
+            - link [ref=f7e209] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e210]
+            - link [ref=f7e212] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=papasdelalma&lang=es
+              - img "Opciones de la base de datos" [ref=f7e213]
+            - link "papasdelalma" [ref=f7e214] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=papasdelalma&lang=es
+          - listitem [ref=f7e215]:
+            - link [ref=f7e219] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e220]
+            - link [ref=f7e222] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=performance_schema&lang=es
+              - img "Opciones de la base de datos" [ref=f7e223]
+            - link "performance_schema" [ref=f7e224] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=performance_schema&lang=es
+          - listitem [ref=f7e225]:
+            - link [ref=f7e229] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e230]
+            - link [ref=f7e232] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=phpmyadmin&lang=es
+              - img "Opciones de la base de datos" [ref=f7e233]
+            - link "phpmyadmin" [ref=f7e234] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=phpmyadmin&lang=es
+          - listitem [ref=f7e235]:
+            - link [ref=f7e239] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e240]
+            - link [ref=f7e242] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=prod_check&lang=es
+              - img "Opciones de la base de datos" [ref=f7e243]
+            - link "prod_check" [ref=f7e244] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=prod_check&lang=es
+          - listitem [ref=f7e245]:
+            - link [ref=f7e249] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e250]
+            - link [ref=f7e252] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=sinden&lang=es
+              - img "Opciones de la base de datos" [ref=f7e253]
+            - link "sinden" [ref=f7e254] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=sinden&lang=es
+          - listitem [ref=f7e255]:
+            - link [ref=f7e259] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e260]
+            - link [ref=f7e262] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=sinden2&lang=es
+              - img "Opciones de la base de datos" [ref=f7e263]
+            - link "sinden2" [ref=f7e264] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=sinden2&lang=es
+          - listitem [ref=f7e265]:
+            - link [ref=f7e269] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e270]
+            - link [ref=f7e272] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=sinden3&lang=es
+              - img "Opciones de la base de datos" [ref=f7e273]
+            - link "sinden3" [ref=f7e274] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=sinden3&lang=es
+          - listitem [ref=f7e275]:
+            - link [ref=f7e279] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e280]
+            - link [ref=f7e282] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=snova&lang=es
+              - img "Opciones de la base de datos" [ref=f7e283]
+            - link "snova" [ref=f7e284] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=snova&lang=es
+          - listitem [ref=f7e285]:
+            - link [ref=f7e289] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e290]
+            - link [ref=f7e292] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=sopasysopitas&lang=es
+              - img "Opciones de la base de datos" [ref=f7e293]
+            - link "sopasysopitas" [ref=f7e294] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=sopasysopitas&lang=es
+          - listitem [ref=f7e295]:
+            - link [ref=f7e299] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e300]
+            - link [ref=f7e302] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=sopasysopitaspms&lang=es
+              - img "Opciones de la base de datos" [ref=f7e303]
+            - link "sopasysopitaspms" [ref=f7e304] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=sopasysopitaspms&lang=es
+          - listitem [ref=f7e305]:
+            - link [ref=f7e309] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e310]
+            - generic [ref=f7e311]:
+              - img "Grupos" [ref=f7e314]
+              - text: sopas_prod
+          - listitem [ref=f7e315]:
+            - link [ref=f7e319] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e320]
+            - link [ref=f7e322] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=test&lang=es
+              - img "Opciones de la base de datos" [ref=f7e323]
+            - link "test" [ref=f7e324] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=test&lang=es
+          - listitem [ref=f7e325]:
+            - link [ref=f7e328] [cursor=pointer]:
+              - /url: "#"
+              - img "Expandir/Colapsar" [ref=f7e329]
+            - link [ref=f7e331] [cursor=pointer]:
+              - /url: index.php?route=/database/operations&db=villaweed&lang=es
+              - img "Opciones de la base de datos" [ref=f7e332]
+            - link "villaweed" [ref=f7e333] [cursor=pointer]:
+              - /url: index.php?route=/database/structure&db=villaweed&lang=es
+  - generic [ref=f7e334]:
+    - navigation "breadcrumb" [ref=f7e335]:
+      - list [ref=f7e336]:
+        - listitem [ref=f7e337]:
+          - 'link "Servidor: 127.0.0.1" [ref=f7e338] [cursor=pointer]':
+            - /url: index.php?route=/&lang=es
+        - listitem [ref=f7e339]:
+          - text: »
+          - 'link "Base de datos: pandoradodc" [ref=f7e340] [cursor=pointer]':
+            - /url: index.php?route=/database/structure&db=pandoradodc&lang=es
+    - navigation [ref=f7e342]:
+      - list [ref=f7e344]:
+        - listitem [ref=f7e345]:
+          - link "Estructura Estructura (actual)" [ref=f7e346] [cursor=pointer]:
+            - /url: index.php?route=/database/structure&db=pandoradodc&lang=es
+            - img "Estructura" [ref=f7e347]
+            - text: Estructura
+            - generic [ref=f7e348]: (actual)
+        - listitem [ref=f7e349]:
+          - link [ref=f7e350] [cursor=pointer]:
+            - /url: index.php?route=/database/sql&db=pandoradodc&lang=es
+            - img "SQL" [ref=f7e351]
+            - text: SQL
+        - listitem [ref=f7e352]:
+          - link [ref=f7e353] [cursor=pointer]:
+            - /url: index.php?route=/database/search&db=pandoradodc&lang=es
+            - img "Buscar" [ref=f7e354]
+            - text: Buscar
+        - listitem [ref=f7e355]:
+          - link [ref=f7e356] [cursor=pointer]:
+            - /url: index.php?route=/database/multi-table-query&db=pandoradodc&lang=es
+            - img "Generar una consulta" [ref=f7e357]
+            - text: Generar una consulta
+        - listitem [ref=f7e358]:
+          - link [ref=f7e359] [cursor=pointer]:
+            - /url: index.php?route=/database/export&db=pandoradodc&lang=es
+            - img "Exportar" [ref=f7e360]
+            - text: Exportar
+        - listitem [ref=f7e361]:
+          - link [ref=f7e362] [cursor=pointer]:
+            - /url: index.php?route=/database/import&db=pandoradodc&lang=es
+            - img "Importar" [ref=f7e363]
+            - text: Importar
+        - listitem [ref=f7e364]:
+          - link [ref=f7e365] [cursor=pointer]:
+            - /url: index.php?route=/database/operations&db=pandoradodc&lang=es
+            - img "Operaciones" [ref=f7e366]
+            - text: Operaciones
+        - listitem [ref=f7e367]:
+          - link [ref=f7e368] [cursor=pointer]:
+            - /url: index.php?route=/server/privileges&db=pandoradodc&checkprivsdb=pandoradodc&viewing_mode=db&lang=es
+            - img "Privilegios" [ref=f7e369]
+            - text: Privilegios
+        - listitem [ref=f7e370]:
+          - link [ref=f7e371] [cursor=pointer]:
+            - /url: index.php?route=/database/routines&db=pandoradodc&lang=es
+            - img "Rutinas" [ref=f7e372]
+            - text: Rutinas
+        - listitem [ref=f7e373]:
+          - button "Más" [ref=f7e374] [cursor=pointer]
+  - generic [ref=f7e375]:
+    - img "Ajustes de página relacionada" [ref=f7e377] [cursor=pointer]
+    - link [ref=f7e378] [cursor=pointer]:
+      - /url: "#"
+      - img "Pulse en la barra para deslizarse al tope de la página" [ref=f7e379]
+  - generic [ref=f7e380]:
+    - generic [ref=f7e382] [cursor=pointer]:
+      - img "Consola de consultas SQL" [ref=f7e383]
+      - text: Consola
+    - generic [ref=f7e384]:
+      - generic [ref=f7e385]: Presione Ctrl+Enter para ejecutar la consulta
+      - generic: ">"
+    - generic [ref=f7e388]:
+      - generic [ref=f7e389] [cursor=pointer]: ascendente
+      - generic [ref=f7e390] [cursor=pointer]: descendente
+      - generic [ref=f7e391]: "Orden:"
+      - generic [ref=f7e392] [cursor=pointer]: Depuración SQL
+      - generic [ref=f7e393] [cursor=pointer]: Cantidad
+      - generic [ref=f7e394] [cursor=pointer]: Orden de ejecución
+      - generic [ref=f7e395] [cursor=pointer]: Tiempo necesario
+      - generic [ref=f7e396]: "Ordenar por:"
+      - generic [ref=f7e397] [cursor=pointer]: Consultas grupales
+      - generic [ref=f7e398] [cursor=pointer]: Desagrupar las consultas
+    - generic [ref=f7e401]:
+      - generic [ref=f7e402]:
+        - generic [ref=f7e403] [cursor=pointer]: Favoritos
+        - generic [ref=f7e404] [cursor=pointer]: Actualizar
+        - generic [ref=f7e405] [cursor=pointer]: Agregar
+      - generic [ref=f7e406]: Ningún favorito
+      - generic [ref=f7e408]:
+        - generic [ref=f7e409]: Agregar favorito
+        - generic [ref=f7e411]:
+          - generic [ref=f7e412]:
+            - generic [ref=f7e413]:
+              - text: "Etiqueta:"
+              - textbox "Etiqueta:" [ref=f7e414]
+            - generic [ref=f7e415]:
+              - text: "Base de datos de destino:"
+              - textbox "Base de datos de destino:" [ref=f7e416]
+            - generic [ref=f7e417]:
+              - checkbox "Compartir favorito" [ref=f7e418]
+              - text: Compartir favorito
+            - button "OK" [ref=f7e419] [cursor=pointer]
+          - generic: ">"
+    - generic [ref=f7e420]:
+      - generic [ref=f7e421]:
+        - generic [ref=f7e422] [cursor=pointer]: Opciones
+        - generic [ref=f7e423] [cursor=pointer]: Definir predeterminado
+      - generic [ref=f7e424]:
+        - generic [ref=f7e425]:
+          - checkbox "Siempre expandir mensajes de consultas" [ref=f7e426]
+          - text: Siempre expandir mensajes de consultas
+        - generic [ref=f7e427]:
+          - checkbox "Mostrar histórico de consultas al iniciar" [ref=f7e428]
+          - text: Mostrar histórico de consultas al iniciar
+        - generic [ref=f7e429]:
+          - checkbox "Mostrar consulta de navegación actual" [ref=f7e430]
+          - text: Mostrar consulta de navegación actual
+        - generic [ref=f7e431]:
+          - checkbox "Ejecute consultas en Enter e inserte una nueva línea con Shift+Enter. Para que esto sea permanente, consulte la configuración." [ref=f7e432]
+          - text: Ejecute consultas en Enter e inserte una nueva línea con Shift+Enter. Para que esto sea permanente, consulte la configuración.
+        - generic [ref=f7e433]:
+          - checkbox "Cambiar al tema oscuro" [ref=f7e434]
+          - text: Cambiar al tema oscuro
+  - generic [ref=f7e435]:
+    - generic [ref=f7e436]:
+      - generic [ref=f7e437]:
+        - generic [ref=f7e438]: Filtros
+        - generic [ref=f7e439]:
+          - generic [ref=f7e440]: "Que contengan la palabra:"
+          - textbox "Que contengan la palabra:" [ref=f7e442]
+      - generic [ref=f7e443]:
+        - table [ref=f7e445]:
+          - rowgroup [ref=f7e446]:
+            - row [ref=f7e447]:
+              - columnheader [ref=f7e448]
+              - columnheader [ref=f7e449]:
+                - link [ref=f7e450] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=table&sort_order=DESC&lang=es
+                  - text: Tabla
+                  - img "Ascendente" [ref=f7e451]
+              - columnheader "Acción" [ref=f7e452]
+              - columnheader "Filas" [ref=f7e453]:
+                - link "Filas" [ref=f7e454] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=records&sort_order=DESC&lang=es
+              - columnheader [ref=f7e456]:
+                - link "Tipo" [ref=f7e457] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=type&sort_order=ASC&lang=es
+              - columnheader [ref=f7e458]:
+                - link "Cotejamiento" [ref=f7e459] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=collation&sort_order=ASC&lang=es
+              - columnheader [ref=f7e460]:
+                - link "Tamaño" [ref=f7e461] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=size&sort_order=DESC&lang=es
+              - columnheader [ref=f7e462]:
+                - link "Residuo a depurar" [ref=f7e463] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure&lang=es&db=pandoradodc&pos=0&sort=overhead&sort_order=DESC&lang=es
+          - rowgroup [ref=f7e464]:
+            - row "conceptos_gasto_fijo Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 5 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e465]:
+              - cell [ref=f7e466]:
+                - checkbox [ref=f7e467]
+              - rowheader [ref=f7e468]:
+                - link "conceptos_gasto_fijo" [ref=f7e469] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=conceptos_gasto_fijo&pos=0&lang=es
+              - cell [ref=f7e470]:
+                - link "Agregar a Favoritos" [ref=f7e471] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=conceptos_gasto_fijo&add_favorite=1&lang=es
+              - cell [ref=f7e473]:
+                - link [ref=f7e474] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=conceptos_gasto_fijo&pos=0&lang=es
+                  - generic [ref=f7e475]:
+                    - img "Examinar" [ref=f7e476]
+                    - text: Examinar
+              - cell [ref=f7e477]:
+                - link [ref=f7e478] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=conceptos_gasto_fijo&lang=es
+                  - generic [ref=f7e479]:
+                    - img "Estructura" [ref=f7e480]
+                    - text: Estructura
+              - cell [ref=f7e481]:
+                - link [ref=f7e482] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=conceptos_gasto_fijo&lang=es
+                  - generic [ref=f7e483]:
+                    - img "Buscar" [ref=f7e484]
+                    - text: Buscar
+              - cell [ref=f7e485]:
+                - link [ref=f7e486] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=conceptos_gasto_fijo&lang=es
+                  - generic [ref=f7e487]:
+                    - img "Insertar" [ref=f7e488]
+                    - text: Insertar
+              - cell [ref=f7e489]:
+                - link [ref=f7e490] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e491]:
+                    - img "Vaciar" [ref=f7e492]
+                    - text: Vaciar
+              - cell [ref=f7e493]:
+                - link [ref=f7e494] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e495]:
+                    - img "Eliminar" [ref=f7e496]
+                    - text: Eliminar
+              - cell "5" [ref=f7e497]
+              - cell "InnoDB" [ref=f7e498]
+              - cell [ref=f7e499]:
+                - term [ref=f7e500]: utf8mb4_unicode_ci
+              - cell [ref=f7e501]:
+                - link "48.0 KB" [ref=f7e502] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=conceptos_gasto_fijo&lang=es#showusage
+              - cell "-" [ref=f7e503]
+            - row "dias_semana Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 7 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e504]:
+              - cell [ref=f7e505]:
+                - checkbox [ref=f7e506]
+              - rowheader [ref=f7e507]:
+                - link "dias_semana" [ref=f7e508] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=dias_semana&pos=0&lang=es
+              - cell [ref=f7e509]:
+                - link "Agregar a Favoritos" [ref=f7e510] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=dias_semana&add_favorite=1&lang=es
+              - cell [ref=f7e512]:
+                - link [ref=f7e513] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=dias_semana&pos=0&lang=es
+                  - generic [ref=f7e514]:
+                    - img "Examinar" [ref=f7e515]
+                    - text: Examinar
+              - cell [ref=f7e516]:
+                - link [ref=f7e517] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=dias_semana&lang=es
+                  - generic [ref=f7e518]:
+                    - img "Estructura" [ref=f7e519]
+                    - text: Estructura
+              - cell [ref=f7e520]:
+                - link [ref=f7e521] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=dias_semana&lang=es
+                  - generic [ref=f7e522]:
+                    - img "Buscar" [ref=f7e523]
+                    - text: Buscar
+              - cell [ref=f7e524]:
+                - link [ref=f7e525] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=dias_semana&lang=es
+                  - generic [ref=f7e526]:
+                    - img "Insertar" [ref=f7e527]
+                    - text: Insertar
+              - cell [ref=f7e528]:
+                - link [ref=f7e529] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e530]:
+                    - img "Vaciar" [ref=f7e531]
+                    - text: Vaciar
+              - cell [ref=f7e532]:
+                - link [ref=f7e533] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e534]:
+                    - img "Eliminar" [ref=f7e535]
+                    - text: Eliminar
+              - cell "7" [ref=f7e536]
+              - cell "InnoDB" [ref=f7e537]
+              - cell [ref=f7e538]:
+                - term [ref=f7e539]: utf8mb4_unicode_ci
+              - cell [ref=f7e540]:
+                - link "32.0 KB" [ref=f7e541] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=dias_semana&lang=es#showusage
+              - cell "-" [ref=f7e542]
+            - row "empleados Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e543]:
+              - cell [ref=f7e544]:
+                - checkbox [ref=f7e545]
+              - rowheader [ref=f7e546]:
+                - link "empleados" [ref=f7e547] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=empleados&pos=0&lang=es
+              - cell [ref=f7e548]:
+                - link "Agregar a Favoritos" [ref=f7e549] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=empleados&add_favorite=1&lang=es
+              - cell [ref=f7e551]:
+                - link [ref=f7e552] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=empleados&pos=0&lang=es
+                  - generic [ref=f7e553]:
+                    - img "Examinar" [ref=f7e554]
+                    - text: Examinar
+              - cell [ref=f7e555]:
+                - link [ref=f7e556] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=empleados&lang=es
+                  - generic [ref=f7e557]:
+                    - img "Estructura" [ref=f7e558]
+                    - text: Estructura
+              - cell [ref=f7e559]:
+                - link [ref=f7e560] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=empleados&lang=es
+                  - generic [ref=f7e561]:
+                    - img "Buscar" [ref=f7e562]
+                    - text: Buscar
+              - cell [ref=f7e563]:
+                - link [ref=f7e564] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=empleados&lang=es
+                  - generic [ref=f7e565]:
+                    - img "Insertar" [ref=f7e566]
+                    - text: Insertar
+              - cell [ref=f7e567]:
+                - link [ref=f7e568] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e569]:
+                    - img "Vaciar" [ref=f7e570]
+                    - text: Vaciar
+              - cell [ref=f7e571]:
+                - link [ref=f7e572] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e573]:
+                    - img "Eliminar" [ref=f7e574]
+                    - text: Eliminar
+              - cell "0" [ref=f7e575]
+              - cell "InnoDB" [ref=f7e576]
+              - cell [ref=f7e577]:
+                - term [ref=f7e578]: utf8mb4_unicode_ci
+              - cell [ref=f7e579]:
+                - link "64.0 KB" [ref=f7e580] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=empleados&lang=es#showusage
+              - cell "-" [ref=f7e581]
+            - row "failed_jobs Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e582]:
+              - cell [ref=f7e583]:
+                - checkbox [ref=f7e584]
+              - rowheader [ref=f7e585]:
+                - link "failed_jobs" [ref=f7e586] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=failed_jobs&pos=0&lang=es
+              - cell [ref=f7e587]:
+                - link "Agregar a Favoritos" [ref=f7e588] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=failed_jobs&add_favorite=1&lang=es
+              - cell [ref=f7e590]:
+                - link [ref=f7e591] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=failed_jobs&pos=0&lang=es
+                  - generic [ref=f7e592]:
+                    - img "Examinar" [ref=f7e593]
+                    - text: Examinar
+              - cell [ref=f7e594]:
+                - link [ref=f7e595] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=failed_jobs&lang=es
+                  - generic [ref=f7e596]:
+                    - img "Estructura" [ref=f7e597]
+                    - text: Estructura
+              - cell [ref=f7e598]:
+                - link [ref=f7e599] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=failed_jobs&lang=es
+                  - generic [ref=f7e600]:
+                    - img "Buscar" [ref=f7e601]
+                    - text: Buscar
+              - cell [ref=f7e602]:
+                - link [ref=f7e603] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=failed_jobs&lang=es
+                  - generic [ref=f7e604]:
+                    - img "Insertar" [ref=f7e605]
+                    - text: Insertar
+              - cell [ref=f7e606]:
+                - link [ref=f7e607] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e608]:
+                    - img "Vaciar" [ref=f7e609]
+                    - text: Vaciar
+              - cell [ref=f7e610]:
+                - link [ref=f7e611] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e612]:
+                    - img "Eliminar" [ref=f7e613]
+                    - text: Eliminar
+              - cell "0" [ref=f7e614]
+              - cell "InnoDB" [ref=f7e615]
+              - cell [ref=f7e616]:
+                - term [ref=f7e617]: utf8mb4_unicode_ci
+              - cell [ref=f7e618]:
+                - link "32.0 KB" [ref=f7e619] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=failed_jobs&lang=es#showusage
+              - cell "-" [ref=f7e620]
+            - row "gastos Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 96.0 KB -" [ref=f7e621]:
+              - cell [ref=f7e622]:
+                - checkbox [ref=f7e623]
+              - rowheader [ref=f7e624]:
+                - link "gastos" [ref=f7e625] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=gastos&pos=0&lang=es
+              - cell [ref=f7e626]:
+                - link "Agregar a Favoritos" [ref=f7e627] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=gastos&add_favorite=1&lang=es
+              - cell [ref=f7e629]:
+                - link [ref=f7e630] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=gastos&pos=0&lang=es
+                  - generic [ref=f7e631]:
+                    - img "Examinar" [ref=f7e632]
+                    - text: Examinar
+              - cell [ref=f7e633]:
+                - link [ref=f7e634] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=gastos&lang=es
+                  - generic [ref=f7e635]:
+                    - img "Estructura" [ref=f7e636]
+                    - text: Estructura
+              - cell [ref=f7e637]:
+                - link [ref=f7e638] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=gastos&lang=es
+                  - generic [ref=f7e639]:
+                    - img "Buscar" [ref=f7e640]
+                    - text: Buscar
+              - cell [ref=f7e641]:
+                - link [ref=f7e642] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=gastos&lang=es
+                  - generic [ref=f7e643]:
+                    - img "Insertar" [ref=f7e644]
+                    - text: Insertar
+              - cell [ref=f7e645]:
+                - link [ref=f7e646] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e647]:
+                    - img "Vaciar" [ref=f7e648]
+                    - text: Vaciar
+              - cell [ref=f7e649]:
+                - link [ref=f7e650] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e651]:
+                    - img "Eliminar" [ref=f7e652]
+                    - text: Eliminar
+              - cell "0" [ref=f7e653]
+              - cell "InnoDB" [ref=f7e654]
+              - cell [ref=f7e655]:
+                - term [ref=f7e656]: utf8mb4_unicode_ci
+              - cell [ref=f7e657]:
+                - link "96.0 KB" [ref=f7e658] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=gastos&lang=es#showusage
+              - cell "-" [ref=f7e659]
+            - row "gastos_fijos Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 80.0 KB -" [ref=f7e660]:
+              - cell [ref=f7e661]:
+                - checkbox [ref=f7e662]
+              - rowheader [ref=f7e663]:
+                - link "gastos_fijos" [ref=f7e664] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=gastos_fijos&pos=0&lang=es
+              - cell [ref=f7e665]:
+                - link "Agregar a Favoritos" [ref=f7e666] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=gastos_fijos&add_favorite=1&lang=es
+              - cell [ref=f7e668]:
+                - link [ref=f7e669] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=gastos_fijos&pos=0&lang=es
+                  - generic [ref=f7e670]:
+                    - img "Examinar" [ref=f7e671]
+                    - text: Examinar
+              - cell [ref=f7e672]:
+                - link [ref=f7e673] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=gastos_fijos&lang=es
+                  - generic [ref=f7e674]:
+                    - img "Estructura" [ref=f7e675]
+                    - text: Estructura
+              - cell [ref=f7e676]:
+                - link [ref=f7e677] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=gastos_fijos&lang=es
+                  - generic [ref=f7e678]:
+                    - img "Buscar" [ref=f7e679]
+                    - text: Buscar
+              - cell [ref=f7e680]:
+                - link [ref=f7e681] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=gastos_fijos&lang=es
+                  - generic [ref=f7e682]:
+                    - img "Insertar" [ref=f7e683]
+                    - text: Insertar
+              - cell [ref=f7e684]:
+                - link [ref=f7e685] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e686]:
+                    - img "Vaciar" [ref=f7e687]
+                    - text: Vaciar
+              - cell [ref=f7e688]:
+                - link [ref=f7e689] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e690]:
+                    - img "Eliminar" [ref=f7e691]
+                    - text: Eliminar
+              - cell "0" [ref=f7e692]
+              - cell "InnoDB" [ref=f7e693]
+              - cell [ref=f7e694]:
+                - term [ref=f7e695]: utf8mb4_unicode_ci
+              - cell [ref=f7e696]:
+                - link "80.0 KB" [ref=f7e697] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=gastos_fijos&lang=es#showusage
+              - cell "-" [ref=f7e698]
+            - row "listas_mercado Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e699]:
+              - cell [ref=f7e700]:
+                - checkbox [ref=f7e701]
+              - rowheader [ref=f7e702]:
+                - link "listas_mercado" [ref=f7e703] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=listas_mercado&pos=0&lang=es
+              - cell [ref=f7e704]:
+                - link "Agregar a Favoritos" [ref=f7e705] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=listas_mercado&add_favorite=1&lang=es
+              - cell [ref=f7e707]:
+                - link [ref=f7e708] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=listas_mercado&pos=0&lang=es
+                  - generic [ref=f7e709]:
+                    - img "Examinar" [ref=f7e710]
+                    - text: Examinar
+              - cell [ref=f7e711]:
+                - link [ref=f7e712] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=listas_mercado&lang=es
+                  - generic [ref=f7e713]:
+                    - img "Estructura" [ref=f7e714]
+                    - text: Estructura
+              - cell [ref=f7e715]:
+                - link [ref=f7e716] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=listas_mercado&lang=es
+                  - generic [ref=f7e717]:
+                    - img "Buscar" [ref=f7e718]
+                    - text: Buscar
+              - cell [ref=f7e719]:
+                - link [ref=f7e720] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=listas_mercado&lang=es
+                  - generic [ref=f7e721]:
+                    - img "Insertar" [ref=f7e722]
+                    - text: Insertar
+              - cell [ref=f7e723]:
+                - link [ref=f7e724] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e725]:
+                    - img "Vaciar" [ref=f7e726]
+                    - text: Vaciar
+              - cell [ref=f7e727]:
+                - link [ref=f7e728] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e729]:
+                    - img "Eliminar" [ref=f7e730]
+                    - text: Eliminar
+              - cell "0" [ref=f7e731]
+              - cell "InnoDB" [ref=f7e732]
+              - cell [ref=f7e733]:
+                - term [ref=f7e734]: utf8mb4_unicode_ci
+              - cell [ref=f7e735]:
+                - link "48.0 KB" [ref=f7e736] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=listas_mercado&lang=es#showusage
+              - cell "-" [ref=f7e737]
+            - row "lista_mercado_items Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e738]:
+              - cell [ref=f7e739]:
+                - checkbox [ref=f7e740]
+              - rowheader [ref=f7e741]:
+                - link "lista_mercado_items" [ref=f7e742] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=lista_mercado_items&pos=0&lang=es
+              - cell [ref=f7e743]:
+                - link "Agregar a Favoritos" [ref=f7e744] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=lista_mercado_items&add_favorite=1&lang=es
+              - cell [ref=f7e746]:
+                - link [ref=f7e747] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=lista_mercado_items&pos=0&lang=es
+                  - generic [ref=f7e748]:
+                    - img "Examinar" [ref=f7e749]
+                    - text: Examinar
+              - cell [ref=f7e750]:
+                - link [ref=f7e751] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=lista_mercado_items&lang=es
+                  - generic [ref=f7e752]:
+                    - img "Estructura" [ref=f7e753]
+                    - text: Estructura
+              - cell [ref=f7e754]:
+                - link [ref=f7e755] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=lista_mercado_items&lang=es
+                  - generic [ref=f7e756]:
+                    - img "Buscar" [ref=f7e757]
+                    - text: Buscar
+              - cell [ref=f7e758]:
+                - link [ref=f7e759] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=lista_mercado_items&lang=es
+                  - generic [ref=f7e760]:
+                    - img "Insertar" [ref=f7e761]
+                    - text: Insertar
+              - cell [ref=f7e762]:
+                - link [ref=f7e763] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e764]:
+                    - img "Vaciar" [ref=f7e765]
+                    - text: Vaciar
+              - cell [ref=f7e766]:
+                - link [ref=f7e767] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e768]:
+                    - img "Eliminar" [ref=f7e769]
+                    - text: Eliminar
+              - cell "0" [ref=f7e770]
+              - cell "InnoDB" [ref=f7e771]
+              - cell [ref=f7e772]:
+                - term [ref=f7e773]: utf8mb4_unicode_ci
+              - cell [ref=f7e774]:
+                - link "48.0 KB" [ref=f7e775] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=lista_mercado_items&lang=es#showusage
+              - cell "-" [ref=f7e776]
+            - row "menu_dia Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e777]:
+              - cell [ref=f7e778]:
+                - checkbox [ref=f7e779]
+              - rowheader [ref=f7e780]:
+                - link "menu_dia" [ref=f7e781] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_dia&pos=0&lang=es
+              - cell [ref=f7e782]:
+                - link "Agregar a Favoritos" [ref=f7e783] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=menu_dia&add_favorite=1&lang=es
+              - cell [ref=f7e785]:
+                - link [ref=f7e786] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_dia&pos=0&lang=es
+                  - generic [ref=f7e787]:
+                    - img "Examinar" [ref=f7e788]
+                    - text: Examinar
+              - cell [ref=f7e789]:
+                - link [ref=f7e790] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_dia&lang=es
+                  - generic [ref=f7e791]:
+                    - img "Estructura" [ref=f7e792]
+                    - text: Estructura
+              - cell [ref=f7e793]:
+                - link [ref=f7e794] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=menu_dia&lang=es
+                  - generic [ref=f7e795]:
+                    - img "Buscar" [ref=f7e796]
+                    - text: Buscar
+              - cell [ref=f7e797]:
+                - link [ref=f7e798] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=menu_dia&lang=es
+                  - generic [ref=f7e799]:
+                    - img "Insertar" [ref=f7e800]
+                    - text: Insertar
+              - cell [ref=f7e801]:
+                - link [ref=f7e802] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e803]:
+                    - img "Vaciar" [ref=f7e804]
+                    - text: Vaciar
+              - cell [ref=f7e805]:
+                - link [ref=f7e806] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e807]:
+                    - img "Eliminar" [ref=f7e808]
+                    - text: Eliminar
+              - cell "0" [ref=f7e809]
+              - cell "InnoDB" [ref=f7e810]
+              - cell [ref=f7e811]:
+                - term [ref=f7e812]: utf8mb4_unicode_ci
+              - cell [ref=f7e813]:
+                - link "48.0 KB" [ref=f7e814] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_dia&lang=es#showusage
+              - cell "-" [ref=f7e815]
+            - row "menu_items Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e816]:
+              - cell [ref=f7e817]:
+                - checkbox [ref=f7e818]
+              - rowheader [ref=f7e819]:
+                - link "menu_items" [ref=f7e820] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_items&pos=0&lang=es
+              - cell [ref=f7e821]:
+                - link "Agregar a Favoritos" [ref=f7e822] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=menu_items&add_favorite=1&lang=es
+              - cell [ref=f7e824]:
+                - link [ref=f7e825] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_items&pos=0&lang=es
+                  - generic [ref=f7e826]:
+                    - img "Examinar" [ref=f7e827]
+                    - text: Examinar
+              - cell [ref=f7e828]:
+                - link [ref=f7e829] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_items&lang=es
+                  - generic [ref=f7e830]:
+                    - img "Estructura" [ref=f7e831]
+                    - text: Estructura
+              - cell [ref=f7e832]:
+                - link [ref=f7e833] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=menu_items&lang=es
+                  - generic [ref=f7e834]:
+                    - img "Buscar" [ref=f7e835]
+                    - text: Buscar
+              - cell [ref=f7e836]:
+                - link [ref=f7e837] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=menu_items&lang=es
+                  - generic [ref=f7e838]:
+                    - img "Insertar" [ref=f7e839]
+                    - text: Insertar
+              - cell [ref=f7e840]:
+                - link [ref=f7e841] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e842]:
+                    - img "Vaciar" [ref=f7e843]
+                    - text: Vaciar
+              - cell [ref=f7e844]:
+                - link [ref=f7e845] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e846]:
+                    - img "Eliminar" [ref=f7e847]
+                    - text: Eliminar
+              - cell "0" [ref=f7e848]
+              - cell "InnoDB" [ref=f7e849]
+              - cell [ref=f7e850]:
+                - term [ref=f7e851]: utf8mb4_unicode_ci
+              - cell [ref=f7e852]:
+                - link "64.0 KB" [ref=f7e853] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_items&lang=es#showusage
+              - cell "-" [ref=f7e854]
+            - row "menu_item_componentes Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e855]:
+              - cell [ref=f7e856]:
+                - checkbox [ref=f7e857]
+              - rowheader [ref=f7e858]:
+                - link "menu_item_componentes" [ref=f7e859] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_item_componentes&pos=0&lang=es
+              - cell [ref=f7e860]:
+                - link "Agregar a Favoritos" [ref=f7e861] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=menu_item_componentes&add_favorite=1&lang=es
+              - cell [ref=f7e863]:
+                - link [ref=f7e864] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_item_componentes&pos=0&lang=es
+                  - generic [ref=f7e865]:
+                    - img "Examinar" [ref=f7e866]
+                    - text: Examinar
+              - cell [ref=f7e867]:
+                - link [ref=f7e868] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_item_componentes&lang=es
+                  - generic [ref=f7e869]:
+                    - img "Estructura" [ref=f7e870]
+                    - text: Estructura
+              - cell [ref=f7e871]:
+                - link [ref=f7e872] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=menu_item_componentes&lang=es
+                  - generic [ref=f7e873]:
+                    - img "Buscar" [ref=f7e874]
+                    - text: Buscar
+              - cell [ref=f7e875]:
+                - link [ref=f7e876] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=menu_item_componentes&lang=es
+                  - generic [ref=f7e877]:
+                    - img "Insertar" [ref=f7e878]
+                    - text: Insertar
+              - cell [ref=f7e879]:
+                - link [ref=f7e880] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e881]:
+                    - img "Vaciar" [ref=f7e882]
+                    - text: Vaciar
+              - cell [ref=f7e883]:
+                - link [ref=f7e884] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e885]:
+                    - img "Eliminar" [ref=f7e886]
+                    - text: Eliminar
+              - cell "0" [ref=f7e887]
+              - cell "InnoDB" [ref=f7e888]
+              - cell [ref=f7e889]:
+                - term [ref=f7e890]: utf8mb4_unicode_ci
+              - cell [ref=f7e891]:
+                - link "32.0 KB" [ref=f7e892] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_item_componentes&lang=es#showusage
+              - cell "-" [ref=f7e893]
+            - row "menu_item_componente_opciones Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e894]:
+              - cell [ref=f7e895]:
+                - checkbox [ref=f7e896]
+              - rowheader [ref=f7e897]:
+                - link "menu_item_componente_opciones" [ref=f7e898] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_item_componente_opciones&pos=0&lang=es
+              - cell [ref=f7e899]:
+                - link "Agregar a Favoritos" [ref=f7e900] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=menu_item_componente_opciones&add_favorite=1&lang=es
+              - cell [ref=f7e902]:
+                - link [ref=f7e903] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=menu_item_componente_opciones&pos=0&lang=es
+                  - generic [ref=f7e904]:
+                    - img "Examinar" [ref=f7e905]
+                    - text: Examinar
+              - cell [ref=f7e906]:
+                - link [ref=f7e907] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_item_componente_opciones&lang=es
+                  - generic [ref=f7e908]:
+                    - img "Estructura" [ref=f7e909]
+                    - text: Estructura
+              - cell [ref=f7e910]:
+                - link [ref=f7e911] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=menu_item_componente_opciones&lang=es
+                  - generic [ref=f7e912]:
+                    - img "Buscar" [ref=f7e913]
+                    - text: Buscar
+              - cell [ref=f7e914]:
+                - link [ref=f7e915] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=menu_item_componente_opciones&lang=es
+                  - generic [ref=f7e916]:
+                    - img "Insertar" [ref=f7e917]
+                    - text: Insertar
+              - cell [ref=f7e918]:
+                - link [ref=f7e919] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e920]:
+                    - img "Vaciar" [ref=f7e921]
+                    - text: Vaciar
+              - cell [ref=f7e922]:
+                - link [ref=f7e923] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e924]:
+                    - img "Eliminar" [ref=f7e925]
+                    - text: Eliminar
+              - cell "0" [ref=f7e926]
+              - cell "InnoDB" [ref=f7e927]
+              - cell [ref=f7e928]:
+                - term [ref=f7e929]: utf8mb4_unicode_ci
+              - cell [ref=f7e930]:
+                - link "64.0 KB" [ref=f7e931] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=menu_item_componente_opciones&lang=es#showusage
+              - cell "-" [ref=f7e932]
+            - row "mercados Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 80.0 KB -" [ref=f7e933]:
+              - cell [ref=f7e934]:
+                - checkbox [ref=f7e935]
+              - rowheader [ref=f7e936]:
+                - link "mercados" [ref=f7e937] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=mercados&pos=0&lang=es
+              - cell [ref=f7e938]:
+                - link "Agregar a Favoritos" [ref=f7e939] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=mercados&add_favorite=1&lang=es
+              - cell [ref=f7e941]:
+                - link [ref=f7e942] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=mercados&pos=0&lang=es
+                  - generic [ref=f7e943]:
+                    - img "Examinar" [ref=f7e944]
+                    - text: Examinar
+              - cell [ref=f7e945]:
+                - link [ref=f7e946] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=mercados&lang=es
+                  - generic [ref=f7e947]:
+                    - img "Estructura" [ref=f7e948]
+                    - text: Estructura
+              - cell [ref=f7e949]:
+                - link [ref=f7e950] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=mercados&lang=es
+                  - generic [ref=f7e951]:
+                    - img "Buscar" [ref=f7e952]
+                    - text: Buscar
+              - cell [ref=f7e953]:
+                - link [ref=f7e954] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=mercados&lang=es
+                  - generic [ref=f7e955]:
+                    - img "Insertar" [ref=f7e956]
+                    - text: Insertar
+              - cell [ref=f7e957]:
+                - link [ref=f7e958] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e959]:
+                    - img "Vaciar" [ref=f7e960]
+                    - text: Vaciar
+              - cell [ref=f7e961]:
+                - link [ref=f7e962] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e963]:
+                    - img "Eliminar" [ref=f7e964]
+                    - text: Eliminar
+              - cell "0" [ref=f7e965]
+              - cell "InnoDB" [ref=f7e966]
+              - cell [ref=f7e967]:
+                - term [ref=f7e968]: utf8mb4_unicode_ci
+              - cell [ref=f7e969]:
+                - link "80.0 KB" [ref=f7e970] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=mercados&lang=es#showusage
+              - cell "-" [ref=f7e971]
+            - row "mercado_items Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 128.0 KB -" [ref=f7e972]:
+              - cell [ref=f7e973]:
+                - checkbox [ref=f7e974]
+              - rowheader [ref=f7e975]:
+                - link "mercado_items" [ref=f7e976] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=mercado_items&pos=0&lang=es
+              - cell [ref=f7e977]:
+                - link "Agregar a Favoritos" [ref=f7e978] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=mercado_items&add_favorite=1&lang=es
+              - cell [ref=f7e980]:
+                - link [ref=f7e981] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=mercado_items&pos=0&lang=es
+                  - generic [ref=f7e982]:
+                    - img "Examinar" [ref=f7e983]
+                    - text: Examinar
+              - cell [ref=f7e984]:
+                - link [ref=f7e985] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=mercado_items&lang=es
+                  - generic [ref=f7e986]:
+                    - img "Estructura" [ref=f7e987]
+                    - text: Estructura
+              - cell [ref=f7e988]:
+                - link [ref=f7e989] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=mercado_items&lang=es
+                  - generic [ref=f7e990]:
+                    - img "Buscar" [ref=f7e991]
+                    - text: Buscar
+              - cell [ref=f7e992]:
+                - link [ref=f7e993] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=mercado_items&lang=es
+                  - generic [ref=f7e994]:
+                    - img "Insertar" [ref=f7e995]
+                    - text: Insertar
+              - cell [ref=f7e996]:
+                - link [ref=f7e997] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e998]:
+                    - img "Vaciar" [ref=f7e999]
+                    - text: Vaciar
+              - cell [ref=f7e1000]:
+                - link [ref=f7e1001] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1002]:
+                    - img "Eliminar" [ref=f7e1003]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1004]
+              - cell "InnoDB" [ref=f7e1005]
+              - cell [ref=f7e1006]:
+                - term [ref=f7e1007]: utf8mb4_unicode_ci
+              - cell [ref=f7e1008]:
+                - link "128.0 KB" [ref=f7e1009] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=mercado_items&lang=es#showusage
+              - cell "-" [ref=f7e1010]
+            - row "metodos_pago Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 4 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e1011]:
+              - cell [ref=f7e1012]:
+                - checkbox [ref=f7e1013]
+              - rowheader [ref=f7e1014]:
+                - link "metodos_pago" [ref=f7e1015] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=metodos_pago&pos=0&lang=es
+              - cell [ref=f7e1016]:
+                - link "Agregar a Favoritos" [ref=f7e1017] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=metodos_pago&add_favorite=1&lang=es
+              - cell [ref=f7e1019]:
+                - link [ref=f7e1020] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=metodos_pago&pos=0&lang=es
+                  - generic [ref=f7e1021]:
+                    - img "Examinar" [ref=f7e1022]
+                    - text: Examinar
+              - cell [ref=f7e1023]:
+                - link [ref=f7e1024] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=metodos_pago&lang=es
+                  - generic [ref=f7e1025]:
+                    - img "Estructura" [ref=f7e1026]
+                    - text: Estructura
+              - cell [ref=f7e1027]:
+                - link [ref=f7e1028] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=metodos_pago&lang=es
+                  - generic [ref=f7e1029]:
+                    - img "Buscar" [ref=f7e1030]
+                    - text: Buscar
+              - cell [ref=f7e1031]:
+                - link [ref=f7e1032] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=metodos_pago&lang=es
+                  - generic [ref=f7e1033]:
+                    - img "Insertar" [ref=f7e1034]
+                    - text: Insertar
+              - cell [ref=f7e1035]:
+                - link [ref=f7e1036] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1037]:
+                    - img "Vaciar" [ref=f7e1038]
+                    - text: Vaciar
+              - cell [ref=f7e1039]:
+                - link [ref=f7e1040] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1041]:
+                    - img "Eliminar" [ref=f7e1042]
+                    - text: Eliminar
+              - cell "4" [ref=f7e1043]
+              - cell "InnoDB" [ref=f7e1044]
+              - cell [ref=f7e1045]:
+                - term [ref=f7e1046]: utf8mb4_unicode_ci
+              - cell [ref=f7e1047]:
+                - link "64.0 KB" [ref=f7e1048] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=metodos_pago&lang=es#showusage
+              - cell "-" [ref=f7e1049]
+            - row "migrations Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 47 InnoDB utf8mb4_unicode_ci 16.0 KB -" [ref=f7e1050]:
+              - cell [ref=f7e1051]:
+                - checkbox [ref=f7e1052]
+              - rowheader [ref=f7e1053]:
+                - link "migrations" [ref=f7e1054] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=migrations&pos=0&lang=es
+              - cell [ref=f7e1055]:
+                - link "Agregar a Favoritos" [ref=f7e1056] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=migrations&add_favorite=1&lang=es
+              - cell [ref=f7e1058]:
+                - link [ref=f7e1059] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=migrations&pos=0&lang=es
+                  - generic [ref=f7e1060]:
+                    - img "Examinar" [ref=f7e1061]
+                    - text: Examinar
+              - cell [ref=f7e1062]:
+                - link [ref=f7e1063] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=migrations&lang=es
+                  - generic [ref=f7e1064]:
+                    - img "Estructura" [ref=f7e1065]
+                    - text: Estructura
+              - cell [ref=f7e1066]:
+                - link [ref=f7e1067] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=migrations&lang=es
+                  - generic [ref=f7e1068]:
+                    - img "Buscar" [ref=f7e1069]
+                    - text: Buscar
+              - cell [ref=f7e1070]:
+                - link [ref=f7e1071] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=migrations&lang=es
+                  - generic [ref=f7e1072]:
+                    - img "Insertar" [ref=f7e1073]
+                    - text: Insertar
+              - cell [ref=f7e1074]:
+                - link [ref=f7e1075] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1076]:
+                    - img "Vaciar" [ref=f7e1077]
+                    - text: Vaciar
+              - cell [ref=f7e1078]:
+                - link [ref=f7e1079] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1080]:
+                    - img "Eliminar" [ref=f7e1081]
+                    - text: Eliminar
+              - cell "47" [ref=f7e1082]
+              - cell "InnoDB" [ref=f7e1083]
+              - cell [ref=f7e1084]:
+                - term [ref=f7e1085]: utf8mb4_unicode_ci
+              - cell [ref=f7e1086]:
+                - link "16.0 KB" [ref=f7e1087] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=migrations&lang=es#showusage
+              - cell "-" [ref=f7e1088]
+            - row "model_has_permissions Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1089]:
+              - cell [ref=f7e1090]:
+                - checkbox [ref=f7e1091]
+              - rowheader [ref=f7e1092]:
+                - link "model_has_permissions" [ref=f7e1093] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=model_has_permissions&pos=0&lang=es
+              - cell [ref=f7e1094]:
+                - link "Agregar a Favoritos" [ref=f7e1095] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=model_has_permissions&add_favorite=1&lang=es
+              - cell [ref=f7e1097]:
+                - link [ref=f7e1098] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=model_has_permissions&pos=0&lang=es
+                  - generic [ref=f7e1099]:
+                    - img "Examinar" [ref=f7e1100]
+                    - text: Examinar
+              - cell [ref=f7e1101]:
+                - link [ref=f7e1102] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=model_has_permissions&lang=es
+                  - generic [ref=f7e1103]:
+                    - img "Estructura" [ref=f7e1104]
+                    - text: Estructura
+              - cell [ref=f7e1105]:
+                - link [ref=f7e1106] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=model_has_permissions&lang=es
+                  - generic [ref=f7e1107]:
+                    - img "Buscar" [ref=f7e1108]
+                    - text: Buscar
+              - cell [ref=f7e1109]:
+                - link [ref=f7e1110] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=model_has_permissions&lang=es
+                  - generic [ref=f7e1111]:
+                    - img "Insertar" [ref=f7e1112]
+                    - text: Insertar
+              - cell [ref=f7e1113]:
+                - link [ref=f7e1114] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1115]:
+                    - img "Vaciar" [ref=f7e1116]
+                    - text: Vaciar
+              - cell [ref=f7e1117]:
+                - link [ref=f7e1118] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1119]:
+                    - img "Eliminar" [ref=f7e1120]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1121]
+              - cell "InnoDB" [ref=f7e1122]
+              - cell [ref=f7e1123]:
+                - term [ref=f7e1124]: utf8mb4_unicode_ci
+              - cell [ref=f7e1125]:
+                - link "32.0 KB" [ref=f7e1126] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=model_has_permissions&lang=es#showusage
+              - cell "-" [ref=f7e1127]
+            - row "model_has_roles Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 1 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1128]:
+              - cell [ref=f7e1129]:
+                - checkbox [ref=f7e1130]
+              - rowheader [ref=f7e1131]:
+                - link "model_has_roles" [ref=f7e1132] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=model_has_roles&pos=0&lang=es
+              - cell [ref=f7e1133]:
+                - link "Agregar a Favoritos" [ref=f7e1134] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=model_has_roles&add_favorite=1&lang=es
+              - cell [ref=f7e1136]:
+                - link [ref=f7e1137] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=model_has_roles&pos=0&lang=es
+                  - generic [ref=f7e1138]:
+                    - img "Examinar" [ref=f7e1139]
+                    - text: Examinar
+              - cell [ref=f7e1140]:
+                - link [ref=f7e1141] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=model_has_roles&lang=es
+                  - generic [ref=f7e1142]:
+                    - img "Estructura" [ref=f7e1143]
+                    - text: Estructura
+              - cell [ref=f7e1144]:
+                - link [ref=f7e1145] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=model_has_roles&lang=es
+                  - generic [ref=f7e1146]:
+                    - img "Buscar" [ref=f7e1147]
+                    - text: Buscar
+              - cell [ref=f7e1148]:
+                - link [ref=f7e1149] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=model_has_roles&lang=es
+                  - generic [ref=f7e1150]:
+                    - img "Insertar" [ref=f7e1151]
+                    - text: Insertar
+              - cell [ref=f7e1152]:
+                - link [ref=f7e1153] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1154]:
+                    - img "Vaciar" [ref=f7e1155]
+                    - text: Vaciar
+              - cell [ref=f7e1156]:
+                - link [ref=f7e1157] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1158]:
+                    - img "Eliminar" [ref=f7e1159]
+                    - text: Eliminar
+              - cell "1" [ref=f7e1160]
+              - cell "InnoDB" [ref=f7e1161]
+              - cell [ref=f7e1162]:
+                - term [ref=f7e1163]: utf8mb4_unicode_ci
+              - cell [ref=f7e1164]:
+                - link "32.0 KB" [ref=f7e1165] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=model_has_roles&lang=es#showusage
+              - cell "-" [ref=f7e1166]
+            - row "movimientos_inventario Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 128.0 KB -" [ref=f7e1167]:
+              - cell [ref=f7e1168]:
+                - checkbox [ref=f7e1169]
+              - rowheader [ref=f7e1170]:
+                - link "movimientos_inventario" [ref=f7e1171] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=movimientos_inventario&pos=0&lang=es
+              - cell [ref=f7e1172]:
+                - link "Agregar a Favoritos" [ref=f7e1173] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=movimientos_inventario&add_favorite=1&lang=es
+              - cell [ref=f7e1175]:
+                - link [ref=f7e1176] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=movimientos_inventario&pos=0&lang=es
+                  - generic [ref=f7e1177]:
+                    - img "Examinar" [ref=f7e1178]
+                    - text: Examinar
+              - cell [ref=f7e1179]:
+                - link [ref=f7e1180] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=movimientos_inventario&lang=es
+                  - generic [ref=f7e1181]:
+                    - img "Estructura" [ref=f7e1182]
+                    - text: Estructura
+              - cell [ref=f7e1183]:
+                - link [ref=f7e1184] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=movimientos_inventario&lang=es
+                  - generic [ref=f7e1185]:
+                    - img "Buscar" [ref=f7e1186]
+                    - text: Buscar
+              - cell [ref=f7e1187]:
+                - link [ref=f7e1188] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=movimientos_inventario&lang=es
+                  - generic [ref=f7e1189]:
+                    - img "Insertar" [ref=f7e1190]
+                    - text: Insertar
+              - cell [ref=f7e1191]:
+                - link [ref=f7e1192] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1193]:
+                    - img "Vaciar" [ref=f7e1194]
+                    - text: Vaciar
+              - cell [ref=f7e1195]:
+                - link [ref=f7e1196] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1197]:
+                    - img "Eliminar" [ref=f7e1198]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1199]
+              - cell "InnoDB" [ref=f7e1200]
+              - cell [ref=f7e1201]:
+                - term [ref=f7e1202]: utf8mb4_unicode_ci
+              - cell [ref=f7e1203]:
+                - link "128.0 KB" [ref=f7e1204] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=movimientos_inventario&lang=es#showusage
+              - cell "-" [ref=f7e1205]
+            - row "nominas Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 80.0 KB -" [ref=f7e1206]:
+              - cell [ref=f7e1207]:
+                - checkbox [ref=f7e1208]
+              - rowheader [ref=f7e1209]:
+                - link "nominas" [ref=f7e1210] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=nominas&pos=0&lang=es
+              - cell [ref=f7e1211]:
+                - link "Agregar a Favoritos" [ref=f7e1212] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=nominas&add_favorite=1&lang=es
+              - cell [ref=f7e1214]:
+                - link [ref=f7e1215] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=nominas&pos=0&lang=es
+                  - generic [ref=f7e1216]:
+                    - img "Examinar" [ref=f7e1217]
+                    - text: Examinar
+              - cell [ref=f7e1218]:
+                - link [ref=f7e1219] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=nominas&lang=es
+                  - generic [ref=f7e1220]:
+                    - img "Estructura" [ref=f7e1221]
+                    - text: Estructura
+              - cell [ref=f7e1222]:
+                - link [ref=f7e1223] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=nominas&lang=es
+                  - generic [ref=f7e1224]:
+                    - img "Buscar" [ref=f7e1225]
+                    - text: Buscar
+              - cell [ref=f7e1226]:
+                - link [ref=f7e1227] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=nominas&lang=es
+                  - generic [ref=f7e1228]:
+                    - img "Insertar" [ref=f7e1229]
+                    - text: Insertar
+              - cell [ref=f7e1230]:
+                - link [ref=f7e1231] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1232]:
+                    - img "Vaciar" [ref=f7e1233]
+                    - text: Vaciar
+              - cell [ref=f7e1234]:
+                - link [ref=f7e1235] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1236]:
+                    - img "Eliminar" [ref=f7e1237]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1238]
+              - cell "InnoDB" [ref=f7e1239]
+              - cell [ref=f7e1240]:
+                - term [ref=f7e1241]: utf8mb4_unicode_ci
+              - cell [ref=f7e1242]:
+                - link "80.0 KB" [ref=f7e1243] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=nominas&lang=es#showusage
+              - cell "-" [ref=f7e1244]
+            - row "nomina_detalles Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1245]:
+              - cell [ref=f7e1246]:
+                - checkbox [ref=f7e1247]
+              - rowheader [ref=f7e1248]:
+                - link "nomina_detalles" [ref=f7e1249] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=nomina_detalles&pos=0&lang=es
+              - cell [ref=f7e1250]:
+                - link "Agregar a Favoritos" [ref=f7e1251] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=nomina_detalles&add_favorite=1&lang=es
+              - cell [ref=f7e1253]:
+                - link [ref=f7e1254] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=nomina_detalles&pos=0&lang=es
+                  - generic [ref=f7e1255]:
+                    - img "Examinar" [ref=f7e1256]
+                    - text: Examinar
+              - cell [ref=f7e1257]:
+                - link [ref=f7e1258] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=nomina_detalles&lang=es
+                  - generic [ref=f7e1259]:
+                    - img "Estructura" [ref=f7e1260]
+                    - text: Estructura
+              - cell [ref=f7e1261]:
+                - link [ref=f7e1262] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=nomina_detalles&lang=es
+                  - generic [ref=f7e1263]:
+                    - img "Buscar" [ref=f7e1264]
+                    - text: Buscar
+              - cell [ref=f7e1265]:
+                - link [ref=f7e1266] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=nomina_detalles&lang=es
+                  - generic [ref=f7e1267]:
+                    - img "Insertar" [ref=f7e1268]
+                    - text: Insertar
+              - cell [ref=f7e1269]:
+                - link [ref=f7e1270] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1271]:
+                    - img "Vaciar" [ref=f7e1272]
+                    - text: Vaciar
+              - cell [ref=f7e1273]:
+                - link [ref=f7e1274] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1275]:
+                    - img "Eliminar" [ref=f7e1276]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1277]
+              - cell "InnoDB" [ref=f7e1278]
+              - cell [ref=f7e1279]:
+                - term [ref=f7e1280]: utf8mb4_unicode_ci
+              - cell [ref=f7e1281]:
+                - link "48.0 KB" [ref=f7e1282] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=nomina_detalles&lang=es#showusage
+              - cell "-" [ref=f7e1283]
+            - row "pagos_ahorro Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e1284]:
+              - cell [ref=f7e1285]:
+                - checkbox [ref=f7e1286]
+              - rowheader [ref=f7e1287]:
+                - link "pagos_ahorro" [ref=f7e1288] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_ahorro&pos=0&lang=es
+              - cell [ref=f7e1289]:
+                - link "Agregar a Favoritos" [ref=f7e1290] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=pagos_ahorro&add_favorite=1&lang=es
+              - cell [ref=f7e1292]:
+                - link [ref=f7e1293] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_ahorro&pos=0&lang=es
+                  - generic [ref=f7e1294]:
+                    - img "Examinar" [ref=f7e1295]
+                    - text: Examinar
+              - cell [ref=f7e1296]:
+                - link [ref=f7e1297] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_ahorro&lang=es
+                  - generic [ref=f7e1298]:
+                    - img "Estructura" [ref=f7e1299]
+                    - text: Estructura
+              - cell [ref=f7e1300]:
+                - link [ref=f7e1301] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=pagos_ahorro&lang=es
+                  - generic [ref=f7e1302]:
+                    - img "Buscar" [ref=f7e1303]
+                    - text: Buscar
+              - cell [ref=f7e1304]:
+                - link [ref=f7e1305] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=pagos_ahorro&lang=es
+                  - generic [ref=f7e1306]:
+                    - img "Insertar" [ref=f7e1307]
+                    - text: Insertar
+              - cell [ref=f7e1308]:
+                - link [ref=f7e1309] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1310]:
+                    - img "Vaciar" [ref=f7e1311]
+                    - text: Vaciar
+              - cell [ref=f7e1312]:
+                - link [ref=f7e1313] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1314]:
+                    - img "Eliminar" [ref=f7e1315]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1316]
+              - cell "InnoDB" [ref=f7e1317]
+              - cell [ref=f7e1318]:
+                - term [ref=f7e1319]: utf8mb4_unicode_ci
+              - cell [ref=f7e1320]:
+                - link "64.0 KB" [ref=f7e1321] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_ahorro&lang=es#showusage
+              - cell "-" [ref=f7e1322]
+            - row "pagos_ahorro_nomina Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1323]:
+              - cell [ref=f7e1324]:
+                - checkbox [ref=f7e1325]
+              - rowheader [ref=f7e1326]:
+                - link "pagos_ahorro_nomina" [ref=f7e1327] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_ahorro_nomina&pos=0&lang=es
+              - cell [ref=f7e1328]:
+                - link "Agregar a Favoritos" [ref=f7e1329] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=pagos_ahorro_nomina&add_favorite=1&lang=es
+              - cell [ref=f7e1331]:
+                - link [ref=f7e1332] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_ahorro_nomina&pos=0&lang=es
+                  - generic [ref=f7e1333]:
+                    - img "Examinar" [ref=f7e1334]
+                    - text: Examinar
+              - cell [ref=f7e1335]:
+                - link [ref=f7e1336] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_ahorro_nomina&lang=es
+                  - generic [ref=f7e1337]:
+                    - img "Estructura" [ref=f7e1338]
+                    - text: Estructura
+              - cell [ref=f7e1339]:
+                - link [ref=f7e1340] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=pagos_ahorro_nomina&lang=es
+                  - generic [ref=f7e1341]:
+                    - img "Buscar" [ref=f7e1342]
+                    - text: Buscar
+              - cell [ref=f7e1343]:
+                - link [ref=f7e1344] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=pagos_ahorro_nomina&lang=es
+                  - generic [ref=f7e1345]:
+                    - img "Insertar" [ref=f7e1346]
+                    - text: Insertar
+              - cell [ref=f7e1347]:
+                - link [ref=f7e1348] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1349]:
+                    - img "Vaciar" [ref=f7e1350]
+                    - text: Vaciar
+              - cell [ref=f7e1351]:
+                - link [ref=f7e1352] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1353]:
+                    - img "Eliminar" [ref=f7e1354]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1355]
+              - cell "InnoDB" [ref=f7e1356]
+              - cell [ref=f7e1357]:
+                - term [ref=f7e1358]: utf8mb4_unicode_ci
+              - cell [ref=f7e1359]:
+                - link "48.0 KB" [ref=f7e1360] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_ahorro_nomina&lang=es#showusage
+              - cell "-" [ref=f7e1361]
+            - row "pagos_nomina Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e1362]:
+              - cell [ref=f7e1363]:
+                - checkbox [ref=f7e1364]
+              - rowheader [ref=f7e1365]:
+                - link "pagos_nomina" [ref=f7e1366] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_nomina&pos=0&lang=es
+              - cell [ref=f7e1367]:
+                - link "Agregar a Favoritos" [ref=f7e1368] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=pagos_nomina&add_favorite=1&lang=es
+              - cell [ref=f7e1370]:
+                - link [ref=f7e1371] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=pagos_nomina&pos=0&lang=es
+                  - generic [ref=f7e1372]:
+                    - img "Examinar" [ref=f7e1373]
+                    - text: Examinar
+              - cell [ref=f7e1374]:
+                - link [ref=f7e1375] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_nomina&lang=es
+                  - generic [ref=f7e1376]:
+                    - img "Estructura" [ref=f7e1377]
+                    - text: Estructura
+              - cell [ref=f7e1378]:
+                - link [ref=f7e1379] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=pagos_nomina&lang=es
+                  - generic [ref=f7e1380]:
+                    - img "Buscar" [ref=f7e1381]
+                    - text: Buscar
+              - cell [ref=f7e1382]:
+                - link [ref=f7e1383] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=pagos_nomina&lang=es
+                  - generic [ref=f7e1384]:
+                    - img "Insertar" [ref=f7e1385]
+                    - text: Insertar
+              - cell [ref=f7e1386]:
+                - link [ref=f7e1387] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1388]:
+                    - img "Vaciar" [ref=f7e1389]
+                    - text: Vaciar
+              - cell [ref=f7e1390]:
+                - link [ref=f7e1391] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1392]:
+                    - img "Eliminar" [ref=f7e1393]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1394]
+              - cell "InnoDB" [ref=f7e1395]
+              - cell [ref=f7e1396]:
+                - term [ref=f7e1397]: utf8mb4_unicode_ci
+              - cell [ref=f7e1398]:
+                - link "64.0 KB" [ref=f7e1399] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=pagos_nomina&lang=es#showusage
+              - cell "-" [ref=f7e1400]
+            - row "password_resets Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 16.0 KB -" [ref=f7e1401]:
+              - cell [ref=f7e1402]:
+                - checkbox [ref=f7e1403]
+              - rowheader [ref=f7e1404]:
+                - link "password_resets" [ref=f7e1405] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=password_resets&pos=0&lang=es
+              - cell [ref=f7e1406]:
+                - link "Agregar a Favoritos" [ref=f7e1407] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=password_resets&add_favorite=1&lang=es
+              - cell [ref=f7e1409]:
+                - link [ref=f7e1410] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=password_resets&pos=0&lang=es
+                  - generic [ref=f7e1411]:
+                    - img "Examinar" [ref=f7e1412]
+                    - text: Examinar
+              - cell [ref=f7e1413]:
+                - link [ref=f7e1414] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=password_resets&lang=es
+                  - generic [ref=f7e1415]:
+                    - img "Estructura" [ref=f7e1416]
+                    - text: Estructura
+              - cell [ref=f7e1417]:
+                - link [ref=f7e1418] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=password_resets&lang=es
+                  - generic [ref=f7e1419]:
+                    - img "Buscar" [ref=f7e1420]
+                    - text: Buscar
+              - cell [ref=f7e1421]:
+                - link [ref=f7e1422] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=password_resets&lang=es
+                  - generic [ref=f7e1423]:
+                    - img "Insertar" [ref=f7e1424]
+                    - text: Insertar
+              - cell [ref=f7e1425]:
+                - link [ref=f7e1426] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1427]:
+                    - img "Vaciar" [ref=f7e1428]
+                    - text: Vaciar
+              - cell [ref=f7e1429]:
+                - link [ref=f7e1430] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1431]:
+                    - img "Eliminar" [ref=f7e1432]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1433]
+              - cell "InnoDB" [ref=f7e1434]
+              - cell [ref=f7e1435]:
+                - term [ref=f7e1436]: utf8mb4_unicode_ci
+              - cell [ref=f7e1437]:
+                - link "16.0 KB" [ref=f7e1438] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=password_resets&lang=es#showusage
+              - cell "-" [ref=f7e1439]
+            - row "permissions Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1440]:
+              - cell [ref=f7e1441]:
+                - checkbox [ref=f7e1442]
+              - rowheader [ref=f7e1443]:
+                - link "permissions" [ref=f7e1444] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=permissions&pos=0&lang=es
+              - cell [ref=f7e1445]:
+                - link "Agregar a Favoritos" [ref=f7e1446] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=permissions&add_favorite=1&lang=es
+              - cell [ref=f7e1448]:
+                - link [ref=f7e1449] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=permissions&pos=0&lang=es
+                  - generic [ref=f7e1450]:
+                    - img "Examinar" [ref=f7e1451]
+                    - text: Examinar
+              - cell [ref=f7e1452]:
+                - link [ref=f7e1453] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=permissions&lang=es
+                  - generic [ref=f7e1454]:
+                    - img "Estructura" [ref=f7e1455]
+                    - text: Estructura
+              - cell [ref=f7e1456]:
+                - link [ref=f7e1457] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=permissions&lang=es
+                  - generic [ref=f7e1458]:
+                    - img "Buscar" [ref=f7e1459]
+                    - text: Buscar
+              - cell [ref=f7e1460]:
+                - link [ref=f7e1461] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=permissions&lang=es
+                  - generic [ref=f7e1462]:
+                    - img "Insertar" [ref=f7e1463]
+                    - text: Insertar
+              - cell [ref=f7e1464]:
+                - link [ref=f7e1465] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1466]:
+                    - img "Vaciar" [ref=f7e1467]
+                    - text: Vaciar
+              - cell [ref=f7e1468]:
+                - link [ref=f7e1469] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1470]:
+                    - img "Eliminar" [ref=f7e1471]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1472]
+              - cell "InnoDB" [ref=f7e1473]
+              - cell [ref=f7e1474]:
+                - term [ref=f7e1475]: utf8mb4_unicode_ci
+              - cell [ref=f7e1476]:
+                - link "32.0 KB" [ref=f7e1477] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=permissions&lang=es#showusage
+              - cell "-" [ref=f7e1478]
+            - row "personal_access_tokens Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1479]:
+              - cell [ref=f7e1480]:
+                - checkbox [ref=f7e1481]
+              - rowheader [ref=f7e1482]:
+                - link "personal_access_tokens" [ref=f7e1483] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=personal_access_tokens&pos=0&lang=es
+              - cell [ref=f7e1484]:
+                - link "Agregar a Favoritos" [ref=f7e1485] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=personal_access_tokens&add_favorite=1&lang=es
+              - cell [ref=f7e1487]:
+                - link [ref=f7e1488] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=personal_access_tokens&pos=0&lang=es
+                  - generic [ref=f7e1489]:
+                    - img "Examinar" [ref=f7e1490]
+                    - text: Examinar
+              - cell [ref=f7e1491]:
+                - link [ref=f7e1492] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=personal_access_tokens&lang=es
+                  - generic [ref=f7e1493]:
+                    - img "Estructura" [ref=f7e1494]
+                    - text: Estructura
+              - cell [ref=f7e1495]:
+                - link [ref=f7e1496] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=personal_access_tokens&lang=es
+                  - generic [ref=f7e1497]:
+                    - img "Buscar" [ref=f7e1498]
+                    - text: Buscar
+              - cell [ref=f7e1499]:
+                - link [ref=f7e1500] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=personal_access_tokens&lang=es
+                  - generic [ref=f7e1501]:
+                    - img "Insertar" [ref=f7e1502]
+                    - text: Insertar
+              - cell [ref=f7e1503]:
+                - link [ref=f7e1504] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1505]:
+                    - img "Vaciar" [ref=f7e1506]
+                    - text: Vaciar
+              - cell [ref=f7e1507]:
+                - link [ref=f7e1508] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1509]:
+                    - img "Eliminar" [ref=f7e1510]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1511]
+              - cell "InnoDB" [ref=f7e1512]
+              - cell [ref=f7e1513]:
+                - term [ref=f7e1514]: utf8mb4_unicode_ci
+              - cell [ref=f7e1515]:
+                - link "48.0 KB" [ref=f7e1516] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=personal_access_tokens&lang=es#showusage
+              - cell "-" [ref=f7e1517]
+            - row "prestaciones_sociales Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 64.0 KB -" [ref=f7e1518]:
+              - cell [ref=f7e1519]:
+                - checkbox [ref=f7e1520]
+              - rowheader [ref=f7e1521]:
+                - link "prestaciones_sociales" [ref=f7e1522] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=prestaciones_sociales&pos=0&lang=es
+              - cell [ref=f7e1523]:
+                - link "Agregar a Favoritos" [ref=f7e1524] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=prestaciones_sociales&add_favorite=1&lang=es
+              - cell [ref=f7e1526]:
+                - link [ref=f7e1527] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=prestaciones_sociales&pos=0&lang=es
+                  - generic [ref=f7e1528]:
+                    - img "Examinar" [ref=f7e1529]
+                    - text: Examinar
+              - cell [ref=f7e1530]:
+                - link [ref=f7e1531] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=prestaciones_sociales&lang=es
+                  - generic [ref=f7e1532]:
+                    - img "Estructura" [ref=f7e1533]
+                    - text: Estructura
+              - cell [ref=f7e1534]:
+                - link [ref=f7e1535] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=prestaciones_sociales&lang=es
+                  - generic [ref=f7e1536]:
+                    - img "Buscar" [ref=f7e1537]
+                    - text: Buscar
+              - cell [ref=f7e1538]:
+                - link [ref=f7e1539] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=prestaciones_sociales&lang=es
+                  - generic [ref=f7e1540]:
+                    - img "Insertar" [ref=f7e1541]
+                    - text: Insertar
+              - cell [ref=f7e1542]:
+                - link [ref=f7e1543] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1544]:
+                    - img "Vaciar" [ref=f7e1545]
+                    - text: Vaciar
+              - cell [ref=f7e1546]:
+                - link [ref=f7e1547] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1548]:
+                    - img "Eliminar" [ref=f7e1549]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1550]
+              - cell "InnoDB" [ref=f7e1551]
+              - cell [ref=f7e1552]:
+                - term [ref=f7e1553]: utf8mb4_unicode_ci
+              - cell [ref=f7e1554]:
+                - link "64.0 KB" [ref=f7e1555] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=prestaciones_sociales&lang=es#showusage
+              - cell "-" [ref=f7e1556]
+            - row "productos_mercado Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 80.0 KB -" [ref=f7e1557]:
+              - cell [ref=f7e1558]:
+                - checkbox [ref=f7e1559]
+              - rowheader [ref=f7e1560]:
+                - link "productos_mercado" [ref=f7e1561] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=productos_mercado&pos=0&lang=es
+              - cell [ref=f7e1562]:
+                - link "Agregar a Favoritos" [ref=f7e1563] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=productos_mercado&add_favorite=1&lang=es
+              - cell [ref=f7e1565]:
+                - link [ref=f7e1566] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=productos_mercado&pos=0&lang=es
+                  - generic [ref=f7e1567]:
+                    - img "Examinar" [ref=f7e1568]
+                    - text: Examinar
+              - cell [ref=f7e1569]:
+                - link [ref=f7e1570] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=productos_mercado&lang=es
+                  - generic [ref=f7e1571]:
+                    - img "Estructura" [ref=f7e1572]
+                    - text: Estructura
+              - cell [ref=f7e1573]:
+                - link [ref=f7e1574] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=productos_mercado&lang=es
+                  - generic [ref=f7e1575]:
+                    - img "Buscar" [ref=f7e1576]
+                    - text: Buscar
+              - cell [ref=f7e1577]:
+                - link [ref=f7e1578] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=productos_mercado&lang=es
+                  - generic [ref=f7e1579]:
+                    - img "Insertar" [ref=f7e1580]
+                    - text: Insertar
+              - cell [ref=f7e1581]:
+                - link [ref=f7e1582] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1583]:
+                    - img "Vaciar" [ref=f7e1584]
+                    - text: Vaciar
+              - cell [ref=f7e1585]:
+                - link [ref=f7e1586] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1587]:
+                    - img "Eliminar" [ref=f7e1588]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1589]
+              - cell "InnoDB" [ref=f7e1590]
+              - cell [ref=f7e1591]:
+                - term [ref=f7e1592]: utf8mb4_unicode_ci
+              - cell [ref=f7e1593]:
+                - link "80.0 KB" [ref=f7e1594] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=productos_mercado&lang=es#showusage
+              - cell "-" [ref=f7e1595]
+            - row "registros_mercado Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 96.0 KB -" [ref=f7e1596]:
+              - cell [ref=f7e1597]:
+                - checkbox [ref=f7e1598]
+              - rowheader [ref=f7e1599]:
+                - link "registros_mercado" [ref=f7e1600] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=registros_mercado&pos=0&lang=es
+              - cell [ref=f7e1601]:
+                - link "Agregar a Favoritos" [ref=f7e1602] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=registros_mercado&add_favorite=1&lang=es
+              - cell [ref=f7e1604]:
+                - link [ref=f7e1605] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=registros_mercado&pos=0&lang=es
+                  - generic [ref=f7e1606]:
+                    - img "Examinar" [ref=f7e1607]
+                    - text: Examinar
+              - cell [ref=f7e1608]:
+                - link [ref=f7e1609] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=registros_mercado&lang=es
+                  - generic [ref=f7e1610]:
+                    - img "Estructura" [ref=f7e1611]
+                    - text: Estructura
+              - cell [ref=f7e1612]:
+                - link [ref=f7e1613] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=registros_mercado&lang=es
+                  - generic [ref=f7e1614]:
+                    - img "Buscar" [ref=f7e1615]
+                    - text: Buscar
+              - cell [ref=f7e1616]:
+                - link [ref=f7e1617] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=registros_mercado&lang=es
+                  - generic [ref=f7e1618]:
+                    - img "Insertar" [ref=f7e1619]
+                    - text: Insertar
+              - cell [ref=f7e1620]:
+                - link [ref=f7e1621] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1622]:
+                    - img "Vaciar" [ref=f7e1623]
+                    - text: Vaciar
+              - cell [ref=f7e1624]:
+                - link [ref=f7e1625] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1626]:
+                    - img "Eliminar" [ref=f7e1627]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1628]
+              - cell "InnoDB" [ref=f7e1629]
+              - cell [ref=f7e1630]:
+                - term [ref=f7e1631]: utf8mb4_unicode_ci
+              - cell [ref=f7e1632]:
+                - link "96.0 KB" [ref=f7e1633] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=registros_mercado&lang=es#showusage
+              - cell "-" [ref=f7e1634]
+            - row "roles Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 2 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1635]:
+              - cell [ref=f7e1636]:
+                - checkbox [ref=f7e1637]
+              - rowheader [ref=f7e1638]:
+                - link "roles" [ref=f7e1639] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=roles&pos=0&lang=es
+              - cell [ref=f7e1640]:
+                - link "Agregar a Favoritos" [ref=f7e1641] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=roles&add_favorite=1&lang=es
+              - cell [ref=f7e1643]:
+                - link [ref=f7e1644] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=roles&pos=0&lang=es
+                  - generic [ref=f7e1645]:
+                    - img "Examinar" [ref=f7e1646]
+                    - text: Examinar
+              - cell [ref=f7e1647]:
+                - link [ref=f7e1648] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=roles&lang=es
+                  - generic [ref=f7e1649]:
+                    - img "Estructura" [ref=f7e1650]
+                    - text: Estructura
+              - cell [ref=f7e1651]:
+                - link [ref=f7e1652] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=roles&lang=es
+                  - generic [ref=f7e1653]:
+                    - img "Buscar" [ref=f7e1654]
+                    - text: Buscar
+              - cell [ref=f7e1655]:
+                - link [ref=f7e1656] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=roles&lang=es
+                  - generic [ref=f7e1657]:
+                    - img "Insertar" [ref=f7e1658]
+                    - text: Insertar
+              - cell [ref=f7e1659]:
+                - link [ref=f7e1660] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1661]:
+                    - img "Vaciar" [ref=f7e1662]
+                    - text: Vaciar
+              - cell [ref=f7e1663]:
+                - link [ref=f7e1664] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1665]:
+                    - img "Eliminar" [ref=f7e1666]
+                    - text: Eliminar
+              - cell "2" [ref=f7e1667]
+              - cell "InnoDB" [ref=f7e1668]
+              - cell [ref=f7e1669]:
+                - term [ref=f7e1670]: utf8mb4_unicode_ci
+              - cell [ref=f7e1671]:
+                - link "32.0 KB" [ref=f7e1672] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=roles&lang=es#showusage
+              - cell "-" [ref=f7e1673]
+            - row "role_has_permissions Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1674]:
+              - cell [ref=f7e1675]:
+                - checkbox [ref=f7e1676]
+              - rowheader [ref=f7e1677]:
+                - link "role_has_permissions" [ref=f7e1678] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=role_has_permissions&pos=0&lang=es
+              - cell [ref=f7e1679]:
+                - link "Agregar a Favoritos" [ref=f7e1680] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=role_has_permissions&add_favorite=1&lang=es
+              - cell [ref=f7e1682]:
+                - link [ref=f7e1683] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=role_has_permissions&pos=0&lang=es
+                  - generic [ref=f7e1684]:
+                    - img "Examinar" [ref=f7e1685]
+                    - text: Examinar
+              - cell [ref=f7e1686]:
+                - link [ref=f7e1687] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=role_has_permissions&lang=es
+                  - generic [ref=f7e1688]:
+                    - img "Estructura" [ref=f7e1689]
+                    - text: Estructura
+              - cell [ref=f7e1690]:
+                - link [ref=f7e1691] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=role_has_permissions&lang=es
+                  - generic [ref=f7e1692]:
+                    - img "Buscar" [ref=f7e1693]
+                    - text: Buscar
+              - cell [ref=f7e1694]:
+                - link [ref=f7e1695] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=role_has_permissions&lang=es
+                  - generic [ref=f7e1696]:
+                    - img "Insertar" [ref=f7e1697]
+                    - text: Insertar
+              - cell [ref=f7e1698]:
+                - link [ref=f7e1699] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1700]:
+                    - img "Vaciar" [ref=f7e1701]
+                    - text: Vaciar
+              - cell [ref=f7e1702]:
+                - link [ref=f7e1703] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1704]:
+                    - img "Eliminar" [ref=f7e1705]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1706]
+              - cell "InnoDB" [ref=f7e1707]
+              - cell [ref=f7e1708]:
+                - term [ref=f7e1709]: utf8mb4_unicode_ci
+              - cell [ref=f7e1710]:
+                - link "32.0 KB" [ref=f7e1711] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=role_has_permissions&lang=es#showusage
+              - cell "-" [ref=f7e1712]
+            - row "tipos_menu_item Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 3 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1713]:
+              - cell [ref=f7e1714]:
+                - checkbox [ref=f7e1715]
+              - rowheader [ref=f7e1716]:
+                - link "tipos_menu_item" [ref=f7e1717] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=tipos_menu_item&pos=0&lang=es
+              - cell [ref=f7e1718]:
+                - link "Agregar a Favoritos" [ref=f7e1719] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=tipos_menu_item&add_favorite=1&lang=es
+              - cell [ref=f7e1721]:
+                - link [ref=f7e1722] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=tipos_menu_item&pos=0&lang=es
+                  - generic [ref=f7e1723]:
+                    - img "Examinar" [ref=f7e1724]
+                    - text: Examinar
+              - cell [ref=f7e1725]:
+                - link [ref=f7e1726] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=tipos_menu_item&lang=es
+                  - generic [ref=f7e1727]:
+                    - img "Estructura" [ref=f7e1728]
+                    - text: Estructura
+              - cell [ref=f7e1729]:
+                - link [ref=f7e1730] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=tipos_menu_item&lang=es
+                  - generic [ref=f7e1731]:
+                    - img "Buscar" [ref=f7e1732]
+                    - text: Buscar
+              - cell [ref=f7e1733]:
+                - link [ref=f7e1734] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=tipos_menu_item&lang=es
+                  - generic [ref=f7e1735]:
+                    - img "Insertar" [ref=f7e1736]
+                    - text: Insertar
+              - cell [ref=f7e1737]:
+                - link [ref=f7e1738] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1739]:
+                    - img "Vaciar" [ref=f7e1740]
+                    - text: Vaciar
+              - cell [ref=f7e1741]:
+                - link [ref=f7e1742] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1743]:
+                    - img "Eliminar" [ref=f7e1744]
+                    - text: Eliminar
+              - cell "3" [ref=f7e1745]
+              - cell "InnoDB" [ref=f7e1746]
+              - cell [ref=f7e1747]:
+                - term [ref=f7e1748]: utf8mb4_unicode_ci
+              - cell [ref=f7e1749]:
+                - link "48.0 KB" [ref=f7e1750] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=tipos_menu_item&lang=es#showusage
+              - cell "-" [ref=f7e1751]
+            - row "tipos_producto_mercado Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 12 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1752]:
+              - cell [ref=f7e1753]:
+                - checkbox [ref=f7e1754]
+              - rowheader [ref=f7e1755]:
+                - link "tipos_producto_mercado" [ref=f7e1756] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=tipos_producto_mercado&pos=0&lang=es
+              - cell [ref=f7e1757]:
+                - link "Agregar a Favoritos" [ref=f7e1758] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=tipos_producto_mercado&add_favorite=1&lang=es
+              - cell [ref=f7e1760]:
+                - link [ref=f7e1761] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=tipos_producto_mercado&pos=0&lang=es
+                  - generic [ref=f7e1762]:
+                    - img "Examinar" [ref=f7e1763]
+                    - text: Examinar
+              - cell [ref=f7e1764]:
+                - link [ref=f7e1765] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=tipos_producto_mercado&lang=es
+                  - generic [ref=f7e1766]:
+                    - img "Estructura" [ref=f7e1767]
+                    - text: Estructura
+              - cell [ref=f7e1768]:
+                - link [ref=f7e1769] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=tipos_producto_mercado&lang=es
+                  - generic [ref=f7e1770]:
+                    - img "Buscar" [ref=f7e1771]
+                    - text: Buscar
+              - cell [ref=f7e1772]:
+                - link [ref=f7e1773] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=tipos_producto_mercado&lang=es
+                  - generic [ref=f7e1774]:
+                    - img "Insertar" [ref=f7e1775]
+                    - text: Insertar
+              - cell [ref=f7e1776]:
+                - link [ref=f7e1777] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1778]:
+                    - img "Vaciar" [ref=f7e1779]
+                    - text: Vaciar
+              - cell [ref=f7e1780]:
+                - link [ref=f7e1781] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1782]:
+                    - img "Eliminar" [ref=f7e1783]
+                    - text: Eliminar
+              - cell "12" [ref=f7e1784]
+              - cell "InnoDB" [ref=f7e1785]
+              - cell [ref=f7e1786]:
+                - term [ref=f7e1787]: utf8mb4_unicode_ci
+              - cell [ref=f7e1788]:
+                - link "48.0 KB" [ref=f7e1789] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=tipos_producto_mercado&lang=es#showusage
+              - cell "-" [ref=f7e1790]
+            - row "trabajadores_turno Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1791]:
+              - cell [ref=f7e1792]:
+                - checkbox [ref=f7e1793]
+              - rowheader [ref=f7e1794]:
+                - link "trabajadores_turno" [ref=f7e1795] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=trabajadores_turno&pos=0&lang=es
+              - cell [ref=f7e1796]:
+                - link "Agregar a Favoritos" [ref=f7e1797] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=trabajadores_turno&add_favorite=1&lang=es
+              - cell [ref=f7e1799]:
+                - link [ref=f7e1800] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=trabajadores_turno&pos=0&lang=es
+                  - generic [ref=f7e1801]:
+                    - img "Examinar" [ref=f7e1802]
+                    - text: Examinar
+              - cell [ref=f7e1803]:
+                - link [ref=f7e1804] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=trabajadores_turno&lang=es
+                  - generic [ref=f7e1805]:
+                    - img "Estructura" [ref=f7e1806]
+                    - text: Estructura
+              - cell [ref=f7e1807]:
+                - link [ref=f7e1808] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=trabajadores_turno&lang=es
+                  - generic [ref=f7e1809]:
+                    - img "Buscar" [ref=f7e1810]
+                    - text: Buscar
+              - cell [ref=f7e1811]:
+                - link [ref=f7e1812] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=trabajadores_turno&lang=es
+                  - generic [ref=f7e1813]:
+                    - img "Insertar" [ref=f7e1814]
+                    - text: Insertar
+              - cell [ref=f7e1815]:
+                - link [ref=f7e1816] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1817]:
+                    - img "Vaciar" [ref=f7e1818]
+                    - text: Vaciar
+              - cell [ref=f7e1819]:
+                - link [ref=f7e1820] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1821]:
+                    - img "Eliminar" [ref=f7e1822]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1823]
+              - cell "InnoDB" [ref=f7e1824]
+              - cell [ref=f7e1825]:
+                - term [ref=f7e1826]: utf8mb4_unicode_ci
+              - cell [ref=f7e1827]:
+                - link "32.0 KB" [ref=f7e1828] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=trabajadores_turno&lang=es#showusage
+              - cell "-" [ref=f7e1829]
+            - row "turnos_caja Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 80.0 KB -" [ref=f7e1830]:
+              - cell [ref=f7e1831]:
+                - checkbox [ref=f7e1832]
+              - rowheader [ref=f7e1833]:
+                - link "turnos_caja" [ref=f7e1834] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=turnos_caja&pos=0&lang=es
+              - cell [ref=f7e1835]:
+                - link "Agregar a Favoritos" [ref=f7e1836] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=turnos_caja&add_favorite=1&lang=es
+              - cell [ref=f7e1838]:
+                - link [ref=f7e1839] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=turnos_caja&pos=0&lang=es
+                  - generic [ref=f7e1840]:
+                    - img "Examinar" [ref=f7e1841]
+                    - text: Examinar
+              - cell [ref=f7e1842]:
+                - link [ref=f7e1843] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=turnos_caja&lang=es
+                  - generic [ref=f7e1844]:
+                    - img "Estructura" [ref=f7e1845]
+                    - text: Estructura
+              - cell [ref=f7e1846]:
+                - link [ref=f7e1847] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=turnos_caja&lang=es
+                  - generic [ref=f7e1848]:
+                    - img "Buscar" [ref=f7e1849]
+                    - text: Buscar
+              - cell [ref=f7e1850]:
+                - link [ref=f7e1851] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=turnos_caja&lang=es
+                  - generic [ref=f7e1852]:
+                    - img "Insertar" [ref=f7e1853]
+                    - text: Insertar
+              - cell [ref=f7e1854]:
+                - link [ref=f7e1855] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1856]:
+                    - img "Vaciar" [ref=f7e1857]
+                    - text: Vaciar
+              - cell [ref=f7e1858]:
+                - link [ref=f7e1859] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1860]:
+                    - img "Eliminar" [ref=f7e1861]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1862]
+              - cell "InnoDB" [ref=f7e1863]
+              - cell [ref=f7e1864]:
+                - term [ref=f7e1865]: utf8mb4_unicode_ci
+              - cell [ref=f7e1866]:
+                - link "80.0 KB" [ref=f7e1867] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=turnos_caja&lang=es#showusage
+              - cell "-" [ref=f7e1868]
+            - row "users Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 1 InnoDB utf8mb4_unicode_ci 32.0 KB -" [ref=f7e1869]:
+              - cell [ref=f7e1870]:
+                - checkbox [ref=f7e1871]
+              - rowheader [ref=f7e1872]:
+                - link "users" [ref=f7e1873] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=users&pos=0&lang=es
+              - cell [ref=f7e1874]:
+                - link "Agregar a Favoritos" [ref=f7e1875] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=users&add_favorite=1&lang=es
+              - cell [ref=f7e1877]:
+                - link [ref=f7e1878] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=users&pos=0&lang=es
+                  - generic [ref=f7e1879]:
+                    - img "Examinar" [ref=f7e1880]
+                    - text: Examinar
+              - cell [ref=f7e1881]:
+                - link [ref=f7e1882] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=users&lang=es
+                  - generic [ref=f7e1883]:
+                    - img "Estructura" [ref=f7e1884]
+                    - text: Estructura
+              - cell [ref=f7e1885]:
+                - link [ref=f7e1886] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=users&lang=es
+                  - generic [ref=f7e1887]:
+                    - img "Buscar" [ref=f7e1888]
+                    - text: Buscar
+              - cell [ref=f7e1889]:
+                - link [ref=f7e1890] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=users&lang=es
+                  - generic [ref=f7e1891]:
+                    - img "Insertar" [ref=f7e1892]
+                    - text: Insertar
+              - cell [ref=f7e1893]:
+                - link [ref=f7e1894] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1895]:
+                    - img "Vaciar" [ref=f7e1896]
+                    - text: Vaciar
+              - cell [ref=f7e1897]:
+                - link [ref=f7e1898] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1899]:
+                    - img "Eliminar" [ref=f7e1900]
+                    - text: Eliminar
+              - cell "1" [ref=f7e1901]
+              - cell "InnoDB" [ref=f7e1902]
+              - cell [ref=f7e1903]:
+                - term [ref=f7e1904]: utf8mb4_unicode_ci
+              - cell [ref=f7e1905]:
+                - link "32.0 KB" [ref=f7e1906] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=users&lang=es#showusage
+              - cell "-" [ref=f7e1907]
+            - row "ventas Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1908]:
+              - cell [ref=f7e1909]:
+                - checkbox [ref=f7e1910]
+              - rowheader [ref=f7e1911]:
+                - link "ventas" [ref=f7e1912] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=ventas&pos=0&lang=es
+              - cell [ref=f7e1913]:
+                - link "Agregar a Favoritos" [ref=f7e1914] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=ventas&add_favorite=1&lang=es
+              - cell [ref=f7e1916]:
+                - link [ref=f7e1917] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=ventas&pos=0&lang=es
+                  - generic [ref=f7e1918]:
+                    - img "Examinar" [ref=f7e1919]
+                    - text: Examinar
+              - cell [ref=f7e1920]:
+                - link [ref=f7e1921] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=ventas&lang=es
+                  - generic [ref=f7e1922]:
+                    - img "Estructura" [ref=f7e1923]
+                    - text: Estructura
+              - cell [ref=f7e1924]:
+                - link [ref=f7e1925] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=ventas&lang=es
+                  - generic [ref=f7e1926]:
+                    - img "Buscar" [ref=f7e1927]
+                    - text: Buscar
+              - cell [ref=f7e1928]:
+                - link [ref=f7e1929] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=ventas&lang=es
+                  - generic [ref=f7e1930]:
+                    - img "Insertar" [ref=f7e1931]
+                    - text: Insertar
+              - cell [ref=f7e1932]:
+                - link [ref=f7e1933] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1934]:
+                    - img "Vaciar" [ref=f7e1935]
+                    - text: Vaciar
+              - cell [ref=f7e1936]:
+                - link [ref=f7e1937] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1938]:
+                    - img "Eliminar" [ref=f7e1939]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1940]
+              - cell "InnoDB" [ref=f7e1941]
+              - cell [ref=f7e1942]:
+                - term [ref=f7e1943]: utf8mb4_unicode_ci
+              - cell [ref=f7e1944]:
+                - link "48.0 KB" [ref=f7e1945] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=ventas&lang=es#showusage
+              - cell "-" [ref=f7e1946]
+            - row "venta_items Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1947]:
+              - cell [ref=f7e1948]:
+                - checkbox [ref=f7e1949]
+              - rowheader [ref=f7e1950]:
+                - link "venta_items" [ref=f7e1951] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=venta_items&pos=0&lang=es
+              - cell [ref=f7e1952]:
+                - link "Agregar a Favoritos" [ref=f7e1953] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=venta_items&add_favorite=1&lang=es
+              - cell [ref=f7e1955]:
+                - link [ref=f7e1956] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=venta_items&pos=0&lang=es
+                  - generic [ref=f7e1957]:
+                    - img "Examinar" [ref=f7e1958]
+                    - text: Examinar
+              - cell [ref=f7e1959]:
+                - link [ref=f7e1960] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=venta_items&lang=es
+                  - generic [ref=f7e1961]:
+                    - img "Estructura" [ref=f7e1962]
+                    - text: Estructura
+              - cell [ref=f7e1963]:
+                - link [ref=f7e1964] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=venta_items&lang=es
+                  - generic [ref=f7e1965]:
+                    - img "Buscar" [ref=f7e1966]
+                    - text: Buscar
+              - cell [ref=f7e1967]:
+                - link [ref=f7e1968] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=venta_items&lang=es
+                  - generic [ref=f7e1969]:
+                    - img "Insertar" [ref=f7e1970]
+                    - text: Insertar
+              - cell [ref=f7e1971]:
+                - link [ref=f7e1972] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1973]:
+                    - img "Vaciar" [ref=f7e1974]
+                    - text: Vaciar
+              - cell [ref=f7e1975]:
+                - link [ref=f7e1976] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e1977]:
+                    - img "Eliminar" [ref=f7e1978]
+                    - text: Eliminar
+              - cell "0" [ref=f7e1979]
+              - cell "InnoDB" [ref=f7e1980]
+              - cell [ref=f7e1981]:
+                - term [ref=f7e1982]: utf8mb4_unicode_ci
+              - cell [ref=f7e1983]:
+                - link "48.0 KB" [ref=f7e1984] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=venta_items&lang=es#showusage
+              - cell "-" [ref=f7e1985]
+            - row "venta_pagos Examinar Examinar Estructura Estructura Buscar Buscar Insertar Insertar Vaciar Vaciar Eliminar Eliminar 0 InnoDB utf8mb4_unicode_ci 48.0 KB -" [ref=f7e1986]:
+              - cell [ref=f7e1987]:
+                - checkbox [ref=f7e1988]
+              - rowheader [ref=f7e1989]:
+                - link "venta_pagos" [ref=f7e1990] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=venta_pagos&pos=0&lang=es
+              - cell [ref=f7e1991]:
+                - link "Agregar a Favoritos" [ref=f7e1992] [cursor=pointer]:
+                  - /url: index.php?route=/database/structure/favorite-table&db=pandoradodc&ajax_request=1&favorite_table=venta_pagos&add_favorite=1&lang=es
+              - cell [ref=f7e1994]:
+                - link [ref=f7e1995] [cursor=pointer]:
+                  - /url: index.php?route=/sql&db=pandoradodc&table=venta_pagos&pos=0&lang=es
+                  - generic [ref=f7e1996]:
+                    - img "Examinar" [ref=f7e1997]
+                    - text: Examinar
+              - cell [ref=f7e1998]:
+                - link [ref=f7e1999] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=venta_pagos&lang=es
+                  - generic [ref=f7e2000]:
+                    - img "Estructura" [ref=f7e2001]
+                    - text: Estructura
+              - cell [ref=f7e2002]:
+                - link [ref=f7e2003] [cursor=pointer]:
+                  - /url: index.php?route=/table/search&db=pandoradodc&table=venta_pagos&lang=es
+                  - generic [ref=f7e2004]:
+                    - img "Buscar" [ref=f7e2005]
+                    - text: Buscar
+              - cell [ref=f7e2006]:
+                - link [ref=f7e2007] [cursor=pointer]:
+                  - /url: index.php?route=/table/change&db=pandoradodc&table=venta_pagos&lang=es
+                  - generic [ref=f7e2008]:
+                    - img "Insertar" [ref=f7e2009]
+                    - text: Insertar
+              - cell [ref=f7e2010]:
+                - link [ref=f7e2011] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e2012]:
+                    - img "Vaciar" [ref=f7e2013]
+                    - text: Vaciar
+              - cell [ref=f7e2014]:
+                - link [ref=f7e2015] [cursor=pointer]:
+                  - /url: index.php?route=/sql&lang=es
+                  - generic [ref=f7e2016]:
+                    - img "Eliminar" [ref=f7e2017]
+                    - text: Eliminar
+              - cell "0" [ref=f7e2018]
+              - cell "InnoDB" [ref=f7e2019]
+              - cell [ref=f7e2020]:
+                - term [ref=f7e2021]: utf8mb4_unicode_ci
+              - cell [ref=f7e2022]:
+                - link "48.0 KB" [ref=f7e2023] [cursor=pointer]:
+                  - /url: index.php?route=/table/structure&db=pandoradodc&table=venta_pagos&lang=es#showusage
+              - cell "-" [ref=f7e2024]
+          - rowgroup [ref=f7e2025]:
+            - row [ref=f7e2026]:
+              - columnheader [ref=f7e2027]
+              - columnheader "40 tablas" [ref=f7e2028]
+              - columnheader "Número de filas" [ref=f7e2029]
+              - columnheader "82" [ref=f7e2030]
+              - columnheader [ref=f7e2031]:
+                - term [ref=f7e2032]: InnoDB
+              - columnheader [ref=f7e2033]:
+                - term [ref=f7e2034]: utf8mb4_unicode_ci
+              - columnheader "2.2 MB" [ref=f7e2035]
+              - columnheader "0 B" [ref=f7e2036]
+        - generic [ref=f7e2037]:
+          - img "Para los elementos que están marcados:" [ref=f7e2038]
+          - checkbox "Seleccionar todo" [ref=f7e2039]
+          - generic [ref=f7e2040] [cursor=pointer]: Seleccionar todo
+          - combobox [ref=f7e2041]:
+            - option "Para los elementos que están marcados:" [selected]
+            - option "Copiar tabla"
+            - option "Mostrar creación"
+            - option "Exportar"
+            - option "Vaciar"
+            - option "Eliminar"
+            - option "Analizar la tabla"
+            - option "Revisar la tabla"
+            - option "Tabla de suma de comprobación"
+            - option "Optimizar la tabla"
+            - option "Reparar la tabla"
+            - option "Agregar prefijo a la tabla"
+            - option "Reemplazar prefijo de la tabla"
+            - option "Copiar tabla con prefijo"
+            - option "Agregar columnas a la lista central"
+            - option "Eliminar columnas de la lista central"
+            - option "Hacer consistente con la lista central"
+    - separator [ref=f7e2042]
+    - paragraph [ref=f7e2043]:
+      - button [ref=f7e2044] [cursor=pointer]:
+        - generic [ref=f7e2045]:
+          - img "Imprimir" [ref=f7e2046]
+          - text: Imprimir
+      - link [ref=f7e2047] [cursor=pointer]:
+        - /url: index.php?route=/database/data-dictionary&db=pandoradodc&goto=index.php%3Froute%3D%2Fdatabase%2Fstructure%26lang%3Des&lang=es
+        - generic [ref=f7e2048]:
+          - img "Diccionario de datos" [ref=f7e2049]
+          - text: Diccionario de datos
+    - generic [ref=f7e2050]:
+      - generic [ref=f7e2052]:
+        - img "Crear nueva tabla" [ref=f7e2053]
+        - text: Crear nueva tabla
+      - generic [ref=f7e2054]:
+        - generic [ref=f7e2055]:
+          - generic [ref=f7e2056]: Nombre de la tabla
+          - textbox "Nombre de la tabla" [ref=f7e2057]
+        - generic [ref=f7e2058]:
+          - generic [ref=f7e2059]: Número de columnas
+          - spinbutton "Número de columnas" [ref=f7e2060]: "4"
+        - button "Crear" [ref=f7e2062] [cursor=pointer]
+  - link [ref=f7e2064] [cursor=pointer]:
+    - /url: index.php?route=%2Fdatabase%2Fstructure&db=pandoradodc&server=1&lang=es
+    - img "Abrir nueva ventana de phpMyAdmin" [ref=f7e2065]
+  - generic [ref=f7e2066]:
+    - alert [ref=f7e2067]: "mysqli::real_connect(): (HY000/1045): Access denied for user 'pma'@'localhost' (using password: NO)"
+    - alert [ref=f7e2068]: La conexión para controluser, como está definida en su configuración, fracasó.
+  - log [ref=f7e2069]
+  - log [ref=f7e2070]
+  - log [ref=f7e2071]
+  - log [ref=f7e2072]
+  - log [ref=f7e2073]
+  - log [ref=f7e2074]
+  - log [ref=f7e2075]
+  - log [ref=f7e2076]
+  - log [ref=f7e2077]
+  - log [ref=f7e2078]
+  - log [ref=f7e2079]
+  - log [ref=f7e2080]
+  - log [ref=f7e2081]
+  - log [ref=f7e2082]
+  - log [ref=f7e2083]
+  - log [ref=f7e2084]
+  - log [ref=f7e2085]
+  - log [ref=f7e2086]
+  - log [ref=f7e2087]
+  - log [ref=f7e2088]
+  - log [ref=f7e2089]
+  - log [ref=f7e2090]
+  - log [ref=f7e2091]
+  - log [ref=f7e2092]
+  - log [ref=f7e2093]
+  - log [ref=f7e2094]
+  - log [ref=f7e2095]
+  - log [ref=f7e2096]
+  - log [ref=f7e2097]
+  - log [ref=f7e2098]
+  - log [ref=f7e2099]
+  - log [ref=f7e2100]
+  - log [ref=f7e2101]
+  - log [ref=f7e2102]
+  - log [ref=f7e2103]
+  - log [ref=f7e2104]
+  - log [ref=f7e2105]
+  - log [ref=f7e2106]
+  - log [ref=f7e2107]
+  - log [ref=f7e2108]
+  - log [ref=f7e2109]

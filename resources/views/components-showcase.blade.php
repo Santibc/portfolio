@@ -412,6 +412,14 @@
     </x-card>
 </x-section>
 
+{{-- ===== Landing: foto pendiente ===== --}}
+<x-section title="Foto pendiente (landing)" description="x-landing.foto-pendiente: espacio para fotos que el cliente aún no envía (props texto y detalle)" id="foto-pendiente">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <x-landing.foto-pendiente class="aspect-[4/5] rounded-[1.75rem]" />
+        <x-landing.foto-pendiente texto="Nuestro equipo" detalle="Foto pendiente" class="aspect-[4/5] rounded-[1.75rem]" />
+    </div>
+</x-section>
+
 {{-- ===== Progress / Spinners ===== --}}
 <x-section title="Progress y spinners" id="progress">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

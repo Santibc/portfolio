@@ -11,9 +11,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', '"Plus Jakarta Sans Variable"', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Plus Jakarta Sans Variable"', 'Inter', 'system-ui', 'sans-serif'],
         brand: ['Caveat', 'cursive'],
+        // Landing: serif clásica que acompaña la tipografía del logo
+        serif: ['"EB Garamond Variable"', '"EB Garamond"', 'Georgia', 'serif'],
       },
 
       colors: {
@@ -60,6 +62,12 @@ export default {
           800: '#493727',
           900: '#342518',
           950: '#1d130c',
+        },
+
+        // Verde oficial de la marca WhatsApp (solo para su botón)
+        whatsapp: {
+          DEFAULT: '#25D366',
+          600: '#1fb855',
         },
 
         // Oro de la cinta "Calidad & Servicio" (detalles decorativos)
