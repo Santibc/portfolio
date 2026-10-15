@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` role, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Used as the starting point for new modules.
+**El Pan Dorado DC** (panadería & pastelería) — copia del sistema "Sopas y Sopitas" en la rama `pandoradodc`. Laravel 9 con autenticación, roles `admin` y `ventas`, profile module, app-shell layout (sidebar + header), dark/light theming, and a curated set of Tailwind/Preline UI components. Logo y recursos de marca en `public/images/` (`logo*.png`, `favicon.png`) y `public/favicon.ico`.
 
 **Tech Stack:**
 - Laravel 9 (PHP 8.0+), Vite 4 (everything is bundled — zero CDN in production)
@@ -18,7 +18,7 @@ Laravel 9 base template ("Sopas y Sopitas") with authentication, single `admin` 
 
 ## RULE 0 — NUNCA borres la base de datos ni datos del usuario (crítico)
 
-**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `sopasysopitas` (o cualquier dato del usuario) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
+**Está terminantemente prohibido ejecutar cualquier comando o acción que borre, vacíe o recree la base de datos `pandoradodc` (o cualquier dato del usuario, incluidas las bases `sopas*` del proyecto original) sin autorización explícita y por escrito del usuario para esa ejecución puntual.**
 
 Prohibido sin permiso explícito:
 - `php artisan migrate:fresh`, `migrate:fresh --seed`, `migrate:refresh`, `migrate:reset`, `db:wipe`.
@@ -61,6 +61,11 @@ php artisan config:clear && php artisan route:clear && php artisan view:clear
 ---
 
 ## Despliegue a producción (Hostinger shared hosting)
+
+> ⛔ **Esta sección describe el servidor de Sopas y Sopitas, NO el de El Pan Dorado DC.**
+> El Pan Dorado DC todavía no tiene producción configurada. No hagas `git pull`,
+> `migrate` ni nada por SSH con estos datos desde la rama `pandoradodc` — sobrescribirías
+> el sistema del restaurante. Actualiza esta sección cuando exista el servidor nuevo.
 
 Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
 `sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
@@ -196,20 +201,23 @@ Every new module, view and component MUST work correctly in both modes. The layo
 
 ---
 
-## RULE 3 — Brand palette (oliva / camel / beige)
+## RULE 3 — Brand palette (bronce / naranja / oro — logo El Pan Dorado)
 
-Paleta del proyecto, definida en `tailwind.config.js` `theme.extend.colors`. **Usa los tokens, no hex inline.**
+Paleta del proyecto, sacada del logo (`logo_1.png`) y definida en `tailwind.config.js` `theme.extend.colors`. **Usa los tokens, no hex inline.**
 
 | Token | Light | Dark | Uso |
 |---|---|---|---|
-| `primary-500` | `#aab808` (oliva) | `#c8d62e` (auto) | CTAs, links activos, sidebar item activo, badges primary |
-| `primary-700` | `#838c00` | — | hover/active de primary |
-| `primary-300` | `#c8d62e` | — | gradientes, ilustraciones |
-| `accent-500` | `#b89875` (camel) | — | header gradient, badges secondary |
-| `accent-200` | `#e2caa1` (wheat) | — | fondos suaves cálidos |
-| `cream-50/100/200` | tonos beige claros | — | surfaces, cards, backgrounds |
-| `cream-900/950` | café oscuro | — | textos sobre fondo claro / fondos en dark |
+| `primary-500` | `#9d612b` (bronce del logo) | usar `primary-300/400` | CTAs (texto blanco 5:1), links activos, sidebar item activo, badges primary |
+| `primary-600/700` | `#834d21` / `#6d3e18` | — | hover/active de primary |
+| `primary-300` | `#e0b185` (caramelo) | — | texto/acentos en dark, gradientes, ilustraciones |
+| `accent-500` | `#f7931e` (naranja "Panadería & Pastelería") | — | puntos/acentos, header gradient. No lleva texto blanco encima (2.3:1) — para texto usa `accent-700` sobre `accent-100` |
+| `accent-200` | `#fbd19d` | — | fondos suaves cálidos |
+| `gold-300/500` | `#f2e689` / `#d4b45a` (cinta "Calidad & Servicio") | — | solo detalles decorativos |
+| `cream-50/100/200` | tonos crema/miga claros | — | surfaces, cards, backgrounds |
+| `cream-900/950` | café corteza | — | textos sobre fondo claro / fondos en dark |
 | `surface.DEFAULT` | `#fffdfa` | `#1a1610` | body background |
+
+Logo: `public/images/logo.png` (completo) / `logo-dark.png` (bronces aclarados para fondo oscuro), `logo-emblema.png` / `logo-emblema-dark.png` (sidebar), `favicon.png` + `public/favicon.ico` (monograma DC). Swap claro/oscuro con `dark:hidden` / `hidden dark:block`. Los hex que no pueden usar tokens (SweetAlert, ApexCharts en `resources/js/app.js` y `components/chart.blade.php`) están sincronizados a mano con esta paleta.
 
 Tailwind tip: para tonos complementarios reach for `amber-*`, `stone-*`, `neutral-*` (food-app vibe). Para semantica: `emerald` (success), `rose` (danger), `amber` (warning), `sky` (info).
 

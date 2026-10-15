@@ -56,7 +56,7 @@
             <h2 class="text-3xl font-bold">Heading H2</h2>
             <h3 class="text-2xl font-semibold">Heading H3</h3>
             <h4 class="text-xl font-semibold">Heading H4</h4>
-            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">Sopas y Sopitas (Caveat)</p>
+            <p class="brand-script text-3xl text-primary-600 dark:text-primary-300">El Pan Dorado DC (Caveat)</p>
             <p class="text-base text-cream-700 dark:text-cream-300">
                 Lorem ipsum dolor sit amet consectetur. <strong>Bold inline</strong>, <em>italica</em>, <a href="#" class="text-primary-700 dark:text-primary-300 underline">enlace</a>.
             </p>

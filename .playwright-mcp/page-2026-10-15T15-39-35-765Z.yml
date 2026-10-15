@@ -1,0 +1,24 @@
+- generic [ref=e2]:
+  - link [ref=e3] [cursor=pointer]:
+    - /url: http://127.0.0.1:8000
+    - img "El Pan Dorado DC" [ref=e4]
+  - generic [ref=e5]:
+    - heading "Iniciar sesion" [level=2] [ref=e6]
+    - paragraph [ref=e7]: Bienvenido de nuevo. Ingresa tus credenciales.
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Correo *
+        - textbox "Correo *" [active] [ref=e12]
+      - generic [ref=e13]:
+        - generic [ref=e14]: Contrasena
+        - generic [ref=e15]:
+          - textbox [ref=e16]
+          - button [ref=e17] [cursor=pointer]
+      - generic [ref=e21]:
+        - generic [ref=e22] [cursor=pointer]:
+          - checkbox "Recordarme" [ref=e23]
+          - generic [ref=e24]: Recordarme
+        - link "Olvidaste la contrasena?" [ref=e26] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/forgot-password
+      - button "Ingresar" [ref=e27] [cursor=pointer]
+  - paragraph [ref=e30]: © 2026 El Pan Dorado DC

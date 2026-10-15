@@ -31,7 +31,7 @@ window.makeChart = (selector, options) => {
     if (isDark()) {
         options.theme = { ...(options.theme || {}), mode: 'dark' };
         options.chart = { ...(options.chart || {}), background: 'transparent' };
-        options.grid = { ...(options.grid || {}), borderColor: '#75605a' };
+        options.grid = { ...(options.grid || {}), borderColor: '#6c5742' };
     }
 
     const chart = new ApexCharts(el, options);
@@ -61,7 +61,7 @@ window.makeChart = (selector, options) => {
         chart.updateOptions({
             theme: { mode: dark ? 'dark' : 'light' },
             chart: { background: 'transparent' },
-            grid: { borderColor: dark ? '#75605a' : '#efdfc0' },
+            grid: { borderColor: dark ? '#6c5742' : '#eddabb' },
         }, false, false);
     });
 
@@ -257,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showCancelButton: true,
             confirmButtonText: opts.confirmButtonText || 'Sí, continuar',
             cancelButtonText: opts.cancelButtonText || 'Cancelar',
-            confirmButtonColor: opts.confirmButtonColor || '#aab808',
-            cancelButtonColor: '#75605a',
+            confirmButtonColor: opts.confirmButtonColor || '#9d612b',
+            cancelButtonColor: '#6c5742',
             background: isDark ? '#1a1610' : '#fffdfa',
-            color: isDark ? '#fbf5e9' : '#3e2723',
+            color: isDark ? '#fbf5e9' : '#342518',
             customClass: { popup: 'rounded-2xl' },
         }).then((result) => {
             if (result.isConfirmed && form) form.submit();
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             timer: 3500,
             timerProgressBar: true,
             background: document.documentElement.classList.contains('dark') ? '#1a1610' : '#fffdfa',
-            color: document.documentElement.classList.contains('dark') ? '#fbf5e9' : '#3e2723',
+            color: document.documentElement.classList.contains('dark') ? '#fbf5e9' : '#342518',
         });
         Toast.fire({ icon, title });
     };

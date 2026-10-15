@@ -1,0 +1,78 @@
+- generic [active] [ref=f5e1]:
+  - complementary [ref=f5e2]:
+    - link "El Pan Dorado DC El Pan Dorado DC Panadería & Pastelería" [ref=f5e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "El Pan Dorado DC" [ref=f5e5]
+      - generic [ref=f5e6]:
+        - generic [ref=f5e7]: El Pan Dorado DC
+        - generic [ref=f5e8]: Panadería & Pastelería
+    - navigation [ref=f5e9]:
+      - paragraph [ref=f5e10]: Principal
+      - link "Inicio" [ref=f5e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+      - link "Consolidado" [ref=f5e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+      - button "Mercado" [ref=f5e22] [cursor=pointer]
+      - generic [ref=f5e32]:
+        - button "Caja" [ref=f5e33] [cursor=pointer]
+        - generic [ref=f5e40]:
+          - link "Registrar" [ref=f5e41] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+          - link "Menú" [ref=f5e47] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+          - link "Menú por día" [ref=f5e55] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/menu-dia
+          - link "Dashboard" [ref=f5e59] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+          - link "Métodos de pago" [ref=f5e64] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+          - link "Gastos" [ref=f5e68] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+          - link "Trabajadores turno" [ref=f5e73] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+          - link "Pagos ahorros" [ref=f5e80] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/pagos-ahorros
+      - button "Nómina" [ref=f5e86] [cursor=pointer]
+      - button "Gastos fijos" [ref=f5e94] [cursor=pointer]
+      - paragraph [ref=f5e101]: Cuenta
+      - link "Mi perfil" [ref=f5e102] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+      - paragraph [ref=f5e116]: Sistema
+      - link "Usuarios" [ref=f5e117] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/usuarios
+      - link "Componentes UI" [ref=f5e124] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+    - button "Cerrar sesion" [ref=f5e133] [cursor=pointer]
+  - banner [ref=f5e137]:
+    - generic [ref=f5e138]:
+      - button "Ocultar menu" [expanded] [ref=f5e139] [cursor=pointer]
+      - generic [ref=f5e141]: Menú
+      - generic [ref=f5e142]:
+        - button "Cambiar tema" [ref=f5e143] [cursor=pointer]
+        - button "A Admin Administrador" [ref=f5e148] [cursor=pointer]:
+          - generic [ref=f5e149]: A
+          - generic [ref=f5e150]:
+            - generic [ref=f5e151]: Admin
+            - generic [ref=f5e152]: Administrador
+  - main [ref=f5e155]:
+    - generic [ref=f5e156]:
+      - generic [ref=f5e157]:
+        - generic [ref=f5e166]:
+          - heading "Menú" [level=1] [ref=f5e167]
+          - paragraph [ref=f5e168]: Platos, combos y adiciones disponibles para la caja
+        - generic [ref=f5e169]:
+          - button "Categorías" [ref=f5e170] [cursor=pointer]
+          - link "Nuevo item" [ref=f5e174] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items/create
+      - generic [ref=f5e177]:
+        - link "Todos" [ref=f5e178] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items
+        - link "Menú" [ref=f5e179] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=1
+        - link "Combos" [ref=f5e180] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=2
+        - link "Adiciones" [ref=f5e181] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/menu-items?tipo_id=3
+      - generic [ref=f5e182]:
+        - heading "Aún no hay items" [level=3] [ref=f5e189]
+        - paragraph [ref=f5e190]: Crea el primer plato, combo o adición con el botón “Nuevo item”.

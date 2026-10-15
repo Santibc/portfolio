@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sopas y Sopitas') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}"/>
+    <title>{{ config('app.name', 'El Pan Dorado DC') }}</title>
 
     <script>
         (function () {
@@ -29,15 +29,16 @@
     <main class="relative h-full flex flex-col px-4 py-8 text-center">
         <div class="flex-1 flex flex-col items-center justify-center">
             <div data-reveal class="mb-8">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sopas y Sopitas') }}" class="max-w-[280px] h-auto" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'El Pan Dorado DC') }}" class="w-full max-w-[320px] h-auto dark:hidden" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo-dark.png') }}" alt="{{ config('app.name', 'El Pan Dorado DC') }}" class="hidden w-full max-w-[320px] h-auto dark:block" onerror="this.style.display='none'">
             </div>
 
             <h1 data-reveal class="font-display text-4xl md:text-6xl font-extrabold tracking-tight text-cream-900 dark:text-cream-50 max-w-3xl">
-                Comida casera, hecha con cariño.
+                Pan recién horneado, con calidad y servicio.
             </h1>
 
             <p data-reveal class="mt-5 max-w-xl text-base md:text-lg text-cream-700 dark:text-cream-300 leading-relaxed">
-                Plataforma para gestionar tu negocio de comida desde un solo lugar — pedidos, clientes y mas.
+                Plataforma para gestionar tu panadería desde un solo lugar — caja, ventas, inventario y más.
             </p>
 
             <div data-reveal class="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -58,7 +59,7 @@
         </div>
 
         <p data-reveal class="text-xs text-cream-600 dark:text-cream-400">
-            &copy; {{ date('Y') }} {{ config('app.name', 'Sopas y Sopitas') }}. Todos los derechos reservados.
+            &copy; {{ date('Y') }} {{ config('app.name', 'El Pan Dorado DC') }}. Todos los derechos reservados.
         </p>
     </main>
 </body>

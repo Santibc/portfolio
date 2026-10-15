@@ -1,7 +1,7 @@
 {
     "name": "sopas/sopas-y-sopitas",
     "type": "project",
-    "description": "Sopas y Sopitas - aplicacion web base sobre Laravel 9.",
+    "description": "El Pan Dorado DC - panaderia & pasteleria, aplicacion web sobre Laravel 9.",
     "keywords": ["laravel", "sopas-y-sopitas"],
     "license": "MIT",
     "require": {

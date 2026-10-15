@@ -1,0 +1,213 @@
+- generic [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - link "Consolidado" [ref=e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=e17]
+        - generic [ref=e20]: Consolidado
+      - button "Mercado" [ref=e23] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e30]: Mercado
+        - img [ref=e31]
+      - button "Caja" [ref=e34] [cursor=pointer]:
+        - img [ref=e35]
+        - generic [ref=e38]: Caja
+        - img [ref=e39]
+      - button "Nómina" [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - generic [ref=e46]: Nómina
+        - img [ref=e47]
+      - button "Gastos fijos" [ref=e50] [cursor=pointer]:
+        - img [ref=e51]
+        - generic [ref=e54]: Gastos fijos
+        - img [ref=e55]
+      - paragraph [ref=e57]: Cuenta
+      - link "Mi perfil" [ref=e58] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e59]
+        - generic [ref=e71]: Mi perfil
+      - paragraph [ref=e72]: Sistema
+      - link "Componentes UI" [ref=e73] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e74]
+        - generic [ref=e79]: Componentes UI
+    - button "Cerrar sesion" [ref=e82] [cursor=pointer]:
+      - img [ref=e83]
+      - text: Cerrar sesion
+  - banner [ref=e86]:
+    - generic [ref=e87]:
+      - button "Ocultar menu" [expanded] [ref=e88] [cursor=pointer]:
+        - img [ref=e89]
+      - generic [ref=e90]: Consolidado general
+      - generic [ref=e91]:
+        - button "Cambiar tema" [active] [ref=e92] [cursor=pointer]:
+          - img [ref=e378]
+        - button "A Admin admin" [ref=e97] [cursor=pointer]:
+          - generic [ref=e98]: A
+          - generic [ref=e99]:
+            - generic [ref=e100]: Admin
+            - generic [ref=e101]: admin
+          - img [ref=e102]
+  - main [ref=e104]:
+    - generic [ref=e105]:
+      - generic [ref=e107]:
+        - img [ref=e109]
+        - generic [ref=e112]:
+          - heading "Consolidado general" [level=1] [ref=e113]
+          - paragraph [ref=e114]: Ingresos y egresos de todos los módulos, discriminados por método de pago
+      - link "Dashboard caja" [ref=e116] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/caja/dashboard
+        - img [ref=e117]
+        - text: Dashboard caja
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123]: Desde
+          - textbox [ref=e124]: 2026-06-01
+        - generic [ref=e125]:
+          - generic [ref=e126]: Hasta
+          - textbox [ref=e127]: 2026-06-30
+        - button "Filtrar" [ref=e128] [cursor=pointer]:
+          - img [ref=e129]
+          - text: Filtrar
+        - link "Mes actual" [ref=e132] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/consolidado
+          - img [ref=e133]
+          - text: Mes actual
+      - paragraph [ref=e135]: "Período: 01 jun. 2026 — 30 jun. 2026"
+    - generic [ref=e136]:
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - paragraph [ref=e140]: Total ingresos
+          - paragraph [ref=e141]: $ 84.505.000
+        - img [ref=e143]
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - paragraph [ref=e149]: Total egresos
+          - paragraph [ref=e150]: $ 39.567.806
+        - img [ref=e152]
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - paragraph [ref=e158]: Neto (ingresos − egresos)
+          - paragraph [ref=e159]: $ 44.937.194
+        - img [ref=e161]
+    - generic [ref=e164]:
+      - heading "Por método de pago" [level=3] [ref=e166]:
+        - img [ref=e167]
+        - text: Por método de pago
+      - table [ref=e170]:
+        - rowgroup [ref=e171]:
+          - row "Método Ingresos Egresos Neto" [ref=e172]:
+            - columnheader "Método" [ref=e173]
+            - columnheader "Ingresos" [ref=e174]
+            - columnheader "Egresos" [ref=e175]
+            - columnheader "Neto" [ref=e176]
+        - rowgroup [ref=e177]:
+          - row "Efectivo $ 43.639.500 $ 15.654.399 $ 27.985.101" [ref=e178]:
+            - cell "Efectivo" [ref=e179]:
+              - generic [ref=e180]:
+                - img [ref=e181]
+                - text: Efectivo
+            - cell "$ 43.639.500" [ref=e184]
+            - cell "$ 15.654.399" [ref=e185]
+            - cell "$ 27.985.101" [ref=e186]
+          - row "Daviplata $ 5.780.000 $ 83.000 $ 5.697.000" [ref=e187]:
+            - cell "Daviplata" [ref=e188]:
+              - generic [ref=e189]:
+                - img [ref=e190]
+                - text: Daviplata
+            - cell "$ 5.780.000" [ref=e192]
+            - cell "$ 83.000" [ref=e193]
+            - cell "$ 5.697.000" [ref=e194]
+          - row "QR $ 15.395.500 $ 3.798.395 $ 11.597.105" [ref=e195]:
+            - cell "QR" [ref=e196]:
+              - generic [ref=e197]:
+                - img [ref=e198]
+                - text: QR
+            - cell "$ 15.395.500" [ref=e200]
+            - cell "$ 3.798.395" [ref=e201]
+            - cell "$ 11.597.105" [ref=e202]
+          - row "Nequi $ 19.690.000 $ 9.393.993 $ 10.296.007" [ref=e203]:
+            - cell "Nequi" [ref=e204]:
+              - generic [ref=e205]:
+                - img [ref=e206]
+                - text: Nequi
+            - cell "$ 19.690.000" [ref=e208]
+            - cell "$ 9.393.993" [ref=e209]
+            - cell "$ 10.296.007" [ref=e210]
+          - row "Sin método — $ 10.638.019 -$ 10.638.019" [ref=e211]:
+            - cell "Sin método" [ref=e212]:
+              - generic [ref=e213]:
+                - img [ref=e214]
+                - text: Sin método
+            - cell "—" [ref=e216]
+            - cell "$ 10.638.019" [ref=e217]
+            - cell "-$ 10.638.019" [ref=e218]
+        - rowgroup [ref=e219]:
+          - row "Total $ 84.505.000 $ 39.567.806 $ 44.937.194" [ref=e220]:
+            - cell "Total" [ref=e221]
+            - cell "$ 84.505.000" [ref=e222]
+            - cell "$ 39.567.806" [ref=e223]
+            - cell "$ 44.937.194" [ref=e224]
+    - generic [ref=e225]:
+      - heading "Egresos por módulo" [level=3] [ref=e226]
+      - generic [ref=e227]:
+        - generic [ref=e228]:
+          - paragraph [ref=e229]:
+            - img [ref=e230]
+            - text: Caja
+          - paragraph [ref=e233]: $ 23.283.492
+        - generic [ref=e234]:
+          - paragraph [ref=e235]:
+            - img [ref=e236]
+            - text: Mercado
+          - paragraph [ref=e242]: $ 16.284.314
+        - generic [ref=e243]:
+          - paragraph [ref=e244]:
+            - img [ref=e245]
+            - text: Nómina
+          - paragraph [ref=e248]: $ 0
+        - generic [ref=e249]:
+          - paragraph [ref=e250]:
+            - img [ref=e251]
+            - text: Gastos fijos
+          - paragraph [ref=e254]: $ 0
+    - generic [ref=e255]:
+      - heading "Ingresos vs egresos por método" [level=3] [ref=e256]
+      - generic [ref=e384]:
+        - 'application "bar chart with 2 data series: Ingresos, Egresos" [ref=e385]':
+          - generic [ref=e404]:
+            - generic "Efectivo" [ref=e405]
+            - generic "Daviplata" [ref=e406]
+            - generic "QR" [ref=e407]
+            - generic "Nequi" [ref=e408]
+            - generic "Sin método" [ref=e409]
+          - generic [ref=e411]:
+            - generic "50000000" [ref=e412]
+            - generic "40000000" [ref=e413]
+            - generic "30000000" [ref=e414]
+            - generic "20000000" [ref=e415]
+            - generic "10000000" [ref=e416]
+            - generic "0" [ref=e417]
+        - generic [ref=e418]:
+          - button "Ingresos, visible. Press Enter or Space to toggle." [ref=e419] [cursor=pointer]:
+            - generic [ref=e420]:
+              - img
+            - generic [ref=e421]: Ingresos
+          - button "Egresos, visible. Press Enter or Space to toggle." [ref=e422] [cursor=pointer]:
+            - generic [ref=e423]:
+              - img
+            - generic [ref=e424]: Egresos
+        - status [ref=e425]
+        - tooltip: ● ●

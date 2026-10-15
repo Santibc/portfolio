@@ -1,0 +1,8 @@
+- main [ref=f6e2]:
+  - generic [ref=f6e3]:
+    - img "El Pan Dorado DC" [ref=f6e5]
+    - heading "Pan recién horneado, con calidad y servicio." [level=1] [ref=f6e6]
+    - paragraph [ref=f6e7]: Plataforma para gestionar tu panadería desde un solo lugar — caja, ventas, inventario y más.
+    - link "Ir al Dashboard" [ref=f6e9] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+  - paragraph [ref=f6e12]: © 2026 El Pan Dorado DC. Todos los derechos reservados.

@@ -206,7 +206,7 @@
             showConfirmButton: false,
             showCloseButton: true,
             background: isDark ? '#1a1610' : '#fffdfa',
-            color: isDark ? '#fbf5e9' : '#3e2723',
+            color: isDark ? '#fbf5e9' : '#342518',
             customClass: {
                 popup: 'rounded-2xl',
                 image: 'rounded-xl max-h-[70vh] w-auto',

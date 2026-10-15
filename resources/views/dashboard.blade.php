@@ -12,7 +12,7 @@
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
                 <p class="brand-script text-2xl text-white/90">¡Hola de nuevo!</p>
-                <h1 class="font-display text-2xl md:text-3xl font-bold mt-1">
+                <h1 class="font-display text-2xl md:text-3xl font-bold mt-1 text-white dark:text-white">
                     Bienvenido, {{ Auth::user()->name }}
                 </h1>
                 <p class="text-white/80 mt-1.5 text-sm">

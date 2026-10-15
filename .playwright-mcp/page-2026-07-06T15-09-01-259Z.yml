@@ -1,0 +1,133 @@
+- generic [ref=f1e1]:
+  - complementary [ref=f1e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=f1e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=f1e5]
+      - generic [ref=f1e6]:
+        - generic [ref=f1e7]: Sopas y Sopitas
+        - generic [ref=f1e8]: comida con cariño
+    - navigation [ref=f1e9]:
+      - paragraph [ref=f1e10]: Principal
+      - link "Inicio" [ref=f1e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=f1e12]
+        - generic [ref=f1e15]: Inicio
+      - link "Consolidado" [ref=f1e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=f1e17]
+        - generic [ref=f1e20]: Consolidado
+      - generic [ref=f1e21]:
+        - button "Mercado" [ref=f1e22] [cursor=pointer]:
+          - img [ref=f1e23]
+          - generic [ref=f1e29]: Mercado
+          - img [ref=f1e30]
+        - generic [ref=f1e32]:
+          - link "Dashboard" [ref=f1e33] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/mercado/dashboard
+            - img [ref=f1e34]
+            - generic [ref=f1e37]: Dashboard
+          - link "Productos" [ref=f1e38] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/productos-mercado
+            - img [ref=f1e39]
+            - generic [ref=f1e45]: Productos
+          - link "Registrar" [ref=f1e46] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/registro-mercado
+            - img [ref=f1e47]
+            - generic [ref=f1e51]: Registrar
+          - link "Lista mercado" [ref=f1e53] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado
+            - img [ref=f1e54]
+            - generic [ref=f1e57]: Lista mercado
+          - link "Plantilla" [ref=f1e58] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/lista-mercado/plantilla
+            - img [ref=f1e59]
+            - generic [ref=f1e62]: Plantilla
+      - button "Caja" [ref=f1e64] [cursor=pointer]:
+        - img [ref=f1e65]
+        - generic [ref=f1e68]: Caja
+        - img [ref=f1e69]
+      - button "Nómina" [ref=f1e72] [cursor=pointer]:
+        - img [ref=f1e73]
+        - generic [ref=f1e76]: Nómina
+        - img [ref=f1e77]
+      - button "Gastos fijos" [ref=f1e80] [cursor=pointer]:
+        - img [ref=f1e81]
+        - generic [ref=f1e84]: Gastos fijos
+        - img [ref=f1e85]
+      - paragraph [ref=f1e87]: Cuenta
+      - link "Mi perfil" [ref=f1e88] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=f1e89]
+        - generic [ref=f1e101]: Mi perfil
+      - paragraph [ref=f1e102]: Sistema
+      - link "Componentes UI" [ref=f1e103] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=f1e104]
+        - generic [ref=f1e109]: Componentes UI
+    - button "Cerrar sesion" [ref=f1e112] [cursor=pointer]:
+      - img [ref=f1e113]
+      - text: Cerrar sesion
+  - banner [ref=f1e116]:
+    - generic [ref=f1e117]:
+      - button "Mostrar menu" [ref=f1e118] [cursor=pointer]:
+        - img [ref=f1e119]
+      - generic [ref=f1e120]: Registrar
+      - generic [ref=f1e121]:
+        - button "Cambiar tema" [ref=f1e122] [cursor=pointer]:
+          - img [ref=f1e124]
+        - button "A Admin admin" [ref=f1e127] [cursor=pointer]:
+          - generic [ref=f1e128]: A
+          - generic [ref=f1e129]:
+            - generic [ref=f1e130]: Admin
+            - generic [ref=f1e131]: admin
+          - img [ref=f1e132]
+  - main [ref=f1e134]:
+    - generic [ref=f1e135]:
+      - generic [ref=f1e137]:
+        - img [ref=f1e139]
+        - generic [ref=f1e143]:
+          - heading "Aceite" [level=1] [ref=f1e144]
+          - paragraph [ref=f1e145]: Registrar cantidad y valor
+      - link "Volver" [ref=f1e147] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/registro-mercado
+        - img [ref=f1e148]
+        - text: Volver
+    - generic [ref=f1e150]:
+      - generic [ref=f1e151]:
+        - img [ref=f1e153]
+        - generic [ref=f1e157]:
+          - heading "Aceite" [level=2] [ref=f1e158]
+          - generic [ref=f1e159]:
+            - generic [ref=f1e160]: Plaza
+            - generic [ref=f1e161]: Galón x 20 litros
+      - generic [ref=f1e162]:
+        - generic [ref=f1e164]:
+          - generic [ref=f1e165]:
+            - generic [ref=f1e166]: Cantidad (Galón x 20 litros) *
+            - spinbutton "Cantidad (Galón x 20 litros) *" [ref=f1e168]: "2"
+          - generic [ref=f1e169]:
+            - generic [ref=f1e170]: Valor total (COP) *
+            - generic [ref=f1e171]:
+              - generic: $
+              - textbox "Valor total (COP) *" [ref=f1e172]:
+                - /placeholder: "0"
+                - text: "150.000"
+          - paragraph [ref=f1e192]: "Unitario: $ 75.000"
+          - generic [ref=f1e173]:
+            - generic [ref=f1e174]: Método de pago
+            - generic [ref=f1e175]:
+              - button "Efectivo" [active] [ref=f1e176] [cursor=pointer]
+              - button "Daviplata" [ref=f1e177] [cursor=pointer]
+              - button "QR" [ref=f1e178] [cursor=pointer]
+              - button "Nequi" [ref=f1e179] [cursor=pointer]
+          - generic [ref=f1e180]:
+            - generic [ref=f1e181]: Observación (opcional)
+            - textbox "Observación (opcional)" [ref=f1e182]:
+              - /placeholder: Nota sobre esta compra (marca, calidad, proveedor, etc.)
+              - text: "Prueba observación: marca Premier, buen precio en la plaza"
+          - generic [ref=f1e184]:
+            - img [ref=f1e185]
+            - generic [ref=f1e187]: No hay una caja abierta, así que este registro no se vinculará a ningún turno.
+        - button "Registrar" [ref=f1e189] [cursor=pointer]:
+          - img [ref=f1e190]
+          - text: Registrar

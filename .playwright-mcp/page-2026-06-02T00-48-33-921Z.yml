@@ -1,0 +1,210 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - button "Mercado" [ref=e17] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e24]: Mercado
+        - img [ref=e25]
+      - generic [ref=e27]:
+        - button "Caja" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Caja
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Registrar" [ref=e36] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja
+            - img [ref=e37]
+            - generic [ref=e41]: Registrar
+          - link "Menú" [ref=e42] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/menu-items
+            - img [ref=e43]
+            - generic [ref=e48]: Menú
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/caja/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Métodos de pago" [ref=e55] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/metodos-pago
+            - img [ref=e56]
+            - generic [ref=e58]: Métodos de pago
+          - link "Gastos" [ref=e59] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos
+            - img [ref=e60]
+            - generic [ref=e63]: Gastos
+          - link "Trabajadores turno" [ref=e64] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/trabajadores-turno
+            - img [ref=e65]
+            - generic [ref=e70]: Trabajadores turno
+          - link "Pagos ahorros" [ref=e71] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/pagos-ahorros
+            - img [ref=e72]
+            - generic [ref=e75]: Pagos ahorros
+      - paragraph [ref=e76]: Cuenta
+      - link "Mi perfil" [ref=e77] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e78]
+        - generic [ref=e90]: Mi perfil
+      - paragraph [ref=e91]: Sistema
+      - link "Componentes UI" [ref=e92] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e93]
+        - generic [ref=e98]: Componentes UI
+    - button "Cerrar sesion" [ref=e101] [cursor=pointer]:
+      - img [ref=e102]
+      - text: Cerrar sesion
+  - banner [ref=e105]:
+    - generic [ref=e106]:
+      - button "Ocultar menu" [expanded] [ref=e107] [cursor=pointer]:
+        - img [ref=e108]
+      - generic [ref=e109]: Turno de caja
+      - generic [ref=e110]:
+        - button "Cambiar tema" [ref=e111] [cursor=pointer]:
+          - img [ref=e113]
+        - button "A Admin admin" [ref=e116] [cursor=pointer]:
+          - generic [ref=e117]: A
+          - generic [ref=e118]:
+            - generic [ref=e119]: Admin
+            - generic [ref=e120]: admin
+          - img [ref=e121]
+  - main [ref=e123]:
+    - generic [ref=e124]:
+      - generic [ref=e126]:
+        - img [ref=e128]
+        - generic [ref=e131]:
+          - heading "Turno · 2026-06-01" [level=1] [ref=e132]
+          - paragraph [ref=e133]: Apertura 10:49 · por Admin
+      - generic [ref=e134]:
+        - link "Volver" [ref=e135] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/caja/dashboard
+          - img [ref=e136]
+          - text: Volver
+        - link "Ir a la caja" [ref=e138] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/caja
+          - img [ref=e139]
+          - text: Ir a la caja
+    - generic [ref=e143]:
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Total ventas
+          - paragraph [ref=e148]: $ 6.509.500
+        - img [ref=e150]
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - paragraph [ref=e156]: Base inicial
+          - paragraph [ref=e157]: $ 900.000
+        - img [ref=e159]
+    - generic [ref=e161]:
+      - generic [ref=e163]:
+        - generic [ref=e164]:
+          - paragraph [ref=e165]: Total gastos
+          - paragraph [ref=e166]: $ 0
+        - img [ref=e168]
+      - generic [ref=e172]:
+        - generic [ref=e173]:
+          - paragraph [ref=e174]: Ahorros descontados
+          - paragraph [ref=e175]: $ 0
+        - img [ref=e177]
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - paragraph [ref=e183]: Neto (ventas − gastos − ahorros)
+          - paragraph [ref=e184]: $ 6.509.500
+        - img [ref=e186]
+    - generic [ref=e189]:
+      - heading "Desglose por método de pago" [level=3] [ref=e190]
+      - generic [ref=e191]:
+        - generic [ref=e192]:
+          - paragraph [ref=e193]:
+            - img [ref=e194]
+            - text: Efectivo
+          - paragraph [ref=e197]: $ 3.676.000
+        - generic [ref=e198]:
+          - paragraph [ref=e199]:
+            - img [ref=e200]
+            - text: Daviplata
+          - paragraph [ref=e202]: $ 410.000
+        - generic [ref=e203]:
+          - paragraph [ref=e204]:
+            - img [ref=e205]
+            - text: QR
+          - paragraph [ref=e207]: $ 1.169.000
+        - generic [ref=e208]:
+          - paragraph [ref=e209]:
+            - img [ref=e210]
+            - text: Nequi
+          - paragraph [ref=e212]: $ 1.254.500
+    - generic [ref=e213]:
+      - heading "Items vendidos" [level=3] [ref=e215]:
+        - img [ref=e216]
+        - text: Items vendidos
+      - table [ref=e222]:
+        - rowgroup [ref=e223]:
+          - row "Item Cantidad Total vendido" [ref=e224]:
+            - columnheader "Item" [ref=e225]:
+              - button "Item" [ref=e226] [cursor=pointer]
+            - columnheader "Cantidad" [ref=e227]:
+              - button "Cantidad" [ref=e228] [cursor=pointer]
+            - columnheader "Total vendido" [ref=e229]:
+              - button "Total vendido" [ref=e230] [cursor=pointer]
+        - rowgroup
+    - generic [ref=e231]:
+      - heading "Ventas del turno" [level=3] [ref=e233]:
+        - img [ref=e234]
+        - text: Ventas del turno
+      - table [ref=e236]:
+        - rowgroup [ref=e237]:
+          - row "Hora Cajero Items Total Cambio Métodos" [ref=e238]:
+            - columnheader "Hora" [ref=e239]:
+              - button "Hora" [ref=e240] [cursor=pointer]
+            - columnheader "Cajero" [ref=e241]:
+              - button "Cajero" [ref=e242] [cursor=pointer]
+            - columnheader "Items" [ref=e243]:
+              - button "Items" [ref=e244] [cursor=pointer]
+            - columnheader "Total" [ref=e245]:
+              - button "Total" [ref=e246] [cursor=pointer]
+            - columnheader "Cambio" [ref=e247]:
+              - button "Cambio" [ref=e248] [cursor=pointer]
+            - columnheader "Métodos" [ref=e249]
+            - columnheader [ref=e250]
+    - generic [ref=e251]:
+      - generic [ref=e252]:
+        - heading "Gastos del turno (0)" [level=3] [ref=e253]:
+          - img [ref=e254]
+          - text: Gastos del turno
+          - generic [ref=e257]: (0)
+        - generic [ref=e258]:
+          - generic [ref=e259]:
+            - text: "Generales:"
+            - strong [ref=e260]: $ 0
+          - generic [ref=e261]: ·
+          - generic [ref=e262]:
+            - text: "Turnos:"
+            - strong [ref=e263]: $ 0
+          - link "Nuevo" [ref=e264] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/gastos/create
+            - img [ref=e265]
+            - text: Nuevo
+      - table [ref=e267]:
+        - rowgroup [ref=e268]:
+          - row "Hora Tipo Concepto / Trabajador Valor Ahorro Método Cajero" [ref=e269]:
+            - columnheader "Hora" [ref=e270]
+            - columnheader "Tipo" [ref=e271]
+            - columnheader "Concepto / Trabajador" [ref=e272]
+            - columnheader "Valor" [ref=e273]
+            - columnheader "Ahorro" [ref=e274]
+            - columnheader "Método" [ref=e275]
+            - columnheader "Cajero" [ref=e276]
+            - columnheader [ref=e277]
+        - rowgroup [ref=e278]:
+          - row "No hay gastos en este turno." [ref=e279]:
+            - cell "No hay gastos en este turno." [ref=e280]

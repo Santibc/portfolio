@@ -17,49 +17,57 @@ export default {
       },
 
       colors: {
-        // Oliva / mostaza (primary)
+        // Bronce / caramelo del logo El Pan Dorado (primary)
         primary: {
-          50:  '#f7faea',
-          100: '#ecf2c1',
-          200: '#d6e285',
-          300: '#c8d62e',
-          400: '#bbcb1c',
-          500: '#aab808', // base
-          600: '#949f06',
-          700: '#838c00',
-          800: '#5d6716',
-          900: '#3d4310',
-          950: '#2a2e0a',
+          50:  '#fcf5ee',
+          100: '#f8e9d8',
+          200: '#eed1b4',
+          300: '#e0b185',
+          400: '#cb884d',
+          500: '#9d612b', // base: "El Pan Dorado" del logo
+          600: '#834d21',
+          700: '#6d3e18',
+          800: '#522f14',
+          900: '#3b2311',
+          950: '#24140a',
         },
 
-        // Camel / wheat (accent)
+        // Naranja pastelería del logo (accent)
         accent: {
-          50:  '#fbf6ed',
-          100: '#f4ead0',
-          200: '#e2caa1',
-          300: '#d2b27c',
-          400: '#c2a07d',
-          500: '#b89875', // base
-          600: '#a07e5b',
-          700: '#85664a',
-          800: '#6b513c',
-          900: '#574232',
-          950: '#2f2218',
+          50:  '#fef6eb',
+          100: '#fde9ce',
+          200: '#fbd19d',
+          300: '#f8b562',
+          400: '#f89e30',
+          500: '#f7931e', // base: "Panadería & Pastelería" del logo
+          600: '#da730b',
+          700: '#a0500d',
+          800: '#814112',
+          900: '#5f3011',
+          950: '#341909',
         },
 
-        // Cream / cafe / beige (surfaces)
+        // Crema / miga / corteza (surfaces)
         cream: {
           50:  '#fffdfa',
           100: '#fbf5e9',
-          200: '#f5e9d2',
-          300: '#efdfc0',
-          400: '#e2caa1',
-          500: '#d7ccc8',
-          600: '#a1887f',
-          700: '#75605a',
-          800: '#4e342e',
-          900: '#3e2723',
-          950: '#241410',
+          200: '#f6ead5',
+          300: '#eddabb',
+          400: '#dbbf94',
+          500: '#c1ac90',
+          600: '#8f775b',
+          700: '#6c5742',
+          800: '#493727',
+          900: '#342518',
+          950: '#1d130c',
+        },
+
+        // Oro de la cinta "Calidad & Servicio" (detalles decorativos)
+        gold: {
+          100: '#faf5d3',
+          300: '#f2e689',
+          500: '#d4b45a',
+          700: '#a88040',
         },
 
         // Surface base (light/dark)
@@ -72,7 +80,7 @@ export default {
       boxShadow: {
         soft: '0 4px 24px -4px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04)',
         'soft-lg': '0 12px 40px -8px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.06)',
-        glow: '0 0 0 4px rgb(170 184 8 / 0.15)',
+        glow: '0 0 0 4px rgb(157 97 43 / 0.15)',
       },
 
       borderRadius: {

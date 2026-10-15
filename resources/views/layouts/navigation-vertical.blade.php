@@ -20,7 +20,7 @@
     <a href="{{ route('caja.index') }}" class="{{ $cls }}">
         <x-icon name="shopping-cart" class="w-4 h-4" />
         <span class="flex-1">Registrar ventas</span>
-        @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+        @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(247,147,30,0.8)]"></span>@endif
     </a>
     @else
 
@@ -78,7 +78,7 @@
             <a href="{{ route('inventario.index') }}" class="{{ $cls }}">
                 <x-icon name="package" class="w-4 h-4" />
                 <span class="flex-1">Inventario</span>
-                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+                @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(247,147,30,0.8)]"></span>@endif
             </a>
 
             @php [$active, $cls] = $navItem('registro-mercado.index', 'shopping-cart', 'Registrar', 'registro-mercado.*'); @endphp
@@ -320,7 +320,7 @@
         <a href="{{ route('usuarios.index') }}" class="{{ $cls }}">
             <x-icon name="users" class="w-4 h-4" />
             <span class="flex-1">Usuarios</span>
-            @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(243,144,48,0.8)]"></span>@endif
+            @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(247,147,30,0.8)]"></span>@endif
         </a>
     @endif
 

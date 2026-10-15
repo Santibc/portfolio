@@ -1,0 +1,196 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - link "Sopas y Sopitas Sopas y Sopitas comida con cariño" [ref=e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "Sopas y Sopitas" [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7]: Sopas y Sopitas
+        - generic [ref=e8]: comida con cariño
+    - navigation [ref=e9]:
+      - paragraph [ref=e10]: Principal
+      - link "Inicio" [ref=e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+        - img [ref=e12]
+        - generic [ref=e15]: Inicio
+      - link "Consolidado" [ref=e16] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+        - img [ref=e17]
+        - generic [ref=e20]: Consolidado
+      - button "Mercado" [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+        - generic [ref=e29]: Mercado
+        - img [ref=e30]
+      - button "Caja" [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - generic [ref=e37]: Caja
+        - img [ref=e38]
+      - generic [ref=e40]:
+        - button "Nómina" [ref=e41] [cursor=pointer]:
+          - img [ref=e42]
+          - generic [ref=e45]: Nómina
+          - img [ref=e46]
+        - generic [ref=e48]:
+          - link "Dashboard" [ref=e49] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/nomina/dashboard
+            - img [ref=e50]
+            - generic [ref=e53]: Dashboard
+          - link "Nóminas" [ref=e54] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/nomina
+            - img [ref=e55]
+            - generic [ref=e58]: Nóminas
+          - link "Empleados" [ref=e59] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/empleados
+            - img [ref=e60]
+            - generic [ref=e65]: Empleados
+          - link "Pago masivo" [ref=e66] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/nomina-pagos/masivo
+            - img [ref=e67]
+            - generic [ref=e69]: Pago masivo
+          - link "Prestaciones" [ref=e70] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/prestaciones
+            - img [ref=e71]
+            - generic [ref=e74]: Prestaciones
+          - link "Ahorros" [ref=e75] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/nomina-ahorros
+            - img [ref=e76]
+            - generic [ref=e79]: Ahorros
+      - button "Gastos fijos" [ref=e82] [cursor=pointer]:
+        - img [ref=e83]
+        - generic [ref=e86]: Gastos fijos
+        - img [ref=e87]
+      - paragraph [ref=e89]: Cuenta
+      - link "Mi perfil" [ref=e90] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+        - img [ref=e91]
+        - generic [ref=e103]: Mi perfil
+      - paragraph [ref=e104]: Sistema
+      - link "Componentes UI" [ref=e105] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+        - img [ref=e106]
+        - generic [ref=e111]: Componentes UI
+    - button "Cerrar sesion" [ref=e114] [cursor=pointer]:
+      - img [ref=e115]
+      - text: Cerrar sesion
+  - banner [ref=e118]:
+    - generic [ref=e119]:
+      - button "Mostrar menu" [ref=e120] [cursor=pointer]:
+        - img [ref=e121]
+      - generic [ref=e122]: Ahorros de empleados
+      - generic [ref=e123]:
+        - button "Cambiar tema" [ref=e124] [cursor=pointer]:
+          - img [ref=e126]
+        - button "A Admin admin" [ref=e133] [cursor=pointer]:
+          - generic [ref=e134]: A
+          - generic [ref=e135]:
+            - generic [ref=e136]: Admin
+            - generic [ref=e137]: admin
+          - img [ref=e138]
+  - main [ref=e140]:
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e144]:
+          - img [ref=e146]
+          - generic [ref=e149]:
+            - heading "Ahorros de empleados" [level=1] [ref=e150]
+            - paragraph [ref=e151]: Ahorro retenido en nómina y entregas realizadas
+        - link "Empleados" [ref=e153] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/empleados
+          - img [ref=e154]
+          - text: Empleados
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - img [ref=e160]
+            - searchbox "Buscar empleado..." [ref=e163]
+          - generic [ref=e164]: 5 registros
+        - table [ref=e166]:
+          - rowgroup [ref=e167]:
+            - row "Empleado Retenido Entregado Acumulado" [ref=e168]:
+              - columnheader "Empleado" [ref=e169]:
+                - button "Empleado" [ref=e170] [cursor=pointer]
+              - columnheader "Retenido" [ref=e171]:
+                - button "Retenido" [ref=e172] [cursor=pointer]
+              - columnheader "Entregado" [ref=e173]:
+                - button "Entregado" [ref=e174] [cursor=pointer]
+              - columnheader "Acumulado" [ref=e175]:
+                - button "Acumulado" [ref=e176] [cursor=pointer]
+              - columnheader [ref=e177]
+          - rowgroup [ref=e178]:
+            - row "Diana Andrea Vega Camacho $ 0 $ 0 $ 0 Entregar" [ref=e179]:
+              - cell "Diana Andrea Vega Camacho" [ref=e180]
+              - cell "$ 0" [ref=e181]
+              - cell "$ 0" [ref=e182]
+              - cell "$ 0" [ref=e183]
+              - cell "Entregar" [ref=e184]:
+                - button "Entregar" [disabled] [ref=e185]:
+                  - img [ref=e186]
+                  - text: Entregar
+            - row "Luz Dary Preciado Sánchez $ 0 $ 0 $ 0 Entregar" [ref=e189]:
+              - cell "Luz Dary Preciado Sánchez" [ref=e190]
+              - cell "$ 0" [ref=e191]
+              - cell "$ 0" [ref=e192]
+              - cell "$ 0" [ref=e193]
+              - cell "Entregar" [ref=e194]:
+                - button "Entregar" [disabled] [ref=e195]:
+                  - img [ref=e196]
+                  - text: Entregar
+            - row "Luz Mery Pachón Jiménez $ 0 $ 0 $ 0 Entregar" [ref=e199]:
+              - cell "Luz Mery Pachón Jiménez" [ref=e200]
+              - cell "$ 0" [ref=e201]
+              - cell "$ 0" [ref=e202]
+              - cell "$ 0" [ref=e203]
+              - cell "Entregar" [ref=e204]:
+                - button "Entregar" [disabled] [ref=e205]:
+                  - img [ref=e206]
+                  - text: Entregar
+            - row "Luz Yamile Chaparro Cardona $ 0 $ 0 $ 0 Entregar" [ref=e209]:
+              - cell "Luz Yamile Chaparro Cardona" [ref=e210]
+              - cell "$ 0" [ref=e211]
+              - cell "$ 0" [ref=e212]
+              - cell "$ 0" [ref=e213]
+              - cell "Entregar" [ref=e214]:
+                - button "Entregar" [disabled] [ref=e215]:
+                  - img [ref=e216]
+                  - text: Entregar
+            - row "Velenice Díaz Pardo $ 0 $ 0 $ 0 Entregar" [ref=e219]:
+              - cell "Velenice Díaz Pardo" [ref=e220]
+              - cell "$ 0" [ref=e221]
+              - cell "$ 0" [ref=e222]
+              - cell "$ 0" [ref=e223]
+              - cell "Entregar" [ref=e224]:
+                - button "Entregar" [disabled] [ref=e225]:
+                  - img [ref=e226]
+                  - text: Entregar
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - text: Filas por página
+            - combobox "Filas por página" [ref=e231]:
+              - option "5" [selected]
+              - option "10"
+              - option "25"
+              - option "50"
+              - option "100"
+              - option "Todas"
+          - generic [ref=e232]:
+            - generic [ref=e233]: Pagina 1 de 1
+            - generic [ref=e234]:
+              - button [disabled] [ref=e235]:
+                - img [ref=e236]
+              - button [disabled] [ref=e238]:
+                - img [ref=e239]
+      - generic [ref=e241]:
+        - heading "Entregas recientes" [level=3] [ref=e243]
+        - table [ref=e245]:
+          - rowgroup [ref=e246]:
+            - row "Fecha Empleado Observación Monto" [ref=e247]:
+              - columnheader "Fecha" [ref=e248]:
+                - button "Fecha" [ref=e249] [cursor=pointer]
+              - columnheader "Empleado" [ref=e250]:
+                - button "Empleado" [ref=e251] [cursor=pointer]
+              - columnheader "Observación" [ref=e252]
+              - columnheader "Monto" [ref=e253]:
+                - button "Monto" [ref=e254] [cursor=pointer]
+              - columnheader [ref=e255]
+          - rowgroup [ref=e256]:
+            - row "Aún no hay entregas de ahorro." [ref=e257]:
+              - cell "Aún no hay entregas de ahorro." [ref=e258]

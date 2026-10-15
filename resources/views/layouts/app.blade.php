@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}"/>
-    <title>{{ config('app.name', 'Sopas y Sopitas') }}@hasSection('title') · @yield('title')@endif</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}"/>
+    <title>{{ config('app.name', 'El Pan Dorado DC') }}@hasSection('title') · @yield('title')@endif</title>
 
     {{-- Theme bootstrap (anti-FOUC) --}}
     <script>
@@ -40,10 +40,11 @@
         {{-- Brand --}}
         <div class="px-6 py-5 flex items-center gap-3 border-b border-cream-200 dark:border-cream-800">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name', 'Sopas y Sopitas') }}" class="h-10 w-10 object-contain shrink-0">
+                <img src="{{ asset('images/logo-emblema.png') }}" alt="{{ config('app.name', 'El Pan Dorado DC') }}" class="h-12 w-12 object-contain shrink-0 dark:hidden">
+                <img src="{{ asset('images/logo-emblema-dark.png') }}" alt="{{ config('app.name', 'El Pan Dorado DC') }}" class="hidden h-12 w-12 object-contain shrink-0 dark:block">
                 <span class="flex flex-col leading-tight">
-                    <span class="font-display font-bold text-cream-900 dark:text-cream-50">{{ config('app.name', 'Sopas y Sopitas') }}</span>
-                    <span class="brand-script text-xs text-primary-600 dark:text-primary-300 -mt-0.5">comida con cariño</span>
+                    <span class="font-display font-bold text-cream-900 dark:text-cream-50">{{ config('app.name', 'El Pan Dorado DC') }}</span>
+                    <span class="text-[10px] font-medium uppercase tracking-[0.18em] text-accent-700 dark:text-accent-300">Panadería &amp; Pastelería</span>
                 </span>
             </a>
         </div>

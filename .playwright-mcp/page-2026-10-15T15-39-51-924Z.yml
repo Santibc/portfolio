@@ -1,0 +1,123 @@
+- generic [active] [ref=f2e1]:
+  - complementary [ref=f2e2]:
+    - link "El Pan Dorado DC El Pan Dorado DC Panadería & Pastelería" [ref=f2e4] [cursor=pointer]:
+      - /url: http://127.0.0.1:8000/dashboard
+      - img "El Pan Dorado DC" [ref=f2e5]
+      - generic [ref=f2e6]:
+        - generic [ref=f2e7]: El Pan Dorado DC
+        - generic [ref=f2e8]: Panadería & Pastelería
+    - navigation [ref=f2e9]:
+      - paragraph [ref=f2e10]: Principal
+      - link "Inicio" [ref=f2e11] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/dashboard
+      - link "Consolidado" [ref=f2e17] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/consolidado
+      - button "Mercado" [ref=f2e23] [cursor=pointer]
+      - button "Caja" [ref=f2e34] [cursor=pointer]
+      - button "Nómina" [ref=f2e42] [cursor=pointer]
+      - button "Gastos fijos" [ref=f2e50] [cursor=pointer]
+      - paragraph [ref=f2e57]: Cuenta
+      - link "Mi perfil" [ref=f2e58] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/profile
+      - paragraph [ref=f2e72]: Sistema
+      - link "Usuarios" [ref=f2e73] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/usuarios
+      - link "Componentes UI" [ref=f2e80] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/components
+    - button "Cerrar sesion" [ref=f2e89] [cursor=pointer]
+  - banner [ref=f2e93]:
+    - generic [ref=f2e94]:
+      - button "Ocultar menu" [expanded] [ref=f2e95] [cursor=pointer]
+      - generic [ref=f2e97]:
+        - button "Cambiar tema" [ref=f2e98] [cursor=pointer]
+        - button "A Admin Administrador" [ref=f2e107] [cursor=pointer]:
+          - generic [ref=f2e108]: A
+          - generic [ref=f2e109]:
+            - generic [ref=f2e110]: Admin
+            - generic [ref=f2e111]: Administrador
+  - main [ref=f2e114]:
+    - generic [ref=f2e115]:
+      - generic [ref=f2e119]:
+        - generic [ref=f2e120]:
+          - paragraph [ref=f2e121]: ¡Hola de nuevo!
+          - heading "Bienvenido, Admin" [level=1] [ref=f2e122]
+          - paragraph [ref=f2e123]: Aqui esta el resumen de tu actividad.
+        - generic [ref=f2e124]:
+          - link "Mi perfil" [ref=f2e125] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/profile
+          - link "Ver componentes" [ref=f2e138] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/components
+      - generic [ref=f2e144]:
+        - generic [ref=f2e148]:
+          - paragraph [ref=f2e149]: Usuarios
+          - paragraph [ref=f2e150]: "1"
+          - paragraph [ref=f2e151]:
+            - text: +0%
+            - generic [ref=f2e155]: vs mes anterior
+        - generic [ref=f2e165]:
+          - paragraph [ref=f2e166]: Roles activos
+          - paragraph [ref=f2e167]: "1"
+        - generic [ref=f2e175]:
+          - paragraph [ref=f2e176]: Sesiones
+          - paragraph [ref=f2e177]: —
+        - generic [ref=f2e184]:
+          - paragraph [ref=f2e185]: Estado
+          - paragraph [ref=f2e186]: OK
+      - generic [ref=f2e190]:
+        - generic [ref=f2e192]:
+          - generic [ref=f2e194]:
+            - generic [ref=f2e195]:
+              - heading "Actividad de la semana" [level=3] [ref=f2e196]
+              - paragraph [ref=f2e197]: Datos de demostracion
+            - generic [ref=f2e198]: +12.4%
+          - generic [ref=f2e203]:
+            - 'application "area chart with 1 data series: Visitas" [ref=f2e204]':
+              - generic [ref=f2e213]:
+                - generic "Lun" [ref=f2e214]
+                - generic "Mar" [ref=f2e215]
+                - generic "Mie" [ref=f2e216]
+                - generic "Jue" [ref=f2e217]
+                - generic "Vie" [ref=f2e218]
+                - generic "Sab" [ref=f2e219]
+                - generic "Dom" [ref=f2e220]
+              - generic [ref=f2e222]:
+                - generic "35" [ref=f2e223]
+                - generic "30" [ref=f2e224]
+                - generic "25" [ref=f2e225]
+                - generic "20" [ref=f2e226]
+                - generic "15" [ref=f2e227]
+                - generic "10" [ref=f2e228]
+            - status [ref=f2e229]
+            - text: ●
+        - generic [ref=f2e231]:
+          - heading "Ultimas acciones" [level=3] [ref=f2e233]
+          - list [ref=f2e234]:
+            - listitem [ref=f2e235]:
+              - generic [ref=f2e240]:
+                - paragraph [ref=f2e241]: Inicio de sesion
+                - paragraph [ref=f2e242]: hace 2 min
+            - listitem [ref=f2e243]:
+              - generic [ref=f2e249]:
+                - paragraph [ref=f2e250]: Perfil actualizado
+                - paragraph [ref=f2e251]: hace 1 hora
+            - listitem [ref=f2e252]:
+              - generic [ref=f2e257]:
+                - paragraph [ref=f2e258]: Nuevo usuario admin
+                - paragraph [ref=f2e259]: ayer
+      - generic [ref=f2e261]:
+        - heading "Accesos rapidos" [level=3] [ref=f2e262]
+        - generic [ref=f2e263]:
+          - link [ref=f2e264] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/profile
+            - generic [ref=f2e278]:
+              - paragraph [ref=f2e279]: Mi perfil
+              - paragraph [ref=f2e280]: Datos y foto
+          - link [ref=f2e284] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/components
+            - generic [ref=f2e291]:
+              - paragraph [ref=f2e292]: Componentes UI
+              - paragraph [ref=f2e293]: Showcase visual
+          - button [ref=f2e298] [cursor=pointer]:
+            - generic [ref=f2e303]:
+              - paragraph [ref=f2e304]: Cerrar sesion
+              - paragraph [ref=f2e305]: Salir de la cuenta

@@ -9,13 +9,16 @@
         @if ($icon)
             <x-icon :name="$icon" class="w-10 h-10 text-primary-600 dark:text-primary-300" />
         @else
-            {{-- Default: cuenco/sopa SVG --}}
+            {{-- Default: espiga de trigo SVG --}}
             <svg class="w-12 h-12 text-primary-600 dark:text-primary-300" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 28h48v4a16 16 0 01-16 16H24a16 16 0 01-16-16v-4z" />
-                <path d="M22 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M32 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M42 18c0-3 2-3 2-6s-2-3-2-6" />
-                <path d="M4 56h56" />
+                <path d="M32 58V22" />
+                <path d="M32 22c-3-3-3-9 0-14 3 5 3 11 0 14z" />
+                <path d="M32 32c-5.5 0-10-4.5-10-10 5.5 0 10 4.5 10 10z" />
+                <path d="M32 32c5.5 0 10-4.5 10-10-5.5 0-10 4.5-10 10z" />
+                <path d="M32 42c-5.5 0-10-4.5-10-10 5.5 0 10 4.5 10 10z" />
+                <path d="M32 42c5.5 0 10-4.5 10-10-5.5 0-10 4.5-10 10z" />
+                <path d="M32 52c-5.5 0-10-4.5-10-10 5.5 0 10 4.5 10 10z" />
+                <path d="M32 52c5.5 0 10-4.5 10-10-5.5 0-10 4.5-10 10z" />
             </svg>
         @endif
     </div>
