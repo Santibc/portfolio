@@ -25,9 +25,10 @@ class InventarioService
 {
     /**
      * @param  array<int,int>  $productoIds
+     * @param  bool  $lecturaBloqueante  true dentro de transacciones que validan stock (ver asegurarDisponible)
      * @return array<int,float> producto_mercado_id => stock (0 si no tiene movimientos)
      */
-    public function stockDe(array $productoIds): array
+    public function stockDe(array $productoIds, bool $lecturaBloqueante = false): array
     {
         $ids = array_values(array_unique(array_map('intval', $productoIds)));
         if ($ids === []) {
@@ -37,6 +38,7 @@ class InventarioService
         $sumas = MovimientoInventario::whereIn('producto_mercado_id', $ids)
             ->groupBy('producto_mercado_id')
             ->selectRaw('producto_mercado_id, SUM(cantidad) as stock')
+            ->when($lecturaBloqueante, fn ($q) => $q->lockForUpdate())
             ->pluck('stock', 'producto_mercado_id');
 
         $stock = [];
@@ -237,7 +239,9 @@ class InventarioService
             ->get()
             ->keyBy('id');
 
-        $stock = $this->stockDe(array_keys($requerido));
+        // Lectura bloqueante: con REPEATABLE READ una lectura normal usaría la foto tomada al inicio
+        // de la transacción y no vería la venta concurrente que se confirmó mientras esperábamos el lock.
+        $stock = $this->stockDe(array_keys($requerido), true);
 
         foreach ($requerido as $productoId => $cantidad) {
             $disponible = $stock[$productoId] ?? 0.0;
