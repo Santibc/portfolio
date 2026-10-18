@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// App móvil "Mis Negocios": resumen financiero de solo lectura.
+Route::middleware(['llave.app-movil', 'throttle:30,1'])
+    ->get('/movil/resumen', \App\Http\Controllers\Api\ResumenMovilController::class)
+    ->name('api.movil.resumen');

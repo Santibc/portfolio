@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Llave compartida de la app móvil "Mis Negocios" (header X-Api-Key). Vacía = API cerrada.
+    'app_movil' => [
+        'key' => env('APP_MOVIL_API_KEY'),
+    ],
+
 ];
