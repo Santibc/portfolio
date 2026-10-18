@@ -68,5 +68,7 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        // API de solo lectura de la app móvil "Mis Negocios"
+        'llave.app-movil' => \App\Http\Middleware\VerificarLlaveAppMovil::class,
     ];
 }
