@@ -15,12 +15,12 @@
     "src": "node_modules/@fontsource-variable/archivo/files/archivo-vietnamese-wdth-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-9456b84b.css",
+    "file": "assets/app-e1dfb6ee.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "resources/css/landing.css": {
-    "file": "assets/landing-128d684d.css",
+    "file": "assets/landing-85b8f9d8.css",
     "isEntry": true,
     "src": "resources/css/landing.css"
   },

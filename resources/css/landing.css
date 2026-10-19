@@ -354,6 +354,17 @@ html.con-3d .pasos .paso:not(.activo) h3 { color: var(--tinta-suave); }
 html.con-3d .pasos .paso:not(.activo) .paso__detalle { color: var(--tinta-tenue); }
 @media (max-width: 639.98px) {
   html.con-3d .pasos .paso:not(.activo) .paso__detalle { display: none; }
+  /* En celular el paquete toma el alto que dejan el título y los pasos (con tope) y queda justo
+     encima del título: los pasos bajan al pie de la pantalla y arriba queda aire bajo la barra
+     para el chorro de ingredientes. min-height + 1fr: si no cabe, la escena crece en vez de
+     desbordarse sobre la sección siguiente. */
+  html.con-3d .arma-escena {
+    grid-template-rows: minmax(10rem, 1fr) auto;
+    row-gap: 0.75rem;
+    padding-top: 7rem;
+    padding-bottom: 1rem;
+  }
+  html.con-3d .arma-escena > [data-bag-anchor] { height: 100%; max-height: 21rem; align-self: end; }
 }
 
 .wa-flotante {
