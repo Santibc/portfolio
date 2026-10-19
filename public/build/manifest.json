@@ -1,8 +1,56 @@
 {
+  "_theme-toggle-23b437dc.js": {
+    "file": "assets/theme-toggle-23b437dc.js"
+  },
+  "node_modules/@fontsource-variable/archivo/files/archivo-latin-ext-wdth-normal.woff2": {
+    "file": "assets/archivo-latin-ext-wdth-normal-5717f370.woff2",
+    "src": "node_modules/@fontsource-variable/archivo/files/archivo-latin-ext-wdth-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2": {
+    "file": "assets/archivo-latin-wdth-normal-e3a28ead.woff2",
+    "src": "node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/archivo/files/archivo-vietnamese-wdth-normal.woff2": {
+    "file": "assets/archivo-vietnamese-wdth-normal-332e6f66.woff2",
+    "src": "node_modules/@fontsource-variable/archivo/files/archivo-vietnamese-wdth-normal.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-ed6daca8.css",
+    "file": "assets/app-9456b84b.css",
     "isEntry": true,
     "src": "resources/css/app.css"
+  },
+  "resources/css/landing.css": {
+    "file": "assets/landing-128d684d.css",
+    "isEntry": true,
+    "src": "resources/css/landing.css"
+  },
+  "resources/fonts/lilita-one-latin-400-normal.woff2": {
+    "file": "assets/lilita-one-latin-400-normal-d2575d4f.woff2",
+    "src": "resources/fonts/lilita-one-latin-400-normal.woff2"
+  },
+  "resources/fonts/lilita-one-latin-ext-400-normal.woff2": {
+    "file": "assets/lilita-one-latin-ext-400-normal-f40903e4.woff2",
+    "src": "resources/fonts/lilita-one-latin-ext-400-normal.woff2"
+  },
+  "resources/images/landing/foil-claro-escritorio.webp": {
+    "file": "assets/foil-claro-escritorio-e74943c1.webp",
+    "src": "resources/images/landing/foil-claro-escritorio.webp"
+  },
+  "resources/images/landing/foil-claro-movil.webp": {
+    "file": "assets/foil-claro-movil-37d922a4.webp",
+    "src": "resources/images/landing/foil-claro-movil.webp"
+  },
+  "resources/images/landing/foil-oscuro-escritorio.webp": {
+    "file": "assets/foil-oscuro-escritorio-91d11cae.webp",
+    "src": "resources/images/landing/foil-oscuro-escritorio.webp"
+  },
+  "resources/images/landing/foil-oscuro-movil.webp": {
+    "file": "assets/foil-oscuro-movil-6dd5131b.webp",
+    "src": "resources/images/landing/foil-oscuro-movil.webp"
+  },
+  "resources/images/landing/logo-dorilokos-mix-1024.webp": {
+    "file": "assets/logo-dorilokos-mix-1024-433b816e.webp",
+    "src": "resources/images/landing/logo-dorilokos-mix-1024.webp"
   },
   "resources/images/logoico.png": {
     "file": "assets/logoico-4ed993c7.js",
@@ -10,8 +58,30 @@
     "src": "resources/images/logoico.png"
   },
   "resources/js/app.js": {
-    "file": "assets/app-2b9e648c.js",
+    "file": "assets/app-fb4e4beb.js",
+    "imports": [
+      "_theme-toggle-23b437dc.js"
+    ],
     "isEntry": true,
     "src": "resources/js/app.js"
+  },
+  "resources/js/landing.js": {
+    "dynamicImports": [
+      "resources/js/landing/bag/index.js"
+    ],
+    "file": "assets/landing-60de4b5a.js",
+    "imports": [
+      "_theme-toggle-23b437dc.js"
+    ],
+    "isEntry": true,
+    "src": "resources/js/landing.js"
+  },
+  "resources/js/landing/bag/index.js": {
+    "assets": [
+      "assets/logo-dorilokos-mix-1024-433b816e.webp"
+    ],
+    "file": "assets/index-c4401755.js",
+    "isDynamicEntry": true,
+    "src": "resources/js/landing/bag/index.js"
   }
 }

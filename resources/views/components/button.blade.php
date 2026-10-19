@@ -15,6 +15,10 @@
         'danger'    => 'bg-red-500 hover:bg-red-600 active:bg-red-700 text-white shadow-soft border border-red-500',
         'success'   => 'bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white shadow-soft border border-emerald-500',
         'link'      => 'bg-transparent text-primary-700 hover:text-primary-800 underline underline-offset-2 dark:text-primary-300',
+        // Acción "viva" (pedir ahora): el rojo MIX se reserva para esto.
+        'pedido'    => 'bg-flame-600 hover:bg-flame-700 active:bg-flame-800 text-white border border-flame-700 uppercase tracking-wide shadow-[0_12px_28px_-12px_theme(colors.flame.600/70%)] hover:shadow-[0_16px_34px_-12px_theme(colors.flame.600/85%)] hover:-translate-y-0.5 active:translate-y-0',
+        // Secundario que toma el color del texto que lo rodea (sobre cualquier fondo).
+        'contorno'  => 'bg-transparent border-2 border-current text-current hover:bg-cream-950/10 dark:hover:bg-cream-50/10',
     ];
 
     $sizes = [
@@ -22,6 +26,7 @@
         'sm' => 'text-sm px-3 py-1.5 gap-1.5',
         'md' => 'text-sm px-4 py-2.5 gap-2',
         'lg' => 'text-base px-6 py-3 gap-2',
+        'xl' => 'text-lg px-7 py-4 gap-3',
     ];
 
     $base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed select-none';

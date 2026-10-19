@@ -39,6 +39,7 @@
             ['empty', 'Estados vacios', 'inbox'],
             ['progress', 'Progress / Spinners', 'loader-circle'],
             ['icons', 'Iconos', 'sparkles'],
+            ['brand-icons', 'Iconos de marca', 'message-circle'],
         ] as [$id, $label, $icon])
             <a href="#{{ $id }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream-100 hover:bg-primary-100 hover:text-primary-800 text-cream-700 dark:bg-cream-800 dark:hover:bg-primary-900/40 dark:text-cream-300 dark:hover:text-primary-200 transition-colors">
                 <x-icon :name="$icon" class="w-3.5 h-3.5" />
@@ -66,7 +67,7 @@
 </x-section>
 
 {{-- ===== Botones ===== --}}
-<x-section title="Botones" description="6 variantes x 4 tamanos, con icono opcional" id="buttons">
+<x-section title="Botones" description="8 variantes x 5 tamanos, con icono opcional" id="buttons">
     <x-card>
         <div class="space-y-4">
             <div class="flex flex-wrap gap-2">
@@ -92,6 +93,15 @@
             <div class="flex flex-wrap gap-2">
                 <x-button variant="primary" disabled>Disabled</x-button>
                 <x-button variant="primary" href="#">Link button</x-button>
+            </div>
+            {{-- Landing: "pedido" es la accion viva (rojo MIX); "contorno" toma el color del texto que lo rodea --}}
+            <div class="flex flex-wrap gap-2 items-center">
+                <x-button variant="pedido" size="xl" href="#">
+                    <x-brand-icon name="whatsapp" class="w-5 h-5" />
+                    Pide por WhatsApp
+                </x-button>
+                <x-button variant="pedido">Pedir</x-button>
+                <x-button variant="contorno" size="lg" icon="map-pin" class="text-primary-700 dark:text-primary-200">Como llegar</x-button>
             </div>
         </div>
     </x-card>
@@ -452,6 +462,22 @@
                         <x-icon :name="$iconName" class="w-5 h-5" />
                     </span>
                     <span class="text-[10px] text-cream-500 truncate w-full">{{ $iconName }}</span>
+                </div>
+            @endforeach
+        </div>
+    </x-card>
+</x-section>
+
+{{-- ===== Iconos de marca ===== --}}
+<x-section title="Iconos de marca" description="SVG de Simple Icons (CC0) para redes y servicios externos; heredan currentColor" id="brand-icons">
+    <x-card>
+        <div class="flex flex-wrap gap-6 text-center">
+            @foreach (['whatsapp', 'instagram', 'tiktok', 'google', 'googlemaps'] as $marca)
+                <div class="flex flex-col items-center gap-1.5">
+                    <span class="inline-flex w-12 h-12 rounded-xl bg-cream-100 text-cream-800 items-center justify-center dark:bg-cream-900 dark:text-cream-200">
+                        <x-brand-icon :name="$marca" class="w-6 h-6" />
+                    </span>
+                    <span class="text-[10px] text-cream-500">{{ $marca }}</span>
                 </div>
             @endforeach
         </div>

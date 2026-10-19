@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arnés del paquete 3D</title>
+<script>
+    // Solo desarrollo: ?tema=claro quita la clase dark antes de pintar.
+    (function () {
+        var q = new URLSearchParams(location.search);
+        if (q.get('tema') === 'claro') document.documentElement.classList.remove('dark');
+        if (q.has('debug')) document.documentElement.classList.add('debug');
+    })();
+</script>
+<style>
+    :root {
+        --ink: #19131e;
+        --cream: #f5f2f7;
+        --gold: #f5c020;
+        --orange: #f39030;
+        --red: #e3262a;
+        --purple: #5f306a;
+        --text: #3a2c42;
+        --muted: #5c5066;
+        --panel: rgba(255, 255, 255, 0.72);
+        --line: rgba(25, 19, 30, 0.18);
+        /* alto del header fijo: el paquete no lanza nachos por debajo de él */
+        --bag-top-inset: 64px;
+    }
+    html.dark {
+        --text: #f5f2f7;
+        --muted: #d9c2e1;
+        --panel: rgba(27, 13, 31, 0.55);
+        --line: rgba(245, 242, 247, 0.18);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: auto; }
+    body {
+        font-family: 'Archivo Variable', system-ui, sans-serif;
+        color: var(--text);
+        background:
+            radial-gradient(1100px 620px at 70% 30%, rgba(255, 255, 255, 0.55), transparent 62%),
+            linear-gradient(112deg, #dcd7e2 0%, #f7f6f9 34%, #cfc8d8 52%, #f2f0f5 70%, #d6d0de 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    html.dark body {
+        background:
+            radial-gradient(900px 520px at 62% 46%, rgba(189, 151, 202, 0.32), transparent 62%),
+            linear-gradient(112deg, #1b0d1f 0%, #381c3f 20%, #5f306a 38%, #8a5a9d 46%, #5f306a 54%, #2a152f 76%, #1b0d1f 100%);
+        background-attachment: fixed;
+    }
+    #bag-stage { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+    #bag-canvas { display: block; width: 100%; height: 100%; }
+    [data-bag-anchor] { position: absolute; pointer-events: none; }
+    html.debug [data-bag-anchor] { outline: 2px dashed rgba(245, 192, 32, 0.8); }
+    html.debug [data-bag-anchor]::after {
+        content: attr(data-bag-anchor) ' · ' attr(data-bag-mode);
+        position: absolute; left: 4px; top: 4px; font: 700 11px/1 system-ui; color: var(--gold);
+    }
+    section { position: relative; }
+    .wrap { position: relative; height: 100%; padding: 0 6vw; }
+    h1, h2 { font-family: 'Lilita One', system-ui, sans-serif; font-weight: 400; line-height: 0.9; color: #fff; -webkit-text-stroke: 6px var(--red); paint-order: stroke fill; }
+    h1 { font-size: clamp(56px, 9vw, 150px); }
+    h1 em, h2 em { font-style: normal; color: var(--gold); }
+    h2 { font-size: clamp(42px, 6vw, 96px); }
+    p { font-size: clamp(16px, 1.4vw, 21px); line-height: 1.5; max-width: 34ch; }
+    .cta { display: inline-block; margin-top: 28px; background: var(--red); color: #fff; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 16px 26px; border-radius: 14px; box-shadow: 0 8px 0 #9f171b; text-decoration: none; }
+    .seal { position: sticky; top: 0; z-index: 40; height: 64px; display: flex; align-items: center; gap: 24px; padding: 0 6vw; background: linear-gradient(#46234f, #2a152f); color: #fff; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; font-size: 13px; }
+    .seal .brand { font-family: 'Lilita One'; font-size: 26px; letter-spacing: 0; text-transform: none; -webkit-text-stroke: 2px var(--red); paint-order: stroke fill; }
+    .seal .sp { flex: 1; }
+    .seal button { font: inherit; background: var(--red); color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+
+    .hero { height: 100vh; }
+    .hero .copy { position: absolute; left: 6vw; top: 18vh; width: 46vw; }
+    .a-hero { right: 9vw; top: 15vh; width: 30vw; height: 70vh; }
+
+    .que { height: 130vh; }
+    .que .copy { position: absolute; right: 8vw; top: 38%; width: 40vw; }
+    .a-que { left: 9vw; top: calc(50% - 27.5vh); width: 26vw; height: 55vh; }
+
+    .arma { height: 100vh; }
+    .arma .copy { position: absolute; left: 6vw; top: 12vh; width: 46vw; }
+    .pasos { list-style: none; margin-top: 28px; border-top: 3px solid var(--line); }
+    .paso { display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); font-weight: 700; font-size: clamp(16px, 1.5vw, 22px); opacity: 0.45; transition: opacity 0.3s; }
+    .paso.activo { opacity: 1; }
+    .paso span:last-child { font-variant-numeric: tabular-nums; color: var(--muted); }
+    .a-arma { right: 10vw; top: 15vh; width: 30vw; height: 70vh; }
+
+    .menu { height: 120vh; }
+    .menu .copy { position: absolute; left: 6vw; top: 20vh; width: 52vw; }
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; background: var(--panel); }
+    th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line); }
+    th { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .a-menu { right: 11vw; top: 14vh; width: 22vw; height: 35vh; }
+
+    .ubicacion { height: 130vh; }
+    .ubicacion .copy { position: absolute; left: 6vw; top: 8vh; }
+    .mapa { position: absolute; left: 50%; top: 32vh; transform: translateX(-50%); width: min(900px, 88vw); height: 420px; border-radius: 18px; background: repeating-linear-gradient(35deg, #d8d2df 0 22px, #cfc7d8 22px 44px); border: 4px solid var(--ink); }
+    html.dark .mapa { background: repeating-linear-gradient(35deg, #2f1d36 0 22px, #2a1830 22px 44px); border-color: #bd97ca; }
+    .pin { position: absolute; left: 50%; top: 58%; width: 28px; height: 28px; margin: -28px 0 0 -14px; background: var(--red); border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+    /* el ancla termina en la cabeza del pin (no en la punta) para que el pin se vea */
+    .a-ubicacion { left: 50%; bottom: calc(42% + 34px); width: 16vh; height: 22vh; transform: translateX(-50%); }
+
+    .cierre { height: 110vh; }
+    .cierre .copy { position: absolute; left: 0; right: 0; bottom: 8vh; text-align: center; }
+    .cierre .copy p { margin: 12px auto 0; }
+    .a-cierre { left: 50%; top: calc(45% - 30vh); width: 30vw; height: 60vh; transform: translateX(-50%); }
+
+    footer { height: 40vh; display: flex; align-items: center; justify-content: space-between; padding: 0 6vw; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: linear-gradient(#2a152f, #1b0d1f); }
+
+    #hud { position: fixed; right: 10px; bottom: 10px; z-index: 50; font: 12px/1.4 ui-monospace, monospace; background: rgba(0, 0, 0, 0.6); color: #0f0; padding: 6px 8px; border-radius: 6px; display: none; white-space: pre; }
+    html.debug #hud { display: block; }
+
+    @media (max-width: 640px) {
+        .seal { gap: 12px; }
+        .seal a { display: none; }
+        .hero { height: 110vh; }
+        .hero .copy { left: 16px; right: 16px; top: 10vh; width: auto; }
+        .hero .copy p, .hero .copy .cta { display: none; }
+        .a-hero { left: 50%; right: auto; top: 46vh; width: 70vw; height: 42vh; transform: translateX(-50%); }
+        .que { height: 120vh; }
+        .que .copy { left: 16px; right: 16px; top: 58vh; width: auto; }
+        .a-que { left: 50%; top: 10vh; width: 60vw; height: 40vh; transform: translateX(-50%); }
+        .arma .copy { left: 16px; right: 16px; top: auto; bottom: 3vh; width: auto; }
+        .arma .copy h2, .arma .copy p { display: none; }
+        .paso { padding: 8px 0; font-size: 15px; }
+        .a-arma { left: 50%; right: auto; top: 14vh; width: 70vw; height: 42vh; transform: translateX(-50%); }
+        .menu .copy { left: 16px; right: 16px; top: 42vh; width: auto; }
+        .a-menu { left: 50%; right: auto; top: 6vh; width: 40vw; height: 28vh; transform: translateX(-50%); }
+        .mapa { height: 360px; width: calc(100% - 32px); }
+        .a-ubicacion { height: 18vh; width: 14vh; }
+        .cierre .copy { bottom: 6vh; }
+        .a-cierre { width: 70vw; height: 45vh; top: 12vh; }
+    }
+</style>
+</head>
+<body>
+<div id="bag-stage" aria-hidden="true"><canvas id="bag-canvas"></canvas></div>
+<header class="seal">
+    <span class="brand">Dorilokos MIX</span>
+    <a>¿Qué es?</a><a>Así se arma</a><a>Menú</a><a>Ubicación</a>
+    <span class="sp"></span>
+    <button id="tema" type="button">Tema</button>
+</header>
+<main>
+    <section class="hero">
+        <div class="copy">
+            <h1>EL PAQUETE<br><em>ES EL</em> PLATO</h1>
+            <p>Abrimos tu paquete y lo cargamos hasta arriba con frijol, carne desmechada, chicharrón, maduro, queso, guacamole y salsa de la casa.</p>
+            <a class="cta">Abre aquí · Pide por WhatsApp</a>
+        </div>
+        <div class="a-hero" data-bag-anchor="hero" data-bag-mode="hero"></div>
+    </section>
+    <section class="que">
+        <div class="a-que" data-bag-anchor="que" data-bag-mode="back"></div>
+        <div class="copy">
+            <h2>¿QUÉ ES UN <em>DORILOKOS</em>?</h2>
+            <p>La versión salada y bogotana de los dorilocos: el paquete es el plato, cargado hasta arriba.</p>
+        </div>
+    </section>
+    <section class="arma" id="arma">
+        <div class="copy">
+            <h2>ASÍ SE <em>ARMA</em></h2>
+            <ol class="pasos">
+                <li class="paso activo"><span>Abrimos tu paquete</span><span>1 paquete</span></li>
+                <li class="paso"><span>Frijol y carne desmechada</span><span>1 capa</span></li>
+                <li class="paso"><span>Chicharrón, maduro y maíz</span><span>3 toques</span></li>
+                <li class="paso"><span>Queso, guacamole y pico</span><span>a tope</span></li>
+                <li class="paso"><span>Salsa de la casa</span><span>en hilo</span></li>
+            </ol>
+        </div>
+        <div class="a-arma" data-bag-anchor="arma" data-bag-mode="arma"></div>
+    </section>
+    <section class="menu">
+        <div class="copy">
+            <h2>EL <em>MENÚ</em></h2>
+            <table>
+                <thead><tr><th>Producto</th><th>Qué lleva</th><th>Precio</th></tr></thead>
+                <tbody>
+                    <tr><td>Dorilokos Mix</td><td>Todo lo de la casa</td><td>$ 25.900</td></tr>
+                    <tr><td>Por confirmar</td><td>Contenido de ejemplo</td><td>—</td></tr>
+                    <tr><td>Por confirmar</td><td>Contenido de ejemplo</td><td>—</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="a-menu" data-bag-anchor="menu" data-bag-mode="park"></div>
+    </section>
+    <section class="ubicacion">
+        <div class="copy"><h2>ESTAMOS EN <em>CHAPINERO</em></h2></div>
+        <div class="mapa"><span class="pin"></span><div class="a-ubicacion" data-bag-anchor="ubicacion" data-bag-mode="pin"></div></div>
+    </section>
+    <section class="cierre">
+        <div class="a-cierre" data-bag-anchor="cierre" data-bag-mode="burst"></div>
+        <div class="copy">
+            <h2>¿TE <em>ANTOJASTE</em>?</h2>
+            <p>Pide por WhatsApp al 314 279 8769.</p>
+            <a class="cta">Pide por WhatsApp</a>
+        </div>
+    </section>
+</main>
+<footer><span>Contenido neto: 1 antojo grande</span><span>Calle 65 #11-73 · Chapinero</span><span>@dorilokosmix</span></footer>
+<div id="hud"></div>
+<script type="module" src="./dev.js"></script>
+</body>
+</html>

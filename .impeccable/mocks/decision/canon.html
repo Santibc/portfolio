@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Estándar de la categoría · primer viewport</title>
+<style>
+@import url('https://fonts.bunny.net/css?family=archivo:400,600,800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{font-family:Archivo,system-ui,sans-serif;background:#111;color:#fff;position:relative}
+nav{position:absolute;top:0;left:0;right:0;height:80px;display:flex;align-items:center;gap:32px;padding:0 64px;font-size:15px;font-weight:600}
+nav .logo{font-weight:800;font-size:26px;color:#f39030}
+nav .sp{flex:1}
+nav .cta{background:#f39030;color:#111;padding:12px 22px;border-radius:10px;font-weight:800}
+.photo{position:absolute;right:0;top:0;width:760px;height:900px;background:
+  radial-gradient(420px 320px at 50% 55%, #c8742c, transparent 70%),
+  linear-gradient(135deg,#3a2216,#1a120d)}
+.photo span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:800;letter-spacing:.2em;color:rgba(255,255,255,.55)}
+h1{position:absolute;left:64px;top:200px;width:600px;font-size:76px;line-height:1.02;font-weight:800;letter-spacing:-.02em}
+p.sub{position:absolute;left:64px;top:430px;width:520px;font-size:20px;line-height:1.5;color:#cfcfcf}
+.btns{position:absolute;left:64px;top:540px;display:flex;gap:16px}
+.btns a{padding:18px 30px;border-radius:12px;font-weight:800;font-size:18px}
+.btns .p{background:#f39030;color:#111}
+.btns .s{border:2px solid #fff;color:#fff}
+.badges{position:absolute;left:64px;top:640px;display:flex;gap:12px}
+.badges span{background:#222;border:1px solid #333;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:600}
+.cards{position:absolute;left:64px;bottom:-60px;display:flex;gap:20px}
+.cards div{width:200px;height:150px;background:#1d1d1d;border-radius:16px;border:1px solid #2c2c2c}
+</style>
+</head>
+<body>
+  <div class="photo"><span>FOTO DEL DORILOKOS</span></div>
+  <nav><span class="logo">Dorilokos Mix</span><a>Menú</a><a>Nosotros</a><a>Ubicación</a><span class="sp"></span><span class="cta">Pedir ahora</span></nav>
+  <h1>Los dorilokos más cargados de Chapinero</h1>
+  <p class="sub">Frijol, carne desmechada, chicharrón, maduro, queso, guacamole y salsa de la casa dentro de tu paquete de Doritos.</p>
+  <div class="btns"><a class="p">Pedir ahora</a><a class="s">Ver menú</a></div>
+  <div class="badges"><span>★ 4,8 en Google</span><span>Domicilios</span><span>Calle 65 #11-73</span></div>
+  <div class="cards"><div></div><div></div><div></div></div>
+</body>
+</html>

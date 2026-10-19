@@ -1,0 +1,391 @@
+/* Landing pública de Dorilokos Mix: mundo "El Paquete" (empaque de snacks).
+   Fuentes autohospedadas (sin peticiones externas) y Tailwind con su propia config. */
+@import '@fontsource-variable/archivo/wdth.css';
+@import 'lenis/dist/lenis.css';
+
+@config "../../tailwind.landing.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Lilita One (titulares) desde resources/fonts: el layout precarga el subconjunto latino
+   para que el titular gigante no salte al cambiar de fuente. */
+@font-face {
+  font-family: 'Lilita One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/lilita-one-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lilita One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/lilita-one-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* =====================================================
+   Rampa de tinta: claro = reverso plateado, oscuro = frente morado.
+   La geometría no cambia entre temas; solo la rampa.
+===================================================== */
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Valores de los tokens de tailwind.config.js; los hex que quedan son tonos propios de la
+       landing (sin token), con su nombre de DESIGN.md. */
+    --suelo: #f3eff6; /* plata-suelo */
+    --suelo-alto: theme('colors.white');
+    --suelo-bajo: #e2d9e8; /* plata-baja */
+    --tinta: theme('colors.primary.950');
+    --tinta-suave: theme('colors.primary.700');
+    --tinta-tenue: theme('colors.cream.700');
+    --sello: #e4dbea; /* plata-sello */
+    --sello-estria: theme('colors.primary.700 / 0.18');
+    --regla: theme('colors.primary.950');
+    --panel: theme('colors.white');
+    --panel-tinta: theme('colors.primary.950');
+    --panel-tenue: theme('colors.cream.700');
+    --triangulo: theme('colors.primary.100');
+    --titular-relleno: theme('colors.primary.700');
+    --titular-trazo: theme('colors.accent.700');
+    --acento-relleno: theme('colors.flame.500');
+    --acento-trazo: #7a1316; /* rojo-sangre */
+    --foco: theme('colors.accent.600');
+    /* Canales RGB sueltos para rgb(var(--sombra) / a): color-mix() no llega a todos los
+       navegadores del build. --sombra-honda es fija en ambos temas (canales de noche-baja). */
+    --sombra: theme('canales.primary-950');
+    --sombra-honda: 16 7 26;
+    --bag-top-inset: 4.25rem;
+    --corte: theme('colors.accent.700');
+  }
+
+  @media (min-width: 1024px) {
+    :root { --bag-top-inset: 4.75rem; }
+  }
+
+  :root.dark {
+    color-scheme: dark;
+    --suelo: theme('colors.primary.950');
+    --suelo-alto: #6e3f7c; /* morado-reflejo */
+    --suelo-bajo: #10071a; /* noche-baja */
+    --tinta: theme('colors.cream.100');
+    --tinta-suave: #e4d8eb; /* humo-suave */
+    --tinta-tenue: theme('colors.cream.400');
+    --sello: theme('colors.primary.900');
+    --sello-estria: theme('colors.white / 0.1');
+    --regla: theme('colors.primary.950');
+    --panel: theme('colors.cream.50');
+    --panel-tinta: theme('colors.primary.950');
+    --panel-tenue: theme('colors.cream.700');
+    --triangulo: theme('colors.primary.700');
+    --titular-relleno: theme('colors.white');
+    --titular-trazo: theme('colors.flame.500');
+    --acento-relleno: theme('colors.accent.300');
+    --acento-trazo: theme('colors.flame.500');
+    --foco: theme('colors.accent.400');
+    --sombra: theme('canales.black');
+    --corte: theme('colors.accent.300');
+  }
+
+  html {
+    background: var(--suelo);
+    scroll-padding-top: 5.5rem;
+    scrollbar-color: var(--tinta-suave) var(--suelo-bajo);
+    scrollbar-width: thin;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background: var(--suelo);
+    color: var(--tinta);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    font-variation-settings: normal;
+    overflow-x: clip;
+  }
+
+  ::selection { background: theme('colors.accent.300'); color: theme('colors.primary.950'); }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--suelo-bajo); }
+  ::-webkit-scrollbar-thumb { background: var(--tinta-suave); border-radius: 999px; border: 2px solid var(--suelo-bajo); }
+
+  :focus-visible {
+    outline: 3px solid var(--foco);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+
+  a { text-underline-offset: 0.22em; text-decoration-thickness: 2px; }
+  h1, h2, h3 { text-wrap: balance; }
+  p, li, dd { text-wrap: pretty; }
+  img, svg, canvas, iframe { display: block; }
+}
+
+/* =====================================================
+   Materiales del mundo
+===================================================== */
+@layer components {
+  .contenedor { @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12; }
+
+  /* Foil: suelo metalizado con un reflejo diagonal y grano fino de película. */
+  .foil {
+    background-color: var(--suelo);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+      linear-gradient(var(--reflejo-angulo, 112deg), transparent 22%, theme('colors.white / 0') 30%, color-mix(in srgb, var(--suelo-alto) 50%, transparent) var(--reflejo-pos, 44%), transparent 62%),
+      linear-gradient(180deg, var(--suelo) 0%, var(--suelo-bajo) 100%);
+    background-size: 180px 180px, 100% 100%, 100% 100%;
+  }
+
+  /* Frente del empaque: foil real a sangre (render del mismo material del paquete, dev/foil.js). */
+  .foil-placa {
+    background-color: var(--suelo);
+    background-image: url('../images/landing/foil-claro-movil.webp');
+    background-size: cover;
+    background-position: center;
+  }
+  @media (min-width: 768px) {
+    .foil-placa { background-image: url('../images/landing/foil-claro-escritorio.webp'); }
+  }
+  :root.dark .foil-placa { background-image: url('../images/landing/foil-oscuro-movil.webp'); }
+  @media (min-width: 768px) {
+    :root.dark .foil-placa { background-image: url('../images/landing/foil-oscuro-escritorio.webp'); }
+  }
+
+  /* Sello crimpado: estrías verticales + borde en zigzag (máscara cónica). */
+  .sello {
+    --diente: 9px;
+    background:
+      repeating-linear-gradient(90deg, var(--sello-estria) 0 2px, transparent 2px 6px),
+      var(--sello);
+  }
+  .dientes-abajo {
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente, 9px)) 100%;
+            mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente, 9px)) 100%;
+  }
+  .sello-separador {
+    --diente: 8px;
+    -webkit-mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% 100% / calc(2 * var(--diente)) 51% repeat-x,
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% 0 / calc(2 * var(--diente)) 51% repeat-x;
+            mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% 100% / calc(2 * var(--diente)) 51% repeat-x,
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% 0 / calc(2 * var(--diente)) 51% repeat-x;
+  }
+  .dientes-arriba {
+    -webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente, 9px)) 100%;
+            mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente, 9px)) 100%;
+  }
+
+  /* Titulares: letra del empaque (Lilita One con contorno, como el logo). */
+  .titular {
+    font-family: theme('fontFamily.brand');
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: -0.005em;
+    color: var(--titular-relleno);
+    -webkit-text-stroke: 0.075em var(--titular-trazo);
+    paint-order: stroke fill;
+    text-shadow: 0 0.05em 0.14em rgb(var(--sombra) / 0.28);
+  }
+  .titular .acento {
+    color: var(--acento-relleno);
+    -webkit-text-stroke-color: var(--acento-trazo);
+  }
+  .titulo-seccion {
+    font-family: theme('fontFamily.brand');
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 0.92;
+    font-size: clamp(2.4rem, 5.2vw, 4.5rem);
+    color: var(--titular-relleno);
+    -webkit-text-stroke: 0.06em var(--titular-trazo);
+    paint-order: stroke fill;
+  }
+
+  /* Rótulo condensado tipo empaque (etiquetas, encabezados de tabla, letra legal). */
+  .rotulo {
+    font-weight: 800;
+    font-stretch: 78%;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .letra-legal {
+    font-weight: 600;
+    font-stretch: 85%;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--tinta-tenue);
+  }
+
+  /* Tabla nutricional: caja blanca con reglas gruesas, cifras tabulares. */
+  /* Las tablas impresas van por encima del lienzo 3D (z 30): el paquete y los nachos pasan por detrás. */
+  .panel-nutri {
+    position: relative;
+    z-index: 31;
+    background: var(--panel);
+    color: var(--panel-tinta);
+    border: 3px solid var(--regla);
+    box-shadow: 0 28px 56px -30px rgb(var(--sombra) / 0.55);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .panel-nutri__titulo {
+    font-weight: 850;
+    font-stretch: 72%;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+  .regla-gruesa { border-top: 10px solid var(--regla); }
+  .regla-media { border-top: 5px solid var(--regla); }
+  .regla-fina { border-top: 1px solid theme('colors.primary.950 / 0.28'); }
+
+  /* Muesca "Abre aquí": tijera + línea punteada que lleva a la acción. */
+  .corte { display: flex; align-items: center; gap: 0.75rem; }
+  .corte__tijera {
+    flex: none;
+    color: var(--corte);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .corte__linea {
+    flex: none;
+    width: clamp(2rem, 3.6vw, 3.5rem);
+    border-top: 3px dashed var(--corte);
+  }
+  .corte:hover .corte__tijera,
+  .corte:focus-within .corte__tijera { transform: translateX(clamp(2rem, 3.6vw, 3.5rem)) rotate(-8deg); }
+
+  /* Ventana troquelada: hueco del empaque para fotos (o su espera honesta). */
+  .ventana {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.75rem;
+    background: var(--suelo-bajo);
+    outline: 2px dashed color-mix(in srgb, var(--tinta) 38%, transparent);
+    outline-offset: 7px;
+  }
+  .ventana--vacia {
+    background:
+      repeating-linear-gradient(135deg, color-mix(in srgb, var(--tinta) 7%, transparent) 0 12px, transparent 12px 24px),
+      var(--suelo-bajo);
+  }
+
+  /* Cinta de sabores (banda del empaque). */
+  .cinta {
+    background: theme('colors.accent.500');
+    color: theme('colors.primary.950');
+    border-block: 3px solid theme('colors.primary.950');
+  }
+
+  /* Paso del armado: una fila por paso, con su medida. */
+  .paso {
+    border-bottom: 1px solid color-mix(in srgb, var(--tinta) 24%, transparent);
+  }
+  .paso__num {
+    background: transparent;
+    color: var(--tinta);
+    border: 2px solid currentColor;
+    transition: background-color 0.35s, color 0.35s, border-color 0.35s;
+  }
+  .paso.activo .paso__num { background: theme('colors.accent.300'); color: theme('colors.primary.950'); border-color: theme('colors.accent.300'); }
+
+  /* Mapa enmarcado como una etiqueta más del empaque. Va sobre el suelo: el marco es tinta, no
+     --regla (esa es del panel y en oscuro vale lo mismo que el suelo). */
+  .mapa {
+    border: 3px solid var(--tinta);
+    background: var(--suelo-bajo);
+  }
+  .dark .mapa iframe { filter: invert(0.92) hue-rotate(180deg) saturate(0.85) brightness(0.95); }
+
+  /* Bloques de lectura por encima del lienzo 3D: el paquete y los nachos pasan por detrás del texto. */
+  .sobre-3d { position: relative; z-index: 31; }
+
+  .texto-tinta { color: var(--tinta); }
+  .texto-suave { color: var(--tinta-suave); }
+  .texto-tenue { color: var(--tinta-tenue); }
+  .texto-panel-tenue { color: var(--panel-tenue); }
+
+  .enlace {
+    @apply font-semibold underline;
+    color: var(--tinta);
+    text-decoration-color: color-mix(in srgb, var(--tinta) 45%, transparent);
+  }
+  .enlace:hover { text-decoration-color: currentColor; }
+
+  .salto {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:px-4 focus:py-3 focus:font-bold;
+    background: var(--panel);
+    color: var(--panel-tinta);
+  }
+}
+
+/* =====================================================
+   Comportamiento del paquete 3D (anclas, póster, pin)
+===================================================== */
+
+/* Sin 3D (reduced motion, sin WebGL o fallo): solo el ancla del inicio (con su póster) ocupa espacio. */
+html:not(.con-3d) [data-bag-anchor]:not([data-bag-anchor='hero']) { display: none; }
+
+#bag-stage { position: fixed; inset: 0; z-index: 30; pointer-events: none; }
+#bag-stage canvas { width: 100%; height: 100%; }
+html:not(.con-3d) #bag-stage { display: none; }
+
+.poster-paquete { transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+html.bag-listo .poster-paquete { opacity: 0; }
+
+/* Con el pin, "Así se arma" ocupa una pantalla; sin 3D es una sección normal. */
+html.con-3d .arma-escena { min-height: 100svh; align-content: center; }
+/* Sin 3D: la lista y "¿Qué es?" ocupan todo el ancho (no queda la columna vacía del paquete). */
+html:not(.con-3d) #que-es .sobre-3d { grid-column: 1 / -1; }
+/* Sin 3D la lista ocupa todo el ancho. Durante el pin solo resalta el paso activo. */
+html:not(.con-3d) .arma-texto { grid-column: 1 / -1; }
+/* El paso activo se marca como una fila resaltada de la tabla; los demás bajan de tono sin perder contraste AA. */
+html.con-3d .pasos .paso { border-radius: 1rem; transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+html.con-3d .pasos .paso.activo { background-color: color-mix(in srgb, var(--tinta) 7%, transparent); border-bottom-color: transparent; }
+html.con-3d .pasos .paso:not(.activo) h3 { color: var(--tinta-suave); }
+html.con-3d .pasos .paso:not(.activo) .paso__detalle { color: var(--tinta-tenue); }
+@media (max-width: 639.98px) {
+  html.con-3d .pasos .paso:not(.activo) .paso__detalle { display: none; }
+}
+
+.wa-flotante {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.wa-flotante.oculto { transform: translateY(150%) scale(0.85); opacity: 0; pointer-events: none; }
+
+/* Menú móvil: <dialog> a pantalla completa con el reverso del empaque. El velo va en literal
+   (noche-baja al 60 %): ::backdrop no hereda variables en navegadores anteriores a 2024. */
+.menu-movil::backdrop { background: rgb(16 7 26 / 0.6); }
+.menu-movil[open] { animation: menu-entra 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes menu-entra { from { opacity: 0; transform: translateY(-1rem); } }
+
+/* Tabla del menú en celular: cada producto es un bloque. */
+@media (max-width: 767.98px) {
+  .tabla-menu thead { @apply sr-only; }
+  .tabla-menu tbody, .tabla-menu tr, .tabla-menu td { display: block; }
+  .tabla-menu tr { padding-block: 1rem; }
+  .tabla-menu td { padding: 0.15rem 0; }
+  .tabla-menu td[data-etiqueta] { display: inline-flex; align-items: baseline; gap: 0.5rem; margin: 0.4rem 1.5rem 0.4rem 0; }
+  .tabla-menu td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-stretch: 78%;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--panel-tenue);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corte__tijera, .wa-flotante, .poster-paquete, .paso, .paso__num { transition: none; }
+  .menu-movil[open] { animation: none; }
+}

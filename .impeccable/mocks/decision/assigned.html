@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>El Paquete · primer viewport</title>
+<style>
+@import url('https://fonts.bunny.net/css?family=lilita-one:400|archivo:400,600,800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{font-family:Archivo,system-ui,sans-serif;color:#f5f2f7;position:relative;
+  background:
+    radial-gradient(900px 520px at 62% 46%, rgba(189,151,202,.38), transparent 62%),
+    linear-gradient(112deg,#1b0d1f 0%,#381c3f 20%,#5f306a 38%,#9a68ad 46%,#5f306a 54%,#2a152f 76%,#1b0d1f 100%);}
+/* sellos crimpados */
+.seal{position:absolute;left:0;right:0;height:78px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.13) 0 2px,rgba(0,0,0,.22) 2px 5px),linear-gradient(#46234f,#2a152f);}
+.seal.top{top:0;--s:12px;-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--s)) 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--s)) 100%;}
+.seal.bottom{bottom:0;height:64px;--s:12px;-webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--s)) 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/calc(2*var(--s)) 100%;}
+.nav{position:absolute;top:0;left:0;right:0;height:66px;display:flex;align-items:center;gap:36px;padding:0 48px;z-index:5}
+.nav .brand{font-family:'Lilita One';font-size:30px;color:#fff;-webkit-text-stroke:2px #e3262a;paint-order:stroke fill}
+.nav a{font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#f5f2f7;text-decoration:none}
+.nav .spacer{flex:1}
+.nav .pedir{background:#e3262a;color:#fff;padding:12px 22px;border-radius:999px;font-size:15px}
+/* triángulo de fuego */
+.tri{position:absolute;left:-120px;top:70px;width:1100px;height:820px;z-index:1}
+/* titular */
+h1{position:absolute;left:72px;top:150px;z-index:3;font-family:'Lilita One',system-ui;font-weight:400;font-size:170px;line-height:.86;color:#fff;
+  -webkit-text-stroke:9px #e3262a;paint-order:stroke fill;text-shadow:0 0 38px rgba(243,144,48,.55);letter-spacing:-.01em}
+h1 em{font-style:normal;color:#f5c020;-webkit-text-stroke:9px #e3262a}
+.hook{position:absolute;left:80px;top:500px;width:520px;z-index:3;font-size:21px;line-height:1.45;color:#ece1f0}
+.tear{position:absolute;left:80px;top:640px;z-index:3;display:flex;align-items:center;gap:16px}
+.tear .line{width:120px;border-top:3px dashed #f5c020}
+.tear .scissor{font-size:26px;color:#f5c020}
+.tear .btn{background:#e3262a;color:#fff;font-weight:800;font-size:22px;letter-spacing:.06em;text-transform:uppercase;padding:20px 34px;border-radius:14px;box-shadow:0 10px 0 #9f171b}
+.tear .alt{color:#fdd889;font-weight:800;font-size:16px;letter-spacing:.12em;text-transform:uppercase;text-decoration:underline;text-underline-offset:6px}
+/* paquete 3D (marcador) */
+.bag{position:absolute;left:690px;top:120px;width:420px;height:640px;z-index:2;transform:rotate(-9deg);filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
+.chip{position:absolute;z-index:2;width:0;height:0;border-left:34px solid transparent;border-right:34px solid transparent;border-bottom:60px solid #f39030;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+/* tabla nutricional */
+.panel{position:absolute;right:56px;top:150px;width:330px;z-index:4;background:#fcfbfd;color:#19131e;padding:22px 22px 18px;border:4px solid #19131e}
+.panel h2{font-family:Archivo;font-weight:800;font-size:31px;line-height:1;letter-spacing:-.01em;text-transform:none}
+.panel .rule{border-top:12px solid #19131e;margin:10px 0 8px}
+.panel .thin{border-top:2px solid #19131e;margin:6px 0}
+.panel .row{display:flex;justify-content:space-between;font-size:15px;font-weight:600;padding:5px 0;border-bottom:1px solid #c3b6cc}
+.panel .price{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px}
+.panel .price b{font-size:44px;font-weight:800;letter-spacing:-.02em}
+.panel .fine{font-size:11px;line-height:1.35;margin-top:8px;color:#5c5066}
+/* estrella de calificación */
+.burst{position:absolute;left:1000px;top:640px;z-index:5;width:150px;height:150px}
+.fineprint{position:absolute;bottom:18px;left:48px;right:48px;z-index:5;display:flex;justify-content:space-between;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#d9c2e1}
+</style>
+</head>
+<body>
+  <div class="seal top"></div>
+  <nav class="nav">
+    <span class="brand">Dorilokos MIX</span>
+    <a href="#">¿Qué es?</a><a href="#">Así se arma</a><a href="#">Menú</a><a href="#">El local</a><a href="#">Ubicación</a>
+    <span class="spacer"></span>
+    <a class="pedir" href="#">Pedir</a>
+  </nav>
+
+  <svg class="tri" viewBox="0 0 1100 820" aria-hidden="true">
+    <defs><linearGradient id="fire" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5c020"/><stop offset=".5" stop-color="#f39030"/><stop offset="1" stop-color="#e3262a"/></linearGradient></defs>
+    <polygon points="60,40 1060,420 300,800" fill="#46234f" stroke="url(#fire)" stroke-width="34" stroke-linejoin="miter"/>
+    <polygon points="180,150 880,425 330,690" fill="none" stroke="url(#fire)" stroke-width="10" opacity=".7"/>
+  </svg>
+
+  <h1>EL PAQUETE<br><em>ES EL</em> PLATO</h1>
+  <p class="hook">Abrimos tu paquete de Doritos y lo cargamos hasta arriba con frijol, carne desmechada, chicharrón, maduro, queso, guacamole y salsa de la casa. Hecho al momento en Chapinero.</p>
+  <div class="tear"><span class="scissor">✂</span><span class="line"></span><span class="btn">Abre aquí · Pide por WhatsApp</span><span class="alt">Qué lleva ↓</span></div>
+
+  <svg class="bag" viewBox="0 0 420 640" aria-hidden="true">
+    <defs>
+      <linearGradient id="foil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a152f"/><stop offset=".35" stop-color="#5f306a"/><stop offset=".5" stop-color="#c7a3d6"/><stop offset=".62" stop-color="#5f306a"/><stop offset="1" stop-color="#1b0d1f"/></linearGradient>
+      <linearGradient id="fire2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5c020"/><stop offset=".55" stop-color="#f39030"/><stop offset="1" stop-color="#e3262a"/></linearGradient>
+    </defs>
+    <path d="M20 30 L400 30 L392 70 Q425 320 392 570 L400 610 L20 610 L28 570 Q-5 320 28 70 Z" fill="url(#foil)" stroke="#1b0d1f" stroke-width="3"/>
+    <rect x="20" y="30" width="380" height="42" fill="#381c3f" opacity=".85"/>
+    <rect x="20" y="568" width="380" height="42" fill="#381c3f" opacity=".85"/>
+    <polygon points="70,150 360,280 120,470" fill="#5f306a" stroke="url(#fire2)" stroke-width="14"/>
+    <text x="210" y="300" text-anchor="middle" font-family="Lilita One" font-size="70" fill="#fff" stroke="#e3262a" stroke-width="5" paint-order="stroke">Dorilokos</text>
+    <text x="250" y="365" text-anchor="middle" font-family="Lilita One" font-size="54" fill="#e3262a" stroke="#f5c020" stroke-width="5" paint-order="stroke">MIX</text>
+    <rect x="95" y="420" width="230" height="110" rx="18" fill="#f39030" opacity=".9"/>
+    <text x="210" y="485" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="24" fill="#2a152f">SABOR BIEN LOKO</text>
+  </svg>
+  <span class="chip" style="left:640px;top:180px;transform:rotate(-30deg)"></span>
+  <span class="chip" style="left:1140px;top:120px;transform:rotate(40deg) scale(.8)"></span>
+  <span class="chip" style="left:660px;top:690px;transform:rotate(15deg) scale(.9)"></span>
+  <span class="chip" style="left:1120px;top:520px;transform:rotate(-70deg) scale(.7)"></span>
+
+  <aside class="panel">
+    <h2>Información antojicional</h2>
+    <div class="rule"></div>
+    <div class="row"><span>Porción</span><span>1 paquete cargado</span></div>
+    <div class="thin"></div>
+    <div class="row"><span>Frijol</span><span>✓</span></div>
+    <div class="row"><span>Carne desmechada</span><span>✓</span></div>
+    <div class="row"><span>Chicharrón carnudo</span><span>✓</span></div>
+    <div class="row"><span>Plátano maduro</span><span>✓</span></div>
+    <div class="row"><span>Queso · maíz dulce</span><span>✓</span></div>
+    <div class="row"><span>Guacamole · pico de gallo</span><span>✓</span></div>
+    <div class="row"><span>Salsa de la casa</span><span>✓</span></div>
+    <div class="price"><span>Dorilokos Mix</span><b>$ 25.900</b></div>
+    <p class="fine">Precio publicado en Rappi. Domicilios en Chapinero: 314 279 8769.</p>
+  </aside>
+
+  <svg class="burst" viewBox="0 0 150 150" aria-hidden="true">
+    <polygon fill="#f5c020" stroke="#e3262a" stroke-width="4" points="75,4 90,40 128,22 112,60 146,75 112,90 128,128 90,110 75,146 60,110 22,128 38,90 4,75 38,60 22,22 60,40"/>
+    <text x="75" y="76" text-anchor="middle" font-family="Lilita One" font-size="36" fill="#2a152f">4,8★</text>
+    <text x="75" y="100" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="14" fill="#2a152f">GOOGLE</text>
+  </svg>
+
+  <div class="seal bottom"></div>
+  <div class="fineprint"><span>Contenido neto: 1 antojo grande</span><span>Calle 65 #11-73 · Chapinero, Bogotá</span><span>@dorilokosmix</span></div>
+</body>
+</html>

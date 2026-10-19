@@ -1,0 +1,712 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T23:30:00-05:00",
+  "title": "Design System: Dorilokos Mix",
+  "extensions": {
+    "colorMeta": {
+      "morado-logo": {
+        "role": "primary",
+        "displayName": "Morado del Logo",
+        "canonical": "#5f306a",
+        "tonalRamp": [
+          "#1b0d1f",
+          "#2a152f",
+          "#381c3f",
+          "#46234f",
+          "#5f306a",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "morado-hondo": {
+        "role": "primary",
+        "displayName": "Morado Hondo",
+        "canonical": "#46234f",
+        "tonalRamp": [
+          "#1b0d1f",
+          "#2a152f",
+          "#381c3f",
+          "#46234f",
+          "#5f306a",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "tinta-foil": {
+        "role": "primary",
+        "displayName": "Tinta Foil",
+        "canonical": "#1b0d1f",
+        "tonalRamp": [
+          "#1b0d1f",
+          "#2a152f",
+          "#381c3f",
+          "#46234f",
+          "#5f306a",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "naranja-fuego": {
+        "role": "secondary",
+        "displayName": "Naranja Fuego",
+        "canonical": "#f39030",
+        "tonalRamp": [
+          "#451a07",
+          "#783616",
+          "#934016",
+          "#b65112",
+          "#dc6f14",
+          "#f39030",
+          "#f5c020",
+          "#ffecc6"
+        ]
+      },
+      "dorado-maiz": {
+        "role": "secondary",
+        "displayName": "Dorado Maíz",
+        "canonical": "#f5c020",
+        "tonalRamp": [
+          "#451a07",
+          "#783616",
+          "#934016",
+          "#b65112",
+          "#dc6f14",
+          "#f39030",
+          "#f5c020",
+          "#ffecc6"
+        ]
+      },
+      "naranja-tostado": {
+        "role": "secondary",
+        "displayName": "Naranja Tostado",
+        "canonical": "#b65112",
+        "tonalRamp": [
+          "#451a07",
+          "#783616",
+          "#934016",
+          "#b65112",
+          "#dc6f14",
+          "#f39030",
+          "#f5c020",
+          "#ffecc6"
+        ]
+      },
+      "naranja-foco": {
+        "role": "secondary",
+        "displayName": "Naranja Foco",
+        "canonical": "#dc6f14",
+        "tonalRamp": [
+          "#451a07",
+          "#783616",
+          "#934016",
+          "#b65112",
+          "#dc6f14",
+          "#f39030",
+          "#f5c020",
+          "#ffecc6"
+        ]
+      },
+      "ambar-foco": {
+        "role": "secondary",
+        "displayName": "Ámbar Foco",
+        "canonical": "#f5a524",
+        "tonalRamp": [
+          "#451a07",
+          "#783616",
+          "#934016",
+          "#b65112",
+          "#dc6f14",
+          "#f5a524",
+          "#f5c020",
+          "#ffecc6"
+        ]
+      },
+      "rojo-mix": {
+        "role": "tertiary",
+        "displayName": "Rojo MIX",
+        "canonical": "#e3262a",
+        "tonalRamp": [
+          "#3b080a",
+          "#6d191c",
+          "#83181c",
+          "#9f171b",
+          "#c01a1e",
+          "#e3262a",
+          "#f06d70",
+          "#fde3e3"
+        ]
+      },
+      "rojo-pedido": {
+        "role": "tertiary",
+        "displayName": "Rojo Pedido",
+        "canonical": "#c01a1e",
+        "tonalRamp": [
+          "#3b080a",
+          "#6d191c",
+          "#83181c",
+          "#9f171b",
+          "#c01a1e",
+          "#e3262a",
+          "#f06d70",
+          "#fde3e3"
+        ]
+      },
+      "rojo-pedido-hondo": {
+        "role": "tertiary",
+        "displayName": "Rojo Pedido Hondo",
+        "canonical": "#9f171b",
+        "tonalRamp": [
+          "#3b080a",
+          "#6d191c",
+          "#83181c",
+          "#9f171b",
+          "#c01a1e",
+          "#e3262a",
+          "#f06d70",
+          "#fde3e3"
+        ]
+      },
+      "rojo-sangre": {
+        "role": "tertiary",
+        "displayName": "Rojo Sangre",
+        "canonical": "#7a1316",
+        "tonalRamp": [
+          "#3b080a",
+          "#6d191c",
+          "#7a1316",
+          "#9f171b",
+          "#c01a1e",
+          "#e3262a",
+          "#f06d70",
+          "#fde3e3"
+        ]
+      },
+      "plata-suelo": {
+        "role": "neutral",
+        "displayName": "Plata Suelo",
+        "canonical": "#f3eff6",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#5c5066",
+          "#c3b6cc",
+          "#e2d9e8",
+          "#f3eff6",
+          "#ffffff"
+        ]
+      },
+      "plata-baja": {
+        "role": "neutral",
+        "displayName": "Plata Baja",
+        "canonical": "#e2d9e8",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#5c5066",
+          "#c3b6cc",
+          "#e2d9e8",
+          "#f3eff6",
+          "#ffffff"
+        ]
+      },
+      "plata-sello": {
+        "role": "neutral",
+        "displayName": "Plata Sello",
+        "canonical": "#e4dbea",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#5c5066",
+          "#c3b6cc",
+          "#e4dbea",
+          "#f3eff6",
+          "#ffffff"
+        ]
+      },
+      "lila-triangulo": {
+        "role": "neutral",
+        "displayName": "Lila Triángulo",
+        "canonical": "#ece1f0",
+        "tonalRamp": [
+          "#1b0d1f",
+          "#2a152f",
+          "#381c3f",
+          "#46234f",
+          "#5f306a",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "papel-panel": {
+        "role": "neutral",
+        "displayName": "Papel Panel",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#ddd4e3",
+          "#f5f2f7",
+          "#ffffff"
+        ]
+      },
+      "lavanda-tenue": {
+        "role": "neutral",
+        "displayName": "Lavanda Tenue",
+        "canonical": "#5c5066",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#7d7087",
+          "#a497ae",
+          "#ddd4e3",
+          "#f5f2f7"
+        ]
+      },
+      "noche-baja": {
+        "role": "neutral",
+        "displayName": "Noche Baja",
+        "canonical": "#10071a",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#46234f",
+          "#6e3f7c",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "noche-sello": {
+        "role": "neutral",
+        "displayName": "Noche Sello",
+        "canonical": "#2a152f",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#46234f",
+          "#6e3f7c",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "morado-reflejo": {
+        "role": "neutral",
+        "displayName": "Morado Reflejo",
+        "canonical": "#6e3f7c",
+        "tonalRamp": [
+          "#10071a",
+          "#1b0d1f",
+          "#2a152f",
+          "#46234f",
+          "#6e3f7c",
+          "#8f5aa3",
+          "#bd97ca",
+          "#ece1f0"
+        ]
+      },
+      "humo-claro": {
+        "role": "neutral",
+        "displayName": "Humo Claro",
+        "canonical": "#f5f2f7",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#c3b6cc",
+          "#e4d8eb",
+          "#f5f2f7"
+        ]
+      },
+      "humo-suave": {
+        "role": "neutral",
+        "displayName": "Humo Suave",
+        "canonical": "#e4d8eb",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#c3b6cc",
+          "#e4d8eb",
+          "#f5f2f7"
+        ]
+      },
+      "humo-tenue": {
+        "role": "neutral",
+        "displayName": "Humo Tenue",
+        "canonical": "#c3b6cc",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#c3b6cc",
+          "#e4d8eb",
+          "#f5f2f7"
+        ]
+      },
+      "crema-app": {
+        "role": "neutral",
+        "displayName": "Crema App",
+        "canonical": "#fcfbfd",
+        "tonalRamp": [
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#ddd4e3",
+          "#f5f2f7",
+          "#fcfbfd"
+        ]
+      },
+      "noche-app": {
+        "role": "neutral",
+        "displayName": "Noche App",
+        "canonical": "#140f18",
+        "tonalRamp": [
+          "#140f18",
+          "#19131e",
+          "#2a2231",
+          "#3e3447",
+          "#5c5066",
+          "#a497ae",
+          "#ddd4e3",
+          "#f5f2f7"
+        ]
+      }
+    },
+    "themeRamps": {
+      "source": "resources/css/landing.css (:root / :root.dark)",
+      "light": {
+        "--suelo": "#f3eff6",
+        "--suelo-alto": "#ffffff",
+        "--suelo-bajo": "#e2d9e8",
+        "--tinta": "#1b0d1f",
+        "--tinta-suave": "#46234f",
+        "--tinta-tenue": "#5c5066",
+        "--sello": "#e4dbea",
+        "--sello-estria": "rgb(70 35 79 / 0.18)",
+        "--regla": "#1b0d1f",
+        "--panel": "#ffffff",
+        "--panel-tinta": "#1b0d1f",
+        "--panel-tenue": "#5c5066",
+        "--triangulo": "#ece1f0",
+        "--titular-relleno": "#46234f",
+        "--titular-trazo": "#b65112",
+        "--acento-relleno": "#e3262a",
+        "--acento-trazo": "#7a1316",
+        "--foco": "#dc6f14",
+        "--sombra": "27 13 31",
+        "--corte": "#b65112",
+        "--sombra-honda": "16 7 26"
+      },
+      "dark": {
+        "--suelo": "#1b0d1f",
+        "--suelo-alto": "#6e3f7c",
+        "--suelo-bajo": "#10071a",
+        "--tinta": "#f5f2f7",
+        "--tinta-suave": "#e4d8eb",
+        "--tinta-tenue": "#c3b6cc",
+        "--sello": "#2a152f",
+        "--sello-estria": "rgb(255 255 255 / 0.1)",
+        "--regla": "#1b0d1f",
+        "--panel": "#fcfbfd",
+        "--panel-tinta": "#1b0d1f",
+        "--panel-tenue": "#5c5066",
+        "--triangulo": "#46234f",
+        "--titular-relleno": "#ffffff",
+        "--titular-trazo": "#e3262a",
+        "--acento-relleno": "#f5c020",
+        "--acento-trazo": "#e3262a",
+        "--foco": "#f5a524",
+        "--sombra": "0 0 0",
+        "--corte": "#f5c020"
+      },
+      "notes": "--sombra se deriva del token con el helper `canales` de tailwind.landing.config.js (theme('canales.primary-950') / theme('canales.black')). --sombra-honda (canales de noche-baja) solo se define en :root y es fija en ambos temas. --regla, --panel-tinta y --panel-tenue valen lo mismo en ambos temas: son del panel y no se usan sobre el suelo. El velo del menú móvil (::backdrop) es literal rgb(16 7 26 / 0.6) porque ::backdrop no hereda variables en navegadores anteriores a 2024."
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Titular del inicio y del cierre de la landing; Lilita One en mayúsculas con contorno pintado detrás y palabra acento opcional."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Un título por sección de la landing, Lilita One con contorno de 0.06em."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Título condensado de cada panel nutricional (Archivo 850, ancho 72%)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido de la landing en Archivo Variable."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Entradilla bajo un titular, en tinta suave, medida 46–62ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulo condensado en mayúsculas: navegación, encabezados de tabla, etiquetas."
+      },
+      "legal": {
+        "displayName": "Legal",
+        "purpose": "Letra legal del empaque: contenido neto, dirección, notas de precio."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "Precios en COP con cifras tabulares dentro del panel nutricional."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel-apoyado",
+        "value": "0 28px 56px -30px rgb(var(--sombra) / 0.55)",
+        "purpose": "Bajo cada panel nutricional, como una etiqueta despegada del foil."
+      },
+      {
+        "name": "sombra-titular",
+        "value": "text-shadow: 0 0.05em 0.14em rgb(var(--sombra) / 0.28)",
+        "purpose": "Solo en el titular Display."
+      },
+      {
+        "name": "sello-flotante",
+        "value": "drop-shadow(0 10px 16px rgb(var(--sombra-honda) / 0.22))",
+        "purpose": "Bajo la barra de navegación fija."
+      },
+      {
+        "name": "pedido",
+        "value": "0 12px 28px -12px theme(colors.flame.600 / 70%)",
+        "purpose": "Resplandor rojo bajo el botón de pedido; en hover 0 16px 34px -12px theme(colors.flame.600 / 85%)."
+      },
+      {
+        "name": "sticker",
+        "value": "drop-shadow(0 10px 14px rgb(var(--sombra-honda) / 0.35))",
+        "purpose": "Bajo la estrella de calificación."
+      },
+      {
+        "name": "poster-paquete",
+        "value": "drop-shadow(0 28px 36px rgb(var(--sombra-honda) / 0.45))",
+        "purpose": "Bajo el póster estático del paquete en el inicio."
+      },
+      {
+        "name": "soft (app)",
+        "value": "0 4px 24px -4px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04)",
+        "purpose": "Solo app interna: tarjetas y botones de la librería de componentes."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-paquete",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Easing exponencial de salida para todo el movimiento de la landing (tijera, sticker, botón flotante, menú móvil, paso activo, póster)."
+      },
+      {
+        "name": "tijera",
+        "value": "500ms",
+        "purpose": "La tijera avanza por la línea de corte y gira −8° al pasar el puntero o enfocar."
+      },
+      {
+        "name": "paso-activo",
+        "value": "350ms",
+        "purpose": "Cambio de fondo y de círculo del paso activo en Así se arma."
+      },
+      {
+        "name": "boton",
+        "value": "200ms ease-out",
+        "purpose": "Estados del componente botón (compartido con la app)."
+      },
+      {
+        "name": "scroll",
+        "value": "Lenis + GSAP ScrollTrigger",
+        "purpose": "Movimiento ligado al scroll; el paquete 3D sigue las anclas data-bag-anchor. Desactivado con prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "xs",
+        "value": "420px"
+      },
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ],
+    "layout": {
+      "containerMax": "1440px",
+      "zCanvas3d": 30,
+      "zImpresos": 31,
+      "zNav": 40,
+      "zFlotante": 50
+    }
+  },
+  "components": [
+    {
+      "name": "Botón Pedido",
+      "kind": "button",
+      "refersTo": "button-pedido",
+      "description": "La única acción roja: pedir por WhatsApp. Pastilla en barra, menú, ubicación y flotante.",
+      "html": "<a class=\"ds-btn-pedido\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Z\"/></svg>Pedir</a>",
+      "css": ".ds-btn-pedido { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 9999px; background: #c01a1e; color: #fff; border: 1px solid #9f171b; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.025em; text-decoration: none; box-shadow: 0 12px 28px -12px rgba(192,26,30,0.7); transition: all 200ms ease-out; } .ds-btn-pedido:hover { background: #9f171b; transform: translateY(-2px); box-shadow: 0 16px 34px -12px rgba(192,26,30,0.85); } .ds-btn-pedido:active { background: #83181c; transform: translateY(0); } .ds-btn-pedido:focus-visible { outline: 3px solid var(--foco, #dc6f14); outline-offset: 3px; }"
+    },
+    {
+      "name": "Muesca de corte Abre aquí",
+      "kind": "custom",
+      "refersTo": "button-pedido-xl",
+      "description": "Acción principal del inicio y del cierre: tijera y línea punteada que llevan al botón pedido xl.",
+      "html": "<div class=\"ds-corte\"><svg class=\"ds-corte__tijera\" viewBox=\"0 0 24 24\" width=\"28\" height=\"28\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M8.12 8.12 12 12\"/><path d=\"M20 4 8.12 15.88\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M14.8 14.8 20 20\"/></svg><span class=\"ds-corte__linea\"></span><a class=\"ds-btn-pedido-xl\" href=\"#\">Abre aquí · Pide por WhatsApp</a></div>",
+      "css": ".ds-corte { display: flex; align-items: center; gap: 12px; } .ds-corte__tijera { flex: none; color: var(--corte, #b65112); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); } .ds-corte__linea { flex: none; width: 3.5rem; border-top: 3px dashed var(--corte, #b65112); } .ds-corte:hover .ds-corte__tijera, .ds-corte:focus-within .ds-corte__tijera { transform: translateX(3.5rem) rotate(-8deg); } .ds-btn-pedido-xl { display: inline-flex; align-items: center; gap: 12px; padding: 16px 28px; border-radius: 12px; background: #c01a1e; color: #fff; border: 1px solid #9f171b; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: 0.025em; text-decoration: none; white-space: nowrap; box-shadow: 0 12px 28px -12px rgba(192,26,30,0.7); transition: all 200ms ease-out; } .ds-btn-pedido-xl:hover { background: #9f171b; transform: translateY(-2px); } .ds-btn-pedido-xl:focus-visible { outline: 3px solid var(--foco, #dc6f14); outline-offset: 3px; }"
+    },
+    {
+      "name": "Botón Contorno",
+      "kind": "button",
+      "refersTo": "button-contorno",
+      "description": "Salidas secundarias (Instagram, cómo llegar, Rappi); toma la tinta del fondo.",
+      "html": "<a class=\"ds-btn-contorno\" href=\"#\">Cómo llegar</a>",
+      "css": ".ds-btn-contorno { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 9999px; background: transparent; color: var(--tinta, #1b0d1f); border: 2px solid currentColor; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-weight: 600; font-size: 16px; text-decoration: none; transition: all 200ms ease-out; } .ds-btn-contorno:hover { background: rgba(25,19,30,0.1); } .ds-btn-contorno:focus-visible { outline: 3px solid var(--foco, #dc6f14); outline-offset: 3px; }"
+    },
+    {
+      "name": "Panel nutricional",
+      "kind": "card",
+      "refersTo": "panel-nutri",
+      "description": "Único contenedor de información de la landing: papel cuadrado, borde de 3px y reglas de tabla nutricional.",
+      "html": "<aside class=\"ds-panel\"><h3 class=\"ds-panel__titulo\">Información antojicional</h3><div class=\"ds-regla-gruesa\"></div><div class=\"ds-fila\"><span>Porción</span><b>1 paquete cargado</b></div><div class=\"ds-regla-media\"></div><div class=\"ds-fila\"><span>Frijol</span><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></div><div class=\"ds-fila ds-fina\"><span>Guacamole</span><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></div><div class=\"ds-regla-media\"></div><div class=\"ds-fila\"><b>Dorilokos paisa</b><b class=\"ds-precio\">$ 23.000</b></div></aside>",
+      "css": ".ds-panel { max-width: 22rem; padding: 20px; background: var(--panel, #fff); color: var(--panel-tinta, #1b0d1f); border: 3px solid var(--regla, #1b0d1f); box-shadow: 0 28px 56px -30px rgb(27 13 31 / 0.55); font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-variant-numeric: tabular-nums lining-nums; } .ds-panel__titulo { margin: 0; font-size: 2.05rem; font-weight: 850; font-stretch: 72%; line-height: 0.95; letter-spacing: -0.01em; } .ds-regla-gruesa { border-top: 10px solid var(--regla, #1b0d1f); margin-top: 8px; } .ds-regla-media { border-top: 5px solid var(--regla, #1b0d1f); } .ds-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 6px 0; font-size: 0.95rem; } .ds-fina { border-top: 1px solid rgb(27 13 31 / 0.28); } .ds-precio { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1; }"
+    },
+    {
+      "name": "Sello crimpado (barra)",
+      "kind": "nav",
+      "refersTo": "sello-nav",
+      "description": "Barra de navegación fija como el sello superior del paquete: estrías verticales y dientes abajo.",
+      "html": "<header class=\"ds-sello\"><nav class=\"ds-sello__nav\"><span class=\"ds-sello__marca\">Dorilokos Mix</span><a href=\"#\">¿Qué es?</a><a href=\"#\">Menú</a><a href=\"#\">Ubicación</a></nav></header>",
+      "css": ".ds-sello { --diente: 8px; background: repeating-linear-gradient(90deg, var(--sello-estria, rgb(70 35 79 / 0.18)) 0 2px, transparent 2px 6px), var(--sello, #e4dbea); -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente)) 100%; mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--diente)) 100%; } .ds-sello__nav { display: flex; align-items: center; gap: 28px; height: 68px; padding: 0 20px 6px; color: var(--tinta, #1b0d1f); } .ds-sello__marca { font-family: 'Lilita One', system-ui, sans-serif; font-size: 1.55rem; line-height: 1; } .ds-sello__nav a { color: inherit; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-weight: 800; font-stretch: 78%; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.95rem; text-decoration: none; text-underline-offset: 6px; text-decoration-thickness: 3px; } .ds-sello__nav a:hover { text-decoration-line: underline; } .ds-sello__nav a:focus-visible { outline: 3px solid var(--foco, #dc6f14); outline-offset: 3px; border-radius: 6px; }"
+    },
+    {
+      "name": "Etiqueta y pastilla",
+      "kind": "chip",
+      "refersTo": "etiqueta-dorada",
+      "description": "Etiqueta dorada para destacar un producto y pastilla con borde de regla para opciones informativas.",
+      "html": "<span class=\"ds-etiqueta\">El más vendido</span> <span class=\"ds-pastilla\">Doritos picantes</span>",
+      "css": ".ds-etiqueta { display: inline-block; padding: 2px 6px; border-radius: 4px; background: #f5c020; color: #1b0d1f; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-size: 0.7rem; font-weight: 800; font-stretch: 78%; text-transform: uppercase; letter-spacing: 0.06em; } .ds-pastilla { display: inline-block; padding: 4px 12px; border-radius: 9999px; border: 2px solid var(--regla, #1b0d1f); color: #1b0d1f; font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; }"
+    },
+    {
+      "name": "Ventana troquelada",
+      "kind": "card",
+      "refersTo": "ventana",
+      "description": "Hueco de foto del empaque; vacía muestra la espera honesta de la foto pendiente.",
+      "html": "<figure class=\"ds-ventana ds-ventana--vacia\"><figcaption><span class=\"ds-ventana__titulo\">Fachada</span><span class=\"ds-ventana__legal\">Foto pendiente</span></figcaption></figure>",
+      "css": ".ds-ventana { position: relative; display: grid; place-items: center; width: 12rem; aspect-ratio: 4 / 5; margin: 10px; overflow: hidden; border-radius: 28px; background: var(--suelo-bajo, #e2d9e8); outline: 2px dashed rgb(27 13 31 / 0.38); outline-offset: 7px; } .ds-ventana--vacia { background: repeating-linear-gradient(135deg, rgb(27 13 31 / 0.07) 0 12px, transparent 12px 24px), var(--suelo-bajo, #e2d9e8); } .ds-ventana figcaption { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; } .ds-ventana__titulo { font-family: 'Lilita One', system-ui, sans-serif; font-size: 1.25rem; text-transform: uppercase; line-height: 1; color: #1b0d1f; } .ds-ventana__legal { font-family: 'Archivo Variable', Archivo, system-ui, sans-serif; font-size: 0.75rem; font-weight: 600; font-stretch: 85%; letter-spacing: 0.07em; text-transform: uppercase; color: #5c5066; }"
+    },
+    {
+      "name": "Titular con contorno",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Titular Lilita One en mayúsculas con contorno pintado detrás y palabra acento.",
+      "html": "<h1 class=\"ds-titular\">El paquete<br><span class=\"ds-acento\">es el</span> plato</h1>",
+      "css": ".ds-titular { margin: 0; font-family: 'Lilita One', 'Archivo Variable', system-ui, sans-serif; font-weight: 400; font-size: clamp(3.3rem, 9.2vw, 6rem); line-height: 0.86; letter-spacing: -0.005em; text-transform: uppercase; color: var(--titular-relleno, #46234f); -webkit-text-stroke: 0.075em var(--titular-trazo, #b65112); paint-order: stroke fill; text-shadow: 0 0.05em 0.14em rgb(27 13 31 / 0.28); } .ds-acento { color: var(--acento-relleno, #e3262a); -webkit-text-stroke-color: var(--acento-trazo, #7a1316); }"
+    },
+    {
+      "name": "Botón primario (app interna)",
+      "kind": "button",
+      "refersTo": "button-primary-app",
+      "description": "CTA de la app de gestión; no se usa en la landing.",
+      "html": "<button class=\"ds-btn-app\" type=\"button\">Guardar</button>",
+      "css": ".ds-btn-app { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; background: #5f306a; color: #fff; border: 1px solid #5f306a; font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif; font-weight: 600; font-size: 14px; box-shadow: 0 4px 24px -4px rgb(0 0 0 / 0.08), 0 2px 8px -2px rgb(0 0 0 / 0.04); transition: all 200ms ease-out; cursor: pointer; } .ds-btn-app:hover { background: #532a5d; box-shadow: 0 0 0 4px rgb(243 144 48 / 0.25); } .ds-btn-app:active { background: #46234f; } .ds-btn-app:focus-visible { outline: 3px solid #dc6f14; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Paquete",
+    "overview": "La landing pública (`/`) se lee como el empaque de un snack: el frente es foil metalizado, los bordes de cada sección son sellos crimpados en zigzag, la información se imprime en paneles tipo tabla nutricional con reglas gruesas, y la acción se anuncia con la muesca \"Abre aquí\" (tijera más línea punteada). Un solo objeto está vivo: el paquete 3D de Dorilokos Mix, que baja por la página siguiendo anclas en el HTML; todo lo demás es impreso y quieto, y la página se lee completa sin él (póster estático cuando no hay WebGL o el usuario pide menos movimiento).\n\nLa densidad es la de una etiqueta: titulares gigantes en Lilita One con contorno, cuerpo en Archivo de ancho variable, cifras tabulares, mayúsculas condensadas para rótulos y letra legal. El tema claro es el reverso plateado del paquete y el oscuro es el frente morado; cambiar de tema cambia la rampa de tinta, nunca la geometría.\n\nDos mundos, una paleta. El repositorio tiene dos superficies con sistemas distintos que comparten los tokens de `tailwind.config.js` (`primary`, `accent`, `flame`, `cream`) y la fuente de marca Lilita One. Los materiales del paquete (foil, sellos, panel nutricional, corte, paquete 3D) son exclusivos de la landing. La app interna sigue RULE 1 a RULE 3 de `CLAUDE.md` y su librería `resources/views/components/`.",
+    "keyCharacteristics": [
+      "Material de empaque: foil con grano y reflejo, sellos con estrías y dientes, reglas de tabla nutricional.",
+      "Un solo objeto vivo (el paquete 3D); el resto es impreso, legible sin JS.",
+      "Rampa de tinta por tema en variables CSS; la geometría no cambia entre claro y oscuro.",
+      "Lilita One en mayúsculas con contorno para titulares; Archivo condensado para rótulos, tablas y letra legal.",
+      "El rojo como relleno de botón solo significa \"pedir\"."
+    ],
+    "rules": [
+      {
+        "name": "The Una Señal Viva Rule",
+        "body": "El rojo como relleno de un control significa una sola cosa: pedir (`<x-button variant=\"pedido\">`). Ningún otro botón, link o fondo interactivo es rojo; las salidas secundarias (Instagram, cómo llegar, Rappi) usan `contorno`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Rampa, No Geometría Rule",
+        "body": "Claro y oscuro solo cambian las variables de `:root` / `:root.dark`. Ninguna regla de la landing cambia tamaño, posición o forma según el tema.",
+        "section": "colors"
+      },
+      {
+        "name": "The Panel Siempre Claro Rule",
+        "body": "El panel nutricional es papel en ambos temas, con tinta y reglas de Tinta Foil; dentro del panel se usan `--panel-*` y `--regla`, nunca `--tinta-*`. Al revés, lo que se dibuja sobre el suelo (marco del mapa, contornos, líneas de los pasos) usa `--tinta`, nunca `--regla`, porque `--regla` no cambia con el tema y en oscuro es igual al suelo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Contorno Rule",
+        "body": "Lilita One siempre va en mayúsculas; cuando es titular (Display o Headline) lleva contorno pintado detrás del relleno (`paint-order: stroke fill`), nunca un contorno encima de la letra.",
+        "section": "typography"
+      },
+      {
+        "name": "The Cifras de Etiqueta Rule",
+        "body": "Todo número dentro de un panel nutricional usa cifras tabulares y alineadas para que los precios caigan en columna.",
+        "section": "typography"
+      },
+      {
+        "name": "The Impresos Encima Rule",
+        "body": "Todo bloque de lectura (paneles, titulares, párrafos) va por encima del lienzo 3D (`.sobre-3d`, z 31); el paquete y los nachos pasan por detrás del texto, nunca encima.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do  pintar la landing con las variables de rampa (`--suelo`, `--tinta`, `--tinta-suave`, `--tinta-tenue`, `--sello`) y dejar que `:root.dark` las cambie; `--regla`, `--panel-tinta` y `--panel-tenue` valen lo mismo en ambos temas porque son del panel, y no se usan sobre el suelo.",
+      "Do poner cada dato estructurado (precios, horario, lo que lleva, ficha) en un panel nutricional con reglas de 10px, 5px y 1px y cifras tabulares.",
+      "Do separar secciones con el sello crimpado de 28px, no con líneas ni fondos alternos.",
+      "Do usar `<x-button variant=\"pedido\">` con el ícono de WhatsApp para toda acción de pedir y `contorno` para las salidas secundarias.",
+      "Do mantener cada bloque de texto por encima del lienzo 3D (z 31) y reservar en escritorio una columna vacía con `data-bag-anchor` para el paquete.",
+      "Do usar `cubic-bezier(0.16, 1, 0.3, 1)` para el movimiento de la landing y desactivarlo con `prefers-reduced-motion`.",
+      "Do mostrar lo pendiente como pendiente: ventanas vacías con \"Foto pendiente\" e insignia \"Texto de ejemplo\".",
+      "Do construir las vistas de la app interna con `resources/views/components/`, Plus Jakarta Sans, `<x-card>` y pares `dark:` de Tailwind (RULE 1 a 3 de `CLAUDE.md`)."
+    ],
+    "donts": [
+      "Don't usar rojo como relleno de un control que no sea pedir.",
+      "Don't cambiar tamaños, posiciones o formas según el tema; solo cambia la rampa.",
+      "Don't presentar el menú como una fila de tarjetas iguales; es una tabla con filas por producto.",
+      "Don't poner Lilita One en minúsculas ni como texto de párrafo.",
+      "Don't usar sombras desplazadas sin desenfoque; las sombras de la landing son difusas y teñidas.",
+      "Don't llevar foil, sellos, panel nutricional, muesca de corte ni el paquete 3D a la app interna, ni usar `pedido`/`contorno` en sus pantallas.",
+      "Don't traer a la landing `<x-card>`, `shadow-soft`, Plus Jakarta Sans ni clases que dependan de `app.js`; la landing tiene su propio bundle.",
+      "Don't hacer que algún contenido dependa del 3D o de JS para leerse."
+    ]
+  }
+}

@@ -29,3 +29,6 @@ yarn-error.log
 CLAUDE.local.md
 /backup_produccion_*.sql
 /backup_produccion_*.sql.gz
+
+# Capturas de revisión de diseño (impeccable): evidencia local, no se versiona
+/.impeccable/review/

@@ -1,0 +1,4 @@
+{
+  "prompt": "Render del paquete 3D procedural de la landing (resources/js/landing/bag, Three.js) en la pose del hero (rot 0.06,-0.42,-0.14), sin nachos ni sombra, exportado con snapshot() a 2x y reducido con Pillow a 636x900 WebP con alfa (calidad 80, alfa 90). Póster mientras carga el 3D o cuando no hay WebGL.",
+  "createdAt": "2026-10-18T21:45:12.451Z"
+}

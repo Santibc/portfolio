@@ -71,11 +71,12 @@ php artisan config:clear && php artisan route:clear && php artisan view:clear
 
 ## Despliegue a producción (Hostinger shared hosting)
 
-> 🚧 **PENDIENTE para DorilokosMix.** Este proyecto aún no está desplegado: usará el
-> mismo servidor SSH pero con **dominio, ruta y BD nuevos (por definir)**, y trabaja en
-> la rama `dorilokos`. Los datos de abajo son los de **Sopas y Sopitas** (proyecto
-> origen): **NO** usarlos para desplegar DorilokosMix — harías `git pull` sobre la app
-> de Sopas en producción. Actualizar esta sección cuando se configure el dominio.
+> ⚠️ **DorilokosMix ya corre en https://dorilokosmix.com** (mismo servidor y usuario SSH):
+> app en `/home/u454224791/domains/dorilokosmix.com/portfolio`, rama `dorilokos`,
+> `public_html` → `portfolio/public`. Las credenciales de su BD están en el `.env` del
+> servidor (no documentadas aquí). Los datos de abajo son los de **Sopas y Sopitas**
+> (proyecto origen): **NO** usarlos para desplegar DorilokosMix — harías `git pull` sobre
+> la app de Sopas en producción.
 
 Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
 `sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
@@ -168,6 +169,15 @@ Deuda conocida: varios controllers de catálogo (`ProductoMercadoController`, `E
 - Theme toggle source: `resources/js/theme-toggle.js` (bundleado; emite el evento `dorilokos:theme-changed`)
 - Globals en `window`: `Alpine`, `HSStaticMethods` (Preline), `Swal`, `TomSelect`, `ApexCharts`, `makeChart(selector, opts)` (theme-aware, lo usa `<x-chart>`), `renderIcons()`, `tableEnhanced(cfg)` (factory Alpine de `<x-table-enhanced>`), `_`, `axios`. `swalConfirm(form, opts)` y `showToast(icon, title)` se definen dentro de `DOMContentLoaded`.
 - Un `MutationObserver` global re-renderiza iconos Lucide y re-ejecuta `HSStaticMethods.autoInit()` cuando se inserta DOM; `select[data-tom-select]` se auto-inicializa con TomSelect.
+
+### Landing pública (`/`, ruta `welcome`)
+- **No consulta la BD**: todo el contenido (negocio, horario, menú, pasos, textos institucionales, SEO) vive en `config/landing.php`; `App\Services\LandingService` arma enlaces (WhatsApp con el pedido escrito, mapa embebido sin API key, cómo llegar), precios formateados y el JSON-LD; `LandingController` es invocable. Lo marcado `pendiente` se muestra como "por confirmar"/"texto de ejemplo": nunca inventar precios ni testimonios. El nombre de ruta `welcome` lo usa `RestringirRolVentas` (el rol ventas va directo a la caja).
+- **Bundle propio**: `@vite(['resources/css/landing.css','resources/js/landing.js'])` en `layouts/landing.blade.php`; no carga `app.js` (344 KB gzip). `landing.css` usa `@config "tailwind.landing.config.js"` (hereda tokens de marca y escanea solo las vistas de la landing) y fuentes autohospedadas (`@fontsource`: Lilita One + Archivo variable).
+- **Mundo visual "El Paquete"** (dirección registrada en `.impeccable/surfaces/` y `DESIGN.md`): foil, sellos crimpados (`.sello` + `.dientes-*`), tabla nutricional (`.panel-nutri`), muesca "Abre aquí" (`.corte`). Rampa de tema por variables CSS en `:root` / `:root.dark`; el rojo (`<x-button variant="pedido">`) se reserva para pedir. Colores siempre por token (RULE 3): la rampa usa `theme('colors.…')` y solo quedan en hex 7 tonos propios, nombrados como en `DESIGN.md`; las sombras van en canales RGB (`rgb(var(--sombra) / a)`, helper `canales` en `tailwind.landing.config.js`) porque `color-mix()` no llega a todos los navegadores del build.
+- **Paquete 3D**: `resources/js/landing/bag/` (Three.js procedural), cargado con `import.meta.glob` + `import()` en la primera interacción (o 2,5 s después de `load`; 6 s en celular o con ≤ 4 núcleos) solo si hay WebGL2 y no hay reduced motion (`html.con-3d`, lo decide el script del `<head>`). Sigue a los elementos `[data-bag-anchor]` (caja = posición y alto del paquete; `data-bag-mode` = comportamiento) y lee el ScrollTrigger con id `arma` (pin de "Así se arma"). Un ancla `park` dentro del cuadro (hoy solo `menu`) deja el paquete apoyado sobre el contenido: al salir de esa parada sube con la página en vez de quedarse fijo en la pantalla, porque los paneles `.sobre-3d`/`.panel-nutri` (z-31) van encima del lienzo (z-30) y lo taparían. Sin 3D se ve el póster `public/images/landing/paquete-dorilokos.webp` y las anclas se ocultan.
+- Arnés del 3D para ajustarlo aislado: con `npm run dev`, abrir http://127.0.0.1:5173/resources/js/landing/bag/dev/index.html (`?tema=claro`, `?debug=1`, `?low=1`). Si cambia el look del paquete en la pose del inicio, regenerar el póster con `window.__bag.snapshot(...)` (ver `dev/dev.js`).
+- Imágenes en `public/images/landing/` (stock libre de Unsplash/Pexels; cada una con su `.json` de procedencia).
+- **Precios del menú**: los del módulo de menú de producción (`/menu-items` en dorilokosmix.com). Rappi cobra con recargo: no usar sus precios. Las fotos de ese módulo tampoco: el cliente las considera genéricas.
 
 ### Database
 MySQL en 127.0.0.1:3306 (sin password en XAMPP local). Nombre en `.env` (`DB_DATABASE`). Tests: SQLite `:memory:`.

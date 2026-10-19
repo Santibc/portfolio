@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Rótulo de barrio · primer viewport</title>
+<style>
+@import url('https://fonts.bunny.net/css?family=lilita-one:400|archivo:400,600,800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{font-family:Archivo,system-ui,sans-serif;position:relative;color:#f6efe4;
+  background:
+    repeating-linear-gradient(96deg,rgba(255,255,255,.035) 0 3px,transparent 3px 11px),
+    repeating-linear-gradient(4deg,rgba(0,0,0,.06) 0 2px,transparent 2px 17px),
+    linear-gradient(#4a2354,#3d1c46);}
+.zocalo{position:absolute;left:0;right:0;bottom:0;height:250px;background:
+    repeating-linear-gradient(92deg,rgba(0,0,0,.05) 0 2px,transparent 2px 9px),#f39030;border-top:14px solid #f6efe4}
+.plates{position:absolute;top:26px;left:48px;right:48px;display:flex;gap:14px;align-items:center}
+.plate{background:#f6efe4;color:#3d1c46;font-weight:800;font-size:14px;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border-radius:6px;box-shadow:3px 3px 0 #1b0d1f}
+.plates .sp{flex:1}
+.plate.hot{background:#e3262a;color:#fff}
+.sign{position:absolute;left:60px;top:110px;font-family:'Lilita One';font-size:176px;line-height:.9;color:#f6efe4;
+  -webkit-text-stroke:8px #e3262a;paint-order:stroke fill;text-shadow:10px 10px 0 #1b0d1f}
+.sign span{color:#f5c020}
+.ribbon{position:absolute;left:84px;top:470px;background:#e3262a;color:#fff;font-family:'Lilita One';font-size:44px;padding:10px 60px;
+  clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%);transform:rotate(-2deg)}
+.hook{position:absolute;left:96px;top:575px;width:560px;font-size:20px;line-height:1.45;color:#f6efe4}
+.board{position:absolute;right:70px;top:120px;width:470px;height:470px;background:#1f1a17;border:14px solid #8a5a2b;box-shadow:8px 8px 0 #1b0d1f;padding:26px 30px}
+.board h2{font-family:'Lilita One';font-size:46px;color:#f5c020;text-align:center;margin-bottom:14px}
+.board .it{display:flex;gap:10px;align-items:baseline;font-size:19px;font-weight:600;color:#f6efe4;margin:14px 0}
+.board .it .dots{flex:1;border-bottom:3px dotted #c3b6cc}
+.board .it b{font-family:'Lilita One';font-size:26px;color:#f39030;font-weight:400}
+.hay{position:absolute;left:70px;top:690px;width:300px;height:170px}
+.bag{position:absolute;left:760px;top:560px;width:250px;height:330px;transform:rotate(6deg)}
+</style>
+</head>
+<body>
+  <div class="zocalo"></div>
+  <div class="plates"><span class="plate">¿Qué es?</span><span class="plate">Menú</span><span class="plate">El local</span><span class="plate">Ubicación</span><span class="sp"></span><span class="plate hot">Pedir</span></div>
+  <div class="sign">DORILOKOS<br><span>MIX</span></div>
+  <div class="ribbon">¡Cargados hasta arriba!</div>
+  <p class="hook">Abrimos tu paquete de Doritos y lo llenamos de frijol, carne desmechada, chicharrón, maduro, queso, guacamole y salsa de la casa.</p>
+  <div class="board">
+    <h2>HOY HAY</h2>
+    <div class="it"><span>Dorilokos Mix</span><span class="dots"></span><b>$25.900</b></div>
+    <div class="it"><span>Dorilokos de carne</span><span class="dots"></span><b>—</b></div>
+    <div class="it"><span>Dorilokos de pollo</span><span class="dots"></span><b>—</b></div>
+    <div class="it"><span>Dorilokos mixto</span><span class="dots"></span><b>—</b></div>
+    <div class="it"><span>Adicionales</span><span class="dots"></span><b>—</b></div>
+  </div>
+  <svg class="hay" viewBox="0 0 300 170" aria-hidden="true">
+    <polygon fill="#f5c020" stroke="#1b0d1f" stroke-width="5" points="10,85 40,60 30,20 80,35 110,5 140,30 185,8 205,40 255,25 250,65 292,85 250,105 262,148 210,135 180,165 140,140 100,165 78,132 30,150 40,110"/>
+    <text x="150" y="80" text-anchor="middle" font-family="Lilita One" font-size="34" fill="#e3262a">¡HAY DOMICILIOS!</text>
+    <text x="150" y="115" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="24" fill="#1b0d1f">314 279 8769</text>
+  </svg>
+  <svg class="bag" viewBox="0 0 250 330" aria-hidden="true">
+    <defs><linearGradient id="f" x1="0" x2="1"><stop offset="0" stop-color="#2a152f"/><stop offset=".5" stop-color="#b48cc4"/><stop offset="1" stop-color="#2a152f"/></linearGradient></defs>
+    <path d="M10 10 L240 10 L234 40 Q255 165 234 290 L240 320 L10 320 L16 290 Q-5 165 16 40 Z" fill="url(#f)" stroke="#1b0d1f" stroke-width="4"/>
+    <text x="125" y="175" text-anchor="middle" font-family="Lilita One" font-size="40" fill="#fff" stroke="#e3262a" stroke-width="4" paint-order="stroke">Dorilokos</text>
+  </svg>
+</body>
+</html>
