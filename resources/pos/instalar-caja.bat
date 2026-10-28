@@ -11,8 +11,9 @@ exit /b
 #   1. Busca Google Chrome.
 #   2. Deja la impresora de recibos como predeterminada de Windows (la caja imprime ahi).
 #   3. Crea el icono de la caja en el escritorio y en el Inicio de Windows (se abre sola
-#      al prender el equipo). El icono abre Chrome con --kiosk-printing: imprime directo,
-#      sin la ventana de impresion, en un perfil de Chrome propio de la caja.
+#      al prender el equipo). El icono abre Chrome en modo kiosco (--kiosk: pantalla
+#      completa, sin barra ni pestanas) con --kiosk-printing (imprime directo, sin la
+#      ventana de impresion), en un perfil de Chrome propio de la caja.
 #  Lo genera InstaladorCajaService (los __VALORES__ se reemplazan al descargarlo).
 # =============================================================================
 $ErrorActionPreference = 'Stop'
@@ -119,9 +120,10 @@ try {
         # Sin internet o sin ícono: el acceso queda con el ícono de Chrome.
     }
 
-    # Perfil de Chrome propio de la caja: --kiosk-printing aplica aunque haya otro Chrome
+    # Perfil de Chrome propio de la caja: los modos kiosco aplican aunque haya otro Chrome
     # abierto, y la configuración de la impresora (guardada en el navegador) queda en él.
-    $argumentos = '--kiosk-printing --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble --start-maximized "{1}"' -f $Perfil, $UrlCaja
+    # --overscroll-history-navigation=0: deslizar el dedo no devuelve de página (y no se pierde el carrito).
+    $argumentos = '--kiosk --kiosk-printing --overscroll-history-navigation=0 --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble "{1}"' -f $Perfil, $UrlCaja
 
     $shell = New-Object -ComObject WScript.Shell
     foreach ($destino in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Startup'))) {
@@ -134,12 +136,13 @@ try {
         $acceso.Save()
     }
     Bien "Ícono `"$NombreAcceso`" en el escritorio."
-    Bien 'La caja se abrirá sola cada vez que se prenda el equipo.'
+    Bien 'La caja se abrirá sola, en pantalla completa, cada vez que se prenda el equipo.'
 
-    Paso 'Listo: ahora se abre la caja'
+    Paso 'Listo: ahora se abre la caja en pantalla completa'
     Texto '1. Inicia sesión.'
     Texto '2. En la Caja toca el botón "Impresora".'
     Texto '3. Toca "Imprimir prueba" y confirma que el recibo salió.'
+    Texto 'Para cerrar la caja: Alt+F4 (o desde la vista de tareas de Windows).'
     Write-Host ''
     Aviso "Abre siempre la caja con el ícono `"$NombreAcceso`": desde el Chrome normal sale la ventana de impresión."
     Start-Process -FilePath $chrome -ArgumentList $argumentos

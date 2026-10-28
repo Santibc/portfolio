@@ -131,7 +131,8 @@ class ReciboVentaTest extends TestCase
         $this->assertStringNotContainsString("\n", str_replace("\r\n", '', $script), 'cmd.exe necesita CRLF en todas las líneas');
         $this->assertStringContainsString("\$UrlCaja       = '".route('login')."'", $script);
         $this->assertStringContainsString("\$NombreAcceso  = 'Caja El Pan Dorado DC'", $script);
-        $this->assertStringContainsString('--kiosk-printing', $script);
+        // Pantalla completa como único programa + impresión sin la ventana de Chrome.
+        $this->assertStringContainsString('--kiosk --kiosk-printing', $script);
         $this->assertStringNotContainsString('__URL_CAJA__', $script);
     }
 
