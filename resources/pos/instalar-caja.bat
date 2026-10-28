@@ -14,6 +14,8 @@ exit /b
 #      al prender el equipo). El icono abre Chrome en modo kiosco (--kiosk: pantalla
 #      completa, sin barra ni pestanas) con --kiosk-printing (imprime directo, sin la
 #      ventana de impresion), en un perfil de Chrome propio de la caja.
+#   4. Activa el teclado en pantalla de Windows al tocar un campo (el equipo no tiene
+#      teclado y en pantalla completa no se ve la barra de tareas) y pide reiniciar.
 #  Lo genera InstaladorCajaService (los __VALORES__ se reemplazan al descargarlo).
 # =============================================================================
 $ErrorActionPreference = 'Stop'
@@ -56,7 +58,7 @@ try {
     Write-Host 'Deja este equipo listo para cobrar e imprimir los recibos.'
 
     # 1. Google Chrome -------------------------------------------------------------
-    Paso '1 de 3 · Google Chrome'
+    Paso '1 de 4 · Google Chrome'
     $chrome = @(
         (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe' -ErrorAction SilentlyContinue).'(default)'
         (Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe' -ErrorAction SilentlyContinue).'(default)'
@@ -74,7 +76,7 @@ try {
     Bien 'Google Chrome instalado.'
 
     # 2. Impresora de recibos --------------------------------------------------------
-    Paso '2 de 3 · Impresora de recibos'
+    Paso '2 de 4 · Impresora de recibos'
     $virtuales  = 'PDF|XPS|OneNote|Fax|AnyDesk|Send To|Enviar a'
     $impresoras = @(Get-Printer | Where-Object { $_.Name -notmatch $virtuales } | Sort-Object Name)
     $termicas   = @($impresoras | Where-Object { "$($_.Name) $($_.DriverName)" -match 'XP-?\d|POS|Xprinter|58 ?mm|80 ?mm|Thermal|T[eé]rmica|Receipt|Recibo' })
@@ -108,7 +110,7 @@ try {
     }
 
     # 3. Icono de la caja -------------------------------------------------------------
-    Paso '3 de 3 · Ícono de la caja'
+    Paso '3 de 4 · Ícono de la caja'
     New-Item -ItemType Directory -Force -Path $Perfil | Out-Null
     $icono = "$chrome,0"
     try {
@@ -123,7 +125,9 @@ try {
     # Perfil de Chrome propio de la caja: los modos kiosco aplican aunque haya otro Chrome
     # abierto, y la configuración de la impresora (guardada en el navegador) queda en él.
     # --overscroll-history-navigation=0: deslizar el dedo no devuelve de página (y no se pierde el carrito).
-    $argumentos = '--kiosk --kiosk-printing --overscroll-history-navigation=0 --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble "{1}"' -f $Perfil, $UrlCaja
+    # --disable-usb-keyboard-detect: Chrome pide el teclado en pantalla aunque crea que hay uno
+    #   conectado (algunas tablets reportan sus botones como teclado).
+    $argumentos = '--kiosk --kiosk-printing --overscroll-history-navigation=0 --disable-usb-keyboard-detect --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble "{1}"' -f $Perfil, $UrlCaja
 
     $shell = New-Object -ComObject WScript.Shell
     foreach ($destino in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Startup'))) {
@@ -138,15 +142,28 @@ try {
     Bien "Ícono `"$NombreAcceso`" en el escritorio."
     Bien 'La caja se abrirá sola, en pantalla completa, cada vez que se prenda el equipo.'
 
-    Paso 'Listo: ahora se abre la caja en pantalla completa'
+    # 4. Teclado en pantalla -----------------------------------------------------------
+    # Windows 11: TouchKeyboardTapInvoke (2 = siempre). Windows 10: EnableDesktopModeAutoInvoke.
+    # Toman efecto al volver a entrar a Windows: por eso se reinicia al final.
+    Paso '4 de 4 · Teclado en pantalla'
+    $teclado = 'HKCU:\Software\Microsoft\TabletTip\1.7'
+    if (-not (Test-Path $teclado)) { New-Item -Path $teclado -Force | Out-Null }
+    New-ItemProperty -Path $teclado -Name 'TouchKeyboardTapInvoke' -Value 2 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $teclado -Name 'EnableDesktopModeAutoInvoke' -Value 1 -PropertyType DWord -Force | Out-Null
+    Bien 'El teclado de Windows se abrirá solo al tocar un campo.'
+
+    Paso 'Listo: falta reiniciar el equipo'
+    Texto 'Al reiniciar, la caja se abre sola en pantalla completa y el teclado sale al tocar un campo.'
     Texto '1. Inicia sesión.'
     Texto '2. En la Caja toca el botón "Impresora".'
     Texto '3. Toca "Imprimir prueba" y confirma que el recibo salió.'
-    Texto 'Para cerrar la caja: Alt+F4 (o desde la vista de tareas de Windows).'
+    Texto 'Para cerrar la caja en pantalla completa: Alt+F4 con un teclado conectado.'
     Write-Host ''
     Aviso "Abre siempre la caja con el ícono `"$NombreAcceso`": desde el Chrome normal sale la ventana de impresión."
-    Start-Process -FilePath $chrome -ArgumentList $argumentos
-    Terminar 0
+    Write-Host ''
+    Read-Host 'Presiona Enter para reiniciar ahora (o cierra esta ventana y reinicia después)' | Out-Null
+    shutdown.exe /r /t 5 /c 'Reiniciando para terminar de instalar la caja'
+    exit 0
 } catch {
     Write-Host ''
     Write-Host "No se pudo terminar la instalación: $($_.Exception.Message)" -ForegroundColor Red

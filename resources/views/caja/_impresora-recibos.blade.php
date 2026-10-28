@@ -36,15 +36,16 @@
             <h4 class="text-sm font-semibold text-cream-900 dark:text-cream-50">1. Prepara el equipo (una sola vez)</h4>
             <p class="text-sm text-cream-700 dark:text-cream-300">
                 Conecta la impresora por USB y préndela. Luego descarga el instalador y ábrelo: deja la impresora
-                lista y crea el ícono <strong>{{ $accesoCaja }}</strong>, que abre la caja en pantalla completa
-                al prender el equipo e imprime sin mostrar la ventana de impresión (para cerrarla: Alt+F4).
+                lista, activa el teclado de Windows al tocar un campo y crea el ícono <strong>{{ $accesoCaja }}</strong>,
+                que abre la caja en pantalla completa al prender el equipo e imprime sin mostrar la ventana de
+                impresión (para cerrarla: Alt+F4 con un teclado).
             </p>
             <x-button variant="secondary" size="sm" icon="download" :href="route('caja.instalador')">
                 Descargar instalador
             </x-button>
             <p class="text-xs text-cream-600 dark:text-cream-400">
                 Si Chrome avisa del archivo, elige «Conservar». Si Windows lo bloquea, toca «Más información» y
-                «Ejecutar de todas formas». Al terminar, la caja se abre en una ventana nueva: sigue ahí con el paso 2.
+                «Ejecutar de todas formas». Al terminar pide reiniciar: la caja se abre sola y ahí sigues con el paso 2.
             </p>
         </section>
 
