@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardNominaController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\GastoFijoController;
+use App\Http\Controllers\InstaladorCajaController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ListaMercadoController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\PagoNominaController;
 use App\Http\Controllers\PrestacionController;
 use App\Http\Controllers\ProductoMercadoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReciboVentaController;
 use App\Http\Controllers\RegistroMercadoController;
 use App\Http\Controllers\TipoMenuItemController;
 use App\Http\Controllers\TipoProductoMercadoController;
@@ -112,6 +114,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/caja/turno/abrir', [CajaController::class, 'abrir'])->name('caja.turno.abrir');
     Route::post('/caja/turno/{turno}/cerrar', [CajaController::class, 'cerrar'])->name('caja.turno.cerrar');
     Route::post('/caja/venta', [CajaController::class, 'storeVenta'])->name('caja.venta.store');
+
+    // Recibos para la impresora térmica + instalador del equipo POS (ver _impresora-recibos).
+    Route::get('/caja/ventas/{venta}/recibo', [ReciboVentaController::class, 'show'])->name('caja.venta.recibo');
+    Route::get('/caja/recibo-de-prueba', [ReciboVentaController::class, 'prueba'])->name('caja.recibo.prueba');
+    Route::get('/caja/instalador', InstaladorCajaController::class)->name('caja.instalador');
 
     Route::get('/caja/dashboard', [DashboardCajaController::class, 'index'])->name('caja-dashboard.index');
     Route::get('/caja/dashboard/turnos/{turno}', [DashboardCajaController::class, 'show'])->name('caja-dashboard.show');

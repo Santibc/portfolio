@@ -62,10 +62,12 @@ php artisan config:clear && php artisan route:clear && php artisan view:clear
 
 ## Despliegue a producción (Hostinger shared hosting)
 
-> ⛔ **Esta sección describe el servidor de Sopas y Sopitas, NO el de El Pan Dorado DC.**
-> El Pan Dorado DC todavía no tiene producción configurada. No hagas `git pull`,
-> `migrate` ni nada por SSH con estos datos desde la rama `pandoradodc` — sobrescribirías
-> el sistema del restaurante. Actualiza esta sección cuando exista el servidor nuevo.
+> ⚠️ **El Pan Dorado DC corre en https://pandoradodc.com** (mismo servidor y usuario SSH):
+> app en `/home/u454224791/domains/pandoradodc.com/portfolio`, rama `pandoradodc`, BD
+> `u454224791_pando` (credenciales en el `.env` del servidor, no aquí). Se despliega igual que
+> abajo pero con esa ruta y esa rama. Los datos que siguen son los de **Sopas y Sopitas**
+> (proyecto origen): **NO** usarlos desde esta rama — harías `git pull` sobre el sistema del
+> restaurante en producción.
 
 Producción corre en Hostinger por SSH. El deploy es **`git pull`** sobre la rama
 `sopas` (no hay build en el servidor: los assets ya van compilados en `public/build/`,
@@ -143,6 +145,13 @@ Los `backup_produccion_*.sql[.gz]` están gitignored — no se versionan.
 - Vite entries: `resources/css/app.css`, `resources/js/app.js`
 - Theme toggle source: `resources/js/theme-toggle.js` (bundleado)
 - Globals expuestos en `window`: `Alpine`, `Swal`, `TomSelect`, `showToast(icon, title)`
+
+### Caja: recibos e impresora del equipo POS
+- Al cobrar, `CajaController::storeVenta` deja `recibo_venta_id` en la sesión; al recargar la caja, `caja/_impresora-recibos.blade.php` (`window.impresoraRecibos`) carga `caja.venta.recibo` en un iframe oculto y llama a `print()`. `caja.recibo.prueba` arma una venta sin guardar y la pasa por el mismo formato (`ReciboVentaService`).
+- El recibo (`caja/recibo.blade.php`) es un documento suelto, sin layout ni tema (papel: negro sobre blanco): rollo de 58 mm por defecto (48 mm imprimibles; `?papel=80` → 72 mm) y `prepararRecibo()` fija `@page` al alto exacto del contenido. Las opciones elegidas salen de `nombre_snapshot` ("Item · Opción").
+- El estado es **por equipo** (`localStorage['caja-impresora']`): `activa` imprime al cobrar, `desactivada` cobra sin preguntar y, sin configurar, al cobrar se pregunta si seguir sin recibo. Una página web no ve las impresoras: imprime en la predeterminada de Windows.
+- Sin la ventana de impresión solo funciona si Chrome se abre con `--kiosk-printing`. Eso lo hace el acceso directo que crea el instalador (`caja.instalador` → `InstaladorCajaService`, plantilla `resources/pos/instalar-caja.bat`): deja la impresora como predeterminada y crea el ícono en el Escritorio y en Inicio (abre `/login` al prender el equipo) con un perfil de Chrome propio en `%LOCALAPPDATA%\CajaPOS`.
+- Las tres rutas están en `RUTAS_PERMITIDAS` del rol ventas. Tests: `tests/Feature/ReciboVentaTest.php`.
 
 ### Landing pública (`/`)
 - `LandingController` (invocable) → `App\Queries\ContenidoLanding` → `resources/views/landing/index.blade.php` + secciones en `landing/partials/`. La ruta conserva el nombre `welcome` (lo usa `RestringirRolVentas`).

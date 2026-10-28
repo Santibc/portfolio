@@ -11,6 +11,7 @@ use App\Models\MenuItem;
 use App\Models\MetodoPago;
 use App\Models\TurnoCaja;
 use App\Services\CatalogoCajaService;
+use App\Services\InstaladorCajaService;
 use App\Services\TurnoCajaService;
 use App\Services\VentaService;
 use DomainException;
@@ -23,6 +24,7 @@ class CajaController extends Controller
         private TurnoCajaService $turnos,
         private VentaService $ventas,
         private CatalogoCajaService $catalogo,
+        private InstaladorCajaService $instalador,
     ) {}
 
     public function index(): View
@@ -44,8 +46,9 @@ class CajaController extends Controller
 
         $menuPayload = $this->catalogo->menuPayload($items);
         $stockPayload = $this->catalogo->stockPayload($items);
+        $accesoCaja = $this->instalador->nombreAcceso();
 
-        return view('caja.index', compact('turno', 'tipos', 'metodos', 'menuPayload', 'stockPayload'));
+        return view('caja.index', compact('turno', 'tipos', 'metodos', 'menuPayload', 'stockPayload', 'accesoCaja'));
     }
 
     public function abrir(AbrirTurnoRequest $request): RedirectResponse
@@ -103,8 +106,10 @@ class CajaController extends Controller
             return back()->withErrors(['caja' => $e->getMessage()])->withInput();
         }
 
+        // recibo_venta_id: la caja imprime el recibo al recargar si este equipo tiene impresora.
         return redirect()
             ->route('caja.index')
-            ->with('success', 'Venta registrada · Total '.$venta->total_formateado.' · Cambio '.$venta->cambio_formateado);
+            ->with('success', 'Venta registrada · Total '.$venta->total_formateado.' · Cambio '.$venta->cambio_formateado)
+            ->with('recibo_venta_id', $venta->id);
     }
 }

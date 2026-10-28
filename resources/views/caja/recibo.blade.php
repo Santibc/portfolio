@@ -1,0 +1,105 @@
+{{--
+    Recibo para impresora térmica (rollo de 58 mm; ?papel=80 para 80 mm). Documento suelto, sin
+    el layout ni el CSS del panel: va siempre negro sobre blanco (es papel, no sigue el tema
+    claro/oscuro). La caja lo carga en un iframe oculto, llama a prepararRecibo() e imprime.
+--}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ $titulo }} · {{ $negocio->nombre }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: white; color: black; }
+        body { width: {{ $papel }}mm; font: 600 12px/1.3 Arial, Helvetica, sans-serif; }
+        .recibo { width: {{ $ancho }}mm; margin: 0 auto; padding-top: 2mm; overflow-wrap: anywhere; }
+        .centro { text-align: center; }
+        .negocio { font-size: 17px; font-weight: 700; line-height: 1.15; }
+        .chico { font-size: 11px; font-weight: 400; }
+        .titulo { margin-top: 2mm; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+        .sep { margin: 2mm 0; border: 0; border-top: 1px dashed black; }
+        .fila { display: flex; justify-content: space-between; align-items: baseline; gap: 2mm; }
+        .fila > :last-child { flex-shrink: 0; text-align: right; white-space: nowrap; }
+        .linea + .linea { margin-top: 1.2mm; }
+        .detalle { padding-left: 4mm; font-size: 11px; font-weight: 400; }
+        .total { margin-bottom: .8mm; font-size: 16px; font-weight: 700; }
+        .prueba { margin-top: 2mm; padding: 1.5mm; border: 1px dashed black; text-align: center; }
+        .gracias { margin-top: 3mm; font-size: 13px; font-weight: 700; }
+        /* El último renglón tiene que pasar la barra de corte; el punto evita que el driver
+           recorte ese espacio en blanco del final. */
+        .corte { padding-top: 12mm; font-size: 8px; text-align: center; }
+
+        @media screen {
+            html { background: gainsboro; }
+            body { margin: 6mm auto; background: white; box-shadow: 0 1px 6px rgb(0 0 0 / .25); }
+        }
+    </style>
+    <style id="pagina">@page { size: {{ $papel }}mm 297mm; margin: 0; }</style>
+</head>
+<body>
+    <main class="recibo">
+        <header class="centro">
+            <div class="negocio">{{ $negocio->nombre }}</div>
+            <div class="chico">{{ $negocio->direccionCompleta() }}</div>
+            <div class="chico">Tel. {{ $negocio->telefonoVisible() }}</div>
+            <div class="titulo">{{ $titulo }}</div>
+            <div class="chico">
+                {{ $fecha->format('d/m/Y g:i a') }}@if ($cajero) · {{ $cajero }}@endif
+            </div>
+        </header>
+
+        @if ($prueba)
+            <div class="prueba">
+                Prueba de impresión. Si este recuadro se ve completo, sin cortes a los lados, la impresora quedó bien.
+            </div>
+        @endif
+
+        <hr class="sep">
+
+        @foreach ($lineas as $linea)
+            <div class="linea">
+                <div class="fila">
+                    <span>{{ $linea['cantidad'] }} x {{ $linea['nombre'] }}</span>
+                    <span>{{ $linea['subtotal'] }}</span>
+                </div>
+                @if ($linea['detalle'])
+                    <div class="detalle">{{ $linea['detalle'] }}</div>
+                @endif
+            </div>
+        @endforeach
+
+        <hr class="sep">
+
+        <div class="fila total"><span>TOTAL</span><span>{{ $total }}</span></div>
+        @foreach ($pagos as $pago)
+            <div class="fila"><span>{{ $pago['metodo'] }}</span><span>{{ $pago['monto'] }}</span></div>
+        @endforeach
+        @if ($cambio)
+            <div class="fila"><span>Cambio</span><span>{{ $cambio }}</span></div>
+        @endif
+
+        @if ($notas)
+            <hr class="sep">
+            <div class="chico">Nota: {{ $notas }}</div>
+        @endif
+
+        <footer class="centro">
+            <div class="gracias">¡Gracias por su compra!</div>
+            <div class="chico">{{ $negocio->lema }}</div>
+        </footer>
+        <div class="corte">.</div>
+    </main>
+
+    <script>
+        // Una sola página del alto exacto del recibo: Chrome no lo parte en dos hojas y la
+        // impresora no suelta papel de más.
+        window.prepararRecibo = function () {
+            var alto = Math.ceil(document.querySelector('.recibo').getBoundingClientRect().height * 25.4 / 96) + 3;
+            document.getElementById('pagina').textContent = '@page { size: {{ $papel }}mm ' + alto + 'mm; margin: 0; }';
+        };
+        window.prepararRecibo();
+    </script>
+</body>
+</html>

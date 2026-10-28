@@ -75,12 +75,12 @@
     "src": "node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-vietnamese-wght-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-2ab07946.css",
+    "file": "assets/app-a1d2279e.css",
     "isEntry": true,
     "src": "resources/css/app.css"
   },
   "resources/css/landing.css": {
-    "file": "assets/landing-1e141e41.css",
+    "file": "assets/landing-c7f80d9f.css",
     "isEntry": true,
     "src": "resources/css/landing.css"
   },
@@ -90,7 +90,7 @@
     "src": "resources/images/logoico.png"
   },
   "resources/js/app.js": {
-    "file": "assets/app-fe893d3c.js",
+    "file": "assets/app-8c6daa43.js",
     "imports": [
       "_lucide-955bd1bf.js"
     ],

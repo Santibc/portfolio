@@ -44,7 +44,8 @@
                 </form>
 
                 <x-slot:footer>
-                    <div class="flex items-center justify-end">
+                    <div class="flex items-center justify-between gap-3">
+                        @include('caja._boton-impresora')
                         <button type="submit" form="form-abrir-caja"
                                 class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white text-base font-semibold shadow-soft transition-colors">
                             <x-icon name="play" class="w-5 h-5" />
@@ -137,6 +138,7 @@
                                 <input x-model="search" type="text" placeholder="Buscar..."
                                        class="block w-full rounded-xl border-cream-300 bg-white pl-8 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 dark:bg-cream-900/40 dark:border-cream-700 dark:text-cream-100">
                             </div>
+                            @include('caja._boton-impresora')
                             {{-- Toggle de la info del turno --}}
                             <button type="button" @click="infoOpen = !infoOpen"
                                     :class="infoOpen ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-cream-700 border-cream-300 hover:bg-cream-100 dark:bg-cream-900/40 dark:text-cream-200 dark:border-cream-700'"
@@ -420,6 +422,8 @@
             </div>
         </div>
     @endif
+
+    @include('caja._impresora-recibos')
 @endsection
 
 @include('caja._pos-inventario-script')
@@ -539,8 +543,10 @@
                 return true;
             },
 
-            submit() {
+            async submit() {
                 if (!this.puedeSubmitir || this.loading) return;
+                // Sin impresora configurada en este equipo, pregunta si cobrar sin recibo.
+                if (!(await window.impresoraRecibos.confirmarCobro())) return;
                 this.loading = true;
                 this.$nextTick(() => {
                     document.getElementById('form-venta').submit();
