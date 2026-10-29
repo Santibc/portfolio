@@ -14,8 +14,8 @@ exit /b
 #      al prender el equipo). El icono abre Chrome en modo kiosco (--kiosk: pantalla
 #      completa, sin barra ni pestanas) con --kiosk-printing (imprime directo, sin la
 #      ventana de impresion), en un perfil de Chrome propio de la caja.
-#   4. Activa el teclado en pantalla de Windows al tocar un campo (el equipo no tiene
-#      teclado y en pantalla completa no se ve la barra de tareas) y pide reiniciar.
+#   4. Deja el teclado en pantalla de Windows solo para cuando no hay un teclado conectado
+#      (en pantalla completa no se ve la barra de tareas para abrirlo) y pide reiniciar.
 #  Lo genera InstaladorCajaService (los __VALORES__ se reemplazan al descargarlo).
 # =============================================================================
 $ErrorActionPreference = 'Stop'
@@ -125,9 +125,7 @@ try {
     # Perfil de Chrome propio de la caja: los modos kiosco aplican aunque haya otro Chrome
     # abierto, y la configuración de la impresora (guardada en el navegador) queda en él.
     # --overscroll-history-navigation=0: deslizar el dedo no devuelve de página (y no se pierde el carrito).
-    # --disable-usb-keyboard-detect: Chrome pide el teclado en pantalla aunque crea que hay uno
-    #   conectado (algunas tablets reportan sus botones como teclado).
-    $argumentos = '--kiosk --kiosk-printing --overscroll-history-navigation=0 --disable-usb-keyboard-detect --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble "{1}"' -f $Perfil, $UrlCaja
+    $argumentos = '--kiosk --kiosk-printing --overscroll-history-navigation=0 --user-data-dir="{0}" --no-first-run --no-default-browser-check --hide-crash-restore-bubble "{1}"' -f $Perfil, $UrlCaja
 
     $shell = New-Object -ComObject WScript.Shell
     foreach ($destino in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Startup'))) {
@@ -143,17 +141,19 @@ try {
     Bien 'La caja se abrirá sola, en pantalla completa, cada vez que se prenda el equipo.'
 
     # 4. Teclado en pantalla -----------------------------------------------------------
-    # Windows 11: TouchKeyboardTapInvoke (2 = siempre). Windows 10: EnableDesktopModeAutoInvoke.
+    # La caja se usa con teclado: el de la pantalla sale al tocar un campo solo si no hay uno
+    # conectado. Windows 11: TouchKeyboardTapInvoke (1 = sin teclado conectado; 2 = siempre).
+    # Windows 10: EnableDesktopModeAutoInvoke (ya trae la condición de "sin teclado").
     # Toman efecto al volver a entrar a Windows: por eso se reinicia al final.
-    Paso '4 de 4 · Teclado en pantalla'
+    Paso '4 de 4 · Teclado'
     $teclado = 'HKCU:\Software\Microsoft\TabletTip\1.7'
     if (-not (Test-Path $teclado)) { New-Item -Path $teclado -Force | Out-Null }
-    New-ItemProperty -Path $teclado -Name 'TouchKeyboardTapInvoke' -Value 2 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $teclado -Name 'TouchKeyboardTapInvoke' -Value 1 -PropertyType DWord -Force | Out-Null
     New-ItemProperty -Path $teclado -Name 'EnableDesktopModeAutoInvoke' -Value 1 -PropertyType DWord -Force | Out-Null
-    Bien 'El teclado de Windows se abrirá solo al tocar un campo.'
+    Bien 'El teclado de la pantalla solo saldrá si no hay un teclado conectado.'
 
     Paso 'Listo: falta reiniciar el equipo'
-    Texto 'Al reiniciar, la caja se abre sola en pantalla completa y el teclado sale al tocar un campo.'
+    Texto 'Al reiniciar, la caja se abre sola en pantalla completa.'
     Texto '1. Inicia sesión.'
     Texto '2. En la Caja toca el botón "Impresora".'
     Texto '3. Toca "Imprimir prueba" y confirma que el recibo salió.'

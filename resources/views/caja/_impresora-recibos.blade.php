@@ -36,7 +36,7 @@
             <h4 class="text-sm font-semibold text-cream-900 dark:text-cream-50">1. Prepara el equipo (una sola vez)</h4>
             <p class="text-sm text-cream-700 dark:text-cream-300">
                 Conecta la impresora por USB y préndela. Luego descarga el instalador y ábrelo: deja la impresora
-                lista, activa el teclado de Windows al tocar un campo y crea el ícono <strong>{{ $accesoCaja }}</strong>,
+                lista y crea el ícono <strong>{{ $accesoCaja }}</strong>,
                 que abre la caja en pantalla completa al prender el equipo e imprime sin mostrar la ventana de
                 impresión (para cerrarla: Alt+F4 con un teclado).
             </p>
