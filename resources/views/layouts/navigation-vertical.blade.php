@@ -88,6 +88,7 @@
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
 
+            {{-- Oculto en El Pan Dorado (las rutas siguen activas): Lista mercado y Plantilla.
             @php
                 $listaActive = request()->routeIs('lista-mercado.index')
                     || request()->routeIs('lista-mercado.tipo')
@@ -114,6 +115,7 @@
                 <span class="flex-1">Plantilla</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
+            --}}
         </div>
     </div>
 
@@ -189,15 +191,18 @@
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
 
+            {{-- Oculto en El Pan Dorado (las rutas siguen activas): Pagos ahorros.
             @php [$active, $cls] = $navItem('pagos-ahorros.index', 'piggy-bank', 'Pagos ahorros', 'pagos-ahorros.*'); @endphp
             <a href="{{ route('pagos-ahorros.index') }}" class="{{ $cls }}">
                 <x-icon name="piggy-bank" class="w-4 h-4" />
                 <span class="flex-1">Pagos ahorros</span>
                 @if ($active)<span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>@endif
             </a>
+            --}}
         </div>
     </div>
 
+    {{-- Oculto en El Pan Dorado (las rutas siguen activas): Nómina.
     @php
         $nominaActive = request()->routeIs('nomina.*')
             || request()->routeIs('nomina-dashboard.*')
@@ -262,6 +267,7 @@
             </a>
         </div>
     </div>
+    --}}
 
     @php
         $gastosFijosActive = request()->routeIs('gastos-fijos.*');
