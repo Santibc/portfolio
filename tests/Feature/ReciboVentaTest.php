@@ -112,7 +112,7 @@ class ReciboVentaTest extends TestCase
     {
         $this->actingAs($this->user)->get(route('caja.recibo.prueba'))
             ->assertOk()
-            ->assertSeeInOrder(['¡Gracias por su compra!', parse_url(route('welcome'), PHP_URL_HOST), 'Programador: Santiago Bellaizan', 'Contacto: 320 223 0467']);
+            ->assertSeeInOrder(['¡Gracias por su compra!', parse_url(route('welcome'), PHP_URL_HOST), 'Desarrollador: Santiago Bellaizan · Tel: 320 223 0467']);
     }
 
     public function test_recibo_se_ajusta_al_rollo_de_80_mm(): void

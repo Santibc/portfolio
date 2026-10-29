@@ -32,7 +32,8 @@
         .total { margin-bottom: .8mm; font-size: 16px; font-weight: 700; }
         .prueba { margin-top: 2mm; padding: 1.5mm; border: 1px dashed black; text-align: center; }
         .gracias { margin-top: 3mm; font-size: 13px; font-weight: 700; }
-        .creditos { margin-top: 3mm; }
+        /* A 7px el renglón mide ~44 mm: cabe en los 48 mm imprimibles del rollo de 58. */
+        .creditos { margin-top: 3mm; font-size: 7px; font-weight: 400; white-space: nowrap; }
         /* El último renglón tiene que pasar la barra de corte; el punto evita que el driver
            recorte ese espacio en blanco del final. */
         .corte { padding-top: 12mm; font-size: 8px; text-align: center; }
@@ -94,10 +95,7 @@
             <div class="gracias">¡Gracias por su compra!</div>
             <div class="chico">{{ $negocio->lema }}</div>
             <div class="chico">{{ $web }}</div>
-            <div class="chico creditos">
-                Programador: Santiago Bellaizan<br>
-                Contacto: 320 223 0467
-            </div>
+            <div class="creditos">Desarrollador: Santiago Bellaizan · Tel: 320 223 0467</div>
         </footer>
         <div class="corte">.</div>
     </main>
