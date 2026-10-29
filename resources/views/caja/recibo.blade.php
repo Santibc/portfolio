@@ -1,7 +1,7 @@
 {{--
     Recibo para impresora térmica (rollo de 58 mm; ?papel=80 para 80 mm). Documento suelto, sin
     el layout ni el CSS del panel: va siempre negro sobre blanco (es papel, no sigue el tema
-    claro/oscuro). La caja lo carga en un iframe oculto, llama a prepararRecibo() e imprime.
+    claro/oscuro). La caja lo carga en un iframe oculto e imprime.
 --}}
 <!DOCTYPE html>
 <html lang="es">
@@ -12,9 +12,14 @@
     <title>{{ $titulo }} · {{ $negocio->nombre }}</title>
     <style>
         * { box-sizing: border-box; }
+        /* Sin size a propósito: en una impresora real Chrome imprime sobre la hoja del driver y,
+           si el tamaño de página no coincide, centra el recibo en la hoja e imprime la fecha y el
+           enlace en los márgenes que sobran. Así arranca arriba y el driver no imprime el blanco
+           que queda al final. */
+        @page { margin: 0; }
         html, body { margin: 0; padding: 0; background: white; color: black; }
-        body { width: {{ $papel }}mm; font: 600 12px/1.3 Arial, Helvetica, sans-serif; }
-        .recibo { width: {{ $ancho }}mm; margin: 0 auto; padding-top: 2mm; overflow-wrap: anywhere; }
+        body { font: 600 12px/1.3 Arial, Helvetica, sans-serif; }
+        .recibo { width: {{ $ancho }}mm; max-width: 100%; margin: 0 auto; padding-top: 2mm; overflow-wrap: anywhere; }
         .centro { text-align: center; }
         .negocio { font-size: 17px; font-weight: 700; line-height: 1.15; }
         .chico { font-size: 11px; font-weight: 400; }
@@ -27,19 +32,19 @@
         .total { margin-bottom: .8mm; font-size: 16px; font-weight: 700; }
         .prueba { margin-top: 2mm; padding: 1.5mm; border: 1px dashed black; text-align: center; }
         .gracias { margin-top: 3mm; font-size: 13px; font-weight: 700; }
+        .creditos { margin-top: 3mm; }
         /* El último renglón tiene que pasar la barra de corte; el punto evita que el driver
            recorte ese espacio en blanco del final. */
         .corte { padding-top: 12mm; font-size: 8px; text-align: center; }
 
         @media screen {
             html { background: gainsboro; }
-            body { margin: 6mm auto; background: white; box-shadow: 0 1px 6px rgb(0 0 0 / .25); }
+            body { width: {{ $papel }}mm; margin: 6mm auto; background: white; box-shadow: 0 1px 6px rgb(0 0 0 / .25); }
         }
     </style>
-    <style id="pagina">@page { size: {{ $papel }}mm 297mm; margin: 0; }</style>
 </head>
 <body>
-    <main class="recibo">
+    <main class="recibo" data-recibo>
         <header class="centro">
             <div class="negocio">{{ $negocio->nombre }}</div>
             <div class="chico">{{ $negocio->direccionCompleta() }}</div>
@@ -88,18 +93,13 @@
         <footer class="centro">
             <div class="gracias">¡Gracias por su compra!</div>
             <div class="chico">{{ $negocio->lema }}</div>
+            <div class="chico">{{ $web }}</div>
+            <div class="chico creditos">
+                Programador: Santiago Bellaizan<br>
+                Contacto: 320 223 0467
+            </div>
         </footer>
         <div class="corte">.</div>
     </main>
-
-    <script>
-        // Una sola página del alto exacto del recibo: Chrome no lo parte en dos hojas y la
-        // impresora no suelta papel de más.
-        window.prepararRecibo = function () {
-            var alto = Math.ceil(document.querySelector('.recibo').getBoundingClientRect().height * 25.4 / 96) + 3;
-            document.getElementById('pagina').textContent = '@page { size: {{ $papel }}mm ' + alto + 'mm; margin: 0; }';
-        };
-        window.prepararRecibo();
-    </script>
 </body>
 </html>

@@ -95,7 +95,24 @@ class ReciboVentaTest extends TestCase
             ->assertSee('Ana Cajera')
             ->assertSeeInOrder(['2 x Onces con gaseosa', '$ 24.000', 'Gaseosa manzana 400 ml'])
             ->assertSeeInOrder(['TOTAL', '$ 24.000', 'Efectivo', '$ 30.000', 'Cambio', '$ 6.000'])
-            ->assertSee('size: 58mm', false);
+            ->assertSee('width: 58mm', false);
+    }
+
+    public function test_recibo_no_fija_el_tamano_de_la_hoja(): void
+    {
+        $html = $this->actingAs($this->user)->get(route('caja.recibo.prueba'))->assertOk()->getContent();
+
+        // En una impresora real, un tamaño de página distinto al papel del driver hace que Chrome
+        // centre el recibo en la hoja e imprima la fecha y el enlace en los márgenes que sobran.
+        $this->assertStringContainsString('@page { margin: 0; }', $html);
+        $this->assertDoesNotMatchRegularExpression('/@page\s*\{[^}]*\bsize\s*:/', $html);
+    }
+
+    public function test_recibo_termina_con_la_web_del_negocio_y_el_programador(): void
+    {
+        $this->actingAs($this->user)->get(route('caja.recibo.prueba'))
+            ->assertOk()
+            ->assertSeeInOrder(['¡Gracias por su compra!', parse_url(route('welcome'), PHP_URL_HOST), 'Programador: Santiago Bellaizan', 'Contacto: 320 223 0467']);
     }
 
     public function test_recibo_se_ajusta_al_rollo_de_80_mm(): void
@@ -104,7 +121,7 @@ class ReciboVentaTest extends TestCase
 
         $this->actingAs($this->user)->get(route('caja.venta.recibo', ['venta' => $venta, 'papel' => 80]))
             ->assertOk()
-            ->assertSee('size: 80mm', false)
+            ->assertSee('width: 80mm', false)
             ->assertSee('width: 70mm', false);
     }
 

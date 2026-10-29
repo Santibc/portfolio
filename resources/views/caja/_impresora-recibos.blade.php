@@ -137,9 +137,8 @@
                         let impreso = false;
                         try {
                             // Sin recibo (error, sesión vencida) no se imprime otra página.
-                            if (win && typeof win.prepararRecibo === 'function') {
+                            if (win && win.document.querySelector('[data-recibo]')) {
                                 await win.document.fonts.ready;
-                                win.prepararRecibo();
                                 win.focus();
                                 win.print();
                                 impreso = true;

@@ -41,6 +41,7 @@ class ReciboVentaService
             ])->all(),
             'cambio'  => $venta->cambio > 0 ? $venta->cambio_formateado : null,
             'notas'   => $venta->notas,
+            'web'     => (string) parse_url(route('welcome'), PHP_URL_HOST),
         ];
     }
 
