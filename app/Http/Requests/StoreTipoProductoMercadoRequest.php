@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTipoProductoMercadoRequest extends FormRequest
 {
@@ -14,7 +15,7 @@ class StoreTipoProductoMercadoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:100', 'unique:tipos_producto_mercado,nombre'],
+            'nombre' => ['required', 'string', 'max:100', Rule::unique('tipos_producto_mercado', 'nombre')->withoutTrashed()],
         ];
     }
 }

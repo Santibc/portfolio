@@ -22,10 +22,13 @@ class TipoProductoMercadoController extends Controller
 
     public function store(StoreTipoProductoMercadoRequest $request): RedirectResponse
     {
-        TipoProductoMercado::create([
-            'nombre' => $request->nombre,
-            'slug'   => Str::slug($request->nombre),
-        ]);
+        $slug = Str::slug($request->nombre);
+
+        // Una categoría eliminada sigue ocupando su nombre (índice único): se recupera esa.
+        $tipo = TipoProductoMercado::onlyTrashed()->firstWhere('slug', $slug) ?? new TipoProductoMercado(['slug' => $slug]);
+        $tipo->nombre     = $request->nombre;
+        $tipo->deleted_at = null;
+        $tipo->save();
 
         return redirect()
             ->route('productos-mercado.tipos.index')

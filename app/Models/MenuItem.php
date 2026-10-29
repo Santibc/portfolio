@@ -34,7 +34,8 @@ class MenuItem extends Model
 
     public function tipo(): BelongsTo
     {
-        return $this->belongsTo(TipoMenuItem::class, 'tipo_id');
+        // Con su categoría eliminada: un item eliminado (ventas viejas) la sigue mostrando.
+        return $this->belongsTo(TipoMenuItem::class, 'tipo_id')->withTrashed();
     }
 
     public function ventaItems(): HasMany

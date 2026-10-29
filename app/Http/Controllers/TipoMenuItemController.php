@@ -14,11 +14,14 @@ class TipoMenuItemController extends Controller
 {
     public function store(StoreTipoMenuItemRequest $request): RedirectResponse
     {
-        TipoMenuItem::create([
-            'nombre' => $request->string('nombre')->toString(),
-            'slug'   => Str::slug($request->string('nombre')->toString()),
-            'orden'  => (int) ($request->input('orden') ?? 0),
-        ]);
+        $nombre = $request->string('nombre')->toString();
+        $slug   = Str::slug($nombre);
+
+        // Una categoría eliminada sigue ocupando su nombre (índice único): se recupera esa.
+        $tipo = TipoMenuItem::onlyTrashed()->firstWhere('slug', $slug) ?? new TipoMenuItem(['slug' => $slug]);
+        $tipo->fill(['nombre' => $nombre, 'orden' => (int) ($request->input('orden') ?? 0)]);
+        $tipo->deleted_at = null;
+        $tipo->save();
 
         return redirect()
             ->route('menu-items.index')

@@ -24,7 +24,7 @@ class TiposProductoMercadoSeeder extends Seeder
         ];
 
         foreach ($tipos as $nombre) {
-            TipoProductoMercado::firstOrCreate(
+            TipoProductoMercado::withTrashed()->firstOrCreate(
                 ['nombre' => $nombre],
                 ['slug' => Str::slug($nombre)]
             );

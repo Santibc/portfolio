@@ -29,3 +29,4 @@ yarn-error.log
 CLAUDE.local.md
 /backup_produccion_*.sql
 /backup_produccion_*.sql.gz
+/backup_produccion_*.tar.gz

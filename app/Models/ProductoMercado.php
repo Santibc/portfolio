@@ -32,7 +32,7 @@ class ProductoMercado extends Model
 
     public function tipo(): BelongsTo
     {
-        return $this->belongsTo(TipoProductoMercado::class, 'tipo_id');
+        return $this->belongsTo(TipoProductoMercado::class, 'tipo_id')->withTrashed();
     }
 
     public function movimientos(): HasMany

@@ -6,6 +6,7 @@ use App\Services\TurnoCajaService;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreRegistroMercadoRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class StoreRegistroMercadoRequest extends FormRequest
                 'before_or_equal:' . today()->toDateString(),
             ],
             'vincular_caja'       => ['nullable', 'boolean'],
-            'tipo_id'             => ['nullable', 'integer', 'exists:tipos_producto_mercado,id'],
+            'tipo_id'             => ['nullable', 'integer', Rule::exists('tipos_producto_mercado', 'id')->withoutTrashed()],
             'observacion'         => ['nullable', 'string', 'max:500'],
         ];
     }

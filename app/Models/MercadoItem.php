@@ -48,7 +48,7 @@ class MercadoItem extends Model
 
     public function tipo(): BelongsTo
     {
-        return $this->belongsTo(TipoProductoMercado::class, 'tipo_producto_mercado_id');
+        return $this->belongsTo(TipoProductoMercado::class, 'tipo_producto_mercado_id')->withTrashed();
     }
 
     public function registro(): BelongsTo

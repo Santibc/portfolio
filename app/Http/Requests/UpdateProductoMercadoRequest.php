@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductoMercadoRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class UpdateProductoMercadoRequest extends FormRequest
         return [
             'nombre'         => ['required', 'string', 'max:255'],
             'unidad_empaque' => ['required', 'string', 'max:50'],
-            'tipo_id'        => ['required', 'integer', 'exists:tipos_producto_mercado,id'],
+            'tipo_id'        => ['required', 'integer', Rule::exists('tipos_producto_mercado', 'id')->withoutTrashed()],
             'activo'         => ['nullable', 'boolean'],
             'controla_inventario' => ['nullable', 'boolean'],
             'imagen'         => ['nullable', 'mimes:jpeg,png,jpg,gif,webp,avif', 'max:2048'],

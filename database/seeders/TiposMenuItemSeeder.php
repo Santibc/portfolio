@@ -18,7 +18,7 @@ class TiposMenuItemSeeder extends Seeder
         ];
 
         foreach ($tipos as $t) {
-            TipoMenuItem::updateOrCreate(['slug' => $t['slug']], $t);
+            TipoMenuItem::withTrashed()->updateOrCreate(['slug' => $t['slug']], $t);
         }
     }
 }
