@@ -24,6 +24,7 @@
             if (resolved === 'dark') html.classList.add('dark');
         })();
     </script>
+    @include('layouts._teclado-fisico')
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')

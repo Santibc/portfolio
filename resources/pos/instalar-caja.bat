@@ -14,8 +14,8 @@ exit /b
 #      al prender el equipo). El icono abre Chrome en modo kiosco (--kiosk: pantalla
 #      completa, sin barra ni pestanas) con --kiosk-printing (imprime directo, sin la
 #      ventana de impresion), en un perfil de Chrome propio de la caja.
-#   4. Deja el teclado en pantalla de Windows solo para cuando no hay un teclado conectado
-#      (en pantalla completa no se ve la barra de tareas para abrirlo) y pide reiniciar.
+#   4. Hace que el teclado en pantalla de Windows no salga solo al tocar un campo (la caja
+#      se usa con teclado) y pide reiniciar.
 #  Lo genera InstaladorCajaService (los __VALORES__ se reemplazan al descargarlo).
 # =============================================================================
 $ErrorActionPreference = 'Stop'
@@ -141,16 +141,16 @@ try {
     Bien 'La caja se abrirá sola, en pantalla completa, cada vez que se prenda el equipo.'
 
     # 4. Teclado en pantalla -----------------------------------------------------------
-    # La caja se usa con teclado: el de la pantalla sale al tocar un campo solo si no hay uno
-    # conectado. Windows 11: TouchKeyboardTapInvoke (1 = sin teclado conectado; 2 = siempre).
-    # Windows 10: EnableDesktopModeAutoInvoke (ya trae la condición de "sin teclado").
+    # La caja se usa con teclado: el de la pantalla no sale solo al tocar un campo. "Solo sin
+    # teclado conectado" no sirve: en una tablet Windows lo saca aunque haya uno conectado.
+    # Windows 11: TouchKeyboardTapInvoke (0 = nunca). Windows 10: EnableDesktopModeAutoInvoke.
     # Toman efecto al volver a entrar a Windows: por eso se reinicia al final.
     Paso '4 de 4 · Teclado'
     $teclado = 'HKCU:\Software\Microsoft\TabletTip\1.7'
     if (-not (Test-Path $teclado)) { New-Item -Path $teclado -Force | Out-Null }
-    New-ItemProperty -Path $teclado -Name 'TouchKeyboardTapInvoke' -Value 1 -PropertyType DWord -Force | Out-Null
-    New-ItemProperty -Path $teclado -Name 'EnableDesktopModeAutoInvoke' -Value 1 -PropertyType DWord -Force | Out-Null
-    Bien 'El teclado de la pantalla solo saldrá si no hay un teclado conectado.'
+    New-ItemProperty -Path $teclado -Name 'TouchKeyboardTapInvoke' -Value 0 -PropertyType DWord -Force | Out-Null
+    New-ItemProperty -Path $teclado -Name 'EnableDesktopModeAutoInvoke' -Value 0 -PropertyType DWord -Force | Out-Null
+    Bien 'El teclado de la pantalla ya no saldrá solo al tocar un campo.'
 
     Paso 'Listo: falta reiniciar el equipo'
     Texto 'Al reiniciar, la caja se abre sola en pantalla completa.'

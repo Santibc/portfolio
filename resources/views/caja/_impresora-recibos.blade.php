@@ -82,6 +82,15 @@
             </div>
         </section>
 
+        <section class="space-y-2 border-t border-cream-200 pt-4 dark:border-cream-800">
+            <h4 class="text-sm font-semibold text-cream-900 dark:text-cream-50">Teclado de este equipo</h4>
+            {{-- Queda en este Chrome (layouts/_teclado-fisico), también para la pantalla de login. --}}
+            <x-toggle id="equipo-teclado-fisico" label="Este equipo tiene teclado"
+                      description="No abre el teclado de la pantalla al tocar un campo."
+                      x-init="on = window.tecladoFisico.activo()"
+                      x-on:change="window.tecladoFisico.guardar($event.target.checked)" />
+        </section>
+
         <div class="flex flex-wrap items-center justify-between gap-2 border-t border-cream-200 pt-4 dark:border-cream-800">
             <x-button variant="ghost" size="sm" icon="rotate-ccw" x-show="ultimo" x-cloak @click="reimprimir()">
                 Reimprimir último recibo

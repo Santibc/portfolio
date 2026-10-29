@@ -144,10 +144,10 @@ class ReciboVentaTest extends TestCase
         $this->assertStringContainsString("\$NombreAcceso  = 'Caja El Pan Dorado DC'", $script);
         // Pantalla completa como único programa + impresión sin la ventana de Chrome.
         $this->assertStringContainsString('--kiosk --kiosk-printing', $script);
-        // El POS se usa con teclado: el de la pantalla sale solo si no hay uno conectado.
+        // El POS se usa con teclado: el de la pantalla no sale solo al tocar un campo.
         $this->assertStringNotContainsString('--disable-usb-keyboard-detect', $script);
-        $this->assertStringContainsString("'TouchKeyboardTapInvoke' -Value 1", $script);
-        $this->assertStringContainsString("'EnableDesktopModeAutoInvoke' -Value 1", $script);
+        $this->assertStringContainsString("'TouchKeyboardTapInvoke' -Value 0", $script);
+        $this->assertStringContainsString("'EnableDesktopModeAutoInvoke' -Value 0", $script);
         $this->assertStringNotContainsString('__URL_CAJA__', $script);
     }
 
