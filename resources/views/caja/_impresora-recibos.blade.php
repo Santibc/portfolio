@@ -51,10 +51,7 @@
 
         <section class="space-y-3">
             <h4 class="text-sm font-semibold text-cream-900 dark:text-cream-50">2. Imprime una prueba</h4>
-            <div class="flex flex-wrap gap-x-6 gap-y-2">
-                <x-radio name="papel_recibo" value="58" label="Rollo de 58 mm" description="Xprinter XP-58 y similares" x-model.number="papel" />
-                <x-radio name="papel_recibo" value="80" label="Rollo de 80 mm" x-model.number="papel" />
-            </div>
+            <p class="text-sm text-cream-700 dark:text-cream-300">Para rollo de 58 mm (Xprinter XP-58 y similares).</p>
             <x-button variant="primary" icon="printer" @click="probar()" x-bind:disabled="paso === 'probando'">
                 Imprimir prueba
             </x-button>
@@ -75,7 +72,7 @@
                     <ul class="list-disc space-y-1 pl-4">
                         <li><strong>Apareció la ventana de impresión:</strong> cierra Chrome y abre la caja con el ícono {{ $accesoCaja }} del escritorio. Si no lo tienes, haz el paso 1.</li>
                         <li><strong>No salió nada:</strong> revisa que la impresora esté prendida, con papel y conectada, y abre de nuevo el instalador.</li>
-                        <li><strong>Salió cortado o muy pequeño:</strong> revisa el tamaño del rollo y prueba otra vez.</li>
+                        <li><strong>Salió cortado o muy pequeño:</strong> revisa que el rollo sea de 58 mm y prueba otra vez.</li>
                     </ul>
                 </x-alert>
             </div>
@@ -99,7 +96,7 @@
 @push('scripts')
 <script>
     window.impresoraRecibos = (() => {
-        const CLAVE = 'caja-impresora';           // { estado, papel } de ESTE equipo
+        const CLAVE = 'caja-impresora';           // { estado } de ESTE equipo
         const CLAVE_ULTIMO = 'caja-ultimo-recibo'; // URL del último recibo, para reimprimir
         const leer = () => { try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) { return {}; } };
         const avisar = () => window.dispatchEvent(new CustomEvent('impresora-cambio'));
@@ -109,7 +106,6 @@
                 const estado = leer().estado;
                 return estado === 'activa' || estado === 'desactivada' ? estado : 'sin-configurar';
             },
-            papel() { return leer().papel === 80 ? 80 : 58; },
             guardar(cambios) {
                 try { localStorage.setItem(CLAVE, JSON.stringify(Object.assign(leer(), cambios))); } catch (e) {}
                 avisar();
@@ -125,7 +121,6 @@
             // Carga el recibo en un iframe oculto y lo imprime. Desde el ícono de la caja
             // (--kiosk-printing) sale directo; en otro Chrome aparece la ventana de impresión.
             imprimir(url) {
-                const src = url + (url.includes('?') ? '&' : '?') + 'papel=' + this.papel();
                 return new Promise((resolve) => {
                     const iframe = document.createElement('iframe');
                     iframe.setAttribute('aria-hidden', 'true');
@@ -147,7 +142,7 @@
                         setTimeout(() => iframe.remove(), 2000);
                         resolve(impreso);
                     }, { once: true });
-                    iframe.src = src;
+                    iframe.src = url;
                     document.body.appendChild(iframe);
                 });
             },
@@ -212,17 +207,14 @@
 
     window.impresoraModal = (urlPrueba) => ({
         estado: 'sin-configurar',
-        papel: 58,
         ultimo: null,
         paso: null, // probando | preguntar | ayuda | error
         init() {
             this.leer();
             window.addEventListener('impresora-cambio', () => this.leer());
-            this.$watch('papel', (papel) => window.impresoraRecibos.guardar({ papel }));
         },
         leer() {
             this.estado = window.impresoraRecibos.estado();
-            this.papel = window.impresoraRecibos.papel();
             this.ultimo = window.impresoraRecibos.ultimoRecibo();
         },
         async probar() {

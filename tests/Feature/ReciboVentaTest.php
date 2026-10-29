@@ -106,6 +106,8 @@ class ReciboVentaTest extends TestCase
         // centre el recibo en la hoja e imprima la fecha y el enlace en los márgenes que sobran.
         $this->assertStringContainsString('@page { margin: 0; }', $html);
         $this->assertDoesNotMatchRegularExpression('/@page\s*\{[^}]*\bsize\s*:/', $html);
+        // Pegado a la izquierda en los 48 mm del cabezal: centrado en la hoja se cortaba por la derecha.
+        $this->assertStringContainsString('.recibo { width: 48mm; max-width: 100%; margin: 0;', $html);
     }
 
     public function test_recibo_termina_con_la_web_del_negocio_y_el_programador(): void
@@ -113,16 +115,6 @@ class ReciboVentaTest extends TestCase
         $this->actingAs($this->user)->get(route('caja.recibo.prueba'))
             ->assertOk()
             ->assertSeeInOrder(['¡Gracias por su compra!', parse_url(route('welcome'), PHP_URL_HOST), 'Desarrollador: Santiago Bellaizan · Tel: 320 223 0467']);
-    }
-
-    public function test_recibo_se_ajusta_al_rollo_de_80_mm(): void
-    {
-        $venta = $this->venderOnces();
-
-        $this->actingAs($this->user)->get(route('caja.venta.recibo', ['venta' => $venta, 'papel' => 80]))
-            ->assertOk()
-            ->assertSee('width: 80mm', false)
-            ->assertSee('width: 70mm', false);
     }
 
     public function test_recibo_de_prueba_no_registra_ventas(): void

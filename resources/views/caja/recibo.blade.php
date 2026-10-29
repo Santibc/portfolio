@@ -1,5 +1,5 @@
 {{--
-    Recibo para impresora térmica (rollo de 58 mm; ?papel=80 para 80 mm). Documento suelto, sin
+    Recibo para impresora térmica de rollo de 58 mm (Xprinter XP-58). Documento suelto, sin
     el layout ni el CSS del panel: va siempre negro sobre blanco (es papel, no sigue el tema
     claro/oscuro). La caja lo carga en un iframe oculto e imprime.
 --}}
@@ -19,7 +19,9 @@
         @page { margin: 0; }
         html, body { margin: 0; padding: 0; background: white; color: black; }
         body { font: 600 12px/1.3 Arial, Helvetica, sans-serif; }
-        .recibo { width: {{ $ancho }}mm; max-width: 100%; margin: 0 auto; padding-top: 2mm; overflow-wrap: anywhere; }
+        /* Pegado a la izquierda, no centrado: el driver manda los 48 mm del cabezal desde el borde
+           izquierdo de la hoja, y centrado en la hoja de 58 mm se cortaba por la derecha. */
+        .recibo { width: 48mm; max-width: 100%; margin: 0; padding: 2mm 1mm 0; overflow-wrap: anywhere; }
         .centro { text-align: center; }
         .negocio { font-size: 17px; font-weight: 700; line-height: 1.15; }
         .chico { font-size: 11px; font-weight: 400; }
@@ -40,7 +42,8 @@
 
         @media screen {
             html { background: gainsboro; }
-            body { width: {{ $papel }}mm; margin: 6mm auto; background: white; box-shadow: 0 1px 6px rgb(0 0 0 / .25); }
+            body { width: 58mm; margin: 6mm auto; background: white; box-shadow: 0 1px 6px rgb(0 0 0 / .25); }
+            .recibo { margin: 0 auto; }
         }
     </style>
 </head>
