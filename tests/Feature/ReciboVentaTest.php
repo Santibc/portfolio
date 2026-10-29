@@ -95,7 +95,8 @@ class ReciboVentaTest extends TestCase
             ->assertSee('Ana Cajera')
             ->assertSeeInOrder(['2 x Onces con gaseosa', '$ 24.000', 'Gaseosa manzana 400 ml'])
             ->assertSeeInOrder(['TOTAL', '$ 24.000', 'Efectivo', '$ 30.000', 'Cambio', '$ 6.000'])
-            ->assertSee('width: 58mm', false);
+            ->assertSee('width: 58mm', false)
+            ->assertDontSee('<div class="regla"', false);
     }
 
     public function test_recibo_no_fija_el_tamano_de_la_hoja(): void
@@ -106,8 +107,8 @@ class ReciboVentaTest extends TestCase
         // centre el recibo en la hoja e imprima la fecha y el enlace en los márgenes que sobran.
         $this->assertStringContainsString('@page { margin: 0; }', $html);
         $this->assertDoesNotMatchRegularExpression('/@page\s*\{[^}]*\bsize\s*:/', $html);
-        // Pegado a la izquierda en los 48 mm del cabezal: centrado en la hoja se cortaba por la derecha.
-        $this->assertStringContainsString('.recibo { width: 48mm; max-width: 100%; margin: 0;', $html);
+        // Pegado a la izquierda y angosto: en la XP-58 del POS solo salen ~42 mm desde el borde izquierdo.
+        $this->assertStringContainsString('.recibo { width: 42mm; max-width: 100%; margin: 0;', $html);
     }
 
     public function test_recibo_termina_con_la_web_del_negocio_y_el_programador(): void
@@ -123,6 +124,7 @@ class ReciboVentaTest extends TestCase
             ->assertOk()
             ->assertSee('Recibo de prueba')
             ->assertSee('Prueba de impresión')
+            ->assertSee('<div class="regla"', false)
             ->assertSeeInOrder(['TOTAL', '$ 117.500', 'Efectivo', '$ 120.000', 'Cambio', '$ 2.500']);
 
         $this->assertDatabaseCount('ventas', 0);

@@ -19,9 +19,10 @@
         @page { margin: 0; }
         html, body { margin: 0; padding: 0; background: white; color: black; }
         body { font: 600 12px/1.3 Arial, Helvetica, sans-serif; }
-        /* Pegado a la izquierda, no centrado: el driver manda los 48 mm del cabezal desde el borde
-           izquierdo de la hoja, y centrado en la hoja de 58 mm se cortaba por la derecha. */
-        .recibo { width: 48mm; max-width: 100%; margin: 0; padding: 2mm 1mm 0; overflow-wrap: anywhere; }
+        /* Pegado a la izquierda y angosto: en la XP-58 del POS solo salen ~42 mm desde el borde
+           izquierdo de la hoja (centrado o con 48 mm se cortaba la derecha). La regla del recibo
+           de prueba muestra hasta dónde imprime. */
+        .recibo { width: 42mm; max-width: 100%; margin: 0; padding: 2mm 1.5mm 0; overflow-wrap: anywhere; }
         .centro { text-align: center; }
         .negocio { font-size: 17px; font-weight: 700; line-height: 1.15; }
         .chico { font-size: 11px; font-weight: 400; }
@@ -33,9 +34,14 @@
         .detalle { padding-left: 4mm; font-size: 11px; font-weight: 400; }
         .total { margin-bottom: .8mm; font-size: 16px; font-weight: 700; }
         .prueba { margin-top: 2mm; padding: 1.5mm; border: 1px dashed black; text-align: center; }
-        .gracias { margin-top: 3mm; font-size: 13px; font-weight: 700; }
-        /* A 7px el renglón mide ~44 mm: cabe en los 48 mm imprimibles del rollo de 58. */
-        .creditos { margin-top: 3mm; font-size: 7px; font-weight: 400; white-space: nowrap; }
+        .gracias { margin-top: 3mm; font-size: 12px; font-weight: 700; }
+        /* A 6px el renglón mide ~38 mm: cabe en los 39 mm del recibo. */
+        .creditos { margin-top: 3mm; font-size: 6px; font-weight: 400; white-space: nowrap; }
+        /* Solo en la prueba, de borde a borde de la hoja (overflow: hidden para que no la ensanche). */
+        .regla { position: relative; height: 5mm; overflow: hidden; font: 400 7px/1 Arial, Helvetica, sans-serif; }
+        .regla i { position: absolute; bottom: 0; height: 1.5mm; border-left: 1px solid black; }
+        .regla i.diez { height: 3mm; }
+        .regla b { position: absolute; top: 0; padding-left: .4mm; font-weight: 400; }
         /* El último renglón tiene que pasar la barra de corte; el punto evita que el driver
            recorte ese espacio en blanco del final. */
         .corte { padding-top: 12mm; font-size: 8px; text-align: center; }
@@ -48,6 +54,18 @@
     </style>
 </head>
 <body>
+    @if ($prueba)
+        {{-- Regla en mm desde el borde izquierdo de la hoja: el último número que sale entero
+             dice hasta dónde imprime el cabezal. --}}
+        <div class="regla" aria-hidden="true">
+            @foreach (range(0, 58, 2) as $mm)
+                <i @class(['diez' => $mm % 10 === 0]) style="left: {{ $mm }}mm"></i>
+                @if ($mm % 10 === 0 && $mm < 58)
+                    <b style="left: {{ $mm }}mm">{{ $mm }}</b>
+                @endif
+            @endforeach
+        </div>
+    @endif
     <main class="recibo" data-recibo>
         <header class="centro">
             <div class="negocio">{{ $negocio->nombre }}</div>
